@@ -1,164 +1,534 @@
-:root {
-  --font-mono: 'Roboto Mono', monospace;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&family=Roboto+Mono:wght@400;700&display=swap');
+
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+
+  --color-coal-100: var(--coal-100);
+  --color-coal-200: var(--coal-200);
+  --color-coal-300: var(--coal-300);
+  --color-coal-400: var(--coal-400);
+  --color-coal-500: var(--coal-500);
+  --color-coal-600: var(--coal-600);
+  --color-coal-700: var(--coal-700);
+  --color-coal-800: var(--coal-800);
+  --color-coal-900: var(--coal-900);
+
+  --color-erythro-100: var(--erythro-100);
+  --color-erythro-200: var(--erythro-200);
+  --color-erythro-300: var(--erythro-300);
+  --color-erythro-400: var(--erythro-400);
+  --color-erythro-500: var(--erythro-500);
+  --color-erythro-600: var(--erythro-600);
+  --color-erythro-700: var(--erythro-700);
+  --color-erythro-800: var(--erythro-800);
+  --color-erythro-900: var(--erythro-900);
+
+  --color-gold-100: var(--gold-100);
+  --color-gold-200: var(--gold-200);
+  --color-gold-300: var(--gold-300);
+  --color-gold-400: var(--gold-400);
+  --color-gold-500: var(--gold-500);
+  --color-gold-600: var(--gold-600);
+  --color-gold-700: var(--gold-700);
+  --color-gold-800: var(--gold-800);
+  --color-gold-900: var(--gold-900);
+
+  --radius-radius-xs: var(--radius-xs);
+  --radius-radius-sm: 5px;
+  --radius-radius-md: 10px;
+  --radius-radius-lg: var(--radius-lg);
+  --radius-radius-xl: var(--radius-xl);
+  --radius-radius-2xl: var(--radius-2xl);
+
+  --spacing-space-xs: 4px;
+  --spacing-space-s: 8px;
+  --spacing-space-m: 16px;
+  --spacing-space-l: 24px;
+  --spacing-space-xl: 32px;
+  --spacing-space-30px: 30px;
+  --spacing-space-40px: 40px;
+  --spacing-space-60px: 60px;
+  --spacing-space-100px: 100px;
+
+  --shadow-btn-primary-dark: 0 3px 20px 0 rgba(255, 233, 199, 0.3);
+  --shadow-btn-primary-light: 0 3px 20px 0 rgba(229, 36, 33, 0.5);
+  --shadow-btn-secondary: 0 3px 20px 0 rgba(255, 233, 199, 0.3);
+  --shadow-card-services-dark: 0 5px 20px 0 rgba(13, 13, 13, 0.3);
+  --shadow-card-services-light: 0 5px 20px 0 rgba(13, 13, 13, 0.2);
+  --shadow-btn-tertiary: 0 3px 20px 0 rgba(255, 255, 255, 0.3);
 }
 
-* {
-  box-sizing: border-box;
-}
+@layer base {
+  :root {
+    /* Primitives - Coal */
+    --coal-100: #b9b9b9;
+    --coal-200: #989898;
+    --coal-300: #686868;
+    --coal-400: #4b4b4b;
+    --coal-500: #1e1e1e;
+    --coal-600: #1b1b1b;
+    --coal-700: #151515;
+    --coal-800: #111111;
+    --coal-900: #0d0d0d;
+    --coal-alpha-0: rgba(13, 13, 13, 0);
+    --coal-alpha-20: rgba(13, 13, 13, 0.2);
+    --coal-alpha-30: rgba(13, 13, 13, 0.3);
+    --coal-alpha-50: rgba(13, 13, 13, 0.5);
+    --coal-alpha-70: rgba(13, 13, 13, 0.7);
 
-html {
-  font-size: 18px;
-  line-height: 32px;
+    /* Primitives - Erythro */
+    --erythro-100: #f7bbba;
+    --erythro-200: #f39a99;
+    --erythro-300: #ee6c6a;
+    --erythro-400: #ea504d;
+    --erythro-500: #e52421;
+    --erythro-600: #d0211e;
+    --erythro-700: #a31a17;
+    --erythro-800: #7e1412;
+    --erythro-900: #600f0e;
+    --erythro-alpha-30: rgba(229, 36, 33, 0.3);
 
-  background: rgb(0, 0, 0);
-  -webkit-font-smoothing: antialiased;
-}
+    /* Primitives - Gold */
+    --gold-100: #ffffff;
+    --gold-200: #fff5e5;
+    --gold-300: #fff0d9;
+    --gold-400: #ffedd2;
+    --gold-500: #ffe9c7;
+    --gold-600: #f1d9b5;
+    --gold-700: #b5a58d;
+    --gold-800: #8c806d;
+    --gold-900: #6b6254;
+    --gold-alpha-0: rgba(255, 248, 238, 0);
+    --gold-alpha-30: rgba(255, 233, 199, 0.3);
 
-html,
-body,
-#app {
-  height: 100%;
-}
+    /* Primitives - Radius */
+    --radius-xs: 2px;
+    --radius-sm: 16px;
+    --radius-md: 30px;
+    --radius-lg: 20px;
+    --radius-xl: 40px;
+    --radius-2xl: 80px;
 
-body {
-  font-family: system-ui;
-  font-size: 18px;
-  line-height: 32px;
+    /* Primitives - Spacing */
+    --spacing-0: 0px;
+    --spacing-2: 2px;
+    --spacing-4: 4px;
+    --spacing-8: 8px;
+    --spacing-12: 12px;
+    --spacing-16: 16px;
+    --spacing-24: 24px;
+    --spacing-32: 32px;
+    --spacing-40: 40px;
+    --spacing-48: 48px;
+    --spacing-64: 64px;
 
-  margin: 0;
-  color: rgb(1000, 1000, 1000);
+    /* Semantic Colors - Backgrounds & Text */
+    --bg-primary: var(--gold-100);
+    --bg-surface: var(--gold-200);
+    --text-main: var(--coal-900);
+    --brand-accent: var(--erythro-500);
+    --brand-gold: var(--gold-700);
 
+    /* Semantic - Shadows */
+    --shadow-button-primary: 0 3px 20px 0 var(--gold-alpha-30);
+    --shadow-button-secondary: 0 3px 20px 0 var(--gold-alpha-30);
+    --shadow-card-services: 0 5px 20px 0 var(--coal-alpha-30);
+    --shadow-button-tertiary: 0 3px 20px 0 rgba(255, 255, 255, 0.3);
+
+    /* Semantic - Accessibility */
+    --accessibility-bg: var(--gold-500);
+    --accessibility-stroke: var(--gold-500);
+    --accessibility-icon: var(--coal-900);
+
+    /* Semantic - Buttons Tertiary */
+    --btn-tertiary-link: var(--gold-500);
+    --btn-tertiary-stroke: var(--gold-500);
+    --btn-tertiary-link-hover: var(--coal-900);
+    --btn-tertiary-bg-hover: var(--gold-500);
+    --btn-tertiary-stroke-hover: var(--gold-500);
+
+    /* Semantic - Buttons Primary */
+    --btn-primary-link: var(--gold-500);
+    --btn-primary-bg: var(--gold-alpha-0);
+    --btn-primary-stroke: var(--gold-500);
+    --btn-primary-hover: var(--gold-500);
+    --btn-primary-stroke-hover: var(--gold-500);
+    --btn-primary-link-hover: var(--coal-500);
+
+    /* Semantic - Buttons Secondary */
+    --btn-secondary-link: var(--gold-500);
+    --btn-secondary-bg: var(--gold-alpha-0);
+    --btn-secondary-stroke: var(--gold-500);
+    --btn-secondary-link-hover: var(--coal-500);
+    --btn-secondary-hover: var(--gold-500);
+
+    /* Semantic - Text & Menu */
+    --text-base: #ffffff;
+    --text-links: var(--gold-500);
+    --menu-point: var(--erythro-500);
+    --menu-bg: var(--coal-alpha-50);
+    --menu-stroke: var(--coal-900);
+    --Menu-bg: var(--coal-alpha-50);
+    --Menu-stroke: #0D0D0D;
+    --Text-Links: #FFE9C7;
+  }
+
+  .dark {
+    --bg-primary: var(--coal-900);
+    --bg-surface: var(--coal-800);
+    --text-main: var(--gold-100);
+    --brand-accent: var(--erythro-500);
+    --brand-gold: var(--gold-500);
+    --Menu-bg: var(--coal-alpha-50);
+    --Menu-stroke: #0D0D0D;
+    --Text-Links: #FFE9C7;
+
+    /* Shadows in dark mode */
+    --shadow-button-primary: 0 3px 20px 0 var(--erythro-alpha-30);
+    --shadow-button-secondary: 0 3px 20px 0 var(--gold-alpha-30);
+    --shadow-card-services: 0 5px 20px 0 var(--coal-alpha-50);
+    --shadow-button-tertiary: 0 3px 20px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: var(--bg-primary);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  /* Desktop Typography (DS) base mapping to tags */
+  h1 {
+    font-size: 48px;
+    line-height: 60px;
+    font-weight: 700; /* Bold (Heading 4XL) */
+  }
+
+  h2 {
+    font-size: 48px;
+    line-height: 60px;
+    font-weight: 200; /* Extra Light (Heading 3XL) */
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+  }
+
+  h3 {
+    font-size: 40px;
+    line-height: 80px;
+    font-weight: 700; /* Bold (Heading 2XL) */
+  }
+
+  h4 {
+    font-size: 40px;
+    line-height: 60px;
+    font-weight: 200; /* Extra Light (Heading XL) */
+    letter-spacing: 0.2em;
+  }
+
+  h5 {
+    font-size: 40px;
+    line-height: 60px;
+    font-weight: 200; /* Extra Light (Heading L) */
+    letter-spacing: 0.2em;
+  }
+
+  h6 {
+    font-size: 30px;
+    line-height: 48px;
+    font-weight: 300; /* Light (Heading M/SM) */
+  }
+
+  /* Responsive/Mobile Typography overrides */
   @media (max-width: 1024px) {
-    font-size: 15px;
-    line-height: 24px;
-  }
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-h1 {
-  margin: 40px 0;
-  font-size: 64px;
-  line-height: 70px;
-  font-weight: bold;
-
-  @media (max-width: 1024px) {
-    margin: 24px 0;
-    font-size: 42px;
-    line-height: 42px;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 38px;
-    line-height: 38px;
-  }
-
-  @media (max-width: 400px) {
-    font-size: 32px;
-    line-height: 32px;
-  }
-}
-
-p {
-  margin: 24px 0;
-
-  @media (max-width: 1024px) {
-    margin: calc(var(--base) * 0.75) 0;
-  }
-}
-
-a {
-  color: currentColor;
-
-  &:focus {
-    opacity: 0.8;
-    outline: none;
-  }
-
-  &:active {
-    opacity: 0.7;
-    outline: none;
-  }
-}
-
-svg {
-  vertical-align: middle;
-}
-
-.home {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  height: 100vh;
-  padding: 45px;
-  max-width: 1024px;
-  margin: 0 auto;
-  overflow: hidden;
-
-  @media (max-width: 400px) {
-    padding: 24px;
-  }
-
-  .content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-
     h1 {
-      text-align: center;
+      font-size: 36px;
+      line-height: 48px;
+    }
+    h2 {
+      font-size: 30px;
+      line-height: 48px;
+      letter-spacing: 0.1em;
+    }
+    h3 {
+      font-size: 24px;
+      line-height: 36px;
+    }
+    h4 {
+      font-size: 24px;
+      line-height: 36px;
+      letter-spacing: 0.1em;
+    }
+    h5 {
+      font-size: 20px;
+      line-height: 30px;
+      letter-spacing: 0.1em;
+    }
+    h6 {
+      font-size: 18px;
+      line-height: 24px;
     }
   }
 
-  .links {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  html[dir='rtl'] {
+    font-family: 'Inter', sans-serif !important;
+  }
+}
 
-    a {
-      text-decoration: none;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-    }
-
-    .admin {
-      color: rgb(0, 0, 0);
-      background: rgb(1000, 1000, 1000);
-      border: 1px solid rgb(0, 0, 0);
-    }
-
-    .docs {
-      color: rgb(1000, 1000, 1000);
-      background: rgb(0, 0, 0);
-      border: 1px solid rgb(1000, 1000, 1000);
-    }
+@layer utilities {
+  /* Procedural premium noise generator */
+  .bg-noise {
+    position: relative;
   }
 
-  .footer {
+  .bg-noise::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.05;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+    z-index: 0;
+  }
+
+  /* Premium Design System Glassmorphism */
+  .panel-glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .dark .panel-glass {
+    background: rgba(13, 13, 13, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Custom Navbar Pill wrapper styling matching Figma design rules */
+  .navbar-pill {
     display: flex;
+    height: 70px;
+    padding: var(--sm, 16px) var(--md, 30px);
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: var(--lg, 40px);
+    flex-shrink: 0;
 
-    @media (max-width: 1024px) {
-      flex-direction: column;
-      gap: 6px;
+    border-radius: var(--xl, 40px);
+    border: 1px solid var(--Menu-stroke, #0D0D0D);
+    background: var(--Menu-bg, rgba(13, 13, 13, 0.50));
+  }
+
+  .menu-link {
+    color: var(--gold-100, #ffffff);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: normal;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+  }
+
+  .menu-link:hover {
+    color: var(--gold-500);
+  }
+
+  /* Typography Utilities for precise class-based layout styling */
+  .font-display-5xl {
+    font-size: 72px;
+    line-height: 96px;
+    font-weight: 100;
+    letter-spacing: 0;
+  }
+
+  .font-heading-4xl {
+    font-size: 48px;
+    line-height: 60px;
+    font-weight: 700;
+  }
+
+  .font-heading-3xl {
+    font-size: 48px;
+    line-height: 60px;
+    font-weight: 200;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .font-heading-2xl {
+    font-size: 40px;
+    line-height: 80px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .font-heading-xl {
+    font-size: 40px;
+    line-height: 60px;
+    font-weight: 200;
+    letter-spacing: 0.2em;
+  }
+
+  .font-heading-l {
+    font-size: 40px;
+    line-height: 60px;
+    font-weight: 200;
+    letter-spacing: 0.2em;
+  }
+
+  .font-heading-m {
+    font-size: 30px;
+    line-height: 48px;
+    font-weight: 300;
+  }
+
+  .font-heading-sm {
+    font-size: 30px;
+    line-height: 48px;
+    font-weight: 300;
+  }
+
+  .font-heading-xs {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 700;
+  }
+
+  .font-accent-label-xl {
+    font-size: 24px;
+    line-height: 36px;
+    font-weight: 700;
+  }
+
+  .font-accent-label-sm {
+    font-size: 16px;
+    line-height: 32px;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+  }
+
+  .font-body-lead {
+    font-size: 18px;
+    line-height: 30px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+  }
+
+  .font-body-lead-bold {
+    font-size: 18px;
+    line-height: 30px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+  }
+
+  .font-body-base {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 500;
+  }
+
+  .font-body-base-bold {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 700;
+  }
+
+  .font-body-sm {
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: 400;
+  }
+
+  .font-body-sm-bold {
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: 700;
+  }
+
+  .font-body-lg {
+    font-size: 16px;
+    line-height: 40px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+  }
+
+  .font-caption-l {
+    font-size: 14px;
+    line-height: 24px;
+    font-weight: 700;
+  }
+
+  .font-caption-sm {
+    font-size: 11px;
+    line-height: 24px;
+    font-weight: 400;
+  }
+
+  .font-button-base {
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+  }
+
+  .font-button-base-sm {
+    font-size: 16px;
+    line-height: 18px;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+  }
+
+  /* Responsive classes for typography utilities */
+  @media (max-width: 1024px) {
+    .font-display-5xl {
+      font-size: 48px;
+      line-height: 72px;
     }
-
-    p {
-      margin: 0;
+    .font-heading-4xl {
+      font-size: 36px;
+      line-height: 48px;
     }
-
-    .codeLink {
-      text-decoration: none;
-      padding: 0 0.5rem;
-      background: rgb(60, 60, 60);
-      border-radius: 4px;
+    .font-heading-3xl {
+      font-size: 30px;
+      line-height: 48px;
+      letter-spacing: 0.1em;
+    }
+    .font-heading-2xl {
+      font-size: 24px;
+      line-height: 36px;
+    }
+    .font-heading-xl {
+      font-size: 24px;
+      line-height: 36px;
+      letter-spacing: 0.1em;
+    }
+    .font-heading-l {
+      font-size: 20px;
+      line-height: 30px;
+      letter-spacing: 0.1em;
+    }
+    .font-heading-m,
+    .font-heading-sm {
+      font-size: 18px;
+      line-height: 24px;
     }
   }
 }

@@ -1,0 +1,97 @@
+'use client'
+
+import React from 'react'
+
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?:
+    | 'dark-outline'    // Variant 1 on dark bg (Outline micro-button: more ➔)
+    | 'dark-text'       // Variant 2 on dark bg (Text button with arrow: LET'S TALK...)
+    | 'dark-accent'     // Variant 3 on dark bg (GET A START / FIND OUT MORE)
+    | 'light-outline'   // Variant 1 on light bg (more ➔)
+    | 'light-inverted'  // Variant 2 on light bg (LET'S TALK...)
+    | 'light-accent'    // Variant 3 on light bg (Solid Erythro Red: LET'S TALK...)
+    | 'gold-outline'    // Custom Gold Outline variant
+    | 'nav-talk'        // Custom Navbar "Let's Talk" variant
+  showArrow?: boolean
+  children: React.ReactNode
+}
+
+export default function Button({
+  variant = 'light-accent',
+  showArrow = false,
+  children,
+  className = '',
+  ...props
+}: ButtonProps) {
+  
+  // Base classes with premium micro-transitions
+  const baseClasses =
+    'inline-flex items-center justify-center font-button-base font-medium rounded-radius-2xl uppercase tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer select-none gap-2'
+
+  // Map variant to styling classes
+  let variantClasses = ''
+  
+  switch (variant) {
+    case 'nav-talk':
+      // Custom Let's Talk button in Navbar
+      variantClasses =
+        'py-3 px-8 rounded-[var(--xl,40px)] border border-gold-500 text-gold-500 bg-transparent hover:border-[var(--Button-Primary-stroke-hover,#FFE9C7)] hover:bg-[var(--Button-Primary-hover,#FFE9C7)] hover:text-coal-900 hover:shadow-[0_3px_20px_0_var(--Buttons-Primary,rgba(255,233,199,0.30))]'
+      break
+
+    case 'gold-outline':
+      // Background: Coal/Alpha/Dark-30, Border: 1px solid Gold500, Text: Gold500
+      // Hover: Background: gold 500, Shadow: button secondary, text: coal 900
+      // Note: No hover translation shift here as requested
+      variantClasses =
+        'py-3.5 px-8 border border-gold-500 text-gold-500 bg-[var(--coal-alpha-30)] hover:bg-gold-500 hover:text-coal-900 hover:shadow-btn-secondary'
+      break
+
+    case 'dark-outline':
+      // Variant 1 (Dark): Outline micro-button, text Coal/100, hover Gold background, text Coal/900
+      variantClasses =
+        'py-2 px-6 border border-coal-400 text-coal-100 rounded-full hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 hover:-translate-y-0.5 shadow-btn-secondary'
+      break
+      
+    case 'dark-text':
+      // Variant 2 (Dark): No background, thin alpha border, text Coal/100, hover bg-white, text Coal/900
+      variantClasses =
+        'py-3 px-8 border border-white/10 text-coal-100 rounded-none bg-transparent hover:bg-white hover:text-coal-900 hover:border-white hover:-translate-y-0.5 shadow-btn-secondary'
+      break
+      
+    case 'dark-accent':
+      // Variant 3 (Dark): Accent button, text Coal/100, hover Gold/Alpha bg, text Coal/900
+      variantClasses =
+        'py-3.5 px-8 border border-coal-300 text-coal-100 bg-transparent hover:bg-gold-200/20 hover:text-coal-900 hover:border-gold-500 hover:-translate-y-0.5 shadow-btn-primary-dark'
+      break
+      
+    case 'light-outline':
+      // Variant 1 (Light): Thin dark border, dark text, hover white bg, dark text
+      variantClasses =
+        'py-2 px-6 border border-coal-900 text-coal-900 bg-transparent hover:bg-white hover:text-coal-900 hover:border-coal-900 hover:-translate-y-0.5 shadow-btn-secondary'
+      break
+      
+    case 'light-inverted':
+      // Variant 2 (Light): Light/creamy/beige background, white text, hover white bg, dark text
+      variantClasses =
+        'py-3 px-8 text-white bg-gold-800 border border-gold-800 hover:bg-white hover:text-coal-900 hover:border-coal-900 hover:-translate-y-0.5 shadow-btn-secondary'
+      break
+      
+    case 'light-accent':
+    default:
+      // Variant 3 (Light): Solid Red Erythro, rounded Radius-Max, text white
+      variantClasses =
+        'py-3 px-8 bg-erythro-500 text-white border border-erythro-500 rounded-full hover:bg-transparent hover:text-erythro-500 hover:-translate-y-0.5 shadow-btn-primary-light'
+      break
+  }
+
+  return (
+    <button className={`${baseClasses} ${variantClasses} ${className}`} {...props}>
+      <span>{children}</span>
+      {showArrow && (
+        <span className="inline-block transform transition-transform duration-300 rtl:rotate-180">
+          ➔
+        </span>
+      )}
+    </button>
+  )
+}
