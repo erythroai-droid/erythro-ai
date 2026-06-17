@@ -175,3 +175,38 @@ export const page = {
     he: '© 2026 Erythro.ai. כל הזכויות שמורות. מתוזמר על ידי סוכנים אוטונומיים.',
   }
 }
+
+// 5. Case Studies translations
+export const caseStudies = {
+  preTitle: {
+    en: 'CASE STUDIES',
+    ru: 'КЕЙСЫ',
+    he: 'מקרי מבחן',
+  },
+  subtitle: {
+    en: 'We are building digital identities',
+    ru: 'Мы создаем цифровые личности',
+    he: 'אנחנו בונים זהויות דיגיטליות',
+  },
+  cardTitle: {
+    en: 'Smarter solutions for your product',
+    ru: 'Более умные решения для вашего продукта',
+    he: 'פתרונות חכמים יותר עבור המוצר שלך',
+  },
+  cardCategory: {
+    en: 'Business Solutions',
+    ru: 'Бизнес-решения',
+    he: 'פתרונות עסקיים',
+  },
+  cardDescription: {
+    en: 'We develop high-performance architectures, neural pipelines, and premium digital systems designed to optimize and scale your business processes.',
+    ru: 'Мы разрабатываем высокопроизводительные архитектуры, нейросети и премиальные цифровые системы для оптимизации и масштабирования ваших бизнес-процессов.',
+    he: 'אנו מפתחים ארכיטקטורות בעלות ביצועים גבוהים, צינורות נתונים עצביים ומערכות דיגיטליות יוקрתיות שנועדו לייעל ולהרחיב את התהליכים העсקיים שלך.',
+  },
+  cardCTA: {
+    en: 'GET STARTED',
+    ru: 'НАЧАТЬ РАБОТУ',
+    he: 'להתחיל לעבוד',
+  }
+}
+

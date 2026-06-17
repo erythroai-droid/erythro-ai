@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import HeroSection from '@/components/HeroSection'
-import PartnersShowcase from '@/components/PartnersShowcase'
+import CaseStudiesSection from '@/components/CaseStudiesSection'
 import ServicesSection from '@/components/ServicesSection'
 import Button from '@/components/Button'
 import { page as translations } from '@/translations'
@@ -56,8 +56,8 @@ export default function HomePage() {
         }
       />
 
-      {/* Technology Partners loop showcase */}
-      <PartnersShowcase />
+      {/* Case Studies showcase with partner logos */}
+      <CaseStudiesSection locale={locale} />
 
       {/* Services Grid with 12-column geometry */}
       <ServicesSection locale={locale} />
