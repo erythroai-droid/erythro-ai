@@ -25,6 +25,7 @@ export default function HeroAnimation({
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const contentRef = useRef<HTMLDivElement | null>(null)
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
 
   const [images, setImages] = useState<HTMLImageElement[]>([])
   const [loadedCount, setLoadedCount] = useState(0)
@@ -86,7 +87,7 @@ export default function HeroAnimation({
   // 2. GSAP ScrollTrigger and Canvas Rendering
   useEffect(() => {
     // Only run if we have images and DOM refs
-    if (images.length === 0 || !canvasRef.current || !containerRef.current) return
+    if (images.length === 0 || !canvasRef.current || !containerRef.current || !wrapperRef.current) return
 
     const canvas = canvasRef.current
     const context = canvas.getContext('2d')
@@ -133,16 +134,18 @@ export default function HeroAnimation({
     const mm = gsap.matchMedia()
 
     mm.add('(min-width: 1024px)', () => {
+      // No pin — the container is already position:fixed.
+      // The wrapper height (220vh) provides scroll distance for the animation.
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: containerRef.current,
+          trigger: wrapperRef.current,
           start: 'top top',
-          end: '+=150%', // Pinned scroll length (1.5x viewport height)
-          scrub: 1, // Smoothly follows scroll with 1-second lag
-          pin: true, // Pin the entire Hero section during sequence play
+          end: 'bottom top', // Animate across the full wrapper height
+          scrub: 1,
           invalidateOnRefresh: true,
         },
       })
+      ScrollTrigger.sort()
 
       // Frame progression tween
       tl.to(
@@ -152,11 +155,12 @@ export default function HeroAnimation({
           snap: 'frame',
           ease: 'none',
           onUpdate: render,
+          duration: 1.2,
         },
         0,
       )
 
-      // Cinematic text fade out and scale as the chip builds
+      // Cinematic text fade out and scale
       if (contentRef.current) {
         tl.to(
           contentRef.current,
@@ -165,6 +169,7 @@ export default function HeroAnimation({
             scale: 0.92,
             y: -30,
             ease: 'power1.inOut',
+            duration: 1.2,
           },
           0,
         )
@@ -180,59 +185,63 @@ export default function HeroAnimation({
   const loadPercentage = Math.round((loadedCount / imagesCount) * 100)
 
   return (
-    <div ref={containerRef} className="relative w-full h-screen bg-primary overflow-hidden">
-      
-      {/* Pinned Navbar */}
-      {navbar}
+    /* Wrapper: provides scroll height. 100vh visible + 120vh animation distance = 220vh total. */
+    <div ref={wrapperRef} className="relative w-full bg-primary" style={{ height: '220vh' }}>
+      {/* Fixed container: stays in place while the page scrolls past */}
+      <div ref={containerRef} className="fixed top-0 left-0 w-full h-screen bg-primary overflow-hidden" style={{ zIndex: 0 }}>
+        
+        {/* Pinned Navbar */}
+        {navbar}
 
-      {/* Premium subtle loading progress indicator */}
-      {!isLoaded && (
-        <div className="absolute top-0 left-0 w-full h-[3px] bg-coal-800 z-50 transition-opacity duration-500">
-          <div
-            className="h-full bg-gradient-to-r from-erythro-500 to-gold-500 shadow-[0_0_8px_#E52421] transition-all duration-300"
-            style={{ width: `${loadPercentage}%` }}
+        {/* Premium subtle loading progress indicator */}
+        {!isLoaded && (
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-coal-800 z-50 transition-opacity duration-500">
+            <div
+              className="h-full bg-gradient-to-r from-erythro-500 to-gold-500 shadow-[0_0_8px_#E52421] transition-all duration-300"
+              style={{ width: `${loadPercentage}%` }}
+            />
+          </div>
+        )}
+
+        {/* 1. Desktop Mode: HTML5 Canvas rendering */}
+        <div className="hidden lg:flex w-full h-full items-center justify-center pointer-events-none select-none z-0">
+          <canvas
+            ref={canvasRef}
+            className="w-full h-full object-cover opacity-85 mix-blend-lighten dark:mix-blend-screen"
           />
         </div>
-      )}
 
-      {/* 1. Desktop Mode: HTML5 Canvas rendering */}
-      <div className="hidden lg:flex w-full h-full items-center justify-center pointer-events-none select-none z-0">
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full object-cover opacity-85 mix-blend-lighten dark:mix-blend-screen"
-        />
-      </div>
-
-      {/* 2. Mobile/Tablet Fallback: Optimized next/image displaying first frame */}
-      <div className="block lg:hidden absolute inset-0 z-0 select-none pointer-events-none">
-        <Image
-          src={`${basePath}chip (1).png`}
-          alt="Erythro Neural Chip"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover opacity-75"
-        />
-      </div>
-
-      {/* Dark overlay to dim the background image/animation */}
-      <div
-        className="absolute inset-0 pointer-events-none z-[1]"
-        style={{ backgroundColor: 'var(--coal-alpha-30)' }}
-      />
-
-      {/* Overlay content layered on top of the animation */}
-      <div
-        ref={contentRef}
-        className="absolute inset-0 z-10 flex flex-col justify-center items-center pointer-events-none"
-      >
-        <div className="pointer-events-auto w-full h-full flex flex-col justify-center items-center">
-          {children}
+        {/* 2. Mobile/Tablet Fallback: Optimized next/image displaying first frame */}
+        <div className="block lg:hidden absolute inset-0 z-0 select-none pointer-events-none">
+          <Image
+            src={`${basePath}chip (1).png`}
+            alt="Erythro Neural Chip"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover opacity-75"
+          />
         </div>
-      </div>
 
-      {/* Ambient background gradients to tie canvas to the overall site theme */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--bg-primary)_90%)] z-0" />
+        {/* Dark overlay to dim the background image/animation */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[1]"
+          style={{ backgroundColor: 'var(--coal-alpha-30)' }}
+        />
+
+        {/* Overlay content layered on top of the animation */}
+        <div
+          ref={contentRef}
+          className="absolute inset-0 z-10 flex flex-col justify-center items-center pointer-events-none"
+        >
+          <div className="pointer-events-auto w-full h-full flex flex-col justify-center items-center">
+            {children}
+          </div>
+        </div>
+
+        {/* Ambient background gradients to tie canvas to the overall site theme */}
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--bg-primary)_90%)] z-0" />
+      </div>
     </div>
   )
 }

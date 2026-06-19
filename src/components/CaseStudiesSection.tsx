@@ -1,8 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import Button from './Button'
 import { caseStudies as translations } from '../translations'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger)
+}
 
 interface CaseStudiesSectionProps {
   locale: string
@@ -26,6 +32,78 @@ const brandLogos = [
 
 export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) {
   const t = (field: Record<string, string>) => field[locale] || field['en']
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const sectionRef = useRef<HTMLDivElement | null>(null)
+  const headingRef = useRef<HTMLDivElement | null>(null)
+  const cardRef = useRef<HTMLDivElement | null>(null)
+  const marqueeRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const mm = gsap.matchMedia()
+
+      // Desktop animation: Pinning, scrubbing & snapping
+      mm.add('(min-width: 1024px)', () => {
+        gsap.set([headingRef.current, cardRef.current, marqueeRef.current], {
+          opacity: 0,
+          y: 60,
+        })
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: wrapperRef.current,
+            start: 'top top',
+            end: '+=100%', // Pin for 1 viewport height
+            pin: true,
+            pinSpacing: true,
+            toggleActions: 'play none none reverse',
+            snap: {
+              snapTo: [0, 1], // Snap to start and end
+              duration: { min: 0.3, max: 0.6 },
+              delay: 0.05,
+              ease: 'power2.out',
+            },
+            invalidateOnRefresh: true,
+          },
+        })
+        ScrollTrigger.sort()
+
+        tl.to([headingRef.current, cardRef.current, marqueeRef.current], {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.25,
+          ease: 'power2.out',
+        })
+      })
+
+      // Mobile/tablet animation: Simple scroll trigger (no pinning/snapping)
+      mm.add('(max-width: 1023px)', () => {
+        gsap.set([headingRef.current, cardRef.current, marqueeRef.current], {
+          opacity: 0,
+          y: 40,
+        })
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: wrapperRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
+          },
+        })
+
+        tl.to([headingRef.current, cardRef.current, marqueeRef.current], {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.25,
+          ease: 'power2.out',
+        })
+      })
+    }, wrapperRef)
+
+    return () => ctx.revert()
+  }, [])
 
   // Utility to render heading with a stylized red first letter
   const renderStylizedTitle = (text: string) => {
@@ -41,23 +119,25 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
   }
 
   return (
-    <section 
-      id="cases" 
-      className="py-20 lg:py-32 w-full transition-colors duration-500 bg-[var(--gold-100,#FFF)] border-t border-b border-coal-400/5 dark:border-white/5 bg-noise relative overflow-hidden select-none"
-    >
-      <div className="max-w-[1170px] mx-auto px-[30px]">
+    <div ref={wrapperRef} className="relative w-full">
+      <section 
+        id="cases" 
+        ref={sectionRef}
+        className="py-20 lg:py-0 lg:h-screen lg:flex lg:flex-col lg:justify-center w-full transition-colors duration-500 bg-[var(--gold-100,#FFF)] border-t border-b border-coal-400/5 dark:border-white/5 bg-noise relative z-10 overflow-hidden select-none"
+      >
+      <div className="max-w-[1170px] mx-auto px-[30px] w-full">
         {/* Headings */}
-        <div className="mb-16 text-center max-w-2xl mx-auto flex flex-col items-center gap-3">
-          <h2 className="font-sans text-[48px] font-extralight leading-[60px] tracking-[9.6px] uppercase text-[#0D0D0D]">
+        <div ref={headingRef} className="mb-16 lg:mb-10 text-center max-w-2xl mx-auto flex flex-col items-center gap-3">
+          <h2 className="font-sans text-[32px] lg:text-[48px] font-extralight leading-tight lg:leading-[60px] tracking-[9.6px] uppercase text-[#0D0D0D]">
             {renderStylizedTitle(t(translations.preTitle))}
           </h2>
-          <p className="font-sans text-base font-light leading-[32px] tracking-[3.2px] text-center text-[var(--gold-800,#8C806D)]">
+          <p className="font-sans text-sm lg:text-base font-light leading-relaxed lg:leading-[32px] tracking-[3.2px] text-center text-[var(--gold-800,#8C806D)]">
             {t(translations.subtitle)}
           </p>
         </div>
 
         {/* Portfolio Banner Card */}
-        <div className="relative w-full rounded-[30px] md:rounded-[40px] bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-950 border border-white/10 p-8 md:p-12 lg:p-16 shadow-2xl mb-20 overflow-hidden group">
+        <div ref={cardRef} className="relative w-full rounded-[30px] md:rounded-[40px] bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-950 border border-white/10 p-8 md:p-12 lg:py-10 lg:px-14 shadow-2xl mb-20 lg:mb-10 overflow-hidden group">
           {/* Card background glowing grid & ambient spots */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
           <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-500/20 rounded-full blur-[80px] pointer-events-none" />
@@ -205,7 +285,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
       </div> {/* Close the max-width container here to make the marquee span the full screen width */}
 
       {/* Partners Marquee Running Belt */}
-      <div className="relative w-full overflow-hidden mt-12 py-4 border-t border-b border-coal-400/10 dark:border-white/5 select-none marquee-wrapper">
+      <div ref={marqueeRef} className="relative w-full overflow-hidden mt-12 lg:mt-8 py-4 border-t border-b border-coal-400/10 dark:border-white/5 select-none marquee-wrapper">
         {/* Faded edges overlay for premium depth */}
         <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-[var(--gold-100,#FFF)] to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-[var(--gold-100,#FFF)] to-transparent z-10 pointer-events-none" />
@@ -293,6 +373,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           animation: flameThrust 0.15s ease-in-out infinite;
         }
       `}</style>
-    </section>
+      </section>
+    </div>
   )
 }
