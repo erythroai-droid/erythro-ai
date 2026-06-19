@@ -53,12 +53,12 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           scrollTrigger: {
             trigger: wrapperRef.current,
             start: 'top top',
-            end: '+=100%', // Pin for 1 viewport height
+            end: '+=200%', // Pin for 2 viewport heights to allow Services to slide over
             pin: true,
-            pinSpacing: true,
+            pinSpacing: false, // Services will slide over Case Studies
             toggleActions: 'play none none reverse',
             snap: {
-              snapTo: [0, 1], // Snap to start and end
+              snapTo: [0, 0.5, 1], // Snap to start, middle (after animations), or end (Services covered)
               duration: { min: 0.3, max: 0.6 },
               delay: 0.05,
               ease: 'power2.out',
