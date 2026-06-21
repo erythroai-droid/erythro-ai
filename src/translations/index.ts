@@ -14,7 +14,7 @@ export const navbar = {
     en: "LET'S TALK...",
     ru: 'ОБСУДИТЬ...',
     he: 'בואו נדבר...',
-  }
+  },
 }
 
 // 2. Hero translations
@@ -38,28 +38,28 @@ export const hero = {
     en: 'FIND OUT MORE',
     ru: 'ПОДРОБНЕЕ',
     he: 'למידע נוסף',
-  }
+  },
 }
 
 // 3. Services translations
 export interface ServiceItem {
   id: string
+  number: string
   title: Record<string, string>
-  description: Record<string, string>
-  price: number
-  category: Record<string, string>
+  features: Record<string, string[]>
+  image: string
 }
 
 export const services = {
   sectionTitle: {
-    en: 'OUR PREMIUM SERVICES',
-    ru: 'НАШИ ПРЕМИАЛЬНЫЕ УСЛУГИ',
-    he: 'השירותים היוקרתיים שלנו',
+    en: 'SERVICES',
+    ru: 'УСЛУГИ',
+    he: 'שירותים',
   },
   sectionSubtitle: {
-    en: 'Crafting premium digital architectures with pixel precision and absolute performance.',
-    ru: 'Создаем цифровые архитектуры премиум-класса с пиксельной точностью и абсолютной производительностью.',
-    he: 'יצירת ארכיטקטורות דיגיטליות יוקרתיות בדיוק פיקסלים וביצועים מוחלטים.',
+    en: 'From strategy to launch',
+    ru: 'От стратегии до запуска',
+    he: 'מאסטרטגיה להשקה',
   },
   startCTA: {
     en: 'GET STARTED',
@@ -69,67 +69,130 @@ export const services = {
   priceLabel: {
     en: 'Starting from',
     ru: 'Начиная от',
-    he: 'החל м-',
+    he: 'החל מ-',
   },
   items: [
     {
       id: '1',
+      number: '01',
       title: {
-        en: 'AI Strategy & Architecture',
-        ru: 'ИИ-Стратегия и Архитектура',
-        he: 'אסטרטגיה וארכיטקטורת בינה מלאכותית',
+        en: 'Design & Branding',
+        ru: 'Дизайн и брендинг',
+        he: 'עיצוב ומיתוג',
       },
-      description: {
-        en: 'Tailored enterprise strategy incorporating neural models, custom pipelines, and operational orchestration.',
-        ru: 'Индивидуальная корпоративная стратегия, включающая нейронные модели, пользовательские конвейеры и операционную оркестровку.',
-        he: 'אסטרטגיה ארגונית מותאמת אישית המשלבת מודלים עצביים, צינורות נתונים מותאמים אישית ותזמור תפעולי.',
+      features: {
+        en: [
+          'Brand Identity / Presentations',
+          'Brand book',
+          'Banners',
+          'Web design',
+          'Motion design',
+          'Graphic design',
+        ],
+        ru: [
+          'Бренд-айдентика / Презентации',
+          'Брендбук',
+          'Баннеры',
+          'Веб-дизайн',
+          'Моушн-дизайн',
+          'Графический дизайн',
+        ],
+        he: [
+          'מיתוג ואסטרטגיה / מצגות',
+          'ספר מותג',
+          'באנרים',
+          'עיצוב אתרים',
+          'עיצוב בתנועה',
+          'עיצוב גרפי',
+        ],
       },
-      price: 3500,
-      category: {
-        en: 'Consulting',
-        ru: 'Консалтинг',
-        he: 'ייעוץ',
-      },
+      image: '/images/service_design_branding.png',
     },
     {
       id: '2',
+      number: '02',
       title: {
-        en: 'Agentic Automations via n8n',
-        ru: 'Агентные Автоматизации через n8n',
-        he: 'אוטומציות סוכנים באמצעות n8n',
+        en: 'Development',
+        ru: 'Разработка',
+        he: 'פיתוח',
       },
-      description: {
-        en: 'High-end integration of autonomous AI agents utilizing webhooks, secure REST APIs, and instant revalidation triggers.',
-        ru: 'Высококлассная интеграция автономных ИИ-агентов с использованием вебхуков, безопасных REST API и триггеров мгновенной ревалидации.',
-        he: 'אינטגרציה מתקדמת של סוכני בינה מלאכותית אוטונומיים תוך שימוש בווב-הוקס, ממשקי API מאובטחים וטריгגרים לאиמות מיידי.',
+      features: {
+        en: [
+          'Custom front-end',
+          'Responsive Layout',
+          'Motion & UI Animation',
+          'SEO Setup',
+          'Easy Publishing',
+        ],
+        ru: [
+          'Индивидуальный фронтенд',
+          'Адаптивная верстка',
+          'Моушн и анимация интерфейса',
+          'Настройка SEO',
+          'Легкая публикация',
+        ],
+        he: [
+          'פרונטאנד בהתאמה אישית',
+          'פריסה רספונסיבית',
+          'אנימציה וממשק משתמש',
+          'הגדרת SEO',
+          'פרסום קל',
+        ],
       },
-      price: 5000,
-      category: {
-        en: 'Automation',
-        ru: 'Автоматизация',
-        he: 'אוטומציה',
-      },
+      image: '/images/service_development.png',
     },
     {
       id: '3',
+      number: '03',
       title: {
-        en: 'High-Fidelity App Ecosystems',
-        ru: 'Премиальные Прикладные Системы',
-        he: 'מערכות יישומים ברמת דיוק גבוהה',
+        en: 'Management',
+        ru: 'Поддержка',
+        he: 'ניהול',
       },
-      description: {
-        en: 'Dynamic, premium Next.js systems featuring strict layout scales, micro-animations, and full localized RTL mirroring.',
-        ru: 'Динамические, премиальные системы на Next.js со строгими масштабами разметки, микроанимациями и локализованным RTL-зеркалированием.',
-        he: 'מערכות Next.js דינמיות ויוקרתיות הכוללות מדדי פריסה קפדניים, מיקרו-אניมציות ושיקוף RTL מקומי מלא.',
+      features: {
+        en: [
+          'SEO optimization',
+          'Custom back-end & Admin Panels',
+          'DNS setup & launch',
+          'Scalable Structure',
+          'API Integrations',
+          'CMS',
+        ],
+        ru: [
+          'SEO-оптимизация',
+          'Кастомный бэкенд и админ-панели',
+          'Настройка DNS и запуск',
+          'Масштабируемая структура',
+          'Интеграция API',
+          'CMS',
+        ],
+        he: [
+          'אופטימיזציית SEO',
+          'ממשק ניהול וצד אחורי מותאם אישית',
+          'הגדרה והשקה של DNS',
+          'מבנה בעל יכולת גדילה',
+          'אינטגרציית API',
+          'מערכות ניהול תוכן CMS',
+        ],
       },
-      price: 7800,
-      category: {
-        en: 'Frontend System',
-        ru: 'Фронтенд-системы',
-        he: 'מערכות פרונטנד',
-      },
+      image: '/images/service_management.png',
     },
-  ] as ServiceItem[]
+    {
+      id: '4',
+      number: '04',
+      title: {
+        en: 'Ai & Automation',
+        ru: 'ИИ и автоматизация',
+        he: 'בינה מלאכותית ואוטומציה',
+      },
+      features: {
+        en: ['AI agents', 'Automation process', 'Chat bot', 'Voice assistance'],
+        ru: ['ИИ-агенты', 'Автоматизация процессов', 'Чат-боты', 'Голосовые ассистенты'],
+        he: ['סוכני AI', 'תהליכי אוטומציה', "צ'אט בוט", 'סיוע קולי'],
+      },
+      image: '/images/service_ai_automation.png',
+    },
+  ] as ServiceItem[],
 }
 
 // 4. Page & Showcase translations
@@ -160,8 +223,8 @@ export const page = {
     he: 'בואו נדבר...',
   },
   moreLabel: {
-    en: 'MORE',
-    ru: 'ПОДРОБНЕЕ',
+    en: 'more',
+    ru: 'подробнее',
     he: 'עוד',
   },
   getStartLabel: {
@@ -173,7 +236,7 @@ export const page = {
     en: '© 2026 Erythro.ai. All rights reserved. Orchestrated by autonomous agents.',
     ru: '© 2026 Erythro.ai. Все права защищены. Оркестровано автономными агентами.',
     he: '© 2026 Erythro.ai. כל הזכויות שמורות. מתוזמר על ידי סוכנים אוטונומיים.',
-  }
+  },
 }
 
 // 5. Case Studies translations
@@ -207,6 +270,5 @@ export const caseStudies = {
     en: 'GET STARTED',
     ru: 'НАЧАТЬ РАБОТУ',
     he: 'להתחיל לעבוד',
-  }
+  },
 }
-

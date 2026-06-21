@@ -26,7 +26,7 @@ export default function Button({
   
   // Base classes with premium micro-transitions
   const baseClasses =
-    'inline-flex items-center justify-center font-button-base font-medium rounded-radius-2xl uppercase tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer select-none gap-2'
+    'inline-flex items-center justify-center font-button-base font-medium rounded-radius-2xl tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer select-none gap-2'
 
   // Map variant to styling classes
   let variantClasses = ''
@@ -35,7 +35,7 @@ export default function Button({
     case 'nav-talk':
       // Custom Let's Talk button in Navbar
       variantClasses =
-        'py-3 px-8 rounded-[var(--xl,40px)] border border-gold-500 text-gold-500 bg-transparent hover:border-[var(--Button-Primary-stroke-hover,#FFE9C7)] hover:bg-[var(--Button-Primary-hover,#FFE9C7)] hover:text-coal-900 hover:shadow-[0_3px_20px_0_var(--Buttons-Primary,rgba(255,233,199,0.30))]'
+        'py-3 px-8 rounded-[var(--xl,40px)] border border-gold-500 text-gold-500 bg-transparent hover:border-[var(--Button-Primary-stroke-hover,#FFE9C7)] hover:bg-[var(--Button-Primary-hover,#FFE9C7)] hover:text-coal-900 hover:shadow-[0_3px_20px_0_var(--Buttons-Primary,rgba(255,233,199,0.30))] uppercase'
       break
 
     case 'gold-outline':
@@ -43,44 +43,44 @@ export default function Button({
       // Hover: Background: gold 500, Shadow: button secondary, text: coal 900
       // Note: No hover translation shift here as requested
       variantClasses =
-        'py-3.5 px-8 border border-gold-500 text-gold-500 bg-[var(--coal-alpha-30)] hover:bg-gold-500 hover:text-coal-900 hover:shadow-btn-secondary'
+        'py-3.5 px-8 border border-gold-500 text-gold-500 bg-[var(--coal-alpha-30)] hover:bg-gold-500 hover:text-coal-900 hover:shadow-btn-secondary uppercase'
       break
 
     case 'dark-outline':
-      // Variant 1 (Dark): Outline micro-button, text Coal/100, hover Gold background, text Coal/900
+      // Variant 1 (Dark): Outline micro-button, text var(--Button-Tertiary-link, #FFE9C7)
       variantClasses =
-        'py-2 px-6 border border-coal-400 text-coal-100 rounded-full hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 hover:-translate-y-0.5 shadow-btn-secondary'
+        'h-[48px] py-0 px-[40px] gap-[10px] border border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] rounded-[var(--xl,40px)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)] font-button-base-sm lowercase'
       break
       
     case 'dark-text':
       // Variant 2 (Dark): No background, thin alpha border, text Coal/100, hover bg-white, text Coal/900
       variantClasses =
-        'py-3 px-8 border border-white/10 text-coal-100 rounded-none bg-transparent hover:bg-white hover:text-coal-900 hover:border-white hover:-translate-y-0.5 shadow-btn-secondary'
+        'py-3 px-8 border border-white/10 text-coal-100 rounded-none bg-transparent hover:bg-white hover:text-coal-900 hover:border-white hover:-translate-y-0.5 shadow-btn-secondary uppercase'
       break
       
     case 'dark-accent':
       // Variant 3 (Dark): Accent button, text Coal/100, hover Gold/Alpha bg, text Coal/900
       variantClasses =
-        'py-3.5 px-8 border border-coal-300 text-coal-100 bg-transparent hover:bg-gold-200/20 hover:text-coal-900 hover:border-gold-500 hover:-translate-y-0.5 shadow-btn-primary-dark'
+        'py-3.5 px-8 border border-coal-300 text-coal-100 bg-transparent hover:bg-gold-200/20 hover:text-coal-900 hover:border-gold-500 hover:-translate-y-0.5 shadow-btn-primary-dark uppercase'
       break
       
     case 'light-outline':
       // Variant 1 (Light): Thin dark border, dark text, hover white bg, dark text
       variantClasses =
-        'py-2 px-6 border border-coal-900 text-coal-900 bg-transparent hover:bg-white hover:text-coal-900 hover:border-coal-900 hover:-translate-y-0.5 shadow-btn-secondary'
+        'h-[48px] py-0 px-[40px] gap-[10px] border border-coal-900 text-coal-900 bg-transparent hover:bg-white hover:text-coal-900 hover:border-coal-900 rounded-[var(--xl,40px)] lowercase'
       break
       
     case 'light-inverted':
       // Variant 2 (Light): Light/creamy/beige background, white text, hover white bg, dark text
       variantClasses =
-        'py-3 px-8 text-white bg-gold-800 border border-gold-800 hover:bg-white hover:text-coal-900 hover:border-coal-900 hover:-translate-y-0.5 shadow-btn-secondary'
+        'py-3 px-8 text-white bg-gold-800 border border-gold-800 hover:bg-white hover:text-coal-900 hover:border-coal-900 hover:-translate-y-0.5 shadow-btn-secondary uppercase'
       break
       
     case 'light-accent':
     default:
       // Variant 3 (Light): Solid Red Erythro, rounded Radius-Max, text white
       variantClasses =
-        'py-3 px-8 bg-erythro-500 text-white border border-erythro-500 rounded-full hover:bg-transparent hover:text-erythro-500 hover:-translate-y-0.5 shadow-btn-primary-light'
+        'py-3 px-8 bg-erythro-500 text-white border border-erythro-500 rounded-full hover:bg-transparent hover:text-erythro-500 hover:-translate-y-0.5 shadow-btn-primary-light uppercase'
       break
   }
 
@@ -88,8 +88,16 @@ export default function Button({
     <button className={`${baseClasses} ${variantClasses} ${className}`} {...props}>
       <span>{children}</span>
       {showArrow && (
-        <span className="inline-block transform transition-transform duration-300 rtl:rotate-180">
-          ➔
+        <span className="inline-block transform transition-transform duration-300 rtl:rotate-180 shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="11" viewBox="0 0 10 11" fill="none" className="w-2.5 h-2.5">
+            <path
+              d="M9.67029 5.15683L5.15651 5.15753M5.15004 5.15753L0.250037 5.15753M5.15004 0.25L9.40026 4.5004C9.57253 4.67269 9.6693 4.90636 9.6693 5.15C9.6693 5.39364 9.57253 5.62731 9.40026 5.7996L5.15004 10.05"
+              stroke="currentColor"
+              strokeWidth="0.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </span>
       )}
     </button>
