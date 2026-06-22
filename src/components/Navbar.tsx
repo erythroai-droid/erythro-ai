@@ -109,9 +109,11 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme }: Na
 
         {/* Right side controls: Language Selectors, Theme Toggle and CTA */}
         <div className="hidden lg:flex items-center gap-6">
-          <Button variant="nav-talk">
-            {t(ctaLabel)}
-          </Button>
+          <a href="#contacts">
+            <Button variant="nav-talk">
+              {t(ctaLabel)}
+            </Button>
+          </a>
         </div>
 
         {/* Mobile Hamburger Burger Button */}
@@ -196,14 +198,15 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme }: Na
               </div>
             </div>
 
-            <Button
-              variant="light-accent"
-              showArrow
-              onClick={() => setMobileOpen(false)}
-              className="w-full max-w-[280px]"
-            >
-              {t(ctaLabel)}
-            </Button>
+            <a href="#contacts" className="w-full max-w-[280px]" onClick={() => setMobileOpen(false)}>
+              <Button
+                variant="light-accent"
+                showArrow
+                className="w-full"
+              >
+                {t(ctaLabel)}
+              </Button>
+            </a>
           </div>
         </div>
       </div>

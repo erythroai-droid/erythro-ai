@@ -12,6 +12,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     | 'light-accent'    // Variant 3 on light bg (Solid Erythro Red: LET'S TALK...)
     | 'gold-outline'    // Custom Gold Outline variant
     | 'nav-talk'        // Custom Navbar "Let's Talk" variant
+    | 'white-outline'   // Figma Let's Talk outline variant
   showArrow?: boolean
   children: React.ReactNode
 }
@@ -44,6 +45,12 @@ export default function Button({
       // Note: No hover translation shift here as requested
       variantClasses =
         'py-3.5 px-8 border border-gold-500 text-gold-500 bg-[var(--coal-alpha-30)] hover:bg-gold-500 hover:text-coal-900 hover:shadow-btn-secondary uppercase'
+      break
+
+    case 'white-outline':
+      // Border: 1px solid white, Text: white, Hover: bg white, text coal-900
+      variantClasses =
+        'h-[48px] py-0 px-[40px] gap-[10px] border border-white text-white rounded-[var(--xl,40px)] hover:bg-white hover:text-coal-900 hover:border-white font-button-base-sm uppercase tracking-[2.4px]'
       break
 
     case 'dark-outline':
