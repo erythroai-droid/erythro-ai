@@ -52,13 +52,13 @@ export default function HomePage() {
       <CaseStudiesSection locale={locale} />
 
       {/* Services Grid with 12-column geometry */}
-      <ServicesSection locale={locale} />
+      <ServicesSection locale={locale} theme={theme} />
 
       {/* Solution pricing cards */}
-      <SolutionSection locale={locale} />
+      <SolutionSection locale={locale} theme={theme} />
 
       {/* Footer from Figma */}
-      <FooterSection locale={locale} />
+      <FooterSection locale={locale} theme={theme} />
 
       {/* Floating Controls Widget */}
       <FloatingWidget

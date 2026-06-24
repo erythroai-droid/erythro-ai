@@ -221,11 +221,11 @@ export default function FloatingWidget({
       {/* 1. Accessibility Button */}
       <button
         onClick={onOpenAccessibility}
-        className="w-[55px] h-[55px] rounded-full bg-erythro-500 hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center border border-white/10 hover:border-gold-500 hover:shadow-lg hover:shadow-gold-500/30 transition-all duration-300 cursor-pointer relative group"
+        className="w-[44px] h-[44px] rounded-full bg-erythro-500 hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center border border-white/10 hover:border-gold-500 hover:shadow-lg hover:shadow-gold-500/30 transition-all duration-300 cursor-pointer relative group"
         aria-label="Accessibility Settings"
       >
-        <HumanIcon className="w-[23px] h-[23px] transition-transform duration-300 group-hover:scale-110" />
-        <span className="absolute bottom-[65px] left-1/2 -translate-x-1/2 px-2 py-1 bg-black/80 border border-white/10 text-[13.5px] font-bold text-white uppercase tracking-widest rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <HumanIcon className="w-[18px] h-[18px] transition-transform duration-300 group-hover:scale-110" />
+        <span className="absolute bottom-[52px] left-1/2 -translate-x-1/2 px-2 py-1 bg-black/80 border border-white/10 text-[13.5px] font-bold text-white uppercase tracking-widest rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
           {locale === 'ru' ? 'Доступность' : locale === 'he' ? 'נגישות' : 'Accessibility'}
         </span>
       </button>
@@ -234,17 +234,17 @@ export default function FloatingWidget({
       <div
         className={`transition-all duration-300 flex shrink-0 justify-center items-center ${
           showScrollTop
-            ? 'w-[55px] me-0 opacity-100 scale-100'
+            ? 'w-[44px] me-0 opacity-100 scale-100'
             : 'w-0 -me-[14px] opacity-0 scale-0 pointer-events-none'
         }`}
       >
         <button
           onClick={scrollToTop}
-          className="w-[55px] h-[55px] rounded-full bg-coal-800 hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center border border-white/10 hover:border-gold-500 hover:shadow-lg hover:shadow-gold-500/30 transition-all duration-300 cursor-pointer relative group overflow-hidden"
+          className="w-[44px] h-[44px] rounded-full bg-coal-800 hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center border border-white/10 hover:border-gold-500 hover:shadow-lg hover:shadow-gold-500/30 transition-all duration-300 cursor-pointer relative group overflow-hidden"
           aria-label="Back to Top"
         >
           <svg
-            className="w-[20px] h-[20px] transition-transform duration-300 group-hover:-translate-y-1"
+            className="w-[16px] h-[16px] transition-transform duration-300 group-hover:-translate-y-1"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -252,7 +252,7 @@ export default function FloatingWidget({
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
           </svg>
-          <span className="absolute bottom-[65px] left-1/2 -translate-x-1/2 px-2 py-1 bg-black/80 border border-white/10 text-[13.5px] font-bold text-white uppercase tracking-widest rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <span className="absolute bottom-[52px] left-1/2 -translate-x-1/2 px-2 py-1 bg-black/80 border border-white/10 text-[13.5px] font-bold text-white uppercase tracking-widest rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
             {locale === 'ru' ? 'Вверх' : locale === 'he' ? 'למעלה' : 'Top'}
           </span>
         </button>
@@ -267,9 +267,9 @@ export default function FloatingWidget({
             <div className="relative group floating-menu-item">
               <button
                 onClick={() => handleMobileSubmenu('contacts')}
-                className="w-[46px] h-[46px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
+                className="w-[37px] h-[37px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
               >
-                <PhoneIcon className="w-[19px] h-[19px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-12" />
+                <PhoneIcon className="w-[15px] h-[15px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-12" />
               </button>
               {/* Flyout horizontally */}
               <div className={getSubmenuClasses('contacts')}>
@@ -289,9 +289,9 @@ export default function FloatingWidget({
             <div className="relative group floating-menu-item">
               <button
                 onClick={() => handleMobileSubmenu('bell')}
-                className="w-[46px] h-[46px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
+                className="w-[37px] h-[37px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
               >
-                <BellIcon className="w-[19px] h-[19px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-[-12deg]" />
+                <BellIcon className="w-[15px] h-[15px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-[-12deg]" />
               </button>
               {/* Flyout horizontally */}
               <div className={getSubmenuClasses('bell')}>
@@ -300,17 +300,17 @@ export default function FloatingWidget({
                     href="https://facebook.com/erythro.ai"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[37px] h-[37px] rounded-full hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center transition-all group/fb-link"
+                    className="w-[30px] h-[30px] rounded-full hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center transition-all group/fb-link"
                   >
-                    <FacebookIcon className="w-[14px] h-[19px] transition-transform duration-300 group-hover/fb-link:scale-115" />
+                    <FacebookIcon className="w-[11px] h-[15px] transition-transform duration-300 group-hover/fb-link:scale-115" />
                   </a>
                   <a
                     href="https://tiktok.com/@erythro.ai"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[37px] h-[37px] rounded-full hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center transition-all group/tt-link"
+                    className="w-[30px] h-[30px] rounded-full hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center transition-all group/tt-link"
                   >
-                    <TikTokIcon className="w-[19px] h-[19px] transition-transform duration-300 group-hover/tt-link:scale-115" />
+                    <TikTokIcon className="w-[15px] h-[15px] transition-transform duration-300 group-hover/tt-link:scale-115" />
                   </a>
                 </div>
               </div>
@@ -320,30 +320,30 @@ export default function FloatingWidget({
             <div className="relative group floating-menu-item">
               <button
                 onClick={() => handleMobileSubmenu('theme')}
-                className="w-[46px] h-[46px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
+                className="w-[37px] h-[37px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
               >
-                <ThemeIcon className="w-[18px] h-[18px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-12" />
+                <ThemeIcon className="w-[14px] h-[14px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-12" />
               </button>
               {/* Flyout horizontally */}
               <div className={getSubmenuClasses('theme')}>
                 <div className={submenuInnerClass}>
                   <button
                     onClick={() => setTheme('light')}
-                    className={`w-[37px] h-[37px] rounded-full flex items-center justify-center transition-all cursor-pointer hover:bg-gold-500 hover:text-coal-900 group/sun-btn ${
+                    className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all cursor-pointer hover:bg-gold-500 hover:text-coal-900 group/sun-btn ${
                       theme === 'light' ? 'bg-erythro-500 text-white' : 'text-white/60'
                     }`}
                   >
-                    <svg className="w-[18px] h-[18px] transition-transform duration-300 group-hover/sun-btn:rotate-45 group-hover/sun-btn:scale-115" fill="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-[14px] h-[14px] transition-transform duration-300 group-hover/sun-btn:rotate-45 group-hover/sun-btn:scale-115" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm-12.37 1.06l-1.06 1.06c-.39.39-.39 1.03 0 1.41.39.39 1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0zm12.37-13.43a.996.996 0 000-1.41l-1.06-1.06c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.38.39 1.02.39 1.41 0z" />
                     </svg>
                   </button>
                   <button
                     onClick={() => setTheme('dark')}
-                    className={`w-[37px] h-[37px] rounded-full flex items-center justify-center transition-all cursor-pointer hover:bg-gold-500 hover:text-coal-900 group/moon-btn ${
+                    className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all cursor-pointer hover:bg-gold-500 hover:text-coal-900 group/moon-btn ${
                       theme === 'dark' ? 'bg-erythro-500 text-white' : 'text-white/60'
                     }`}
                   >
-                    <svg className="w-[16px] h-[16px] transition-transform duration-300 group-hover/moon-btn:-rotate-12 group-hover/moon-btn:scale-115" fill="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-[13px] h-[13px] transition-transform duration-300 group-hover/moon-btn:-rotate-12 group-hover/moon-btn:scale-115" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12.3 22h-.1c-5.4 0-9.8-4.4-9.8-9.8 0-5.1 3.9-9.3 9-9.8.6-.1 1.1.4 1 1-.5 2.5.2 5.1 1.9 6.8 1.7 1.7 4.3 2.4 6.8 1.9.6-.1 1.1.4 1 1-.9 5.2-5.3 9-10.8 8.9z" />
                     </svg>
                   </button>
@@ -355,9 +355,9 @@ export default function FloatingWidget({
             <div className="relative group floating-menu-item">
               <button
                 onClick={() => handleMobileSubmenu('lang')}
-                className="w-[46px] h-[46px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
+                className="w-[37px] h-[37px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
               >
-                <LangIcon className="w-[19px] h-[19px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-12" />
+                <LangIcon className="w-[15px] h-[15px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-12" />
               </button>
               {/* Flyout horizontally */}
               <div className={getSubmenuClasses('lang')}>
@@ -371,13 +371,13 @@ export default function FloatingWidget({
                           setLocale(lg)
                           setActiveMobileSubmenu(null)
                         }}
-                        className={`w-[37px] h-[37px] rounded-full flex items-center justify-center transition-all cursor-pointer hover:bg-gold-500 hover:text-coal-900 group/lang-opt ${
+                        className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all cursor-pointer hover:bg-gold-500 hover:text-coal-900 group/lang-opt ${
                           locale === lg
                             ? 'bg-erythro-500 text-white'
                             : 'text-white/60'
                         }`}
                       >
-                        <Icon className="w-[18px] h-[11.5px] transition-transform duration-300 group-hover/lang-opt:scale-115" />
+                        <Icon className="w-[14px] h-[9px] transition-transform duration-300 group-hover/lang-opt:scale-115" />
                       </button>
                     )
                   })}
@@ -390,7 +390,7 @@ export default function FloatingWidget({
         {/* Three dots Trigger button */}
         <button
           onClick={toggleMenu}
-          className={`w-[55px] h-[55px] rounded-full border flex items-center justify-center shadow-lg transition-all duration-300 cursor-pointer relative group ${
+          className={`w-[44px] h-[44px] rounded-full border flex items-center justify-center shadow-lg transition-all duration-300 cursor-pointer relative group ${
             isMenuOpen
               ? 'bg-white border-white text-black hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500'
               : 'bg-coal-800 border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500'
@@ -398,16 +398,16 @@ export default function FloatingWidget({
           aria-label="Toggle Controls Menu"
         >
           {isMenuOpen ? (
-            <svg className="w-[23px] h-[23px] transition-transform duration-300 rotate-90" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-[18px] h-[18px] transition-transform duration-300 rotate-90" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           ) : (
             <div className="relative w-full h-full flex items-center justify-center gap-[4px]">
               {/* Pulsing rings in background to draw attention */}
               <span className="absolute inset-0 rounded-full bg-gold-500/20 animate-ping pointer-events-none" />
-              <span className="w-[5px] h-[5px] rounded-full bg-current animate-dot-1" />
-              <span className="w-[5px] h-[5px] rounded-full bg-current animate-dot-2" />
-              <span className="w-[5px] h-[5px] rounded-full bg-current animate-dot-3" />
+              <span className="w-[4px] h-[4px] rounded-full bg-current animate-dot-1" />
+              <span className="w-[4px] h-[4px] rounded-full bg-current animate-dot-2" />
+              <span className="w-[4px] h-[4px] rounded-full bg-current animate-dot-3" />
             </div>
           )}
         </button>

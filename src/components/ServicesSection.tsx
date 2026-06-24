@@ -16,9 +16,10 @@ if (typeof window !== 'undefined') {
 
 interface ServicesSectionProps {
   locale: string
+  theme?: 'light' | 'dark'
 }
 
-export default function ServicesSection({ locale }: ServicesSectionProps) {
+export default function ServicesSection({ locale, theme = 'dark' }: ServicesSectionProps) {
   // Translate helper
   const t = (field: Record<string, string>) => field[locale] || field['en']
 
@@ -280,8 +281,8 @@ export default function ServicesSection({ locale }: ServicesSectionProps) {
     const rest = text.slice(1)
     return (
       <>
-        <span className="text-[var(--erythro-500,#E52421)]">{firstChar}</span>
-        <span className="text-[#FFF]">{rest}</span>
+        <span className="text-erythro-500">{firstChar}</span>
+        <span className={theme === 'light' ? 'text-coal-900' : 'text-white'}>{rest}</span>
       </>
     )
   }
@@ -297,7 +298,7 @@ export default function ServicesSection({ locale }: ServicesSectionProps) {
         className="pt-20 pb-20 lg:py-0 lg:pt-20 lg:h-screen lg:flex lg:flex-col lg:justify-start w-full transition-colors duration-500 border-t border-b border-coal-400/5 dark:border-white/5 bg-noise relative z-10 overflow-hidden select-none"
         style={{
           background:
-            'radial-gradient(288.44% 49.43% at 50% 50%, var(--Background-Services-Gradient-start, #1E1E1E) 0%, var(--Background-Services-Gradient-finish, #0D0D0D) 100%)',
+            'radial-gradient(288.44% 49.43% at 50% 50%, var(--services-gradient-start, #FFEDD2) 0%, var(--services-gradient-end, #F1D9B5) 100%)',
         }}
       >
         <div className="w-full flex flex-col justify-center pt-0 pb-6 lg:pt-0 lg:pb-12 relative z-10">
@@ -332,11 +333,12 @@ export default function ServicesSection({ locale }: ServicesSectionProps) {
                 return (
                   <div
                     key={item.id}
-                    className="relative w-full lg:w-[1170px] lg:h-[480px] shrink-0 rounded-[20px] bg-coal-900 border border-white/5 shadow-card-services-dark overflow-hidden group transition-all duration-500 hover:border-erythro-500/30 flex flex-col lg:flex-row gap-6 lg:gap-0 items-stretch"
+                    className={`relative w-full lg:w-[1170px] lg:h-[480px] shrink-0 rounded-[20px] border border-white/5 shadow-card-services-dark overflow-hidden group transition-all duration-500 flex flex-col lg:flex-row gap-6 lg:gap-0 items-stretch ${theme === 'dark' ? 'hover:border-erythro-500/30' : 'hover:border-white/70 hover:shadow-[0_0_30px_0_rgba(255,255,255,0.35)]'}`}
+                    style={{ background: 'var(--service-card-bg)' }}
                   >
                     {/* Background noise & hover spot */}
                     <div className="absolute inset-0 bg-noise opacity-30 pointer-events-none" />
-                    <div className="absolute inset-0 bg-gradient-to-br from-erythro-500/0 via-erythro-500/0 to-erythro-500/0 group-hover:to-erythro-500/5 transition-all duration-500 pointer-events-none" />
+                    <div className={`absolute inset-0 bg-gradient-to-br from-transparent via-transparent transition-all duration-500 pointer-events-none ${theme === 'dark' ? 'group-hover:to-erythro-500/5' : 'group-hover:to-white/15'}`} />
 
                     {/* Card Image */}
                     <div
@@ -354,25 +356,33 @@ export default function ServicesSection({ locale }: ServicesSectionProps) {
                       />
                     </div>
 
+
                     {/* Card Content */}
-                    <div className="w-full lg:w-1/2 flex flex-col justify-between h-full gap-6 text-start z-10 p-6 pt-0 lg:p-12 relative">
-                      {/* Background Letter "e" */}
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none -z-10">
-                        <img
-                          src="/images/e.svg"
-                          alt=""
-                          className="w-full h-auto object-contain opacity-100"
-                        />
+                    <div className="w-full lg:w-1/2 flex flex-col justify-between h-full gap-6 text-start p-6 pt-0 lg:p-12 relative">
+                      {/* Background Letter "e" — centered, full width of content block */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+                        <svg
+                          viewBox="0 0 598 614"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-full h-auto"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M307.133 464.906C244.462 451.569 197.579 419.178 187.533 353.919H591.781C595.608 332.008 598 302.475 598 277.229C598 92.886 490.36 0 308.568 0C308.09 0 307.133 0 306.654 0V123.372C308.568 123.372 310.482 123.372 312.395 123.372C386.069 123.372 423.862 161.002 426.254 235.787H306.654H187.054H6.6976C2.392 259.128 0 284.374 0 311.525C0 507.3 121.514 602.092 307.133 614V465.383V464.906Z"
+                            fill="var(--service-card-e, #f1d9b5)"
+                          />
+                        </svg>
                       </div>
-                      <div className="flex flex-col gap-6">
-                        <h3 className="font-sans text-xl lg:text-[40px] font-extralight tracking-[2px] lg:tracking-[8px] text-[var(--Service-cards-Header,#8C806D)] leading-tight lg:leading-[60px]">
+                      <div className="flex flex-col gap-6 relative z-10">
+                        <h3 className="font-sans text-xl lg:text-[40px] font-extralight tracking-[2px] lg:tracking-[8px] text-[var(--service-card-header,#0D0D0D)] leading-tight lg:leading-[60px]">
                           {itemTitle}
                         </h3>
                         <ul className="flex flex-col gap-3">
                           {itemFeatures.map((feature, fIdx) => (
                             <li
                               key={fIdx}
-                              className="flex items-center gap-3 font-sans text-xs lg:text-[14px] font-normal tracking-[1.2px] lg:tracking-[3.2px] text-[var(--Service-cards-list,#FFF)] leading-normal lg:leading-[24px]"
+                              className="flex items-center gap-3 font-sans text-xs lg:text-[14px] font-normal tracking-[1.2px] lg:tracking-[3.2px] text-[var(--service-card-list,#1E1E1E)] leading-normal lg:leading-[24px]"
                             >
                               <span className="w-1 h-1 bg-erythro-500 shrink-0 rotate-45" />
                               <span>{feature}</span>
@@ -381,9 +391,9 @@ export default function ServicesSection({ locale }: ServicesSectionProps) {
                         </ul>
                       </div>
 
-                      <div className="mt-4">
+                      <div className="mt-4 relative z-10">
                         <Button
-                          variant="dark-outline"
+                          variant={theme === 'dark' ? 'dark-outline' : 'light-outline'}
                           showArrow
                         >
                           {isRtl ? 'עוד' : locale === 'ru' ? 'подробнее' : 'more'}

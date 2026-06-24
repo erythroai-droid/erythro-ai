@@ -12,6 +12,7 @@ if (typeof window !== 'undefined') {
 
 interface SolutionSectionProps {
   locale: string
+  theme?: 'light' | 'dark'
 }
 
 interface SolutionFeature {
@@ -36,27 +37,38 @@ function SolutionCard({
   card,
   locale,
   ctaLabel,
+  theme = 'dark',
 }: {
   card: SolutionCardData
   locale: string
   ctaLabel: string
+  theme?: 'light' | 'dark'
 }) {
   const t = (field: Record<string, string>) => field[locale] || field['en']
 
   const isFeatured = card.featured
+  const isLight = theme === 'light'
+
+  const solutionButtonClassName = isFeatured
+    ? 'border-white text-white hover:bg-white hover:text-coal-900 hover:border-white'
+    : isLight
+      ? 'border-coal-900 text-coal-900 hover:!bg-erythro-500 hover:!text-white hover:!border-erythro-500'
+      : 'border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)]'
 
   return (
     <article
-      className={`relative flex shrink-0 flex-col items-center gap-2 overflow-hidden rounded-[10px] px-4 py-[30px] ${
+      className={`relative flex shrink-0 flex-col items-center gap-2 rounded-[10px] px-4 py-[30px] ${
         isFeatured
-          ? 'min-h-[570px] w-[300px] bg-erythro-600 shadow-[0_5px_50px_0_rgba(13,13,13,0.3)]'
-          : 'min-h-[530px] w-[270px] border border-gold-500 bg-[#1E1E1E]'
+          ? 'z-10 mb-4 min-h-[570px] w-[300px] overflow-visible bg-erythro-600 shadow-[0_5px_50px_0_rgba(13,13,13,0.3)]'
+          : isLight
+            ? 'min-h-[530px] w-[270px] overflow-hidden border border-white bg-white shadow-card-services'
+            : 'min-h-[530px] w-[270px] overflow-hidden border border-gold-500 bg-[#1E1E1E]'
       }`}
     >
       {card.pricePrefix && (
         <span
           className={`absolute top-[13px] font-bold text-sm uppercase ${
-            isFeatured ? 'text-white' : 'text-gold-500'
+            isFeatured ? 'text-white' : isLight ? 'text-coal-900' : 'text-gold-500'
           } ${locale === 'he' ? 'start-4' : 'end-4'}`}
         >
           {t(card.pricePrefix)}
@@ -78,7 +90,7 @@ function SolutionCard({
         {card.priceNote && (
           <span
             className={`absolute -top-2 font-bold text-sm uppercase ${
-              isFeatured ? 'text-white' : 'text-gold-500'
+              isFeatured ? 'text-white' : isLight ? 'text-coal-900' : 'text-gold-500'
             } ${locale === 'he' ? 'start-1/2 ms-16' : 'start-1/2 ms-16'}`}
           >
             *
@@ -86,7 +98,7 @@ function SolutionCard({
         )}
         <p
           className={`font-bold uppercase leading-[80px] ${
-            isFeatured ? 'text-white' : 'text-gold-500'
+            isFeatured ? 'text-white' : isLight ? 'text-coal-900' : 'text-gold-500'
           }`}
         >
           <span className="text-[25.8px] leading-[80px]">₪</span>{' '}
@@ -96,12 +108,12 @@ function SolutionCard({
 
       <div
         className={`flex h-[30px] w-full items-center justify-center rounded-[2px] ${
-          isFeatured ? 'bg-white' : 'bg-gold-500'
+          isFeatured ? 'bg-white' : isLight ? 'bg-coal-900' : 'bg-gold-500'
         }`}
       >
         <span
           className={`px-2 text-center font-bold text-base uppercase leading-6 ${
-            isFeatured ? 'text-erythro-500' : 'text-coal-900'
+            isFeatured ? 'text-erythro-500' : isLight ? 'text-white' : 'text-coal-900'
           }`}
         >
           {t(card.title)}
@@ -111,8 +123,12 @@ function SolutionCard({
       <ul className="flex w-full flex-col gap-4 py-4 ps-4">
         {card.features.map((feature, index) => {
           const dotClass = isFeatured ? 'bg-white' : 'bg-erythro-500'
-          const textClass = isFeatured ? 'text-white' : 'text-white'
-          const labelClass = isFeatured ? 'text-white' : 'text-gold-500'
+          const textClass = isFeatured ? 'text-white' : isLight ? 'text-coal-900' : 'text-white'
+          const labelClass = isFeatured
+            ? 'text-white'
+            : isLight
+              ? 'text-coal-900'
+              : 'text-gold-500'
 
           if (feature.full) {
             return (
@@ -144,17 +160,14 @@ function SolutionCard({
       </ul>
 
       <div className="mt-auto flex w-full flex-col items-center gap-4">
-        <Button
-          variant={isFeatured ? 'white-outline' : 'dark-outline'}
-          className="uppercase"
-        >
+        <Button variant="solution-cta" className={solutionButtonClassName}>
           {ctaLabel}
         </Button>
 
         {card.disclaimer && (
           <p
             className={`text-center text-[11px] leading-6 ${
-              isFeatured ? 'text-white' : 'text-white'
+              isFeatured ? 'text-white' : isLight ? 'text-coal-900' : 'text-white'
             }`}
           >
             {t(card.disclaimer)}
@@ -165,8 +178,9 @@ function SolutionCard({
   )
 }
 
-export default function SolutionSection({ locale }: SolutionSectionProps) {
+export default function SolutionSection({ locale, theme = 'dark' }: SolutionSectionProps) {
   const t = (field: Record<string, string>) => field[locale] || field['en']
+  const isLight = theme === 'light'
 
   const sectionRef = useRef<HTMLElement | null>(null)
   const headingRef = useRef<HTMLDivElement | null>(null)
@@ -234,7 +248,7 @@ export default function SolutionSection({ locale }: SolutionSectionProps) {
     return (
       <>
         <span className="text-erythro-500">{firstChar}</span>
-        <span className="text-white">{rest}</span>
+        <span className={isLight ? 'text-coal-900' : 'text-white'}>{rest}</span>
       </>
     )
   }
@@ -247,10 +261,11 @@ export default function SolutionSection({ locale }: SolutionSectionProps) {
       <section
         id="solutions"
         ref={sectionRef}
-        className="relative w-full overflow-hidden border-t border-b border-coal-400/5 pt-20 pb-[100px] lg:py-0 lg:pt-20 lg:min-h-screen lg:flex lg:flex-col lg:justify-start select-none pointer-events-auto"
+        className="relative w-full border-t border-b border-coal-400/5 pt-20 pb-[100px] lg:pt-20 lg:pb-24 lg:min-h-screen lg:flex lg:flex-col lg:justify-start select-none pointer-events-auto overflow-visible"
         style={{
-          background:
-            'radial-gradient(288.44% 49.43% at 50% 50%, var(--Background-Solution-Gradient-start, #1E1E1E) 0%, var(--Background-Solution-Gradient-finish, #0D0D0D) 100%)',
+          background: isLight
+            ? '#FFE9C7'
+            : 'radial-gradient(288.44% 49.43% at 50% 50%, var(--Background-Solution-Gradient-start, #1E1E1E) 0%, var(--Background-Solution-Gradient-finish, #0D0D0D) 100%)',
         }}
       >
         <div className="absolute inset-0 bg-noise opacity-10 pointer-events-none" />
@@ -273,7 +288,7 @@ export default function SolutionSection({ locale }: SolutionSectionProps) {
         {/* Cards container (full screen width, max-w-none) */}
         <div
           ref={cardsRef}
-          className="relative z-10 w-full flex flex-col items-center gap-[30px] lg:flex-row lg:items-center lg:justify-center lg:overflow-x-auto lg:pb-2 no-scrollbar px-[30px]"
+          className="relative z-10 flex w-full flex-col items-center gap-[30px] overflow-visible px-[30px] py-8 pb-16 lg:flex-row lg:items-center lg:justify-center lg:py-10 lg:pb-20 no-scrollbar"
         >
           {translations.cards.map((card) => (
             <SolutionCard
@@ -281,6 +296,7 @@ export default function SolutionSection({ locale }: SolutionSectionProps) {
               card={card}
               locale={locale}
               ctaLabel={t(translations.ctaLabel)}
+              theme={theme}
             />
           ))}
         </div>

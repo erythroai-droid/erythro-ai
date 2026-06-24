@@ -13,6 +13,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     | 'gold-outline'    // Custom Gold Outline variant
     | 'nav-talk'        // Custom Navbar "Let's Talk" variant
     | 'white-outline'   // Figma Let's Talk outline variant
+    | 'solution-cta'    // Solution pricing cards — unified sizing
   showArrow?: boolean
   children: React.ReactNode
 }
@@ -25,9 +26,15 @@ export default function Button({
   ...props
 }: ButtonProps) {
   
+  const isFixedSizeButton =
+    variant === 'solution-cta' ||
+    variant === 'dark-outline' ||
+    variant === 'light-outline'
+
   // Base classes with premium micro-transitions
-  const baseClasses =
-    'inline-flex items-center justify-center font-button-base font-medium rounded-radius-2xl tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer select-none gap-2'
+  const baseClasses = isFixedSizeButton
+      ? 'inline-flex items-center justify-center shrink-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer select-none gap-[10px]'
+      : 'inline-flex items-center justify-center font-button-base font-medium rounded-radius-2xl tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer select-none gap-2'
 
   // Map variant to styling classes
   let variantClasses = ''
@@ -53,10 +60,16 @@ export default function Button({
         'h-[48px] py-0 px-[40px] gap-[10px] border border-white text-white rounded-[var(--xl,40px)] hover:bg-white hover:text-coal-900 hover:border-white font-button-base-sm uppercase tracking-[2.4px]'
       break
 
+    case 'solution-cta':
+      // Solution cards: fixed Figma geometry, colors via className
+      variantClasses =
+        'h-[48px] min-h-[48px] min-w-[183px] py-0 px-[40px] gap-[10px] rounded-[var(--xl,40px)] border bg-transparent text-[12px] leading-[18px] font-normal uppercase tracking-[2.4px]'
+      break
+
     case 'dark-outline':
       // Variant 1 (Dark): Outline micro-button, text var(--Button-Tertiary-link, #FFE9C7)
       variantClasses =
-        'h-[48px] py-0 px-[40px] gap-[10px] border border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] rounded-[var(--xl,40px)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)] font-button-base-sm lowercase'
+        'h-[48px] min-h-[48px] min-w-[110px] py-0 px-[40px] border border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] rounded-[var(--xl,40px)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)] text-[12px] leading-[18px] font-normal lowercase tracking-[2.4px] bg-transparent'
       break
       
     case 'dark-text':
@@ -74,7 +87,7 @@ export default function Button({
     case 'light-outline':
       // Variant 1 (Light): Thin dark border, dark text, hover white bg, dark text
       variantClasses =
-        'h-[48px] py-0 px-[40px] gap-[10px] border border-coal-900 text-coal-900 bg-transparent hover:bg-white hover:text-coal-900 hover:border-coal-900 rounded-[var(--xl,40px)] lowercase'
+        'h-[48px] min-h-[48px] min-w-[110px] py-0 px-[40px] border border-coal-900 text-coal-900 rounded-[var(--xl,40px)] hover:bg-white hover:text-coal-900 hover:border-coal-900 text-[12px] leading-[18px] font-normal lowercase tracking-[2.4px] bg-transparent'
       break
       
     case 'light-inverted':

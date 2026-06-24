@@ -136,7 +136,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
         </div>
 
         {/* Portfolio Banner Card */}
-        <div ref={cardRef} className="relative w-full rounded-[30px] md:rounded-[40px] bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-950 border border-white/10 p-8 md:p-12 lg:py-10 lg:px-14 shadow-2xl mb-20 lg:mb-10 overflow-hidden group">
+        <div ref={cardRef} className="relative w-full rounded-[30px] md:rounded-[40px] bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-950 border border-white/10 p-8 md:p-12 lg:py-10 lg:px-14 shadow-2xl mb-16 lg:mb-10 overflow-hidden group">
           {/* Card background glowing grid & ambient spots */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
           <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-500/20 rounded-full blur-[80px] pointer-events-none" />
@@ -284,7 +284,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
       </div> {/* Close the max-width container here to make the marquee span the full screen width */}
 
       {/* Partners Marquee Running Belt */}
-      <div ref={marqueeRef} className="relative w-full overflow-hidden mt-12 lg:mt-8 py-4 border-t border-b border-coal-400/10 dark:border-white/5 select-none marquee-wrapper">
+      <div ref={marqueeRef} className="relative w-full overflow-hidden py-4 border-t border-b border-coal-400/10 dark:border-white/5 select-none marquee-wrapper">
         {/* Faded edges overlay for premium depth */}
         <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-[var(--gold-100,#FFF)] to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-[var(--gold-100,#FFF)] to-transparent z-10 pointer-events-none" />
