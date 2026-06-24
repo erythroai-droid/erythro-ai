@@ -49,31 +49,33 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           y: 60,
         })
 
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: wrapperRef.current,
-            start: 'top top',
-            end: '+=200%', // Pin for 2 viewport heights to allow Services to slide over
-            pin: true,
-            pinSpacing: false, // Services will slide over Case Studies
-            toggleActions: 'play none none reverse',
-            snap: {
-              snapTo: [0, 0.5, 1], // Snap to start, middle (after animations), or end (Services covered)
-              duration: { min: 0.3, max: 0.6 },
-              delay: 0.05,
-              ease: 'power2.out',
-            },
-            invalidateOnRefresh: true,
-          },
-        })
-        ScrollTrigger.sort()
-
-        tl.to([headingRef.current, cardRef.current, marqueeRef.current], {
+        gsap.to([headingRef.current, cardRef.current, marqueeRef.current], {
           opacity: 1,
           y: 0,
           duration: 0.8,
           stagger: 0.25,
           ease: 'power2.out',
+          scrollTrigger: {
+            trigger: wrapperRef.current,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse',
+          },
+        })
+
+        ScrollTrigger.create({
+          id: 'cases-pin',
+          trigger: wrapperRef.current,
+          start: 'top top',
+          end: '+=200%', // Pin for 2 viewport heights to allow Services to slide over
+          pin: true,
+          pinSpacing: false, // Services will slide over Case Studies
+          snap: {
+            snapTo: [0, 0.5, 1], // Snap to start, middle, or end
+            duration: { min: 0.3, max: 0.6 },
+            delay: 0.05,
+            ease: 'power2.out',
+          },
+          invalidateOnRefresh: true,
         })
       })
 
@@ -84,20 +86,17 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           y: 40,
         })
 
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: wrapperRef.current,
-            start: 'top 85%',
-            toggleActions: 'play none none reverse',
-          },
-        })
-
-        tl.to([headingRef.current, cardRef.current, marqueeRef.current], {
+        gsap.to([headingRef.current, cardRef.current, marqueeRef.current], {
           opacity: 1,
           y: 0,
           duration: 0.8,
           stagger: 0.25,
           ease: 'power2.out',
+          scrollTrigger: {
+            trigger: wrapperRef.current,
+            start: 'top 92%',
+            toggleActions: 'play none none reverse',
+          },
         })
       })
     }, wrapperRef)
@@ -123,7 +122,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
       <section 
         id="cases" 
         ref={sectionRef}
-        className="py-20 lg:py-0 lg:h-screen lg:flex lg:flex-col lg:justify-center w-full transition-colors duration-500 bg-[var(--gold-100,#FFF)] border-t border-b border-coal-400/5 dark:border-white/5 bg-noise relative z-10 overflow-hidden select-none"
+        className="pt-20 pb-20 lg:py-0 lg:pt-20 lg:h-screen lg:flex lg:flex-col lg:justify-start w-full transition-colors duration-500 bg-[var(--gold-100,#FFF)] border-t border-b border-coal-400/5 dark:border-white/5 bg-noise relative z-10 overflow-hidden select-none"
       >
       <div className="max-w-[1170px] mx-auto px-[30px] w-full">
         {/* Headings */}

@@ -87,7 +87,7 @@ export default function Button({
     default:
       // Variant 3 (Light): Solid Red Erythro, rounded Radius-Max, text white
       variantClasses =
-        'py-3 px-8 bg-erythro-500 text-white border border-erythro-500 rounded-full hover:bg-transparent hover:text-erythro-500 hover:-translate-y-0.5 shadow-btn-primary-light uppercase'
+        'py-3 px-8 bg-erythro-500 text-white border border-[var(--gold-100,#fff)] rounded-[var(--xl,40px)] hover:bg-erythro-500 hover:border-erythro-500 hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)] uppercase'
       break
   }
 

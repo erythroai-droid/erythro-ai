@@ -559,3 +559,61 @@ export const letsTalk = {
     he: 'אנו מיישמים סוכני AI ואוטומציה המבוססים על',
   },
 }
+
+export const accessibility = {
+  title: {
+    en: 'Accessibility Controls',
+    ru: 'Настройки доступности',
+    he: 'הגדרות נגישות',
+  },
+  reset: {
+    en: 'Reset Settings',
+    ru: 'Сбросить настройки',
+    he: 'איפוס הגדרות',
+  },
+  poweredBy: {
+    en: 'Powered by Erythro.ai',
+    ru: 'Создано на Erythro.ai',
+    he: 'מופעל על ידי Erythro.ai',
+  },
+  biggerText: {
+    en: 'Bigger Text',
+    ru: 'Крупный шрифт',
+    he: 'גופן גדול',
+  },
+  dyslexia: {
+    en: 'Dyslexia Friendly',
+    ru: 'Для дислексиков',
+    he: 'מותאם לדיסלקציה',
+  },
+  contrast: {
+    en: 'High Contrast',
+    ru: 'Высокий контраст',
+    he: 'ניגודיות גבוהה',
+  },
+  monochrome: {
+    en: 'Monochrome',
+    ru: 'Монохромный режим',
+    he: 'מונוכרום',
+  },
+  highlightLinks: {
+    en: 'Highlight Links',
+    ru: 'Подсветка ссылок',
+    he: 'הדגשת קישורים',
+  },
+  pauseAnimations: {
+    en: 'Pause Animations',
+    ru: 'Отключить анимации',
+    he: 'חסימת אנימציות',
+  },
+  spacing: {
+    en: 'Text Spacing',
+    ru: 'Интервал текста',
+    he: 'מרווח טקסט',
+  },
+  cursor: {
+    en: 'Big Cursor',
+    ru: 'Крупный курсор',
+    he: 'סמן גדול',
+  },
+}

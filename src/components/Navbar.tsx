@@ -18,6 +18,21 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme }: Na
 
   const t = (field: Record<string, string>) => field[currentLocale] || field['en']
 
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('#')) {
+      e.preventDefault()
+      const targetId = href.substring(1)
+      const targetElement = targetId === 'contacts'
+        ? document.querySelector('footer')
+        : document.getElementById(targetId)
+      
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth' })
+      }
+      setMobileOpen(false)
+    }
+  }
+
   return (
     <header className="absolute top-6 start-0 end-0 z-50 w-full px-[30px] max-w-[1170px] mx-auto select-none pointer-events-none">
       {/* 
@@ -25,7 +40,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme }: Na
         Uses glassmorphism (panel-glass / backdrop-blur) and high-end rounding (rounded-full).
         Translates colors and properties according to dark/light theme skins.
       */}
-      <div className="w-full navbar-pill pointer-events-auto transition-all duration-500 ease-out shadow-lg text-white">
+      <div className={`w-full navbar-pill pointer-events-auto transition-all duration-500 ease-out shadow-lg ${theme === 'light' ? 'navbar-pill--light text-coal-900' : 'text-white'}`}>
         {/* Brand Logo */}
         <a href="#" className="flex items-center group select-none cursor-pointer">
           <svg
@@ -34,7 +49,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme }: Na
             viewBox="0 0 138 30"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="h-[30px] w-auto transition-colors duration-300 text-white"
+            className={`h-[30px] w-auto transition-colors duration-300 ${theme === 'light' ? 'text-coal-900' : 'text-white'}`}
           >
             <g clipPath="url(#clip0_23_40)">
               {/* Main brand letters: rythro... */}
@@ -100,7 +115,11 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme }: Na
               {index > 0 && (
                 <span className="w-[3px] h-[3px] rounded-[1px] bg-[#E52421] inline-block" />
               )}
-              <a href={item.href} className="menu-link">
+              <a
+                href={item.href}
+                onClick={(e) => handleNavClick(e, item.href)}
+                className={`menu-link${theme === 'light' ? ' menu-link--light' : ''}`}
+              >
                 {t(item.label)}
               </a>
             </React.Fragment>
@@ -109,8 +128,8 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme }: Na
 
         {/* Right side controls: Language Selectors, Theme Toggle and CTA */}
         <div className="hidden lg:flex items-center gap-6">
-          <a href="#contacts">
-            <Button variant="nav-talk">
+          <a href="#contacts" onClick={(e) => handleNavClick(e, '#contacts')}>
+            <Button variant={theme === 'light' ? 'light-accent' : 'nav-talk'}>
               {t(ctaLabel)}
             </Button>
           </a>
@@ -162,7 +181,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme }: Na
               <a
                 key={item.href}
                 href={item.href}
-                onClick={() => setMobileOpen(false)}
+                onClick={(e) => handleNavClick(e, item.href)}
                 className="font-sans text-2xl font-bold tracking-widest text-white hover:text-erythro-500 transition-colors duration-300 uppercase"
               >
                 {t(item.label)}
@@ -198,7 +217,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme }: Na
               </div>
             </div>
 
-            <a href="#contacts" className="w-full max-w-[280px]" onClick={() => setMobileOpen(false)}>
+            <a href="#contacts" className="w-full max-w-[280px]" onClick={(e) => handleNavClick(e, '#contacts')}>
               <Button
                 variant="light-accent"
                 showArrow

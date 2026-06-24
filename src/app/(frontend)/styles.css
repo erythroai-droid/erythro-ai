@@ -335,6 +335,13 @@
     background: var(--Menu-bg, rgba(13, 13, 13, 0.50));
   }
 
+  /* Light theme navbar pill — white background, dark text */
+  .navbar-pill--light {
+    border: 1px solid var(--gold-100, #ffffff);
+    background: #FFFFFF;
+    box-shadow: 0 4px 24px 0 rgba(13, 13, 13, 0.08);
+  }
+
   .menu-link {
     color: var(--gold-100, #ffffff);
     font-family: 'Inter', sans-serif;
@@ -350,6 +357,16 @@
   .menu-link:hover {
     color: var(--gold-500);
   }
+
+  /* Light theme menu links */
+  .menu-link--light {
+    color: #0D0D0D;
+  }
+
+  .menu-link--light:hover {
+    color: #E52421;
+  }
+
 
   /* Typography Utilities for precise class-based layout styling */
   .font-display-5xl {
@@ -532,3 +549,48 @@
     }
   }
 }
+
+/* Accessibility Control Classes */
+html.accessibility-bigger-text {
+  font-size: 120% !important;
+}
+
+html.accessibility-dyslexia-friendly,
+html.accessibility-dyslexia-friendly * {
+  font-family: 'Comic Sans MS', 'Courier New', sans-serif !important;
+}
+
+html.accessibility-high-contrast {
+  filter: contrast(1.4) saturate(1.1) !important;
+}
+
+html.accessibility-monochrome {
+  filter: grayscale(100%) !important;
+}
+
+html.accessibility-highlight-links a {
+  background-color: #ffeb3b !important;
+  color: #000000 !important;
+  outline: 2px solid #ff9800 !important;
+  text-decoration: underline !important;
+}
+
+html.accessibility-pause-animations,
+html.accessibility-pause-animations * {
+  animation: none !important;
+  transition: none !important;
+  animation-play-state: paused !important;
+}
+
+html.accessibility-text-spacing,
+html.accessibility-text-spacing * {
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.16em !important;
+  line-height: 1.8 !important;
+}
+
+html.accessibility-big-cursor,
+html.accessibility-big-cursor * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M0 0 L16 16 L10 17 L17 27 L14 29 L7 19 L3 22 Z' fill='white' stroke='black' stroke-width='2'/%3E%3C/svg%3E"), auto !important;
+}
+

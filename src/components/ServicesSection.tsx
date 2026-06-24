@@ -83,8 +83,23 @@ export default function ServicesSection({ locale }: ServicesSectionProps) {
           y: 40,
         })
 
+        // Separate reveal animation (triggers earlier, when section enters viewport)
+        gsap.to([headingRef.current, cardsRowRef.current], {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.25,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse',
+          },
+        })
+
         const tl = gsap.timeline({
           scrollTrigger: {
+            id: 'services-pin',
             trigger: sectionRef.current,
             start: 'top top',
             end: '+=550%', // Pin for horizontal scroll + LetsTalk reveal + hold phase
@@ -95,25 +110,6 @@ export default function ServicesSection({ locale }: ServicesSectionProps) {
           },
         })
         ScrollTrigger.sort()
-
-        // 1. Services intro fade-in
-        tl.to(headingRef.current, {
-          opacity: 1,
-          y: 0,
-          duration: 0.4,
-          ease: 'power2.out',
-        })
-
-        tl.to(
-          cardsRowRef.current,
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.4,
-            ease: 'power2.out',
-          },
-          '-=0.2',
-        )
 
         // 2. Horizontal scroll (stops when the last card is fully visible)
         const maxScroll = () => {
@@ -226,7 +222,7 @@ export default function ServicesSection({ locale }: ServicesSectionProps) {
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: 'top 85%',
+            start: 'top 92%',
             toggleActions: 'play none none reverse',
           },
         })
@@ -261,7 +257,7 @@ export default function ServicesSection({ locale }: ServicesSectionProps) {
         const contactTl = gsap.timeline({
           scrollTrigger: {
             trigger: mobileContactRef.current,
-            start: 'top 85%',
+            start: 'top 92%',
             toggleActions: 'play none none reverse',
           },
         })
@@ -298,13 +294,13 @@ export default function ServicesSection({ locale }: ServicesSectionProps) {
       <section
         id="services"
         ref={sectionRef}
-        className="py-20 lg:py-0 lg:h-screen lg:flex lg:flex-col lg:justify-center w-full transition-colors duration-500 border-t border-b border-coal-400/5 dark:border-white/5 bg-noise relative z-10 overflow-hidden select-none"
+        className="pt-20 pb-20 lg:py-0 lg:pt-20 lg:h-screen lg:flex lg:flex-col lg:justify-start w-full transition-colors duration-500 border-t border-b border-coal-400/5 dark:border-white/5 bg-noise relative z-10 overflow-hidden select-none"
         style={{
           background:
             'radial-gradient(288.44% 49.43% at 50% 50%, var(--Background-Services-Gradient-start, #1E1E1E) 0%, var(--Background-Services-Gradient-finish, #0D0D0D) 100%)',
         }}
       >
-        <div className="w-full flex flex-col justify-center py-6 lg:py-12 relative z-10">
+        <div className="w-full flex flex-col justify-center pt-0 pb-6 lg:pt-0 lg:pb-12 relative z-10">
           {/* Headings */}
           <div
             ref={headingRef}

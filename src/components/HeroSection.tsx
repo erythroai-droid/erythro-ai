@@ -2,9 +2,14 @@
 
 import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Button from './Button'
 import HeroAnimation from './HeroAnimation'
 import { hero as translations } from '../translations'
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger)
+}
 
 interface HeroSectionProps {
   locale: string
@@ -14,6 +19,28 @@ interface HeroSectionProps {
 export default function HeroSection({ locale, navbar }: HeroSectionProps) {
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const containerRef = useRef<HTMLDivElement | null>(null)
+
+  const handleFindOutMoreClick = () => {
+    const isMobile = window.innerWidth < 1024
+    if (isMobile) {
+      const target = document.getElementById('contacts')
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' })
+      }
+    } else {
+      const st = ScrollTrigger.getById('services-pin')
+      if (st) {
+        // Let's Talk is fully open at ~80% of the timeline scroll distance
+        const scrollPosition = st.start + 0.8 * (st.end - st.start)
+        window.scrollTo({ top: scrollPosition, behavior: 'smooth' })
+      } else {
+        const target = document.querySelector('footer')
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' })
+        }
+      }
+    }
+  }
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -41,7 +68,7 @@ export default function HeroSection({ locale, navbar }: HeroSectionProps) {
         className="relative max-w-[1170px] mx-auto px-[30px] flex flex-col items-center text-center gap-6 mt-12 md:mt-16 select-none"
       >
         {/* Pre-Heading tag */}
-        <span className="hero-pre-heading opacity-0 font-mono text-xs md:text-sm font-bold tracking-[0.25em] text-erythro-500 dark:text-gold-500 uppercase select-none animate-pulse">
+        <span className="hero-pre-heading opacity-0 font-mono text-xs md:text-sm font-bold tracking-[0.25em] text-gold-500 uppercase select-none animate-pulse">
           {t(translations.preHeading)}
         </span>
 
@@ -49,18 +76,22 @@ export default function HeroSection({ locale, navbar }: HeroSectionProps) {
           Main Title: "Engineering the Future"
           Enforces the precise Display 5XL font class from foundations-typography.
         */}
-        <div className="hero-heading opacity-0 font-display-5xl text-coal-900 dark:text-gold-500 max-w-4xl mt-2 mb-2 select-text">
+        <div className="hero-heading opacity-0 font-display-5xl text-gold-500 max-w-4xl mt-2 mb-2 select-text">
           {t(translations.mainHeading)}
         </div>
 
         {/* Description subtext matching Figma geometry spacing & leading */}
-        <p className="hero-subtext opacity-0 font-body-lead text-coal-300 dark:text-gold-100 max-w-3xl leading-relaxed tracking-wider mt-2 select-text">
+        <p className="hero-subtext opacity-0 font-body-lead text-gold-100 max-w-3xl leading-relaxed tracking-wider mt-2 select-text">
           {t(translations.subtext)}
         </p>
 
         {/* Action Button Group */}
         <div className="hero-buttons opacity-0 flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 w-full sm:w-auto">
-          <Button variant="gold-outline" className="w-full sm:w-auto min-w-[180px]">
+          <Button
+            onClick={handleFindOutMoreClick}
+            variant="gold-outline"
+            className="w-full sm:w-auto min-w-[180px]"
+          >
             {t(translations.ctaFind)}
           </Button>
         </div>

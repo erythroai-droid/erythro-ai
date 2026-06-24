@@ -182,25 +182,27 @@ export default function SolutionSection({ locale }: SolutionSectionProps) {
           y: 60,
         })
 
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top top',
-            end: '+=150%',
-            pin: true,
-            pinSpacing: false,
-            toggleActions: 'play none none reverse',
-            invalidateOnRefresh: true,
-          },
-        })
-        ScrollTrigger.sort()
-
-        tl.to([headingRef.current, cardsRef.current], {
+        gsap.to([headingRef.current, cardsRef.current], {
           opacity: 1,
           y: 0,
           duration: 0.8,
           stagger: 0.25,
           ease: 'power2.out',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse',
+          },
+        })
+
+        ScrollTrigger.create({
+          id: 'solutions-pin',
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: '+=150%',
+          pin: true,
+          pinSpacing: false,
+          invalidateOnRefresh: true,
         })
       })
 
@@ -215,7 +217,7 @@ export default function SolutionSection({ locale }: SolutionSectionProps) {
           ease: 'power2.out',
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: 'top 85%',
+            start: 'top 92%',
             toggleActions: 'play none none reverse',
           },
         })
@@ -245,7 +247,7 @@ export default function SolutionSection({ locale }: SolutionSectionProps) {
       <section
         id="solutions"
         ref={sectionRef}
-        className="relative w-full overflow-hidden border-t border-b border-coal-400/5 py-[60px] pb-[100px] lg:py-0 lg:min-h-screen lg:flex lg:flex-col lg:justify-center select-none pointer-events-auto"
+        className="relative w-full overflow-hidden border-t border-b border-coal-400/5 pt-20 pb-[100px] lg:py-0 lg:pt-20 lg:min-h-screen lg:flex lg:flex-col lg:justify-start select-none pointer-events-auto"
         style={{
           background:
             'radial-gradient(288.44% 49.43% at 50% 50%, var(--Background-Solution-Gradient-start, #1E1E1E) 0%, var(--Background-Solution-Gradient-finish, #0D0D0D) 100%)',

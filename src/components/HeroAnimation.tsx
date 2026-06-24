@@ -186,9 +186,9 @@ export default function HeroAnimation({
 
   return (
     /* Wrapper: provides scroll height. 100vh visible + 120vh animation distance = 220vh total. */
-    <div ref={wrapperRef} className="relative w-full bg-primary" style={{ height: '220vh' }}>
+    <div ref={wrapperRef} className="relative w-full bg-coal-900" style={{ height: '220vh' }}>
       {/* Fixed container: stays in place while the page scrolls past */}
-      <div ref={containerRef} className="fixed top-0 left-0 w-full h-screen bg-primary overflow-hidden" style={{ zIndex: 0 }}>
+      <div ref={containerRef} className="fixed top-0 left-0 w-full h-screen bg-coal-900 overflow-hidden" style={{ zIndex: 0 }}>
         
         {/* Pinned Navbar */}
         {navbar}
@@ -207,7 +207,7 @@ export default function HeroAnimation({
         <div className="hidden lg:flex w-full h-full items-center justify-center pointer-events-none select-none z-0">
           <canvas
             ref={canvasRef}
-            className="w-full h-full object-cover opacity-85 mix-blend-lighten dark:mix-blend-screen"
+            className="w-full h-full object-cover opacity-85"
           />
         </div>
 
@@ -226,7 +226,7 @@ export default function HeroAnimation({
         {/* Dark overlay to dim the background image/animation */}
         <div
           className="absolute inset-0 pointer-events-none z-[1]"
-          style={{ backgroundColor: 'var(--coal-alpha-30)' }}
+          style={{ backgroundColor: 'rgba(13,13,13,0.30)' }}
         />
 
         {/* Overlay content layered on top of the animation */}
@@ -240,7 +240,7 @@ export default function HeroAnimation({
         </div>
 
         {/* Ambient background gradients to tie canvas to the overall site theme */}
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--bg-primary)_90%)] z-0" />
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,#0D0D0D_90%)] z-0" />
       </div>
     </div>
   )

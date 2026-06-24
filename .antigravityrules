@@ -1,0 +1,11 @@
+# Antigravity IDE Execution Rules
+
+## 1. Automated Checks Restriction
+- NEVER run automated TypeScript compiler checks (`tsc`, `npx tsc`, etc.) automatically after code modifications.
+- NEVER invoke the browser subagent or capture screenshots for visual verification by default.
+- Ignore project compilation errors during micro-tasks unless they directly block editing.
+
+## 2. Testing Workflow
+- Apply code changes and STOP immediately.
+- Wait for explicit user validation.
+- ONLY run `tsc`, linters, or the browser subagent when the user explicitly commands: "сделай полный тест", "запусти проверку" or "run full test".

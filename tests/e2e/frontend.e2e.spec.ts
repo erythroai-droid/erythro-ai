@@ -13,8 +13,8 @@ test.describe('Frontend', () => {
 
     await expect(page).toHaveTitle(/Payload Blank Template/)
 
-    const heading = page.locator('h1').first()
+    const heading = page.locator('.hero-heading').first()
 
-    await expect(heading).toHaveText('Welcome to your new project.')
+    await expect(heading).toContainText('Engineering the future')
   })
 })
