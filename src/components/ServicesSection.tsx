@@ -103,7 +103,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             id: 'services-pin',
             trigger: sectionRef.current,
             start: 'top top',
-            end: '+=550%', // Pin for horizontal scroll + LetsTalk reveal + hold phase
+            end: '+=600%', // Pin for horizontal scroll + LetsTalk reveal + hold phase
             pin: true,
             pinSpacing: false, // SolutionSection will slide over it
             scrub: 1, // Smooth scrub
@@ -204,7 +204,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         )
 
         // 7. Hold phase to keep Let's Talk fully visible and interactive before Solutions slides over
-        tl.to({}, { duration: 1.7 })
+        tl.to({}, { duration: 2.3 })
       })
 
       // Mobile/tablet animation: Simple scroll trigger (no pinning/snapping)

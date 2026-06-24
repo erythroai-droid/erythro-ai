@@ -59,10 +59,10 @@ function SolutionCard({
     <article
       className={`relative flex shrink-0 flex-col items-center gap-2 rounded-[10px] px-4 py-[30px] ${
         isFeatured
-          ? 'z-10 mb-4 min-h-[570px] w-[300px] overflow-visible bg-erythro-600 shadow-[0_5px_50px_0_rgba(13,13,13,0.3)]'
+          ? 'z-10 mb-4 min-h-[570px] h-auto w-[300px] overflow-visible bg-erythro-600 shadow-[0_5px_50px_0_rgba(13,13,13,0.3)]'
           : isLight
-            ? 'min-h-[530px] w-[270px] overflow-hidden border border-white bg-white shadow-card-services'
-            : 'min-h-[530px] w-[270px] overflow-hidden border border-gold-500 bg-[#1E1E1E]'
+            ? 'min-h-[530px] h-auto w-[270px] overflow-visible border border-white bg-white shadow-card-services'
+            : 'min-h-[530px] h-auto w-[270px] overflow-visible border border-gold-500 bg-[#1E1E1E]'
       }`}
     >
       {card.pricePrefix && (
@@ -77,6 +77,7 @@ function SolutionCard({
 
       {card.originalPrice && (
         <p
+          dir="ltr"
           className={`absolute top-[17px] font-bold text-sm uppercase text-white ${
             locale === 'he' ? 'start-4' : 'end-4'
           }`}
@@ -86,33 +87,28 @@ function SolutionCard({
         </p>
       )}
 
-      <div className="relative flex h-[70px] w-full items-start justify-center text-center">
-        {card.priceNote && (
-          <span
-            className={`absolute -top-2 font-bold text-sm uppercase ${
-              isFeatured ? 'text-white' : isLight ? 'text-coal-900' : 'text-gold-500'
-            } ${locale === 'he' ? 'start-1/2 ms-16' : 'start-1/2 ms-16'}`}
-          >
-            *
-          </span>
-        )}
+      <div className="relative flex min-h-[70px] w-full items-center justify-center py-2 text-center">
         <p
-          className={`font-bold uppercase leading-[80px] ${
+          dir="ltr"
+          className={`font-bold uppercase leading-tight ${
             isFeatured ? 'text-white' : isLight ? 'text-coal-900' : 'text-gold-500'
           }`}
         >
-          <span className="text-[25.8px] leading-[80px]">₪</span>{' '}
-          <span className="text-[40px] leading-[80px]">{card.price}</span>
+          <span className="text-[1.6125rem] leading-tight">₪</span>{' '}
+          <span className="text-[2.5rem] leading-tight">{card.price}</span>
+          {card.priceNote && (
+            <span className="relative -top-5 inline-block text-sm leading-none">*</span>
+          )}
         </p>
       </div>
 
       <div
-        className={`flex h-[30px] w-full items-center justify-center rounded-[2px] ${
+        className={`flex min-h-[30px] w-full items-center justify-center rounded-[2px] px-2 py-1.5 ${
           isFeatured ? 'bg-white' : isLight ? 'bg-coal-900' : 'bg-gold-500'
         }`}
       >
         <span
-          className={`px-2 text-center font-bold text-base uppercase leading-6 ${
+          className={`text-center font-bold text-base uppercase leading-snug ${
             isFeatured ? 'text-erythro-500' : isLight ? 'text-white' : 'text-coal-900'
           }`}
         >
@@ -120,7 +116,7 @@ function SolutionCard({
         </span>
       </div>
 
-      <ul className="flex w-full flex-col gap-4 py-4 ps-4">
+      <ul className="flex w-full flex-1 flex-col gap-4 py-4 ps-4">
         {card.features.map((feature, index) => {
           const dotClass = isFeatured ? 'bg-white' : 'bg-erythro-500'
           const textClass = isFeatured ? 'text-white' : isLight ? 'text-coal-900' : 'text-white'
@@ -150,9 +146,19 @@ function SolutionCard({
                 {feature.label && (
                   <span className={`font-bold ${labelClass}`}>{t(feature.label)} </span>
                 )}
-                {feature.value && (
-                  <span className="font-normal normal-case">{t(feature.value)}</span>
-                )}
+                {feature.value &&
+                  (() => {
+                    const value = t(feature.value)
+                    const isPrice = value.includes('₪')
+                    return (
+                      <span
+                        {...(isPrice ? { dir: 'ltr' as const } : {})}
+                        className={`font-normal normal-case ${isPrice ? 'inline-block' : ''}`}
+                      >
+                        {value}
+                      </span>
+                    )
+                  })()}
               </p>
             </li>
           )
@@ -256,7 +262,7 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
   return (
     <div className="relative z-30 w-full pointer-events-none">
       {/* Spacer to allow the pinned Services/LetsTalk overlay to stay fixed while Solutions slides up over it */}
-      <div className="hidden lg:block h-[450vh] w-full pointer-events-none" />
+      <div className="hidden lg:block h-[490vh] w-full pointer-events-none" />
 
       <section
         id="solutions"

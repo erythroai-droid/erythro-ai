@@ -402,7 +402,7 @@ export const solutions = {
         },
         {
           label: { en: 'Subscription:', ru: 'Подписка:', he: 'מנוי:' },
-          value: { en: '650 ₪/mth', ru: '650 ₪/мес', he: '650 ₪/חודש' },
+          value: { en: '650₪/mth', ru: '650₪/мес', he: '650₪/חודש' },
         },
       ],
       disclaimer: {
@@ -445,7 +445,7 @@ export const solutions = {
         },
         {
           label: { en: 'Subscription:', ru: 'Подписка:', he: 'מנוי:' },
-          value: { en: '₪2 500/mth', ru: '₪2 500/мес', he: '₪2 500/חודש' },
+          value: { en: '2500₪/mth', ru: '2500₪/мес', he: '2500₪/חודש' },
         },
       ],
       disclaimer: {
@@ -615,5 +615,35 @@ export const accessibility = {
     en: 'Big Cursor',
     ru: 'Крупный курсор',
     he: 'סמן גדול',
+  },
+  keyboardNavigation: {
+    en: 'Keyboard Navigation',
+    ru: 'Навигация с клавиатуры',
+    he: 'ניווט במקלדת',
+  },
+  screenReader: {
+    en: 'Screen Reader',
+    ru: 'Экранный диктор',
+    he: 'קורא מסך',
+  },
+  screenReaderEnabled: {
+    en: 'Screen reader mode enabled',
+    ru: 'Режим экранного диктора включён',
+    he: 'מצב קורא מסך הופעל',
+  },
+  screenReaderServices: {
+    en: 'Services section',
+    ru: 'Раздел услуг',
+    he: 'מדור שירותים',
+  },
+  screenReaderSolutions: {
+    en: 'Solutions section',
+    ru: 'Раздел решений',
+    he: 'מדור פתרונות',
+  },
+  screenReaderContacts: {
+    en: 'Contact section',
+    ru: 'Раздел контактов',
+    he: 'מדור יצירת קשר',
   },
 }

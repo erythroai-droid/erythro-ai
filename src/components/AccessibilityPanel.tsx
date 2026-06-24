@@ -29,6 +29,8 @@ export default function AccessibilityPanel({ isOpen, onClose, locale }: Accessib
     pauseAnimations: false,
     spacing: false,
     cursor: false,
+    keyboardNavigation: false,
+    screenReader: false,
   })
 
   // Load from localStorage on mount
@@ -36,7 +38,7 @@ export default function AccessibilityPanel({ isOpen, onClose, locale }: Accessib
     try {
       const stored = localStorage.getItem('erythro-accessibility-settings')
       if (stored) {
-        setSettings(JSON.parse(stored))
+        setSettings((prev) => ({ ...prev, ...JSON.parse(stored) }))
       }
     } catch (e) {
       console.error('Failed to load accessibility settings', e)
@@ -57,6 +59,8 @@ export default function AccessibilityPanel({ isOpen, onClose, locale }: Accessib
       pauseAnimations: 'accessibility-pause-animations',
       spacing: 'accessibility-text-spacing',
       cursor: 'accessibility-big-cursor',
+      keyboardNavigation: 'accessibility-keyboard-navigation',
+      screenReader: 'accessibility-screen-reader',
     }
 
     Object.entries(classesMap).forEach(([key, className]) => {
@@ -76,6 +80,46 @@ export default function AccessibilityPanel({ isOpen, onClose, locale }: Accessib
     }
   }, [settings])
 
+  useEffect(() => {
+    const sectionLabels: Record<string, string> = {
+      services: t(translations.screenReaderServices),
+      solutions: t(translations.screenReaderSolutions),
+      contacts: t(translations.screenReaderContacts),
+    }
+
+    let liveRegion = document.getElementById('a11y-live-region') as HTMLDivElement | null
+
+    if (settings.screenReader) {
+      if (!liveRegion) {
+        liveRegion = document.createElement('div')
+        liveRegion.id = 'a11y-live-region'
+        liveRegion.className = 'sr-only'
+        liveRegion.setAttribute('aria-live', 'polite')
+        liveRegion.setAttribute('aria-atomic', 'true')
+        document.body.appendChild(liveRegion)
+      }
+
+      Object.entries(sectionLabels).forEach(([id, label]) => {
+        const element = document.getElementById(id)
+        if (element && !element.dataset.a11yLabeled) {
+          element.setAttribute('aria-label', label)
+          element.dataset.a11yLabeled = 'true'
+        }
+      })
+
+      liveRegion.textContent = t(translations.screenReaderEnabled)
+    } else {
+      document.querySelectorAll('[data-a11y-labeled="true"]').forEach((element) => {
+        element.removeAttribute('aria-label')
+        element.removeAttribute('data-a11y-labeled')
+      })
+
+      if (liveRegion) {
+        liveRegion.textContent = ''
+      }
+    }
+  }, [settings.screenReader, locale])
+
   const toggleOption = (id: keyof typeof settings) => {
     setSettings((prev) => ({
       ...prev,
@@ -93,6 +137,8 @@ export default function AccessibilityPanel({ isOpen, onClose, locale }: Accessib
       pauseAnimations: false,
       spacing: false,
       cursor: false,
+      keyboardNavigation: false,
+      screenReader: false,
     })
   }
 
@@ -180,6 +226,30 @@ export default function AccessibilityPanel({ isOpen, onClose, locale }: Accessib
         </svg>
       ),
     },
+    {
+      id: 'keyboardNavigation',
+      labelKey: 'keyboardNavigation',
+      className: 'keyboardNavigation',
+      icon: (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <path strokeLinecap="round" d="M7 10h2M11 10h2M15 10h2M7 14h10" />
+        </svg>
+      ),
+    },
+    {
+      id: 'screenReader',
+      labelKey: 'screenReader',
+      className: 'screenReader',
+      icon: (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4a4 4 0 00-4 4v2" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 10v1a4 4 0 008 0v-1" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18h12" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 21h6" />
+        </svg>
+      ),
+    },
   ]
 
   const isRTL = locale === 'he'
@@ -226,15 +296,15 @@ export default function AccessibilityPanel({ isOpen, onClose, locale }: Accessib
                 <button
                   key={opt.id}
                   onClick={() => toggleOption(opt.id as keyof typeof settings)}
-                  className={`flex flex-col items-center justify-center p-5 rounded-lg border transition-all duration-300 gap-3 group cursor-pointer ${
+                  className={`flex flex-col items-center justify-center p-5 rounded-lg border gap-3 group cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-0.5 ${
                     active
                       ? 'bg-erythro-500 border-erythro-500 text-white shadow-lg shadow-erythro-500/25'
-                      : 'bg-[#18181b]/80 border-white/5 hover:border-white/20 text-[#a1a1aa] hover:text-white'
+                      : 'bg-[#18181b]/80 border-white/5 text-[#a1a1aa] hover:bg-gold-500 hover:border-gold-500 hover:text-coal-900 hover:shadow-lg hover:shadow-gold-500/25'
                   }`}
                 >
                   <div
-                    className={`transition-transform duration-300 group-hover:scale-110 ${
-                      active ? 'text-white' : 'text-white/60 group-hover:text-white'
+                    className={`transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:scale-110 ${
+                      active ? 'text-white' : 'text-white/60 group-hover:text-coal-900'
                     }`}
                   >
                     {opt.icon}
@@ -252,7 +322,7 @@ export default function AccessibilityPanel({ isOpen, onClose, locale }: Accessib
         <div className="pt-6 border-t border-white/5 flex flex-col gap-4">
           <button
             onClick={resetAll}
-            className="w-full py-3 rounded-lg border border-white/15 text-white/90 hover:bg-white/5 transition-all text-xs font-bold uppercase tracking-widest text-center cursor-pointer"
+            className="w-full py-3 rounded-lg border border-white/15 text-white/90 hover:bg-erythro-500 hover:border-erythro-500 hover:text-white hover:shadow-lg hover:shadow-erythro-500/25 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] text-xs font-bold uppercase tracking-widest text-center cursor-pointer"
           >
             {t(translations.reset)}
           </button>

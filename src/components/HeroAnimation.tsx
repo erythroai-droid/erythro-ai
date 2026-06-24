@@ -140,7 +140,11 @@ export default function HeroAnimation({
         scrollTrigger: {
           trigger: wrapperRef.current,
           start: 'top top',
-          end: 'bottom top', // Animate across the full wrapper height
+          // Finish the chip animation exactly when the next section (Case Studies)
+          // begins to slide up over the fixed hero. The wrapper is 220vh tall, so
+          // 'bottom bottom' resolves to scrollY = 220vh - 100vh = 120vh, which is the
+          // precise point where the following section enters the viewport from below.
+          end: 'bottom bottom',
           scrub: 1,
           invalidateOnRefresh: true,
         },

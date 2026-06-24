@@ -268,11 +268,11 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
               </p>
               <FooterLinkItem href="mailto:erythro.ai@gmail.com" theme={theme}>
                 <span className="font-bold uppercase">{t(translations.emailLabel)} </span>
-                erythro.ai@gmail.com
+                <span dir="ltr" className="inline-block">erythro.ai@gmail.com</span>
               </FooterLinkItem>
               <FooterLinkItem href="tel:+972509312746" theme={theme}>
-                <span className="font-bold uppercase">{t(translations.phoneLabel)}</span>
-                +972 50 931 27 46
+                <span className="font-bold uppercase">{t(translations.phoneLabel)} </span>
+                <span dir="ltr" className="inline-block">+972 50 931 27 46</span>
               </FooterLinkItem>
               <FooterLinkItem theme={theme}>
                 <span className="font-bold uppercase">{t(translations.locationLabel)}</span>

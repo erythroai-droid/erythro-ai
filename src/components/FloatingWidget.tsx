@@ -190,8 +190,8 @@ export default function FloatingWidget({
   return (
     <div
       ref={menuContainerRef}
-      className={`fixed bottom-[18px] z-50 flex items-end gap-[14px] select-none pointer-events-auto ${
-        isRTL ? 'left-[18px] flex-row-reverse' : 'right-[18px] flex-row'
+      className={`fixed bottom-[18px] z-50 flex items-end gap-[14px] select-none pointer-events-auto flex-row ${
+        isRTL ? 'left-[18px]' : 'right-[18px]'
       }`}
     >
       <style>{`
