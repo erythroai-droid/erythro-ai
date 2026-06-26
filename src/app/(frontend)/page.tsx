@@ -1,80 +1,15 @@
-'use client'
+import React from 'react'
+import { cookies } from 'next/headers'
+import HomeClient from './HomeClient'
 
-import React, { useState, useEffect } from 'react'
-import Navbar from '@/components/Navbar'
-import HeroSection from '@/components/HeroSection'
-import CaseStudiesSection from '@/components/CaseStudiesSection'
-import ServicesSection from '@/components/ServicesSection'
-import SolutionSection from '@/components/SolutionSection'
-import FooterSection from '@/components/FooterSection'
-import FloatingWidget from '@/components/FloatingWidget'
-import AccessibilityPanel from '@/components/AccessibilityPanel'
+const SUPPORTED_LOCALES = ['en', 'ru', 'he']
+const DEFAULT_LOCALE = 'en'
 
-export default function HomePage() {
-  const [locale, setLocale] = useState('en')
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark')
-  const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
+export default async function HomePage() {
+  const cookieStore = await cookies()
+  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
+  const initialLocale =
+    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
 
-  // Automatically toggle dark class on the HTML/Body element for Tailwind
-  useEffect(() => {
-    const root = window.document.documentElement
-    if (theme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-  }, [theme])
-
-  // Translate helpers
-  const t = (field: Record<string, string>) => field[locale] || field['en']
-
-  return (
-    <div
-      dir={locale === 'he' ? 'rtl' : 'ltr'}
-      className={`min-h-screen font-sans transition-colors duration-500 bg-primary text-main ${
-        locale === 'he' ? 'font-sans' : ''
-      }`}
-    >
-      {/* Hero Section with WordStack and embedded Navbar */}
-      <HeroSection
-        locale={locale}
-        navbar={
-          <Navbar
-            currentLocale={locale}
-            setLocale={setLocale}
-            theme={theme}
-            setTheme={setTheme}
-          />
-        }
-      />
-
-      {/* Case Studies showcase with partner logos */}
-      <CaseStudiesSection locale={locale} />
-
-      {/* Services Grid with 12-column geometry */}
-      <ServicesSection locale={locale} theme={theme} />
-
-      {/* Solution pricing cards */}
-      <SolutionSection locale={locale} theme={theme} />
-
-      {/* Footer from Figma */}
-      <FooterSection locale={locale} theme={theme} />
-
-      {/* Floating Controls Widget */}
-      <FloatingWidget
-        locale={locale}
-        setLocale={setLocale}
-        theme={theme}
-        setTheme={setTheme}
-        onOpenAccessibility={() => setIsAccessibilityOpen(true)}
-      />
-
-      {/* Accessibility Control Panel */}
-      <AccessibilityPanel
-        isOpen={isAccessibilityOpen}
-        onClose={() => setIsAccessibilityOpen(false)}
-        locale={locale}
-      />
-    </div>
-  )
+  return <HomeClient initialLocale={initialLocale} />
 }

@@ -17,6 +17,25 @@ export const navbar = {
   },
 }
 
+// 1b. Cookie consent banner translations
+export const cookieConsent = {
+  message: {
+    en: 'We use cookies on our website to remember your language preference and improve your experience.',
+    ru: 'На нашем сайте используются cookies, чтобы запомнить выбранный язык и улучшить ваш опыт.',
+    he: 'אנו משתמשים בעוגיות באתר שלנו כדי לזכור את העדפת השפה שלך ולשפר את החוויה.',
+  },
+  accept: {
+    en: 'Accept',
+    ru: 'Принять',
+    he: 'אישור',
+  },
+  decline: {
+    en: 'Decline',
+    ru: 'Отклонить',
+    he: 'דחייה',
+  },
+}
+
 // 2. Hero translations
 export const hero = {
   preHeading: {
@@ -83,7 +102,6 @@ export const services = {
       features: {
         en: [
           'Brand Identity / Presentations',
-          'Brand book',
           'Banners',
           'Web design',
           'Motion design',
@@ -91,7 +109,6 @@ export const services = {
         ],
         ru: [
           'Бренд-айдентика / Презентации',
-          'Брендбук',
           'Баннеры',
           'Веб-дизайн',
           'Моушн-дизайн',
@@ -99,7 +116,6 @@ export const services = {
         ],
         he: [
           'מיתוג ואסטרטגיה / מצגות',
-          'ספר מותג',
           'באנרים',
           'עיצוב אתרים',
           'עיצוב בתנועה',

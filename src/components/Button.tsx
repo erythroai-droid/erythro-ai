@@ -63,13 +63,13 @@ export default function Button({
     case 'solution-cta':
       // Solution cards: fixed Figma geometry, colors via className
       variantClasses =
-        'h-[48px] min-h-[48px] min-w-[183px] py-0 px-[40px] gap-[10px] rounded-[var(--xl,40px)] border bg-transparent text-[12px] leading-[18px] font-normal uppercase tracking-[2.4px]'
+        'h-[48px] min-h-[48px] min-w-[183px] py-0 px-[40px] gap-[10px] rounded-[var(--xl,40px)] border bg-transparent text-[12px] rtl:text-[14px] leading-[18px] font-normal uppercase tracking-[2.4px]'
       break
 
     case 'dark-outline':
       // Variant 1 (Dark): Outline micro-button, text var(--Button-Tertiary-link, #FFE9C7)
       variantClasses =
-        'h-[48px] min-h-[48px] min-w-[110px] py-0 px-[40px] border border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] rounded-[var(--xl,40px)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)] text-[12px] leading-[18px] font-normal lowercase tracking-[2.4px] bg-transparent'
+        'h-[48px] min-h-[48px] min-w-[110px] py-0 px-[40px] border border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] rounded-[var(--xl,40px)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)] text-[12px] rtl:text-[14px] leading-[18px] font-normal lowercase tracking-[2.4px] bg-transparent'
       break
       
     case 'dark-text':
@@ -87,7 +87,7 @@ export default function Button({
     case 'light-outline':
       // Variant 1 (Light): Thin dark border, dark text, hover white bg, dark text
       variantClasses =
-        'h-[48px] min-h-[48px] min-w-[110px] py-0 px-[40px] border border-coal-900 text-coal-900 rounded-[var(--xl,40px)] hover:bg-white hover:text-coal-900 hover:border-coal-900 text-[12px] leading-[18px] font-normal lowercase tracking-[2.4px] bg-transparent'
+        'h-[48px] min-h-[48px] min-w-[110px] py-0 px-[40px] border border-coal-900 text-coal-900 rounded-[var(--xl,40px)] hover:bg-white hover:text-coal-900 hover:border-coal-900 text-[12px] rtl:text-[14px] leading-[18px] font-normal lowercase tracking-[2.4px] bg-transparent'
       break
       
     case 'light-inverted':

@@ -280,9 +280,10 @@ export default function AccessibilityPanel({ isOpen, onClose, locale }: Accessib
             </h2>
             <button
               onClick={onClose}
-              className="text-white/60 hover:text-white hover:bg-white/10 rounded-full p-2 transition-all cursor-pointer"
+              className="w-11 h-11 rounded-full bg-gold-500 text-coal-900 flex items-center justify-center transition-all duration-300 hover:bg-white cursor-pointer"
+              aria-label="Close menu"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>

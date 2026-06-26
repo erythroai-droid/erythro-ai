@@ -306,7 +306,10 @@
 
 @layer utilities {
   /* Procedural premium noise generator */
-  .bg-noise {
+  /* :where() keeps specificity at 0 so an explicit position utility
+     (e.g. `absolute`) on the same element wins; elements with only
+     `bg-noise` still default to relative for the ::before overlay. */
+  :where(.bg-noise) {
     position: relative;
   }
 
@@ -381,6 +384,11 @@
 
   .menu-link--light:hover {
     color: #E52421;
+  }
+
+  /* Hebrew (RTL) needs a slightly larger nav font for legibility */
+  [dir='rtl'] .menu-link {
+    font-size: 14px;
   }
 
 
@@ -522,8 +530,14 @@
     letter-spacing: 0.2em;
   }
 
+  /* Hebrew (RTL): buttons use a slightly larger 14px font */
+  [dir='rtl'] .font-button-base,
+  [dir='rtl'] .font-button-base-sm {
+    font-size: 14px;
+  }
+
   .font-button-base-sm {
-    font-size: 16px;
+    font-size: 12px;
     line-height: 18px;
     font-weight: 300;
     letter-spacing: 0.2em;
