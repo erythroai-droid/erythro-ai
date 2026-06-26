@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Button from './Button'
-import { navbar as translations } from '../translations'
+import { useSiteContent } from './SiteContentProvider'
 
 interface NavbarProps {
   currentLocale: string
@@ -108,7 +108,9 @@ const BrandLogo = ({ className = '' }: { className?: string }) => (
 export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOpenAccessibility }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const { navItems, ctaLabel } = translations
+  const content = useSiteContent()
+  const { navItems, ctaLabel } = content.navbar
+  const site = content.siteSettings
 
   const t = (field: Record<string, string>) => field[currentLocale] || field['en']
 
@@ -288,16 +290,16 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
             {/* Contact & social links (moved from the floating controls widget) */}
             <div className="flex flex-col items-center gap-4">
               <a
-                href="tel:+972509312746"
+                href={`tel:${site.phone}`}
                 className="flex items-center gap-2 font-mono text-base font-bold text-white hover:text-erythro-500 transition-colors duration-300"
               >
                 <PhoneIcon className="w-4 h-4" />
-                <span dir="ltr">+972 50 931 27 46</span>
+                <span dir="ltr">{site.phoneDisplay}</span>
               </a>
 
               <div className="flex items-center gap-3">
                 <a
-                  href="https://facebook.com/erythro.ai"
+                  href={site.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-11 h-11 rounded-full bg-white/5 border border-white/10 text-white flex items-center justify-center hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 transition-all duration-300"
@@ -306,7 +308,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
                   <FacebookIcon className="w-[14px] h-[18px]" />
                 </a>
                 <a
-                  href="https://tiktok.com/@erythro.ai"
+                  href={site.tiktok}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-11 h-11 rounded-full bg-white/5 border border-white/10 text-white flex items-center justify-center hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 transition-all duration-300"

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
+import { useSiteContent } from './SiteContentProvider'
 
 // SVG Icon Components inlined for dynamic styling, sizing, and theme responsiveness
 const HumanIcon = ({ className = 'w-[24.6px] h-[24.6px]' }: { className?: string }) => (
@@ -87,6 +88,7 @@ export default function FloatingWidget({
   setTheme,
   onOpenAccessibility,
 }: FloatingWidgetProps) {
+  const site = useSiteContent().siteSettings
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [activeMobileSubmenu, setActiveMobileSubmenu] = useState<string | null>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
@@ -275,11 +277,11 @@ export default function FloatingWidget({
               <div className={getSubmenuClasses('contacts')}>
                 <div className={submenuInnerClass}>
                   <a
-                    href="tel:+972509312746"
+                    href={`tel:${site.phone}`}
                     className="px-[14px] py-[7px] rounded-full hover:bg-gold-500 hover:text-coal-900 text-[18px] font-mono font-bold text-white flex items-center gap-1.5 transition-all whitespace-nowrap group/phone-link"
                   >
                     <PhoneIcon className="w-[9.5px] h-[9.5px] transition-transform duration-300 group-hover/phone-link:scale-110 group-hover/phone-link:rotate-12" />
-                    <span>+972 50 931 27 46</span>
+                    <span>{site.phoneDisplay}</span>
                   </a>
                 </div>
               </div>
@@ -297,7 +299,7 @@ export default function FloatingWidget({
               <div className={getSubmenuClasses('bell')}>
                 <div className={submenuInnerClass}>
                   <a
-                    href="https://facebook.com/erythro.ai"
+                    href={site.facebook}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-[30px] h-[30px] rounded-full hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center transition-all group/fb-link"
@@ -305,7 +307,7 @@ export default function FloatingWidget({
                     <FacebookIcon className="w-[11px] h-[15px] transition-transform duration-300 group-hover/fb-link:scale-115" />
                   </a>
                   <a
-                    href="https://tiktok.com/@erythro.ai"
+                    href={site.tiktok}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-[30px] h-[30px] rounded-full hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center transition-all group/tt-link"

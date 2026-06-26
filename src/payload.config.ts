@@ -9,7 +9,16 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Services } from './collections/Services'
+import { SolutionPlans } from './collections/SolutionPlans'
 import { Partners } from './collections/Partners'
+
+import { Header } from './globals/Header'
+import { Hero } from './globals/Hero'
+import { ServicesIntro } from './globals/ServicesIntro'
+import { CaseStudies } from './globals/CaseStudies'
+import { SolutionsIntro } from './globals/SolutionsIntro'
+import { Footer } from './globals/Footer'
+import { SiteSettings } from './globals/SiteSettings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -21,7 +30,8 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Pages, Services, Partners],
+  collections: [Users, Media, Pages, Services, SolutionPlans, Partners],
+  globals: [Header, Hero, ServicesIntro, CaseStudies, SolutionsIntro, Footer, SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'fallback-secret-key-replace-in-prod',
   typescript: {

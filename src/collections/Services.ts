@@ -1,33 +1,36 @@
 import type { CollectionConfig } from 'payload'
+import { locText } from '../fields/localized'
 
 export const Services: CollectionConfig = {
   slug: 'services',
   admin: {
     useAsTitle: 'title',
+    defaultColumns: ['title', 'number', 'order'],
+    group: 'Content',
   },
   fields: [
+    locText('title', { required: true }),
     {
-      name: 'title',
+      name: 'number',
       type: 'text',
-      required: true,
-      localized: true,
+      admin: { description: 'Display number, e.g. "01"' },
     },
     {
-      name: 'slug',
-      type: 'text',
-      required: true,
-      index: true,
-      unique: true,
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
     },
     {
-      name: 'description',
-      type: 'textarea',
-      localized: true,
+      name: 'features',
+      type: 'array',
+      labels: { singular: 'Feature', plural: 'Features' },
+      fields: [locText('feature', { required: true })],
     },
     {
-      name: 'price',
+      name: 'order',
       type: 'number',
-      required: true,
+      defaultValue: 0,
+      admin: { description: 'Sort order (ascending)' },
     },
   ],
 }

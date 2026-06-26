@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { cookieConsent as translations } from '../translations'
+import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
 
 const CONSENT_COOKIE = 'cookie_consent'
@@ -12,6 +12,7 @@ interface CookieConsentProps {
 }
 
 export default function CookieConsent({ locale, theme }: CookieConsentProps) {
+  const translations = useSiteContent().cookieConsent
   const [visible, setVisible] = useState(false)
 
   const t = (field: Record<string, string>) => field[locale] || field['en']

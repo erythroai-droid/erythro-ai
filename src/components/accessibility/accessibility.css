@@ -1,0 +1,322 @@
+/* =====================================================================
+   Accessibility module — self-contained styles
+   ---------------------------------------------------------------------
+   No Tailwind / framework dependency. All colors are driven by CSS
+   variables so the panel can be re-themed per project by overriding
+   `--a11y-*` on a parent (e.g. :root or the panel wrapper).
+   ===================================================================== */
+
+:root {
+  --a11y-panel-bg: #0d0d0d;
+  --a11y-text: #ffffff;
+  --a11y-text-muted: #a1a1aa;
+  --a11y-border: rgba(255, 255, 255, 0.05);
+  --a11y-border-strong: rgba(255, 255, 255, 0.15);
+
+  /* Inactive option tile */
+  --a11y-surface: rgba(24, 24, 27, 0.8);
+
+  /* Active option tile */
+  --a11y-accent: #e52421;
+  --a11y-accent-contrast: #ffffff;
+
+  /* Hover state for inactive tiles */
+  --a11y-hover: #ffe9c7;
+  --a11y-hover-contrast: #0d0d0d;
+
+  /* Close button */
+  --a11y-close-bg: #ffe9c7;
+  --a11y-close-bg-hover: #ffffff;
+  --a11y-close-icon: #0d0d0d;
+
+  --a11y-overlay: rgba(0, 0, 0, 0.6);
+  --a11y-radius: 8px;
+  --a11y-width: 400px;
+  --a11y-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ----------------------------- Overlay ----------------------------- */
+.a11y-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--a11y-overlay);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: opacity 0.3s ease;
+}
+
+/* ------------------------------ Panel ------------------------------ */
+.a11y-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 50;
+  width: 100%;
+  max-width: var(--a11y-width);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  background: var(--a11y-panel-bg);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  transition: transform 0.5s var(--a11y-ease);
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.a11y-panel * {
+  box-sizing: border-box;
+}
+
+.a11y-panel--right {
+  right: 0;
+  border-left: 1px solid var(--a11y-border);
+  transform: translateX(100%);
+}
+
+.a11y-panel--left {
+  left: 0;
+  border-right: 1px solid var(--a11y-border);
+  transform: translateX(-100%);
+}
+
+.a11y-panel.is-open {
+  transform: translateX(0);
+}
+
+/* ------------------------------ Header ----------------------------- */
+.a11y-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--a11y-border);
+}
+
+.a11y-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  color: var(--a11y-text);
+}
+
+.a11y-close {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 9999px;
+  background: var(--a11y-close-bg);
+  color: var(--a11y-close-icon);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.a11y-close:hover {
+  background: var(--a11y-close-bg-hover);
+}
+
+/* ------------------------------ Grid ------------------------------- */
+.a11y-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.a11y-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--a11y-radius);
+  border: 1px solid var(--a11y-border);
+  background: var(--a11y-surface);
+  color: var(--a11y-text-muted);
+  cursor: pointer;
+  transition: all 0.3s var(--a11y-ease);
+}
+
+.a11y-card:hover {
+  transform: translateY(-2px);
+  background: var(--a11y-hover);
+  border-color: var(--a11y-hover);
+  color: var(--a11y-hover-contrast);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.25);
+}
+
+.a11y-card.is-active {
+  background: var(--a11y-accent);
+  border-color: var(--a11y-accent);
+  color: var(--a11y-accent-contrast);
+  box-shadow: 0 10px 15px -3px rgba(229, 36, 33, 0.25);
+}
+
+.a11y-card-icon {
+  width: 28px;
+  height: 28px;
+  transition: transform 0.3s var(--a11y-ease);
+}
+
+.a11y-card:hover .a11y-card-icon {
+  transform: scale(1.1);
+}
+
+.a11y-card-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  line-height: 1.2;
+}
+
+/* ------------------------------ Footer ----------------------------- */
+.a11y-footer {
+  padding-top: 24px;
+  border-top: 1px solid var(--a11y-border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.a11y-reset {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--a11y-radius);
+  border: 1px solid var(--a11y-border-strong);
+  background: transparent;
+  color: var(--a11y-text);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s var(--a11y-ease);
+}
+
+.a11y-reset:hover {
+  background: var(--a11y-accent);
+  border-color: var(--a11y-accent);
+  color: var(--a11y-accent-contrast);
+  box-shadow: 0 10px 15px -3px rgba(229, 36, 33, 0.25);
+}
+
+.a11y-powered {
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--a11y-text-muted);
+  opacity: 0.6;
+}
+
+/* Visually hidden live region for screen-reader announcements. */
+.a11y-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* =====================================================================
+   Feature classes — applied to <html> while an option is enabled.
+   ===================================================================== */
+html.a11y-bigger-text {
+  font-size: 120% !important;
+}
+
+html.a11y-dyslexia-friendly,
+html.a11y-dyslexia-friendly * {
+  font-family: 'Comic Sans MS', 'Courier New', sans-serif !important;
+}
+
+html.a11y-high-contrast {
+  filter: contrast(1.4) saturate(1.1) !important;
+}
+
+html.a11y-monochrome {
+  filter: grayscale(100%) !important;
+}
+
+html.a11y-highlight-links a {
+  background-color: #ffeb3b !important;
+  color: #000000 !important;
+  outline: 2px solid #ff9800 !important;
+  text-decoration: underline !important;
+}
+
+html.a11y-pause-animations,
+html.a11y-pause-animations * {
+  animation: none !important;
+  transition: none !important;
+  animation-play-state: paused !important;
+}
+
+html.a11y-text-spacing,
+html.a11y-text-spacing * {
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.16em !important;
+  line-height: 1.8 !important;
+}
+
+html.a11y-big-cursor,
+html.a11y-big-cursor * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M0 0 L16 16 L10 17 L17 27 L14 29 L7 19 L3 22 Z' fill='white' stroke='black' stroke-width='2'/%3E%3C/svg%3E"), auto !important;
+}
+
+html.a11y-keyboard-navigation
+  :is(
+    a,
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    [role='button'],
+    [role='link'],
+    [role='menuitem'],
+    [tabindex]:not([tabindex='-1'])
+  ):focus,
+html.a11y-keyboard-navigation
+  :is(
+    a,
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    [role='button'],
+    [role='link'],
+    [role='menuitem'],
+    [tabindex]:not([tabindex='-1'])
+  ):focus-visible {
+  outline: 3px solid var(--a11y-accent, #e52421) !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 6px rgba(229, 36, 33, 0.28) !important;
+}
+
+html.a11y-screen-reader :is(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: 6rem;
+}
+
+html.a11y-screen-reader :is(main, nav, section, footer)[aria-label] {
+  outline: 1px dashed rgba(229, 36, 33, 0.35);
+  outline-offset: 4px;
+}

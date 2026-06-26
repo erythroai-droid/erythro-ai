@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { solutions as translations } from '../translations'
+import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -185,6 +185,7 @@ function SolutionCard({
 }
 
 export default function SolutionSection({ locale, theme = 'dark' }: SolutionSectionProps) {
+  const translations = useSiteContent().solutions
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const isLight = theme === 'light'
 

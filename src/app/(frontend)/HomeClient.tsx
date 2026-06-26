@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import Navbar from '@/components/Navbar'
 import HeroSection from '@/components/HeroSection'
 import CaseStudiesSection from '@/components/CaseStudiesSection'
@@ -8,16 +8,20 @@ import ServicesSection from '@/components/ServicesSection'
 import SolutionSection from '@/components/SolutionSection'
 import FooterSection from '@/components/FooterSection'
 import FloatingWidget from '@/components/FloatingWidget'
-import AccessibilityPanel from '@/components/AccessibilityPanel'
+import { AccessibilityPanel } from '@/components/accessibility'
 import CookieConsent from '@/components/CookieConsent'
+import { SiteContentProvider } from '@/components/SiteContentProvider'
+import type { SiteContent } from '@/lib/defaultContent'
 
 const LOCALE_COOKIE = 'NEXT_LOCALE'
 
 interface HomeClientProps {
   initialLocale: string
+  content: SiteContent
 }
 
-export default function HomeClient({ initialLocale }: HomeClientProps) {
+export default function HomeClient({ initialLocale, content }: HomeClientProps) {
+  const a11yTranslations = content.accessibility
   const [locale, setLocaleState] = useState(initialLocale)
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
@@ -46,7 +50,41 @@ export default function HomeClient({ initialLocale }: HomeClientProps) {
     root.dir = locale === 'he' ? 'rtl' : 'ltr'
   }, [locale])
 
+  // Resolve accessibility panel strings for the active locale. The panel
+  // module itself is locale-agnostic; the app supplies the translated labels.
+  const pickA11y = (field: Record<string, string>) => field[locale] || field.en
+
+  const a11yLabels = useMemo(
+    () => ({
+      title: pickA11y(a11yTranslations.title),
+      reset: pickA11y(a11yTranslations.reset),
+      poweredBy: pickA11y(a11yTranslations.poweredBy),
+      screenReaderEnabled: pickA11y(a11yTranslations.screenReaderEnabled),
+      biggerText: pickA11y(a11yTranslations.biggerText),
+      dyslexia: pickA11y(a11yTranslations.dyslexia),
+      contrast: pickA11y(a11yTranslations.contrast),
+      monochrome: pickA11y(a11yTranslations.monochrome),
+      highlightLinks: pickA11y(a11yTranslations.highlightLinks),
+      pauseAnimations: pickA11y(a11yTranslations.pauseAnimations),
+      spacing: pickA11y(a11yTranslations.spacing),
+      cursor: pickA11y(a11yTranslations.cursor),
+      keyboardNavigation: pickA11y(a11yTranslations.keyboardNavigation),
+      screenReader: pickA11y(a11yTranslations.screenReader),
+    }),
+    [locale],
+  )
+
+  const a11yTargets = useMemo(
+    () => [
+      { id: 'services', label: pickA11y(a11yTranslations.screenReaderServices) },
+      { id: 'solutions', label: pickA11y(a11yTranslations.screenReaderSolutions) },
+      { id: 'contacts', label: pickA11y(a11yTranslations.screenReaderContacts) },
+    ],
+    [locale],
+  )
+
   return (
+    <SiteContentProvider value={content}>
     <div
       dir={locale === 'he' ? 'rtl' : 'ltr'}
       className={`min-h-screen font-sans transition-colors duration-500 bg-primary text-main ${
@@ -94,11 +132,15 @@ export default function HomeClient({ initialLocale }: HomeClientProps) {
       <AccessibilityPanel
         isOpen={isAccessibilityOpen}
         onClose={() => setIsAccessibilityOpen(false)}
-        locale={locale}
+        labels={a11yLabels}
+        screenReaderTargets={a11yTargets}
+        rtl={locale === 'he'}
+        showPoweredBy
       />
 
       {/* Cookie consent banner */}
       <CookieConsent locale={locale} theme={theme} />
     </div>
+    </SiteContentProvider>
   )
 }

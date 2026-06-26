@@ -1,11 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import {
-  services as translations,
-  letsTalk as letsTalkTranslations,
-  navbar as navTranslations,
-} from '../translations'
+import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -20,6 +16,11 @@ interface ServicesSectionProps {
 }
 
 export default function ServicesSection({ locale, theme = 'dark' }: ServicesSectionProps) {
+  const content = useSiteContent()
+  const translations = content.services
+  const letsTalkTranslations = content.letsTalk
+  const navTranslations = content.navbar
+  const site = content.siteSettings
   // Translate helper
   const t = (field: Record<string, string>) => field[locale] || field['en']
 
@@ -523,7 +524,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
 
           {/* Button */}
           <div ref={buttonRef} className="relative z-10 mt-2 pointer-events-auto">
-            <a href="mailto:erythro.ai@gmail.com" className="inline-block">
+            <a href={`mailto:${site.email}`} className="inline-block">
               <Button variant="white-outline">
                 {t(navTranslations.ctaLabel)}
               </Button>
@@ -627,7 +628,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         </div>
 
         <div ref={mobileButtonRef} className="relative z-10 mt-2">
-          <a href="mailto:erythro.ai@gmail.com" className="inline-block">
+          <a href={`mailto:${site.email}`} className="inline-block">
             <Button variant="white-outline">
               {t(navTranslations.ctaLabel)}
             </Button>

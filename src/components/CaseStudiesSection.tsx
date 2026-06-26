@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import Button from './Button'
-import { caseStudies as translations } from '../translations'
+import { useSiteContent } from './SiteContentProvider'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -31,6 +31,7 @@ const brandLogos = [
 ]
 
 export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) {
+  const translations = useSiteContent().caseStudies
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const sectionRef = useRef<HTMLDivElement | null>(null)

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { letsTalk as translations, navbar as navTranslations } from '../translations'
+import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -15,6 +15,10 @@ interface LetsTalkSectionProps {
 }
 
 export default function LetsTalkSection({ locale }: LetsTalkSectionProps) {
+  const content = useSiteContent()
+  const translations = content.letsTalk
+  const navTranslations = content.navbar
+  const site = content.siteSettings
   const t = (field: Record<string, string>) => field[locale] || field['en']
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
@@ -295,7 +299,7 @@ export default function LetsTalkSection({ locale }: LetsTalkSectionProps) {
 
       {/* Let's Talk Button */}
       <div ref={buttonRef} className="relative z-10 mt-2">
-        <a href="mailto:erythro.ai@gmail.com" className="inline-block">
+        <a href={`mailto:${site.email}`} className="inline-block">
           <Button variant="white-outline">
             {t(navTranslations.ctaLabel)}
           </Button>

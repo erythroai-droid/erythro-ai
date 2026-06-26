@@ -1,6 +1,7 @@
 import React from 'react'
 import { cookies } from 'next/headers'
 import HomeClient from './HomeClient'
+import { getSiteContent } from '@/lib/getSiteContent'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -11,5 +12,7 @@ export default async function HomePage() {
   const initialLocale =
     cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
 
-  return <HomeClient initialLocale={initialLocale} />
+  const content = await getSiteContent()
+
+  return <HomeClient initialLocale={initialLocale} content={content} />
 }

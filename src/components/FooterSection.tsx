@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { footer as translations } from '../translations'
+import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -94,6 +94,9 @@ function FooterLinkItem({
 }
 
 export default function FooterSection({ locale, theme = 'dark' }: FooterSectionProps) {
+  const content = useSiteContent()
+  const translations = content.footer
+  const site = content.siteSettings
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const isLight = theme === 'light'
 
@@ -229,7 +232,7 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
                 <br />
                 {t(translations.ctaHeadingLine2)}
               </p>
-              <a href="mailto:erythro.ai@gmail.com" className="inline-block">
+              <a href={`mailto:${site.email}`} className="inline-block">
                 <Button variant="solution-cta" className={footerButtonClassName}>
                   {t(translations.ctaButton)}
                 </Button>
@@ -266,13 +269,13 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
               >
                 {t(translations.contactTitle)}
               </p>
-              <FooterLinkItem href="mailto:erythro.ai@gmail.com" theme={theme}>
+              <FooterLinkItem href={`mailto:${site.email}`} theme={theme}>
                 <span className="font-bold uppercase">{t(translations.emailLabel)} </span>
-                <span dir="ltr" className="inline-block">erythro.ai@gmail.com</span>
+                <span dir="ltr" className="inline-block">{site.email}</span>
               </FooterLinkItem>
-              <FooterLinkItem href="tel:+972509312746" theme={theme}>
+              <FooterLinkItem href={`tel:${site.phone}`} theme={theme}>
                 <span className="font-bold uppercase">{t(translations.phoneLabel)} </span>
-                <span dir="ltr" className="inline-block">+972 50 931 27 46</span>
+                <span dir="ltr" className="inline-block">{site.phoneDisplay}</span>
               </FooterLinkItem>
               <FooterLinkItem theme={theme}>
                 <span className="font-bold uppercase">{t(translations.locationLabel)}</span>

@@ -71,6 +71,7 @@ export interface Config {
     media: Media;
     pages: Page;
     services: Service;
+    'solution-plans': SolutionPlan;
     partners: Partner;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -83,6 +84,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
+    'solution-plans': SolutionPlansSelect<false> | SolutionPlansSelect<true>;
     partners: PartnersSelect<false> | PartnersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -93,8 +95,24 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'ru' | 'he') | ('en' | 'ru' | 'he')[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    header: Header;
+    hero: Hero;
+    'services-section': ServicesSection;
+    'case-studies': CaseStudy;
+    'solutions-section': SolutionsSection;
+    footer: Footer;
+    'site-settings': SiteSetting;
+  };
+  globalsSelect: {
+    header: HeaderSelect<false> | HeaderSelect<true>;
+    hero: HeroSelect<false> | HeroSelect<true>;
+    'services-section': ServicesSectionSelect<false> | ServicesSectionSelect<true>;
+    'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
+    'solutions-section': SolutionsSectionSelect<false> | SolutionsSectionSelect<true>;
+    footer: FooterSelect<false> | FooterSelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+  };
   locale: 'en' | 'ru' | 'he';
   widgets: {
     collections: CollectionsWidget;
@@ -207,9 +225,67 @@ export interface Page {
 export interface Service {
   id: number;
   title: string;
-  slug: string;
-  description?: string | null;
-  price: number;
+  /**
+   * Display number, e.g. "01"
+   */
+  number?: string | null;
+  image?: (number | null) | Media;
+  features?:
+    | {
+        feature: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Sort order (ascending)
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "solution-plans".
+ */
+export interface SolutionPlan {
+  id: number;
+  title: string;
+  /**
+   * Main price value, e.g. "14 999" or "0"
+   */
+  price: string;
+  /**
+   * Optional prefix, e.g. "from" / "от"
+   */
+  pricePrefix?: string | null;
+  /**
+   * Optional old/struck-through price
+   */
+  originalPrice?: string | null;
+  /**
+   * Show installment note marker (*)
+   */
+  priceNote?: boolean | null;
+  /**
+   * Highlight this plan as recommended
+   */
+  featured?: boolean | null;
+  /**
+   * Fill "label" + "value" for a two-column row, OR "full" for a single full-width row.
+   */
+  features?:
+    | {
+        label?: string | null;
+        value?: string | null;
+        full?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  disclaimer?: string | null;
+  /**
+   * Sort order (ascending)
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -221,6 +297,14 @@ export interface Partner {
   id: number;
   name: string;
   logo: number | Media;
+  /**
+   * Optional external link
+   */
+  url?: string | null;
+  /**
+   * Sort order (ascending)
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -263,6 +347,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'services';
         value: number | Service;
+      } | null)
+    | ({
+        relationTo: 'solution-plans';
+        value: number | SolutionPlan;
       } | null)
     | ({
         relationTo: 'partners';
@@ -390,9 +478,39 @@ export interface PagesSelect<T extends boolean = true> {
  */
 export interface ServicesSelect<T extends boolean = true> {
   title?: T;
-  slug?: T;
-  description?: T;
+  number?: T;
+  image?: T;
+  features?:
+    | T
+    | {
+        feature?: T;
+        id?: T;
+      };
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "solution-plans_select".
+ */
+export interface SolutionPlansSelect<T extends boolean = true> {
+  title?: T;
   price?: T;
+  pricePrefix?: T;
+  originalPrice?: T;
+  priceNote?: T;
+  featured?: T;
+  features?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        full?: T;
+        id?: T;
+      };
+  disclaimer?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -403,6 +521,8 @@ export interface ServicesSelect<T extends boolean = true> {
 export interface PartnersSelect<T extends boolean = true> {
   name?: T;
   logo?: T;
+  url?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -445,6 +565,301 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header".
+ */
+export interface Header {
+  id: number;
+  navItems?:
+    | {
+        label: string;
+        /**
+         * e.g. #services
+         */
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Primary call-to-action label
+   */
+  ctaLabel?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hero".
+ */
+export interface Hero {
+  id: number;
+  preHeading?: string | null;
+  mainHeading?: string | null;
+  subtext?: string | null;
+  /**
+   * "Find out more" button label
+   */
+  ctaFind?: string | null;
+  /**
+   * Optional hero background image
+   */
+  backgroundImage?: (number | null) | Media;
+  words?:
+    | {
+        word: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services-section".
+ */
+export interface ServicesSection {
+  id: number;
+  sectionTitle?: string | null;
+  sectionSubtitle?: string | null;
+  startCTA?: string | null;
+  priceLabel?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "case-studies".
+ */
+export interface CaseStudy {
+  id: number;
+  preTitle?: string | null;
+  subtitle?: string | null;
+  cardTitle?: string | null;
+  cardCategory?: string | null;
+  cardDescription?: string | null;
+  cardCTA?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "solutions-section".
+ */
+export interface SolutionsSection {
+  id: number;
+  sectionTitle?: string | null;
+  sectionSubtitle?: string | null;
+  ctaLabel?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer".
+ */
+export interface Footer {
+  id: number;
+  ctaHeadingLine1?: string | null;
+  ctaHeadingLine2?: string | null;
+  ctaButton?: string | null;
+  companyTitle?: string | null;
+  companyLinks?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  contactTitle?: string | null;
+  emailLabel?: string | null;
+  phoneLabel?: string | null;
+  locationLabel?: string | null;
+  locationValue?: string | null;
+  copyright?: string | null;
+  legalLinks?:
+    | {
+        /**
+         * Stable id, e.g. privacy
+         */
+        key?: string | null;
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  /**
+   * e.g. erythro.ai@gmail.com
+   */
+  email?: string | null;
+  /**
+   * Raw phone for tel: link, e.g. +972509312746
+   */
+  phone?: string | null;
+  /**
+   * Formatted phone shown to users
+   */
+  phoneDisplay?: string | null;
+  /**
+   * Facebook URL
+   */
+  facebook?: string | null;
+  /**
+   * TikTok URL
+   */
+  tiktok?: string | null;
+  cookieMessage?: string | null;
+  cookieAccept?: string | null;
+  cookieDecline?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  /**
+   * Social share image (1200x630 recommended)
+   */
+  ogImage?: (number | null) | Media;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header_select".
+ */
+export interface HeaderSelect<T extends boolean = true> {
+  navItems?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  ctaLabel?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hero_select".
+ */
+export interface HeroSelect<T extends boolean = true> {
+  preHeading?: T;
+  mainHeading?: T;
+  subtext?: T;
+  ctaFind?: T;
+  backgroundImage?: T;
+  words?:
+    | T
+    | {
+        word?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services-section_select".
+ */
+export interface ServicesSectionSelect<T extends boolean = true> {
+  sectionTitle?: T;
+  sectionSubtitle?: T;
+  startCTA?: T;
+  priceLabel?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "case-studies_select".
+ */
+export interface CaseStudiesSelect<T extends boolean = true> {
+  preTitle?: T;
+  subtitle?: T;
+  cardTitle?: T;
+  cardCategory?: T;
+  cardDescription?: T;
+  cardCTA?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "solutions-section_select".
+ */
+export interface SolutionsSectionSelect<T extends boolean = true> {
+  sectionTitle?: T;
+  sectionSubtitle?: T;
+  ctaLabel?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer_select".
+ */
+export interface FooterSelect<T extends boolean = true> {
+  ctaHeadingLine1?: T;
+  ctaHeadingLine2?: T;
+  ctaButton?: T;
+  companyTitle?: T;
+  companyLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  contactTitle?: T;
+  emailLabel?: T;
+  phoneLabel?: T;
+  locationLabel?: T;
+  locationValue?: T;
+  copyright?: T;
+  legalLinks?:
+    | T
+    | {
+        key?: T;
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  email?: T;
+  phone?: T;
+  phoneDisplay?: T;
+  facebook?: T;
+  tiktok?: T;
+  cookieMessage?: T;
+  cookieAccept?: T;
+  cookieDecline?: T;
+  seoTitle?: T;
+  seoDescription?: T;
+  ogImage?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -5,7 +5,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Button from './Button'
 import HeroAnimation from './HeroAnimation'
-import { hero as translations } from '../translations'
+import { useSiteContent } from './SiteContentProvider'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -17,6 +17,7 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ locale, navbar }: HeroSectionProps) {
+  const translations = useSiteContent().hero
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const containerRef = useRef<HTMLDivElement | null>(null)
 
@@ -81,7 +82,7 @@ export default function HeroSection({ locale, navbar }: HeroSectionProps) {
         </div>
 
         {/* Description subtext matching Figma geometry spacing & leading */}
-        <p className="hero-subtext opacity-0 font-body-lead text-gold-100 max-w-3xl leading-relaxed tracking-wider mt-2 select-text">
+        <p className="hero-subtext opacity-0 font-body-lead text-gold-100 max-w-3xl leading-relaxed mt-2 select-text">
           {t(translations.subtext)}
         </p>
 
