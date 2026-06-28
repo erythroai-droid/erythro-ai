@@ -2,6 +2,7 @@ import React from 'react'
 import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
 import { getSeoSettings } from '@/lib/getSiteContent'
+import Script from 'next/script'
 import './styles.css'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
@@ -126,6 +127,19 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang={locale} dir={locale === 'he' ? 'rtl' : 'ltr'}>
       <body>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-F3BTVWGDRS"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-F3BTVWGDRS');
+          `}
+        </Script>
         <main>{children}</main>
       </body>
     </html>
