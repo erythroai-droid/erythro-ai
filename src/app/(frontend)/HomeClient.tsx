@@ -8,7 +8,7 @@ import ServicesSection from '@/components/ServicesSection'
 import SolutionSection from '@/components/SolutionSection'
 import FooterSection from '@/components/FooterSection'
 import FloatingWidget from '@/components/FloatingWidget'
-import BackToTopMobile from '@/components/BackToTopMobile'
+import WhatsAppButton from '@/components/WhatsAppButton'
 import { AccessibilityPanel } from '@/components/accessibility'
 import CookieConsent from '@/components/CookieConsent'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
@@ -92,31 +92,49 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
         locale === 'he' ? 'font-sans' : ''
       }`}
     >
-      {/* Hero Section with WordStack and embedded Navbar */}
-      <HeroSection
-        locale={locale}
-        navbar={
-          <Navbar
-            currentLocale={locale}
-            setLocale={setLocale}
-            theme={theme}
-            setTheme={setTheme}
-            onOpenAccessibility={() => setIsAccessibilityOpen(true)}
-          />
-        }
+      {/* Hero Section with WordStack */}
+      <HeroSection locale={locale} />
+
+      {/*
+        Global fixed header rendered at the root level (not inside the hero).
+        On mobile the hero is sticky and the sections stack over it; a header
+        nested inside the sticky hero would be trapped in its stacking context
+        and disappear under the rising sections. At root it stays on top.
+      */}
+      <Navbar
+        currentLocale={locale}
+        setLocale={setLocale}
+        theme={theme}
+        setTheme={setTheme}
+        onOpenAccessibility={() => setIsAccessibilityOpen(true)}
       />
 
+      {/*
+        Mobile "stacking" scroll: the hero stays pinned (sticky) while each
+        following section rides up over the previous one with a rounded top edge
+        and soft shadow. Long sections (Services/Solutions) still scroll normally
+        so no content is hidden. `lg:contents` removes these wrappers on desktop,
+        leaving the original GSAP-pinned layout untouched.
+      */}
       {/* Case Studies showcase with partner logos */}
-      <CaseStudiesSection locale={locale} />
+      <div className="relative z-10 -mt-8 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+        <CaseStudiesSection locale={locale} />
+      </div>
 
       {/* Services Grid with 12-column geometry */}
-      <ServicesSection locale={locale} theme={theme} />
+      <div className="relative z-20 -mt-8 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+        <ServicesSection locale={locale} theme={theme} />
+      </div>
 
       {/* Solution pricing cards */}
-      <SolutionSection locale={locale} theme={theme} />
+      <div className="relative z-30 -mt-8 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+        <SolutionSection locale={locale} theme={theme} />
+      </div>
 
       {/* Footer from Figma */}
-      <FooterSection locale={locale} theme={theme} />
+      <div className="relative z-40 -mt-8 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+        <FooterSection locale={locale} theme={theme} />
+      </div>
 
       {/* Floating Controls Widget (desktop only — mobile controls live in the burger menu) */}
       <div className="hidden lg:block">
@@ -129,8 +147,8 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
         />
       </div>
 
-      {/* Mobile-only back-to-top button (desktop has it inside FloatingWidget) */}
-      <BackToTopMobile locale={locale} />
+      {/* Mobile-only pulsing WhatsApp button (desktop has contacts in FloatingWidget) */}
+      <WhatsAppButton />
 
       {/* Accessibility Control Panel */}
       <AccessibilityPanel

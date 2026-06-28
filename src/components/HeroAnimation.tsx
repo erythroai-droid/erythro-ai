@@ -205,7 +205,10 @@ export default function HeroAnimation({
      * - Mobile: a plain 100vh section that scrolls normally — no fixed container, no
      *   dead scroll distance, since the chip animation is disabled there.
      */
-    <div ref={wrapperRef} className="relative w-full bg-coal-900 h-screen lg:h-[220vh]">
+    <div
+      ref={wrapperRef}
+      className="sticky lg:relative top-0 lg:top-auto z-0 lg:z-auto w-full bg-coal-900 h-screen lg:h-[220vh]"
+    >
       {/* Container: normal-flow on mobile (scrolls away), pinned (fixed) on desktop */}
       <div ref={containerRef} className="absolute inset-0 lg:fixed w-full h-screen bg-coal-900 overflow-hidden" style={{ zIndex: 0 }}>
         
