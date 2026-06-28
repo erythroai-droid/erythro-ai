@@ -119,11 +119,9 @@ pnpm install --lockfile-only
 
 ## 6. Открытые задачи на будущее (TODO)
 
-- [ ] **Медиа-хранилище.** Загрузки изображений через админку **не переживают редеплой**
-      (эфемерная ФС Vercel). Сейчас сайт работает на статике из `/public`. Перед использованием
-      аплоадов из админки — подключить storage-адаптер: **Vercel Blob** (`@payloadcms/storage-vercel-blob`)
-      или S3 (`@payloadcms/storage-s3`).
-- [ ] **Домен `erythro.ai`.** Привязать в `Settings → Domains` и настроить DNS.
+- [x] **Медиа-хранилище — Vercel Blob.** Подключён адаптер `@payloadcms/storage-vercel-blob`
+      для коллекции `media` (см. §8). Загрузки из админки теперь переживают редеплой.
+- [x] **Домен `erythro.ai`.** Привязан, сайт открывается по основному домену.
 - [ ] **Миграции схемы Payload.** Сейчас схема в Supabase появилась через dev `push`. Для прод-эволюции
       схемы настроить нормальные миграции (`payload migrate:create` / `payload migrate`), а не push.
 - [ ] **Безопасность Next.js.** Держать Next запатченным (выходят новые CVE: 55183/55184/67779 и т.д.).
@@ -156,7 +154,35 @@ pnpm exec tsx scripts/seed.ts
 
 ---
 
-## 8. Грабли, специфичные для этого деплоя
+## 8. Медиа-хранилище (Vercel Blob)
+
+Загрузки Payload (коллекция `media`) хранятся в Vercel Blob, а не на эфемерной ФС.
+
+**Код:**
+- Пакет `@payloadcms/storage-vercel-blob` (версия синхронна с ядром Payload — все `@payloadcms/*`
+  и `payload` держим на одной версии, иначе peer-конфликт).
+- Плагин в `src/payload.config.ts`:
+  ```ts
+  vercelBlobStorage({
+    enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+    collections: { media: true },
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+  })
+  ```
+  `enabled` завязан на токен: без токена (локально) Payload использует локальный диск и сборка
+  не падает; в проде с токеном включается Blob.
+- `next.config.ts` → `images.remotePatterns` разрешает `*.public.blob.vercel-storage.com`
+  для `next/image`.
+
+**Настройка в Vercel (однократно):**
+1. Dashboard → **Storage** → **Create** → **Blob** → создать стор и **Connect** к проекту
+   `erythro-ai`. Vercel сам добавит переменную `BLOB_READ_WRITE_TOKEN` в окружение проекта.
+2. **Redeploy** проекта (env-переменные применяются только к новым деплоям).
+3. Локально для разработки/сидинга: `vercel env pull .env.local` или вписать токен в `.env`.
+
+---
+
+## 9. Грабли, специфичные для этого деплоя
 
 1. **`engines.node` — только мажор (`24.x`)**, не открытые диапазоны с патчем (`>=24.15.0`):
    билд-образ Vercel может отставать по патч-версии → мгновенный фейл.

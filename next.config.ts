@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
         pathname: '/images/**',
       },
     ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+      },
+    ],
   },
   typescript: {
     ignoreBuildErrors: true,
