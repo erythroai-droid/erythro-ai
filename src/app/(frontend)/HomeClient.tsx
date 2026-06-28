@@ -8,6 +8,7 @@ import ServicesSection from '@/components/ServicesSection'
 import SolutionSection from '@/components/SolutionSection'
 import FooterSection from '@/components/FooterSection'
 import FloatingWidget from '@/components/FloatingWidget'
+import BackToTopMobile from '@/components/BackToTopMobile'
 import { AccessibilityPanel } from '@/components/accessibility'
 import CookieConsent from '@/components/CookieConsent'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
@@ -127,6 +128,9 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
           onOpenAccessibility={() => setIsAccessibilityOpen(true)}
         />
       </div>
+
+      {/* Mobile-only back-to-top button (desktop has it inside FloatingWidget) */}
+      <BackToTopMobile locale={locale} />
 
       {/* Accessibility Control Panel */}
       <AccessibilityPanel

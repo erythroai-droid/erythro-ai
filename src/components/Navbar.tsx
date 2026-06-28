@@ -130,7 +130,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
   }
 
   return (
-    <header className="absolute top-0 lg:top-6 start-0 end-0 z-50 w-full px-0 lg:px-[30px] max-w-[1170px] mx-auto select-none pointer-events-none">
+    <header className="fixed lg:absolute top-0 lg:top-6 start-0 end-0 z-50 w-full px-0 lg:px-[30px] max-w-[1170px] mx-auto select-none pointer-events-none">
       {/* 
         Main Pill Container: 
         Uses glassmorphism (panel-glass / backdrop-blur) and high-end rounding (rounded-full).

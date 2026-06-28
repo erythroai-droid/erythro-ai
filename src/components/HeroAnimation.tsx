@@ -36,6 +36,15 @@ export default function HeroAnimation({
 
   // 1. Smart progressive preloading of the 110 image sequence
   useEffect(() => {
+    // The scrubbed frame animation only runs on desktop (>=1024px). On mobile/tablet
+    // the hero shows a single static frame (chip 1) via next/image, so there is no
+    // reason to download 110 PNGs there — skip the preload and mark as ready so the
+    // loading bar doesn't linger.
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+      setIsLoaded(true)
+      return
+    }
+
     const loadedImages: HTMLImageElement[] = []
     let completed = 0
 
@@ -189,10 +198,16 @@ export default function HeroAnimation({
   const loadPercentage = Math.round((loadedCount / imagesCount) * 100)
 
   return (
-    /* Wrapper: provides scroll height. 100vh visible + 120vh animation distance = 220vh total. */
-    <div ref={wrapperRef} className="relative w-full bg-coal-900" style={{ height: '220vh' }}>
-      {/* Fixed container: stays in place while the page scrolls past */}
-      <div ref={containerRef} className="fixed top-0 left-0 w-full h-screen bg-coal-900 overflow-hidden" style={{ zIndex: 0 }}>
+    /*
+     * Wrapper height drives the scroll behaviour:
+     * - Desktop (lg+): 220vh (100vh visible + 120vh of scrub distance for the chip
+     *   animation), with the inner container pinned via `fixed`.
+     * - Mobile: a plain 100vh section that scrolls normally — no fixed container, no
+     *   dead scroll distance, since the chip animation is disabled there.
+     */
+    <div ref={wrapperRef} className="relative w-full bg-coal-900 h-screen lg:h-[220vh]">
+      {/* Container: normal-flow on mobile (scrolls away), pinned (fixed) on desktop */}
+      <div ref={containerRef} className="absolute inset-0 lg:fixed w-full h-screen bg-coal-900 overflow-hidden" style={{ zIndex: 0 }}>
         
         {/* Pinned Navbar */}
         {navbar}

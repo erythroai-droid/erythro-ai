@@ -229,6 +229,9 @@ export interface Service {
    * Display number, e.g. "01"
    */
   number?: string | null;
+  /**
+   * Image OR video shown on the card. If you upload a video (mp4/webm), it autoplays muted in a loop instead of an image.
+   */
   image?: (number | null) | Media;
   features?:
     | {
