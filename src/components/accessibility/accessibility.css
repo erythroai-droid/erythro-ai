@@ -39,7 +39,7 @@
 .a11y-overlay {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 70;
   background: var(--a11y-overlay);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -51,7 +51,7 @@
   position: fixed;
   top: 0;
   bottom: 0;
-  z-index: 50;
+  z-index: 80;
   width: 100%;
   max-width: var(--a11y-width);
   display: flex;

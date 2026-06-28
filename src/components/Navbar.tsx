@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Button from './Button'
 import { useSiteContent } from './SiteContentProvider'
 
@@ -107,6 +107,16 @@ const BrandLogo = ({ className = '' }: { className?: string }) => (
 
 export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOpenAccessibility }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  // Once the user scrolls past the hero a bit, collapse the mobile logo so the
+  // fixed header plate becomes more compact.
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 60)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const content = useSiteContent()
   const { navItems, ctaLabel } = content.navbar
@@ -178,13 +188,20 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
 
       {/* ===== Mobile header (below lg): full-width backing plate with logo + controls ===== */}
       <div
-        className={`lg:hidden w-full pointer-events-auto flex flex-col items-center gap-4 px-[30px] py-[30px] border-b backdrop-blur-md ${
+        className={`lg:hidden w-full pointer-events-auto flex flex-col items-center px-[30px] border-b backdrop-blur-md transition-all duration-300 ${
+          scrolled ? 'gap-0 py-3' : 'gap-4 py-[30px]'
+        } ${
           theme === 'light'
             ? 'bg-gold-100 border-coal-900/10'
             : 'bg-coal-900/50 border-white/5'
         }`}
       >
-        <a href="#" className="flex w-full items-center justify-center select-none cursor-pointer">
+        <a
+          href="#"
+          className={`flex w-full items-center justify-center select-none cursor-pointer overflow-hidden transition-all duration-300 ${
+            scrolled ? 'max-h-0 opacity-0' : 'max-h-[56px] opacity-100'
+          }`}
+        >
           <BrandLogo
             className={`h-[44px] w-auto transition-colors duration-300 ${theme === 'light' ? 'text-coal-900' : 'text-white'}`}
           />
