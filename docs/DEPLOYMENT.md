@@ -175,10 +175,103 @@ pnpm exec tsx scripts/seed.ts
   для `next/image`.
 
 **Настройка в Vercel (однократно):**
-1. Dashboard → **Storage** → **Create** → **Blob** → создать стор и **Connect** к проекту
-   `erythro-ai`. Vercel сам добавит переменную `BLOB_READ_WRITE_TOKEN` в окружение проекта.
-2. **Redeploy** проекта (env-переменные применяются только к новым деплоям).
-3. Локально для разработки/сидинга: `vercel env pull .env.local` или вписать токен в `.env`.
+1. Dashboard → **Storage** → **Create** → **Blob** → создать стор с доступом **Public**
+   (тип доступа потом не меняется — для публичных медиа нужен именно Public) и **Connect**
+   к проекту `erythro-ai`.
+2. Скопировать `BLOB_READ_WRITE_TOKEN` из вкладки **Quickstart → .env.local** стора и
+   добавить вручную в `Settings → Environment Variables` проекта. Адаптер
+   `@payloadcms/storage-vercel-blob` требует именно R/W-токен (OIDC не поддерживает), и
+   при создании стора он в переменные проекта автоматически **не** попадает.
+3. **Redeploy** проекта (env-переменные применяются только к новым деплоям).
+4. Локально для разработки/сидинга: `vercel env pull .env.local` или вписать токен в `.env`.
+
+### 8.1. Чёрный/пустой экран в `/admin` после подключения Blob
+
+**Симптом:** фронт работает, но `https://erythro.ai/admin` (и `/admin/login`) — пустая
+страница: грузится оболочка и заголовок «Login/Dashboard - Payload», но нет ни формы, ни
+дашборда. В консоли браузера при этом **нет** JS-ошибок, серверного error-digest тоже нет.
+
+**Диагностика:** в DOM есть только каркас и портал уведомлений; форма входа отсутствует.
+В серверных логах (локально воспроизводится на `pnpm build && pnpm start`) виден ключ:
+```
+getFromImportMap: PayloadComponent not found in importMap
+  key: '@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler'
+```
+
+**Причина 1 — устаревший importMap.** Плагин Blob регистрирует клиентский компонент
+`VercelBlobClientUploadHandler`, но его не было в `src/app/(payload)/admin/importMap.js`.
+Payload не находит компонент и рендерит **пустую** админку (без явной ошибки).
+**Фикс:** перегенерировать карту и закоммитить:
+```bash
+pnpm generate:importmap
+```
+
+**Причина 2 — серверный код в клиентском бандле (всплывает после фикса №1).** Добавленный в
+importMap клиентский хендлер импортирует `getFileKey` из барреля
+`@payloadcms/plugin-cloud-storage/utilities`, а тот же баррель реэкспортит **серверный**
+`resolveSignedURLKey`, который тянет весь серверный `payload` → `undici` → `node:*` builtins.
+Webpack не умеет собирать `node:`-схему для браузера → сборка падает:
+```
+Module build failed: UnhandledSchemeError: Reading from "node:console"/"node:os" is not handled
+```
+Tree-shaking не выбрасывает неиспользуемый реэкспорт (хотя у пакета `"sideEffects": false`).
+**Фикс:** в `next.config.ts` для клиентского бандла подменить серверный модуль на заглушку
+(этот код на клиенте никогда не выполняется):
+```ts
+// внутри webpack(), при !isServer
+webpackConfig.plugins.push(
+  new webpack.NormalModuleReplacementPlugin(
+    /[\\/]resolveSignedURLKey(\.js)?$/,
+    path.resolve(dirname, 'src/stubs/resolve-signed-url-key.client.js'),
+  ),
+)
+```
+Заглушка `src/stubs/resolve-signed-url-key.client.js` экспортирует одноимённую функцию,
+которая на клиенте просто бросает ошибку.
+
+> Проверять обе причины удобно локальной прод-сборкой: `pnpm build && pnpm start`, затем
+> открыть `/admin/login` — должна появиться форма Payload, а в логах не должно быть
+> `getFromImportMap: ... not found`.
+
+### 8.2. Видео из Media не воспроизводится (Range → `200` вместо `206`)
+
+**Симптом:** видео (`video/mp4`), загруженное в Media, не проигрывается. Файл при этом в Blob
+есть и по прямой ссылке открывается.
+
+**Причина:** по умолчанию плагин отдаёт медиа через прокси-роут Payload
+`/api/media/file/<filename>`, который стримит файл из Blob. На Range-запрос (а `<video>` всегда
+шлёт `Range`) связка «роут Payload + кэш Vercel CDN» возвращает **`HTTP 200`** с уже нарезанным
+телом и `Content-Range`, вместо корректного **`206 Partial Content`**:
+```
+curl -D - -o NUL -H "Range: bytes=0-1023" https://erythro.ai/api/media/file/<file>.mp4
+# -> HTTP/1.1 200 OK   Content-Length: 1024   Content-Range: bytes 0-1023/...
+```
+При статусе 200 браузер считает, что получил весь файл (а это 1 КБ) → видео не играет и не
+перематывается; Safari/iOS вообще требует `206`.
+
+**Фикс:** отдавать медиа напрямую с публичного Blob-URL (он нативно поддерживает `206`), а не
+через прокси-роут. В `src/payload.config.ts` для коллекции включить
+`disablePayloadAccessControl` (Media у нас публичная — `read: () => true`, поэтому контроль
+доступа на файлах не нужен):
+```ts
+vercelBlobStorage({
+  collections: {
+    media: { disablePayloadAccessControl: true },
+  },
+  // ...
+})
+```
+После этого `url` в `/api/media` становится `https://<store>.public.blob.vercel-storage.com/...`,
+а проверка прямой ссылки даёт `206`:
+```
+curl -D - -o NUL -H "Range: bytes=0-1023" https://<store>.public.blob.vercel-storage.com/<file>.mp4
+# -> HTTP/1.1 206 Partial Content
+```
+URL вычисляется в afterRead-хуке, так что ссылка чинится и для **уже загруженных** файлов —
+перезаливать не нужно.
+
+> Отдельно: в самой админке Payload для видео показывается иконка файла, а не плеер — это штатно
+> (превью-плеера для video в document-view нет). Воспроизведение проверяется по ссылке / на фронте.
 
 ---
 
@@ -194,3 +287,10 @@ pnpm exec tsx scripts/seed.ts
 5. **Windows + pnpm install:** запущенный `pnpm dev` держит `node_modules` (`EPERM`/`lightningcss.node`)
    — остановить dev-сервер перед установкой; на no-TTY ошибку ставить `$env:CI="true"`.
 6. **Supabase SSL:** `sslmode=no-verify` в `DATABASE_URL` (иначе self-signed cert chain).
+7. **После подключения storage-плагина — `pnpm generate:importmap`.** Иначе админка молча
+   рендерится пустой (см. §8.1). А клиентский upload-хендлер тянет серверный код в браузерный
+   бандл (`node:*` → `UnhandledSchemeError`) — лечится заглушкой `resolveSignedURLKey` в
+   `next.config.ts`.
+8. **Видео/аудио из Media → `disablePayloadAccessControl: true`.** Прокси-роут Payload отдаёт
+   Range как `200` (а не `206`), и медиа с перемоткой не играет (см. §8.2). Прямой публичный
+   Blob-URL отдаёт `206` корректно. Подходит только для публичных файлов.

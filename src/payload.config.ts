@@ -57,7 +57,15 @@ export default buildConfig({
     vercelBlobStorage({
       enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
       collections: {
-        media: true,
+        media: {
+          // Serve media straight from the public Blob URL instead of proxying
+          // through Payload's `/api/media/file/...` route. The proxy route
+          // returns range requests as `200` (instead of `206 Partial Content`)
+          // once cached by Vercel, which breaks <video> playback/seeking. The
+          // direct Blob URL supports proper range requests. Media is public
+          // (`read: () => true`), so dropping Payload access control is safe.
+          disablePayloadAccessControl: true,
+        },
       },
       token: process.env.BLOB_READ_WRITE_TOKEN,
     }),
