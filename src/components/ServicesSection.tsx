@@ -349,12 +349,26 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                           : 'lg:border-r lg:rounded-l-[20px] lg:rounded-r-none'
                       } rounded-t-[20px] rounded-b-none`}
                     >
-                      <img
-                        src={item.image}
-                        alt={itemTitle}
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                        loading="lazy"
-                      />
+                      {item.video ? (
+                        <video
+                          src={item.video}
+                          poster={item.image || undefined}
+                          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          preload="metadata"
+                          aria-label={itemTitle}
+                        />
+                      ) : (
+                        <img
+                          src={item.image}
+                          alt={itemTitle}
+                          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      )}
                     </div>
 
 

@@ -67,6 +67,8 @@ export interface ServiceItem {
   title: Record<string, string>
   features: Record<string, string[]>
   image: string
+  /** Optional video URL. When set, the card plays this video instead of `image`. */
+  video?: string
 }
 
 export const services = {

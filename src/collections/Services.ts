@@ -19,6 +19,10 @@ export const Services: CollectionConfig = {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
+      admin: {
+        description:
+          'Image OR video shown on the card. If you upload a video (mp4/webm), it autoplays muted in a loop instead of an image.',
+      },
     },
     {
       name: 'features',

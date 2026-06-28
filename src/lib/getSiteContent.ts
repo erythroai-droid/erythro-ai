@@ -82,12 +82,21 @@ export async function getSiteContent(): Promise<SiteContent> {
         for (const f of d.features ?? []) {
           for (const l of LOCALES) features[l].push(f.feature?.[l] || f.feature?.en || '')
         }
+        // The `image` upload field accepts any media; if a video was uploaded,
+        // expose it as `video` so the card plays it instead of rendering an image.
+        const media = d.image && typeof d.image === 'object' ? d.image : null
+        const url = typeof media?.url === 'string' ? media.url : undefined
+        const isVideo =
+          (typeof media?.mimeType === 'string' && media.mimeType.startsWith('video/')) ||
+          (!!url && /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(url))
         return {
           id: String(d.id),
           number: d.number || fb?.number || String(i + 1).padStart(2, '0'),
           title: L(d.title, fb?.title ?? { en: '', ru: '', he: '' }),
           features,
-          image: mediaUrl(d.image) || fb?.image || '',
+          // For videos keep the static default image as a poster fallback.
+          image: isVideo ? fb?.image || '' : url || fb?.image || '',
+          ...(isVideo && url ? { video: url } : {}),
         }
       })
     }
