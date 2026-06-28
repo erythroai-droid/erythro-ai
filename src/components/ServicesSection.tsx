@@ -15,6 +15,60 @@ interface ServicesSectionProps {
   theme?: 'light' | 'dark'
 }
 
+/**
+ * Card video that only plays while it is visible in the viewport, and pauses
+ * when it scrolls out (saves CPU/bandwidth). Muted + playsInline so browsers
+ * allow programmatic playback without a user gesture.
+ */
+function CardVideo({
+  src,
+  poster,
+  label,
+  className,
+}: {
+  src: string
+  poster?: string
+  label: string
+  className?: string
+}) {
+  const ref = useRef<HTMLVideoElement | null>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            el.play().catch(() => {})
+          } else {
+            el.pause()
+          }
+        }
+      },
+      { threshold: 0.25 },
+    )
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <video
+      ref={ref}
+      src={src}
+      poster={poster}
+      className={className}
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      aria-label={label}
+    />
+  )
+}
+
 export default function ServicesSection({ locale, theme = 'dark' }: ServicesSectionProps) {
   const content = useSiteContent()
   const translations = content.services
@@ -350,16 +404,11 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                       } rounded-t-[20px] rounded-b-none`}
                     >
                       {item.video ? (
-                        <video
+                        <CardVideo
                           src={item.video}
                           poster={item.image || undefined}
+                          label={itemTitle}
                           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                          autoPlay
-                          muted
-                          loop
-                          playsInline
-                          preload="metadata"
-                          aria-label={itemTitle}
                         />
                       ) : (
                         <img
