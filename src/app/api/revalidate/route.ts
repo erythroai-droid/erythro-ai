@@ -1,19 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { revalidatePath } from 'next/cache'
+import { revalidateTag, revalidatePath } from 'next/cache'
+import { SITE_CONTENT_TAG } from '@/lib/revalidate'
 
+/**
+ * Manual cache-busting endpoint (kept as a fallback). Content edits in the
+ * Payload admin already trigger `revalidateTag` automatically via the
+ * afterChange/afterDelete hooks in src/lib/revalidate.ts, so calling this is
+ * usually unnecessary. Protected by REVALIDATION_TOKEN.
+ */
 export async function POST(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get('secret')
-  const path = request.nextUrl.searchParams.get('path') || '/'
+  const path = request.nextUrl.searchParams.get('path')
 
-  // Защита эндпоинта хука revalidate
   if (secret !== process.env.REVALIDATION_TOKEN) {
     return NextResponse.json({ message: 'Invalid token' }, { status: 401 })
   }
 
   try {
-    revalidatePath(path) // Мгновенный сброс кэша Vercel для указанного роута
-    return NextResponse.json({ revalidated: true, now: Date.now() })
-  } catch (err) {
+    revalidateTag(SITE_CONTENT_TAG)
+    if (path) revalidatePath(path)
+    return NextResponse.json({ revalidated: true, tag: SITE_CONTENT_TAG, now: Date.now() })
+  } catch {
     return NextResponse.json({ message: 'Error revalidating' }, { status: 500 })
   }
 }

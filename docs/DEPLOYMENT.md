@@ -129,7 +129,13 @@ pnpm install --lockfile-only
 - [ ] **Transaction pooler и prepared statements.** Если в Runtime Logs появится
       `prepared statement "..." already exists` — переключить `DATABASE_URL` на **Session pooler**
       (порт 5432).
-- [ ] **`REVALIDATION_TOKEN` + вебхуки n8n** — когда понадобится On-Demand Revalidation контента.
+- [x] **On-Demand Revalidation контента.** `getSiteContent` / `getSeoSettings` обёрнуты в
+      `unstable_cache` с тегом `payload-content` (см. `src/lib/getSiteContent.ts`). Любое
+      изменение глобалов и контентных коллекций (`services`, `solution-plans`, `media`) сбрасывает
+      кэш автоматически через `afterChange`/`afterDelete` хуки (`src/lib/revalidate.ts`) — БД
+      больше не нагружается на каждый запрос. Куки `NEXT_LOCALE` по-прежнему читаются вне кэша,
+      поэтому запоминание языка не затронуто. `REVALIDATION_TOKEN` + ручной POST `/api/revalidate`
+      оставлены как резервный способ сброса (например, из n8n).
 
 ---
 

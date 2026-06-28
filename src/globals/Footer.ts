@@ -1,10 +1,12 @@
 import type { GlobalConfig } from 'payload'
 import { locText } from '../fields/localized'
+import { revalidateGlobal } from '../lib/revalidate'
 
 export const Footer: GlobalConfig = {
   slug: 'footer',
   label: 'Footer',
   admin: { group: 'Sections' },
+  hooks: { afterChange: [revalidateGlobal] },
   fields: [
     locText('ctaHeadingLine1'),
     locText('ctaHeadingLine2'),

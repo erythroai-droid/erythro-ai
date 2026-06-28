@@ -1,6 +1,8 @@
 import { getPayload } from 'payload'
+import { unstable_cache } from 'next/cache'
 import config from '@payload-config'
 import { defaultSiteContent, type SiteContent, type Localized } from './defaultContent'
+import { SITE_CONTENT_TAG } from './revalidate'
 
 const LOCALES = ['en', 'ru', 'he'] as const
 
@@ -179,6 +181,18 @@ export async function getSiteContent(): Promise<SiteContent> {
   return content
 }
 
+/**
+ * Cached variant of {@link getSiteContent}. The result is locale-independent
+ * (it always contains all locales), so a single cache entry serves every
+ * visitor regardless of their `NEXT_LOCALE` cookie. The page still reads the
+ * cookie outside this cache to pick the initial locale, so language memory is
+ * unaffected. Invalidated via the `SITE_CONTENT_TAG` tag whenever content is
+ * edited in the Payload admin (see src/lib/revalidate.ts).
+ */
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content'], {
+  tags: [SITE_CONTENT_TAG],
+})
+
 export interface SeoSettings {
   title?: string
   description?: Partial<Record<(typeof LOCALES)[number], string>>
@@ -219,3 +233,8 @@ export async function getSeoSettings(): Promise<SeoSettings> {
     return {}
   }
 }
+
+/** Cached variant of {@link getSeoSettings}; shares the site-content tag. */
+export const getCachedSeoSettings = unstable_cache(getSeoSettings, ['seo-settings'], {
+  tags: [SITE_CONTENT_TAG],
+})

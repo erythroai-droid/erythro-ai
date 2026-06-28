@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { locText } from '../fields/localized'
+import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
 
 export const SolutionPlans: CollectionConfig = {
   slug: 'solution-plans',
@@ -9,6 +10,7 @@ export const SolutionPlans: CollectionConfig = {
     defaultColumns: ['title', 'price', 'featured', 'order'],
     group: 'Content',
   },
+  hooks: { afterChange: [revalidateOnChange], afterDelete: [revalidateOnDelete] },
   fields: [
     locText('title', { required: true }),
     {

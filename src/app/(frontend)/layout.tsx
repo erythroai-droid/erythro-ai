@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
-import { getSeoSettings } from '@/lib/getSiteContent'
+import { getCachedSeoSettings } from '@/lib/getSiteContent'
 import Script from 'next/script'
 import './styles.css'
 
@@ -55,7 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   // SEO is editable from the Payload "Site Settings" global; fall back to
   // the static values below when a field is left empty (or DB is unavailable).
-  const seo = await getSeoSettings()
+  const seo = await getCachedSeoSettings()
   const title = seo.title || SITE_TITLE
   const description = seo.description?.[locale] || DESCRIPTIONS[locale]
   const ogImage = seo.ogImage || '/images/og-image.png'

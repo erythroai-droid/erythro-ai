@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { locText } from '../fields/localized'
+import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
 
 export const Services: CollectionConfig = {
   slug: 'services',
@@ -8,6 +9,7 @@ export const Services: CollectionConfig = {
     defaultColumns: ['title', 'number', 'order'],
     group: 'Content',
   },
+  hooks: { afterChange: [revalidateOnChange], afterDelete: [revalidateOnDelete] },
   fields: [
     locText('title', { required: true }),
     {

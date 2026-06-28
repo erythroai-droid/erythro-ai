@@ -1,10 +1,12 @@
 import type { GlobalConfig } from 'payload'
 import { locText, locTextarea } from '../fields/localized'
+import { revalidateGlobal } from '../lib/revalidate'
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
   label: 'Site Settings',
   admin: { group: 'Settings' },
+  hooks: { afterChange: [revalidateGlobal] },
   fields: [
     {
       type: 'tabs',

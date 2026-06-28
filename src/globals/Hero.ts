@@ -1,10 +1,12 @@
 import type { GlobalConfig } from 'payload'
 import { locText, locTextarea } from '../fields/localized'
+import { revalidateGlobal } from '../lib/revalidate'
 
 export const Hero: GlobalConfig = {
   slug: 'hero',
   label: 'Hero Section',
   admin: { group: 'Sections' },
+  hooks: { afterChange: [revalidateGlobal] },
   fields: [
     locText('preHeading'),
     locText('mainHeading'),
