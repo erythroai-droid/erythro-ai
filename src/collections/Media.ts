@@ -9,10 +9,26 @@ export const Media: CollectionConfig = {
   hooks: { afterChange: [revalidateOnChange], afterDelete: [revalidateOnDelete] },
   fields: [
     {
+      name: 'preview',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/components/admin/MediaPreview#MediaPreview',
+        },
+      },
+    },
+    {
       name: 'alt',
       type: 'text',
       required: true,
     },
   ],
-  upload: true,
+  upload: {
+    // Show image thumbnails in the list view; videos fall back to a file icon
+    // there, but the edit view renders a full player via the MediaPreview field.
+    adminThumbnail: ({ doc }) =>
+      typeof doc?.mimeType === 'string' && doc.mimeType.startsWith('image/')
+        ? (doc.url as string)
+        : null,
+  },
 }
