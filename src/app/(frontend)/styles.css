@@ -216,12 +216,26 @@
   html {
     background: var(--bg-primary);
     -webkit-font-smoothing: antialiased;
+    /* Hide the vertical scrollbar everywhere. The page still scrolls; removing
+       the scrollbar gutter keeps the layout width constant so the splash
+       intro's scroll lock/unlock can't cause a horizontal shift / jerk. */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* legacy Edge/IE */
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none; /* Chrome/Safari/WebKit */
   }
 
   body {
     background-color: var(--bg-primary);
     color: var(--text-main);
     font-family: 'Inter', sans-serif;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     transition:
       background-color 0.3s ease,
       color 0.3s ease;

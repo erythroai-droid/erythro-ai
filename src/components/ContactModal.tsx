@@ -111,7 +111,10 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
           type="button"
           onClick={onClose}
           aria-label={t(form.close)}
-          className={`absolute top-4 ${isRtl ? 'start-4' : 'end-4'} flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white`}
+          // Logical `end` keeps the close button in the corner opposite where
+          // the heading text starts: top-right for LTR, top-left for RTL (he),
+          // so it never overlaps the right-aligned Hebrew title.
+          className="absolute top-4 end-4 flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 4 4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

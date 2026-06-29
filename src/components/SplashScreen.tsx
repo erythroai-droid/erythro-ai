@@ -21,6 +21,7 @@ export default function SplashScreen() {
 
   const overlayRef = useRef<HTMLDivElement | null>(null)
   const logoWrapRef = useRef<HTMLDivElement | null>(null)
+  const svgRef = useRef<SVGSVGElement | null>(null)
   const eRef = useRef<SVGPathElement | null>(null)
   const lettersRef = useRef<(SVGPathElement | null)[]>([])
   const boxRef = useRef<SVGPathElement | null>(null)
@@ -29,8 +30,9 @@ export default function SplashScreen() {
   useLayoutEffect(() => {
     const overlay = overlayRef.current
     const wrap = logoWrapRef.current
+    const svg = svgRef.current
     const ePath = eRef.current
-    if (!overlay || !wrap || !ePath) return
+    if (!overlay || !wrap || !svg || !ePath) return
 
     // Lock scrolling while the intro plays. Hiding overflow removes the page's
     // vertical scrollbar, which would otherwise widen the layout when the lock
@@ -72,25 +74,30 @@ export default function SplashScreen() {
     const eCxFrac = (bbox.x + bbox.width / 2) / VB_W
     const eCyFrac = (bbox.y + bbox.height / 2) / VB_H
 
-    const wrapW = wrap.getBoundingClientRect().width || 1
-    const wrapH = wrapW * (VB_H / VB_W)
+    // Measure the SVG itself (not the wrapper): the wrapper carries horizontal
+    // padding (px-6) which would otherwise offset the transform origin from the
+    // glyph centre and push the enlarged "e" sideways — very noticeable on
+    // narrow mobile widths where the padding is a large fraction of the box.
+    const svgRect = svg.getBoundingClientRect()
+    const wrapW = svgRect.width || 1
+    const wrapH = svgRect.height || wrapW * (VB_H / VB_W)
     const SCALE = 4.2
-    // Translation that brings the e-centre to the wrapper centre (= viewport
-    // centre, since the wrapper is flex-centred).
+    // Translation that brings the e-centre to the SVG centre (= viewport centre,
+    // since the SVG is symmetrically centred in the viewport).
     const tx1 = (0.5 - eCxFrac) * wrapW
     const ty1 = (0.5 - eCyFrac) * wrapH
 
-    gsap.set(wrap, {
+    gsap.set(wrap, { opacity: 1 })
+    gsap.set(svg, {
       transformOrigin: `${eCxFrac * 100}% ${eCyFrac * 100}%`,
       x: tx1,
       y: ty1,
       scale: SCALE,
-      opacity: 1,
     })
 
     const applyRecede = (p: number) => {
       const s = SCALE + (1 - SCALE) * p
-      gsap.set(wrap, { x: tx1 * (1 - p), y: ty1 * (1 - p), scale: s })
+      gsap.set(svg, { x: tx1 * (1 - p), y: ty1 * (1 - p), scale: s })
     }
 
     // ---- Prepare every path for a "draw" (stroke reveal) ----
@@ -126,7 +133,7 @@ export default function SplashScreen() {
         strokeWidth: 0,
         strokeDashoffset: 0,
       })
-      gsap.set(wrap, { x: 0, y: 0, scale: 1 })
+      gsap.set(svg, { x: 0, y: 0, scale: 1 })
       gsap.to(overlay, {
         opacity: 0,
         duration: 0.4,
@@ -221,6 +228,7 @@ export default function SplashScreen() {
         style={{ opacity: 0 }}
       >
         <svg
+          ref={svgRef}
           viewBox="0 0 138 30"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
