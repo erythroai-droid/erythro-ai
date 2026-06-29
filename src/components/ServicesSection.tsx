@@ -498,7 +498,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             className="absolute inset-0 z-0 pointer-events-none"
             style={{
               background:
-                'url("/images/lets-talk-bg.png") 50% / cover no-repeat, radial-gradient(298.86% 50% at 50% 50.08%, var(--erythro-500, #E52421) 0%, var(--erythro-900, #600F0E) 100%)',
+                'url("/images/lets-talk-bg.webp") 50% / cover no-repeat, radial-gradient(298.86% 50% at 50% 50.08%, var(--erythro-500, #E52421) 0%, var(--erythro-900, #600F0E) 100%)',
               backgroundBlendMode: 'overlay, normal',
             }}
           >
@@ -605,7 +605,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         className="relative w-full overflow-hidden py-[60px] pb-[100px] md:py-[100px] md:pb-[140px] lg:hidden flex flex-col items-center justify-center gap-8 md:gap-[30px]"
         style={{
           background:
-            'url("/images/lets-talk-bg.png") 50% / cover no-repeat, radial-gradient(298.86% 50% at 50% 50.08%, var(--erythro-500, #E52421) 0%, var(--erythro-900, #600F0E) 100%)',
+            'url("/images/lets-talk-bg.webp") 50% / cover no-repeat, radial-gradient(298.86% 50% at 50% 50.08%, var(--erythro-500, #E52421) 0%, var(--erythro-900, #600F0E) 100%)',
           backgroundBlendMode: 'overlay, normal',
         }}
       >

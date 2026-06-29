@@ -215,7 +215,7 @@ export default function SplashScreen() {
       className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
       style={{
         background:
-          'url("/images/lets-talk-bg.png") 50% / cover no-repeat, radial-gradient(298.86% 50% at 50% 50.08%, var(--erythro-500, #E52421) 0%, var(--erythro-900, #600F0E) 100%)',
+          'url("/images/lets-talk-bg.webp") 50% / cover no-repeat, radial-gradient(298.86% 50% at 50% 50.08%, var(--erythro-500, #E52421) 0%, var(--erythro-900, #600F0E) 100%)',
         backgroundBlendMode: 'overlay, normal',
       }}
       aria-hidden="true"

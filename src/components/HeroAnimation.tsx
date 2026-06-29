@@ -51,7 +51,7 @@ export default function HeroAnimation({
     // Progressive loader: preloads all images into memory
     for (let i = 1; i <= imagesCount; i++) {
       const img = new window.Image()
-      img.src = `${basePath}chip (${i}).png`
+      img.src = `${basePath}chip (${i}).webp`
 
       const handleLoad = () => {
         completed++
@@ -236,7 +236,7 @@ export default function HeroAnimation({
         {/* 2. Mobile/Tablet Fallback: Optimized next/image displaying first frame */}
         <div className="block lg:hidden absolute inset-0 z-0 select-none pointer-events-none">
           <Image
-            src={`${basePath}chip (1).png`}
+            src={`${basePath}chip (1).webp`}
             alt="Erythro Neural Chip"
             fill
             priority

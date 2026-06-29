@@ -124,7 +124,7 @@ export const services = {
           'עיצוב גרפי',
         ],
       },
-      image: '/images/service_design_branding.png',
+      image: '/images/service_design_branding.webp',
     },
     {
       id: '2',
@@ -157,7 +157,7 @@ export const services = {
           'פרסום קל',
         ],
       },
-      image: '/images/service_development.png',
+      image: '/images/service_development.webp',
     },
     {
       id: '3',
@@ -193,7 +193,7 @@ export const services = {
           'מערכות ניהול תוכן CMS',
         ],
       },
-      image: '/images/service_management.png',
+      image: '/images/service_management.webp',
     },
     {
       id: '4',
@@ -208,7 +208,7 @@ export const services = {
         ru: ['ИИ-агенты', 'Автоматизация процессов', 'Чат-боты', 'Голосовые ассистенты'],
         he: ['סוכני AI', 'תהליכי אוטומציה', "צ'אט בוט", 'סיוע קולי'],
       },
-      image: '/images/service_ai_automation.png',
+      image: '/images/service_ai_automation.webp',
     },
   ] as ServiceItem[],
 }
