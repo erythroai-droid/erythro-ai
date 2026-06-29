@@ -121,13 +121,15 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
           </svg>
         </button>
 
-        <h2 className="mb-6 max-w-[85%] font-semibold normal-case tracking-normal text-[22px] leading-snug text-gold-100 sm:text-[24px]">
-          {t(form.title)}
-        </h2>
+        {status !== 'success' && (
+          <h2 className="mb-6 max-w-[85%] font-semibold normal-case tracking-normal text-[22px] leading-snug text-gold-100 sm:text-[24px]">
+            {t(form.title)}
+          </h2>
+        )}
 
         {status === 'success' ? (
           <div className="py-6 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gold-500/15 text-gold-500">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="m5 13 4 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
