@@ -134,7 +134,7 @@ function SolutionCard({
                 <span
                   className={`absolute -start-4 top-2.5 size-1 shrink-0 rounded-[1px] ${dotClass}`}
                 />
-                <p className={`text-sm leading-6 ${textClass}`}>{t(feature.full)}</p>
+                <p className={`text-base leading-6 lg:text-sm ${textClass}`}>{t(feature.full)}</p>
               </li>
             )
           }
@@ -144,7 +144,7 @@ function SolutionCard({
               <span
                 className={`absolute -start-4 top-2.5 size-1 shrink-0 rounded-[1px] ${dotClass}`}
               />
-              <p className={`text-sm leading-6 uppercase ${textClass}`}>
+              <p className={`text-base leading-6 uppercase lg:text-sm ${textClass}`}>
                 {feature.label && (
                   <span className={`font-bold ${labelClass}`}>{t(feature.label)} </span>
                 )}
@@ -288,7 +288,7 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
             <h2 className="font-sans text-[32px] font-extralight uppercase leading-tight tracking-[9.6px] lg:text-[48px] lg:leading-[60px]">
               {renderStylizedTitle(t(translations.sectionTitle))}
             </h2>
-            <p className="font-sans text-sm font-light leading-8 tracking-[3.2px] text-gold-800 lg:text-base">
+            <p className="font-sans text-base font-light leading-8 tracking-[3.2px] text-gold-800">
               {t(translations.sectionSubtitle)}
             </p>
           </div>

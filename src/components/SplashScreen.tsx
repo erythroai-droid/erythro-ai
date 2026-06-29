@@ -28,40 +28,6 @@ export default function SplashScreen() {
   const textRef = useRef<(SVGPathElement | null)[]>([])
 
   useLayoutEffect(() => {
-    // Show the brand intro at most once per browsing session. On repeat
-    // navigations within the session we resolve `done` synchronously here —
-    // inside useLayoutEffect, before the browser paints — so the opaque overlay
-    // never flashes. This also stops the intro from blocking LCP/Speed Index on
-    // every page view. (Cold loads, e.g. Lighthouse, still play it once.)
-    // Skip the brand intro entirely on mobile/tablet (<1024px). The GSAP timeline
-    // (path measuring + the ~4.8s opaque overlay) is the biggest drag on mobile
-    // LCP/Speed Index, and the small viewport gains the least from it. Resolved
-    // here in useLayoutEffect, before paint, so the overlay never flashes. This
-    // mirrors the hero's own desktop-only (>=1024px) animation gate.
-    if (window.matchMedia('(max-width: 1023px)').matches) {
-      setDone(true)
-      return
-    }
-
-    const SEEN_KEY = 'erythro:splashSeen'
-    let alreadySeen = false
-    try {
-      alreadySeen = sessionStorage.getItem(SEEN_KEY) === '1'
-    } catch {
-      // sessionStorage can throw in privacy modes — fall back to showing it.
-    }
-    if (alreadySeen) {
-      setDone(true)
-      return
-    }
-    const markSeen = () => {
-      try {
-        sessionStorage.setItem(SEEN_KEY, '1')
-      } catch {
-        // ignore storage failures
-      }
-    }
-
     const overlay = overlayRef.current
     const wrap = logoWrapRef.current
     const svg = svgRef.current
@@ -98,7 +64,6 @@ export default function SplashScreen() {
 
     const finish = () => {
       restoreScroll()
-      markSeen()
       setDone(true)
     }
 
