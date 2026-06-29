@@ -14,6 +14,7 @@ export const Media: CollectionConfig = {
       admin: {
         components: {
           Field: '/components/admin/MediaPreview#MediaPreview',
+          Cell: '/components/admin/MediaPreview#MediaPreviewCell',
         },
       },
     },

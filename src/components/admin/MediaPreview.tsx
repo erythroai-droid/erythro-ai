@@ -60,4 +60,47 @@ export const MediaPreview: React.FC = () => {
   )
 }
 
+type MediaRow = {
+  url?: unknown
+  mimeType?: unknown
+  filename?: unknown
+}
+
+/**
+ * List-view cell for the Media "Preview" column. Renders a small first-frame
+ * <video> thumbnail for video uploads and an <img> for images, using the row's
+ * own data (the list view has no form state, so we read from `rowData`).
+ */
+export const MediaPreviewCell: React.FC<{ rowData?: MediaRow }> = ({ rowData }) => {
+  const url = typeof rowData?.url === 'string' ? rowData.url : undefined
+  const mimeType = typeof rowData?.mimeType === 'string' ? rowData.mimeType : undefined
+
+  if (!url) return <span>—</span>
+
+  const isVideo = mimeType?.startsWith('video/')
+  const isImage = mimeType?.startsWith('image/')
+
+  if (!isVideo && !isImage) return <span>—</span>
+
+  const thumbStyle: React.CSSProperties = {
+    display: 'block',
+    height: 48,
+    width: 'auto',
+    maxWidth: 96,
+    objectFit: 'cover',
+    borderRadius: 4,
+    border: '1px solid var(--theme-elevation-150)',
+    background: '#000',
+  }
+
+  return isVideo ? (
+    // The `#t=0.1` media fragment nudges the browser to paint an early frame as
+    // the thumbnail instead of a blank black box.
+    <video src={`${url}#t=0.1`} muted playsInline preload="metadata" style={thumbStyle} />
+  ) : (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={url} alt="" style={thumbStyle} />
+  )
+}
+
 export default MediaPreview
