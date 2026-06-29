@@ -440,14 +440,14 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                         </svg>
                       </div>
                       <div className="flex flex-col gap-6 relative z-10">
-                        <h3 className="font-sans text-xl lg:text-[40px] font-extralight tracking-[2px] lg:tracking-[8px] text-[var(--service-card-header,#0D0D0D)] leading-tight lg:leading-[60px]">
+                        <h3 className="font-sans text-xl lg:text-[40px] font-extralight tracking-[2px] lg:tracking-[8px] text-[var(--service-card-header,#0D0D0D)] leading-tight lg:leading-[50px]">
                           {itemTitle}
                         </h3>
                         <ul className="flex flex-col gap-3">
                           {itemFeatures.map((feature, fIdx) => (
                             <li
                               key={fIdx}
-                              className="flex items-center gap-3 font-sans text-xs lg:text-[14px] font-normal tracking-[1.2px] lg:tracking-[3.2px] text-[var(--service-card-list,#1E1E1E)] leading-normal lg:leading-[24px]"
+                              className="flex items-center gap-3 font-sans text-base lg:text-[14px] font-normal tracking-[1.2px] lg:tracking-[3.2px] text-[var(--service-card-list,#1E1E1E)] leading-normal lg:leading-[24px]"
                             >
                               <span className="w-1 h-1 bg-erythro-500 shrink-0 rotate-45" />
                               <span>{feature}</span>

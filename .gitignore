@@ -53,6 +53,9 @@ node_modules/
 /qa/
 /public/images/Let`s talk.png
 
+# Design source files (Photoshop) — keep locally, don't ship/version them
+*.psd
+
 # IDE and tool configuration
 .antigravity/
 .antigravityrules

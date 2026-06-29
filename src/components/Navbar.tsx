@@ -188,7 +188,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
 
       {/* ===== Mobile header (below lg): full-width backing plate with logo + controls ===== */}
       <div
-        className={`lg:hidden w-full pointer-events-auto flex flex-col items-center px-[30px] border-b border-t border-t-[#E52421] backdrop-blur-md transition-all duration-300 ${
+        className={`lg:hidden w-full pointer-events-auto flex flex-col items-center px-[30px] border-b backdrop-blur-md transition-all duration-300 ${
           scrolled ? 'gap-0 py-3' : 'gap-4 py-[30px]'
         } ${
           theme === 'light'
