@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import Button from './Button'
 import { useSiteContent } from './SiteContentProvider'
+import { useContactModal } from './ContactModal'
 
 interface NavbarProps {
   currentLocale: string
@@ -121,6 +122,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
   const content = useSiteContent()
   const { navItems, ctaLabel } = content.navbar
   const site = content.siteSettings
+  const { open: openContact } = useContactModal()
 
   const t = (field: Record<string, string>) => field[currentLocale] || field['en']
 
@@ -176,11 +178,9 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
 
         {/* Right side controls: Language Selectors, Theme Toggle and CTA */}
         <div className="hidden lg:flex items-center gap-6">
-          <a href="#contacts" onClick={(e) => handleNavClick(e, '#contacts')}>
-            <Button variant={theme === 'light' ? 'light-accent' : 'nav-talk'}>
-              {t(ctaLabel)}
-            </Button>
-          </a>
+          <Button variant={theme === 'light' ? 'light-accent' : 'nav-talk'} onClick={openContact}>
+            {t(ctaLabel)}
+          </Button>
         </div>
 
       </div>
@@ -222,15 +222,13 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
           </button>
 
           {/* Let's Talk CTA */}
-          <a
-            href="#contacts"
-            onClick={(e) => handleNavClick(e, '#contacts')}
-            className="min-w-0 shrink"
+          <Button
+            variant={theme === 'light' ? 'light-accent' : 'nav-talk'}
+            className="!px-7 min-w-0 shrink"
+            onClick={openContact}
           >
-            <Button variant={theme === 'light' ? 'light-accent' : 'nav-talk'} className="!px-7">
-              {t(ctaLabel)}
-            </Button>
-          </a>
+            {t(ctaLabel)}
+          </Button>
 
           {/* Hamburger menu */}
           <button
@@ -362,15 +360,17 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
               </div>
             </div>
 
-            <a href="#contacts" className="w-full max-w-[280px]" onClick={(e) => handleNavClick(e, '#contacts')}>
-              <Button
-                variant="light-accent"
-                showArrow
-                className="w-full"
-              >
-                {t(ctaLabel)}
-              </Button>
-            </a>
+            <Button
+              variant="light-accent"
+              showArrow
+              className="w-full max-w-[280px]"
+              onClick={() => {
+                setMobileOpen(false)
+                openContact()
+              }}
+            >
+              {t(ctaLabel)}
+            </Button>
           </div>
         </div>
       </div>

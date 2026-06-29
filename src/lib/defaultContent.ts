@@ -7,6 +7,7 @@ import {
   solutions,
   footer,
   letsTalk,
+  contactForm,
   accessibility,
   page,
 } from '@/translations'
@@ -30,6 +31,7 @@ export interface SiteContent {
   solutions: typeof solutions
   footer: typeof footer
   letsTalk: typeof letsTalk
+  contactForm: typeof contactForm
   accessibility: typeof accessibility
   page: typeof page
   siteSettings: SiteSettingsContent
@@ -49,6 +51,7 @@ export const defaultSiteContent: SiteContent = {
   solutions,
   footer,
   letsTalk,
+  contactForm,
   accessibility,
   page,
   siteSettings: {

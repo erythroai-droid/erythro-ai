@@ -578,6 +578,59 @@ export const letsTalk = {
   },
 }
 
+export const contactForm = {
+  title: {
+    en: "Leave a message and we'll get in touch",
+    ru: 'Оставьте сообщение и мы свяжемся с вами',
+    he: 'השאירו הודעה ואנו ניצור איתכם קשר',
+  },
+  name: {
+    en: 'Name',
+    ru: 'Имя',
+    he: 'שם',
+  },
+  email: {
+    en: 'Email',
+    ru: 'Email',
+    he: 'אימייל',
+  },
+  phone: {
+    en: 'Phone',
+    ru: 'Телефон',
+    he: 'טלפון',
+  },
+  message: {
+    en: 'Message',
+    ru: 'Сообщение',
+    he: 'הודעה',
+  },
+  submit: {
+    en: 'Send',
+    ru: 'Отправить',
+    he: 'שליחה',
+  },
+  sending: {
+    en: 'Sending…',
+    ru: 'Отправка…',
+    he: 'שולח…',
+  },
+  success: {
+    en: "Thank you! We'll get back to you shortly.",
+    ru: 'Спасибо! Мы свяжемся с вами в ближайшее время.',
+    he: 'תודה! ניצור איתכם קשר בהקדם.',
+  },
+  error: {
+    en: 'Something went wrong. Please try again.',
+    ru: 'Не удалось отправить. Попробуйте ещё раз.',
+    he: 'אירעה שגיאה. אנא נסו שוב.',
+  },
+  close: {
+    en: 'Close',
+    ru: 'Закрыть',
+    he: 'סגירה',
+  },
+}
+
 export const accessibility = {
   title: {
     en: 'Accessibility Controls',

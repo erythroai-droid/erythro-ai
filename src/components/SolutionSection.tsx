@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import { useSiteContent } from './SiteContentProvider'
+import { useContactModal } from './ContactModal'
 import Button from './Button'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -45,6 +46,7 @@ function SolutionCard({
   theme?: 'light' | 'dark'
 }) {
   const t = (field: Record<string, string>) => field[locale] || field['en']
+  const { open: openContact } = useContactModal()
 
   const isFeatured = card.featured
   const isLight = theme === 'light'
@@ -166,7 +168,7 @@ function SolutionCard({
       </ul>
 
       <div className="mt-auto flex w-full flex-col items-center gap-4">
-        <Button variant="solution-cta" className={solutionButtonClassName}>
+        <Button variant="solution-cta" className={solutionButtonClassName} onClick={openContact}>
           {ctaLabel}
         </Button>
 

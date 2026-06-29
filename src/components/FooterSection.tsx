@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import { useSiteContent } from './SiteContentProvider'
+import { useContactModal } from './ContactModal'
 import Button from './Button'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -97,6 +98,7 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
   const content = useSiteContent()
   const translations = content.footer
   const site = content.siteSettings
+  const { open: openContact } = useContactModal()
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const isLight = theme === 'light'
 
@@ -232,11 +234,9 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
                 <br />
                 {t(translations.ctaHeadingLine2)}
               </p>
-              <a href={`mailto:${site.email}`} className="inline-block">
-                <Button variant="solution-cta" className={footerButtonClassName}>
-                  {t(translations.ctaButton)}
-                </Button>
-              </a>
+              <Button variant="solution-cta" className={footerButtonClassName} onClick={openContact}>
+                {t(translations.ctaButton)}
+              </Button>
             </div>
 
             {/* Company column */}

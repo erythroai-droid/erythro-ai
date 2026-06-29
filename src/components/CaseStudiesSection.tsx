@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react'
 import Button from './Button'
 import { useSiteContent } from './SiteContentProvider'
+import { useContactModal } from './ContactModal'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -33,6 +34,7 @@ const brandLogos = [
 export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) {
   const translations = useSiteContent().caseStudies
   const t = (field: Record<string, string>) => field[locale] || field['en']
+  const { open: openContact } = useContactModal()
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const sectionRef = useRef<HTMLDivElement | null>(null)
   const headingRef = useRef<HTMLDivElement | null>(null)
@@ -182,7 +184,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
 
               {/* Action Button */}
               <div className="mt-4">
-                <Button variant="light-accent" className="font-semibold px-8 py-3.5 text-xs">
+                <Button variant="light-accent" className="font-semibold px-8 py-3.5 text-xs" onClick={openContact}>
                   {t(translations.cardCTA)}
                 </Button>
               </div>

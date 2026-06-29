@@ -8,10 +8,12 @@ import ServicesSection from '@/components/ServicesSection'
 import SolutionSection from '@/components/SolutionSection'
 import FooterSection from '@/components/FooterSection'
 import FloatingWidget from '@/components/FloatingWidget'
+import SplashScreen from '@/components/SplashScreen'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import { AccessibilityPanel } from '@/components/accessibility'
 import CookieConsent from '@/components/CookieConsent'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
+import { ContactModalProvider } from '@/components/ContactModal'
 import type { SiteContent } from '@/lib/defaultContent'
 
 const LOCALE_COOKIE = 'NEXT_LOCALE'
@@ -86,6 +88,8 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
 
   return (
     <SiteContentProvider value={content}>
+    <ContactModalProvider locale={locale}>
+    <SplashScreen />
     <div
       dir={locale === 'he' ? 'rtl' : 'ltr'}
       className={`min-h-screen font-sans transition-colors duration-500 bg-primary text-main ${
@@ -163,6 +167,7 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
       {/* Cookie consent banner */}
       <CookieConsent locale={locale} theme={theme} />
     </div>
+    </ContactModalProvider>
     </SiteContentProvider>
   )
 }

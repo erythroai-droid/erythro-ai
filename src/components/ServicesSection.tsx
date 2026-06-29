@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import { useSiteContent } from './SiteContentProvider'
+import { useContactModal } from './ContactModal'
 import Button from './Button'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -59,7 +60,7 @@ function CardVideo({
       ref={ref}
       src={src}
       poster={poster}
-      className={className}
+      className={`block max-w-full ${className ?? ''}`}
       muted
       loop
       playsInline
@@ -74,7 +75,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
   const translations = content.services
   const letsTalkTranslations = content.letsTalk
   const navTranslations = content.navbar
-  const site = content.siteSettings
+  const { open: openContact } = useContactModal()
   // Translate helper
   const t = (field: Record<string, string>) => field[locale] || field['en']
 
@@ -459,6 +460,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                         <Button
                           variant={theme === 'dark' ? 'dark-outline' : 'light-outline'}
                           showArrow
+                          onClick={openContact}
                         >
                           {isRtl ? 'עוד' : locale === 'ru' ? 'подробнее' : 'more'}
                         </Button>
@@ -585,13 +587,11 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             </span>
           </div>
 
-          {/* Button */}
-          <div ref={buttonRef} className="relative z-10 mt-2 pointer-events-auto">
-            <a href={`mailto:${site.email}`} className="inline-block">
-              <Button variant="white-outline">
-                {t(navTranslations.ctaLabel)}
-              </Button>
-            </a>
+        {/* Button */}
+        <div ref={buttonRef} className="relative z-10 mt-2 pointer-events-auto">
+            <Button variant="white-outline" onClick={openContact}>
+              {t(navTranslations.ctaLabel)}
+            </Button>
           </div>
         </div>
       </section>
@@ -691,11 +691,9 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         </div>
 
         <div ref={mobileButtonRef} className="relative z-10 mt-2">
-          <a href={`mailto:${site.email}`} className="inline-block">
-            <Button variant="white-outline">
-              {t(navTranslations.ctaLabel)}
-            </Button>
-          </a>
+          <Button variant="white-outline" onClick={openContact}>
+            {t(navTranslations.ctaLabel)}
+          </Button>
         </div>
       </div>
     </div>
