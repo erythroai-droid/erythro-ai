@@ -1,20 +1,32 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import Navbar from '@/components/Navbar'
 import HeroSection from '@/components/HeroSection'
-import CaseStudiesSection from '@/components/CaseStudiesSection'
-import ServicesSection from '@/components/ServicesSection'
-import SolutionSection from '@/components/SolutionSection'
-import FooterSection from '@/components/FooterSection'
-import FloatingWidget from '@/components/FloatingWidget'
 import SplashScreen from '@/components/SplashScreen'
-import WhatsAppButton from '@/components/WhatsAppButton'
-import { AccessibilityPanel } from '@/components/accessibility'
-import CookieConsent from '@/components/CookieConsent'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
 import { ContactModalProvider } from '@/components/ContactModal'
 import type { SiteContent } from '@/lib/defaultContent'
+
+// Below-the-fold content sections: code-split into their own chunks so they no
+// longer inflate the initial hydration long-task (lower TBT). They keep SSR so
+// the markup stays in the HTML for SEO and the LCP candidate is unaffected.
+const CaseStudiesSection = dynamic(() => import('@/components/CaseStudiesSection'))
+const ServicesSection = dynamic(() => import('@/components/ServicesSection'))
+const SolutionSection = dynamic(() => import('@/components/SolutionSection'))
+const FooterSection = dynamic(() => import('@/components/FooterSection'))
+
+// Non-critical, client-only UI (no SEO value, not part of the first paint):
+// defer hydration entirely with ssr:false so it doesn't compete for main-thread
+// time during initial load.
+const FloatingWidget = dynamic(() => import('@/components/FloatingWidget'), { ssr: false })
+const WhatsAppButton = dynamic(() => import('@/components/WhatsAppButton'), { ssr: false })
+const CookieConsent = dynamic(() => import('@/components/CookieConsent'), { ssr: false })
+const AccessibilityPanel = dynamic(
+  () => import('@/components/accessibility').then((m) => m.AccessibilityPanel),
+  { ssr: false },
+)
 
 const LOCALE_COOKIE = 'NEXT_LOCALE'
 
