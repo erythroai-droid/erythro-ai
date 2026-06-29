@@ -26,6 +26,7 @@ export default function SplashScreen() {
   const lettersRef = useRef<(SVGPathElement | null)[]>([])
   const boxRef = useRef<SVGPathElement | null>(null)
   const textRef = useRef<(SVGPathElement | null)[]>([])
+  const taglineRef = useRef<HTMLParagraphElement | null>(null)
 
   useLayoutEffect(() => {
     const overlay = overlayRef.current
@@ -126,6 +127,10 @@ export default function SplashScreen() {
     if (boxRef.current) prep(boxRef.current, '#FFFFFF', true)
     textRef.current.forEach((el) => el && prep(el, '#E52421', true))
 
+    // The "digital agency" tagline stays hidden (and slightly lowered) until the
+    // wordmark has settled, then fades up — matching the og-image lockup.
+    if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 0, y: 8 })
+
     if (reduceMotion) {
       gsap.set([ePath, ...letters, ...restFills], {
         opacity: 1,
@@ -133,11 +138,12 @@ export default function SplashScreen() {
         strokeWidth: 0,
         strokeDashoffset: 0,
       })
+      if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 1, y: 0 })
       gsap.set(svg, { x: 0, y: 0, scale: 1 })
       gsap.to(overlay, {
         opacity: 0,
         duration: 0.4,
-        delay: 0.6,
+        delay: 1.1,
         // Restore the scrollbar while the overlay is still opaque so the
         // layout change is hidden, then dissolve to a stable page.
         onStart: restoreScroll,
@@ -191,6 +197,15 @@ export default function SplashScreen() {
       // Drop the stroke once everything is filled so no thin outline lingers.
       .set([ePath, ...letters, ...restFills], { strokeWidth: 0 }, 'recede+=1.45')
 
+    // Reveal the "digital agency" tagline once the wordmark is fully drawn.
+    if (taglineRef.current) {
+      tl.to(
+        taglineRef.current,
+        { opacity: 1, y: 0, duration: 0.5, ease: 'power1.out' },
+        'recede+=1.3',
+      )
+    }
+
     // Outro — unlock scroll while the overlay is still fully opaque so the
     // returning scrollbar can't shift / jerk the revealed page.
     tl.to(overlay, {
@@ -199,7 +214,7 @@ export default function SplashScreen() {
       ease: 'power2.inOut',
       onStart: restoreScroll,
       onComplete: finish,
-    }, '+=0.5')
+    }, '+=1')
 
     return () => {
       tl.kill()
@@ -266,6 +281,27 @@ export default function SplashScreen() {
           <path id="sp-t0" clipPath="url(#cp-t0)" ref={(el) => { textRef.current[0] = el }} fill="#E52421" d="M126.214 19.7301C125.745 19.7301 125.332 19.6615 124.973 19.5107C124.615 19.3599 124.339 19.1268 124.132 18.8252C123.926 18.5235 123.829 18.1397 123.829 17.6735C123.829 17.2074 123.898 16.9606 124.036 16.6864C124.174 16.4122 124.367 16.1928 124.601 16.0146C124.835 15.8363 125.125 15.7129 125.456 15.617C125.787 15.521 126.131 15.4661 126.503 15.4387C126.917 15.4113 127.234 15.3702 127.482 15.329C127.73 15.2879 127.91 15.2194 128.02 15.1371C128.13 15.0548 128.185 14.9589 128.185 14.8218V14.7943C128.185 14.6847 128.158 14.6024 128.089 14.5201C128.02 14.4379 127.937 14.383 127.813 14.3419C127.689 14.3008 127.551 14.2734 127.386 14.2734C127.22 14.2734 127.069 14.3008 126.945 14.3419C126.821 14.383 126.71 14.4653 126.641 14.5613C126.572 14.6572 126.517 14.7669 126.49 14.9177L124.091 14.8629C124.146 14.3693 124.298 13.9306 124.56 13.5741C124.822 13.2177 125.208 12.9435 125.69 12.7515C126.173 12.5596 126.779 12.4636 127.482 12.4636C128.185 12.4636 128.488 12.5184 128.902 12.6281C129.316 12.7378 129.66 12.9023 129.95 13.108C130.239 13.3136 130.446 13.5741 130.598 13.8758C130.749 14.1774 130.818 14.5201 130.818 14.904V19.6204H128.268V18.6332H128.24C128.089 18.9074 127.91 19.1268 127.717 19.2913C127.524 19.4558 127.289 19.5655 127.041 19.6341C126.793 19.7026 126.517 19.7438 126.214 19.7438V19.7301ZM127.082 18.0848C127.275 18.0848 127.455 18.0437 127.634 17.9751C127.813 17.9066 127.951 17.7969 128.075 17.6461C128.199 17.4953 128.24 17.3308 128.24 17.1114V16.5493C128.171 16.5767 128.102 16.6041 128.034 16.6178C127.965 16.6315 127.882 16.6589 127.799 16.6864C127.717 16.7138 127.62 16.7275 127.524 16.7412C127.427 16.7549 127.317 16.7823 127.193 16.8098C127.013 16.8372 126.848 16.892 126.724 16.9469C126.6 17.0017 126.49 17.084 126.421 17.1799C126.352 17.2759 126.324 17.3856 126.324 17.4953C126.324 17.605 126.352 17.7283 126.421 17.8106C126.49 17.8929 126.572 17.9614 126.696 18.0163C126.821 18.0711 126.945 18.0848 127.096 18.0848H127.082Z" />
           <path id="sp-t1" clipPath="url(#cp-t1)" ref={(el) => { textRef.current[1] = el }} fill="#E52421" d="M133.451 12.066C133.051 12.066 132.72 11.9426 132.459 11.7095C132.197 11.4765 132.073 11.1748 132.073 10.8184C132.073 10.4619 132.197 10.1603 132.459 9.92719C132.72 9.69411 133.051 9.57072 133.451 9.57072C133.851 9.57072 134.182 9.69411 134.444 9.92719C134.705 10.1603 134.829 10.4619 134.829 10.8184C134.829 11.1748 134.705 11.4765 134.444 11.7095C134.182 11.9426 133.851 12.066 133.451 12.066ZM132.141 19.6067V12.6007H134.774V19.6067H132.141Z" />
         </svg>
+
+        {/* Tagline below the wordmark, matching the og-image lockup. Sized per
+            breakpoint to stay proportional to the fixed wrapper width. */}
+        <p
+          ref={taglineRef}
+          className="font-sans font-light lowercase text-white/90 text-[13px] sm:text-[20px] lg:text-[30px]"
+          style={{
+            opacity: 0,
+            // Pin the tagline to the wordmark's right edge (end of the white ".ai"
+            // box). With even letter-spacing tuned so the text spans ~63% of the
+            // logo width, the left edge lands under the "t". `direction: ltr` keeps
+            // this alignment identical in the Hebrew locale; the negative right
+            // margin cancels the trailing letter-spacing so "y" sits flush.
+            direction: 'ltr',
+            textAlign: 'right',
+            letterSpacing: '0.44em',
+            marginRight: '-0.44em',
+          }}
+        >
+          digital agency
+        </p>
       </div>
     </div>
   )
