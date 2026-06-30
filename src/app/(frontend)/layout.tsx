@@ -115,6 +115,9 @@ export async function generateMetadata(): Promise<Metadata> {
         'max-video-preview': -1,
       },
     },
+    verification: {
+      google: 'YPeQiGKCZE7HbtVPrL9NhkfiYe01eJ4FXheHGa93sAY',
+    },
   }
 }
 
