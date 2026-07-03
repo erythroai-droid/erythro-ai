@@ -48,6 +48,7 @@ const BrandLogo = ({ className = '' }: { className?: string }) => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
+    aria-hidden="true"
   >
     <g clipPath="url(#clip0_23_40)">
       {/* Main brand letters: rythro... */}
@@ -152,7 +153,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
       <div className="hidden lg:block w-full pointer-events-auto">
       <div className={`w-full navbar-pill transition-all duration-500 ease-out shadow-lg ${theme === 'light' ? 'navbar-pill--light text-coal-900' : 'text-white'}`}>
         {/* Brand Logo */}
-        <a href="#" className="flex items-center group select-none cursor-pointer">
+        <a href="#" aria-label="Erythro.ai" className="flex items-center group select-none cursor-pointer">
           <BrandLogo
             className={`h-[30px] w-auto transition-colors duration-300 ${theme === 'light' ? 'text-coal-900' : 'text-white'}`}
           />
@@ -198,6 +199,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
       >
         <a
           href="#"
+          aria-label="Erythro.ai"
           className={`flex w-full items-center justify-center select-none cursor-pointer overflow-hidden transition-all duration-300 ${
             scrolled ? 'max-h-0 opacity-0' : 'max-h-[56px] opacity-100'
           }`}

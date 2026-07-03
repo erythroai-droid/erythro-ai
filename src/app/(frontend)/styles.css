@@ -1,10 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&family=Roboto+Mono:wght@400;700&display=swap');
-
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: 'Inter', sans-serif;
-  --font-inter: 'Inter', sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
 
   --color-coal-100: var(--coal-100);
   --color-coal-200: var(--coal-200);
@@ -233,7 +231,7 @@
   body {
     background-color: var(--bg-primary);
     color: var(--text-main);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans);
     scrollbar-width: none;
     -ms-overflow-style: none;
     transition:
@@ -314,7 +312,7 @@
   }
 
   html[dir='rtl'] {
-    font-family: 'Inter', sans-serif !important;
+    font-family: var(--font-sans) !important;
   }
 }
 
@@ -377,7 +375,7 @@
 
   .menu-link {
     color: var(--gold-100, #ffffff);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans);
     font-size: 11px;
     font-style: normal;
     font-weight: 300;
