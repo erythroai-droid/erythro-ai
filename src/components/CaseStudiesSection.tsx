@@ -13,7 +13,8 @@ interface CaseStudiesSectionProps {
   locale: string
 }
 
-const CASE_STUDY_VIDEO = '/videos/Cases/Main_Render_1.mp4'
+const CASE_STUDY_VIDEO =
+  'https://wgw9moyqjdjcaq9l.public.blob.vercel-storage.com/Main_Render_1.mp4'
 
 /** Plays only while the case-study video is in the viewport. */
 function CaseStudyVideo({ src, label }: { src: string; label: string }) {
