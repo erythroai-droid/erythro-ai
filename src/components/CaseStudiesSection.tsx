@@ -18,10 +18,12 @@ function CaseStudyVideo({
   src,
   label,
   sectionRef,
+  containerRef,
 }: {
   src: string
   label: string
   sectionRef: React.RefObject<HTMLElement | null>
+  containerRef: React.RefObject<HTMLElement | null>
 }) {
   const ref = useRef<HTMLVideoElement | null>(null)
   const [visible, setVisible] = useState(false)
@@ -30,6 +32,7 @@ function CaseStudyVideo({
   useEffect(() => {
     const el = ref.current
     const section = sectionRef.current
+    const container = containerRef.current
     if (!el) return
 
     const prefetch = () => {
@@ -49,6 +52,8 @@ function CaseStudyVideo({
         )
       : null
 
+    // Observe the sized container (not the absolute video) so mobile IO works.
+    const playTarget = container ?? el
     const playObserver = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -60,17 +65,17 @@ function CaseStudyVideo({
           el.pause()
         }
       },
-      { threshold: 0.2 },
+      { threshold: 0.1 },
     )
 
     if (prefetchObserver && section) prefetchObserver.observe(section)
-    playObserver.observe(el)
+    playObserver.observe(playTarget)
 
     return () => {
       prefetchObserver?.disconnect()
       playObserver.disconnect()
     }
-  }, [src, sectionRef])
+  }, [src, sectionRef, containerRef])
 
   return (
     <video
@@ -211,15 +216,16 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           </p>
         </div>
 
-        {/* Case study video — fills the flex slot (object-cover trims letterboxing) */}
+        {/* Case study video — aspect-video gives height on mobile; flex-1 on desktop */}
         <div
           ref={cardRef}
-          className="relative mb-[50px] w-full flex-1 min-h-0 overflow-hidden bg-white"
+          className="relative mb-[50px] w-full aspect-video overflow-hidden bg-white lg:aspect-auto lg:flex-1 lg:min-h-0"
         >
           <CaseStudyVideo
             src={translations.video}
             label={t(translations.cardTitle)}
             sectionRef={sectionRef}
+            containerRef={cardRef}
           />
         </div>
       </div> {/* Close the max-width container here to make the marquee span the full screen width */}
