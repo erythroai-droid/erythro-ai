@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSiteContent } from './SiteContentProvider'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -13,47 +13,77 @@ interface CaseStudiesSectionProps {
   locale: string
 }
 
-/** Plays only while the case-study video is in the viewport. */
-function CaseStudyVideo({ src, label }: { src: string; label: string }) {
+/** Prefetches near the section; plays and fades in only while the block is in view. */
+function CaseStudyVideo({
+  src,
+  label,
+  sectionRef,
+}: {
+  src: string
+  label: string
+  sectionRef: React.RefObject<HTMLElement | null>
+}) {
   const ref = useRef<HTMLVideoElement | null>(null)
+  const [visible, setVisible] = useState(false)
+  const prefetchedRef = useRef(false)
 
   useEffect(() => {
     const el = ref.current
+    const section = sectionRef.current
     if (!el) return
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            // Start buffering the full file once visible (metadata-only preload
-            // can leave long videos stuck on the first frame).
-            if (el.preload !== 'auto') {
-              el.preload = 'auto'
-              el.load()
-            }
-            el.play().catch(() => {})
-          } else {
-            el.pause()
-          }
+    const prefetch = () => {
+      if (prefetchedRef.current) return
+      prefetchedRef.current = true
+      el.preload = 'auto'
+      el.load()
+    }
+
+    // Start buffering ~1 viewport before the user reaches Case Studies.
+    const prefetchObserver = section
+      ? new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) prefetch()
+          },
+          { rootMargin: '0px 0px 100% 0px', threshold: 0 },
+        )
+      : null
+
+    const playObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          prefetch()
+          setVisible(true)
+          el.play().catch(() => {})
+        } else {
+          setVisible(false)
+          el.pause()
         }
       },
-      { threshold: 0.25 },
+      { threshold: 0.2 },
     )
 
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [src])
+    if (prefetchObserver && section) prefetchObserver.observe(section)
+    playObserver.observe(el)
+
+    return () => {
+      prefetchObserver?.disconnect()
+      playObserver.disconnect()
+    }
+  }, [src, sectionRef])
 
   return (
     <video
       key={src}
       ref={ref}
       src={src}
-      className="block h-full w-full object-contain lg:max-h-full lg:max-w-full lg:h-auto lg:w-auto"
+      className={`absolute inset-0 h-full w-full object-cover scale-[1.14] transition-opacity duration-500 ${
+        visible ? 'opacity-100' : 'opacity-0'
+      }`}
       muted
       loop
       playsInline
-      preload="metadata"
+      preload="none"
       aria-label={label}
     />
   )
@@ -181,12 +211,16 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           </p>
         </div>
 
-        {/* Case study video — scaled proportionally (no crop); capped height so marquee fits on one screen */}
+        {/* Case study video — fills the flex slot (object-cover trims letterboxing) */}
         <div
           ref={cardRef}
-          className="relative mb-[50px] flex w-full flex-1 min-h-0 items-center justify-center bg-white aspect-video lg:aspect-auto"
+          className="relative mb-[50px] w-full flex-1 min-h-0 overflow-hidden bg-white"
         >
-          <CaseStudyVideo src={translations.video} label={t(translations.cardTitle)} />
+          <CaseStudyVideo
+            src={translations.video}
+            label={t(translations.cardTitle)}
+            sectionRef={sectionRef}
+          />
         </div>
       </div> {/* Close the max-width container here to make the marquee span the full screen width */}
 
