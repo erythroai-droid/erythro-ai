@@ -14,5 +14,13 @@ export const CaseStudies: GlobalConfig = {
     locText('cardCategory'),
     locTextarea('cardDescription'),
     locText('cardCTA'),
+    {
+      name: 'bannerVideo',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Case Studies banner video (mp4). Shown instead of the static default when set.',
+      },
+    },
   ],
 }

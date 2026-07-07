@@ -289,6 +289,8 @@ export const caseStudies = {
     ru: 'НАЧАТЬ РАБОТУ',
     he: 'להתחיל לעבוד',
   },
+  video:
+    'https://wgw9moyqjdjcaq9l.public.blob.vercel-storage.com/Dynamic%20Urban%20Slideshow.mp4',
 }
 
 // 6. Solution Section translations

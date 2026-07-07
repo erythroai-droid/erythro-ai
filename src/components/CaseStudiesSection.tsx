@@ -13,9 +13,6 @@ interface CaseStudiesSectionProps {
   locale: string
 }
 
-const CASE_STUDY_VIDEO =
-  'https://wgw9moyqjdjcaq9l.public.blob.vercel-storage.com/Main_Render_1.mp4'
-
 /** Plays only while the case-study video is in the viewport. */
 function CaseStudyVideo({ src, label }: { src: string; label: string }) {
   const ref = useRef<HTMLVideoElement | null>(null)
@@ -28,6 +25,12 @@ function CaseStudyVideo({ src, label }: { src: string; label: string }) {
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
+            // Start buffering the full file once visible (metadata-only preload
+            // can leave long videos stuck on the first frame).
+            if (el.preload !== 'auto') {
+              el.preload = 'auto'
+              el.load()
+            }
             el.play().catch(() => {})
           } else {
             el.pause()
@@ -39,10 +42,11 @@ function CaseStudyVideo({ src, label }: { src: string; label: string }) {
 
     observer.observe(el)
     return () => observer.disconnect()
-  }, [])
+  }, [src])
 
   return (
     <video
+      key={src}
       ref={ref}
       src={src}
       className="block h-full w-full object-contain lg:max-h-full lg:max-w-full lg:h-auto lg:w-auto"
@@ -182,7 +186,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           ref={cardRef}
           className="relative mb-[50px] flex w-full flex-1 min-h-0 items-center justify-center bg-white aspect-video lg:aspect-auto"
         >
-          <CaseStudyVideo src={CASE_STUDY_VIDEO} label={t(translations.cardTitle)} />
+          <CaseStudyVideo src={translations.video} label={t(translations.cardTitle)} />
         </div>
       </div> {/* Close the max-width container here to make the marquee span the full screen width */}
 

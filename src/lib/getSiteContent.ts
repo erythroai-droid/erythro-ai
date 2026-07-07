@@ -45,7 +45,7 @@ export async function getSiteContent(): Promise<SiteContent> {
         payload.findGlobal({ slug: 'header', locale: 'all', depth: 0 }) as Promise<any>,
         payload.findGlobal({ slug: 'hero', locale: 'all', depth: 1 }) as Promise<any>,
         payload.findGlobal({ slug: 'services-section', locale: 'all', depth: 0 }) as Promise<any>,
-        payload.findGlobal({ slug: 'case-studies', locale: 'all', depth: 0 }) as Promise<any>,
+        payload.findGlobal({ slug: 'case-studies', locale: 'all', depth: 1 }) as Promise<any>,
         payload.findGlobal({ slug: 'solutions-section', locale: 'all', depth: 0 }) as Promise<any>,
         payload.findGlobal({ slug: 'footer', locale: 'all', depth: 0 }) as Promise<any>,
         payload.findGlobal({ slug: 'site-settings', locale: 'all', depth: 1 }) as Promise<any>,
@@ -110,6 +110,8 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.caseStudies.cardCategory = L(caseStudiesG?.cardCategory, content.caseStudies.cardCategory)
     content.caseStudies.cardDescription = L(caseStudiesG?.cardDescription, content.caseStudies.cardDescription)
     content.caseStudies.cardCTA = L(caseStudiesG?.cardCTA, content.caseStudies.cardCTA)
+    const caseStudyVideo = mediaUrl(caseStudiesG?.bannerVideo)
+    if (caseStudyVideo) content.caseStudies.video = caseStudyVideo
 
     // --- Solutions section intro + cards ---
     content.solutions.sectionTitle = L(solutionsIntro?.sectionTitle, content.solutions.sectionTitle)
