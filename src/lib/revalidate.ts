@@ -1,4 +1,4 @@
-import { revalidateTag } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import type {
   CollectionAfterChangeHook,
   CollectionAfterDeleteHook,
@@ -20,6 +20,7 @@ export const SITE_CONTENT_TAG = 'payload-content'
 function revalidateContent(): void {
   try {
     revalidateTag(SITE_CONTENT_TAG)
+    revalidatePath('/', 'layout')
   } catch (err) {
     console.error('[revalidate] skipped (no request scope):', err)
   }

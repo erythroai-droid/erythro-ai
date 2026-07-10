@@ -17,6 +17,10 @@ function hasContent(v: any): boolean {
 /** Merge a Payload localized object over a fallback, keeping all locales filled. */
 function L(v: any, fallback: Localized): Localized {
   const out: Localized = { ...fallback }
+  if (typeof v === 'string' && v.trim().length > 0) {
+    out.en = v.trim()
+    return out
+  }
   if (v && typeof v === 'object') {
     for (const l of LOCALES) {
       if (typeof v[l] === 'string' && v[l].trim().length > 0) out[l] = v[l]
@@ -121,24 +125,32 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.solutions.ctaLabel = L(solutionsIntro?.ctaLabel, content.solutions.ctaLabel)
 
     if (Array.isArray(plansRes?.docs) && plansRes.docs.length) {
-      content.solutions.cards = plansRes.docs.map((d: any) => {
-        const features = (d.features ?? []).map((f: any) => {
-          if (hasContent(f.full)) return { full: L(f.full, { en: '', ru: '', he: '' }) }
+      content.solutions.cards = plansRes.docs.map((d: any, i: number) => {
+        const fb = defaultSiteContent.solutions.cards[i]
+        const features = (d.features ?? []).map((f: any, fi: number) => {
+          const fbF = fb?.features?.[fi]
+          if (hasContent(f.full)) return { full: L(f.full, fbF?.full ?? { en: '', ru: '', he: '' }) }
           return {
-            label: L(f.label, { en: '', ru: '', he: '' }),
-            value: L(f.value, { en: '', ru: '', he: '' }),
+            label: L(f.label, fbF?.label ?? { en: '', ru: '', he: '' }),
+            value: L(f.value, fbF?.value ?? { en: '', ru: '', he: '' }),
           }
         })
         return {
-          id: String(d.id),
-          price: d.price ?? '',
-          ...(hasContent(d.pricePrefix) ? { pricePrefix: L(d.pricePrefix, { en: '', ru: '', he: '' }) } : {}),
-          ...(d.priceNote ? { priceNote: true } : {}),
-          ...(d.originalPrice ? { originalPrice: d.originalPrice } : {}),
-          ...(d.featured ? { featured: true } : {}),
-          title: L(d.title, { en: '', ru: '', he: '' }),
-          features,
-          ...(hasContent(d.disclaimer) ? { disclaimer: L(d.disclaimer, { en: '', ru: '', he: '' }) } : {}),
+          id: fb?.id ?? String(d.id),
+          price: d.price ?? fb?.price ?? '',
+          ...(hasContent(d.pricePrefix) || fb?.pricePrefix
+            ? { pricePrefix: L(d.pricePrefix, fb?.pricePrefix ?? { en: '', ru: '', he: '' }) }
+            : {}),
+          ...(d.priceNote ?? fb?.priceNote ? { priceNote: !!(d.priceNote ?? fb?.priceNote) } : {}),
+          ...(d.originalPrice || fb?.originalPrice
+            ? { originalPrice: d.originalPrice ?? fb?.originalPrice }
+            : {}),
+          ...(d.featured ?? fb?.featured ? { featured: !!(d.featured ?? fb?.featured) } : {}),
+          title: L(d.title, fb?.title ?? { en: '', ru: '', he: '' }),
+          features: features.length ? features : (fb?.features ?? []),
+          ...(hasContent(d.disclaimer) || fb?.disclaimer
+            ? { disclaimer: L(d.disclaimer, fb?.disclaimer ?? { en: '', ru: '', he: '' }) }
+            : {}),
         }
       })
     }

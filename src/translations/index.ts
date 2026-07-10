@@ -470,7 +470,7 @@ export const solutions = {
         },
       ],
       disclaimer: {
-        en: '* possible the payment into 12 payments',
+        en: '* split into up to 12 payments',
         ru: '* возможна оплата в 12 платежей',
         he: '* אפשרות לתשלום ב-12 תשלומים',
       },
