@@ -38,6 +38,13 @@ function CardVideo({
     const el = ref.current
     if (!el) return
 
+    el.loop = true
+    const onEnded = () => {
+      el.currentTime = 0
+      el.play().catch(() => {})
+    }
+    el.addEventListener('ended', onEnded)
+
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -52,7 +59,10 @@ function CardVideo({
     )
 
     observer.observe(el)
-    return () => observer.disconnect()
+    return () => {
+      el.removeEventListener('ended', onEnded)
+      observer.disconnect()
+    }
   }, [src])
 
   return (

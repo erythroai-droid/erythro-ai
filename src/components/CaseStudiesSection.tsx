@@ -58,6 +58,13 @@ function CaseStudyVideo({
       el.load()
     }
 
+    const onEnded = () => {
+      el.currentTime = 0
+      el.play().catch(() => {})
+    }
+    el.loop = true
+    el.addEventListener('ended', onEnded)
+
     // Start buffering ~1 viewport before the user reaches Case Studies.
     const prefetchObserver = section
       ? new IntersectionObserver(
@@ -88,6 +95,7 @@ function CaseStudyVideo({
     playObserver.observe(playTarget)
 
     return () => {
+      el.removeEventListener('ended', onEnded)
       prefetchObserver?.disconnect()
       playObserver.disconnect()
     }
