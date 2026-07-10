@@ -13,6 +13,20 @@ interface CaseStudiesSectionProps {
   locale: string
 }
 
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const update = () => setIsDesktop(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  return isDesktop
+}
+
 /** Prefetches near the section; plays and fades in only while the block is in view. */
 function CaseStudyVideo({
   src,
@@ -113,6 +127,13 @@ const brandLogos = [
 export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) {
   const translations = useSiteContent().caseStudies
   const t = (field: Record<string, string>) => field[locale] || field['en']
+  const isDesktop = useIsDesktop()
+  const videoSrc =
+    isDesktop === null
+      ? null
+      : isDesktop
+        ? translations.video
+        : translations.videoMobile || translations.video
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const sectionRef = useRef<HTMLDivElement | null>(null)
   const headingRef = useRef<HTMLDivElement | null>(null)
@@ -221,12 +242,15 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           ref={cardRef}
           className="relative mb-[50px] w-full aspect-video overflow-hidden bg-white lg:aspect-auto lg:flex-1 lg:min-h-0"
         >
-          <CaseStudyVideo
-            src={translations.video}
-            label={t(translations.cardTitle)}
-            sectionRef={sectionRef}
-            containerRef={cardRef}
-          />
+          {videoSrc ? (
+            <CaseStudyVideo
+              key={videoSrc}
+              src={videoSrc}
+              label={t(translations.cardTitle)}
+              sectionRef={sectionRef}
+              containerRef={cardRef}
+            />
+          ) : null}
         </div>
       </div> {/* Close the max-width container here to make the marquee span the full screen width */}
 

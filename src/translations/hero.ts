@@ -4,8 +4,8 @@ export interface TranslationDict {
 
 export const preHeading: TranslationDict = {
   en: 'Precision AI Engineering',
-  ru: 'НЕЙРОННЫЕ БИЗНЕС-СИСТЕМЫ',
-  he: 'מערכות עסקיות עצביות',
+  ru: 'ВЫСОКОТОЧНАЯ ИИ-ИНЖЕНЕРИЯ',
+  he: 'הנדסת בינה מלאכותית מדויקת',
 }
 
 export const mainHeading: TranslationDict = {

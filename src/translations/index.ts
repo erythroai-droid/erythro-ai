@@ -7,8 +7,8 @@ export const navbar = {
   navItems: [
     { label: { en: 'CASE STUDIES', ru: 'КЕЙСЫ', he: 'מקרי מבחן' }, href: '#cases' },
     { label: { en: 'SERVICES', ru: 'УСЛУГИ', he: 'שירותים' }, href: '#services' },
-    { label: { en: 'SOLUTION', ru: 'РЕШЕНИЯ', he: 'פתרונות' }, href: '#solutions' },
-    { label: { en: 'CONTACTS', ru: 'КОНТАКТЫ', he: 'אנשי קשר' }, href: '#contacts' },
+    { label: { en: 'SOLUTIONS', ru: 'РЕШЕНИЯ', he: 'פתרונות' }, href: '#solutions' },
+    { label: { en: 'CONTACTS', ru: 'КОНТАКТЫ', he: 'יצירת קשר' }, href: '#contacts' },
   ],
   ctaLabel: {
     en: "LET'S TALK...",
@@ -40,8 +40,8 @@ export const cookieConsent = {
 export const hero = {
   preHeading: {
     en: 'Precision AI Engineering',
-    ru: 'НЕЙРОННЫЕ БИЗНЕС-СИСТЕМЫ',
-    he: 'מערכות עסקיות עצביות',
+    ru: 'ВЫСОКОТОЧНАЯ ИИ-ИНЖЕНЕРИЯ',
+    he: 'הנדסת בינה מלאכותית מדויקת',
   },
   mainHeading: {
     en: 'Engineering the future',
@@ -89,7 +89,7 @@ export const services = {
   },
   priceLabel: {
     en: 'Starting from',
-    ru: 'Начиная от',
+    ru: 'От',
     he: 'החל מ-',
   },
   items: [
@@ -117,7 +117,7 @@ export const services = {
           'Графический дизайн',
         ],
         he: [
-          'מיתוג ואסטרטגיה / מצגות',
+          'זהות מותג / מצגות',
           'באנרים',
           'עיצוב אתרים',
           'עיצוב בתנועה',
@@ -152,7 +152,7 @@ export const services = {
         he: [
           'פרונטאנד בהתאמה אישית',
           'פריסה רספונסיבית',
-          'אנימציה וממשק משתמש',
+          'אנימציית ממשק משתמש ומושן',
           'הגדרת SEO',
           'פרסום קל',
         ],
@@ -164,7 +164,7 @@ export const services = {
       number: '03',
       title: {
         en: 'Management',
-        ru: 'Поддержка',
+        ru: 'Управление',
         he: 'ניהול',
       },
       features: {
@@ -188,7 +188,7 @@ export const services = {
           'אופטימיזציית SEO',
           'ממשק ניהול וצד אחורי מותאם אישית',
           'הגדרה והשקה של DNS',
-          'מבנה בעל יכולת גדילה',
+          'מבנה בעל יכולת הרחבה',
           'אינטגרציית API',
           'מערכות ניהול תוכן CMS',
         ],
@@ -199,14 +199,14 @@ export const services = {
       id: '4',
       number: '04',
       title: {
-        en: 'Ai & Automation',
+        en: 'AI & Automation',
         ru: 'ИИ и автоматизация',
         he: 'בינה מלאכותית ואוטומציה',
       },
       features: {
         en: ['AI agents', 'Automation process', 'Chat bot', 'Voice assistance'],
         ru: ['ИИ-агенты', 'Автоматизация процессов', 'Чат-боты', 'Голосовые ассистенты'],
-        he: ['סוכני AI', 'תהליכי אוטומציה', "צ'אט בוט", 'סיוע קולי'],
+        he: ['סוכני AI', 'תהליכי אוטומציה', "צ'אטבוט", 'סיוע קולי'],
       },
       image: '/images/service_ai_automation.webp',
     },
@@ -246,7 +246,7 @@ export const page = {
     he: 'עוד',
   },
   getStartLabel: {
-    en: 'GET A START',
+    en: 'GET STARTED',
     ru: 'НАЧАТЬ СЕЙЧАС',
     he: 'להתחיל עכשיו',
   },
@@ -266,7 +266,7 @@ export const caseStudies = {
   },
   subtitle: {
     en: 'We are building digital identities',
-    ru: 'Мы создаем цифровые личности',
+    ru: 'Мы создаем цифровую идентичность',
     he: 'אנחנו בונים זהויות דיגיטליות',
   },
   cardTitle: {
@@ -282,15 +282,16 @@ export const caseStudies = {
   cardDescription: {
     en: 'We develop high-performance architectures, neural pipelines, and premium digital systems designed to optimize and scale your business processes.',
     ru: 'Мы разрабатываем высокопроизводительные архитектуры, нейросети и премиальные цифровые системы для оптимизации и масштабирования ваших бизнес-процессов.',
-    he: 'אנו מפתחים ארכיטקטורות בעלות ביצועים גבוהים, צינורות נתונים עצביים ומערכות דיגיטליות יוקрתיות שנועדו לייעל ולהרחיב את התהליכים העсקיים שלך.',
+    he: 'אנו מפתחים ארכיטקטורות בעלות ביצועים גבוהים, צינורות נתונים עצביים ומערכות דיגיטליות יוקרתיות שנועדו לייעל ולהרחיב את התהליכים העסקיים שלך.',
   },
   cardCTA: {
     en: 'GET STARTED',
     ru: 'НАЧАТЬ РАБОТУ',
-    he: 'להתחיל לעבוד',
+    he: 'להתחיל עכשיו',
   },
   video:
     'https://wgw9moyqjdjcaq9l.public.blob.vercel-storage.com/Dynamic%20Urban%20Slideshow.mp4',
+  videoMobile: '/videos/Cases/Dynamic%20Urban%20Slideshow_mobile.mp4',
 }
 
 // 6. Solution Section translations
@@ -321,10 +322,10 @@ export const solutions = {
   sectionSubtitle: {
     en: 'Clear pricing models for different types of collaboration',
     ru: 'Прозрачные модели ценообразования для разных форматов сотрудничества',
-    he: 'מודלים ברורים לתמחור לסוגים שונים של שיתוף פעולה',
+    he: 'מודלי תמחור ברורים לסוגים שונים של שיתוף פעולה',
   },
   ctaLabel: {
-    en: 'Get a start',
+    en: 'Get started',
     ru: 'Начать сейчас',
     he: 'להתחיל עכשיו',
   },
@@ -339,7 +340,7 @@ export const solutions = {
       },
       features: [
         {
-          label: { en: 'Hosting:', ru: 'Хостинг:', he: 'אירוח:' },
+          label: { en: 'Hosting:', ru: 'Хостинг:', he: 'אחסון:' },
           value: { en: '0₪', ru: '0₪', he: '0₪' },
         },
         {
@@ -375,7 +376,7 @@ export const solutions = {
         },
         {
           full: {
-            en: 'AI: Integration of a ready-made chatbot for recording and answering FAQs',
+            en: 'AI: Integration of a ready-made chatbot for booking and answering FAQs',
             ru: 'AI: Интеграция готового чат-бота для записи и ответов на FAQ',
             he: 'AI: שילוב צ׳אטבוט מוכן לקביעת תורים ומענה על שאלות נפוצות',
           },
@@ -426,7 +427,7 @@ export const solutions = {
         },
       ],
       disclaimer: {
-        en: '* possible the payment into 12 payments',
+        en: '* split into up to 12 payments',
         ru: '* возможна оплата в 12 платежей',
         he: '* אפשרות לתשלום ב-12 תשלומים',
       },
@@ -480,17 +481,17 @@ export const solutions = {
 // 7. Footer translations
 export const footer = {
   ctaHeadingLine1: {
-    en: 'You have a project idea ?',
+    en: 'You have a project idea?',
     ru: 'Есть идея для проекта?',
     he: 'יש לך רעיון לפרויקט?',
   },
   ctaHeadingLine2: {
-    en: 'Lets talk about it!',
+    en: "Let's talk about it!",
     ru: 'Давайте обсудим!',
     he: 'בואו נדבר על זה!',
   },
   ctaButton: {
-    en: 'Get a start',
+    en: 'Get started',
     ru: 'Начать сейчас',
     he: 'להתחיל עכשיו',
   },
@@ -576,7 +577,7 @@ export const letsTalk = {
   subheadingPrefix: {
     en: 'We implement AI agents and automation based on',
     ru: 'Мы внедряем ИИ-агентов и автоматизацию на базе',
-    he: 'אנו מיישמים סוכני AI ואוטומציה המבוססים על',
+    he: 'אנו מטמיעים סוכני AI ואוטומציה המבוססים על',
   },
 }
 

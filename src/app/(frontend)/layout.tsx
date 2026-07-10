@@ -19,7 +19,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 const DESCRIPTIONS: Record<Locale, string> = {
   en: 'Erythro.ai is a digital agency building high-performance websites, brand identity, and AI automation — from strategy to launch.',
   ru: 'Erythro.ai — цифровое агентство: высокопроизводительные сайты, брендинг и AI-автоматизация бизнес-процессов. От стратегии до запуска.',
-  he: 'Erythro.ai היא סוכנות דיגיטל לבניית אתרים מהירים, מיתוג ואוטומציה מבוססת בינה מלאכותית — מאסטרטגיה ועד השקה.',
+  he: 'Erythro.ai היא סוכנות דיגיטל לבניית אתרים בעלי ביצועים גבוהים, מיתוג ואוטומציה מבוססת בינה מלאכותית — מאסטרטגיה ועד השקה.',
 }
 
 const OG_LOCALE: Record<Locale, string> = {

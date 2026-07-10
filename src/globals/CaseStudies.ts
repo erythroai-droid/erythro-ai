@@ -19,7 +19,15 @@ export const CaseStudies: GlobalConfig = {
       type: 'upload',
       relationTo: 'media',
       admin: {
-        description: 'Case Studies banner video (mp4). Shown instead of the static default when set.',
+        description: 'Desktop banner video (1024px+). Shown instead of the static default when set.',
+      },
+    },
+    {
+      name: 'bannerVideoMobile',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Mobile banner video (under 1024px). Falls back to the desktop video when empty.',
       },
     },
   ],

@@ -112,6 +112,8 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.caseStudies.cardCTA = L(caseStudiesG?.cardCTA, content.caseStudies.cardCTA)
     const caseStudyVideo = mediaUrl(caseStudiesG?.bannerVideo)
     if (caseStudyVideo) content.caseStudies.video = caseStudyVideo
+    const caseStudyVideoMobile = mediaUrl(caseStudiesG?.bannerVideoMobile)
+    if (caseStudyVideoMobile) content.caseStudies.videoMobile = caseStudyVideoMobile
 
     // --- Solutions section intro + cards ---
     content.solutions.sectionTitle = L(solutionsIntro?.sectionTitle, content.solutions.sectionTitle)
