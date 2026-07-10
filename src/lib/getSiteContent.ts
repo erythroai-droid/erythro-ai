@@ -33,6 +33,58 @@ function mediaUrl(v: any): string | undefined {
   return v && typeof v === 'object' && typeof v.url === 'string' ? v.url : undefined
 }
 
+function isPopulatedMedia(v: any): boolean {
+  return !!(v && typeof v === 'object' && (typeof v.url === 'string' || typeof v.mimeType === 'string'))
+}
+
+function mediaRelationId(v: any): number | string | null {
+  if (typeof v === 'number') return v
+  if (typeof v === 'string' && v.length > 0) return v
+  return null
+}
+
+function isVideoMedia(media: any, url?: string): boolean {
+  if (typeof media?.mimeType === 'string' && media.mimeType.startsWith('video/')) return true
+  const candidates = [url, media?.url, media?.filename].filter((s) => typeof s === 'string') as string[]
+  return candidates.some((s) => /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(s))
+}
+
+async function resolveServiceMediaMap(payload: any, docs: any[]): Promise<Map<number | string, any>> {
+  const mediaById = new Map<number | string, any>()
+  const unresolvedIds: (number | string)[] = []
+
+  for (const d of docs) {
+    const raw = d.image
+    if (!isPopulatedMedia(raw)) {
+      const id = mediaRelationId(raw)
+      if (id != null) unresolvedIds.push(id)
+    }
+  }
+
+  if (!unresolvedIds.length) return mediaById
+
+  const uniqueIds = [...new Set(unresolvedIds)]
+  const mediaRes = (await payload.find({
+    collection: 'media',
+    where: { id: { in: uniqueIds } },
+    limit: uniqueIds.length,
+    depth: 0,
+  })) as { docs?: any[] }
+
+  for (const m of mediaRes.docs ?? []) {
+    mediaById.set(m.id, m)
+  }
+
+  return mediaById
+}
+
+function resolveServiceMedia(raw: any, mediaById: Map<number | string, any>): any | null {
+  if (isPopulatedMedia(raw)) return raw
+  const id = mediaRelationId(raw)
+  if (id == null) return null
+  return mediaById.get(id) ?? mediaById.get(Number(id)) ?? null
+}
+
 /**
  * Loads all editable site content from Payload (globals + collections),
  * merged over the static defaults so the site never renders empty.
@@ -82,6 +134,8 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.services.priceLabel = L(servicesIntro?.priceLabel, content.services.priceLabel)
 
     if (Array.isArray(servicesRes?.docs) && servicesRes.docs.length) {
+      const serviceMediaById = await resolveServiceMediaMap(payload, servicesRes.docs)
+
       content.services.items = servicesRes.docs.map((d: any, i: number) => {
         const fb = defaultSiteContent.services.items[i]
         const features: Record<string, string[]> = { en: [], ru: [], he: [] }
@@ -90,11 +144,9 @@ export async function getSiteContent(): Promise<SiteContent> {
         }
         // The `image` upload field accepts any media; if a video was uploaded,
         // expose it as `video` so the card plays it instead of rendering an image.
-        const media = d.image && typeof d.image === 'object' ? d.image : null
-        const url = typeof media?.url === 'string' ? media.url : undefined
-        const isVideo =
-          (typeof media?.mimeType === 'string' && media.mimeType.startsWith('video/')) ||
-          (!!url && /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(url))
+        const media = resolveServiceMedia(d.image, serviceMediaById)
+        const url = mediaUrl(media)
+        const isVideo = isVideoMedia(media, url)
         return {
           id: String(d.id),
           number: d.number || fb?.number || String(i + 1).padStart(2, '0'),
@@ -205,7 +257,7 @@ export async function getSiteContent(): Promise<SiteContent> {
  * unaffected. Invalidated via the `SITE_CONTENT_TAG` tag whenever content is
  * edited in the Payload admin (see src/lib/revalidate.ts).
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v2'], {
   tags: [SITE_CONTENT_TAG],
 })
 

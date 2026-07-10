@@ -53,7 +53,7 @@ function CardVideo({
 
     observer.observe(el)
     return () => observer.disconnect()
-  }, [])
+  }, [src])
 
   return (
     <video

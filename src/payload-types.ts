@@ -680,9 +680,13 @@ export interface CaseStudy {
   cardDescription?: string | null;
   cardCTA?: string | null;
   /**
-   * Case Studies banner video (mp4). Shown instead of the static default when set.
+   * Desktop banner video (1024px+). Shown instead of the static default when set.
    */
   bannerVideo?: (number | null) | Media;
+  /**
+   * Mobile banner video (under 1024px). Falls back to the desktop video when empty.
+   */
+  bannerVideoMobile?: (number | null) | Media;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -835,6 +839,7 @@ export interface CaseStudiesSelect<T extends boolean = true> {
   cardDescription?: T;
   cardCTA?: T;
   bannerVideo?: T;
+  bannerVideoMobile?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
