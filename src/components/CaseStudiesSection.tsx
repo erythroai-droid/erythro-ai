@@ -33,11 +33,13 @@ function CaseStudyVideo({
   label,
   sectionRef,
   containerRef,
+  portrait = false,
 }: {
   src: string
   label: string
   sectionRef: React.RefObject<HTMLElement | null>
   containerRef: React.RefObject<HTMLElement | null>
+  portrait?: boolean
 }) {
   const ref = useRef<HTMLVideoElement | null>(null)
   const [visible, setVisible] = useState(false)
@@ -96,9 +98,9 @@ function CaseStudyVideo({
       key={src}
       ref={ref}
       src={src}
-      className={`absolute inset-0 h-full w-full object-cover scale-[1.14] transition-opacity duration-500 ${
-        visible ? 'opacity-100' : 'opacity-0'
-      }`}
+      className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+        portrait ? '' : 'scale-[1.14]'
+      } ${visible ? 'opacity-100' : 'opacity-0'}`}
       muted
       loop
       playsInline
@@ -237,10 +239,10 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           </p>
         </div>
 
-        {/* Case study video — aspect-video gives height on mobile; flex-1 on desktop */}
+        {/* Mobile: 9:16 portrait player; desktop: flex slot for 16:9 video */}
         <div
           ref={cardRef}
-          className="relative mb-[50px] w-full aspect-video overflow-hidden bg-white lg:aspect-auto lg:flex-1 lg:min-h-0"
+          className="relative mx-auto mb-[50px] w-full max-w-[420px] aspect-[9/16] overflow-hidden bg-white lg:max-w-none lg:aspect-auto lg:flex-1 lg:min-h-0"
         >
           {videoSrc ? (
             <CaseStudyVideo
@@ -249,6 +251,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
               label={t(translations.cardTitle)}
               sectionRef={sectionRef}
               containerRef={cardRef}
+              portrait={isDesktop === false}
             />
           ) : null}
         </div>
