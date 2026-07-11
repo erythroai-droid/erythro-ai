@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import Button from './Button'
@@ -141,12 +142,117 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
   const columnsRef = useRef<HTMLDivElement | null>(null)
   const logoRef = useRef<HTMLDivElement | null>(null)
   const barRef = useRef<HTMLDivElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+
+  const animationState = useRef({ frame: 0 })
+  const [images, setImages] = useState<HTMLImageElement[]>([])
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  // Preloading image sequence (desktop only, runs after mount)
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.matchMedia('(max-width: 1023px)').matches) {
+      return
+    }
+
+    const loadedImages: HTMLImageElement[] = []
+    const imagesCount = 110
+    const basePath = '/images/hero-sequence/'
+    let completed = 0
+
+    for (let i = 1; i <= imagesCount; i++) {
+      const img = new window.Image()
+      img.src = `${basePath}chip (${i}).webp`
+
+      const handleLoad = () => {
+        completed++
+        if (completed === imagesCount) {
+          setIsLoaded(true)
+        }
+      }
+
+      img.onload = handleLoad
+      img.onerror = handleLoad
+
+      loadedImages.push(img)
+    }
+
+    setImages(loadedImages)
+  }, [])
+
+  // Helper to find the nearest loaded image
+  const getNearestLoadedImage = (index: number): HTMLImageElement | null => {
+    if (images.length === 0) return null
+
+    const exactImg = images[index]
+    if (exactImg && exactImg.complete) return exactImg
+
+    for (let i = index - 1; i >= 0; i--) {
+      const prevImg = images[i]
+      if (prevImg && prevImg.complete) return prevImg
+    }
+
+    for (let i = index + 1; i < images.length; i++) {
+      const nextImg = images[i]
+      if (nextImg && nextImg.complete) return nextImg
+    }
+
+    return null
+  }
+
+  // Draw frame on canvas
+  const render = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const context = canvas.getContext('2d')
+    if (!context) return
+
+    const currentFrame = Math.round(animationState.current.frame)
+    const img = getNearestLoadedImage(currentFrame)
+
+    if (img) {
+      context.clearRect(0, 0, canvas.width, canvas.height)
+
+      const canvasWidth = canvas.width
+      const canvasHeight = canvas.height
+      const imgWidth = img.naturalWidth || img.width
+      const imgHeight = img.naturalHeight || img.height
+
+      if (imgWidth && imgHeight) {
+        const scale = Math.max(canvasWidth / imgWidth, canvasHeight / imgHeight)
+        const x = canvasWidth / 2 - (imgWidth / 2) * scale
+        const y = canvasHeight / 2 - (imgHeight / 2) * scale
+        context.drawImage(img, x, y, imgWidth * scale, imgHeight * scale)
+      } else {
+        context.drawImage(img, 0, 0, canvasWidth, canvasHeight)
+      }
+    }
+  }
+
+  const renderRef = useRef<() => void>(() => {})
+  renderRef.current = render
+
+  // Trigger re-render of canvas once preloading is completed
+  useEffect(() => {
+    if (isLoaded) {
+      renderRef.current()
+    }
+  }, [isLoaded])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia()
 
       mm.add('(min-width: 1024px)', () => {
+        // Set canvas resolution on desktop mount
+        const canvas = canvasRef.current
+        if (canvas) {
+          canvas.width = 1920
+          canvas.height = 1080
+        }
+
+        // Draw initial frame if we have images
+        renderRef.current()
+
         gsap.set([columnsRef.current, logoRef.current, barRef.current], {
           opacity: 0,
           y: 60,
@@ -165,14 +271,32 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
           },
         })
 
-        ScrollTrigger.create({
-          trigger: footerRef.current,
-          start: 'top top',
-          end: '+=100%', // Pin scroll distance
-          pin: true,
-          pinSpacing: true,
-          invalidateOnRefresh: true,
+        // Pin the footer and scrub the chip animation
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: footerRef.current,
+            start: 'top top',
+            end: '+=100%', // Pin scroll distance
+            pin: true,
+            pinSpacing: true,
+            scrub: 1,
+            invalidateOnRefresh: true,
+          },
         })
+
+        tl.to(
+          animationState.current,
+          {
+            frame: 109,
+            snap: 'frame',
+            ease: 'none',
+            onUpdate: () => {
+              renderRef.current()
+            },
+            duration: 1.2,
+          },
+          0,
+        )
       })
 
       mm.add('(max-width: 1023px)', () => {
@@ -206,7 +330,7 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
 
       <footer
         ref={footerRef}
-        className={`relative w-full py-[60px] transition-colors duration-500 lg:py-0 lg:h-screen lg:flex lg:flex-col lg:justify-center select-none pointer-events-auto ${
+        className={`relative w-full py-[60px] transition-colors duration-500 lg:py-0 lg:h-screen lg:flex lg:flex-col lg:justify-center select-none pointer-events-auto overflow-hidden ${
           isLight ? 'bg-gold-100' : ''
         }`}
         style={
@@ -215,7 +339,43 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
             : { background: 'var(--background-footer-bg, #0D0D0D)' }
         }
       >
-        <div className="absolute inset-0 bg-noise opacity-5 pointer-events-none" />
+        <div className="absolute inset-0 bg-noise opacity-5 pointer-events-none z-[1]" />
+
+        {/* 1. Desktop Mode: HTML5 Canvas rendering */}
+        <div className="hidden lg:flex absolute inset-0 w-full h-full items-center justify-center pointer-events-none select-none z-0">
+          <canvas
+            ref={canvasRef}
+            className="w-full h-full object-cover opacity-85"
+          />
+        </div>
+
+        {/* 2. Mobile/Tablet Fallback: Optimized next/image displaying first frame */}
+        <div className="block lg:hidden absolute inset-0 z-0 select-none pointer-events-none">
+          <Image
+            src="/images/hero-sequence/chip (1).webp"
+            alt="Erythro Neural Chip"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover opacity-75"
+          />
+        </div>
+
+        {/* Dark overlay to dim the background image/animation */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[1]"
+          style={{ backgroundColor: 'rgba(13,13,13,0.8)' }}
+        />
+
+        {/* Ambient background gradients to tie canvas to the overall site theme */}
+        <div
+          className="absolute inset-0 pointer-events-none z-0"
+          style={{
+            background: isLight
+              ? 'radial-gradient(ellipse at center, transparent 30%, #FFE9C7 90%)'
+              : 'radial-gradient(ellipse at center, transparent 30%, #0D0D0D 90%)'
+          }}
+        />
 
         <div className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col items-center gap-[30px] px-[30px]">
           {/* Columns Grid */}
