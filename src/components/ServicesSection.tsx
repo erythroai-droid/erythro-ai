@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import Button from './Button'
@@ -17,9 +17,8 @@ interface ServicesSectionProps {
 }
 
 /**
- * Card video that only plays while it is visible in the viewport, and pauses
- * when it scrolls out (saves CPU/bandwidth). Muted + playsInline so browsers
- * allow programmatic playback without a user gesture.
+ * Looping card video with a persistent poster underlay (first frame) visible
+ * while the file buffers or if playback never starts.
  */
 function CardVideo({
   src,
@@ -32,51 +31,72 @@ function CardVideo({
   label: string
   className?: string
 }) {
-  const ref = useRef<HTMLVideoElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const [videoReady, setVideoReady] = useState(false)
 
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
+    setVideoReady(false)
+  }, [src])
 
-    el.loop = true
-    const onEnded = () => {
-      el.currentTime = 0
-      el.play().catch(() => {})
-    }
-    el.addEventListener('ended', onEnded)
+  useEffect(() => {
+    const container = containerRef.current
+    const video = videoRef.current
+    if (!container || !video) return
 
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            el.play().catch(() => {})
+            video.preload = 'auto'
+            void video.play().catch(() => {})
           } else {
-            el.pause()
+            video.pause()
           }
         }
       },
-      { threshold: 0.25 },
+      { threshold: 0.15 },
     )
 
-    observer.observe(el)
+    observer.observe(container)
+
     return () => {
-      el.removeEventListener('ended', onEnded)
       observer.disconnect()
     }
   }, [src])
 
   return (
-    <video
-      ref={ref}
-      src={src}
-      poster={poster}
-      className={`block max-w-full ${className ?? ''}`}
-      muted
-      loop
-      playsInline
-      preload="metadata"
-      aria-label={label}
-    />
+    <div
+      ref={containerRef}
+      className={`relative h-full w-full overflow-hidden ${className ?? ''}`}
+    >
+      {poster ? (
+        <img
+          src={poster}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="eager"
+          decoding="async"
+        />
+      ) : null}
+      <video
+        ref={videoRef}
+        src={src}
+        poster={poster}
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
+          videoReady ? 'opacity-100' : 'opacity-0'
+        }`}
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-label={label}
+        onLoadedData={() => setVideoReady(true)}
+        onCanPlay={() => setVideoReady(true)}
+        onError={() => setVideoReady(false)}
+      />
+    </div>
   )
 }
 
@@ -417,7 +437,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                       {item.video ? (
                         <CardVideo
                           src={item.video}
-                          poster={item.image || undefined}
+                          poster={item.videoPoster || item.image || undefined}
                           label={itemTitle}
                           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                         />

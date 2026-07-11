@@ -67,6 +67,8 @@ export interface ServiceItem {
   title: Record<string, string>
   features: Record<string, string[]>
   image: string
+  /** First-frame poster shown under video while it loads or if playback fails. */
+  videoPoster?: string
   /** Optional video URL. When set, the card plays this video instead of `image`. */
   video?: string
 }
@@ -125,6 +127,7 @@ export const services = {
         ],
       },
       image: '/images/service_design_branding.webp',
+      videoPoster: '/images/service_design_branding_poster.webp',
     },
     {
       id: '2',
@@ -158,6 +161,7 @@ export const services = {
         ],
       },
       image: '/images/service_development.webp',
+      videoPoster: '/images/service_development_poster.webp',
     },
     {
       id: '3',
@@ -194,6 +198,7 @@ export const services = {
         ],
       },
       image: '/images/service_management.webp',
+      videoPoster: '/images/service_management_poster.webp',
     },
     {
       id: '4',
@@ -209,6 +214,7 @@ export const services = {
         he: ['סוכני AI', 'תהליכי אוטומציה', "צ'אטבוט", 'סיוע קולי'],
       },
       image: '/images/service_ai_automation.webp',
+      videoPoster: '/images/service_ai_automation_poster.webp',
     },
   ] as ServiceItem[],
 }

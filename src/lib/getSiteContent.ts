@@ -152,9 +152,11 @@ export async function getSiteContent(): Promise<SiteContent> {
           number: d.number || fb?.number || String(i + 1).padStart(2, '0'),
           title: L(d.title, fb?.title ?? { en: '', ru: '', he: '' }),
           features,
-          // For videos keep the static default image as a poster fallback.
+          // For videos keep the static poster/image as fallback under the player.
           image: isVideo ? fb?.image || '' : url || fb?.image || '',
-          ...(isVideo && url ? { video: url } : {}),
+          ...(isVideo && url
+            ? { video: url, videoPoster: fb?.videoPoster || fb?.image || '' }
+            : {}),
         }
       })
     }
