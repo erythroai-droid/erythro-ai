@@ -129,12 +129,31 @@ function SolutionCard({
               : 'text-gold-500'
 
           if (feature.full) {
+            const text = t(feature.full)
+            const colonIndex = text.indexOf(':')
+            let labelPart = ''
+            let valuePart = text
+
+            if (colonIndex !== -1) {
+              labelPart = text.slice(0, colonIndex + 1)
+              valuePart = text.slice(colonIndex + 1)
+            }
+
             return (
               <li key={index} className="relative flex items-start gap-2.5">
                 <span
                   className={`absolute -start-4 top-2.5 size-1 shrink-0 rounded-[1px] ${dotClass}`}
                 />
-                <p className={`text-base leading-6 lg:text-sm ${textClass}`}>{t(feature.full)}</p>
+                <p className={`text-base leading-6 lg:text-sm ${textClass}`}>
+                  {labelPart ? (
+                    <>
+                      <span className={`font-bold ${labelClass}`}>{labelPart}</span>
+                      <span className="font-normal normal-case">{valuePart}</span>
+                    </>
+                  ) : (
+                    text
+                  )}
+                </p>
               </li>
             )
           }
