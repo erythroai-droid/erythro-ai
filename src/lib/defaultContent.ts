@@ -25,7 +25,7 @@ export interface SiteSettingsContent {
 export interface SiteContent {
   navbar: typeof navbar
   cookieConsent: typeof cookieConsent
-  hero: typeof hero
+  hero: typeof hero & { backgroundImage?: string }
   services: typeof services
   caseStudies: typeof caseStudies
   solutions: typeof solutions

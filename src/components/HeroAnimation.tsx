@@ -9,6 +9,7 @@ if (typeof window !== 'undefined') {
 }
 
 interface HeroAnimationProps {
+  videoUrl?: string
   imagesCount?: number
   basePath?: string
   children?: React.ReactNode
@@ -16,6 +17,7 @@ interface HeroAnimationProps {
 }
 
 export default function HeroAnimation({
+  videoUrl,
   children,
   navbar,
 }: HeroAnimationProps) {
@@ -87,19 +89,27 @@ export default function HeroAnimation({
         {/* Pinned Navbar */}
         {navbar}
 
-        {/* Background Video */}
+        {/* Background Media (Video or Image) */}
         <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0">
-          <video
-            src="/videos/Ai.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover opacity-85"
-          />
+          {videoUrl && !/\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(videoUrl) ? (
+            <img
+              src={videoUrl}
+              alt="Hero Background"
+              className="w-full h-full object-cover opacity-85"
+            />
+          ) : (
+            <video
+              src={videoUrl || "/videos/Ai.mp4"}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover opacity-85"
+            />
+          )}
         </div>
 
-        {/* Dark overlay to dim the background video */}
+        {/* Dark overlay to dim the background media */}
         <div
           className="absolute inset-0 pointer-events-none z-[1]"
           style={{ backgroundColor: 'rgba(13,13,13,0.45)' }}

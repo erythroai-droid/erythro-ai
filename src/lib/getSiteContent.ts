@@ -126,6 +126,10 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.hero.mainHeading = L(hero?.mainHeading, content.hero.mainHeading)
     content.hero.subtext = L(hero?.subtext, content.hero.subtext)
     content.hero.ctaFind = L(hero?.ctaFind, content.hero.ctaFind)
+    const heroBg = mediaUrl(hero?.backgroundImage)
+    if (heroBg) {
+      content.hero.backgroundImage = heroBg
+    }
 
     // --- Services section intro + items ---
     content.services.sectionTitle = L(servicesIntro?.sectionTitle, content.services.sectionTitle)

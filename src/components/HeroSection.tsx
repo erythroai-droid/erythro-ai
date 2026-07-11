@@ -63,7 +63,7 @@ export default function HeroSection({ locale, navbar }: HeroSectionProps) {
   }, [])
 
   return (
-    <HeroAnimation navbar={navbar}>
+    <HeroAnimation videoUrl={translations.backgroundImage} navbar={navbar}>
       <div 
         ref={containerRef} 
         className="relative max-w-[1170px] mx-auto px-[30px] flex flex-col items-center text-center gap-6 mt-12 md:mt-16 select-none"
