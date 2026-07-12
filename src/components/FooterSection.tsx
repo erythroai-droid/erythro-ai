@@ -313,8 +313,8 @@ export default function FooterSection({ locale }: FooterSectionProps) {
 
   return (
     <div className="relative z-40 w-full pointer-events-none">
-      {/* Spacer to allow the pinned SolutionSection to stay fixed while Footer slides up over it */}
-      <div className="hidden lg:block h-[150vh] w-full pointer-events-none" />
+      {/* Spacer so Footer can slide up over the pinned full-screen Solutions */}
+      <div className="hidden lg:block h-screen w-full pointer-events-none" />
 
       <footer
         ref={footerRef}

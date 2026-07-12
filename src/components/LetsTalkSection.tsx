@@ -199,6 +199,10 @@ export default function LetsTalkSection({ locale }: LetsTalkSectionProps) {
         ref={bgRef}
         className="absolute inset-0 z-0 pointer-events-none lets-talk-bg"
       />
+      <div
+        className="solution-section-noise absolute inset-0 z-[1] pointer-events-none"
+        aria-hidden
+      />
 
       {/* Large Scaled Erythro.ai Logo (custom colored: white letters/mark + white .ai box with red text) */}
       <div

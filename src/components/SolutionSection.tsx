@@ -254,13 +254,20 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
           },
         })
 
+        // Lock Solutions to full viewport, then Footer slides up over it
         ScrollTrigger.create({
           id: 'solutions-pin',
           trigger: sectionRef.current,
           start: 'top top',
-          end: '+=150%',
+          end: '+=100%',
           pin: true,
           pinSpacing: false,
+          snap: {
+            snapTo: [0, 1],
+            duration: { min: 0.25, max: 0.5 },
+            delay: 0.04,
+            ease: 'power2.out',
+          },
           invalidateOnRefresh: true,
         })
       })
@@ -300,15 +307,15 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
 
   return (
     <div className="relative z-30 w-full pointer-events-none">
-      {/* Spacer to allow the pinned Services/LetsTalk overlay to stay fixed while Solutions slides up over it */}
-      <div className="hidden lg:block h-[490vh] w-full pointer-events-none" />
+      {/* Spacer: Services/LetsTalk stays pinned; last ~100vh is Solutions riding up full-screen (like Services over Cases) */}
+      <div className="hidden lg:block h-[500vh] w-full pointer-events-none" />
 
       <section
         id="solutions"
         ref={sectionRef}
         data-glow-x={isLight ? '50' : '82'}
         data-glow-y={isLight ? '32' : '14'}
-        className={`relative z-10 w-full overflow-hidden border-b border-coal-400/5 pt-20 pb-[100px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:border-t lg:pt-20 lg:pb-24 lg:min-h-screen lg:flex lg:flex-col lg:justify-start select-none pointer-events-auto ${
+        className={`relative z-10 w-full overflow-hidden border-b border-coal-400/5 pt-20 pb-[100px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:border-t lg:py-0 lg:pt-20 lg:h-screen lg:flex lg:flex-col lg:justify-start select-none pointer-events-auto ${
           isLight ? 'solution-light-bg' : 'dark-gradient-bg'
         }`}
       >
@@ -318,7 +325,7 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
         />
 
         {/* Headings container (max-w-[1170px]) */}
-        <div className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col items-center px-[30px] mb-[60px]">
+        <div className="relative z-10 mx-auto flex w-full max-w-[1170px] shrink-0 flex-col items-center px-[30px] mb-8 lg:mb-10">
           <div
             ref={headingRef}
             className="flex flex-col items-center gap-[5px] text-center"
@@ -339,7 +346,7 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
         {/* Cards container (full screen width, max-w-none) */}
         <div
           ref={cardsRef}
-          className="solution-cards-track relative z-10 flex w-full flex-col items-center gap-[30px] px-[30px] py-8 pb-16 lg:flex-row lg:flex-nowrap lg:items-center lg:justify-start lg:gap-[30px] lg:overflow-x-auto lg:overscroll-x-contain lg:snap-x lg:snap-mandatory lg:scroll-px-[30px] lg:py-10 lg:pb-20 xl:justify-center xl:overflow-x-visible xl:snap-none"
+          className="solution-cards-track relative z-10 flex min-h-0 w-full flex-1 flex-col items-center gap-[30px] px-[30px] py-8 pb-16 lg:flex-row lg:flex-nowrap lg:items-center lg:justify-start lg:gap-[30px] lg:overflow-x-auto lg:overscroll-x-contain lg:snap-x lg:snap-mandatory lg:scroll-px-[30px] lg:py-6 lg:pb-10 xl:justify-center xl:overflow-x-visible xl:snap-none"
         >
           {translations.cards.map((card) => (
             <SolutionCard

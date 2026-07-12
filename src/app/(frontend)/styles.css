@@ -563,6 +563,22 @@
     background-size: cover;
   }
 
+  /* Splash: full-viewport radial with edge darkening */
+  .splash-bg {
+    background-color: #0f0000;
+    background-image: radial-gradient(
+      ellipse 120% 100% at 50% 48%,
+      #e80807 0%,
+      #c40a09 22%,
+      #7a0c0b 48%,
+      #2a0504 72%,
+      #0f0000 100%
+    );
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+  }
+
   /* Premium Design System Glassmorphism */
   .panel-glass {
     background: rgba(255, 255, 255, 0.03);

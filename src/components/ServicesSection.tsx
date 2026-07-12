@@ -549,6 +549,10 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             ref={bgRef}
             className="absolute inset-0 z-0 pointer-events-none lets-talk-bg"
           />
+          <div
+            className="solution-section-noise absolute inset-0 z-[1] pointer-events-none"
+            aria-hidden
+          />
 
           {/* Logo */}
           <div
@@ -649,6 +653,10 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         ref={mobileContactRef}
         className="relative z-20 -mt-8 w-full overflow-hidden rounded-t-[28px] py-[60px] pb-[160px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] md:py-[100px] md:pb-[180px] lg:hidden flex flex-col items-center justify-center gap-8 md:gap-[30px] lets-talk-bg"
       >
+        <div
+          className="solution-section-noise absolute inset-0 z-[1] pointer-events-none"
+          aria-hidden
+        />
         <div
           ref={mobileLogoRef}
           className="w-full max-w-[280px] sm:max-w-[420px] h-auto flex justify-center px-6 relative z-10"

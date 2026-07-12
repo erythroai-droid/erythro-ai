@@ -227,10 +227,13 @@ export default function SplashScreen() {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden lets-talk-bg"
+      className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden splash-bg"
       aria-hidden="true"
     >
-      <div className="absolute inset-0 bg-noise opacity-10 pointer-events-none" />
+      <div
+        className="solution-section-noise absolute inset-0 z-[1] pointer-events-none"
+        aria-hidden
+      />
 
       <div
         ref={logoWrapRef}
