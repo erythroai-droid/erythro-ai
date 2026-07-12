@@ -495,6 +495,7 @@
   /* Solution light: warm cream glow (upper-center) + peach/taupe vignette */
   .solution-light-bg {
     position: relative;
+    overflow: hidden;
     background-color: var(--gold-500, #ffe9c7);
     background-image:
       radial-gradient(
@@ -527,7 +528,7 @@
   .solution-light-bg::after {
     content: '';
     position: absolute;
-    inset: -35%;
+    inset: 0;
     background-image: radial-gradient(
       ellipse 100% 90% at var(--cursor-glow-x, 50%) var(--cursor-glow-y, 34%),
       rgba(255, 255, 255, 0.5) 0%,
@@ -549,39 +550,17 @@
 
   .lets-talk-bg {
     background-color: #0f0000;
-    background-image:
-      linear-gradient(
-        to bottom,
-        transparent 0%,
-        transparent 48%,
-        rgba(15, 0, 0, 0.35) 72%,
-        #0f0000 100%
-      ),
-      radial-gradient(
-        140% 90% at 50% 38%,
-        #e80807 0%,
-        #c40a09 22%,
-        #7a0c0b 48%,
-        #2a0504 72%,
-        #0f0000 100%
-      );
+    background-image: radial-gradient(
+      140% 90% at 50% 42%,
+      #e80807 0%,
+      #c40a09 22%,
+      #7a0c0b 48%,
+      #2a0504 72%,
+      #0f0000 100%
+    );
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-  }
-
-  /* Desktop: no bottom vignette — clean radial only */
-  @media (min-width: 1024px) {
-    .lets-talk-bg {
-      background-image: radial-gradient(
-        140% 90% at 50% 42%,
-        #e80807 0%,
-        #c40a09 22%,
-        #7a0c0b 48%,
-        #2a0504 72%,
-        #0f0000 100%
-      );
-    }
   }
 
   /* Premium Design System Glassmorphism */
