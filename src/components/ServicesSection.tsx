@@ -379,7 +379,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
   useCursorGlow(sectionRef)
 
   return (
-    <div ref={wrapperRef} className="relative z-20 w-full">
+    <div ref={wrapperRef} className="relative w-full lg:z-20">
       {/* Spacer to push Services Section down by 100vh on desktop so Case Studies is fully visible before Services slides over */}
       <div className="hidden lg:block h-screen w-full pointer-events-none" />
 
@@ -388,10 +388,14 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         ref={sectionRef}
         data-glow-x={isLight ? '50' : '28'}
         data-glow-y={isLight ? '36' : '72'}
-        className={`pt-20 pb-20 lg:py-0 lg:pt-20 lg:h-screen lg:flex lg:flex-col lg:justify-start w-full transition-colors duration-500 border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 overflow-visible select-none ${
-          isLight ? 'premium-light-bg' : 'premium-dark-bg'
-        }`}
+        className="pt-20 pb-20 lg:py-0 lg:pt-20 lg:h-screen lg:flex lg:flex-col lg:justify-start w-full transition-colors duration-500 border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 max-lg:overflow-hidden lg:overflow-visible select-none"
       >
+        <div
+          className={`absolute inset-0 overflow-hidden pointer-events-none ${
+            isLight ? 'premium-light-bg' : 'premium-dark-bg'
+          }`}
+          aria-hidden
+        />
         <div
           className="solution-section-noise absolute inset-0 z-[1] pointer-events-none"
           aria-hidden
@@ -416,7 +420,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           </div>
 
           {/* Service Cards Horizontal Scroll Track */}
-          <div className="w-full overflow-x-clip overflow-y-visible py-6 lg:py-8">
+          <div className="w-full overflow-hidden lg:overflow-x-clip lg:overflow-y-visible py-6 lg:py-8">
             <div
               ref={cardsRowRef}
               className="flex flex-col lg:flex-row gap-6 lg:gap-10 w-full lg:w-max px-[30px] lg:px-0"

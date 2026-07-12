@@ -340,10 +340,13 @@
 
   /* Premium cinematic gradient backgrounds */
   .dark-gradient-bg,
-  .premium-dark-bg,
-  .premium-light-bg,
   .solution-light-bg {
     position: relative;
+    isolation: isolate;
+  }
+
+  .premium-dark-bg,
+  .premium-light-bg {
     isolation: isolate;
   }
 
@@ -412,6 +415,34 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='fineGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.05' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fineGrain)'/%3E%3C/svg%3E");
     opacity: 0.08;
     mix-blend-mode: soft-light;
+  }
+
+  .solution-cards-track {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 233, 199, 0.35) transparent;
+  }
+
+  .solution-cards-track::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .solution-cards-track::-webkit-scrollbar-thumb {
+    background: rgba(255, 233, 199, 0.35);
+    border-radius: 999px;
+  }
+
+  .solution-cards-track::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  @media (min-width: 1280px) {
+    .solution-cards-track {
+      scrollbar-width: auto;
+    }
+
+    .solution-cards-track::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   /* Services light: warm cream glow (upper-center) + peach/taupe vignette */

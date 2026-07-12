@@ -75,14 +75,16 @@ function SolutionCard({
       ? 'border-coal-900 text-coal-900 hover:!bg-erythro-500 hover:!text-white hover:!border-erythro-500'
       : 'border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)]'
 
+  const cardWidthClass = isFeatured ? 'w-[300px] flex-none' : 'w-[270px] flex-none'
+
   return (
     <article
-      className={`relative flex shrink-0 flex-col items-center gap-2 rounded-[10px] px-4 py-[30px] transition-shadow duration-300 ease-out ${
+      className={`relative flex ${cardWidthClass} flex-col items-center gap-2 rounded-[10px] px-4 py-[30px] transition-shadow duration-300 ease-out lg:snap-center ${
         isFeatured
-          ? 'z-10 mb-4 min-h-[570px] h-auto w-[300px] overflow-visible bg-erythro-600 shadow-[0_5px_50px_0_rgba(13,13,13,0.3)] hover:shadow-[0_10px_44px_0_rgba(13,13,13,0.38)]'
+          ? 'max-lg:mb-4 min-h-[560px] h-auto bg-erythro-600 shadow-[0_5px_50px_0_rgba(13,13,13,0.3)] hover:shadow-[0_10px_44px_0_rgba(13,13,13,0.38)] lg:min-h-[540px] xl:min-h-[570px]'
           : isLight
-            ? 'min-h-[530px] h-auto w-[270px] overflow-visible border border-white bg-white shadow-card-services hover:shadow-[0_8px_26px_0_rgba(13,13,13,0.22)]'
-            : 'min-h-[530px] h-auto w-[270px] overflow-visible border border-gold-500 bg-[#1E1E1E] hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)]'
+            ? 'min-h-[530px] h-auto border border-white bg-white shadow-card-services hover:shadow-[0_8px_26px_0_rgba(13,13,13,0.22)] lg:min-h-[510px] xl:min-h-[530px]'
+            : 'min-h-[530px] h-auto border border-gold-500 bg-[#1E1E1E] hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)] lg:min-h-[510px] xl:min-h-[530px]'
       }`}
     >
       {card.pricePrefix && (
@@ -128,7 +130,7 @@ function SolutionCard({
         }`}
       >
         <span
-          className={`text-center font-bold text-base uppercase leading-snug ${
+          className={`text-center font-bold text-base uppercase leading-snug break-words hyphens-auto ${
             isFeatured ? 'text-erythro-500' : isLight ? 'text-white' : 'text-coal-900'
           }`}
         >
@@ -155,7 +157,7 @@ function SolutionCard({
                 <span
                   className={`absolute -start-4 top-2.5 size-1 shrink-0 rounded-[1px] ${dotClass}`}
                 />
-                <p className={`text-base leading-6 lg:text-sm ${textClass}`}>
+                <p className={`break-words text-base leading-6 lg:text-sm ${textClass}`}>
                   {labelPart ? (
                     <>
                       <span className={`font-bold ${labelClass}`}>{labelPart}</span>
@@ -174,7 +176,7 @@ function SolutionCard({
               <span
                 className={`absolute -start-4 top-2.5 size-1 shrink-0 rounded-[1px] ${dotClass}`}
               />
-              <p className={`text-base leading-6 lg:text-sm ${textClass}`}>
+              <p className={`break-words text-base leading-6 lg:text-sm ${textClass}`}>
                 {feature.label && (
                   <span className={`font-bold ${labelClass}`}>
                     {capitalizeFeatureLabel(t(feature.label))}{' '}
@@ -337,7 +339,7 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
         {/* Cards container (full screen width, max-w-none) */}
         <div
           ref={cardsRef}
-          className="relative z-10 flex w-full flex-col items-center gap-[30px] overflow-visible px-[30px] py-8 pb-16 lg:flex-row lg:items-center lg:justify-center lg:py-10 lg:pb-20 no-scrollbar"
+          className="solution-cards-track relative z-10 flex w-full flex-col items-center gap-[30px] px-[30px] py-8 pb-16 lg:flex-row lg:flex-nowrap lg:items-center lg:justify-start lg:gap-[30px] lg:overflow-x-auto lg:overscroll-x-contain lg:snap-x lg:snap-mandatory lg:scroll-px-[30px] lg:py-10 lg:pb-20 xl:justify-center xl:overflow-x-visible xl:snap-none"
         >
           {translations.cards.map((card) => (
             <SolutionCard
@@ -349,16 +351,6 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
             />
           ))}
         </div>
-
-        <style jsx>{`
-          .no-scrollbar::-webkit-scrollbar {
-            display: none;
-          }
-          .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-        `}</style>
       </section>
     </div>
   )
