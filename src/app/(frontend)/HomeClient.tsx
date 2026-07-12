@@ -130,8 +130,8 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
         <ServicesSection locale={locale} theme={theme} />
       </div>
 
-      {/* Solution pricing cards */}
-      <div className="relative z-30 -mt-8 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+      {/* Solution pricing cards — larger mobile overlap so rounded top fully covers Lets Talk edges */}
+      <div className="relative z-30 -mt-16 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
         <SolutionSection locale={locale} theme={theme} />
       </div>
 
