@@ -647,7 +647,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
       <div
         id="contacts"
         ref={mobileContactRef}
-        className="relative w-full overflow-hidden py-[60px] pb-[100px] md:py-[100px] md:pb-[140px] lg:hidden flex flex-col items-center justify-center gap-8 md:gap-[30px] lets-talk-bg"
+        className="relative z-20 -mt-8 w-full overflow-hidden rounded-t-[28px] py-[60px] pb-[100px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] md:py-[100px] md:pb-[140px] lg:hidden flex flex-col items-center justify-center gap-8 md:gap-[30px] lets-talk-bg"
       >
         <div
           ref={mobileLogoRef}
