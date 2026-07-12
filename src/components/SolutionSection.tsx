@@ -308,7 +308,7 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
         ref={sectionRef}
         data-glow-x={isLight ? '50' : '82'}
         data-glow-y={isLight ? '32' : '14'}
-        className={`relative w-full border-t border-b border-coal-400/5 pt-20 pb-[100px] lg:pt-20 lg:pb-24 lg:min-h-screen lg:flex lg:flex-col lg:justify-start select-none pointer-events-auto overflow-visible ${
+        className={`relative w-full border-t border-b border-coal-400/5 pt-20 pb-[100px] lg:pt-20 lg:pb-24 lg:min-h-screen lg:flex lg:flex-col lg:justify-start select-none pointer-events-auto max-lg:overflow-hidden lg:overflow-visible ${
           isLight ? 'solution-light-bg' : 'dark-gradient-bg'
         }`}
       >
