@@ -131,11 +131,7 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
       </div>
 
       {/* Solution: mobile overlap over Lets Talk */}
-      <div
-        className={`relative z-30 -mt-24 lg:contents ${
-          theme === 'light' ? 'bg-[var(--gold-500,#ffe9c7)]' : 'bg-[#141414]'
-        }`}
-      >
+      <div className="relative z-30 -mt-24 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.35)] lg:contents">
         <SolutionSection locale={locale} theme={theme} />
       </div>
 

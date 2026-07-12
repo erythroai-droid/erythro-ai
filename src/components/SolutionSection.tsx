@@ -299,22 +299,16 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
   }
 
   return (
-    <div className="relative z-10 w-full pointer-events-none">
+    <div className="relative z-30 w-full pointer-events-none">
       {/* Spacer to allow the pinned Services/LetsTalk overlay to stay fixed while Solutions slides up over it */}
       <div className="hidden lg:block h-[490vh] w-full pointer-events-none" />
-
-      {/* Red fill under rounded top — corner crescents stay on Lets Talk color */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-14 bg-[var(--erythro-500,#e52421)] lg:hidden"
-        aria-hidden
-      />
 
       <section
         id="solutions"
         ref={sectionRef}
         data-glow-x={isLight ? '50' : '82'}
         data-glow-y={isLight ? '32' : '14'}
-        className={`relative z-10 w-full border-t border-b border-coal-400/5 pt-20 pb-[100px] shadow-[0_-12px_30px_rgba(0,0,0,0.18)] lg:pt-20 lg:pb-24 lg:min-h-screen lg:flex lg:flex-col lg:justify-start select-none pointer-events-auto max-lg:overflow-hidden max-lg:rounded-t-[28px] lg:overflow-visible lg:shadow-none ${
+        className={`relative z-10 w-full border-b border-coal-400/5 pt-20 pb-[100px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:border-t lg:pt-20 lg:pb-24 lg:min-h-screen lg:flex lg:flex-col lg:justify-start select-none pointer-events-auto lg:overflow-visible ${
           isLight ? 'solution-light-bg' : 'dark-gradient-bg'
         }`}
       >
