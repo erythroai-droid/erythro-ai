@@ -273,33 +273,36 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
 
         {/* Marquee scroll container */}
         <div className="relative w-full overflow-hidden flex flex-nowrap">
-          {/* Row 1 */}
-          <div className="flex gap-16 shrink-0 animate-marquee items-center min-w-full">
+          {/* Row 1 — pe-16 matches gap so the loop seam stays even */}
+          <div className="flex shrink-0 animate-marquee items-center gap-16 pe-16">
             {brandLogos.map((brand, i) => (
               <div
                 key={`marquee-1-${i}`}
-                className="flex items-center justify-center w-[160px] h-[70px] shrink-0"
+                className="flex h-[70px] shrink-0 items-center justify-center"
               >
                 <img
                   src={brand.src}
                   alt={brand.name}
-                  className="max-w-[85%] max-h-[38px] object-contain transition-all duration-500 ease-out grayscale opacity-45 hover:grayscale-0 hover:opacity-100 hover:scale-110"
+                  className="h-[38px] w-auto max-w-[160px] object-contain transition-all duration-500 ease-out grayscale opacity-45 hover:grayscale-0 hover:opacity-100 hover:scale-110"
                 />
               </div>
             ))}
           </div>
 
           {/* Cloned Row 2 for seamless infinite loop */}
-          <div className="flex gap-16 shrink-0 animate-marquee items-center min-w-full" aria-hidden="true">
+          <div
+            className="flex shrink-0 animate-marquee items-center gap-16 pe-16"
+            aria-hidden="true"
+          >
             {brandLogos.map((brand, i) => (
               <div
                 key={`marquee-2-${i}`}
-                className="flex items-center justify-center w-[160px] h-[70px] shrink-0"
+                className="flex h-[70px] shrink-0 items-center justify-center"
               >
                 <img
                   src={brand.src}
                   alt={brand.name}
-                  className="max-w-[85%] max-h-[38px] object-contain transition-all duration-500 ease-out grayscale opacity-45 hover:grayscale-0 hover:opacity-100 hover:scale-110"
+                  className="h-[38px] w-auto max-w-[160px] object-contain transition-all duration-500 ease-out grayscale opacity-45 hover:grayscale-0 hover:opacity-100 hover:scale-110"
                 />
               </div>
             ))}
