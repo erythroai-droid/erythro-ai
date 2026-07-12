@@ -130,9 +130,9 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
         <ServicesSection locale={locale} theme={theme} />
       </div>
 
-      {/* Solution pricing cards — solid wrapper bg prevents light-theme corner bleed */}
+      {/* Solution: mobile overlap over Lets Talk */}
       <div
-        className={`relative z-30 -mt-16 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents ${
+        className={`relative z-30 -mt-24 lg:contents ${
           theme === 'light' ? 'bg-[var(--gold-500,#ffe9c7)]' : 'bg-[#141414]'
         }`}
       >

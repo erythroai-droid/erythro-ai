@@ -548,13 +548,17 @@
   }
 
   .lets-talk-bg {
-    background:
-      url('/images/lets-talk-bg.webp') 50% / cover no-repeat,
+    background-color: var(--erythro-500, #e52421);
+    background-image:
+      url('/images/lets-talk-bg.webp'),
       radial-gradient(
         298.86% 50% at 50% 50.08%,
         var(--erythro-500, #e52421) 0%,
         var(--erythro-900, #600f0e) 100%
       );
+    background-position: 50%;
+    background-size: cover, auto;
+    background-repeat: no-repeat;
     background-blend-mode: overlay, normal;
   }
 
