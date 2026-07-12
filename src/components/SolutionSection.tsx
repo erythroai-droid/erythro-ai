@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import Button from './Button'
+import { useCursorGlow } from '@/hooks/useCursorGlow'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -34,6 +35,23 @@ interface SolutionCardData {
   featured?: boolean
 }
 
+function capitalizeFeatureLabel(text: string): string {
+  if (!text) return text
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+function splitFeatureFull(text: string) {
+  const colonIndex = text.indexOf(':')
+  if (colonIndex === -1) {
+    return { labelPart: '', valuePart: capitalizeFeatureLabel(text) }
+  }
+
+  return {
+    labelPart: capitalizeFeatureLabel(text.slice(0, colonIndex + 1)),
+    valuePart: text.slice(colonIndex + 1),
+  }
+}
+
 function SolutionCard({
   card,
   locale,
@@ -59,12 +77,12 @@ function SolutionCard({
 
   return (
     <article
-      className={`relative flex shrink-0 flex-col items-center gap-2 rounded-[10px] px-4 py-[30px] ${
+      className={`relative flex shrink-0 flex-col items-center gap-2 rounded-[10px] px-4 py-[30px] transition-shadow duration-300 ease-out ${
         isFeatured
-          ? 'z-10 mb-4 min-h-[570px] h-auto w-[300px] overflow-visible bg-erythro-600 shadow-[0_5px_50px_0_rgba(13,13,13,0.3)]'
+          ? 'z-10 mb-4 min-h-[570px] h-auto w-[300px] overflow-visible bg-erythro-600 shadow-[0_5px_50px_0_rgba(13,13,13,0.3)] hover:shadow-[0_10px_44px_0_rgba(13,13,13,0.38)]'
           : isLight
-            ? 'min-h-[530px] h-auto w-[270px] overflow-visible border border-white bg-white shadow-card-services'
-            : 'min-h-[530px] h-auto w-[270px] overflow-visible border border-gold-500 bg-[#1E1E1E]'
+            ? 'min-h-[530px] h-auto w-[270px] overflow-visible border border-white bg-white shadow-card-services hover:shadow-[0_8px_26px_0_rgba(13,13,13,0.22)]'
+            : 'min-h-[530px] h-auto w-[270px] overflow-visible border border-gold-500 bg-[#1E1E1E] hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)]'
       }`}
     >
       {card.pricePrefix && (
@@ -130,14 +148,7 @@ function SolutionCard({
 
           if (feature.full) {
             const text = t(feature.full)
-            const colonIndex = text.indexOf(':')
-            let labelPart = ''
-            let valuePart = text
-
-            if (colonIndex !== -1) {
-              labelPart = text.slice(0, colonIndex + 1)
-              valuePart = text.slice(colonIndex + 1)
-            }
+            const { labelPart, valuePart } = splitFeatureFull(text)
 
             return (
               <li key={index} className="relative flex items-start gap-2.5">
@@ -148,10 +159,10 @@ function SolutionCard({
                   {labelPart ? (
                     <>
                       <span className={`font-bold ${labelClass}`}>{labelPart}</span>
-                      <span className="font-normal normal-case">{valuePart}</span>
+                      <span className="font-normal">{valuePart}</span>
                     </>
                   ) : (
-                    text
+                    valuePart
                   )}
                 </p>
               </li>
@@ -163,9 +174,11 @@ function SolutionCard({
               <span
                 className={`absolute -start-4 top-2.5 size-1 shrink-0 rounded-[1px] ${dotClass}`}
               />
-              <p className={`text-base leading-6 uppercase lg:text-sm ${textClass}`}>
+              <p className={`text-base leading-6 lg:text-sm ${textClass}`}>
                 {feature.label && (
-                  <span className={`font-bold ${labelClass}`}>{t(feature.label)} </span>
+                  <span className={`font-bold ${labelClass}`}>
+                    {capitalizeFeatureLabel(t(feature.label))}{' '}
+                  </span>
                 )}
                 {feature.value &&
                   (() => {
@@ -174,7 +187,7 @@ function SolutionCard({
                     return (
                       <span
                         {...(isPrice ? { dir: 'ltr' as const } : {})}
-                        className={`font-normal normal-case ${isPrice ? 'inline-block' : ''}`}
+                        className={`font-normal ${isPrice ? 'inline-block' : ''}`}
                       >
                         {value}
                       </span>
@@ -213,6 +226,8 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
   const sectionRef = useRef<HTMLElement | null>(null)
   const headingRef = useRef<HTMLDivElement | null>(null)
   const cardsRef = useRef<HTMLDivElement | null>(null)
+
+  useCursorGlow(sectionRef)
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -289,14 +304,16 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
       <section
         id="solutions"
         ref={sectionRef}
-        className="relative w-full border-t border-b border-coal-400/5 pt-20 pb-[100px] lg:pt-20 lg:pb-24 lg:min-h-screen lg:flex lg:flex-col lg:justify-start select-none pointer-events-auto overflow-visible"
-        style={{
-          background: isLight
-            ? '#FFE9C7'
-            : 'radial-gradient(288.44% 49.43% at 50% 50%, var(--Background-Solution-Gradient-start, #1E1E1E) 0%, var(--Background-Solution-Gradient-finish, #0D0D0D) 100%)',
-        }}
+        data-glow-x={isLight ? '50' : '82'}
+        data-glow-y={isLight ? '32' : '14'}
+        className={`relative w-full border-t border-b border-coal-400/5 pt-20 pb-[100px] lg:pt-20 lg:pb-24 lg:min-h-screen lg:flex lg:flex-col lg:justify-start select-none pointer-events-auto overflow-visible ${
+          isLight ? 'solution-light-bg' : 'dark-gradient-bg'
+        }`}
       >
-        <div className="absolute inset-0 bg-noise opacity-10 pointer-events-none" />
+        <div
+          className="solution-section-noise absolute inset-0 z-[1] pointer-events-none"
+          aria-hidden
+        />
 
         {/* Headings container (max-w-[1170px]) */}
         <div className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col items-center px-[30px] mb-[60px]">
@@ -307,7 +324,11 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
             <h2 className="font-sans text-[32px] font-extralight uppercase leading-tight tracking-[9.6px] lg:text-[48px] lg:leading-[60px]">
               {renderStylizedTitle(t(translations.sectionTitle))}
             </h2>
-            <p className="font-sans text-base font-light leading-8 tracking-[3.2px] text-gold-800">
+            <p
+              className={`font-sans text-base font-light leading-8 tracking-[3.2px] ${
+                isLight ? 'text-gold-900' : 'text-gold-800'
+              }`}
+            >
               {t(translations.sectionSubtitle)}
             </p>
           </div>

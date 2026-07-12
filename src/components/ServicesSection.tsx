@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import Button from './Button'
+import { useCursorGlow } from '@/hooks/useCursorGlow'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -373,6 +374,10 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
     )
   }
 
+  const isLight = theme === 'light'
+
+  useCursorGlow(sectionRef)
+
   return (
     <div ref={wrapperRef} className="relative z-20 w-full">
       {/* Spacer to push Services Section down by 100vh on desktop so Case Studies is fully visible before Services slides over */}
@@ -381,12 +386,17 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
       <section
         id="services"
         ref={sectionRef}
-        className="pt-20 pb-20 lg:py-0 lg:pt-20 lg:h-screen lg:flex lg:flex-col lg:justify-start w-full transition-colors duration-500 border-t border-b border-coal-400/5 dark:border-white/5 bg-noise relative z-10 overflow-hidden select-none"
-        style={{
-          background:
-            'radial-gradient(288.44% 49.43% at 50% 50%, var(--services-gradient-start, #FFEDD2) 0%, var(--services-gradient-end, #F1D9B5) 100%)',
-        }}
+        data-glow-x={isLight ? '50' : '28'}
+        data-glow-y={isLight ? '36' : '72'}
+        className={`pt-20 pb-20 lg:py-0 lg:pt-20 lg:h-screen lg:flex lg:flex-col lg:justify-start w-full transition-colors duration-500 border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 overflow-visible select-none ${
+          isLight ? 'premium-light-bg' : 'premium-dark-bg'
+        }`}
       >
+        <div
+          className="solution-section-noise absolute inset-0 z-[1] pointer-events-none"
+          aria-hidden
+        />
+
         <div className="w-full flex flex-col justify-center pt-0 pb-6 lg:pt-0 lg:pb-12 relative z-10">
           {/* Headings */}
           <div
@@ -396,13 +406,17 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             <h2 className="font-sans text-[32px] lg:text-[48px] font-extralight leading-tight lg:leading-[60px] tracking-[9.6px] uppercase">
               {renderStylizedTitle(t(translations.sectionTitle))}
             </h2>
-            <p className="font-sans text-sm lg:text-base font-light leading-relaxed lg:leading-[32px] tracking-[3.2px] text-center text-[var(--gold-800,#8C806D)]">
+            <p
+              className={`font-sans text-sm lg:text-base font-light leading-relaxed lg:leading-[32px] tracking-[3.2px] text-center ${
+                isLight ? 'text-gold-900' : 'text-gold-800'
+              }`}
+            >
               {t(translations.sectionSubtitle)}
             </p>
           </div>
 
           {/* Service Cards Horizontal Scroll Track */}
-          <div className="w-full overflow-hidden">
+          <div className="w-full overflow-x-clip overflow-y-visible py-6 lg:py-8">
             <div
               ref={cardsRowRef}
               className="flex flex-col lg:flex-row gap-6 lg:gap-10 w-full lg:w-max px-[30px] lg:px-0"
@@ -419,9 +433,12 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                 return (
                   <div
                     key={item.id}
-                    className={`relative w-full lg:w-[1170px] lg:h-[480px] shrink-0 rounded-[20px] border border-white/5 shadow-card-services-dark overflow-hidden group transition-all duration-500 flex flex-col lg:flex-row gap-6 lg:gap-0 items-stretch ${theme === 'dark' ? 'hover:border-erythro-500/30' : 'hover:border-white/70 hover:shadow-[0_0_30px_0_rgba(255,255,255,0.35)]'}`}
-                    style={{ background: 'var(--service-card-bg)' }}
+                    className="shrink-0 w-full lg:w-[1170px] px-1 py-2 lg:px-2 lg:py-3"
                   >
+                    <div
+                      className={`relative w-full lg:h-[480px] rounded-[20px] border border-white/5 shadow-card-services-dark overflow-hidden group transition-all duration-500 flex flex-col lg:flex-row gap-6 lg:gap-0 items-stretch ${theme === 'dark' ? 'hover:border-erythro-500/30 hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.45)]' : 'hover:border-white/70 hover:shadow-[0_0_30px_0_rgba(255,255,255,0.35)]'}`}
+                      style={{ background: 'var(--service-card-bg)' }}
+                    >
                     {/* Background noise & hover spot */}
                     <div className="absolute inset-0 bg-noise opacity-30 pointer-events-none" />
                     <div className={`absolute inset-0 bg-gradient-to-br from-transparent via-transparent transition-all duration-500 pointer-events-none ${theme === 'dark' ? 'group-hover:to-erythro-500/5' : 'group-hover:to-white/15'}`} />
@@ -505,6 +522,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                     >
                       {item.number}
                     </div>
+                    </div>
                   </div>
                 )
               })}
@@ -525,15 +543,8 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           {/* Background container that opens from the center */}
           <div
             ref={bgRef}
-            className="absolute inset-0 z-0 pointer-events-none"
-            style={{
-              background:
-                'url("/images/lets-talk-bg.webp") 50% / cover no-repeat, radial-gradient(298.86% 50% at 50% 50.08%, var(--erythro-500, #E52421) 0%, var(--erythro-900, #600F0E) 100%)',
-              backgroundBlendMode: 'overlay, normal',
-            }}
-          >
-            <div className="absolute inset-0 bg-noise opacity-10" />
-          </div>
+            className="absolute inset-0 z-0 pointer-events-none lets-talk-bg"
+          />
 
           {/* Logo */}
           <div
@@ -632,15 +643,8 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
       <div
         id="contacts"
         ref={mobileContactRef}
-        className="relative w-full overflow-hidden py-[60px] pb-[100px] md:py-[100px] md:pb-[140px] lg:hidden flex flex-col items-center justify-center gap-8 md:gap-[30px]"
-        style={{
-          background:
-            'url("/images/lets-talk-bg.webp") 50% / cover no-repeat, radial-gradient(298.86% 50% at 50% 50.08%, var(--erythro-500, #E52421) 0%, var(--erythro-900, #600F0E) 100%)',
-          backgroundBlendMode: 'overlay, normal',
-        }}
+        className="relative w-full overflow-hidden py-[60px] pb-[100px] md:py-[100px] md:pb-[140px] lg:hidden flex flex-col items-center justify-center gap-8 md:gap-[30px] lets-talk-bg"
       >
-        <div className="absolute inset-0 bg-noise opacity-10" />
-
         <div
           ref={mobileLogoRef}
           className="w-full max-w-[280px] sm:max-w-[420px] h-auto flex justify-center px-6 relative z-10"

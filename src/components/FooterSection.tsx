@@ -17,8 +17,8 @@ interface FooterSectionProps {
   theme?: 'light' | 'dark'
 }
 
-function FooterBrandLogo({ theme = 'dark' }: { theme?: 'light' | 'dark' }) {
-  const letterFill = theme === 'light' ? '#0D0D0D' : '#FFFFFF'
+function FooterBrandLogo() {
+  const letterFill = '#FFFFFF'
 
   return (
     <svg
@@ -54,26 +54,16 @@ function FooterLinkItem({
   children,
   external,
   onClick,
-  theme = 'dark',
 }: {
   href?: string
   children: React.ReactNode
   external?: boolean
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void
-  theme?: 'light' | 'dark'
 }) {
-  const isLight = theme === 'light'
-
   const content = (
     <>
       <span className="size-1 shrink-0 rounded-[1px] bg-erythro-500" aria-hidden="true" />
-      <span
-        className={`text-base font-medium capitalize leading-6 transition-colors duration-300 ${
-          isLight
-            ? 'text-coal-900 hover:text-erythro-500'
-            : 'text-white hover:text-gold-500'
-        }`}
-      >
+      <span className="text-base font-medium capitalize leading-6 text-white transition-colors duration-300 hover:text-gold-500">
         {children}
       </span>
     </>
@@ -95,17 +85,15 @@ function FooterLinkItem({
   return <div className="flex items-center gap-2 px-2">{content}</div>
 }
 
-export default function FooterSection({ locale, theme = 'dark' }: FooterSectionProps) {
+export default function FooterSection({ locale }: FooterSectionProps) {
   const content = useSiteContent()
   const translations = content.footer
   const site = content.siteSettings
   const { open: openContact } = useContactModal()
   const t = (field: Record<string, string>) => field[locale] || field['en']
-  const isLight = theme === 'light'
 
-  const footerButtonClassName = isLight
-    ? 'border-coal-900 text-coal-900 hover:!bg-erythro-500 hover:!text-white hover:!border-erythro-500'
-    : 'border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)]'
+  const footerButtonClassName =
+    'border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)]'
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
@@ -330,14 +318,8 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
 
       <footer
         ref={footerRef}
-        className={`relative w-full py-[60px] transition-colors duration-500 lg:py-0 lg:h-screen lg:flex lg:flex-col lg:justify-center select-none pointer-events-auto overflow-hidden ${
-          isLight ? 'bg-gold-100' : ''
-        }`}
-        style={
-          isLight
-            ? undefined
-            : { background: 'var(--background-footer-bg, #0D0D0D)' }
-        }
+        className="relative w-full py-[60px] transition-colors duration-500 lg:py-0 lg:h-screen lg:flex lg:flex-col lg:justify-center select-none pointer-events-auto overflow-hidden"
+        style={{ background: 'var(--background-footer-bg, #0D0D0D)' }}
       >
         <div className="absolute inset-0 bg-noise opacity-5 pointer-events-none z-[1]" />
 
@@ -371,9 +353,7 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
         <div
           className="absolute inset-0 pointer-events-none z-0"
           style={{
-            background: isLight
-              ? 'radial-gradient(ellipse at center, transparent 30%, #FFE9C7 90%)'
-              : 'radial-gradient(ellipse at center, transparent 30%, #0D0D0D 90%)'
+            background: 'radial-gradient(ellipse at center, transparent 30%, #0D0D0D 90%)',
           }}
         />
 
@@ -385,11 +365,7 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
           >
             {/* CTA column */}
             <div className="flex flex-col items-start gap-[30px]">
-              <p
-                className={`px-2 text-2xl font-bold leading-9 ${
-                  isLight ? 'text-coal-900' : 'text-white'
-                }`}
-              >
+              <p className="px-2 text-2xl font-bold leading-9 text-white">
                 {t(translations.ctaHeadingLine1)}
                 <br />
                 {t(translations.ctaHeadingLine2)}
@@ -401,18 +377,13 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
 
             {/* Company column */}
             <div className="flex flex-col items-start gap-4">
-              <p
-                className={`px-2 text-2xl font-bold leading-9 ${
-                  isLight ? 'text-coal-900' : 'text-white'
-                }`}
-              >
+              <p className="px-2 text-2xl font-bold leading-9 text-white">
                 {t(translations.companyTitle)}
               </p>
               {translations.companyLinks.map((link) => (
                 <FooterLinkItem
                   key={link.href}
                   href={link.href}
-                  theme={theme}
                   onClick={(e) => handleNavClick(e, link.href)}
                 >
                   {t(link.label)}
@@ -422,22 +393,18 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
 
             {/* Contact column */}
             <div className="flex flex-col items-start gap-4 md:col-span-2 lg:col-span-1">
-              <p
-                className={`px-2 text-2xl font-bold leading-9 ${
-                  isLight ? 'text-coal-900' : 'text-white'
-                }`}
-              >
+              <p className="px-2 text-2xl font-bold leading-9 text-white">
                 {t(translations.contactTitle)}
               </p>
-              <FooterLinkItem href={`mailto:${site.email}`} theme={theme}>
+              <FooterLinkItem href={`mailto:${site.email}`}>
                 <span className="font-bold uppercase">{t(translations.emailLabel)} </span>
                 <span dir="ltr" className="inline-block">{site.email}</span>
               </FooterLinkItem>
-              <FooterLinkItem href={`tel:${site.phone}`} theme={theme}>
+              <FooterLinkItem href={`tel:${site.phone}`}>
                 <span className="font-bold uppercase">{t(translations.phoneLabel)} </span>
                 <span dir="ltr" className="inline-block">{site.phoneDisplay}</span>
               </FooterLinkItem>
-              <FooterLinkItem theme={theme}>
+              <FooterLinkItem>
                 <span className="font-bold uppercase">{t(translations.locationLabel)}</span>
                 {t(translations.locationValue)}
               </FooterLinkItem>
@@ -446,21 +413,15 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
 
           {/* Large brand logo */}
           <div ref={logoRef} className="flex w-full justify-center py-4">
-            <FooterBrandLogo theme={theme} />
+            <FooterBrandLogo />
           </div>
 
           {/* Bottom legal bar */}
           <div
             ref={barRef}
-            className={`flex w-full flex-col items-start justify-between gap-4 border-t pt-6 lg:flex-row lg:items-center ${
-              isLight ? 'border-coal-900/10' : 'border-white/5'
-            }`}
+            className="flex w-full flex-col items-start justify-between gap-4 border-t border-white/5 pt-6 lg:flex-row lg:items-center"
           >
-            <p
-              className={`text-xs uppercase tracking-[2.4px] ${
-                isLight ? 'text-coal-900' : 'text-white'
-              }`}
-            >
+            <p className="text-xs uppercase tracking-[2.4px] text-white">
               {t(translations.copyright)}
             </p>
 
@@ -469,11 +430,7 @@ export default function FooterSection({ locale, theme = 'dark' }: FooterSectionP
                 <a
                   key={link.id}
                   href={link.href}
-                  className={`text-xs uppercase tracking-[2.4px] transition-colors duration-300 ${
-                    isLight
-                      ? 'text-coal-900 hover:text-erythro-500'
-                      : 'text-white hover:text-gold-500'
-                  }`}
+                  className="text-xs uppercase tracking-[2.4px] text-white transition-colors duration-300 hover:text-gold-500"
                 >
                   {t(link.label)}
                 </a>

@@ -197,16 +197,8 @@ export default function LetsTalkSection({ locale }: LetsTalkSectionProps) {
       {/* Background container that opens from the center */}
       <div
         ref={bgRef}
-        className="absolute inset-0 z-0 pointer-events-none"
-        style={{
-          background:
-            'url("/images/lets-talk-bg.webp") 50% / cover no-repeat, radial-gradient(298.86% 50% at 50% 50.08%, var(--erythro-500, #E52421) 0%, var(--erythro-900, #600F0E) 100%)',
-          backgroundBlendMode: 'overlay, normal',
-        }}
-      >
-        {/* Background Noise Layer for Erythro consistency */}
-        <div className="absolute inset-0 bg-noise opacity-10" />
-      </div>
+        className="absolute inset-0 z-0 pointer-events-none lets-talk-bg"
+      />
 
       {/* Large Scaled Erythro.ai Logo (custom colored: white letters/mark + white .ai box with red text) */}
       <div
