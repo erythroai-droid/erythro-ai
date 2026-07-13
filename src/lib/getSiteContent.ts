@@ -116,6 +116,9 @@ export async function getSiteContent(): Promise<SiteContent> {
     if (Array.isArray(header?.navItems) && header.navItems.length) {
       content.navbar.navItems = header.navItems.map((n: any, i: number) => ({
         label: L(n.label, defaultSiteContent.navbar.navItems[i]?.label ?? {}),
+        description:
+          defaultSiteContent.navbar.navItems[i]?.description ??
+          ({ en: '', ru: '', he: '' } as Record<string, string>),
         href: n.href ?? defaultSiteContent.navbar.navItems[i]?.href ?? '#',
       }))
     }

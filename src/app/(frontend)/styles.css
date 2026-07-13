@@ -563,6 +563,28 @@
     background-size: cover;
   }
 
+  /* Portfolio side scroll hint (dvdrod-style vertical line + label) */
+  .portfolio-scroll-beacon {
+    animation: portfolio-scroll-line 2.4s ease infinite;
+  }
+
+  @keyframes portfolio-scroll-line {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .portfolio-scroll-beacon {
+      animation: none;
+      transform: none;
+      opacity: 0.55;
+    }
+  }
+
   /* Splash: full-viewport radial with edge darkening */
   .splash-bg {
     background-color: #0f0000;

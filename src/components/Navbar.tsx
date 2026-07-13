@@ -11,6 +11,8 @@ interface NavbarProps {
   theme: 'light' | 'dark'
   setTheme: (theme: 'light' | 'dark') => void
   onOpenAccessibility: () => void
+  /** Portfolio / inner pages: always use the mobile burger menu (no desktop pill). */
+  forceBurger?: boolean
 }
 
 // Accessibility (person) glyph used on the mobile control circle
@@ -107,18 +109,31 @@ const BrandLogo = ({ className = '' }: { className?: string }) => (
   </svg>
 )
 
-export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOpenAccessibility }: NavbarProps) {
+export default function Navbar({
+  currentLocale,
+  setLocale,
+  theme,
+  setTheme,
+  onOpenAccessibility,
+  forceBurger = false,
+}: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   // Once the user scrolls past the hero a bit, collapse the mobile logo so the
   // fixed header plate becomes more compact.
   const [scrolled, setScrolled] = useState(false)
+  // Portfolio: logo only at page top — hides on scroll and stays hidden until top
+  const [logoHidden, setLogoHidden] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60)
+    const handleScroll = () => {
+      const y = window.scrollY
+      setScrolled(y > 60)
+      if (forceBurger) setLogoHidden(y > 24)
+    }
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [forceBurger])
 
   const content = useSiteContent()
   const { navItems, ctaLabel } = content.navbar
@@ -130,6 +145,12 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
       e.preventDefault()
+      // On inner pages, hash targets live on the home page.
+      if (forceBurger) {
+        window.location.href = `/${href}`
+        setMobileOpen(false)
+        return
+      }
       const targetId = href.substring(1)
       const targetElement = targetId === 'contacts'
         ? document.querySelector('footer')
@@ -143,17 +164,19 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
   }
 
   return (
-    <header className="fixed top-0 lg:top-6 start-0 end-0 z-[60] lg:z-0 w-full px-0 lg:px-[30px] max-w-[1170px] mx-auto select-none pointer-events-none">
-      {/* 
-        Main Pill Container: 
-        Uses glassmorphism (panel-glass / backdrop-blur) and high-end rounding (rounded-full).
-        Translates colors and properties according to dark/light theme skins.
-      */}
-      {/* ===== Desktop navigation pill (lg and up) ===== */}
+    <header
+      className={`fixed top-0 start-0 end-0 z-[60] lg:z-50 w-full select-none pointer-events-none overflow-visible ${
+        forceBurger
+          ? 'px-[50px] max-w-none'
+          : 'lg:top-6 px-0 lg:px-[30px] max-w-[1170px] mx-auto'
+      }`}
+    >
+      {/* ===== Desktop navigation pill (lg and up) — hidden on portfolio ===== */}
+      {!forceBurger && (
       <div className="hidden lg:block w-full pointer-events-auto">
       <div className={`w-full navbar-pill transition-all duration-500 ease-out shadow-lg ${theme === 'light' ? 'navbar-pill--light text-coal-900' : 'text-white'}`}>
         {/* Brand Logo */}
-        <a href="#" aria-label="Erythro.ai" className="flex items-center group select-none cursor-pointer">
+        <a href="/" aria-label="Erythro.ai" className="flex items-center group select-none cursor-pointer">
           <BrandLogo
             className={`h-[30px] w-auto transition-colors duration-300 ${theme === 'light' ? 'text-coal-900' : 'text-white'}`}
           />
@@ -186,8 +209,88 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
 
       </div>
       </div>
+      )}
+
+      {/* ===== Portfolio header: logo + MENU burger (all breakpoints) ===== */}
+      {forceBurger && (
+        <div className="relative w-full pointer-events-auto flex items-center justify-between overflow-visible py-6 lg:py-8">
+          <a
+            href="/"
+            aria-label="Erythro.ai"
+            className={`relative z-10 flex items-center select-none cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              logoHidden
+                ? '-translate-y-[140%] opacity-0 pointer-events-none'
+                : 'translate-y-0 opacity-100'
+            }`}
+          >
+            <BrandLogo
+              className={`h-[30px] w-auto transition-colors duration-300 ${
+                theme === 'light' ? 'text-coal-900' : 'text-white'
+              }`}
+            />
+          </a>
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className={`group relative z-[70] flex items-center gap-3 overflow-visible cursor-pointer transition-colors duration-300 ${
+              mobileOpen
+                ? 'text-white hover:text-gold-500'
+                : theme === 'light'
+                  ? 'text-coal-900 hover:text-erythro-500'
+                  : 'text-white hover:text-gold-500'
+            }`}
+            aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
+          >
+            <span className="font-sans text-xs uppercase tracking-[2.4px]">
+              {mobileOpen ? 'Close' : 'Menu'}
+            </span>
+            <svg
+              width="21"
+              height="12"
+              viewBox="-4 -6 29 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              overflow="visible"
+              className="h-[20px] w-[21px] shrink-0 overflow-visible"
+              aria-hidden
+            >
+              {/* Top bar — offset right; hover slides left; open → X */}
+              <path
+                d="M5 1C5 0.447715 5.44772 0 6 0H20C20.5523 0 21 0.447715 21 1V1C21 1.55228 20.5523 2 20 2H6C5.44772 2 5 1.55228 5 1V1Z"
+                fill="currentColor"
+                className={`[transform-box:view-box] origin-[10.5px_6px] transition-transform duration-300 ease-out ${
+                  mobileOpen
+                    ? 'translate-y-[5px] -rotate-45 scale-x-[0.85]'
+                    : 'group-hover:-translate-x-[5px]'
+                }`}
+              />
+              {/* Middle bar — offset left; hover slides right; open → hide */}
+              <path
+                d="M0 6C0 5.44772 0.447715 5 1 5H15C15.5523 5 16 5.44772 16 6V6C16 6.55228 15.5523 7 15 7H1C0.447715 7 0 6.55228 0 6V6Z"
+                fill="currentColor"
+                className={`[transform-box:view-box] origin-[10.5px_6px] transition-all duration-300 ease-out ${
+                  mobileOpen
+                    ? 'opacity-0'
+                    : 'group-hover:translate-x-[5px]'
+                }`}
+              />
+              {/* Bottom bar — offset right; hover slides left; open → X */}
+              <path
+                d="M5 11C5 10.4477 5.44772 10 6 10H20C20.5523 10 21 10.4477 21 11V11C21 11.5523 20.5523 12 20 12H6C5.44772 12 5 11.5523 5 11V11Z"
+                fill="currentColor"
+                className={`[transform-box:view-box] origin-[10.5px_6px] transition-transform duration-300 ease-out ${
+                  mobileOpen
+                    ? '-translate-y-[5px] rotate-45 scale-x-[0.85]'
+                    : 'group-hover:-translate-x-[5px]'
+                }`}
+              />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* ===== Mobile header (below lg): full-width backing plate with logo + controls ===== */}
+      {!forceBurger && (
       <div
         className={`lg:hidden w-full pointer-events-auto flex flex-col items-center px-[30px] border-b backdrop-blur-md transition-all duration-300 ${
           scrolled ? 'gap-0 py-3' : 'gap-4 py-[30px]'
@@ -198,7 +301,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
         }`}
       >
         <a
-          href="#"
+          href="/"
           aria-label="Erythro.ai"
           className={`flex w-full items-center justify-center select-none cursor-pointer overflow-hidden transition-all duration-300 ${
             scrolled ? 'max-h-0 opacity-0' : 'max-h-[56px] opacity-100'
@@ -260,6 +363,7 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
           </button>
         </div>
       </div>
+      )}
 
       {/* 
         Mobile Menu Overlay: 
@@ -267,7 +371,9 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
         Features a deep coal background, glass blur, and smooth layout mirror.
       */}
       <div
-        className={`fixed inset-y-0 start-0 end-0 lg:hidden bg-coal-900/90 backdrop-blur-lg transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed inset-y-0 start-0 end-0 bg-coal-900/90 backdrop-blur-lg transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          forceBurger ? 'z-[65]' : 'lg:hidden'
+        } ${
           mobileOpen
             ? 'translate-x-0'
             : currentLocale === 'he'
@@ -276,30 +382,46 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
         }`}
         style={{ pointerEvents: mobileOpen ? 'auto' : 'none' }}
       >
-        {/* Close button */}
-        <button
-          onClick={() => setMobileOpen(false)}
-          className="absolute top-8 end-8 w-11 h-11 rounded-full bg-gold-500 text-coal-900 flex items-center justify-center transition-all duration-300 hover:bg-white cursor-pointer z-10"
-          aria-label="Close menu"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        {/* Close button — only for default mobile header; portfolio keeps Menu/Close above the panel */}
+        {!forceBurger && (
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="absolute top-8 end-8 w-11 h-11 rounded-full bg-gold-500 text-coal-900 flex items-center justify-center transition-all duration-300 hover:bg-white cursor-pointer z-10"
+            aria-label="Close menu"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
 
-        <div className="flex flex-col h-full justify-between p-12 pt-32">
-          {/* Menu Items Stack */}
-          <nav className="flex flex-col gap-6 text-center">
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={(e) => handleNavClick(e, item.href)}
-                className="font-sans text-2xl font-bold tracking-widest text-white hover:text-erythro-500 transition-colors duration-300 uppercase"
-              >
-                {t(item.label)}
-              </a>
-            ))}
+        <div className={`flex flex-col h-full justify-between p-12 ${forceBurger ? 'pt-28 lg:pt-32' : 'pt-32'}`}>
+          {/* Menu Items — centered block, left-aligned titles + subtext (Emily Nolan style) */}
+          <nav className="flex flex-1 flex-col items-center justify-center">
+            <ul className="flex w-max max-w-full flex-col items-start gap-7 text-start">
+              {navItems.map((item) => (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    onClick={(e) => handleNavClick(e, item.href)}
+                    className="group relative flex flex-col items-start gap-1.5 ps-5 text-start"
+                  >
+                    <span
+                      className="pointer-events-none absolute start-0 top-[0.55em] h-px w-3 origin-left scale-x-0 bg-erythro-500 transition-transform duration-300 ease-out group-hover:scale-x-100"
+                      aria-hidden
+                    />
+                    <span className="font-sans text-[28px] font-bold uppercase leading-none tracking-[0.04em] text-white transition-all duration-300 ease-out group-hover:translate-x-2 group-hover:text-erythro-500 md:text-[32px]">
+                      {t(item.label)}
+                    </span>
+                    {'description' in item && item.description ? (
+                      <span className="font-sans text-base font-normal normal-case leading-snug tracking-normal text-white/35">
+                        {t(item.description)}
+                      </span>
+                    ) : null}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </nav>
 
           {/* Settings and CTA */}
@@ -362,17 +484,37 @@ export default function Navbar({ currentLocale, setLocale, theme, setTheme, onOp
               </div>
             </div>
 
-            <Button
-              variant="light-accent"
-              showArrow
-              className="w-full max-w-[280px]"
-              onClick={() => {
-                setMobileOpen(false)
-                openContact()
-              }}
-            >
-              {t(ctaLabel)}
-            </Button>
+            {forceBurger ? (
+              <Button
+                variant="light-accent"
+                className="w-full max-w-[280px] !border-transparent hover:!border-transparent hover:!shadow-[0_3px_20px_0_rgba(229,36,33,0.45)]"
+                onClick={() => {
+                  setMobileOpen(false)
+                  onOpenAccessibility()
+                }}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <HumanIcon className="w-4 h-4" />
+                  {currentLocale === 'ru'
+                    ? 'Доступность'
+                    : currentLocale === 'he'
+                      ? 'נגישות'
+                      : 'Accessibility'}
+                </span>
+              </Button>
+            ) : (
+              <Button
+                variant="light-accent"
+                showArrow
+                className="w-full max-w-[280px]"
+                onClick={() => {
+                  setMobileOpen(false)
+                  openContact()
+                }}
+              >
+                {t(ctaLabel)}
+              </Button>
+            )}
           </div>
         </div>
       </div>

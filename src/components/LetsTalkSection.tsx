@@ -12,14 +12,17 @@ if (typeof window !== 'undefined') {
 
 interface LetsTalkSectionProps {
   locale: string
+  /** Portfolio / standalone: fade in on scroll like Solution (no center clipPath reveal). */
+  variant?: 'default' | 'simple'
 }
 
-export default function LetsTalkSection({ locale }: LetsTalkSectionProps) {
+export default function LetsTalkSection({ locale, variant = 'default' }: LetsTalkSectionProps) {
   const content = useSiteContent()
   const translations = content.letsTalk
   const navTranslations = content.navbar
   const site = content.siteSettings
   const t = (field: Record<string, string>) => field[locale] || field['en']
+  const isSimple = variant === 'simple'
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const bgRef = useRef<HTMLDivElement | null>(null)
@@ -33,6 +36,65 @@ export default function LetsTalkSection({ locale }: LetsTalkSectionProps) {
 
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia()
+
+      if (isSimple) {
+        // Solution-like entrance + pin so Footer rides up (no center clipPath reveal)
+        mm.add('(min-width: 1024px)', () => {
+          gsap.set(wrapperRef.current, { clipPath: 'inset(0% 0% 0% 0%)' })
+          gsap.set([logoRef.current, headingRef.current, subtextRef.current, buttonRef.current], {
+            opacity: 0,
+            y: 60,
+            scale: 1,
+          })
+
+          gsap.to([logoRef.current, headingRef.current, subtextRef.current, buttonRef.current], {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: wrapperRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none reverse',
+            },
+          })
+
+          ScrollTrigger.create({
+            id: 'lets-talk-simple-pin',
+            trigger: wrapperRef.current,
+            start: 'top top',
+            end: '+=100%',
+            pin: true,
+            pinSpacing: false,
+            invalidateOnRefresh: true,
+          })
+        })
+
+        mm.add('(max-width: 1023px)', () => {
+          gsap.set(wrapperRef.current, { clipPath: 'inset(0% 0% 0% 0%)' })
+          gsap.set([logoRef.current, headingRef.current, subtextRef.current, buttonRef.current], {
+            opacity: 0,
+            y: 30,
+            scale: 1,
+          })
+
+          gsap.to([logoRef.current, headingRef.current, subtextRef.current, buttonRef.current], {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.12,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: wrapperRef.current,
+              start: 'top 92%',
+              toggleActions: 'play none none reverse',
+            },
+          })
+        })
+
+        return
+      }
 
       // Desktop animation: Pinning, scale down, and scrubbing
       mm.add('(min-width: 1024px)', () => {
@@ -183,16 +245,18 @@ export default function LetsTalkSection({ locale }: LetsTalkSectionProps) {
     }, wrapperRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [isSimple])
 
-  return (
+  const section = (
     <section
       id="contacts"
       ref={wrapperRef}
-      className="relative w-full overflow-hidden select-none py-[60px] pb-[100px] md:py-[100px] md:pb-[140px] lg:py-0 lg:h-screen flex flex-col items-center justify-center gap-8 md:gap-[30px] bg-transparent"
-      style={{
-        clipPath: 'inset(50% 0% 50% 0%)',
-      }}
+      className={`relative w-full overflow-hidden select-none flex flex-col items-center justify-center gap-8 md:gap-[30px] bg-transparent shadow-[0_-12px_30px_rgba(0,0,0,0.28)] ${
+        isSimple
+          ? 'min-h-screen py-[100px] md:py-[120px] lg:py-0 lg:h-screen'
+          : 'py-[60px] pb-[100px] md:py-[100px] md:pb-[140px] lg:py-0 lg:h-screen'
+      }`}
+      style={isSimple ? undefined : { clipPath: 'inset(50% 0% 50% 0%)' }}
     >
       {/* Background container that opens from the center */}
       <div
@@ -303,4 +367,14 @@ export default function LetsTalkSection({ locale }: LetsTalkSectionProps) {
       </div>
     </section>
   )
+
+  if (isSimple) {
+    return (
+      <div className="relative z-20 w-full pointer-events-none">
+        <div className="pointer-events-auto">{section}</div>
+      </div>
+    )
+  }
+
+  return section
 }

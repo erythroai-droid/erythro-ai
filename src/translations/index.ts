@@ -5,10 +5,42 @@ export interface TranslationDict {
 // 1. Navbar translations
 export const navbar = {
   navItems: [
-    { label: { en: 'CASE STUDIES', ru: 'КЕЙСЫ', he: 'מקרי מבחן' }, href: '#cases' },
-    { label: { en: 'SERVICES', ru: 'УСЛУГИ', he: 'שירותים' }, href: '#services' },
-    { label: { en: 'SOLUTIONS', ru: 'РЕШЕНИЯ', he: 'פתרונות' }, href: '#solutions' },
-    { label: { en: 'CONTACTS', ru: 'КОНТАКТЫ', he: 'יצירת קשר' }, href: '#contacts' },
+    {
+      label: { en: 'CASE STUDIES', ru: 'КЕЙСЫ', he: 'מקרי מבחן' },
+      description: {
+        en: 'View our selected works',
+        ru: 'Смотреть избранные работы',
+        he: 'צפו בעבודות נבחרות',
+      },
+      href: '#cases',
+    },
+    {
+      label: { en: 'SERVICES', ru: 'УСЛУГИ', he: 'שירותים' },
+      description: {
+        en: 'What we can build for you',
+        ru: 'Что мы можем сделать для вас',
+        he: 'מה נוכל לבנות בשבילכם',
+      },
+      href: '#services',
+    },
+    {
+      label: { en: 'SOLUTIONS', ru: 'РЕШЕНИЯ', he: 'פתרונות' },
+      description: {
+        en: 'Ready-made packages',
+        ru: 'Готовые пакеты решений',
+        he: 'חבילות מוכנות',
+      },
+      href: '#solutions',
+    },
+    {
+      label: { en: 'CONTACTS', ru: 'КОНТАКТЫ', he: 'יצירת קשר' },
+      description: {
+        en: 'Get in touch and find us',
+        ru: 'Связаться с нами',
+        he: 'צרו קשר ומצאו אותנו',
+      },
+      href: '#contacts',
+    },
   ],
   ctaLabel: {
     en: "LET'S TALK...",

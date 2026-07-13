@@ -118,11 +118,13 @@ export default function FooterSection({ locale }: FooterSectionProps) {
         }
       }
 
-      // Fallback: scroll to element directly
+      // Fallback: scroll to element directly, or jump to home section from inner pages
       const target = document.getElementById(sectionId)
       if (target) {
         target.scrollIntoView({ behavior: 'smooth' })
+        return
       }
+      window.location.href = `/${href}`
     }
   }
 
