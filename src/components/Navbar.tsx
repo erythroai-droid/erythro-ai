@@ -397,7 +397,7 @@ export default function Navbar({
 
         <div className={`flex flex-col h-full justify-between p-12 ${forceBurger ? 'pt-28 lg:pt-32' : 'pt-32'}`}>
           {/* Menu Items — centered block, left-aligned titles + subtext (Emily Nolan style) */}
-          <nav className="flex flex-1 flex-col items-center justify-center">
+          <nav className="flex flex-1 flex-col items-center justify-center -translate-y-[50px]">
             <ul className="flex w-max max-w-full flex-col items-start gap-7 text-start">
               {navItems.map((item) => (
                 <li key={item.href}>

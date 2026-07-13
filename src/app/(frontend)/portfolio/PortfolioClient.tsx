@@ -69,9 +69,12 @@ export default function PortfolioClient({ initialLocale, content }: PortfolioCli
       { id: 'portfolio', label: 'Portfolio' },
       { id: 'portfolio-grid', label: 'Projects' },
       { id: 'contacts', label: "Let's Talk" },
+      { id: 'footer', label: 'Footer' },
     ],
     [],
   )
+
+  const scrollSectionIds = useMemo(() => ['portfolio', 'contacts', 'footer'], [])
 
   return (
     <SiteContentProvider value={content}>
@@ -91,19 +94,21 @@ export default function PortfolioClient({ initialLocale, content }: PortfolioCli
             forceBurger
           />
 
-          <main>
-            <div className="relative z-10 lg:contents">
-              <PortfolioSection theme={theme} locale={locale} />
-            </div>
+          {/*
+            Mobile stack: rounded overlap. Desktop: lg:contents so GSAP pin
+            (Let's Talk → Footer) works like Solutions on the home page.
+          */}
+          <div className="relative z-10 lg:contents">
+            <PortfolioSection theme={theme} locale={locale} />
+          </div>
 
-            <div className="relative z-20 -mt-8 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
-              <LetsTalkSection locale={locale} variant="simple" />
-            </div>
-          </main>
+          <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+            <LetsTalkSection locale={locale} variant="simple" />
+          </div>
 
-          <ScrollSideButton label="Scroll" targetId="portfolio-grid" />
+          <ScrollSideButton label="Scroll" sectionIds={scrollSectionIds} />
 
-          <div className="relative z-40 -mt-8 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+          <div className="relative z-40 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
             <FooterSection locale={locale} theme={theme} />
           </div>
 

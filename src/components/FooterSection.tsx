@@ -15,6 +15,8 @@ if (typeof window !== 'undefined') {
 interface FooterSectionProps {
   locale: string
   theme?: 'light' | 'dark'
+  /** Home page: spacer lets Footer ride over pinned Solutions. Portfolio skips it to avoid a black void. */
+  pinSpacer?: boolean
 }
 
 function FooterBrandLogo() {
@@ -85,7 +87,7 @@ function FooterLinkItem({
   return <div className="flex items-center gap-2 px-2">{content}</div>
 }
 
-export default function FooterSection({ locale }: FooterSectionProps) {
+export default function FooterSection({ locale, pinSpacer = true }: FooterSectionProps) {
   const content = useSiteContent()
   const translations = content.footer
   const site = content.siteSettings
@@ -316,9 +318,10 @@ export default function FooterSection({ locale }: FooterSectionProps) {
   return (
     <div className="relative z-40 w-full pointer-events-none">
       {/* Spacer so Footer can slide up over the pinned full-screen Solutions */}
-      <div className="hidden lg:block h-screen w-full pointer-events-none" />
+      {pinSpacer && <div className="hidden lg:block h-screen w-full pointer-events-none" />}
 
       <footer
+        id="footer"
         ref={footerRef}
         className="relative w-full py-[60px] transition-colors duration-500 lg:py-0 lg:h-screen lg:flex lg:flex-col lg:justify-center select-none pointer-events-auto overflow-hidden"
         style={{ background: 'var(--background-footer-bg, #0D0D0D)' }}

@@ -585,6 +585,43 @@
     }
   }
 
+  /* Portfolio filter chips: fast hover in, slow ease-out leave */
+  .portfolio-filter-btn {
+    transform: scale(1);
+    transition:
+      color 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .portfolio-filter-btn:hover,
+  .portfolio-filter-btn:focus-visible {
+    transition-duration: 0.22s;
+    transition-timing-function: ease-out;
+  }
+
+  .portfolio-filter-btn:active {
+    transform: scale(0.97);
+    transition-duration: 0.12s;
+  }
+
+  .portfolio-filter-btn.is-active:hover,
+  .portfolio-filter-btn.is-active:focus-visible {
+    box-shadow: 0 6px 22px 0 rgba(229, 36, 33, 0.45);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .portfolio-filter-btn,
+    .portfolio-filter-btn:hover,
+    .portfolio-filter-btn:focus-visible,
+    .portfolio-filter-btn:active {
+      transition: none;
+      transform: none;
+    }
+  }
+
   /* Splash: full-viewport radial with edge darkening */
   .splash-bg {
     background-color: #0f0000;

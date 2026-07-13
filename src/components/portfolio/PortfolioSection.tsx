@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useCursorGlow } from '@/hooks/useCursorGlow'
 import { gsap } from 'gsap'
@@ -96,6 +96,9 @@ const PROJECTS: PortfolioProject[] = [
   },
 ]
 
+const matchesFilter = (category: PortfolioCategory, filter: PortfolioCategory) =>
+  filter === 'all' || category === filter
+
 interface PortfolioSectionProps {
   theme?: 'light' | 'dark'
   locale?: string
@@ -104,21 +107,124 @@ interface PortfolioSectionProps {
 export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionProps) {
   const isLight = theme === 'light'
   const sectionRef = React.useRef<HTMLElement | null>(null)
+  const gridRef = useRef<HTMLDivElement | null>(null)
   const [activeFilter, setActiveFilter] = useState<PortfolioCategory>('all')
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const isFirstRender = useRef(true)
+  const isFiltering = useRef(false)
+  const pendingFilter = useRef<PortfolioCategory | null>(null)
 
   useCursorGlow(sectionRef)
 
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => setPrefersReducedMotion(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  const projects = useMemo(
+    () =>
+      activeFilter === 'all'
+        ? PROJECTS
+        : PROJECTS.filter((project) => matchesFilter(project.category, activeFilter)),
+    [activeFilter],
+  )
+
+  const handleFilterChange = (next: PortfolioCategory) => {
+    if (next === activeFilter || isFiltering.current || !gridRef.current) return
+
+    if (prefersReducedMotion) {
+      setActiveFilter(next)
+      return
+    }
+
+    isFiltering.current = true
+    pendingFilter.current = next
+
+    const outgoing = Array.from(
+      gridRef.current.querySelectorAll<HTMLElement>('[data-project]'),
+    )
+
+    // Fade out in place — keep opacity at 0 until the next set is mounted
+    gsap.to(outgoing, {
+      opacity: 0,
+      duration: 0.28,
+      ease: 'power1.out',
+      overwrite: true,
+      onComplete: () => setActiveFilter(next),
+    })
+  }
+
+  useLayoutEffect(() => {
+    if (!gridRef.current) return
+
+    const cards = Array.from(gridRef.current.querySelectorAll<HTMLElement>('[data-project]'))
+
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      if (prefersReducedMotion) return
+      gsap.fromTo(
+        cards,
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          stagger: 0.06,
+          ease: 'power2.out',
+          delay: 0.04,
+          clearProps: 'transform',
+        },
+      )
+      return
+    }
+
+    // Only animate after an intentional filter transition
+    if (!isFiltering.current || pendingFilter.current !== activeFilter) return
+
+    pendingFilter.current = null
+
+    if (prefersReducedMotion || cards.length === 0) {
+      isFiltering.current = false
+      return
+    }
+
+    // Start invisible this frame (before paint), then fade in — no flash
+    gsap.set(cards, { opacity: 0 })
+    gsap.to(cards, {
+      opacity: 1,
+      duration: 0.34,
+      stagger: 0.04,
+      ease: 'power1.out',
+      overwrite: true,
+      onComplete: () => {
+        gsap.set(cards, { clearProps: 'opacity' })
+        isFiltering.current = false
+        ScrollTrigger.refresh()
+      },
+    })
+  }, [activeFilter, prefersReducedMotion])
+
+  useEffect(() => {
+    ScrollTrigger.refresh()
+  }, [activeFilter])
+
+  // Desktop: pin the last viewport of Portfolio so Let's Talk can slide over it
+  // (same pattern as Case Studies → Services / Services → Solutions).
   useEffect(() => {
     if (!sectionRef.current) return
 
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia()
 
-      // Hold the last viewport of Portfolio while Let's Talk rides up over it
       mm.add('(min-width: 1024px)', () => {
         ScrollTrigger.create({
           id: 'portfolio-pin',
           trigger: sectionRef.current,
+          // Scroll through all cards first; lock only once the section bottom
+          // reaches the viewport bottom — then Let's Talk rides up over it.
           start: 'bottom bottom',
           end: '+=100%',
           pin: true,
@@ -131,25 +237,13 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
     return () => ctx.revert()
   }, [])
 
-  const projects = useMemo(
-    () =>
-      activeFilter === 'all'
-        ? PROJECTS
-        : PROJECTS.filter((project) => project.category === activeFilter),
-    [activeFilter],
-  )
-
-  useEffect(() => {
-    ScrollTrigger.refresh()
-  }, [projects])
-
   return (
     <section
       ref={sectionRef}
       id="portfolio"
       data-glow-x={isLight ? '50' : '82'}
       data-glow-y={isLight ? '32' : '14'}
-      className={`relative z-10 min-h-screen w-full overflow-hidden pt-[100px] pb-[100px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] ${
+      className={`relative z-10 min-h-screen w-full overflow-hidden pt-[100px] ${
         isLight ? 'bg-gold-100' : 'dark-gradient-bg'
       }`}
     >
@@ -185,13 +279,13 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
                 type="button"
                 role="tab"
                 aria-selected={active}
-                onClick={() => setActiveFilter(filter.id)}
-                className={`cursor-pointer rounded-full border px-4 py-2 font-sans text-xs uppercase tracking-[1.6px] transition-all duration-300 md:px-5 md:text-[12px] ${
+                onClick={() => handleFilterChange(filter.id)}
+                className={`portfolio-filter-btn cursor-pointer rounded-full border px-4 py-2 font-sans text-xs uppercase tracking-[1.6px] md:px-5 md:text-[12px] ${
                   active
-                    ? 'border-erythro-500 bg-erythro-500 text-white'
+                    ? 'is-active border-erythro-500 bg-erythro-500 text-white shadow-[0_4px_18px_0_rgba(229,36,33,0.35)]'
                     : isLight
-                      ? 'border-coal-900/15 bg-white/50 text-coal-900 hover:border-gold-500 hover:text-gold-500'
-                      : 'border-white/15 bg-white/5 text-white/80 hover:border-gold-500 hover:text-gold-500'
+                      ? 'border-coal-900 bg-white text-coal-900 hover:border-erythro-500 hover:bg-white hover:text-erythro-500'
+                      : 'border-white/80 bg-white/5 text-white/80 hover:border-gold-500 hover:bg-gold-500 hover:text-coal-900 hover:shadow-[0_3px_16px_0_rgba(255,233,199,0.35)]'
                 }`}
               >
                 {filter.label}
@@ -201,12 +295,14 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
         </div>
 
         <div
+          ref={gridRef}
           id="portfolio-grid"
           className="grid w-full grid-cols-1 gap-[30px] md:grid-cols-2 xl:grid-cols-3"
         >
           {projects.map((project) => (
             <article
               key={project.id}
+              data-project={project.id}
               className={`group flex flex-col gap-5 ${
                 isLight ? 'text-coal-900' : 'text-white'
               }`}
@@ -232,7 +328,13 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
                   {project.description}
                 </p>
                 <div className="mt-1 flex flex-wrap gap-2">
-                  <span className="rounded-[2px] bg-erythro-500/15 px-2 py-1 font-sans text-[11px] uppercase tracking-[1.2px] text-erythro-500">
+                  <span
+                    className={`rounded-[2px] px-2 py-1 font-sans text-[11px] uppercase tracking-[1.2px] ${
+                      isLight
+                        ? 'bg-coal-500 text-gold-100'
+                        : 'bg-erythro-500/15 text-[#f7bbba]'
+                    }`}
+                  >
                     {project.categoryLabel}
                   </span>
                   {project.tags.map((tag) => (
@@ -259,6 +361,9 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
           </p>
         )}
       </div>
+
+      {/* Explicit bottom spacing — matches requested 150px below cards */}
+      <div className="relative z-10 h-[150px] w-full shrink-0" aria-hidden />
     </section>
   )
 }

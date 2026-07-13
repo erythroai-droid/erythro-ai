@@ -66,6 +66,7 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
             start: 'top top',
             end: '+=100%',
             pin: true,
+            // Like Solutions: stay pinned while Footer rides up over it
             pinSpacing: false,
             invalidateOnRefresh: true,
           })
