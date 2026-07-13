@@ -224,3 +224,112 @@ export default [
 6. **ESLint 9**: только нативный flat config, без `FlatCompat`.
 7. **Разделять клиентский и серверный код**: дефолты контента в client-safe модуле
    (`defaultContent.ts`), загрузчик с `getPayload` — отдельно (`getSiteContent.ts`).
+
+---
+
+## 9. Хроника после базового деплоя (июнь–июль 2026)
+
+Ниже — что сделано **после** этапов 1–7 и журнала в `DEPLOYMENT.md` (Supabase, Vercel Blob,
+фикс Range/`206` для видео). Инфра и Blob подробно в `DEPLOYMENT.md` §8; здесь — продуктовые
+и UI-изменения сайта.
+
+### 9.1. Контактный UX и splash
+- Модалка обратной связи (contact feedback): успех без заголовка, зелёная галочка.
+- Brand splash screen: теглайн «digital agency», удлинённый hold intro; на mobile (&lt;1024px)
+  intro отключён / показывается раз за сессию для производительности.
+- Мелкие UI-фиксы: скрытие скроллбара, центрирование glyph splash, RTL close у модалки.
+
+### 9.2. Админка Media
+- Превью изображений и видео в list view и edit view Media (не только иконка файла).
+
+### 9.3. SEO и a11y
+- Google Search Console: meta-тег в `head` + verification file.
+- Self-host шрифтов; `aria-label` на лого-ссылках для скринридеров.
+
+### 9.4. Картинки и перф
+- Конвертация hero frames, lets-talk-bg и service images в WebP.
+- Mobile: lazy-load нижеfold-секций; desktop: откат next/dynamic lazy-loading в `HomeClient`
+  (вернулись к стабильному layout без регрессий пина).
+
+### 9.5. Видео в секциях (Case Studies / Services / Hero)
+- Case Studies: баннерное видео из CMS (Vercel Blob URL), мобильный portrait 9:16, prefetch
+  при приближении, надёжный loop, копирайт RU/HE/EN.
+- Services: ролики карточек из CMS + first-frame posters; баст кэша контента; loop.
+- Hero: фон из видео (вместо прежней анимации кадров); медиа фона **динамическое из Payload**.
+- Анимация «chip» перенесена из Hero в Footer.
+- Solutions: merge plan disclaimers с дефолтами + revalidate layout.
+
+### 9.6. Полировка главной (Services / Solutions / Footer / mobile stack)
+- Typographic polish Services/Solutions/Footer; bold prefix перед двоеточием в фичах планов.
+- Responsive layout Services & Solutions.
+- **Mobile stacking** (наезд секций друг на друга с rounded top + shadow), по аналогии с
+  «листками» над sticky hero:
+  - Let's Talk наезжает на Services;
+  - Solutions наезжает на Let's Talk (увеличен overlap; фикс bleed углов в light theme);
+  - CSS-фон Let's Talk; Solutions pin на полный viewport;
+  - clip section glows; Services top cut на mobile.
+- Splash noise; выравнивание spacing логотипов партнёров в Case Studies.
+- Navbar: восстановлен корректный `lg:z-0` на главной, чтобы шапка не перекрывала
+  скролл-стек секций (регресс после portfolio-работы).
+
+### 9.7. Страница Portfolio (`/portfolio`)
+Новая внутренняя страница. Маршрут: `src/app/(frontend)/portfolio/`.
+
+**Состав**
+- `PortfolioClient.tsx` — оболочка (theme/locale, providers, без FloatingWidget/WhatsApp).
+- `PortfolioSection.tsx` — сетка кейсов, фильтры категорий, light/dark.
+- `LetsTalkSection` с `variant="simple"` (fade-in + pin без clipPath-reveal как на главной).
+- `FooterSection` — общий футер; `id="footer"`.
+- `ScrollSideButton` — боковой hint «Scroll» с счётчиком `01 | 03`.
+- Ассеты: `public/images/portfolio/case-*.png`, `public/images/icons/burger_menu.svg`.
+
+**Navbar в режиме `forceBurger`**
+- Всегда лого + Menu (без desktop pill).
+- Desktop: отступ шапки 50px; лого скрывается после скролла от верха.
+- Mobile: подложка как на главной (`bg-coal-900/50` / `bg-gold-100` + blur), отступы
+  лого/Menu **30px**; лого **не** скрывается при скролле.
+- Open menu: шапка `z-[70]` над оверлеем; подложка снимается при открытом меню, чтобы
+  Close и лого были белыми и кликабельными (раньше Close «пропадал» из-за stacking context).
+- Пункты меню в стиле Emily Nolan (title + subtext, hover erythro + красный штрих).
+- CTA в бургере — «Доступность» (открывает a11y panel), не «Обсудим».
+
+**Скролл-стек и GSAP (desktop)**
+- Portfolio пинится в конце (`start: 'bottom bottom'`, `pinSpacing: false`) → Let's Talk
+  наезжает на последнюю «страницу» портфолио.
+- Let's Talk simple: pin + `pinSpacing: false` → Footer наезжает (как Solutions → Footer
+  на главной); у Footer остаётся `h-screen` spacer на главной (`pinSpacer`, по умолчанию
+  `true`).
+- Обёртки секций с `lg:contents` / `max-lg:overflow-hidden`, чтобы на desktop пин работал
+  как на home, а на mobile сохранялся rounded overlap.
+- Явный нижний спейсер ~150px под карточками в Portfolio.
+- Чёрный «пустой» блок после Let's Talk: появлялся из-за пустого footer-spacer при сломанном
+  пине/`overflow-hidden`; чинится корректным пином + `lg:contents`, без отключения наезда.
+
+**Фильтры и карточки**
+- Crossfade при смене категории (opacity GSAP; Flip отключён из-за дёрганья).
+- Hover фильтров: быстрый вход, медленный ease-out при уходе курсора
+  (класс `.portfolio-filter-btn` в `styles.css`).
+- Light theme filters: белый фон, обводка = цвет текста; hover — обводка и текст
+  `erythro/500`, фон белый.
+- Dark theme filters: hover gold fill.
+- Бейдж категории на карточке: dark — `#f7bbba` на `erythro/15`; light — `coal/500` +
+  `gold/100`.
+
+**Scroll hint**
+- Вертикально по центру экрана; формат `01` | линия | `03`.
+- Light theme: левое число и элементы hint — `coal/500` (белый не читался на `gold-100`).
+
+**Ключевые коммиты**
+- `8893c0e` — feat: portfolio page + burger.
+- `6d65a58` — fix: home navbar stacking.
+- `11af54c` — polish: scroll stack, filters, burger layout.
+- `068e027` — fix: mobile header plate + scroll contrast.
+
+### 9.8. Практические правила из этой фазы
+1. **Пин + наезд**: предыдущая секция `pinSpacing: false`, следующая выше по `z-index`;
+   scroll-room даёт spacer следующей секции (Footer `h-screen`) или собственный pin end.
+2. **Не оборачивать pinned-секции в `overflow-hidden` на desktop** — ломает pin / даёт
+   «чёрную дыру»; на home уже есть `lg:contents`.
+3. **Кнопка поверх full-screen меню** должна жить в stacking context с `z-index` выше
+   оверлея (родитель с `z-[70]`), иначе `z-index` на ребёнке не выигрывает у sibling-оверлея.
+4. **PowerShell**: коммит-сообщения через файл + `git commit -F` (без bash heredoc).

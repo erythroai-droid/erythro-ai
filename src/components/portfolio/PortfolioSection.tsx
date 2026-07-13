@@ -2,102 +2,20 @@
 
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useCursorGlow } from '@/hooks/useCursorGlow'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import {
+  PORTFOLIO_FILTERS,
+  PORTFOLIO_PROJECTS,
+  matchesPortfolioFilter,
+  type PortfolioCategory,
+} from '@/lib/portfolioProjects'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
 }
-
-export type PortfolioCategory =
-  | 'all'
-  | 'ai'
-  | 'crm'
-  | 'websites'
-  | 'landing'
-  | 'apps'
-  | 'other'
-
-export interface PortfolioProject {
-  id: string
-  title: string
-  category: PortfolioCategory
-  categoryLabel: string
-  description: string
-  tags: string[]
-  image: string
-}
-
-const FILTERS: { id: PortfolioCategory; label: string }[] = [
-  { id: 'all', label: 'All Projects' },
-  { id: 'ai', label: 'AI Agents' },
-  { id: 'crm', label: 'CRM Systems' },
-  { id: 'websites', label: 'Websites' },
-  { id: 'landing', label: 'Landing Pages' },
-  { id: 'apps', label: 'Apps' },
-  { id: 'other', label: 'Other' },
-]
-
-const PROJECTS: PortfolioProject[] = [
-  {
-    id: '1',
-    title: 'AI Lead Qualifier',
-    category: 'ai',
-    categoryLabel: 'AI Agents',
-    description: 'Autonomous agent that scores inbound leads and books qualified calls.',
-    tags: ['n8n', 'OpenAI', 'CRM'],
-    image: '/images/portfolio/case-1.png',
-  },
-  {
-    id: '2',
-    title: 'Ops Command Center',
-    category: 'crm',
-    categoryLabel: 'CRM Systems',
-    description: 'Unified dashboard for pipeline, tasks, and client communication.',
-    tags: ['Next.js', 'Payload', 'Postgres'],
-    image: '/images/portfolio/case-2.png',
-  },
-  {
-    id: '3',
-    title: 'Studio Portfolio Site',
-    category: 'websites',
-    categoryLabel: 'Websites',
-    description: 'High-performance brand site with cinematic motion and CMS editing.',
-    tags: ['Next.js', 'GSAP', 'Design'],
-    image: '/images/portfolio/case-3.png',
-  },
-  {
-    id: '4',
-    title: 'Product Launch Landing',
-    category: 'landing',
-    categoryLabel: 'Landing Pages',
-    description: 'Conversion-focused landing with A/B-ready sections and analytics.',
-    tags: ['Webflow', 'Analytics'],
-    image: '/images/portfolio/case-1.png',
-  },
-  {
-    id: '5',
-    title: 'Client Portal App',
-    category: 'apps',
-    categoryLabel: 'Apps',
-    description: 'Secure client space for deliveries, approvals, and messaging.',
-    tags: ['React', 'Auth', 'API'],
-    image: '/images/portfolio/case-2.png',
-  },
-  {
-    id: '6',
-    title: 'Brand Identity System',
-    category: 'other',
-    categoryLabel: 'Other',
-    description: 'Visual language, guidelines, and asset kit for a digital product brand.',
-    tags: ['Branding', 'Figma'],
-    image: '/images/portfolio/case-3.png',
-  },
-]
-
-const matchesFilter = (category: PortfolioCategory, filter: PortfolioCategory) =>
-  filter === 'all' || category === filter
 
 interface PortfolioSectionProps {
   theme?: 'light' | 'dark'
@@ -127,8 +45,10 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
   const projects = useMemo(
     () =>
       activeFilter === 'all'
-        ? PROJECTS
-        : PROJECTS.filter((project) => matchesFilter(project.category, activeFilter)),
+        ? PORTFOLIO_PROJECTS
+        : PORTFOLIO_PROJECTS.filter((project) =>
+            matchesPortfolioFilter(project.category, activeFilter),
+          ),
     [activeFilter],
   )
 
@@ -147,7 +67,6 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
       gridRef.current.querySelectorAll<HTMLElement>('[data-project]'),
     )
 
-    // Fade out in place — keep opacity at 0 until the next set is mounted
     gsap.to(outgoing, {
       opacity: 0,
       duration: 0.28,
@@ -181,7 +100,6 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
       return
     }
 
-    // Only animate after an intentional filter transition
     if (!isFiltering.current || pendingFilter.current !== activeFilter) return
 
     pendingFilter.current = null
@@ -191,7 +109,6 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
       return
     }
 
-    // Start invisible this frame (before paint), then fade in — no flash
     gsap.set(cards, { opacity: 0 })
     gsap.to(cards, {
       opacity: 1,
@@ -211,8 +128,6 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
     ScrollTrigger.refresh()
   }, [activeFilter])
 
-  // Desktop: pin the last viewport of Portfolio so Let's Talk can slide over it
-  // (same pattern as Case Studies → Services / Services → Solutions).
   useEffect(() => {
     if (!sectionRef.current) return
 
@@ -223,8 +138,6 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
         ScrollTrigger.create({
           id: 'portfolio-pin',
           trigger: sectionRef.current,
-          // Scroll through all cards first; lock only once the section bottom
-          // reaches the viewport bottom — then Let's Talk rides up over it.
           start: 'bottom bottom',
           end: '+=100%',
           pin: true,
@@ -271,7 +184,7 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
           role="tablist"
           aria-label="Project filters"
         >
-          {FILTERS.map((filter) => {
+          {PORTFOLIO_FILTERS.map((filter) => {
             const active = activeFilter === filter.id
             return (
               <button
@@ -300,8 +213,9 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
           className="grid w-full grid-cols-1 gap-[30px] md:grid-cols-2 xl:grid-cols-3"
         >
           {projects.map((project) => (
-            <article
+            <Link
               key={project.id}
+              href={`/portfolio/${project.slug}`}
               data-project={project.id}
               className={`group flex flex-col gap-5 ${
                 isLight ? 'text-coal-900' : 'text-white'
@@ -351,7 +265,7 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
                   ))}
                 </div>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
 
@@ -362,7 +276,6 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
         )}
       </div>
 
-      {/* Explicit bottom spacing — matches requested 150px below cards */}
       <div className="relative z-10 h-[150px] w-full shrink-0" aria-hidden />
     </section>
   )

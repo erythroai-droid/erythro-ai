@@ -371,7 +371,7 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
 
   if (isSimple) {
     return (
-      <div className="relative z-20 w-full pointer-events-none">
+      <div className="relative z-30 w-full pointer-events-none shadow-[0_-12px_30px_rgba(0,0,0,0.28)]">
         <div className="pointer-events-auto">{section}</div>
       </div>
     )
