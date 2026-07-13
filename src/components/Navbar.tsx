@@ -165,10 +165,10 @@ export default function Navbar({
 
   return (
     <header
-      className={`fixed top-0 start-0 end-0 z-[60] lg:z-50 w-full select-none pointer-events-none overflow-visible ${
+      className={`fixed top-0 start-0 end-0 z-[60] w-full select-none pointer-events-none ${
         forceBurger
-          ? 'px-[50px] max-w-none'
-          : 'lg:top-6 px-0 lg:px-[30px] max-w-[1170px] mx-auto'
+          ? 'overflow-visible px-[50px] max-w-none lg:z-50'
+          : 'lg:top-6 lg:z-0 px-0 lg:px-[30px] max-w-[1170px] mx-auto'
       }`}
     >
       {/* ===== Desktop navigation pill (lg and up) — hidden on portfolio ===== */}
