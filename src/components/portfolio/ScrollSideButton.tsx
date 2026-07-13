@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 
 interface ScrollSideButtonProps {
   label?: string
+  theme?: 'light' | 'dark'
   /** Section element ids in page order — used for 01|04 counter and scroll targets. */
   sectionIds?: string[]
 }
@@ -12,10 +13,12 @@ const pad2 = (n: number) => String(n).padStart(2, '0')
 
 export default function ScrollSideButton({
   label = 'Scroll',
+  theme = 'dark',
   sectionIds = ['portfolio', 'contacts', 'footer'],
 }: ScrollSideButtonProps) {
   const total = sectionIds.length
   const [current, setCurrent] = useState(1)
+  const isLight = theme === 'light'
 
   useEffect(() => {
     const update = () => {
@@ -63,23 +66,36 @@ export default function ScrollSideButton({
     >
       <span className="flex items-start gap-2">
         <span
-          className="pt-0.5 font-sans text-[9px] uppercase tracking-[0.18em] text-white/90 tabular-nums"
+          className={`pt-0.5 font-sans text-[9px] uppercase tracking-[0.18em] tabular-nums ${
+            isLight ? 'text-coal-500' : 'text-white/90'
+          }`}
           aria-hidden
         >
           {pad2(current)}
         </span>
 
         <span className="flex flex-col items-center gap-2.5">
-          <span className="portfolio-scroll-track relative h-16 w-px overflow-hidden bg-white/20" aria-hidden>
+          <span
+            className={`portfolio-scroll-track relative h-16 w-px overflow-hidden ${
+              isLight ? 'bg-coal-500/20' : 'bg-white/20'
+            }`}
+            aria-hidden
+          >
             <span className="portfolio-scroll-beacon absolute inset-x-0 top-0 h-full w-full bg-erythro-500" />
           </span>
-          <span className="font-sans text-[9px] uppercase tracking-[0.18em] text-gold-800 [writing-mode:vertical-lr]">
+          <span
+            className={`font-sans text-[9px] uppercase tracking-[0.18em] [writing-mode:vertical-lr] ${
+              isLight ? 'text-coal-500' : 'text-gold-800'
+            }`}
+          >
             {label}
           </span>
         </span>
 
         <span
-          className="pt-0.5 font-sans text-[9px] uppercase tracking-[0.18em] text-gold-800 tabular-nums"
+          className={`pt-0.5 font-sans text-[9px] uppercase tracking-[0.18em] tabular-nums ${
+            isLight ? 'text-coal-500/50' : 'text-gold-800'
+          }`}
           aria-hidden
         >
           {pad2(total)}

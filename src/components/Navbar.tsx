@@ -128,11 +128,19 @@ export default function Navbar({
     const handleScroll = () => {
       const y = window.scrollY
       setScrolled(y > 60)
-      if (forceBurger) setLogoHidden(y > 24)
+      if (forceBurger) {
+        // Desktop only: hide logo after scroll. Mobile keeps logo visible.
+        const isDesktop = window.matchMedia('(min-width: 1024px)').matches
+        setLogoHidden(isDesktop && y > 24)
+      }
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll)
     handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+    }
   }, [forceBurger])
 
   const content = useSiteContent()
@@ -167,7 +175,7 @@ export default function Navbar({
     <header
       className={`fixed top-0 start-0 end-0 z-[60] w-full select-none pointer-events-none ${
         forceBurger
-          ? 'overflow-visible px-[50px] max-w-none lg:z-50'
+          ? 'overflow-visible px-0 max-w-none lg:z-50'
           : 'lg:top-6 lg:z-0 px-0 lg:px-[30px] max-w-[1170px] mx-auto'
       }`}
     >
@@ -213,7 +221,15 @@ export default function Navbar({
 
       {/* ===== Portfolio header: logo + MENU burger (all breakpoints) ===== */}
       {forceBurger && (
-        <div className="relative w-full pointer-events-auto flex items-center justify-between overflow-visible py-6 lg:py-8">
+        <div
+          className={`relative z-[70] w-full pointer-events-auto flex items-center justify-between overflow-visible px-[30px] py-5 lg:px-[50px] lg:py-8 lg:bg-transparent lg:border-transparent lg:backdrop-blur-none max-lg:border-b max-lg:backdrop-blur-md transition-colors duration-300 ${
+            mobileOpen
+              ? 'max-lg:border-transparent max-lg:bg-transparent max-lg:backdrop-blur-none'
+              : theme === 'light'
+                ? 'max-lg:bg-gold-100 max-lg:border-coal-900/10'
+                : 'max-lg:bg-coal-900/50 max-lg:border-white/5'
+          }`}
+        >
           <a
             href="/"
             aria-label="Erythro.ai"
@@ -225,18 +241,16 @@ export default function Navbar({
           >
             <BrandLogo
               className={`h-[30px] w-auto transition-colors duration-300 ${
-                theme === 'light' ? 'text-coal-900' : 'text-white'
+                mobileOpen || theme === 'dark' ? 'text-white' : 'text-coal-900'
               }`}
             />
           </a>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className={`group relative z-[70] flex items-center gap-3 overflow-visible cursor-pointer transition-colors duration-300 ${
-              mobileOpen
+              mobileOpen || theme === 'dark'
                 ? 'text-white hover:text-gold-500'
-                : theme === 'light'
-                  ? 'text-coal-900 hover:text-erythro-500'
-                  : 'text-white hover:text-gold-500'
+                : 'text-coal-900 hover:text-erythro-500'
             }`}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
