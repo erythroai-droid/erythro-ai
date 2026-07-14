@@ -1,0 +1,82 @@
+import React from 'react'
+import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
+import { notFound } from 'next/navigation'
+import ServiceClient from './ServiceClient'
+import { getCachedSiteContent } from '@/lib/getSiteContent'
+import {
+  getAllServiceSlugs,
+  getServicePage,
+  tLocale,
+} from '@/lib/servicePages'
+
+const SUPPORTED_LOCALES = ['en', 'ru', 'he']
+const DEFAULT_LOCALE = 'en'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
+
+interface ServicePageProps {
+  params: Promise<{ slug: string }>
+}
+
+export function generateStaticParams() {
+  return getAllServiceSlugs().map((slug) => ({ slug }))
+}
+
+export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
+  const { slug } = await params
+  const service = getServicePage(slug)
+
+  if (!service) {
+    return {
+      title: 'Service not found | Erythro.ai',
+    }
+  }
+
+  const cookieStore = await cookies()
+  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
+  const locale =
+    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+
+  const title = tLocale(service.title, locale)
+  const summary = tLocale(service.summary, locale)
+  const url = `${SITE_URL}/services/${service.slug}`
+
+  return {
+    title: `${title} | Services | Erythro.ai`,
+    description: summary,
+    alternates: {
+      canonical: `/services/${service.slug}`,
+    },
+    openGraph: {
+      title: `${title} | Erythro.ai`,
+      description: summary,
+      url,
+      siteName: 'Erythro.ai',
+      type: 'website',
+      images: [
+        {
+          url: service.hero.src,
+          alt: title,
+        },
+      ],
+    },
+  }
+}
+
+export default async function ServiceDetailPage({ params }: ServicePageProps) {
+  const { slug } = await params
+  const service = getServicePage(slug)
+
+  if (!service) notFound()
+
+  const cookieStore = await cookies()
+  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
+  const initialLocale =
+    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+
+  const content = await getCachedSiteContent()
+
+  return (
+    <ServiceClient initialLocale={initialLocale} content={content} service={service} />
+  )
+}

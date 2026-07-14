@@ -1,10 +1,12 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import Button from './Button'
 import { useCursorGlow } from '@/hooks/useCursorGlow'
+import { getServiceSlugById } from '@/lib/servicePages'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -107,6 +109,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
   const letsTalkTranslations = content.letsTalk
   const navTranslations = content.navbar
   const { open: openContact } = useContactModal()
+  const router = useRouter()
   // Translate helper
   const t = (field: Record<string, string>) => field[locale] || field['en']
 
@@ -511,7 +514,11 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                         <Button
                           variant={theme === 'dark' ? 'dark-outline' : 'light-outline'}
                           showArrow
-                          onClick={openContact}
+                          onClick={() => {
+                            const slug = getServiceSlugById(item.id)
+                            if (slug) router.push(`/services/${slug}`)
+                            else openContact()
+                          }}
                         >
                           {isRtl ? 'עוד' : locale === 'ru' ? 'подробнее' : 'more'}
                         </Button>
