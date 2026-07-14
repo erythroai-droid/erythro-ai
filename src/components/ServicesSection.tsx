@@ -515,7 +515,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                           variant={theme === 'dark' ? 'dark-outline' : 'light-outline'}
                           showArrow
                           onClick={() => {
-                            const slug = getServiceSlugById(item.id)
+                            const slug = item.slug || getServiceSlugById(item.id)
                             if (slug) router.push(`/services/${slug}`)
                             else openContact()
                           }}

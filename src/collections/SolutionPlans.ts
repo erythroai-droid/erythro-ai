@@ -7,12 +7,21 @@ export const SolutionPlans: CollectionConfig = {
   labels: { singular: 'Solution Plan', plural: 'Solution Plans' },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'price', 'featured', 'order'],
+    defaultColumns: ['title', 'slug', 'price', 'featured', 'order'],
     group: 'Content',
   },
   hooks: { afterChange: [revalidateOnChange], afterDelete: [revalidateOnDelete] },
   fields: [
     locText('title', { required: true }),
+    {
+      name: 'slug',
+      type: 'text',
+      unique: true,
+      admin: {
+        description:
+          'Stable id / order URL, e.g. "business-automation" → /order/business-automation',
+      },
+    },
     {
       name: 'price',
       type: 'text',
@@ -45,13 +54,71 @@ export const SolutionPlans: CollectionConfig = {
         description:
           'Fill "label" + "value" for a two-column row, OR "full" for a single full-width row.',
       },
-      fields: [
-        locText('label'),
-        locText('value'),
-        locText('full'),
-      ],
+      fields: [locText('label'), locText('value'), locText('full')],
     },
     locText('disclaimer'),
+    locText('subtitle', {
+      admin: { description: 'Subtitle on the order page under the plan title' },
+    }),
+    locText('promo', {
+      admin: { description: 'Green promo callout on the order page' },
+    }),
+    {
+      name: 'periods',
+      type: 'array',
+      labels: { singular: 'Period', plural: 'Payment periods' },
+      admin: {
+        description:
+          'Optional. If empty, defaults (pay in full / 12 payments when priceNote) are used.',
+      },
+      fields: [
+        {
+          name: 'periodId',
+          type: 'text',
+          required: true,
+          admin: { description: 'e.g. "full" or "12"' },
+        },
+        locText('label', { required: true }),
+        {
+          name: 'months',
+          type: 'number',
+          defaultValue: 1,
+          admin: { description: '1 = one-time; 12 = split into months for display' },
+        },
+        {
+          name: 'discountPercent',
+          type: 'number',
+          defaultValue: 0,
+        },
+      ],
+    },
+    {
+      name: 'addons',
+      type: 'array',
+      labels: { singular: 'Add-on', plural: 'Order add-ons' },
+      fields: [
+        {
+          name: 'addonId',
+          type: 'text',
+          required: true,
+          admin: { description: 'Stable id, e.g. "priority-support"' },
+        },
+        locText('name', { required: true }),
+        locText('description'),
+        {
+          name: 'price',
+          type: 'number',
+          required: true,
+          admin: { description: 'Amount in ₪ (number)' },
+        },
+        {
+          name: 'recommended',
+          type: 'checkbox',
+          defaultValue: false,
+        },
+        locText('note'),
+      ],
+    },
     {
       name: 'order',
       type: 'number',

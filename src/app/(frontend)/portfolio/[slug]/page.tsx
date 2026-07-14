@@ -5,9 +5,10 @@ import { notFound } from 'next/navigation'
 import ProjectClient from './ProjectClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import {
-  getAllPortfolioSlugs,
-  getPortfolioProject,
-} from '@/lib/portfolioProjects'
+  getAllPortfolioSlugsCms,
+  getPortfolioProjectBySlug,
+} from '@/lib/cmsPages'
+import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -17,13 +18,24 @@ interface ProjectPageProps {
   params: Promise<{ slug: string }>
 }
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  try {
+    const slugs = await getAllPortfolioSlugsCms()
+    if (slugs.length) return slugs.map((slug) => ({ slug }))
+  } catch {
+    /* fall through */
+  }
   return getAllPortfolioSlugs().map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
   const { slug } = await params
-  const project = getPortfolioProject(slug)
+  const cookieStore = await cookies()
+  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
+  const locale =
+    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+
+  const project = await getPortfolioProjectBySlug(slug, locale)
 
   if (!project) {
     return {
@@ -57,14 +69,14 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { slug } = await params
-  const project = getPortfolioProject(slug)
-
-  if (!project) notFound()
 
   const cookieStore = await cookies()
   const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
   const initialLocale =
     cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+
+  const project = await getPortfolioProjectBySlug(slug, initialLocale)
+  if (!project) notFound()
 
   const content = await getCachedSiteContent()
 

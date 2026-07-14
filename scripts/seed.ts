@@ -10,6 +10,9 @@ import {
   solutions,
   footer,
 } from '../src/translations'
+import { SERVICE_PAGES, SERVICE_ID_TO_SLUG } from '../src/lib/servicePages'
+import { ORDER_PLANS } from '../src/lib/orderPlans'
+import { PORTFOLIO_PROJECTS } from '../src/lib/portfolioProjects'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -179,38 +182,120 @@ async function run() {
     })),
   )
 
-  // Services collection
+  // Services collection (home cards + /services/[slug])
   await seedCollection(
     payload,
     'services',
     byLocale((loc) =>
-      services.items.map((item, i) => ({
-        title: item.title[loc],
-        number: item.number,
-        order: i,
-        features: item.features[loc].map((f) => ({ feature: f })),
-      })),
+      services.items.map((item, i) => {
+        const page = SERVICE_PAGES.find((p) => p.id === item.id) || SERVICE_PAGES[i]
+        return {
+          title: item.title[loc],
+          slug: page?.slug || SERVICE_ID_TO_SLUG[item.id] || item.id,
+          number: item.number,
+          order: i,
+          features: item.features[loc].map((f) => ({ feature: f })),
+          ...(page?.summary ? { summary: page.summary[loc] || page.summary.en } : {}),
+          ...(page?.description
+            ? {
+                description: (page.description[loc] || page.description.en).map((text) => ({
+                  text,
+                })),
+              }
+            : {}),
+          ...(page?.offerings
+            ? {
+                offerings: page.offerings.map((o) => ({
+                  name: o.name[loc] || o.name.en,
+                  ...(o.description
+                    ? { description: o.description[loc] || o.description.en }
+                    : {}),
+                  price: o.price,
+                  ...(o.pricePrefix
+                    ? { pricePrefix: o.pricePrefix[loc] || o.pricePrefix.en }
+                    : {}),
+                })),
+              }
+            : {}),
+        }
+      }),
     ),
   )
 
-  // Solution plans collection
+  // Solution plans (home cards + /order/[slug])
   await seedCollection(
     payload,
     'solution-plans',
     byLocale((loc) =>
-      solutions.cards.map((card, i) => ({
-        title: card.title[loc],
-        price: card.price,
+      solutions.cards.map((card, i) => {
+        const plan = ORDER_PLANS.find((p) => p.slug === card.id) || ORDER_PLANS[i]
+        return {
+          title: card.title[loc],
+          slug: card.id,
+          price: card.price,
+          order: i,
+          priceNote: !!card.priceNote,
+          featured: !!card.featured,
+          ...(card.pricePrefix ? { pricePrefix: card.pricePrefix[loc] } : {}),
+          ...(card.originalPrice ? { originalPrice: card.originalPrice } : {}),
+          ...(card.disclaimer ? { disclaimer: card.disclaimer[loc] } : {}),
+          features: card.features.map((f) => ({
+            ...(f.label ? { label: f.label[loc] } : {}),
+            ...(f.value ? { value: f.value[loc] } : {}),
+            ...(f.full ? { full: f.full[loc] } : {}),
+          })),
+          ...(plan?.subtitle ? { subtitle: plan.subtitle[loc] || plan.subtitle.en } : {}),
+          ...(plan?.promo ? { promo: plan.promo[loc] || plan.promo.en } : {}),
+          ...(plan?.periods
+            ? {
+                periods: plan.periods.map((p) => ({
+                  periodId: p.id,
+                  label: p.label[loc] || p.label.en,
+                  months: p.months,
+                  discountPercent: p.discountPercent,
+                })),
+              }
+            : {}),
+          ...(plan?.addons
+            ? {
+                addons: plan.addons.map((a) => ({
+                  addonId: a.id,
+                  name: a.name[loc] || a.name.en,
+                  description: a.description[loc] || a.description.en,
+                  price: a.price,
+                  recommended: !!a.recommended,
+                  ...(a.note ? { note: a.note[loc] || a.note.en } : {}),
+                })),
+              }
+            : {}),
+        }
+      }),
+    ),
+  )
+
+  // Portfolio projects (/portfolio + /portfolio/[slug])
+  // Media URLs stay as public paths via frontend fallback until uploaded in admin.
+  await seedCollection(
+    payload,
+    'portfolio-projects',
+    byLocale((_loc) =>
+      PORTFOLIO_PROJECTS.map((project, i) => ({
+        slug: project.slug,
+        title: project.title,
+        category: project.category,
+        categoryLabel: project.categoryLabel,
+        description: project.description,
+        summary: project.summary,
+        date: project.date,
+        client: project.client,
+        ...(project.link ? { link: project.link } : {}),
         order: i,
-        priceNote: !!card.priceNote,
-        featured: !!card.featured,
-        ...(card.pricePrefix ? { pricePrefix: card.pricePrefix[loc] } : {}),
-        ...(card.originalPrice ? { originalPrice: card.originalPrice } : {}),
-        ...(card.disclaimer ? { disclaimer: card.disclaimer[loc] } : {}),
-        features: card.features.map((f) => ({
-          ...(f.label ? { label: f.label[loc] } : {}),
-          ...(f.value ? { value: f.value[loc] } : {}),
-          ...(f.full ? { full: f.full[loc] } : {}),
+        stack: project.stack.map((item) => ({ item })),
+        tags: project.tags.map((tag) => ({ tag })),
+        body: project.body.map((section) => ({
+          ...(section.heading ? { heading: section.heading } : {}),
+          paragraphs: section.paragraphs.map((text) => ({ text })),
+          // Skip image uploads in seed — editors add media in admin; fallback uses static paths
         })),
       })),
     ),

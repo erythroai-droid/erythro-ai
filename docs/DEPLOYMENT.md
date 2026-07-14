@@ -131,7 +131,8 @@ pnpm install --lockfile-only
       (порт 5432).
 - [x] **On-Demand Revalidation контента.** `getSiteContent` / `getSeoSettings` обёрнуты в
       `unstable_cache` с тегом `payload-content` (см. `src/lib/getSiteContent.ts`). Любое
-      изменение глобалов и контентных коллекций (`services`, `solution-plans`, `media`) сбрасывает
+      изменение глобалов и контентных коллекций (`services`, `solution-plans`,
+      `portfolio-projects`, `media`) сбрасывает
       кэш автоматически через `afterChange`/`afterDelete` хуки (`src/lib/revalidate.ts`) — БД
       больше не нагружается на каждый запрос. Куки `NEXT_LOCALE` по-прежнему читаются вне кэша,
       поэтому запоминание языка не затронуто. `REVALIDATION_TOKEN` + ручной POST `/api/revalidate`

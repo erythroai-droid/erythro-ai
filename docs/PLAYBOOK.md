@@ -80,7 +80,9 @@
 4. **Схема Payload**:
    - Хелпер локализованных полей (`src/fields/localized.ts`).
    - Globals: Header, Hero, *-Section (intro), Footer, SiteSettings.
-   - Collections: списки (услуги, тарифы, партнёры) + Media + Users.
+   - Collections: списки (услуги, тарифы, партнёры, **portfolio-projects**) + Media + Users.
+   - Страницы `/portfolio`, `/portfolio/[slug]`, `/services/[slug]`, `/order/[slug]` читают CMS
+     через `src/lib/cmsPages.ts` (фолбэк на статику в `portfolioProjects` / `servicePages` / `orderPlans`).
    - Зарегистрировать в `payload.config.ts`.
 5. **Типы**: `pnpm run generate:types`.
 6. **Загрузчик** (`src/lib/getSiteContent.ts`): тянет globals/collections с `locale: 'all'`, мёрджит
@@ -274,6 +276,8 @@ export default [
 
 ### 9.7. Страница Portfolio (`/portfolio`)
 Новая внутренняя страница. Маршрут: `src/app/(frontend)/portfolio/`.
+Контент кейсов редактируется в админке: коллекция **Portfolio Projects** (группа Pages).
+Загрузчик: `getCachedPortfolioProjects` / `getPortfolioProjectBySlug` в `src/lib/cmsPages.ts`.
 
 **Состав**
 - `PortfolioClient.tsx` — оболочка (theme/locale, providers, без FloatingWidget/WhatsApp).
@@ -325,7 +329,20 @@ export default [
 - `11af54c` — polish: scroll stack, filters, burger layout.
 - `068e027` — fix: mobile header plate + scroll contrast.
 
-### 9.8. Практические правила из этой фазы
+### 9.8. CMS-редактируемые внутренние страницы
+После утверждения вёрстки контент вынесен в Payload:
+
+| Страница | Коллекция в `/admin` | Загрузчик |
+|---|---|---|
+| `/portfolio`, `/portfolio/[slug]` | **Portfolio Projects** (Pages) | `cmsPages.ts` |
+| `/services/[slug]` | **Services** (+ slug, hero, summary, description, offerings) | `cmsPages.ts` |
+| `/order/[slug]` | **Solution Plans** (+ slug, subtitle, promo, periods, addons) | `cmsPages.ts` |
+
+Главная по-прежнему через `getSiteContent`. Пустая/недоступная CMS → статический фолбэк.
+После добавления полей: перезапуск `npm run dev` (Postgres `push`), затем при необходимости
+`pnpm exec tsx scripts/seed.ts` — зальёт slug/описания/кейсы.
+
+### 9.9. Практические правила из этой фазы
 1. **Пин + наезд**: предыдущая секция `pinSpacing: false`, следующая выше по `z-index`;
    scroll-room даёт spacer следующей секции (Footer `h-screen`) или собственный pin end.
 2. **Не оборачивать pinned-секции в `overflow-hidden` на desktop** — ломает pin / даёт

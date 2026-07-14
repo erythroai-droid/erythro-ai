@@ -8,9 +8,9 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
   PORTFOLIO_FILTERS,
-  PORTFOLIO_PROJECTS,
   matchesPortfolioFilter,
   type PortfolioCategory,
+  type PortfolioProject,
 } from '@/lib/portfolioProjects'
 
 if (typeof window !== 'undefined') {
@@ -20,9 +20,13 @@ if (typeof window !== 'undefined') {
 interface PortfolioSectionProps {
   theme?: 'light' | 'dark'
   locale?: string
+  projects: PortfolioProject[]
 }
 
-export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionProps) {
+export default function PortfolioSection({
+  theme = 'dark',
+  projects: allProjects,
+}: PortfolioSectionProps) {
   const isLight = theme === 'light'
   const sectionRef = React.useRef<HTMLElement | null>(null)
   const gridRef = useRef<HTMLDivElement | null>(null)
@@ -45,11 +49,11 @@ export default function PortfolioSection({ theme = 'dark' }: PortfolioSectionPro
   const projects = useMemo(
     () =>
       activeFilter === 'all'
-        ? PORTFOLIO_PROJECTS
-        : PORTFOLIO_PROJECTS.filter((project) =>
+        ? allProjects
+        : allProjects.filter((project) =>
             matchesPortfolioFilter(project.category, activeFilter),
           ),
-    [activeFilter],
+    [activeFilter, allProjects],
   )
 
   const handleFilterChange = (next: PortfolioCategory) => {

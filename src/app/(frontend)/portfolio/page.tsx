@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import PortfolioClient from './PortfolioClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
+import { getCachedPortfolioProjects } from '@/lib/cmsPages'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -29,7 +30,12 @@ export default async function PortfolioPage() {
   const initialLocale =
     cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
 
-  const content = await getCachedSiteContent()
+  const [content, projects] = await Promise.all([
+    getCachedSiteContent(),
+    getCachedPortfolioProjects(initialLocale),
+  ])
 
-  return <PortfolioClient initialLocale={initialLocale} content={content} />
+  return (
+    <PortfolioClient initialLocale={initialLocale} content={content} projects={projects} />
+  )
 }

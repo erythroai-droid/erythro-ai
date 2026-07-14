@@ -95,6 +95,8 @@ export const hero = {
 // 3. Services translations
 export interface ServiceItem {
   id: string
+  /** URL slug for /services/[slug]; preferred over id → slug map when set via CMS. */
+  slug?: string
   number: string
   title: Record<string, string>
   features: Record<string, string[]>

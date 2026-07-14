@@ -11,15 +11,21 @@ import PortfolioSection from '@/components/portfolio/PortfolioSection'
 import ScrollSideButton from '@/components/portfolio/ScrollSideButton'
 import LetsTalkSection from '@/components/LetsTalkSection'
 import type { SiteContent } from '@/lib/defaultContent'
+import type { PortfolioProject } from '@/lib/portfolioProjects'
 
 const LOCALE_COOKIE = 'NEXT_LOCALE'
 
 interface PortfolioClientProps {
   initialLocale: string
   content: SiteContent
+  projects: PortfolioProject[]
 }
 
-export default function PortfolioClient({ initialLocale, content }: PortfolioClientProps) {
+export default function PortfolioClient({
+  initialLocale,
+  content,
+  projects,
+}: PortfolioClientProps) {
   const a11yTranslations = content.accessibility
   const [locale, setLocaleState] = useState(initialLocale)
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
@@ -99,7 +105,7 @@ export default function PortfolioClient({ initialLocale, content }: PortfolioCli
             (Let's Talk → Footer) works like Solutions on the home page.
           */}
           <div className="relative z-10 lg:contents">
-            <PortfolioSection theme={theme} locale={locale} />
+            <PortfolioSection theme={theme} locale={locale} projects={projects} />
           </div>
 
           <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">

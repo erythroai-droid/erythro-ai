@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSiteContent } from './SiteContentProvider'
-import { useContactModal } from './ContactModal'
 import Button from './Button'
 import { useCursorGlow } from '@/hooks/useCursorGlow'
 import { gsap } from 'gsap'
@@ -64,7 +64,7 @@ function SolutionCard({
   theme?: 'light' | 'dark'
 }) {
   const t = (field: Record<string, string>) => field[locale] || field['en']
-  const { open: openContact } = useContactModal()
+  const router = useRouter()
 
   const isFeatured = card.featured
   const isLight = theme === 'light'
@@ -202,7 +202,11 @@ function SolutionCard({
       </ul>
 
       <div className="mt-auto flex w-full flex-col items-center gap-4">
-        <Button variant="solution-cta" className={solutionButtonClassName} onClick={openContact}>
+        <Button
+          variant="solution-cta"
+          className={solutionButtonClassName}
+          onClick={() => router.push(`/order/${card.id}`)}
+        >
           {ctaLabel}
         </Button>
 

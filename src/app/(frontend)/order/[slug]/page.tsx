@@ -1,0 +1,71 @@
+import React from 'react'
+import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
+import { notFound } from 'next/navigation'
+import OrderClient from './OrderClient'
+import { getCachedSiteContent } from '@/lib/getSiteContent'
+import { getAllOrderSlugsCms, getOrderPlanBySlug } from '@/lib/cmsPages'
+import { getAllOrderSlugs, tLocale } from '@/lib/orderPlans'
+
+const SUPPORTED_LOCALES = ['en', 'ru', 'he']
+const DEFAULT_LOCALE = 'en'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
+
+interface OrderPageProps {
+  params: Promise<{ slug: string }>
+}
+
+export async function generateStaticParams() {
+  try {
+    const slugs = await getAllOrderSlugsCms()
+    if (slugs.length) return slugs.map((slug) => ({ slug }))
+  } catch {
+    /* fall through */
+  }
+  return getAllOrderSlugs().map((slug) => ({ slug }))
+}
+
+export async function generateMetadata({ params }: OrderPageProps): Promise<Metadata> {
+  const { slug } = await params
+  const plan = await getOrderPlanBySlug(slug)
+
+  if (!plan) {
+    return { title: 'Order not found | Erythro.ai' }
+  }
+
+  const cookieStore = await cookies()
+  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
+  const locale =
+    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+
+  const title = tLocale(plan.card.title, locale)
+  const subtitle = tLocale(plan.subtitle, locale)
+
+  return {
+    title: `${title} | Order | Erythro.ai`,
+    description: subtitle,
+    alternates: { canonical: `/order/${plan.slug}` },
+    openGraph: {
+      title: `${title} | Order | Erythro.ai`,
+      description: subtitle,
+      url: `${SITE_URL}/order/${plan.slug}`,
+      siteName: 'Erythro.ai',
+      type: 'website',
+    },
+  }
+}
+
+export default async function OrderPage({ params }: OrderPageProps) {
+  const { slug } = await params
+  const plan = await getOrderPlanBySlug(slug)
+  if (!plan) notFound()
+
+  const cookieStore = await cookies()
+  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
+  const initialLocale =
+    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+
+  const content = await getCachedSiteContent()
+
+  return <OrderClient initialLocale={initialLocale} content={content} plan={plan} />
+}

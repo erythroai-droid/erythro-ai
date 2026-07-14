@@ -49,6 +49,18 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
   const [values, setValues] = useState({ name: '', email: '', phone: '', message: '' })
   const firstFieldRef = useRef<HTMLInputElement | null>(null)
 
+  useEffect(() => {
+    try {
+      const draft = sessionStorage.getItem('erythro_order_draft')
+      if (draft) {
+        setValues((v) => ({ ...v, message: draft }))
+        sessionStorage.removeItem('erythro_order_draft')
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
   // Close on Escape and lock background scroll while open.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

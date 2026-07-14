@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache'
 import config from '@payload-config'
 import { defaultSiteContent, type SiteContent, type Localized } from './defaultContent'
 import { SITE_CONTENT_TAG } from './revalidate'
+import { SERVICE_ID_TO_SLUG } from './servicePages'
 
 const LOCALES = ['en', 'ru', 'he'] as const
 
@@ -155,7 +156,11 @@ export async function getSiteContent(): Promise<SiteContent> {
         const url = mediaUrl(media)
         const isVideo = isVideoMedia(media, url)
         return {
-          id: String(d.id),
+          id: fb?.id ?? String(d.id),
+          slug:
+            (typeof d.slug === 'string' && d.slug.trim()) ||
+            (fb?.id ? SERVICE_ID_TO_SLUG[fb.id] : undefined) ||
+            undefined,
           number: d.number || fb?.number || String(i + 1).padStart(2, '0'),
           title: L(d.title, fb?.title ?? { en: '', ru: '', he: '' }),
           features,
@@ -197,7 +202,7 @@ export async function getSiteContent(): Promise<SiteContent> {
           }
         })
         return {
-          id: fb?.id ?? String(d.id),
+          id: (typeof d.slug === 'string' && d.slug.trim()) || fb?.id || String(d.id),
           price: d.price ?? fb?.price ?? '',
           ...(hasContent(d.pricePrefix) || fb?.pricePrefix
             ? { pricePrefix: L(d.pricePrefix, fb?.pricePrefix ?? { en: '', ru: '', he: '' }) }

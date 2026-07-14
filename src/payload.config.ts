@@ -11,6 +11,7 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Services } from './collections/Services'
 import { SolutionPlans } from './collections/SolutionPlans'
+import { PortfolioProjects } from './collections/PortfolioProjects'
 import { Partners } from './collections/Partners'
 import { ContactSubmissions } from './collections/ContactSubmissions'
 
@@ -32,7 +33,16 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Pages, Services, SolutionPlans, Partners, ContactSubmissions],
+  collections: [
+    Users,
+    Media,
+    Pages,
+    Services,
+    SolutionPlans,
+    PortfolioProjects,
+    Partners,
+    ContactSubmissions,
+  ],
   globals: [Header, Hero, ServicesIntro, CaseStudies, SolutionsIntro, Footer, SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'fallback-secret-key-replace-in-prod',

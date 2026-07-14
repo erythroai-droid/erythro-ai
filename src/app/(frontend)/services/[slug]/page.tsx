@@ -4,11 +4,8 @@ import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import ServiceClient from './ServiceClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
-import {
-  getAllServiceSlugs,
-  getServicePage,
-  tLocale,
-} from '@/lib/servicePages'
+import { getAllServiceSlugsCms, getServicePageBySlug } from '@/lib/cmsPages'
+import { getAllServiceSlugs, tLocale } from '@/lib/servicePages'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -18,13 +15,19 @@ interface ServicePageProps {
   params: Promise<{ slug: string }>
 }
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  try {
+    const slugs = await getAllServiceSlugsCms()
+    if (slugs.length) return slugs.map((slug) => ({ slug }))
+  } catch {
+    /* fall through */
+  }
   return getAllServiceSlugs().map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
   const { slug } = await params
-  const service = getServicePage(slug)
+  const service = await getServicePageBySlug(slug)
 
   if (!service) {
     return {
@@ -65,7 +68,7 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
 
 export default async function ServiceDetailPage({ params }: ServicePageProps) {
   const { slug } = await params
-  const service = getServicePage(slug)
+  const service = await getServicePageBySlug(slug)
 
   if (!service) notFound()
 

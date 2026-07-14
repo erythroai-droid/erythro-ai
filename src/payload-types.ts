@@ -72,6 +72,7 @@ export interface Config {
     pages: Page;
     services: Service;
     'solution-plans': SolutionPlan;
+    'portfolio-projects': PortfolioProject;
     partners: Partner;
     'contact-submissions': ContactSubmission;
     'payload-kv': PayloadKv;
@@ -86,6 +87,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     'solution-plans': SolutionPlansSelect<false> | SolutionPlansSelect<true>;
+    'portfolio-projects': PortfolioProjectsSelect<false> | PortfolioProjectsSelect<true>;
     partners: PartnersSelect<false> | PartnersSelect<true>;
     'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -228,6 +230,10 @@ export interface Service {
   id: number;
   title: string;
   /**
+   * URL for the service page, e.g. "design-branding" → /services/design-branding. Also used by the home card “more” link.
+   */
+  slug?: string | null;
+  /**
    * Display number, e.g. "01"
    */
   number?: string | null;
@@ -235,9 +241,41 @@ export interface Service {
    * Image OR video shown on the card. If you upload a video (mp4/webm), it autoplays muted in a loop instead of an image.
    */
   image?: (number | null) | Media;
+  /**
+   * Optional hero for /services/[slug]. Falls back to the card image.
+   */
+  heroMedia?: (number | null) | Media;
   features?:
     | {
         feature: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Short intro on the service detail page
+   */
+  summary?: string | null;
+  /**
+   * Detailed paragraphs on the service page
+   */
+  description?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  offerings?:
+    | {
+        name: string;
+        description?: string | null;
+        /**
+         * e.g. "2 500"
+         */
+        price: string;
+        /**
+         * e.g. "from" / "от"
+         */
+        pricePrefix?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -255,6 +293,10 @@ export interface Service {
 export interface SolutionPlan {
   id: number;
   title: string;
+  /**
+   * Stable id / order URL, e.g. "business-automation" → /order/business-automation
+   */
+  slug?: string | null;
   /**
    * Main price value, e.g. "14 999" or "0"
    */
@@ -287,6 +329,124 @@ export interface SolutionPlan {
       }[]
     | null;
   disclaimer?: string | null;
+  /**
+   * Subtitle on the order page under the plan title
+   */
+  subtitle?: string | null;
+  /**
+   * Green promo callout on the order page
+   */
+  promo?: string | null;
+  /**
+   * Optional. If empty, defaults (pay in full / 12 payments when priceNote) are used.
+   */
+  periods?:
+    | {
+        /**
+         * e.g. "full" or "12"
+         */
+        periodId: string;
+        label: string;
+        /**
+         * 1 = one-time; 12 = split into months for display
+         */
+        months?: number | null;
+        discountPercent?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  addons?:
+    | {
+        /**
+         * Stable id, e.g. "priority-support"
+         */
+        addonId: string;
+        name: string;
+        description?: string | null;
+        /**
+         * Amount in ₪ (number)
+         */
+        price: number;
+        recommended?: boolean | null;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Sort order (ascending)
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolio-projects".
+ */
+export interface PortfolioProject {
+  id: number;
+  /**
+   * URL segment, e.g. "ai-lead-qualifier" → /portfolio/ai-lead-qualifier
+   */
+  slug: string;
+  title: string;
+  category: 'ai' | 'crm' | 'websites' | 'landing' | 'apps' | 'other';
+  categoryLabel: string;
+  /**
+   * Short card description on /portfolio
+   */
+  description: string;
+  /**
+   * Hero summary on the project page
+   */
+  summary: string;
+  /**
+   * e.g. "2025" or "2024 — 2025"
+   */
+  date?: string | null;
+  client?: string | null;
+  /**
+   * Optional external project URL
+   */
+  link?: string | null;
+  stack?:
+    | {
+        item: string;
+        id?: string | null;
+      }[]
+    | null;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Thumbnail on the portfolio grid
+   */
+  cardImage?: (number | null) | Media;
+  /**
+   * Full-bleed hero image or video
+   */
+  heroMedia?: (number | null) | Media;
+  body?:
+    | {
+        heading?: string | null;
+        paragraphs?:
+          | {
+              text: string;
+              id?: string | null;
+            }[]
+          | null;
+        images?:
+          | {
+              image: number | Media;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Sort order (ascending)
    */
@@ -373,6 +533,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'solution-plans';
         value: number | SolutionPlan;
+      } | null)
+    | ({
+        relationTo: 'portfolio-projects';
+        value: number | PortfolioProject;
       } | null)
     | ({
         relationTo: 'partners';
@@ -504,12 +668,30 @@ export interface PagesSelect<T extends boolean = true> {
  */
 export interface ServicesSelect<T extends boolean = true> {
   title?: T;
+  slug?: T;
   number?: T;
   image?: T;
+  heroMedia?: T;
   features?:
     | T
     | {
         feature?: T;
+        id?: T;
+      };
+  summary?: T;
+  description?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  offerings?:
+    | T
+    | {
+        name?: T;
+        description?: T;
+        price?: T;
+        pricePrefix?: T;
         id?: T;
       };
   order?: T;
@@ -522,6 +704,7 @@ export interface ServicesSelect<T extends boolean = true> {
  */
 export interface SolutionPlansSelect<T extends boolean = true> {
   title?: T;
+  slug?: T;
   price?: T;
   pricePrefix?: T;
   originalPrice?: T;
@@ -536,6 +719,78 @@ export interface SolutionPlansSelect<T extends boolean = true> {
         id?: T;
       };
   disclaimer?: T;
+  subtitle?: T;
+  promo?: T;
+  periods?:
+    | T
+    | {
+        periodId?: T;
+        label?: T;
+        months?: T;
+        discountPercent?: T;
+        id?: T;
+      };
+  addons?:
+    | T
+    | {
+        addonId?: T;
+        name?: T;
+        description?: T;
+        price?: T;
+        recommended?: T;
+        note?: T;
+        id?: T;
+      };
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolio-projects_select".
+ */
+export interface PortfolioProjectsSelect<T extends boolean = true> {
+  slug?: T;
+  title?: T;
+  category?: T;
+  categoryLabel?: T;
+  description?: T;
+  summary?: T;
+  date?: T;
+  client?: T;
+  link?: T;
+  stack?:
+    | T
+    | {
+        item?: T;
+        id?: T;
+      };
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  cardImage?: T;
+  heroMedia?: T;
+  body?:
+    | T
+    | {
+        heading?: T;
+        paragraphs?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        images?:
+          | T
+          | {
+              image?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   order?: T;
   updatedAt?: T;
   createdAt?: T;
