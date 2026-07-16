@@ -127,7 +127,7 @@ function OrderCheckout({
   const isLight = theme === 'light'
   const [periodId, setPeriodId] = useState(plan.defaultPeriodId)
   const [selectedAddons, setSelectedAddons] = useState<string[]>(
-    plan.addons.filter((a) => a.recommended).map((a) => a.id),
+    plan.addons.filter((a) => a.recommended || a.mandatory).map((a) => a.id),
   )
 
   const title = tLocale(plan.card.title, locale)
@@ -173,6 +173,8 @@ function OrderCheckout({
   }
 
   const toggleAddon = (id: string) => {
+    if (plan.addons.some((addon) => addon.id === id && addon.mandatory)) return
+
     setSelectedAddons((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     )
@@ -305,6 +307,7 @@ function OrderCheckout({
           {/* Add-ons */}
           {plan.addons.map((addon) => {
             const checked = selectedAddons.includes(addon.id)
+            const isMandatory = Boolean(addon.mandatory)
             return (
               <section key={addon.id} className={`rounded-[10px] p-6 md:p-7 ${cardCls}`}>
                 <div className="flex items-start gap-3">
@@ -312,7 +315,8 @@ function OrderCheckout({
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggleAddon(addon.id)}
-                    className="mt-1 size-5 shrink-0 accent-[var(--erythro-500,#e52421)]"
+                    disabled={isMandatory}
+                    className="mt-1 size-5 shrink-0 accent-[var(--erythro-500,#e52421)] disabled:cursor-not-allowed disabled:opacity-100"
                     aria-label={tLocale(addon.name, locale)}
                   />
                   <div className="min-w-0 flex-1">

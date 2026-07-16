@@ -270,6 +270,7 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
       description: locMap(a.description, { en: '' }),
       price: typeof a.price === 'number' ? a.price : Number(a.price) || 0,
       ...(a.recommended ? { recommended: true } : {}),
+      ...(a.mandatory ? { mandatory: true } : {}),
       ...(a.note ? { note: locMap(a.note, { en: '' }) } : {}),
     }))
   }

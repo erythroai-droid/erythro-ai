@@ -368,6 +368,10 @@ export interface SolutionPlan {
          */
         price: number;
         recommended?: boolean | null;
+        /**
+         * Always include this add-on in the order. Customers cannot deselect it.
+         */
+        mandatory?: boolean | null;
         note?: string | null;
         id?: string | null;
       }[]
@@ -738,6 +742,7 @@ export interface SolutionPlansSelect<T extends boolean = true> {
         description?: T;
         price?: T;
         recommended?: T;
+        mandatory?: T;
         note?: T;
         id?: T;
       };

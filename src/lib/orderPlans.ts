@@ -17,6 +17,7 @@ export interface OrderAddon {
   description: LocaleMap
   price: number
   recommended?: boolean
+  mandatory?: boolean
   note?: LocaleMap
 }
 

@@ -116,6 +116,15 @@ export const SolutionPlans: CollectionConfig = {
           type: 'checkbox',
           defaultValue: false,
         },
+        {
+          name: 'mandatory',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description:
+              'Always include this add-on in the order. Customers cannot deselect it.',
+          },
+        },
         locText('note'),
       ],
     },

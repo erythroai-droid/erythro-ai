@@ -264,6 +264,7 @@ async function run() {
                   description: a.description[loc] || a.description.en,
                   price: a.price,
                   recommended: !!a.recommended,
+                  mandatory: !!a.mandatory,
                   ...(a.note ? { note: a.note[loc] || a.note.en } : {}),
                 })),
               }
