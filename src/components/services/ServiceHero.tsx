@@ -69,10 +69,6 @@ export default function ServiceHero({ service, locale }: ServiceHeroProps) {
             className="object-cover"
           />
         )}
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-coal-900 via-coal-900/50 to-coal-900/15"
-          aria-hidden
-        />
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-[1170px] px-[30px] pb-14 pt-20 md:pb-10">
