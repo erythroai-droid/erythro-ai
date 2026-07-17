@@ -341,9 +341,13 @@ export interface SolutionFeature {
   full?: Record<string, string>
 }
 
+export type SolutionCurrency = 'ILS' | 'USD' | 'EUR'
+
 export interface SolutionCardItem {
   id: string
   price: string
+  /** Currency code for price display. Default ILS (₪). */
+  currency?: SolutionCurrency
   pricePrefix?: Record<string, string>
   priceNote?: boolean
   originalPrice?: string

@@ -178,11 +178,21 @@ export function parsePrice(price: string): number {
   return Number.isFinite(n) ? n : 0
 }
 
-export function formatPrice(amount: number, locale: string): string {
+const CURRENCY_SYMBOL: Record<string, string> = {
+  ILS: '₪',
+  USD: '$',
+  EUR: '€',
+}
+
+export function currencySymbol(currency?: string): string {
+  return CURRENCY_SYMBOL[currency || 'ILS'] || CURRENCY_SYMBOL.ILS
+}
+
+export function formatPrice(amount: number, locale: string, currency?: string): string {
   const formatted = new Intl.NumberFormat(locale === 'he' ? 'he-IL' : locale === 'ru' ? 'ru-RU' : 'en-US').format(
     amount,
   )
-  return `${formatted} ₪`
+  return `${formatted} ${currencySymbol(currency)}`
 }
 
 export function calcPlanAmount(plan: OrderPlan, periodId: string): {

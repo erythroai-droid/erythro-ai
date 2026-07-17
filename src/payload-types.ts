@@ -302,6 +302,10 @@ export interface SolutionPlan {
    */
   price: string;
   /**
+   * Currency shown next to the price on the site and order page
+   */
+  currency: 'ILS' | 'USD' | 'EUR';
+  /**
    * Optional prefix, e.g. "from" / "от"
    */
   pricePrefix?: string | null;
@@ -364,7 +368,7 @@ export interface SolutionPlan {
         name: string;
         description?: string | null;
         /**
-         * Amount in ₪ (number)
+         * Amount in the plan currency (number)
          */
         price: number;
         recommended?: boolean | null;
@@ -710,6 +714,7 @@ export interface SolutionPlansSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   price?: T;
+  currency?: T;
   pricePrefix?: T;
   originalPrice?: T;
   priceNote?: T;

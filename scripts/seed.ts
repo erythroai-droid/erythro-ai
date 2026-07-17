@@ -233,6 +233,7 @@ async function run() {
           title: card.title[loc],
           slug: card.id,
           price: card.price,
+          currency: card.currency || 'ILS',
           order: i,
           priceNote: !!card.priceNote,
           featured: !!card.featured,

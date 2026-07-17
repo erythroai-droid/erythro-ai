@@ -224,6 +224,10 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
   const card: SolutionCardItem = {
     id: d.slug || fb.slug,
     price: d.price ?? fb.card.price,
+    currency:
+      d.currency === 'USD' || d.currency === 'EUR' || d.currency === 'ILS'
+        ? d.currency
+        : fb.card.currency || 'ILS',
     title: locMap(d.title, fb.card.title) as SolutionCardItem['title'],
     features: fb.card.features,
     ...(d.pricePrefix || fb.card.pricePrefix

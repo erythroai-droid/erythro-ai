@@ -135,6 +135,7 @@ function OrderCheckout({
   const features = featureLines(plan.card.features, locale)
   const pricing = calcPlanAmount(plan, periodId)
   const period = plan.periods.find((p) => p.id === periodId) || plan.periods[0]
+  const money = (amount: number) => formatPrice(amount, locale, plan.card.currency)
 
   const addonTotal = plan.addons
     .filter((a) => selectedAddons.includes(a.id))
@@ -188,7 +189,7 @@ function OrderCheckout({
     const draft = [
       `Order: ${title}`,
       `Period: ${tLocale(period?.label, locale)}`,
-      `Total: ${formatPrice(total, locale)}`,
+      `Total: ${money(total)}`,
       addonNames ? `Add-ons: ${addonNames}` : null,
     ]
       .filter(Boolean)
@@ -256,18 +257,18 @@ function OrderCheckout({
               <div className="flex flex-wrap items-center gap-3 md:justify-end" dir="ltr">
                 {pricing.savings > 0 ? (
                   <span className={`text-sm line-through opacity-50 ${muted}`}>
-                    {formatPrice(pricing.list, locale)}
+                    {money(pricing.list)}
                     {pricing.perMonth ? copy.perMonth : ''}
                   </span>
                 ) : null}
                 <span className="text-xl font-bold tracking-wide md:text-2xl">
                   {pricing.perMonth
-                    ? `${formatPrice(pricing.perMonth, locale)}${copy.perMonth}`
-                    : formatPrice(pricing.base, locale)}
+                    ? `${money(pricing.perMonth)}${copy.perMonth}`
+                    : money(pricing.base)}
                 </span>
                 {pricing.savings > 0 ? (
                   <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-600">
-                    {copy.savings} {formatPrice(pricing.savings, locale)}
+                    {copy.savings} {money(pricing.savings)}
                   </span>
                 ) : null}
               </div>
@@ -275,7 +276,7 @@ function OrderCheckout({
 
             {plan.card.pricePrefix ? (
               <p className={`mt-2 text-xs ${muted}`}>
-                {tLocale(plan.card.pricePrefix, locale)} {formatPrice(pricing.base, locale)}
+                {tLocale(plan.card.pricePrefix, locale)} {money(pricing.base)}
               </p>
             ) : null}
 
@@ -308,6 +309,7 @@ function OrderCheckout({
           {plan.addons.map((addon) => {
             const checked = selectedAddons.includes(addon.id)
             const isMandatory = Boolean(addon.mandatory)
+            const note = tLocale(addon.note, locale).trim()
             return (
               <section key={addon.id} className={`rounded-[10px] p-6 md:p-7 ${cardCls}`}>
                 <div className="flex items-start gap-3">
@@ -333,14 +335,14 @@ function OrderCheckout({
                     <p className={`mt-2 text-sm leading-6 ${muted}`}>
                       {tLocale(addon.description, locale)}
                     </p>
-                    {addon.note ? (
+                    {note ? (
                       <p className="mt-3 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300">
-                        {tLocale(addon.note, locale)}
+                        {note}
                       </p>
                     ) : null}
                   </div>
                   <p className="shrink-0 text-sm font-semibold" dir="ltr">
-                    {formatPrice(addon.price, locale)}
+                    {money(addon.price)}
                   </p>
                 </div>
               </section>
@@ -365,9 +367,9 @@ function OrderCheckout({
               </div>
               <div className="text-end text-sm" dir="ltr">
                 {pricing.savings > 0 ? (
-                  <p className={`text-xs line-through opacity-50`}>{formatPrice(pricing.list, locale)}</p>
+                  <p className={`text-xs line-through opacity-50`}>{money(pricing.list)}</p>
                 ) : null}
-                <p className="font-semibold">{formatPrice(pricing.base, locale)}</p>
+                <p className="font-semibold">{money(pricing.base)}</p>
               </div>
             </li>
 
@@ -377,7 +379,7 @@ function OrderCheckout({
                 <li key={addon.id} className="flex items-start justify-between gap-4 text-sm">
                   <p>{tLocale(addon.name, locale)}</p>
                   <p className="shrink-0 font-semibold" dir="ltr">
-                    {formatPrice(addon.price, locale)}
+                    {money(addon.price)}
                   </p>
                 </li>
               ))}
@@ -392,9 +394,9 @@ function OrderCheckout({
             <span className="text-base font-bold uppercase tracking-[0.08em]">{copy.total}</span>
             <div className="text-end" dir="ltr">
               {listTotal > total ? (
-                <p className={`text-xs line-through opacity-50`}>{formatPrice(listTotal, locale)}</p>
+                <p className={`text-xs line-through opacity-50`}>{money(listTotal)}</p>
               ) : null}
-              <p className="text-2xl font-bold tracking-wide">{formatPrice(total, locale)}</p>
+              <p className="text-2xl font-bold tracking-wide">{money(total)}</p>
             </div>
           </div>
 

@@ -204,6 +204,10 @@ export async function getSiteContent(): Promise<SiteContent> {
         return {
           id: (typeof d.slug === 'string' && d.slug.trim()) || fb?.id || String(d.id),
           price: d.price ?? fb?.price ?? '',
+          currency:
+            d.currency === 'USD' || d.currency === 'EUR' || d.currency === 'ILS'
+              ? d.currency
+              : fb?.currency || 'ILS',
           ...(hasContent(d.pricePrefix) || fb?.pricePrefix
             ? { pricePrefix: L(d.pricePrefix, fb?.pricePrefix ?? { en: '', ru: '', he: '' }) }
             : {}),

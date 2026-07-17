@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
+import { currencySymbol } from '@/lib/orderPlans'
 import { useCursorGlow } from '@/hooks/useCursorGlow'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -26,6 +27,7 @@ interface SolutionFeature {
 interface SolutionCardData {
   id: string
   price: string
+  currency?: string
   pricePrefix?: Record<string, string>
   priceNote?: boolean
   originalPrice?: string
@@ -104,7 +106,7 @@ function SolutionCard({
             locale === 'he' ? 'start-4' : 'end-4'
           }`}
         >
-          <span>₪</span>{' '}
+          <span>{currencySymbol(card.currency)}</span>{' '}
           <span className="line-through">{card.originalPrice}</span>
         </p>
       )}
@@ -116,7 +118,7 @@ function SolutionCard({
             isFeatured ? 'text-white' : isLight ? 'text-coal-900' : 'text-gold-500'
           }`}
         >
-          <span className="text-[1.6125rem] leading-tight">₪</span>{' '}
+          <span className="text-[1.6125rem] leading-tight">{currencySymbol(card.currency)}</span>{' '}
           <span className="text-[2.5rem] leading-tight">{card.price}</span>
           {card.priceNote && (
             <span className="relative -top-5 inline-block text-sm leading-none">*</span>
@@ -185,7 +187,7 @@ function SolutionCard({
                 {feature.value &&
                   (() => {
                     const value = t(feature.value)
-                    const isPrice = value.includes('₪')
+                    const isPrice = /[₪$€]/.test(value)
                     return (
                       <span
                         {...(isPrice ? { dir: 'ltr' as const } : {})}

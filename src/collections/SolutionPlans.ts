@@ -28,6 +28,18 @@ export const SolutionPlans: CollectionConfig = {
       required: true,
       admin: { description: 'Main price value, e.g. "14 999" or "0"' },
     },
+    {
+      name: 'currency',
+      type: 'select',
+      required: true,
+      defaultValue: 'ILS',
+      options: [
+        { label: '₪ ILS', value: 'ILS' },
+        { label: '$ USD', value: 'USD' },
+        { label: '€ EUR', value: 'EUR' },
+      ],
+      admin: { description: 'Currency shown next to the price on the site and order page' },
+    },
     locText('pricePrefix', { admin: { description: 'Optional prefix, e.g. "from" / "от"' } }),
     {
       name: 'originalPrice',
@@ -109,7 +121,7 @@ export const SolutionPlans: CollectionConfig = {
           name: 'price',
           type: 'number',
           required: true,
-          admin: { description: 'Amount in ₪ (number)' },
+          admin: { description: 'Amount in the plan currency (number)' },
         },
         {
           name: 'recommended',
