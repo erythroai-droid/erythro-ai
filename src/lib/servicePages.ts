@@ -1,5 +1,6 @@
 export type LocaleMap = Record<string, string>
 export type LocaleListMap = Record<string, string[]>
+export type ServiceCurrency = 'USD' | 'ILS' | 'EUR'
 
 export interface ServiceOffering {
   name: LocaleMap
@@ -17,6 +18,7 @@ export interface ServicePage {
   description: LocaleListMap
   features: LocaleListMap
   offerings: ServiceOffering[]
+  currency?: ServiceCurrency
 }
 
 export const SERVICE_ID_TO_SLUG: Record<string, string> = {

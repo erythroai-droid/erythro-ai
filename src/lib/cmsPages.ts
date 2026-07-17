@@ -193,6 +193,10 @@ function mapServiceDoc(d: any, i: number): ServicePage {
     description,
     features,
     offerings,
+    currency:
+      d.currency === 'ILS' || d.currency === 'EUR' || d.currency === 'USD'
+        ? d.currency
+        : fb.currency || 'USD',
   }
 }
 

@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Button from '@/components/Button'
 import { useContactModal } from '@/components/ContactModal'
 import { tLocale, tLocaleList, type ServicePage } from '@/lib/servicePages'
+import { currencySymbol } from '@/lib/orderPlans'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -144,7 +145,7 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
                   <p className="shrink-0 font-sans text-base tracking-[0.04em] md:text-lg">
                     {prefix ? <span className="opacity-60">{prefix} </span> : null}
                     <span className="font-medium">{offering.price}</span>
-                    <span className="opacity-60"> $</span>
+                    <span className="opacity-60"> {currencySymbol(service.currency || 'USD')}</span>
                   </p>
                 </li>
               )

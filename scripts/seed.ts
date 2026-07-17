@@ -192,6 +192,7 @@ async function run() {
         return {
           title: item.title[loc],
           slug: page?.slug || SERVICE_ID_TO_SLUG[item.id] || item.id,
+          currency: page?.currency || 'USD',
           number: item.number,
           order: i,
           features: item.features[loc].map((f) => ({ feature: f })),

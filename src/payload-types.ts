@@ -238,13 +238,17 @@ export interface Service {
    */
   number?: string | null;
   /**
-   * Image OR video shown on the card. If you upload a video (mp4/webm), it autoplays muted in a loop instead of an image.
+   * Card image/video. Recommended: 1600×1000 px (16:10), minimum 1200 px wide. Images are stored in original quality without upload compression. MP4/WebM videos autoplay muted.
    */
   image?: (number | null) | Media;
   /**
-   * Optional hero for /services/[slug]. Falls back to the card image.
+   * Wide header image/video for /services/[slug]. Recommended: 1920×600 px (16:5), minimum 1600×500 px. Images are stored in original quality without upload compression. Falls back to the card media.
    */
   heroMedia?: (number | null) | Media;
+  /**
+   * Currency used for all packages and prices on this service page
+   */
+  currency: 'USD' | 'ILS' | 'EUR';
   features?:
     | {
         feature: string;
@@ -680,6 +684,7 @@ export interface ServicesSelect<T extends boolean = true> {
   number?: T;
   image?: T;
   heroMedia?: T;
+  currency?: T;
   features?:
     | T
     | {

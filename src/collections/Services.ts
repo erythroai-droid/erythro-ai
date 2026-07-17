@@ -32,7 +32,7 @@ export const Services: CollectionConfig = {
       relationTo: 'media',
       admin: {
         description:
-          'Image OR video shown on the card. If you upload a video (mp4/webm), it autoplays muted in a loop instead of an image.',
+          'Card image/video. Recommended: 1600×1000 px (16:10), minimum 1200 px wide. Images are stored in original quality without upload compression. MP4/WebM videos autoplay muted.',
       },
     },
     {
@@ -40,8 +40,21 @@ export const Services: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       admin: {
-        description: 'Optional hero for /services/[slug]. Falls back to the card image.',
+        description:
+          'Wide header image/video for /services/[slug]. Recommended: 1920×600 px (16:5), minimum 1600×500 px. Images are stored in original quality without upload compression. Falls back to the card media.',
       },
+    },
+    {
+      name: 'currency',
+      type: 'select',
+      required: true,
+      defaultValue: 'USD',
+      options: [
+        { label: '$ USD', value: 'USD' },
+        { label: '₪ ILS', value: 'ILS' },
+        { label: '€ EUR', value: 'EUR' },
+      ],
+      admin: { description: 'Currency used for all packages and prices on this service page' },
     },
     {
       name: 'features',
