@@ -278,6 +278,11 @@
     font-size: 30px;
     line-height: 48px;
     font-weight: 300; /* Light (Heading M/SM) */
+    color: var(--gold-900); /* #6b6254 — light theme */
+  }
+
+  .dark h6 {
+    color: inherit;
   }
 
   /* Responsive/Mobile Typography overrides */
