@@ -8,6 +8,7 @@ import CookieConsent from '@/components/CookieConsent'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
 import { ContactModalProvider, useContactModal } from '@/components/ContactModal'
 import Button from '@/components/Button'
+import WhatsAppButton from '@/components/WhatsAppButton'
 import type { SiteContent } from '@/lib/defaultContent'
 import {
   calcPlanAmount,
@@ -108,6 +109,8 @@ export default function OrderClient({ initialLocale, content, plan }: OrderClien
           />
 
           <CookieConsent locale={locale} theme={theme} />
+
+          <WhatsAppButton />
         </div>
       </ContactModalProvider>
     </SiteContentProvider>

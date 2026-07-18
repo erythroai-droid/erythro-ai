@@ -10,6 +10,7 @@ import { ContactModalProvider } from '@/components/ContactModal'
 import PortfolioSection from '@/components/portfolio/PortfolioSection'
 import ScrollSideButton from '@/components/portfolio/ScrollSideButton'
 import LetsTalkSection from '@/components/LetsTalkSection'
+import WhatsAppButton from '@/components/WhatsAppButton'
 import type { SiteContent } from '@/lib/defaultContent'
 import type { PortfolioProject } from '@/lib/portfolioProjects'
 
@@ -128,6 +129,8 @@ export default function PortfolioClient({
           />
 
           <CookieConsent locale={locale} theme={theme} />
+
+          <WhatsAppButton />
         </div>
       </ContactModalProvider>
     </SiteContentProvider>

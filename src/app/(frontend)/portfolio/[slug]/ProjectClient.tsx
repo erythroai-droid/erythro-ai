@@ -11,6 +11,7 @@ import ProjectHero from '@/components/portfolio/ProjectHero'
 import ProjectBody from '@/components/portfolio/ProjectBody'
 import ScrollSideButton from '@/components/portfolio/ScrollSideButton'
 import LetsTalkSection from '@/components/LetsTalkSection'
+import WhatsAppButton from '@/components/WhatsAppButton'
 import type { SiteContent } from '@/lib/defaultContent'
 import type { PortfolioProject } from '@/lib/portfolioProjects'
 
@@ -128,6 +129,8 @@ export default function ProjectClient({ initialLocale, content, project }: Proje
           />
 
           <CookieConsent locale={locale} theme={theme} />
+
+          <WhatsAppButton />
         </div>
       </ContactModalProvider>
     </SiteContentProvider>
