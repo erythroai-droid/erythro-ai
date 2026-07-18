@@ -219,17 +219,9 @@ export default function Navbar({
       </div>
       )}
 
-      {/* ===== Inner-page header: logo + MENU burger (all breakpoints) ===== */}
+      {/* ===== Inner-page header: logo + MENU (no plate; Menu blends with page bg) ===== */}
       {forceBurger && (
-        <div
-          className={`relative z-[70] w-full pointer-events-auto flex items-center justify-between overflow-visible border-b px-[30px] py-5 lg:px-[50px] lg:py-8 transition-colors duration-300 ${
-            mobileOpen
-              ? 'border-transparent bg-transparent backdrop-blur-none'
-              : theme === 'light'
-                ? 'bg-gold-100 border-coal-900/10 backdrop-blur-md'
-                : 'max-lg:bg-coal-900/50 max-lg:border-white/5 max-lg:backdrop-blur-md lg:border-transparent lg:bg-transparent lg:backdrop-blur-none'
-          }`}
-        >
+        <div className="relative z-[70] w-full pointer-events-auto flex items-center justify-between overflow-visible bg-transparent px-[30px] py-5 lg:px-[50px] lg:py-8">
           <a
             href="/"
             aria-label="Erythro.ai"
@@ -247,10 +239,8 @@ export default function Navbar({
           </a>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className={`group relative z-[70] flex items-center gap-3 overflow-visible cursor-pointer transition-colors duration-300 ${
-              mobileOpen || theme === 'dark'
-                ? 'text-white hover:text-gold-500'
-                : 'text-coal-900 hover:text-erythro-500'
+            className={`group relative z-[70] flex items-center gap-3 overflow-visible cursor-pointer text-white transition-opacity duration-300 hover:opacity-70 ${
+              mobileOpen ? '' : 'mix-blend-difference'
             }`}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}

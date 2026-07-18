@@ -61,7 +61,7 @@ export default function ScrollSideButton({
     <button
       type="button"
       onClick={handleClick}
-      className="portfolio-scroll-hint pointer-events-auto fixed end-[44px] top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center gap-2.5 lg:flex"
+      className="portfolio-scroll-hint pointer-events-auto fixed end-[44px] top-1/2 z-40 hidden -translate-y-1/2 cursor-pointer flex-col items-center gap-2.5 lg:flex"
       aria-label={`${label}, section ${pad2(current)} of ${pad2(total)}`}
     >
       <span className="flex items-start gap-2">

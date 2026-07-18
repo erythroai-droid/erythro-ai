@@ -84,22 +84,20 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
         isLight ? 'bg-gold-100 text-coal-900' : 'dark-gradient-bg text-white'
       }`}
     >
-      <div className="mx-auto flex w-full max-w-[1170px] flex-col gap-14 px-[30px] py-16 md:gap-16 md:py-20 lg:gap-20 lg:py-[100px]">
-        <div className="flex w-full flex-col gap-6">
-          <div className="service-summary font-sans text-lg font-light leading-8 text-gold-500 md:text-xl [&_p]:m-0 [&_p+p]:mt-4 [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
-            <RichText data={summaryDoc as never} />
-          </div>
-          <div
-            className={`service-description font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_p]:m-0 [&_p+p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
-              isLight ? 'text-coal-900/85' : 'text-white/80'
-            }`}
-          >
-            <RichText data={descriptionDoc as never} />
-          </div>
+      <div className="mx-auto flex w-full max-w-[1170px] flex-col gap-12 px-[30px] py-12 md:gap-16 md:py-16 lg:gap-20 lg:py-20">
+        <div className="service-summary font-sans text-lg font-light leading-8 text-gold-500 md:text-xl [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_:is(h1,h2,h3,h4,h5,h6)+p]:mt-4 [&_p+_p]:mt-4 [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
+          <RichText data={summaryDoc as never} />
+        </div>
+        <div
+          className={`service-description font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
+            isLight ? 'text-coal-900/85' : 'text-white/80'
+          }`}
+        >
+          <RichText data={descriptionDoc as never} />
         </div>
 
         <div className="flex flex-col gap-6">
-          <h2 className="font-sans text-[22px] font-extralight uppercase tracking-[0.08em] md:text-[28px]">
+          <h2 className="m-0 font-sans text-[22px] font-extralight uppercase tracking-[0.08em] md:text-[28px]">
             <span className="text-erythro-500">{pricingHeading.charAt(0)}</span>
             <span>{pricingHeading.slice(1)}</span>
           </h2>
