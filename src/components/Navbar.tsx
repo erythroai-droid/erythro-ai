@@ -132,10 +132,12 @@ export default function Navbar({
     const handleScroll = () => {
       const y = window.scrollY
       setScrolled(y > 60)
-      if (forceBurger) {
-        // Desktop only: hide logo after scroll. Mobile keeps logo visible.
-        const isDesktop = window.matchMedia('(min-width: 1024px)').matches
+      // Desktop burger header (home + inner): hide logo after a short scroll.
+      const isDesktop = window.matchMedia('(min-width: 1024px)').matches
+      if (forceBurger || isDesktop) {
         setLogoHidden(isDesktop && y > 24)
+      } else {
+        setLogoHidden(false)
       }
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -148,8 +150,7 @@ export default function Navbar({
   }, [forceBurger])
 
   useEffect(() => {
-    if (!forceBurger) return
-
+    // Sample backdrop under Menu on desktop (home + inner pages).
     const parseRgb = (color: string) => {
       const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
       if (!m) return null
@@ -193,6 +194,7 @@ export default function Navbar({
     const update = () => {
       raf = 0
       const isDesktop = window.matchMedia('(min-width: 1024px)').matches
+      // Mobile home keeps the plate — follow theme. Inner mobile too.
       if (!isDesktop || mobileOpen) {
         setOverDarkBg(theme === 'dark')
         return
@@ -256,64 +258,19 @@ export default function Navbar({
   }
 
   return (
-    <header
-      className={`fixed top-0 start-0 end-0 z-[60] w-full select-none pointer-events-none ${
-        forceBurger
-          ? 'overflow-visible px-0 max-w-none lg:z-50'
-          : 'lg:top-6 lg:z-0 px-0 lg:px-[30px] max-w-[1170px] mx-auto'
-      }`}
-    >
-      {/* ===== Desktop navigation pill (lg and up) — hidden on portfolio ===== */}
-      {!forceBurger && (
-      <div className="hidden lg:block w-full pointer-events-auto">
-      <div className={`w-full navbar-pill transition-all duration-500 ease-out shadow-lg ${theme === 'light' ? 'navbar-pill--light text-coal-900' : 'text-white'}`}>
-        {/* Brand Logo */}
-        <a href="/" aria-label="Erythro.ai" className="flex items-center group select-none cursor-pointer">
-          <BrandLogo
-            className={`h-[30px] w-auto transition-colors duration-300 ${theme === 'light' ? 'text-coal-900' : 'text-white'}`}
-          />
-        </a>
-
-        {/* Desktop Pill Navigation (Menu items separated by Erythro dots •) */}
-        <nav className="hidden lg:flex items-center gap-6">
-          {navItems.map((item, index) => (
-            <React.Fragment key={item.href}>
-              {index > 0 && (
-                <span className="w-[3px] h-[3px] rounded-[1px] bg-[#E52421] inline-block" />
-              )}
-              <a
-                href={item.href}
-                onClick={(e) => handleNavClick(e, item.href)}
-                className={`menu-link${theme === 'light' ? ' menu-link--light' : ''}`}
-              >
-                {t(item.label)}
-              </a>
-            </React.Fragment>
-          ))}
-        </nav>
-
-        {/* Right side controls: Language Selectors, Theme Toggle and CTA */}
-        <div className="hidden lg:flex items-center gap-6">
-          <Button variant={theme === 'light' ? 'light-accent' : 'nav-talk'} onClick={openContact}>
-            {t(ctaLabel)}
-          </Button>
-        </div>
-
-      </div>
-      </div>
-      )}
-
-      {/* ===== Inner-page header: mobile plate; desktop Menu contrast from backdrop ===== */}
-      {forceBurger && (
-        <div
-          className={`relative z-[70] w-full pointer-events-auto flex items-center justify-between overflow-visible px-[30px] py-5 lg:border-transparent lg:bg-transparent lg:px-[50px] lg:py-8 lg:backdrop-blur-none transition-colors duration-300 ${
-            mobileOpen
-              ? 'max-lg:border-transparent max-lg:bg-transparent max-lg:backdrop-blur-none'
-              : theme === 'light'
-                ? 'max-lg:border-b max-lg:border-coal-900/10 max-lg:bg-gold-100 max-lg:backdrop-blur-md'
-                : 'max-lg:border-b max-lg:border-white/5 max-lg:bg-coal-900/50 max-lg:backdrop-blur-md'
-          }`}
-        >
+    <header className="fixed top-0 start-0 end-0 z-[60] w-full max-w-none select-none pointer-events-none overflow-visible px-0 lg:z-50">
+      {/* ===== Burger header: all breakpoints on inner pages; desktop-only on home ===== */}
+      <div
+        className={`relative z-[70] w-full pointer-events-auto items-center justify-between overflow-visible px-[30px] py-5 lg:border-transparent lg:bg-transparent lg:px-[50px] lg:py-8 lg:backdrop-blur-none transition-colors duration-300 ${
+          forceBurger ? 'flex' : 'hidden lg:flex'
+        } ${
+          mobileOpen
+            ? 'max-lg:border-transparent max-lg:bg-transparent max-lg:backdrop-blur-none'
+            : theme === 'light'
+              ? 'max-lg:border-b max-lg:border-coal-900/10 max-lg:bg-gold-100 max-lg:backdrop-blur-md'
+              : 'max-lg:border-b max-lg:border-white/5 max-lg:bg-coal-900/50 max-lg:backdrop-blur-md'
+        }`}
+      >
           <a
             href="/"
             aria-label="Erythro.ai"
@@ -470,9 +427,7 @@ export default function Navbar({
         Features a deep coal background, glass blur, and smooth layout mirror.
       */}
       <div
-        className={`fixed inset-y-0 start-0 end-0 bg-coal-900/90 backdrop-blur-lg transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
-          forceBurger ? 'z-[65]' : 'lg:hidden'
-        } ${
+        className={`fixed inset-y-0 start-0 end-0 z-[65] bg-coal-900/90 backdrop-blur-lg transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
           mobileOpen
             ? 'translate-x-0'
             : currentLocale === 'he'
@@ -481,11 +436,11 @@ export default function Navbar({
         }`}
         style={{ pointerEvents: mobileOpen ? 'auto' : 'none' }}
       >
-        {/* Close button — only for default mobile header; portfolio keeps Menu/Close above the panel */}
+        {/* Close — home mobile plate only (desktop / inner pages use Menu ↔ Close in the header) */}
         {!forceBurger && (
           <button
             onClick={() => setMobileOpen(false)}
-            className="absolute top-8 end-8 w-11 h-11 rounded-full bg-gold-500 text-coal-900 flex items-center justify-center transition-all duration-300 hover:bg-white cursor-pointer z-10"
+            className="absolute top-8 end-8 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-gold-500 text-coal-900 transition-all duration-300 hover:bg-white lg:hidden"
             aria-label="Close menu"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -494,7 +449,11 @@ export default function Navbar({
           </button>
         )}
 
-        <div className={`flex flex-col h-full justify-between p-12 ${forceBurger ? 'pt-28 lg:pt-32' : 'pt-32'}`}>
+        <div
+          className={`flex h-full flex-col justify-between p-12 ${
+            forceBurger ? 'pt-28 lg:pt-32' : 'pt-32 lg:pt-28'
+          }`}
+        >
           {/* Menu Items — centered block, left-aligned titles + subtext (Emily Nolan style) */}
           <nav className="flex flex-1 flex-col items-center justify-center -translate-y-[50px]">
             <ul className="flex w-max max-w-full flex-col items-start gap-7 text-start">
@@ -583,10 +542,21 @@ export default function Navbar({
               </div>
             </div>
 
-            {forceBurger ? (
+            <div className="flex w-full max-w-[280px] flex-col gap-3">
               <Button
                 variant="light-accent"
-                className="w-full max-w-[280px] !border-transparent hover:!border-transparent hover:!shadow-[0_3px_20px_0_rgba(229,36,33,0.45)]"
+                showArrow
+                className="w-full"
+                onClick={() => {
+                  setMobileOpen(false)
+                  openContact()
+                }}
+              >
+                {t(ctaLabel)}
+              </Button>
+              <Button
+                variant="light-accent"
+                className="w-full !border-transparent hover:!border-transparent hover:!shadow-[0_3px_20px_0_rgba(229,36,33,0.45)]"
                 onClick={() => {
                   setMobileOpen(false)
                   onOpenAccessibility()
@@ -601,19 +571,7 @@ export default function Navbar({
                       : 'Accessibility'}
                 </span>
               </Button>
-            ) : (
-              <Button
-                variant="light-accent"
-                showArrow
-                className="w-full max-w-[280px]"
-                onClick={() => {
-                  setMobileOpen(false)
-                  openContact()
-                }}
-              >
-                {t(ctaLabel)}
-              </Button>
-            )}
+            </div>
           </div>
         </div>
       </div>

@@ -7,9 +7,11 @@ import CaseStudiesSection from '@/components/CaseStudiesSection'
 import ServicesSection from '@/components/ServicesSection'
 import SolutionSection from '@/components/SolutionSection'
 import FooterSection from '@/components/FooterSection'
-import FloatingWidget from '@/components/FloatingWidget'
 import SplashScreen from '@/components/SplashScreen'
 import WhatsAppButton from '@/components/WhatsAppButton'
+import ChatButton from '@/components/ChatButton'
+import ScrollTopButton from '@/components/ScrollTopButton'
+import ScrollSideButton from '@/components/portfolio/ScrollSideButton'
 import { AccessibilityPanel } from '@/components/accessibility'
 import CookieConsent from '@/components/CookieConsent'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
@@ -86,6 +88,11 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
     [locale],
   )
 
+  const scrollSectionIds = useMemo(
+    () => ['cases', 'services', 'contacts', 'solutions', 'footer'],
+    [],
+  )
+
   return (
     <SiteContentProvider value={content}>
     <ContactModalProvider locale={locale}>
@@ -101,9 +108,7 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
 
       {/*
         Global fixed header rendered at the root level (not inside the hero).
-        On mobile the hero is sticky and the sections stack over it; a header
-        nested inside the sticky hero would be trapped in its stacking context
-        and disappear under the rising sections. At root it stays on top.
+        Desktop: logo + Menu (same as inner pages). Mobile: plate with controls.
       */}
       <Navbar
         currentLocale={locale}
@@ -140,18 +145,11 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
         <FooterSection locale={locale} theme={theme} />
       </div>
 
-      {/* Floating Controls Widget (desktop only — mobile controls live in the burger menu) */}
-      <div className="hidden lg:block">
-        <FloatingWidget
-          locale={locale}
-          setLocale={setLocale}
-          theme={theme}
-          setTheme={setTheme}
-          onOpenAccessibility={() => setIsAccessibilityOpen(true)}
-        />
-      </div>
+      <ScrollSideButton label="Scroll" theme={theme} sectionIds={scrollSectionIds} />
+      <ScrollTopButton theme={theme} />
 
-      {/* Mobile-only pulsing WhatsApp button (desktop has contacts in FloatingWidget) */}
+      {/* Desktop chat CTA → contact modal; mobile keeps WhatsApp */}
+      <ChatButton />
       <WhatsAppButton />
 
       {/* Accessibility Control Panel */}
