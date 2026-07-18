@@ -374,10 +374,12 @@ export function getServiceSlugById(id: string): string | undefined {
   return SERVICE_ID_TO_SLUG[id]
 }
 
-export function tLocale(field: LocaleMap, locale: string): string {
+export function tLocale(field: LocaleMap | null | undefined, locale: string): string {
+  if (!field) return ''
   return field[locale] || field.en || Object.values(field)[0] || ''
 }
 
-export function tLocaleList(field: LocaleListMap, locale: string): string[] {
+export function tLocaleList(field: LocaleListMap | null | undefined, locale: string): string[] {
+  if (!field) return []
   return field[locale] || field.en || Object.values(field)[0] || []
 }
