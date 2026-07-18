@@ -219,15 +219,15 @@ export default function Navbar({
       </div>
       )}
 
-      {/* ===== Portfolio header: logo + MENU burger (all breakpoints) ===== */}
+      {/* ===== Inner-page header: logo + MENU burger (all breakpoints) ===== */}
       {forceBurger && (
         <div
-          className={`relative z-[70] w-full pointer-events-auto flex items-center justify-between overflow-visible px-[30px] py-5 lg:px-[50px] lg:py-8 lg:bg-transparent lg:border-transparent lg:backdrop-blur-none max-lg:border-b max-lg:backdrop-blur-md transition-colors duration-300 ${
+          className={`relative z-[70] w-full pointer-events-auto flex items-center justify-between overflow-visible border-b px-[30px] py-5 lg:px-[50px] lg:py-8 transition-colors duration-300 ${
             mobileOpen
-              ? 'max-lg:border-transparent max-lg:bg-transparent max-lg:backdrop-blur-none'
+              ? 'border-transparent bg-transparent backdrop-blur-none'
               : theme === 'light'
-                ? 'max-lg:bg-gold-100 max-lg:border-coal-900/10'
-                : 'max-lg:bg-coal-900/50 max-lg:border-white/5'
+                ? 'bg-gold-100 border-coal-900/10 backdrop-blur-md'
+                : 'max-lg:bg-coal-900/50 max-lg:border-white/5 max-lg:backdrop-blur-md lg:border-transparent lg:bg-transparent lg:backdrop-blur-none'
           }`}
         >
           <a
