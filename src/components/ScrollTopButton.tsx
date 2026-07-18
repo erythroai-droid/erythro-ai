@@ -12,23 +12,30 @@ interface ScrollTopButtonProps {
 /**
  * Refined “Top” control — short vertical beacon line + label, bottom-center on desktop.
  * Red fill matches Scroll; line color follows backdrop contrast.
+ *
+ * Temporarily returns null (hidden). Flip `ENABLED` to true to show again.
  */
+const ENABLED = false
+
 export default function ScrollTopButton({
   theme = 'dark',
   threshold = 400,
 }: ScrollTopButtonProps) {
   const [visible, setVisible] = useState(false)
   const btnRef = useRef<HTMLButtonElement | null>(null)
-  const overDark = useBackdropContrast(btnRef, theme, { enabled: visible })
+  const overDark = useBackdropContrast(btnRef, theme, {
+    enabled: ENABLED && visible,
+  })
 
   useEffect(() => {
+    if (!ENABLED) return
     const update = () => setVisible(window.scrollY > threshold)
     update()
     window.addEventListener('scroll', update, { passive: true })
     return () => window.removeEventListener('scroll', update)
   }, [threshold])
 
-  if (!visible) return null
+  if (!ENABLED || !visible) return null
 
   const muted = overDark ? 'text-gold-800' : 'text-coal-500'
   const track = overDark ? 'bg-white/20' : 'bg-coal-500/20'
