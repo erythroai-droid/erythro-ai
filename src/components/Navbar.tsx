@@ -343,7 +343,6 @@ export default function Navbar({
             </svg>
           </button>
         </div>
-      )}
 
       {/* ===== Mobile header (below lg): full-width backing plate with logo + controls ===== */}
       {!forceBurger && (
