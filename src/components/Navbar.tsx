@@ -282,8 +282,8 @@ export default function Navbar({
               }
               alt=""
               width={235}
-              height={69}
-              className="hidden h-[42px] w-auto transition-opacity duration-300 lg:block"
+              height={74}
+              className="hidden h-[64px] w-auto transition-opacity duration-300 lg:block"
               aria-hidden
             />
           </a>

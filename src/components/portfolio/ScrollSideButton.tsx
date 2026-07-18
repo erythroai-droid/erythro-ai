@@ -89,7 +89,7 @@ export default function ScrollSideButton({
         onFocus={() => setTopHover(true)}
         onBlur={() => setTopHover(false)}
         aria-label="Back to top"
-        className={`cursor-pointer font-sans text-[9px] uppercase tracking-[0.18em] transition-colors duration-300 ${
+        className={`cursor-pointer font-sans text-[9px] uppercase tracking-[0.18em] [writing-mode:vertical-lr] transition-colors duration-300 ${
           topHover ? 'text-erythro-500' : muted
         }`}
       >
@@ -127,7 +127,7 @@ export default function ScrollSideButton({
         type="button"
         onClick={scrollToNext}
         aria-label={`${label}, next section`}
-        className={`cursor-pointer font-sans text-[9px] uppercase tracking-[0.18em] transition-colors duration-300 ${muted}`}
+        className={`cursor-pointer font-sans text-[9px] uppercase tracking-[0.18em] [writing-mode:vertical-lr] transition-colors duration-300 ${muted}`}
       >
         {label}
       </button>
