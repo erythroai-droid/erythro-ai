@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Button from './Button'
 import { useSiteContent } from './SiteContentProvider'
-import { useContactModal } from './ContactModal'
 
 interface NavbarProps {
   currentLocale: string
@@ -11,11 +10,11 @@ interface NavbarProps {
   theme: 'light' | 'dark'
   setTheme: (theme: 'light' | 'dark') => void
   onOpenAccessibility: () => void
-  /** Portfolio / inner pages: always use the mobile burger menu (no desktop pill). */
+  /** When true, hash nav links jump to home (`/#…`) instead of in-page scroll. */
   forceBurger?: boolean
 }
 
-// Accessibility (person) glyph used on the mobile control circle
+// Accessibility (person) glyph used in the burger menu CTA
 const HumanIcon = ({ className = 'w-[18px] h-[18px]' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 23 25" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path d="M9.485 4.26625C8.995 3.77625 8.75 3.1875 8.75 2.5C8.75 1.8125 8.995 1.22417 9.485 0.735002C9.975 0.245835 10.5633 0.000835452 11.25 2.11864e-06C11.9367 -0.000831215 12.5254 0.244169 13.0163 0.735002C13.5071 1.22584 13.7517 1.81417 13.75 2.5C13.7483 3.18584 13.5037 3.77459 13.0163 4.26625C12.5288 4.75792 11.94 5.0025 11.25 5C10.56 4.9975 9.97167 4.75292 9.485 4.26625ZM7.5 25V8.75H0V6.25H22.5V8.75H15V25H12.5V17.5H10V25H7.5Z" />
@@ -118,10 +117,7 @@ export default function Navbar({
   forceBurger = false,
 }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
-  // Once the user scrolls past the hero a bit, collapse the mobile logo so the
-  // fixed header plate becomes more compact.
-  const [scrolled, setScrolled] = useState(false)
-  // Portfolio: logo only at page top — hides on scroll and stays hidden until top
+  // Desktop: logo only at page top — hides on scroll and stays hidden until top
   const [logoHidden, setLogoHidden] = useState(false)
   // Desktop inner pages: Menu/logo contrast vs content under the fixed header
   // (mix-blend fails inside a fixed stacking context, so we sample the backdrop).
@@ -131,14 +127,9 @@ export default function Navbar({
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY
-      setScrolled(y > 60)
-      // Desktop burger header (home + inner): hide logo after a short scroll.
+      // Desktop only: hide logo after a short scroll. Mobile keeps logo + Menu.
       const isDesktop = window.matchMedia('(min-width: 1024px)').matches
-      if (forceBurger || isDesktop) {
-        setLogoHidden(isDesktop && y > 24)
-      } else {
-        setLogoHidden(false)
-      }
+      setLogoHidden(isDesktop && y > 24)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('resize', handleScroll)
@@ -147,7 +138,7 @@ export default function Navbar({
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', handleScroll)
     }
-  }, [forceBurger])
+  }, [])
 
   useEffect(() => {
     // Sample backdrop under Menu on desktop (home + inner pages).
@@ -194,7 +185,7 @@ export default function Navbar({
     const update = () => {
       raf = 0
       const isDesktop = window.matchMedia('(min-width: 1024px)').matches
-      // Mobile home keeps the plate — follow theme. Inner mobile too.
+      // Mobile header uses a theme plate — follow theme. Desktop samples backdrop.
       if (!isDesktop || mobileOpen) {
         setOverDarkBg(theme === 'dark')
         return
@@ -223,12 +214,11 @@ export default function Navbar({
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
     }
-  }, [forceBurger, theme, mobileOpen])
+  }, [theme, mobileOpen])
 
   const content = useSiteContent()
-  const { navItems, ctaLabel } = content.navbar
+  const { navItems } = content.navbar
   const site = content.siteSettings
-  const { open: openContact } = useContactModal()
 
   const t = (field: Record<string, string>) => field[currentLocale] || field['en']
 
@@ -259,11 +249,9 @@ export default function Navbar({
 
   return (
     <header className="fixed top-0 start-0 end-0 z-[60] w-full max-w-none select-none pointer-events-none overflow-visible px-0 lg:z-50">
-      {/* ===== Burger header: all breakpoints on inner pages; desktop-only on home ===== */}
+      {/* ===== Burger header: logo + Menu on all breakpoints (home + inner) ===== */}
       <div
-        className={`relative z-[70] w-full pointer-events-auto items-center justify-between overflow-visible px-[30px] py-5 lg:border-transparent lg:bg-transparent lg:px-[50px] lg:py-8 lg:backdrop-blur-none transition-colors duration-300 ${
-          forceBurger ? 'flex' : 'hidden lg:flex'
-        } ${
+        className={`relative z-[70] flex w-full pointer-events-auto items-center justify-between overflow-visible px-[30px] py-5 lg:border-transparent lg:bg-transparent lg:px-[50px] lg:py-8 lg:backdrop-blur-none transition-colors duration-300 ${
           mobileOpen
             ? 'max-lg:border-transparent max-lg:bg-transparent max-lg:backdrop-blur-none'
             : theme === 'light'
@@ -344,82 +332,6 @@ export default function Navbar({
           </button>
         </div>
 
-      {/* ===== Mobile header (below lg): full-width backing plate with logo + controls ===== */}
-      {!forceBurger && (
-      <div
-        className={`lg:hidden w-full pointer-events-auto flex flex-col items-center px-[30px] border-b backdrop-blur-md transition-all duration-300 ${
-          scrolled ? 'gap-0 py-3' : 'gap-4 py-[30px]'
-        } ${
-          theme === 'light'
-            ? 'bg-gold-100 border-coal-900/10'
-            : 'bg-coal-900/50 border-white/5'
-        }`}
-      >
-        <a
-          href="/"
-          aria-label="Erythro.ai"
-          className={`flex w-full items-center justify-center select-none cursor-pointer overflow-hidden transition-all duration-300 ${
-            scrolled ? 'max-h-0 opacity-0' : 'max-h-[56px] opacity-100'
-          }`}
-        >
-          <BrandLogo
-            className={`h-[44px] w-auto transition-colors duration-300 ${theme === 'light' ? 'text-coal-900' : 'text-white'}`}
-          />
-        </a>
-
-        <div className="flex w-full items-center justify-between gap-3">
-          {/* Accessibility settings */}
-          <button
-            onClick={onOpenAccessibility}
-            className={`w-11 h-11 shrink-0 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer ${
-              theme === 'light'
-                ? 'bg-white border border-coal-900 text-coal-900 hover:bg-gold-500'
-                : 'bg-gold-500 text-coal-900 hover:bg-white'
-            }`}
-            aria-label="Accessibility Settings"
-          >
-            <HumanIcon className="w-[18px] h-[18px]" />
-          </button>
-
-          {/* Let's Talk CTA */}
-          <Button
-            variant={theme === 'light' ? 'light-accent' : 'nav-talk'}
-            className="!px-7 min-w-0 shrink"
-            onClick={openContact}
-          >
-            {t(ctaLabel)}
-          </Button>
-
-          {/* Hamburger menu */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className={`w-11 h-11 shrink-0 rounded-full flex flex-col items-center justify-center gap-0.5 transition-all duration-300 cursor-pointer z-50 ${
-              theme === 'light'
-                ? 'bg-white border border-coal-900 text-coal-900 hover:bg-gold-500'
-                : 'bg-gold-500 text-coal-500 hover:bg-white'
-            }`}
-            aria-label="Toggle menu"
-          >
-            <span
-              className={`w-4 h-0.5 rounded-full bg-current transition-all duration-300 origin-center ${
-                mobileOpen ? 'rotate-45 translate-y-[4px]' : ''
-              }`}
-            />
-            <span
-              className={`w-4 h-0.5 rounded-full bg-current transition-opacity duration-300 ${
-                mobileOpen ? 'opacity-0' : ''
-              }`}
-            />
-            <span
-              className={`w-4 h-0.5 rounded-full bg-current transition-all duration-300 origin-center ${
-                mobileOpen ? '-rotate-45 -translate-y-[4px]' : ''
-              }`}
-            />
-          </button>
-        </div>
-      </div>
-      )}
-
       {/* 
         Mobile Menu Overlay: 
         Slides in from Screen End (Right in LTR, Left in RTL).
@@ -435,24 +347,7 @@ export default function Navbar({
         }`}
         style={{ pointerEvents: mobileOpen ? 'auto' : 'none' }}
       >
-        {/* Close — home mobile plate only (desktop / inner pages use Menu ↔ Close in the header) */}
-        {!forceBurger && (
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="absolute top-8 end-8 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-gold-500 text-coal-900 transition-all duration-300 hover:bg-white lg:hidden"
-            aria-label="Close menu"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-
-        <div
-          className={`flex h-full flex-col justify-between p-12 ${
-            forceBurger ? 'pt-28 lg:pt-32' : 'pt-32 lg:pt-28'
-          }`}
-        >
+        <div className="flex h-full flex-col justify-between p-12 pt-28 lg:pt-32">
           {/* Menu Items — centered block, left-aligned titles + subtext (Emily Nolan style) */}
           <nav className="flex flex-1 flex-col items-center justify-center -translate-y-[50px]">
             <ul className="flex w-max max-w-full flex-col items-start gap-7 text-start">
