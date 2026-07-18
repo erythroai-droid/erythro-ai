@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Button from './Button'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
@@ -123,6 +123,10 @@ export default function Navbar({
   const [scrolled, setScrolled] = useState(false)
   // Portfolio: logo only at page top — hides on scroll and stays hidden until top
   const [logoHidden, setLogoHidden] = useState(false)
+  // Desktop inner pages: Menu/logo contrast vs content under the fixed header
+  // (mix-blend fails inside a fixed stacking context, so we sample the backdrop).
+  const [overDarkBg, setOverDarkBg] = useState(true)
+  const menuBtnRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -143,12 +147,92 @@ export default function Navbar({
     }
   }, [forceBurger])
 
+  useEffect(() => {
+    if (!forceBurger) return
+
+    const parseRgb = (color: string) => {
+      const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
+      if (!m) return null
+      return {
+        r: Number(m[1]) / 255,
+        g: Number(m[2]) / 255,
+        b: Number(m[3]) / 255,
+        a: m[4] === undefined ? 1 : Number(m[4]),
+      }
+    }
+
+    const luminance = (r: number, g: number, b: number) =>
+      0.2126 * r + 0.7152 * g + 0.0722 * b
+
+    const isDarkAtPoint = (x: number, y: number) => {
+      const stack = document.elementsFromPoint(x, y)
+      for (const el of stack) {
+        if (!(el instanceof Element)) continue
+        if (el.closest('header')) continue
+        if (el.closest('[aria-label="Toggle menu"]')) continue
+
+        const tag = el.tagName
+        if (tag === 'IMG' || tag === 'VIDEO' || tag === 'CANVAS') return true
+
+        let node: Element | null = el
+        while (node && node !== document.documentElement) {
+          if (node instanceof HTMLElement && node.dataset.menuContrast) {
+            return node.dataset.menuContrast === 'dark'
+          }
+          const style = getComputedStyle(node)
+          const bg = parseRgb(style.backgroundColor)
+          if (bg && bg.a >= 0.15) return luminance(bg.r, bg.g, bg.b) < 0.55
+          if (style.backgroundImage && style.backgroundImage !== 'none') return true
+          node = node.parentElement
+        }
+      }
+      return theme === 'dark'
+    }
+
+    let raf = 0
+    const update = () => {
+      raf = 0
+      const isDesktop = window.matchMedia('(min-width: 1024px)').matches
+      if (!isDesktop || mobileOpen) {
+        setOverDarkBg(theme === 'dark')
+        return
+      }
+      const btn = menuBtnRef.current
+      if (!btn) {
+        setOverDarkBg(true)
+        return
+      }
+      const rect = btn.getBoundingClientRect()
+      const x = Math.min(window.innerWidth - 2, Math.max(1, rect.left + rect.width / 2))
+      const y = Math.min(window.innerHeight - 2, Math.max(1, rect.top + rect.height / 2))
+      setOverDarkBg(isDarkAtPoint(x, y))
+    }
+
+    const schedule = () => {
+      if (raf) return
+      raf = window.requestAnimationFrame(update)
+    }
+
+    schedule()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    return () => {
+      if (raf) window.cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+    }
+  }, [forceBurger, theme, mobileOpen])
+
   const content = useSiteContent()
   const { navItems, ctaLabel } = content.navbar
   const site = content.siteSettings
   const { open: openContact } = useContactModal()
 
   const t = (field: Record<string, string>) => field[currentLocale] || field['en']
+
+  // Desktop: contrast from sampled backdrop. Mobile plate: follow site theme.
+  const menuOnDark = mobileOpen || overDarkBg
+  const logoOnDark = mobileOpen || overDarkBg || theme === 'dark'
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
@@ -219,9 +303,17 @@ export default function Navbar({
       </div>
       )}
 
-      {/* ===== Inner-page header: logo + MENU (no plate; Menu blends with page bg) ===== */}
+      {/* ===== Inner-page header: mobile plate; desktop Menu contrast from backdrop ===== */}
       {forceBurger && (
-        <div className="relative z-[70] w-full pointer-events-auto flex items-center justify-between overflow-visible bg-transparent px-[30px] py-5 lg:px-[50px] lg:py-8">
+        <div
+          className={`relative z-[70] w-full pointer-events-auto flex items-center justify-between overflow-visible px-[30px] py-5 lg:border-transparent lg:bg-transparent lg:px-[50px] lg:py-8 lg:backdrop-blur-none transition-colors duration-300 ${
+            mobileOpen
+              ? 'max-lg:border-transparent max-lg:bg-transparent max-lg:backdrop-blur-none'
+              : theme === 'light'
+                ? 'max-lg:border-b max-lg:border-coal-900/10 max-lg:bg-gold-100 max-lg:backdrop-blur-md'
+                : 'max-lg:border-b max-lg:border-white/5 max-lg:bg-coal-900/50 max-lg:backdrop-blur-md'
+          }`}
+        >
           <a
             href="/"
             aria-label="Erythro.ai"
@@ -233,14 +325,17 @@ export default function Navbar({
           >
             <BrandLogo
               className={`h-[30px] w-auto transition-colors duration-300 ${
-                mobileOpen || theme === 'dark' ? 'text-white' : 'text-coal-900'
+                logoOnDark ? 'text-white' : 'text-coal-900'
               }`}
             />
           </a>
           <button
+            ref={menuBtnRef}
             onClick={() => setMobileOpen(!mobileOpen)}
-            className={`group relative z-[70] flex items-center gap-3 overflow-visible cursor-pointer text-white transition-opacity duration-300 hover:opacity-70 ${
-              mobileOpen ? '' : 'mix-blend-difference'
+            className={`group relative z-[70] flex items-center gap-3 overflow-visible cursor-pointer transition-colors duration-300 ${
+              menuOnDark
+                ? 'text-white hover:text-gold-500'
+                : 'text-coal-900 hover:text-erythro-500'
             }`}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
