@@ -269,9 +269,22 @@ export default function Navbar({
             }`}
           >
             <BrandLogo
-              className={`h-[30px] w-auto transition-colors duration-300 ${
+              className={`h-[30px] w-auto transition-colors duration-300 lg:hidden ${
                 logoOnDark ? 'text-white' : 'text-coal-900'
               }`}
+            />
+            {/* Desktop: full “erythro.ai digital” mark */}
+            <img
+              src={
+                logoOnDark
+                  ? '/images/logo/Logo_digital.svg'
+                  : '/images/logo/Logo_digital-on-light.svg'
+              }
+              alt=""
+              width={235}
+              height={69}
+              className="hidden h-[42px] w-auto transition-opacity duration-300 lg:block"
+              aria-hidden
             />
           </a>
           <button

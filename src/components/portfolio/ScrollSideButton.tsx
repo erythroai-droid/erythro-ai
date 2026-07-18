@@ -12,6 +12,11 @@ interface ScrollSideButtonProps {
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
 
+/**
+ * Side scroll control:
+ * Top → animated line → Scroll, with section counter on either side of the line.
+ * Hover Top: pause fill, turn Top + line red. Click Top → page top; Click Scroll → next section.
+ */
 export default function ScrollSideButton({
   label = 'Scroll',
   theme = 'dark',
@@ -19,8 +24,9 @@ export default function ScrollSideButton({
 }: ScrollSideButtonProps) {
   const total = sectionIds.length
   const [current, setCurrent] = useState(1)
-  const btnRef = useRef<HTMLButtonElement | null>(null)
-  const overDark = useBackdropContrast(btnRef, theme)
+  const [topHover, setTopHover] = useState(false)
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  const overDark = useBackdropContrast(rootRef, theme)
 
   useEffect(() => {
     const update = () => {
@@ -48,7 +54,11 @@ export default function ScrollSideButton({
     }
   }, [sectionIds])
 
-  const handleClick = () => {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const scrollToNext = () => {
     const nextIndex = Math.min(current, total - 1)
     const nextId = sectionIds[nextIndex]
     const target = nextId ? document.getElementById(nextId) : null
@@ -65,43 +75,62 @@ export default function ScrollSideButton({
   const track = overDark ? 'bg-white/20' : 'bg-coal-500/20'
 
   return (
-    <button
-      ref={btnRef}
-      type="button"
+    <div
+      ref={rootRef}
       data-contrast-ignore
-      onClick={handleClick}
-      className="portfolio-scroll-hint pointer-events-auto fixed end-[44px] top-1/2 z-40 hidden -translate-y-1/2 cursor-pointer flex-col items-center gap-2.5 transition-colors duration-300 lg:flex"
-      aria-label={`${label}, section ${pad2(current)} of ${pad2(total)}`}
+      className="portfolio-scroll-hint pointer-events-auto fixed end-[44px] top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center gap-2.5 transition-colors duration-300 lg:flex"
+      aria-label={`Section ${pad2(current)} of ${pad2(total)}`}
     >
-      <span className="flex items-start gap-2">
+      <button
+        type="button"
+        onClick={scrollToTop}
+        onMouseEnter={() => setTopHover(true)}
+        onMouseLeave={() => setTopHover(false)}
+        onFocus={() => setTopHover(true)}
+        onBlur={() => setTopHover(false)}
+        aria-label="Back to top"
+        className={`cursor-pointer font-sans text-[9px] uppercase tracking-[0.18em] transition-colors duration-300 ${
+          topHover ? 'text-erythro-500' : muted
+        }`}
+      >
+        Top
+      </button>
+
+      <div className="flex items-center gap-2">
         <span
-          className={`pt-0.5 font-sans text-[9px] uppercase tracking-[0.18em] tabular-nums ${primary}`}
+          className={`font-sans text-[9px] uppercase tracking-[0.18em] tabular-nums ${primary}`}
           aria-hidden
         >
           {pad2(current)}
         </span>
 
-        <span className="flex flex-col items-center gap-2.5">
-          <span
-            className={`portfolio-scroll-track relative h-16 w-px overflow-hidden ${track}`}
-            aria-hidden
-          >
+        <span
+          className={`portfolio-scroll-track relative h-16 w-px overflow-hidden transition-colors duration-300 ${
+            topHover ? 'bg-erythro-500' : track
+          }`}
+          aria-hidden
+        >
+          {!topHover ? (
             <span className="portfolio-scroll-beacon absolute inset-x-0 top-0 h-full w-full bg-erythro-500" />
-          </span>
-          <span
-            className={`font-sans text-[9px] uppercase tracking-[0.18em] [writing-mode:vertical-lr] ${muted}`}
-          >
-            {label}
-          </span>
+          ) : null}
         </span>
 
         <span
-          className={`pt-0.5 font-sans text-[9px] uppercase tracking-[0.18em] tabular-nums ${mutedSoft}`}
+          className={`font-sans text-[9px] uppercase tracking-[0.18em] tabular-nums ${mutedSoft}`}
           aria-hidden
         >
           {pad2(total)}
         </span>
-      </span>
-    </button>
+      </div>
+
+      <button
+        type="button"
+        onClick={scrollToNext}
+        aria-label={`${label}, next section`}
+        className={`cursor-pointer font-sans text-[9px] uppercase tracking-[0.18em] transition-colors duration-300 ${muted}`}
+      >
+        {label}
+      </button>
+    </div>
   )
 }

@@ -10,7 +10,6 @@ import FooterSection from '@/components/FooterSection'
 import SplashScreen from '@/components/SplashScreen'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import ChatButton from '@/components/ChatButton'
-import ScrollTopButton from '@/components/ScrollTopButton'
 import ScrollSideButton from '@/components/portfolio/ScrollSideButton'
 import { AccessibilityPanel } from '@/components/accessibility'
 import CookieConsent from '@/components/CookieConsent'
@@ -146,7 +145,6 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
       </div>
 
       <ScrollSideButton label="Scroll" theme={theme} sectionIds={scrollSectionIds} />
-      <ScrollTopButton theme={theme} />
 
       {/* Desktop chat CTA → contact modal; mobile keeps WhatsApp */}
       <ChatButton />
