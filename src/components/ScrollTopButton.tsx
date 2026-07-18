@@ -9,35 +9,9 @@ interface ScrollTopButtonProps {
   threshold?: number
 }
 
-function TopArrow({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 12 20"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M6 18V5"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeLinecap="round"
-      />
-      <path
-        d="M2 8.5L6 4L10 8.5"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
 /**
- * Refined “Top” control — half-height upward arrow + label, bottom-center on desktop.
- * Red fill animates through the arrow like Scroll’s beacon; color otherwise follows contrast.
+ * Refined “Top” control — short vertical beacon line + label, bottom-center on desktop.
+ * Red fill matches Scroll; line color follows backdrop contrast.
  */
 export default function ScrollTopButton({
   theme = 'dark',
@@ -57,7 +31,7 @@ export default function ScrollTopButton({
   if (!visible) return null
 
   const muted = overDark ? 'text-gold-800' : 'text-coal-500'
-  const stroke = overDark ? 'text-white/20' : 'text-coal-500/20'
+  const track = overDark ? 'bg-white/20' : 'bg-coal-500/20'
 
   return (
     <button
@@ -66,16 +40,14 @@ export default function ScrollTopButton({
       data-contrast-ignore
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Back to top"
-      className="portfolio-scroll-hint pointer-events-auto fixed bottom-8 start-1/2 z-40 hidden -translate-x-1/2 cursor-pointer flex-col items-center gap-2 transition-colors duration-300 lg:flex"
+      className="portfolio-scroll-hint pointer-events-auto fixed bottom-8 start-1/2 z-40 hidden -translate-x-1/2 cursor-pointer flex-col items-center gap-2.5 transition-colors duration-300 lg:flex"
     >
-      {/* Muted arrow + red beacon sweeping upward (same motion as Scroll, reversed) */}
-      <span className="relative block h-5 w-3 overflow-hidden" aria-hidden>
-        <TopArrow className={`absolute inset-0 h-5 w-3 ${stroke}`} />
-        <span className="absolute inset-0 overflow-hidden rotate-180">
-          <span className="portfolio-scroll-beacon absolute inset-x-0 top-0 h-full w-full">
-            <TopArrow className="absolute inset-0 h-5 w-3 rotate-180 text-erythro-500" />
-          </span>
-        </span>
+      {/* Half of Scroll’s h-16 track; rotate so the red beacon runs upward */}
+      <span
+        className={`portfolio-scroll-track relative h-8 w-px overflow-hidden rotate-180 ${track}`}
+        aria-hidden
+      >
+        <span className="portfolio-scroll-beacon absolute inset-x-0 top-0 h-full w-full bg-erythro-500" />
       </span>
       <span className={`font-sans text-[9px] uppercase tracking-[0.18em] ${muted}`}>Top</span>
     </button>
