@@ -45,7 +45,7 @@ export default function ServiceHero({ service, locale }: ServiceHeroProps) {
     <section
       ref={sectionRef}
       id="service-hero"
-      className="relative z-10 flex h-[30vh] min-h-[220px] w-full flex-col justify-end overflow-hidden"
+      className="relative z-10 flex h-[300px] w-full flex-col justify-end overflow-hidden"
     >
       <div className="absolute inset-0 z-0">
         {service.hero.type === 'video' ? (
