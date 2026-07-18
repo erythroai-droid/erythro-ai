@@ -14,11 +14,18 @@ export interface ServicePage {
   slug: string
   title: LocaleMap
   hero: { type: 'image' | 'video'; src: string }
+  /** Plain-text fallback / legacy; prefer summaryRich when present. */
   summary: LocaleMap
+  /** Lexical docs per locale from CMS. */
+  summaryRich?: LocaleMap | Record<string, unknown>
   description: LocaleListMap
+  /** Lexical docs per locale from CMS. */
+  descriptionRich?: LocaleMap | Record<string, unknown>
   features: LocaleListMap
   offerings: ServiceOffering[]
   currency?: ServiceCurrency
+  seoTitle?: LocaleMap
+  seoDescription?: LocaleMap
 }
 
 export const SERVICE_ID_TO_SLUG: Record<string, string> = {

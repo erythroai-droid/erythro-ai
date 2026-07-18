@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { locText, locTextarea } from '../fields/localized'
+import { seoFields } from '../fields/seo'
 import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
 
 export const PortfolioProjects: CollectionConfig = {
@@ -105,6 +106,7 @@ export const PortfolioProjects: CollectionConfig = {
         },
       ],
     },
+    ...seoFields(),
     {
       name: 'order',
       type: 'number',

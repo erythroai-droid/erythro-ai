@@ -152,10 +152,10 @@ function OrderCheckout({
     included: locale === 'ru' ? 'Включено' : locale === 'he' ? 'כלול' : 'Included',
     continue:
       locale === 'ru'
-        ? 'Перейти к оплате'
+        ? 'Отправить заказ'
         : locale === 'he'
-          ? 'המשך לתשלום'
-          : 'Continue to payment',
+          ? 'שלח הזמנה'
+          : 'Send order',
     guarantee:
       locale === 'ru'
         ? 'Гарантия возврата — обсуждается индивидуально'

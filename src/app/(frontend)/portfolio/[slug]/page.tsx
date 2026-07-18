@@ -44,16 +44,18 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
   }
 
   const url = `${SITE_URL}/portfolio/${project.slug}`
+  const metaTitle = project.seoTitle || `${project.title} | Portfolio | Erythro.ai`
+  const metaDescription = project.seoDescription || project.summary
 
   return {
-    title: `${project.title} | Portfolio | Erythro.ai`,
-    description: project.summary,
+    title: metaTitle,
+    description: metaDescription,
     alternates: {
       canonical: `/portfolio/${project.slug}`,
     },
     openGraph: {
-      title: `${project.title} | Erythro.ai`,
-      description: project.summary,
+      title: project.seoTitle || `${project.title} | Erythro.ai`,
+      description: metaDescription,
       url,
       siteName: 'Erythro.ai',
       type: 'article',

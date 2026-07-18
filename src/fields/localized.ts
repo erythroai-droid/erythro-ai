@@ -15,3 +15,11 @@ export const locTextarea = (name: string, overrides: Partial<Field> = {}): Field
   localized: true,
   ...(overrides as object),
 })
+
+/** Localized rich-text (Lexical) field. */
+export const locRichText = (name: string, overrides: Partial<Field> = {}): Field => ({
+  name,
+  type: 'richText',
+  localized: true,
+  ...(overrides as object),
+})

@@ -29,8 +29,13 @@ const dirname = path.dirname(filename)
 export default buildConfig({
   admin: {
     user: Users.slug,
+    // Allow users to pick light/dark (default). Toggle also in the header via ThemeToggle.
+    theme: 'all',
     importMap: {
       baseDir: path.resolve(dirname),
+    },
+    components: {
+      actions: ['/components/admin/ThemeToggle#ThemeToggle'],
     },
   },
   collections: [

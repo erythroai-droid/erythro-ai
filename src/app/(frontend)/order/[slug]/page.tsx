@@ -38,15 +38,18 @@ export async function generateMetadata({ params }: OrderPageProps): Promise<Meta
   const locale =
     cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
 
-  const title = tLocale(plan.card.title, locale)
-  const subtitle = tLocale(plan.subtitle, locale)
+  const customTitle = tLocale(plan.seoTitle, locale)
+  const customDescription = tLocale(plan.seoDescription, locale)
+  const pageTitle = tLocale(plan.card.title, locale)
+  const title = customTitle || `${pageTitle} | Order | Erythro.ai`
+  const subtitle = customDescription || tLocale(plan.subtitle, locale)
 
   return {
-    title: `${title} | Order | Erythro.ai`,
+    title,
     description: subtitle,
     alternates: { canonical: `/order/${plan.slug}` },
     openGraph: {
-      title: `${title} | Order | Erythro.ai`,
+      title,
       description: subtitle,
       url: `${SITE_URL}/order/${plan.slug}`,
       siteName: 'Erythro.ai',

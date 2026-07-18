@@ -59,7 +59,7 @@ export default function ProjectBody({ project, theme = 'dark' }: ProjectBodyProp
               </h2>
             ) : null}
 
-            <div className="flex flex-col gap-5 md:max-w-[720px]">
+            <div className="flex w-full flex-col gap-5">
               {section.paragraphs.map((paragraph) => (
                 <p
                   key={paragraph.slice(0, 48)}

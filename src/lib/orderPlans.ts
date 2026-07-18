@@ -29,6 +29,8 @@ export interface OrderPlan {
   defaultPeriodId: string
   addons: OrderAddon[]
   promo?: LocaleMap
+  seoTitle?: LocaleMap
+  seoDescription?: LocaleMap
 }
 
 const PERIOD_FULL: OrderPeriod = {

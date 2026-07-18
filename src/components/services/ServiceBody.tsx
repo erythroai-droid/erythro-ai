@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
+import { RichText } from '@payloadcms/richtext-lexical/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Button from '@/components/Button'
 import { useContactModal } from '@/components/ContactModal'
-import { tLocale, tLocaleList, type ServicePage } from '@/lib/servicePages'
+import { tLocale, type ServicePage } from '@/lib/servicePages'
 import { currencySymbol } from '@/lib/orderPlans'
+import { isLexicalDoc, lexicalFromParagraphs, lexicalFromText, type LexicalDoc } from '@/lib/lexical'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -18,18 +20,37 @@ interface ServiceBodyProps {
   theme?: 'light' | 'dark'
 }
 
+function pickLexical(
+  rich: ServicePage['summaryRich'] | ServicePage['descriptionRich'],
+  locale: string,
+  fallback: LexicalDoc,
+): LexicalDoc {
+  if (rich && typeof rich === 'object') {
+    const map = rich as Record<string, unknown>
+    const candidate = map[locale] ?? map.en
+    if (isLexicalDoc(candidate)) return candidate
+  }
+  return fallback
+}
+
 export default function ServiceBody({ service, locale, theme = 'dark' }: ServiceBodyProps) {
   const isLight = theme === 'light'
   const sectionRef = useRef<HTMLElement | null>(null)
   const { open: openContact } = useContactModal()
 
-  const summary = tLocale(service.summary, locale)
-  const description = tLocaleList(service.description, locale)
-  const features = tLocaleList(service.features, locale)
+  const summaryDoc = pickLexical(
+    service.summaryRich,
+    locale,
+    lexicalFromText(tLocale(service.summary, locale)),
+  )
+  const descriptionDoc = pickLexical(
+    service.descriptionRich,
+    locale,
+    lexicalFromParagraphs(service.description?.[locale] || service.description?.en || []),
+  )
+
   const ctaLabel =
     locale === 'he' ? 'בואו נדבר...' : locale === 'ru' ? 'ОБСУДИТЬ...' : "LET'S TALK..."
-  const includedHeading =
-    locale === 'ru' ? 'Что входит' : locale === 'he' ? 'מה כלול' : "What's included"
   const pricingHeading =
     locale === 'ru' ? 'Пакеты и цены' : locale === 'he' ? 'חבילות ומחירים' : 'Packages & pricing'
 
@@ -64,47 +85,18 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
       }`}
     >
       <div className="mx-auto flex w-full max-w-[1170px] flex-col gap-14 px-[30px] py-16 md:gap-16 md:py-20 lg:gap-20 lg:py-[100px]">
-        <div className="flex flex-col gap-6 md:max-w-[720px]">
-          <p
-            className={`font-sans text-lg font-light leading-8 md:text-xl ${
-              isLight ? 'text-coal-900' : 'text-white'
+        <div className="flex w-full flex-col gap-6">
+          <div className="service-summary font-sans text-lg font-light leading-8 text-gold-500 md:text-xl [&_p]:m-0 [&_p+p]:mt-4 [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
+            <RichText data={summaryDoc as never} />
+          </div>
+          <div
+            className={`service-description font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_p]:m-0 [&_p+p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
+              isLight ? 'text-coal-900/85' : 'text-white/80'
             }`}
           >
-            {summary}
-          </p>
-          {description.map((paragraph) => (
-            <p
-              key={paragraph.slice(0, 40)}
-              className={`font-sans text-base font-light leading-7 md:text-lg md:leading-8 ${
-                isLight ? 'text-coal-900/85' : 'text-white/80'
-              }`}
-            >
-              {paragraph}
-            </p>
-          ))}
-        </div>
-
-        {features.length > 0 ? (
-          <div className="flex flex-col gap-5">
-            <h2 className="font-sans text-[22px] font-extralight uppercase tracking-[0.08em] md:text-[28px]">
-              <span className="text-erythro-500">{includedHeading.charAt(0)}</span>
-              <span>{includedHeading.slice(1)}</span>
-            </h2>
-            <ul className="flex flex-col gap-3 md:max-w-[640px]">
-              {features.map((feature) => (
-                <li
-                  key={feature}
-                  className={`flex items-center gap-3 font-sans text-base tracking-[0.04em] ${
-                    isLight ? 'text-coal-900' : 'text-white/90'
-                  }`}
-                >
-                  <span className="h-1 w-1 shrink-0 rotate-45 bg-erythro-500" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
+            <RichText data={descriptionDoc as never} />
           </div>
-        ) : null}
+        </div>
 
         <div className="flex flex-col gap-6">
           <h2 className="font-sans text-[22px] font-extralight uppercase tracking-[0.08em] md:text-[28px]">
@@ -128,7 +120,7 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
                     isLight ? 'border-coal-900/15' : 'border-white/15'
                   }`}
                 >
-                  <div className="flex min-w-0 flex-col gap-1.5 md:max-w-[70%]">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <h3 className="font-sans text-base font-bold uppercase tracking-[0.06em] md:text-lg">
                       {name}
                     </h3>

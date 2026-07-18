@@ -16,6 +16,7 @@ import {
   type LocaleMap,
   type LocaleListMap,
 } from './servicePages'
+import { lexicalFromParagraphs, lexicalFromText, isLexicalDoc, lexicalToPlain } from './lexical'
 import {
   ORDER_PLANS,
   getOrderPlan as getStaticOrderPlan,
@@ -31,6 +32,12 @@ const LOCALES = ['en', 'ru', 'he'] as const
 
 function mediaUrl(v: any): string | undefined {
   return v && typeof v === 'object' && typeof v.url === 'string' ? v.url : undefined
+}
+
+function hasLocalizedSeo(v: any): boolean {
+  if (typeof v === 'string') return v.trim().length > 0
+  if (!v || typeof v !== 'object') return false
+  return LOCALES.some((l) => typeof v[l] === 'string' && v[l].trim().length > 0)
 }
 
 function locMap(v: any, fallback: LocaleMap = { en: '' }): LocaleMap {
@@ -134,6 +141,12 @@ function mapPortfolioDoc(d: any, i: number, locale: string): PortfolioProject {
     hero: { type: heroType, src: heroUrl },
     summary: pickStr(d.summary, locale, fb.summary),
     body,
+    ...(pickStr(d.seo?.title, locale)
+      ? { seoTitle: pickStr(d.seo.title, locale) }
+      : {}),
+    ...(pickStr(d.seo?.description, locale)
+      ? { seoDescription: pickStr(d.seo.description, locale) }
+      : {}),
   }
 }
 
@@ -165,7 +178,52 @@ function mapServiceDoc(d: any, i: number): ServicePage {
   const heroType: 'image' | 'video' = String(mime).startsWith('video/') ? 'video' : 'image'
 
   const features = locList(d.features, 'feature', fb.features)
-  const description = locList(d.description, 'text', fb.description)
+
+  // Summary / description may be Lexical (new), plain string, or legacy paragraph array.
+  const summaryRich: Record<string, unknown> = {}
+  const descriptionRich: Record<string, unknown> = {}
+  const summaryPlain: LocaleMap = { en: '', ru: '', he: '' }
+  const description: LocaleListMap = { en: [], ru: [], he: [] }
+
+  for (const loc of LOCALES) {
+    const sumVal =
+      d.summary && typeof d.summary === 'object' && !Array.isArray(d.summary)
+        ? (d.summary as Record<string, unknown>)[loc] ?? (d.summary as Record<string, unknown>).en
+        : d.summary
+    if (isLexicalDoc(sumVal)) {
+      summaryRich[loc] = sumVal
+      summaryPlain[loc] = lexicalToPlain(sumVal)
+    } else if (typeof sumVal === 'string' && sumVal.trim()) {
+      summaryRich[loc] = lexicalFromText(sumVal)
+      summaryPlain[loc] = sumVal
+    } else {
+      summaryRich[loc] = lexicalFromText(fb.summary[loc] || fb.summary.en || '')
+      summaryPlain[loc] = fb.summary[loc] || fb.summary.en || ''
+    }
+
+    const descVal =
+      d.description && typeof d.description === 'object' && !Array.isArray(d.description)
+        ? (d.description as Record<string, unknown>)[loc] ??
+          (d.description as Record<string, unknown>).en
+        : d.description
+    if (isLexicalDoc(descVal)) {
+      descriptionRich[loc] = descVal
+      const plain = lexicalToPlain(descVal)
+      description[loc] = plain ? [plain] : fb.description[loc] || fb.description.en || []
+    } else if (Array.isArray(descVal)) {
+      const paras = descVal
+        .map((row: any) => (typeof row === 'string' ? row : row?.text || ''))
+        .filter(Boolean)
+      description[loc] = paras.length ? paras : fb.description[loc] || fb.description.en || []
+      descriptionRich[loc] = lexicalFromParagraphs(description[loc])
+    } else if (typeof descVal === 'string' && descVal.trim()) {
+      descriptionRich[loc] = lexicalFromText(descVal)
+      description[loc] = [descVal]
+    } else {
+      description[loc] = fb.description[loc] || fb.description.en || []
+      descriptionRich[loc] = lexicalFromParagraphs(description[loc])
+    }
+  }
 
   let offerings: ServiceOffering[] = fb.offerings
   if (Array.isArray(d.offerings) && d.offerings.length) {
@@ -189,14 +247,20 @@ function mapServiceDoc(d: any, i: number): ServicePage {
     slug: d.slug || fb.slug || SERVICE_ID_TO_SLUG[fb.id] || fb.slug,
     title: locMap(d.title, fb.title),
     hero: { type: heroType, src: heroUrl },
-    summary: locMap(d.summary, fb.summary),
+    summary: summaryPlain,
+    summaryRich,
     description,
+    descriptionRich,
     features,
     offerings,
     currency:
       d.currency === 'ILS' || d.currency === 'EUR' || d.currency === 'USD'
         ? d.currency
         : fb.currency || 'USD',
+    ...(hasLocalizedSeo(d.seo?.title) ? { seoTitle: locMap(d.seo.title, { en: '' }) } : {}),
+    ...(hasLocalizedSeo(d.seo?.description)
+      ? { seoDescription: locMap(d.seo.description, { en: '' }) }
+      : {}),
   }
 }
 
@@ -291,6 +355,10 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
     defaultPeriodId: periods[0]?.id || fb.defaultPeriodId,
     addons,
     ...(d.promo || fb.promo ? { promo: locMap(d.promo, fb.promo || { en: '' }) } : {}),
+    ...(hasLocalizedSeo(d.seo?.title) ? { seoTitle: locMap(d.seo.title, { en: '' }) } : {}),
+    ...(hasLocalizedSeo(d.seo?.description)
+      ? { seoDescription: locMap(d.seo.description, { en: '' }) }
+      : {}),
   }
 }
 

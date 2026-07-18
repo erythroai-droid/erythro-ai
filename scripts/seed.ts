@@ -13,6 +13,7 @@ import {
 import { SERVICE_PAGES, SERVICE_ID_TO_SLUG } from '../src/lib/servicePages'
 import { ORDER_PLANS } from '../src/lib/orderPlans'
 import { PORTFOLIO_PROJECTS } from '../src/lib/portfolioProjects'
+import { lexicalFromParagraphs, lexicalFromText } from '../src/lib/lexical'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -196,12 +197,14 @@ async function run() {
           number: item.number,
           order: i,
           features: item.features[loc].map((f) => ({ feature: f })),
-          ...(page?.summary ? { summary: page.summary[loc] || page.summary.en } : {}),
+          ...(page?.summary
+            ? { summary: lexicalFromText(page.summary[loc] || page.summary.en) }
+            : {}),
           ...(page?.description
             ? {
-                description: (page.description[loc] || page.description.en).map((text) => ({
-                  text,
-                })),
+                description: lexicalFromParagraphs(
+                  page.description[loc] || page.description.en || [],
+                ),
               }
             : {}),
           ...(page?.offerings

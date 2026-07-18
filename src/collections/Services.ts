@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
-import { locText, locTextarea } from '../fields/localized'
+import { locText, locTextarea, locRichText } from '../fields/localized'
+import { seoFields } from '../fields/seo'
 import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
 
 export const Services: CollectionConfig = {
@@ -62,16 +63,12 @@ export const Services: CollectionConfig = {
       labels: { singular: 'Feature', plural: 'Features' },
       fields: [locText('feature', { required: true })],
     },
-    locTextarea('summary', {
-      admin: { description: 'Short intro on the service detail page' },
+    locRichText('summary', {
+      admin: { description: 'Short intro on the service detail page (rich text)' },
     }),
-    {
-      name: 'description',
-      type: 'array',
-      labels: { singular: 'Paragraph', plural: 'Description' },
-      fields: [locTextarea('text', { required: true })],
-      admin: { description: 'Detailed paragraphs on the service page' },
-    },
+    locRichText('description', {
+      admin: { description: 'Detailed description on the service page (rich text)' },
+    }),
     {
       name: 'offerings',
       type: 'array',
@@ -88,6 +85,7 @@ export const Services: CollectionConfig = {
         locText('pricePrefix', { admin: { description: 'e.g. "from" / "от"' } }),
       ],
     },
+    ...seoFields(),
     {
       name: 'order',
       type: 'number',

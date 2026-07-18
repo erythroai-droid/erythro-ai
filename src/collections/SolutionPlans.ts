@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { locText } from '../fields/localized'
+import { seoFields } from '../fields/seo'
 import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
 
 export const SolutionPlans: CollectionConfig = {
@@ -140,6 +141,7 @@ export const SolutionPlans: CollectionConfig = {
         locText('note'),
       ],
     },
+    ...seoFields(),
     {
       name: 'order',
       type: 'number',

@@ -29,6 +29,8 @@ export interface PortfolioProject {
   hero: { type: 'image' | 'video'; src: string }
   summary: string
   body: PortfolioBodySection[]
+  seoTitle?: string
+  seoDescription?: string
 }
 
 export const PORTFOLIO_FILTERS: { id: PortfolioCategory; label: string }[] = [

@@ -256,18 +256,41 @@ export interface Service {
       }[]
     | null;
   /**
-   * Short intro on the service detail page
+   * Short intro on the service detail page (rich text)
    */
-  summary?: string | null;
+  summary?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   /**
-   * Detailed paragraphs on the service page
+   * Detailed description on the service page (rich text)
    */
-  description?:
-    | {
-        text: string;
-        id?: string | null;
-      }[]
-    | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   offerings?:
     | {
         name: string;
@@ -283,6 +306,19 @@ export interface Service {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Optional. If empty, the page title and intro text are used for search engines and social previews.
+   */
+  seo?: {
+    /**
+     * Meta title. Example: "Design & Branding | Erythro.ai"
+     */
+    title?: string | null;
+    /**
+     * Meta description (recommended up to ~160 characters).
+     */
+    description?: string | null;
+  };
   /**
    * Sort order (ascending)
    */
@@ -385,6 +421,19 @@ export interface SolutionPlan {
       }[]
     | null;
   /**
+   * Optional. If empty, the page title and intro text are used for search engines and social previews.
+   */
+  seo?: {
+    /**
+     * Meta title. Example: "Design & Branding | Erythro.ai"
+     */
+    title?: string | null;
+    /**
+     * Meta description (recommended up to ~160 characters).
+     */
+    description?: string | null;
+  };
+  /**
    * Sort order (ascending)
    */
   order?: number | null;
@@ -459,6 +508,19 @@ export interface PortfolioProject {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Optional. If empty, the page title and intro text are used for search engines and social previews.
+   */
+  seo?: {
+    /**
+     * Meta title. Example: "Design & Branding | Erythro.ai"
+     */
+    title?: string | null;
+    /**
+     * Meta description (recommended up to ~160 characters).
+     */
+    description?: string | null;
+  };
   /**
    * Sort order (ascending)
    */
@@ -692,12 +754,7 @@ export interface ServicesSelect<T extends boolean = true> {
         id?: T;
       };
   summary?: T;
-  description?:
-    | T
-    | {
-        text?: T;
-        id?: T;
-      };
+  description?: T;
   offerings?:
     | T
     | {
@@ -706,6 +763,12 @@ export interface ServicesSelect<T extends boolean = true> {
         price?: T;
         pricePrefix?: T;
         id?: T;
+      };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
       };
   order?: T;
   updatedAt?: T;
@@ -756,6 +819,12 @@ export interface SolutionPlansSelect<T extends boolean = true> {
         note?: T;
         id?: T;
       };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
   order?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -805,6 +874,12 @@ export interface PortfolioProjectsSelect<T extends boolean = true> {
               id?: T;
             };
         id?: T;
+      };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
       };
   order?: T;
   updatedAt?: T;

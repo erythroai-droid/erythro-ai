@@ -40,18 +40,21 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
   const locale =
     cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
 
-  const title = tLocale(service.title, locale)
-  const summary = tLocale(service.summary, locale)
+  const customTitle = tLocale(service.seoTitle, locale)
+  const customDescription = tLocale(service.seoDescription, locale)
+  const pageTitle = tLocale(service.title, locale)
+  const title = customTitle || `${pageTitle} | Services | Erythro.ai`
+  const summary = customDescription || tLocale(service.summary, locale)
   const url = `${SITE_URL}/services/${service.slug}`
 
   return {
-    title: `${title} | Services | Erythro.ai`,
+    title,
     description: summary,
     alternates: {
       canonical: `/services/${service.slug}`,
     },
     openGraph: {
-      title: `${title} | Erythro.ai`,
+      title: customTitle || `${pageTitle} | Erythro.ai`,
       description: summary,
       url,
       siteName: 'Erythro.ai',
@@ -59,7 +62,7 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
       images: [
         {
           url: service.hero.src,
-          alt: title,
+          alt: pageTitle,
         },
       ],
     },
