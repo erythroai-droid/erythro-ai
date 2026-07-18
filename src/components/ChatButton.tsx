@@ -18,7 +18,7 @@ export default function ChatButton() {
     >
       <span className="absolute inset-0 rounded-full bg-gold-500/20 animate-ping pointer-events-none" />
       <svg
-        className="relative h-[15px] w-[20px]"
+        className="relative h-[10.5px] w-[14px]"
         viewBox="0 0 20 15"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
