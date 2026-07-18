@@ -544,17 +544,6 @@ export default function Navbar({
             <div className="flex w-full max-w-[280px] flex-col gap-3">
               <Button
                 variant="light-accent"
-                showArrow
-                className="w-full"
-                onClick={() => {
-                  setMobileOpen(false)
-                  openContact()
-                }}
-              >
-                {t(ctaLabel)}
-              </Button>
-              <Button
-                variant="light-accent"
                 className="w-full !border-transparent hover:!border-transparent hover:!shadow-[0_3px_20px_0_rgba(229,36,33,0.45)]"
                 onClick={() => {
                   setMobileOpen(false)

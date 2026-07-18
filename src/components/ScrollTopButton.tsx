@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { useBackdropContrast } from '@/hooks/useBackdropContrast'
 
 interface ScrollTopButtonProps {
   theme?: 'light' | 'dark'
@@ -9,15 +10,16 @@ interface ScrollTopButtonProps {
 }
 
 /**
- * Refined “Top” control in the same visual language as ScrollSideButton —
- * thin beacon line + vertical label, fixed bottom-center on desktop.
+ * Refined “Top” control — half-height upward arrow + label, bottom-center on desktop.
+ * Color follows backdrop contrast (same idea as Menu).
  */
 export default function ScrollTopButton({
   theme = 'dark',
   threshold = 400,
 }: ScrollTopButtonProps) {
   const [visible, setVisible] = useState(false)
-  const isLight = theme === 'light'
+  const btnRef = useRef<HTMLButtonElement | null>(null)
+  const overDark = useBackdropContrast(btnRef, theme, { enabled: visible })
 
   useEffect(() => {
     const update = () => setVisible(window.scrollY > threshold)
@@ -28,28 +30,41 @@ export default function ScrollTopButton({
 
   if (!visible) return null
 
+  const muted = overDark ? 'text-gold-800' : 'text-coal-500'
+  const stroke = overDark ? 'text-white/50' : 'text-coal-500/50'
+
   return (
     <button
+      ref={btnRef}
       type="button"
+      data-contrast-ignore
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Back to top"
-      className="portfolio-scroll-hint pointer-events-auto fixed bottom-8 start-1/2 z-40 hidden -translate-x-1/2 cursor-pointer flex-col items-center gap-2.5 lg:flex"
+      className="pointer-events-auto fixed bottom-8 start-1/2 z-40 hidden -translate-x-1/2 cursor-pointer flex-col items-center gap-2 transition-colors duration-300 lg:flex"
     >
-      <span
-        className={`portfolio-scroll-track relative h-10 w-px overflow-hidden rotate-180 ${
-          isLight ? 'bg-coal-500/20' : 'bg-white/20'
-        }`}
+      {/* Half the old 40px line → 20px tall upward arrow */}
+      <svg
+        className={`h-5 w-3 ${stroke}`}
+        viewBox="0 0 12 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
         aria-hidden
       >
-        <span className="portfolio-scroll-beacon absolute inset-x-0 top-0 h-full w-full bg-erythro-500" />
-      </span>
-      <span
-        className={`font-sans text-[9px] uppercase tracking-[0.18em] ${
-          isLight ? 'text-coal-500' : 'text-gold-800'
-        }`}
-      >
-        Top
-      </span>
+        <path
+          d="M6 18V5"
+          stroke="currentColor"
+          strokeWidth="1"
+          strokeLinecap="round"
+        />
+        <path
+          d="M2 8.5L6 4L10 8.5"
+          stroke="currentColor"
+          strokeWidth="1"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span className={`font-sans text-[9px] uppercase tracking-[0.18em] ${muted}`}>Top</span>
     </button>
   )
 }
