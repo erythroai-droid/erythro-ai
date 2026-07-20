@@ -85,10 +85,7 @@ export default function ProjectHero({ project }: ProjectHeroProps) {
         <p className="mb-4 font-sans text-xs uppercase tracking-[0.24em] text-white/55">
           {project.categoryLabel}
         </p>
-        <h1 className="max-w-[920px] font-sans text-[36px] font-extralight uppercase leading-[1.05] tracking-[0.06em] text-white md:text-[56px] md:tracking-[0.08em] lg:text-[72px] lg:leading-[1.02]">
-          {project.title}
-        </h1>
-        <p className="mt-6 max-w-[640px] font-sans text-base font-light leading-7 text-white/80 md:text-lg md:leading-8">
+        <p className="max-w-[640px] font-sans text-base font-light leading-7 text-white/80 md:text-lg md:leading-8">
           {project.summary}
         </p>
 

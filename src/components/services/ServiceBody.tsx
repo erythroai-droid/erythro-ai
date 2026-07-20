@@ -37,6 +37,7 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
   const isLight = theme === 'light'
   const sectionRef = useRef<HTMLElement | null>(null)
   const { open: openContact } = useContactModal()
+  const title = tLocale(service.title, locale)
 
   const summaryDoc = pickLexical(
     service.summaryRich,
@@ -85,6 +86,10 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
       }`}
     >
       <div className="mx-auto flex w-full max-w-[1170px] flex-col gap-12 px-[30px] py-12 md:gap-16 md:py-16 lg:gap-20 lg:py-20">
+        <h1 className="m-0 font-sans text-[28px] font-extralight uppercase tracking-[0.08em] md:text-[40px] md:tracking-[0.1em]">
+          <span className="text-erythro-500">{title.charAt(0)}</span>
+          <span>{title.slice(1)}</span>
+        </h1>
         <div className="service-summary font-sans text-lg font-light leading-8 text-gold-500 md:text-xl [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_:is(h1,h2,h3,h4,h5,h6)+p]:mt-4 [&_p+_p]:mt-4 [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
           <RichText data={summaryDoc as never} />
         </div>

@@ -50,10 +50,14 @@ export default function ProjectBody({ project, theme = 'dark' }: ProjectBodyProp
       }`}
     >
       <div className="mx-auto flex w-full max-w-[1170px] flex-col gap-16 px-[30px] py-16 md:gap-20 md:py-24 lg:gap-24 lg:py-[120px]">
+        <h1 className="m-0 font-sans text-[28px] font-extralight uppercase tracking-[0.08em] md:text-[40px] md:tracking-[0.1em]">
+          <span className="text-erythro-500">{project.title.charAt(0)}</span>
+          <span>{project.title.slice(1)}</span>
+        </h1>
         {project.body.map((section, index) => (
           <div key={section.heading ?? `section-${index}`} className="flex flex-col gap-8 md:gap-10">
             {section.heading ? (
-              <h2 className="font-sans text-[28px] font-extralight uppercase tracking-[0.08em] md:text-[40px] md:tracking-[0.1em]">
+              <h2 className="m-0 font-sans text-[28px] font-extralight uppercase tracking-[0.08em] md:text-[40px] md:tracking-[0.1em]">
                 <span className="text-erythro-500">{section.heading.charAt(0)}</span>
                 <span>{section.heading.slice(1)}</span>
               </h2>

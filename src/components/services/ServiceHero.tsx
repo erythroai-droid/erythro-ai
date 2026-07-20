@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { tLocale, type ServicePage } from '@/lib/servicePages'
+import type { ServicePage } from '@/lib/servicePages'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -12,12 +12,10 @@ if (typeof window !== 'undefined') {
 
 interface ServiceHeroProps {
   service: ServicePage
-  locale: string
 }
 
-export default function ServiceHero({ service, locale }: ServiceHeroProps) {
+export default function ServiceHero({ service }: ServiceHeroProps) {
   const sectionRef = useRef<HTMLElement | null>(null)
-  const title = tLocale(service.title, locale)
 
   useEffect(() => {
     if (!sectionRef.current) return
@@ -45,7 +43,7 @@ export default function ServiceHero({ service, locale }: ServiceHeroProps) {
     <section
       ref={sectionRef}
       id="service-hero"
-      className="relative z-10 flex h-[300px] w-full flex-col justify-end overflow-hidden"
+      className="relative z-10 h-[300px] w-full overflow-hidden"
     >
       <div className="absolute inset-0 z-0">
         {service.hero.type === 'video' ? (
@@ -69,12 +67,6 @@ export default function ServiceHero({ service, locale }: ServiceHeroProps) {
             className="object-cover"
           />
         )}
-      </div>
-
-      <div className="relative z-10 mx-auto w-full max-w-[1170px] px-[30px] pb-14 pt-20 md:pb-10">
-        <h1 className="max-w-[900px] font-sans text-[28px] font-extralight uppercase leading-tight tracking-[0.08em] text-white md:text-[40px] md:tracking-[0.1em] lg:text-[48px]">
-          {title}
-        </h1>
       </div>
     </section>
   )
