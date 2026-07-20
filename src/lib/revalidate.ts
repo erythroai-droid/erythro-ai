@@ -21,6 +21,9 @@ function revalidateContent(): void {
   try {
     revalidateTag(SITE_CONTENT_TAG)
     revalidatePath('/', 'layout')
+    // Keep SEO endpoints in sync when services / portfolio / plans change.
+    revalidatePath('/sitemap.xml')
+    revalidatePath('/robots.txt')
   } catch (err) {
     console.error('[revalidate] skipped (no request scope):', err)
   }
