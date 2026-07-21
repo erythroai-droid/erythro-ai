@@ -1,11 +1,10 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import Button from '@/components/Button'
-import { useContactModal } from '@/components/ContactModal'
 import { tLocale, type ServicePage } from '@/lib/servicePages'
 import { currencySymbol } from '@/lib/orderPlans'
 import { isLexicalDoc, lexicalFromParagraphs, lexicalFromText, type LexicalDoc } from '@/lib/lexical'
@@ -36,7 +35,6 @@ function pickLexical(
 export default function ServiceBody({ service, locale, theme = 'dark' }: ServiceBodyProps) {
   const isLight = theme === 'light'
   const sectionRef = useRef<HTMLElement | null>(null)
-  const { open: openContact } = useContactModal()
   const title = tLocale(service.title, locale)
 
   const summaryDoc = pickLexical(
@@ -50,8 +48,8 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
     lexicalFromParagraphs(service.description?.[locale] || service.description?.en || []),
   )
 
-  const ctaLabel =
-    locale === 'he' ? 'בואו נדבר...' : locale === 'ru' ? 'ОБСУДИТЬ...' : "LET'S TALK..."
+  const portfolioCta =
+    locale === 'he' ? 'הפרויקטים שלנו' : locale === 'ru' ? 'НАШИ ПРОЕКТЫ' : 'OUR PROJECTS'
   const pricingHeading =
     locale === 'ru' ? 'Пакеты и цены' : locale === 'he' ? 'חבילות ומחירים' : 'Packages & pricing'
 
@@ -149,12 +147,16 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
         </div>
 
         <div>
-          <Button
-            variant={isLight ? 'light-accent' : 'nav-talk'}
-            onClick={openContact}
+          <Link
+            href="/portfolio"
+            className={`inline-flex items-center justify-center gap-2 select-none font-button-base font-medium uppercase tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer ${
+              isLight
+                ? 'rounded-[var(--xl,40px)] border border-[var(--gold-100,#fff)] bg-erythro-500 px-8 py-3 text-white hover:border-erythro-500 hover:bg-erythro-500 hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)]'
+                : 'rounded-[var(--xl,40px)] border border-gold-500 bg-transparent px-8 py-3 text-gold-500 hover:border-[var(--Button-Primary-stroke-hover,#FFE9C7)] hover:bg-[var(--Button-Primary-hover,#FFE9C7)] hover:text-coal-900 hover:shadow-[0_3px_20px_0_var(--Buttons-Primary,rgba(255,233,199,0.30))]'
+            }`}
           >
-            {ctaLabel}
-          </Button>
+            {portfolioCta}
+          </Link>
         </div>
       </div>
 
