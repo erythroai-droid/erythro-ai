@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useSiteContent } from './SiteContentProvider'
-import { useCursorGlow } from '@/hooks/useCursorGlow'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -24,8 +23,6 @@ export default function FAQSection({ locale, theme = 'light' }: FAQSectionProps)
   const headingRef = useRef<HTMLDivElement | null>(null)
   const panelRef = useRef<HTMLDivElement | null>(null)
   const isLight = theme === 'light'
-
-  useCursorGlow(sectionRef)
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -104,10 +101,8 @@ export default function FAQSection({ locale, theme = 'light' }: FAQSectionProps)
       <section
         id="faq"
         ref={sectionRef}
-        data-glow-x={isLight ? '50' : '82'}
-        data-glow-y={isLight ? '32' : '14'}
         className={`relative z-10 w-full border-t border-b border-coal-400/5 select-none pointer-events-auto pt-20 pb-20 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:rounded-t-[28px] lg:flex lg:h-screen lg:flex-col lg:justify-start lg:overflow-hidden lg:border-t lg:py-0 lg:pt-20 lg:pb-10 ${
-          isLight ? 'bg-gold-100' : 'faq-dark-bg'
+          isLight ? 'bg-gold-100' : 'bg-coal-1000'
         }`}
       >
         {!isLight && (

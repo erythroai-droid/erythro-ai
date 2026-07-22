@@ -72,7 +72,7 @@
     --coal-700: #151515;
     --coal-800: #111111;
     --coal-900: #0d0d0d;
-    --coal-1000: #403d38;
+    --coal-1000: #2a2824;
     --coal-alpha-0: rgba(13, 13, 13, 0);
     --coal-alpha-20: rgba(13, 13, 13, 0.2);
     --coal-alpha-30: rgba(13, 13, 13, 0.3);
@@ -347,8 +347,7 @@
 
   /* Premium cinematic gradient backgrounds */
   .dark-gradient-bg,
-  .solution-light-bg,
-  .faq-dark-bg {
+  .solution-light-bg {
     position: relative;
     isolation: isolate;
   }
@@ -381,52 +380,6 @@
         transparent 62%
       ),
       radial-gradient(ellipse 110% 95% at 50% 55%, #1e1e1e 0%, #161616 55%, #121212 100%);
-  }
-
-  /* FAQ dark: Coal-1000 base with a barely visible lighter cursor glow */
-  .faq-dark-bg {
-    background-color: var(--coal-1000, #403d38);
-    background-image:
-      radial-gradient(
-        ellipse 130% 110% at var(--cursor-glow-x, 82%) var(--cursor-glow-y, 14%),
-        rgba(74, 71, 65, 0.28) 0%,
-        rgba(68, 65, 59, 0.12) 24%,
-        transparent 58%
-      ),
-      radial-gradient(
-        ellipse 100% 90% at -8% 108%,
-        rgba(0, 0, 0, 0.35) 0%,
-        rgba(0, 0, 0, 0.12) 35%,
-        transparent 72%
-      ),
-      radial-gradient(
-        ellipse 75% 65% at 4% -2%,
-        rgba(0, 0, 0, 0.22) 0%,
-        rgba(0, 0, 0, 0.08) 30%,
-        transparent 62%
-      ),
-      radial-gradient(
-        ellipse 110% 95% at 50% 55%,
-        #434039 0%,
-        var(--coal-1000, #403d38) 55%,
-        #35322e 100%
-      );
-  }
-
-  .faq-dark-bg::after {
-    content: '';
-    position: absolute;
-    inset: -40%;
-    background-image: radial-gradient(
-      ellipse 100% 90% at var(--cursor-glow-x, 82%) var(--cursor-glow-y, 14%),
-      rgba(78, 74, 68, 0.14) 0%,
-      rgba(70, 67, 61, 0.05) 32%,
-      transparent 62%
-    );
-    filter: blur(80px);
-    transform: translateZ(0);
-    pointer-events: none;
-    z-index: 0;
   }
 
   /* Services dark: warm gold glow (upper-right) on deep charcoal + vignette */

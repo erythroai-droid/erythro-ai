@@ -408,7 +408,7 @@ export default function Navbar({
                           </svg>
                         </span>
                         {'description' in item && item.description ? (
-                          <span className="font-sans text-base font-normal normal-case leading-snug tracking-normal text-white/35">
+                          <span className="font-sans text-[14px] font-normal normal-case leading-snug tracking-normal text-gold-700">
                             {t(item.description)}
                           </span>
                         ) : null}
@@ -416,7 +416,7 @@ export default function Navbar({
 
                       <div
                         id="burger-services-submenu"
-                        className={`grid transition-[grid-template-rows,opacity,margin] duration-300 ease-out ${
+                        className={`grid ps-5 transition-[grid-template-rows,opacity,margin] duration-300 ease-out ${
                           servicesOpen
                             ? 'mt-4 grid-rows-[1fr] opacity-100'
                             : 'mt-0 grid-rows-[0fr] opacity-0'
@@ -459,7 +459,7 @@ export default function Navbar({
                         {t(item.label)}
                       </span>
                       {'description' in item && item.description ? (
-                        <span className="font-sans text-base font-normal normal-case leading-snug tracking-normal text-white/35">
+                        <span className="font-sans text-[14px] font-normal normal-case leading-snug tracking-normal text-gold-700">
                           {t(item.description)}
                         </span>
                       ) : null}
