@@ -522,7 +522,76 @@ export const solutions = {
   ] as SolutionCardItem[],
 }
 
-// 7. Footer translations
+// 7. FAQ Section translations
+export interface FAQItem {
+  question: Record<string, string>
+  answer: Record<string, string>
+}
+
+export const faq = {
+  sectionTitle: {
+    en: 'FAQ',
+    ru: 'FAQ',
+    he: 'FAQ',
+  },
+  sectionSubtitle: {
+    en: 'Quick answers to the questions we get most often before a project starts.',
+    ru: 'Коротко отвечаем на частые вопросы перед стартом проекта.',
+    he: 'תשובות קצרות לשאלות הנפוצות לפני תחילת פרויקט.',
+  },
+  items: [
+    {
+      question: {
+        en: 'How long does it take to launch a project?',
+        ru: 'Сколько времени занимает запуск проекта?',
+        he: 'כמה זמן לוקח להשיק פרויקט?',
+      },
+      answer: {
+        en: 'Timeline depends on scope: a landing page usually takes a few weeks, while a CMS site with integrations and motion needs more time. After the brief, we provide a clear roadmap and milestones.',
+        ru: 'Срок зависит от задачи: лендинг обычно занимает несколько недель, а сайт с CMS, интеграциями и анимацией требует больше времени. После брифа мы даем понятный план и этапы.',
+        he: 'משך העבודה תלוי בהיקף: דף נחיתה לוקח בדרך כלל כמה שבועות, ואתר עם CMS, אינטגרציות ואנימציות דורש יותר זמן. אחרי הבריף אנחנו נותנים תוכנית עבודה ברורה ושלבים מסודרים.',
+      },
+    },
+    {
+      question: {
+        en: 'Do you only handle design, or can you deliver everything end-to-end?',
+        ru: 'Работаете ли вы только с дизайном, или можете сделать все под ключ?',
+        he: 'אתם עובדים רק על עיצוב או גם על ביצוע מלא?',
+      },
+      answer: {
+        en: 'We can cover the full cycle: strategy, design, development, CMS, baseline SEO, motion, and launch. When needed, we also add branding, AI automation, and ongoing support.',
+        ru: 'Мы можем закрыть весь цикл: стратегия, дизайн, разработка, CMS, базовое SEO, анимации и запуск. При необходимости подключаем брендинг, AI-автоматизацию и дальнейшую поддержку.',
+        he: 'אנחנו יכולים ללוות את כל התהליך: אסטרטגיה, עיצוב, פיתוח, CMS, SEO בסיסי, אנימציות והשקה. לפי הצורך נוסיף גם מיתוג, אוטומציה מבוססת AI ותמיכה בהמשך.',
+      },
+    },
+    {
+      question: {
+        en: 'Will we be able to edit the content ourselves later?',
+        ru: 'Можно ли потом самостоятельно редактировать контент?',
+        he: 'אפשר לערוך את התוכן לבד אחר כך?',
+      },
+      answer: {
+        en: 'Yes. We build editor-friendly structure and admin tooling so your team can update copy, imagery, case studies, services, and SEO fields without a developer.',
+        ru: 'Да. Мы закладываем editor-friendly структуру и админку, чтобы вы могли менять тексты, изображения, кейсы, услуги и SEO-поля без разработчика.',
+        he: 'כן. אנחנו בונים מבנה אדיטורי נוח וממשק ניהול שמאפשר לעדכן טקסטים, תמונות, עבודות, שירותים ושדות SEO בלי לפנות למפתח.',
+      },
+    },
+    {
+      question: {
+        en: 'Do you take AI and automation projects too?',
+        ru: 'Берете ли вы проекты с AI и автоматизацией?',
+        he: 'אתם עושים גם פרויקטים עם AI ואוטומציה?',
+      },
+      answer: {
+        en: 'Yes. In addition to websites, we build AI agents, n8n automations, CRM-connected flows, chat, and voice experiences when they create real business value.',
+        ru: 'Да. Мы делаем не только сайты, но и AI-агентов, n8n-автоматизацию, формы, CRM-связки, чат- и voice-сценарии, если это полезно для бизнеса.',
+        he: 'כן. מעבר לאתרים, אנחנו בונים סוכני AI, אוטומציות n8n, חיבורים ל-CRM, תהליכי צ׳אט ו-voice כאשר זה תורם ישירות לעסק.',
+      },
+    },
+  ] as FAQItem[],
+}
+
+// 8. Footer translations
 export const footer = {
   ctaHeadingLine1: {
     en: 'You have a project idea?',
@@ -694,6 +763,11 @@ export const accessibility = {
     ru: 'Создано на Erythro.ai',
     he: 'מופעל על ידי Erythro.ai',
   },
+  closeLabel: {
+    en: 'Close accessibility panel',
+    ru: 'Закрыть панель доступности',
+    he: 'סגירת חלונית הנגישות',
+  },
   biggerText: {
     en: 'Bigger Text',
     ru: 'Крупный шрифт',
@@ -763,5 +837,40 @@ export const accessibility = {
     en: 'Contact section',
     ru: 'Раздел контактов',
     he: 'מדור יצירת קשר',
+  },
+  screenReaderFooter: {
+    en: 'Footer',
+    ru: 'Подвал сайта',
+    he: 'כותרת תחתונה',
+  },
+  screenReaderPortfolio: {
+    en: 'Portfolio section',
+    ru: 'Раздел портфолио',
+    he: 'מדור תיק עבודות',
+  },
+  screenReaderProjects: {
+    en: 'Projects list',
+    ru: 'Список проектов',
+    he: 'רשימת פרויקטים',
+  },
+  screenReaderDetails: {
+    en: 'Details section',
+    ru: 'Раздел деталей',
+    he: 'מדור פרטים',
+  },
+  screenReaderDescription: {
+    en: 'Description section',
+    ru: 'Раздел описания',
+    he: 'מדור תיאור',
+  },
+  screenReaderOrder: {
+    en: 'Order section',
+    ru: 'Раздел заказа',
+    he: 'מדור הזמנה',
+  },
+  screenReaderSummary: {
+    en: 'Summary section',
+    ru: 'Раздел итогов',
+    he: 'מדור סיכום',
   },
 }

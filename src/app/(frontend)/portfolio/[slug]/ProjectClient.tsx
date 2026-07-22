@@ -53,6 +53,7 @@ export default function ProjectClient({ initialLocale, content, project }: Proje
       title: pickA11y(a11yTranslations.title),
       reset: pickA11y(a11yTranslations.reset),
       poweredBy: pickA11y(a11yTranslations.poweredBy),
+      closeLabel: pickA11y(a11yTranslations.closeLabel),
       screenReaderEnabled: pickA11y(a11yTranslations.screenReaderEnabled),
       biggerText: pickA11y(a11yTranslations.biggerText),
       dyslexia: pickA11y(a11yTranslations.dyslexia),
@@ -71,11 +72,11 @@ export default function ProjectClient({ initialLocale, content, project }: Proje
   const a11yTargets = useMemo(
     () => [
       { id: 'project-hero', label: project.title },
-      { id: 'project-body', label: 'Description' },
-      { id: 'contacts', label: "Let's Talk" },
-      { id: 'footer', label: 'Footer' },
+      { id: 'project-body', label: pickA11y(a11yTranslations.screenReaderDescription) },
+      { id: 'contacts', label: pickA11y(a11yTranslations.screenReaderContacts) },
+      { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
     ],
-    [project.title],
+    [locale, project.title],
   )
 
   const scrollSectionIds = useMemo(

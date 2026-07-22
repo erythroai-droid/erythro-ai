@@ -20,6 +20,7 @@ import { Hero } from './globals/Hero'
 import { ServicesIntro } from './globals/ServicesIntro'
 import { CaseStudies } from './globals/CaseStudies'
 import { SolutionsIntro } from './globals/SolutionsIntro'
+import { FAQ } from './globals/FAQ'
 import { Footer } from './globals/Footer'
 import { SiteSettings } from './globals/SiteSettings'
 
@@ -48,7 +49,7 @@ export default buildConfig({
     Partners,
     ContactSubmissions,
   ],
-  globals: [Header, Hero, ServicesIntro, CaseStudies, SolutionsIntro, Footer, SiteSettings],
+  globals: [Header, Hero, ServicesIntro, CaseStudies, SolutionsIntro, FAQ, Footer, SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'fallback-secret-key-replace-in-prod',
   typescript: {

@@ -105,6 +105,7 @@ export interface Config {
     'services-section': ServicesSection;
     'case-studies': CaseStudy;
     'solutions-section': SolutionsSection;
+    'faq-section': FaqSection;
     footer: Footer;
     'site-settings': SiteSetting;
   };
@@ -114,6 +115,7 @@ export interface Config {
     'services-section': ServicesSectionSelect<false> | ServicesSectionSelect<true>;
     'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
     'solutions-section': SolutionsSectionSelect<false> | SolutionsSectionSelect<true>;
+    'faq-section': FaqSectionSelect<false> | FaqSectionSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
   };
@@ -242,7 +244,7 @@ export interface Service {
    */
   image?: (number | null) | Media;
   /**
-   * Wide header image/video for /services/[slug]. Recommended: 1920×600 px (16:5), minimum 1600×500 px. Images are stored in original quality without upload compression. Falls back to the card media.
+   * Wide header image/video for /services/[slug]. Recommended: 1920×300 px, minimum 1600×250 px. Images are stored in original quality without upload compression. Falls back to the card media.
    */
   heroMedia?: (number | null) | Media;
   /**
@@ -1049,6 +1051,27 @@ export interface SolutionsSection {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faq-section".
+ */
+export interface FaqSection {
+  id: number;
+  sectionTitle?: string | null;
+  sectionSubtitle?: string | null;
+  /**
+   * FAQ accordion items. Drag to reorder.
+   */
+  items?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer".
  */
 export interface Footer {
@@ -1197,6 +1220,24 @@ export interface SolutionsSectionSelect<T extends boolean = true> {
   sectionTitle?: T;
   sectionSubtitle?: T;
   ctaLabel?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faq-section_select".
+ */
+export interface FaqSectionSelect<T extends boolean = true> {
+  sectionTitle?: T;
+  sectionSubtitle?: T;
+  items?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

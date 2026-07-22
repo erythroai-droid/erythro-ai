@@ -54,6 +54,7 @@ export default function ServiceClient({ initialLocale, content, service }: Servi
       title: pickA11y(a11yTranslations.title),
       reset: pickA11y(a11yTranslations.reset),
       poweredBy: pickA11y(a11yTranslations.poweredBy),
+      closeLabel: pickA11y(a11yTranslations.closeLabel),
       screenReaderEnabled: pickA11y(a11yTranslations.screenReaderEnabled),
       biggerText: pickA11y(a11yTranslations.biggerText),
       dyslexia: pickA11y(a11yTranslations.dyslexia),
@@ -72,11 +73,11 @@ export default function ServiceClient({ initialLocale, content, service }: Servi
   const a11yTargets = useMemo(
     () => [
       { id: 'service-hero', label: serviceTitle },
-      { id: 'service-body', label: 'Details' },
-      { id: 'contacts', label: "Let's Talk" },
-      { id: 'footer', label: 'Footer' },
+      { id: 'service-body', label: pickA11y(a11yTranslations.screenReaderDetails) },
+      { id: 'contacts', label: pickA11y(a11yTranslations.screenReaderContacts) },
+      { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
     ],
-    [serviceTitle],
+    [locale, serviceTitle],
   )
 
   const scrollSectionIds = useMemo(

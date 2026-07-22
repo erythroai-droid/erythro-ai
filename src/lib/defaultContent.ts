@@ -5,6 +5,7 @@ import {
   services,
   caseStudies,
   solutions,
+  faq,
   footer,
   letsTalk,
   contactForm,
@@ -29,6 +30,7 @@ export interface SiteContent {
   services: typeof services
   caseStudies: typeof caseStudies
   solutions: typeof solutions
+  faq: typeof faq
   footer: typeof footer
   letsTalk: typeof letsTalk
   contactForm: typeof contactForm
@@ -49,6 +51,7 @@ export const defaultSiteContent: SiteContent = {
   services,
   caseStudies,
   solutions,
+  faq,
   footer,
   letsTalk,
   contactForm,

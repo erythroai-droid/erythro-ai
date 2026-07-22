@@ -56,6 +56,7 @@ export default function OrderClient({ initialLocale, content, plan }: OrderClien
       title: pickA11y(a11yTranslations.title),
       reset: pickA11y(a11yTranslations.reset),
       poweredBy: pickA11y(a11yTranslations.poweredBy),
+      closeLabel: pickA11y(a11yTranslations.closeLabel),
       screenReaderEnabled: pickA11y(a11yTranslations.screenReaderEnabled),
       biggerText: pickA11y(a11yTranslations.biggerText),
       dyslexia: pickA11y(a11yTranslations.dyslexia),
@@ -100,9 +101,9 @@ export default function OrderClient({ initialLocale, content, plan }: OrderClien
             onClose={() => setIsAccessibilityOpen(false)}
             labels={a11yLabels}
             screenReaderTargets={[
-              { id: 'order-main', label: 'Order' },
-              { id: 'order-summary', label: 'Summary' },
-              { id: 'footer', label: 'Footer' },
+              { id: 'order-main', label: pickA11y(a11yTranslations.screenReaderOrder) },
+              { id: 'order-summary', label: pickA11y(a11yTranslations.screenReaderSummary) },
+              { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
             ]}
             rtl={locale === 'he'}
             showPoweredBy

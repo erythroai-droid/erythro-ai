@@ -56,6 +56,7 @@ export default function PortfolioClient({
       title: pickA11y(a11yTranslations.title),
       reset: pickA11y(a11yTranslations.reset),
       poweredBy: pickA11y(a11yTranslations.poweredBy),
+      closeLabel: pickA11y(a11yTranslations.closeLabel),
       screenReaderEnabled: pickA11y(a11yTranslations.screenReaderEnabled),
       biggerText: pickA11y(a11yTranslations.biggerText),
       dyslexia: pickA11y(a11yTranslations.dyslexia),
@@ -73,12 +74,12 @@ export default function PortfolioClient({
 
   const a11yTargets = useMemo(
     () => [
-      { id: 'portfolio', label: 'Portfolio' },
-      { id: 'portfolio-grid', label: 'Projects' },
-      { id: 'contacts', label: "Let's Talk" },
-      { id: 'footer', label: 'Footer' },
+      { id: 'portfolio', label: pickA11y(a11yTranslations.screenReaderPortfolio) },
+      { id: 'portfolio-grid', label: pickA11y(a11yTranslations.screenReaderProjects) },
+      { id: 'contacts', label: pickA11y(a11yTranslations.screenReaderContacts) },
+      { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
     ],
-    [],
+    [locale],
   )
 
   const scrollSectionIds = useMemo(() => ['portfolio', 'contacts', 'footer'], [])

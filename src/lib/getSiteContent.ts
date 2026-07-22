@@ -97,13 +97,14 @@ export async function getSiteContent(): Promise<SiteContent> {
   try {
     const payload = await getPayload({ config })
 
-    const [header, hero, servicesIntro, caseStudiesG, solutionsIntro, footer, settings] =
+    const [header, hero, servicesIntro, caseStudiesG, solutionsIntro, faqG, footer, settings] =
       await Promise.all([
         payload.findGlobal({ slug: 'header', locale: 'all', depth: 0 }) as Promise<any>,
         payload.findGlobal({ slug: 'hero', locale: 'all', depth: 1 }) as Promise<any>,
         payload.findGlobal({ slug: 'services-section', locale: 'all', depth: 0 }) as Promise<any>,
         payload.findGlobal({ slug: 'case-studies', locale: 'all', depth: 1 }) as Promise<any>,
         payload.findGlobal({ slug: 'solutions-section', locale: 'all', depth: 0 }) as Promise<any>,
+        payload.findGlobal({ slug: 'faq-section', locale: 'all', depth: 0 }) as Promise<any>,
         payload.findGlobal({ slug: 'footer', locale: 'all', depth: 0 }) as Promise<any>,
         payload.findGlobal({ slug: 'site-settings', locale: 'all', depth: 1 }) as Promise<any>,
       ])
@@ -221,6 +222,19 @@ export async function getSiteContent(): Promise<SiteContent> {
           ...(hasContent(d.disclaimer) || fb?.disclaimer
             ? { disclaimer: L(d.disclaimer, fb?.disclaimer ?? { en: '', ru: '', he: '' }) }
             : {}),
+        }
+      })
+    }
+
+    // --- FAQ section ---
+    content.faq.sectionTitle = L(faqG?.sectionTitle, content.faq.sectionTitle)
+    content.faq.sectionSubtitle = L(faqG?.sectionSubtitle, content.faq.sectionSubtitle)
+    if (Array.isArray(faqG?.items) && faqG.items.length) {
+      content.faq.items = faqG.items.map((item: any, i: number) => {
+        const fb = defaultSiteContent.faq.items[i]
+        return {
+          question: L(item.question, fb?.question ?? { en: '', ru: '', he: '' }),
+          answer: L(item.answer, fb?.answer ?? { en: '', ru: '', he: '' }),
         }
       })
     }

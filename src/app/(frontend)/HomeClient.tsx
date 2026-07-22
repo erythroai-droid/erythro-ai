@@ -6,6 +6,7 @@ import HeroSection from '@/components/HeroSection'
 import CaseStudiesSection from '@/components/CaseStudiesSection'
 import ServicesSection from '@/components/ServicesSection'
 import SolutionSection from '@/components/SolutionSection'
+import FAQSection from '@/components/FAQSection'
 import FooterSection from '@/components/FooterSection'
 import SplashScreen from '@/components/SplashScreen'
 import WhatsAppButton from '@/components/WhatsAppButton'
@@ -57,12 +58,14 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
   // Resolve accessibility panel strings for the active locale. The panel
   // module itself is locale-agnostic; the app supplies the translated labels.
   const pickA11y = (field: Record<string, string>) => field[locale] || field.en
+  const faqA11yLabel = locale === 'ru' ? 'Раздел FAQ' : locale === 'he' ? 'מדור שאלות ותשובות' : 'FAQ section'
 
   const a11yLabels = useMemo(
     () => ({
       title: pickA11y(a11yTranslations.title),
       reset: pickA11y(a11yTranslations.reset),
       poweredBy: pickA11y(a11yTranslations.poweredBy),
+      closeLabel: pickA11y(a11yTranslations.closeLabel),
       screenReaderEnabled: pickA11y(a11yTranslations.screenReaderEnabled),
       biggerText: pickA11y(a11yTranslations.biggerText),
       dyslexia: pickA11y(a11yTranslations.dyslexia),
@@ -82,13 +85,15 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
     () => [
       { id: 'services', label: pickA11y(a11yTranslations.screenReaderServices) },
       { id: 'solutions', label: pickA11y(a11yTranslations.screenReaderSolutions) },
+      { id: 'faq', label: faqA11yLabel },
       { id: 'contacts', label: pickA11y(a11yTranslations.screenReaderContacts) },
+      { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
     ],
-    [locale],
+    [faqA11yLabel, locale],
   )
 
   const scrollSectionIds = useMemo(
-    () => ['cases', 'services', 'contacts', 'solutions', 'footer'],
+    () => ['cases', 'services', 'contacts', 'solutions', 'faq', 'footer'],
     [],
   )
 
@@ -137,6 +142,10 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
       {/* Solution: mobile overlap over Lets Talk */}
       <div className="relative z-30 -mt-24 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.35)] lg:contents">
         <SolutionSection locale={locale} theme={theme} />
+      </div>
+
+      <div className="relative z-[35] -mt-8 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+        <FAQSection locale={locale} />
       </div>
 
       {/* Footer from Figma */}

@@ -8,6 +8,7 @@ import {
   services,
   caseStudies,
   solutions,
+  faq,
   footer,
 } from '../src/translations'
 import { SERVICE_PAGES, SERVICE_ID_TO_SLUG } from '../src/lib/servicePages'
@@ -146,6 +147,20 @@ async function run() {
       sectionTitle: solutions.sectionTitle[loc],
       sectionSubtitle: solutions.sectionSubtitle[loc],
       ctaLabel: solutions.ctaLabel[loc],
+    })),
+  )
+
+  // FAQ section
+  await seedGlobal(
+    payload,
+    'faq-section',
+    byLocale((loc) => ({
+      sectionTitle: faq.sectionTitle[loc],
+      sectionSubtitle: faq.sectionSubtitle[loc],
+      items: faq.items.map((item) => ({
+        question: item.question[loc],
+        answer: item.answer[loc],
+      })),
     })),
   )
 
