@@ -9,8 +9,11 @@ interface FAQSectionProps {
 
 export default function FAQSection({ locale }: FAQSectionProps) {
   const translations = useSiteContent().faq
-  const t = (field: Record<string, string>) => field[locale] || field['en']
+  const t = (field?: Record<string, string>) => (field && (field[locale] || field.en)) || ''
   const [openIndex, setOpenIndex] = useState<number>(0)
+  const items = translations?.items ?? []
+
+  if (!translations) return null
 
   const renderStylizedTitle = (text: string) => {
     const firstChar = text.charAt(0)
@@ -24,10 +27,11 @@ export default function FAQSection({ locale }: FAQSectionProps) {
   }
 
   return (
-    <section
-      id="faq"
-      className="relative z-10 w-full border-t border-b border-coal-400/5 bg-gold-100 select-none"
-    >
+    <div className="relative z-[35] w-full pointer-events-none">
+      <section
+        id="faq"
+        className="relative z-10 w-full border-t border-b border-coal-400/5 bg-gold-100 select-none pointer-events-auto"
+      >
       <div className="mx-auto flex w-full max-w-[1170px] flex-col gap-10 px-[30px] py-16 md:gap-12 lg:py-20">
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 text-center">
           <h2 className="font-sans text-[32px] font-extralight uppercase leading-tight tracking-[9.6px] text-coal-900 lg:text-[40px] lg:leading-[50px]">
@@ -39,7 +43,7 @@ export default function FAQSection({ locale }: FAQSectionProps) {
         </div>
 
         <div className="mx-auto flex w-full max-w-[970px] flex-col overflow-hidden rounded-[20px] border border-coal-900/10 bg-white shadow-[0_14px_44px_rgba(13,13,13,0.10)]">
-          {translations.items.map((item, index) => {
+          {items.map((item, index) => {
             const isOpen = openIndex === index
             const question = t(item.question)
 
@@ -102,5 +106,6 @@ export default function FAQSection({ locale }: FAQSectionProps) {
         </div>
       </div>
     </section>
+    </div>
   )
 }

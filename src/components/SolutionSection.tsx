@@ -260,12 +260,13 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
           },
         })
 
-        // Lock Solutions to full viewport, then Footer slides up over it
+        // Lock Solutions full-viewport while FAQ rides up over it (z-35), then Footer (z-40)
         ScrollTrigger.create({
           id: 'solutions-pin',
           trigger: sectionRef.current,
           start: 'top top',
-          end: '+=100%',
+          endTrigger: '#faq',
+          end: 'bottom top',
           pin: true,
           pinSpacing: false,
           snap: {
