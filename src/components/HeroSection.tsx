@@ -7,6 +7,7 @@ import Button from './Button'
 import HeroAnimation from './HeroAnimation'
 import HeroMotionText from './HeroMotionText'
 import { useSiteContent } from './SiteContentProvider'
+import { hero as heroCopy } from '@/translations'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -14,41 +15,22 @@ if (typeof window !== 'undefined') {
 
 interface HeroSectionProps {
   locale: string
+  theme?: 'light' | 'dark'
   navbar?: React.ReactNode
 }
 
-export default function HeroSection({ locale, navbar }: HeroSectionProps) {
+export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSectionProps) {
   const translations = useSiteContent().hero
   const t = (field: Record<string, string>) => field[locale] || field['en']
+  const isLight = theme === 'light'
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const motionPhrases = useMemo(() => {
-    const pick = (phrase: Record<string, string>) =>
-      (phrase[locale] || phrase.en || '').trim()
-
-    const fromCms = (translations.motionHeadings ?? []).map(pick).filter(Boolean)
-    if (fromCms.length >= 2) return fromCms
-
-    const fallbacks = [
-      translations.mainHeading,
-      {
-        en: 'Intelligent systems that scale',
-        ru: 'Интеллектуальные системы',
-        he: 'מערכות חכמות שצומחות',
-      },
-      {
-        en: 'Design that drives growth',
-        ru: 'Дизайн, который растёт с вами',
-        he: 'עיצוב שמניע צמיחה',
-      },
-      {
-        en: 'Automation with precision',
-        ru: 'Автоматизация с точностью',
-        he: 'אוטומציה מדויקת',
-      },
-    ].map(pick).filter(Boolean)
-
-    return fallbacks
-  }, [locale, translations.mainHeading, translations.motionHeadings])
+  const motionPhrases = useMemo(
+    () =>
+      heroCopy.motionHeadings
+        .map((phrase) => (phrase[locale] || phrase.en || '').trim())
+        .filter(Boolean),
+    [locale],
+  )
 
   const handleFindOutMoreClick = () => {
     const isMobile = window.innerWidth < 1024
@@ -93,31 +75,39 @@ export default function HeroSection({ locale, navbar }: HeroSectionProps) {
 
   return (
     <HeroAnimation videoUrl={translations.backgroundImage} navbar={navbar}>
-      <div 
-        ref={containerRef} 
-        className="relative max-w-[1170px] mx-auto px-[30px] flex flex-col items-center text-center gap-6 mt-12 md:mt-16 select-none"
+      <div
+        ref={containerRef}
+        className="relative mx-auto mt-12 flex w-full flex-col items-center gap-6 text-center select-none md:mt-16"
       >
         {/* Pre-Heading tag */}
-        <span className="hero-pre-heading opacity-0 font-mono text-xs md:text-sm font-bold tracking-[0.25em] text-gold-500 uppercase select-none animate-pulse">
+        <span className="hero-pre-heading opacity-0 font-mono text-xs md:text-sm font-bold tracking-[0.25em] text-gold-500 uppercase select-none animate-pulse px-[30px]">
           {t(translations.preHeading)}
         </span>
 
-        {/* Rotating motion headline — Display 5XL */}
-        <h1 className="hero-heading opacity-0 font-display-5xl text-gold-500 max-w-4xl mt-2 mb-2 w-full select-text">
-          <HeroMotionText phrases={motionPhrases} />
+        {/* Full-bleed rotating headline — no wrap on large screens */}
+        <h1
+          className={`hero-heading opacity-0 font-display-5xl !font-bold uppercase mt-2 mb-2 flex w-screen max-w-none items-center justify-center select-text tracking-tight px-4 lg:whitespace-nowrap lg:text-[clamp(40px,5.5vw,72px)] lg:leading-[1.15] ${
+            isLight ? 'text-gold-100' : 'text-gold-500'
+          }`}
+        >
+          <HeroMotionText phrases={motionPhrases} theme={theme} />
         </h1>
 
         {/* Description subtext matching Figma geometry spacing & leading */}
-        <p className="hero-subtext opacity-0 font-body-lead text-gold-100 max-w-3xl leading-relaxed mt-2 select-text">
+        <p className="hero-subtext opacity-0 font-body-lead text-gold-100 mt-2 w-full max-w-none select-text px-[30px] text-center lg:whitespace-nowrap">
           {t(translations.subtext)}
         </p>
 
         {/* Action Button Group */}
-        <div className="hero-buttons opacity-0 flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 w-full sm:w-auto">
+        <div className="hero-buttons opacity-0 flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 w-full sm:w-auto px-[30px]">
           <Button
             onClick={handleFindOutMoreClick}
             variant="gold-outline"
-            className="w-full sm:w-auto min-w-[180px]"
+            className={`w-full sm:w-auto min-w-[180px] ${
+              isLight
+                ? 'hover:!border-erythro-500 hover:!bg-erythro-500 hover:!text-white'
+                : 'hover:!border-gold-500 hover:!bg-gold-500 hover:!text-coal-900'
+            }`}
           >
             {t(translations.ctaFind)}
           </Button>

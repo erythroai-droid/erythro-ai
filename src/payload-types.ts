@@ -1057,19 +1057,30 @@ export interface SolutionsSection {
   createdAt?: string | null;
 }
 /**
+ * Home page FAQ: section headings and accordion Q&A (localized en / ru / he).
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faq-section".
  */
 export interface FaqSection {
   id: number;
+  /**
+   * Main FAQ heading, e.g. "FAQ"
+   */
   sectionTitle?: string | null;
+  /**
+   * Short line under the title
+   */
   sectionSubtitle?: string | null;
   /**
-   * FAQ accordion items. Drag to reorder.
+   * Accordion items on the home page. Drag to reorder. Switch locale in the admin bar to edit translations.
    */
   items?:
     | {
         question: string;
+        /**
+         * Answer text shown when the accordion item is open
+         */
         answer: string;
         id?: string | null;
       }[]

@@ -108,7 +108,7 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
       }`}
     >
       {/* Hero Section with WordStack */}
-      <HeroSection locale={locale} />
+      <HeroSection locale={locale} theme={theme} />
 
       {/*
         Global fixed header rendered at the root level (not inside the hero).

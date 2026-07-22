@@ -76,31 +76,31 @@ export const hero = {
     he: 'הנדסת בינה מלאכותית מדויקת',
   },
   mainHeading: {
-    en: 'Engineering the future',
-    ru: 'Инженерия будущего',
-    he: 'הנדסת העתיд',
+    en: 'ENGINEERING FUTURE',
+    ru: 'ИНЖЕНЕРИЯ БУДУЩЕГО',
+    he: 'הנדסת העתיד',
   },
-  /** Rotating hero headline phrases (motion text). */
+  /** Rotating hero headline phrases (motion text), solid gold fill. */
   motionHeadings: [
     {
-      en: 'Engineering the future',
-      ru: 'Инженерия будущего',
+      en: 'ENGINEERING FUTURE',
+      ru: 'ИНЖЕНЕРИЯ БУДУЩЕГО',
       he: 'הנדסת העתיד',
     },
     {
-      en: 'Intelligent systems that scale',
-      ru: 'Интеллектуальные системы',
-      he: 'מערכות חכמות שצומחות',
+      en: 'AI AUTOMATION',
+      ru: 'AI-АВТОМАТИЗАЦИЯ',
+      he: 'אוטומציית AI',
     },
     {
-      en: 'Design that drives growth',
-      ru: 'Дизайн, который растёт с вами',
-      he: 'עיצוב שמניע צמיחה',
+      en: 'SCALABLE SYSTEMS',
+      ru: 'МАСШТАБИРУЕМЫЕ СИСТЕМЫ',
+      he: 'מערכות מדרגיות',
     },
     {
-      en: 'Automation with precision',
-      ru: 'Автоматизация с точностью',
-      he: 'אוטומציה מדויקת',
+      en: 'INTELLIGENT CODE',
+      ru: 'ИНТЕЛЛЕКТУАЛЬНЫЙ КОД',
+      he: 'קוד חכם',
     },
   ],
   subtext: {
