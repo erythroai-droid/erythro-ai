@@ -250,7 +250,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
         {/* Mobile: 9:16 portrait player; desktop: flex slot for 16:9 video */}
         <div
           ref={cardRef}
-          className="relative mx-auto mb-[50px] w-full max-w-[420px] aspect-[9/16] overflow-hidden bg-white lg:max-w-none lg:aspect-auto lg:flex-1 lg:min-h-0"
+          className="relative mx-auto w-full max-w-[420px] aspect-[9/16] overflow-hidden bg-white lg:max-w-none lg:aspect-auto lg:flex-1 lg:min-h-0"
         >
           {videoSrc ? (
             <CaseStudyVideo
@@ -262,6 +262,37 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
               portrait={isDesktop === false}
             />
           ) : null}
+        </div>
+
+        <div className="mt-[34px] mb-[50px] shrink-0 flex justify-center">
+          <a
+            href="/portfolio"
+            aria-label={t(translations.viewAllProjects).replace(/\s*>>\s*$/, '')}
+            className="group inline-flex items-center gap-1.5 font-sans text-[11px] font-medium uppercase tracking-[0.12em] text-gold-900 transition-colors duration-300 hover:text-erythro-500"
+          >
+            <span aria-hidden="true">
+              {t(translations.viewAllProjects)
+                .replace(/\s*>>\s*$/, '')
+                .split('')
+                .map((char, i) => (
+                  <span
+                    key={`${char}-${i}`}
+                    className="view-all-letter inline-block"
+                    style={{ animationDelay: `${i * 35}ms` }}
+                  >
+                    {char === ' ' ? '\u00A0' : char}
+                  </span>
+                ))}
+            </span>
+            <span className="inline-flex rtl:flex-row-reverse" aria-hidden="true">
+              <span className="inline-block transition-transform duration-300 ease-out group-hover:translate-x-[3px] rtl:group-hover:-translate-x-[3px]">
+                &gt;
+              </span>
+              <span className="inline-block transition-transform duration-300 ease-out delay-75 group-hover:translate-x-[3px] rtl:group-hover:-translate-x-[3px]">
+                &gt;
+              </span>
+            </span>
+          </a>
         </div>
       </div> {/* Close the max-width container here to make the marquee span the full screen width */}
 
@@ -325,6 +356,25 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
         }
         .marquee-wrapper:hover .animate-marquee {
           animation-play-state: paused;
+        }
+
+        @keyframes view-all-letter-bounce {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          35% {
+            transform: translateY(-3px);
+          }
+          55% {
+            transform: translateY(-0.5px);
+          }
+          70% {
+            transform: translateY(-1.5px);
+          }
+        }
+        .group:hover .view-all-letter {
+          animation: view-all-letter-bounce 0.5s ease-out both;
         }
       `}</style>
       </section>

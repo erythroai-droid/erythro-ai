@@ -102,14 +102,20 @@ export default function FAQSection({ locale, theme = 'light' }: FAQSectionProps)
         id="faq"
         ref={sectionRef}
         className={`relative z-10 w-full border-t border-b border-coal-400/5 select-none pointer-events-auto pt-20 pb-20 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:rounded-t-[28px] lg:flex lg:h-screen lg:flex-col lg:justify-start lg:overflow-hidden lg:border-t lg:py-0 lg:pt-20 lg:pb-10 ${
-          isLight ? 'bg-gold-100' : 'bg-coal-1000'
+          isLight ? 'bg-gold-100' : 'bg-[#1a1816]'
         }`}
       >
         {!isLight && (
-          <div
-            className="solution-section-noise absolute inset-0 z-[1] pointer-events-none"
-            aria-hidden
-          />
+          <>
+            <div
+              className="absolute inset-0 z-0 pointer-events-none faq-radial-bg max-lg:rounded-t-[28px]"
+              aria-hidden
+            />
+            <div
+              className="solution-section-noise absolute inset-0 z-[1] pointer-events-none max-lg:rounded-t-[28px]"
+              aria-hidden
+            />
+          </>
         )}
 
         {/* Heading — same top position as Services / Solutions */}
@@ -135,9 +141,9 @@ export default function FAQSection({ locale, theme = 'light' }: FAQSectionProps)
         <div className="relative z-10 mx-auto flex w-full min-h-0 max-w-[1170px] flex-1 flex-col px-[30px] lg:overflow-hidden">
           <div
             ref={panelRef}
-            className={`mx-auto flex w-full max-w-[970px] min-h-0 flex-col overflow-y-auto overflow-x-hidden rounded-[10px] border ${
+            className={`faq-accordion-scroll mx-auto flex w-full max-w-[970px] min-h-0 flex-col overflow-y-auto overflow-x-hidden rounded-[10px] border ${
               isLight
-                ? 'border-coal-900/10 bg-white shadow-[0_14px_44px_rgba(13,13,13,0.10)]'
+                ? 'is-light border-coal-900/10 bg-white shadow-[0_14px_44px_rgba(13,13,13,0.10)]'
                 : 'border-white/10 bg-coal-500 shadow-[0_14px_44px_rgba(13,13,13,0.45)]'
             }`}
           >

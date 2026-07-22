@@ -992,6 +992,9 @@ export interface Hero {
    * Optional hero background image
    */
   backgroundImage?: (number | null) | Media;
+  /**
+   * Rotating hero headlines (motion text). Leave empty to use the default phrases from code.
+   */
   words?:
     | {
         word: string;
@@ -1026,6 +1029,10 @@ export interface CaseStudy {
   cardCategory?: string | null;
   cardDescription?: string | null;
   cardCTA?: string | null;
+  /**
+   * Text link under the video banner, e.g. "View All Projects" (arrows are added in UI)
+   */
+  viewAllProjects?: string | null;
   /**
    * Desktop banner video (1024px+). Shown instead of the static default when set.
    */
@@ -1206,6 +1213,7 @@ export interface CaseStudiesSelect<T extends boolean = true> {
   cardCategory?: T;
   cardDescription?: T;
   cardCTA?: T;
+  viewAllProjects?: T;
   bannerVideo?: T;
   bannerVideoMobile?: T;
   updatedAt?: T;

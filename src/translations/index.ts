@@ -80,6 +80,29 @@ export const hero = {
     ru: 'Инженерия будущего',
     he: 'הנדסת העתיд',
   },
+  /** Rotating hero headline phrases (motion text). */
+  motionHeadings: [
+    {
+      en: 'Engineering the future',
+      ru: 'Инженерия будущего',
+      he: 'הנדסת העתיד',
+    },
+    {
+      en: 'Intelligent systems that scale',
+      ru: 'Интеллектуальные системы',
+      he: 'מערכות חכמות שצומחות',
+    },
+    {
+      en: 'Design that drives growth',
+      ru: 'Дизайн, который растёт с вами',
+      he: 'עיצוב שמניע צמיחה',
+    },
+    {
+      en: 'Automation with precision',
+      ru: 'Автоматизация с точностью',
+      he: 'אוטומציה מדויקת',
+    },
+  ],
   subtext: {
     en: 'Bridging the gap between traditional mechanical engineering and cutting-edge machine intelligence for high-stakes business automation.',
     ru: 'Преодолеваем разрыв между традиционным машиностроением и передовым машинным интеллектом для автоматизации бизнеса в критически важных сферах.',
@@ -328,6 +351,11 @@ export const caseStudies = {
     en: 'GET STARTED',
     ru: 'НАЧАТЬ РАБОТУ',
     he: 'להתחיל עכשיו',
+  },
+  viewAllProjects: {
+    en: 'View All Projects',
+    ru: 'Смотреть все проекты',
+    he: 'כל הפרויקטים',
   },
   video:
     'https://wgw9moyqjdjcaq9l.public.blob.vercel-storage.com/Dynamic%20Urban%20Slideshow.mp4',

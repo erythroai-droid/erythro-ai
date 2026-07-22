@@ -131,6 +131,11 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.hero.mainHeading = L(hero?.mainHeading, content.hero.mainHeading)
     content.hero.subtext = L(hero?.subtext, content.hero.subtext)
     content.hero.ctaFind = L(hero?.ctaFind, content.hero.ctaFind)
+    if (Array.isArray(hero?.words) && hero.words.length >= 2) {
+      content.hero.motionHeadings = hero.words.map((item: any, i: number) =>
+        L(item.word, content.hero.motionHeadings[i] ?? { en: '', ru: '', he: '' }),
+      )
+    }
     const heroBg = mediaUrl(hero?.backgroundImage)
     if (heroBg) {
       content.hero.backgroundImage = heroBg
@@ -181,6 +186,10 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.caseStudies.cardCategory = L(caseStudiesG?.cardCategory, content.caseStudies.cardCategory)
     content.caseStudies.cardDescription = L(caseStudiesG?.cardDescription, content.caseStudies.cardDescription)
     content.caseStudies.cardCTA = L(caseStudiesG?.cardCTA, content.caseStudies.cardCTA)
+    content.caseStudies.viewAllProjects = L(
+      caseStudiesG?.viewAllProjects,
+      content.caseStudies.viewAllProjects,
+    )
     const caseStudyVideo = mediaUrl(caseStudiesG?.bannerVideo)
     if (caseStudyVideo) content.caseStudies.video = caseStudyVideo
     const caseStudyVideoMobile = mediaUrl(caseStudiesG?.bannerVideoMobile)

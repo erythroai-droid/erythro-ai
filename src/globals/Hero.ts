@@ -21,7 +21,11 @@ export const Hero: GlobalConfig = {
     {
       name: 'words',
       type: 'array',
-      labels: { singular: 'Word', plural: 'Word Stack' },
+      labels: { singular: 'Phrase', plural: 'Motion Headings' },
+      admin: {
+        description:
+          'Rotating hero headlines (motion text). Leave empty to use the default phrases from code.',
+      },
       fields: [locText('word', { required: true })],
     },
   ],

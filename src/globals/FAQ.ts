@@ -5,21 +5,46 @@ import { revalidateGlobal } from '../lib/revalidate'
 export const FAQ: GlobalConfig = {
   slug: 'faq-section',
   label: 'FAQ Section',
-  admin: { group: 'Sections' },
+  admin: {
+    group: 'Sections',
+    description: 'Home page FAQ: section headings and accordion Q&A (localized en / ru / he).',
+  },
   hooks: { afterChange: [revalidateGlobal] },
   fields: [
-    locText('sectionTitle'),
-    locTextarea('sectionSubtitle'),
+    locText('sectionTitle', {
+      label: 'Section Title',
+      admin: { description: 'Main FAQ heading, e.g. "FAQ"' },
+    }),
+    locTextarea('sectionSubtitle', {
+      label: 'Section Subtitle',
+      admin: {
+        description: 'Short line under the title',
+        rows: 2,
+      },
+    }),
     {
       name: 'items',
       type: 'array',
-      labels: { singular: 'Question', plural: 'Questions' },
+      label: 'Questions & Answers',
+      labels: { singular: 'FAQ Item', plural: 'FAQ Items' },
       admin: {
-        description: 'FAQ accordion items. Drag to reorder.',
+        description:
+          'Accordion items on the home page. Drag to reorder. Switch locale in the admin bar to edit translations.',
+        initCollapsed: false,
       },
       fields: [
-        locText('question', { required: true }),
-        locTextarea('answer', { required: true }),
+        locText('question', {
+          required: true,
+          label: 'Question',
+        }),
+        locTextarea('answer', {
+          required: true,
+          label: 'Answer',
+          admin: {
+            rows: 5,
+            description: 'Answer text shown when the accordion item is open',
+          },
+        }),
       ],
     },
   ],

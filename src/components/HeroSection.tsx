@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Button from './Button'
 import HeroAnimation from './HeroAnimation'
+import HeroMotionText from './HeroMotionText'
 import { useSiteContent } from './SiteContentProvider'
 
 if (typeof window !== 'undefined') {
@@ -20,6 +21,34 @@ export default function HeroSection({ locale, navbar }: HeroSectionProps) {
   const translations = useSiteContent().hero
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const motionPhrases = useMemo(() => {
+    const pick = (phrase: Record<string, string>) =>
+      (phrase[locale] || phrase.en || '').trim()
+
+    const fromCms = (translations.motionHeadings ?? []).map(pick).filter(Boolean)
+    if (fromCms.length >= 2) return fromCms
+
+    const fallbacks = [
+      translations.mainHeading,
+      {
+        en: 'Intelligent systems that scale',
+        ru: 'Интеллектуальные системы',
+        he: 'מערכות חכמות שצומחות',
+      },
+      {
+        en: 'Design that drives growth',
+        ru: 'Дизайн, который растёт с вами',
+        he: 'עיצוב שמניע צמיחה',
+      },
+      {
+        en: 'Automation with precision',
+        ru: 'Автоматизация с точностью',
+        he: 'אוטומציה מדויקת',
+      },
+    ].map(pick).filter(Boolean)
+
+    return fallbacks
+  }, [locale, translations.mainHeading, translations.motionHeadings])
 
   const handleFindOutMoreClick = () => {
     const isMobile = window.innerWidth < 1024
@@ -73,13 +102,10 @@ export default function HeroSection({ locale, navbar }: HeroSectionProps) {
           {t(translations.preHeading)}
         </span>
 
-        {/* 
-          Main Title: "Engineering the Future"
-          Enforces the precise Display 5XL font class from foundations-typography.
-        */}
-        <div className="hero-heading opacity-0 font-display-5xl text-gold-500 max-w-4xl mt-2 mb-2 select-text">
-          {t(translations.mainHeading)}
-        </div>
+        {/* Rotating motion headline — Display 5XL */}
+        <h1 className="hero-heading opacity-0 font-display-5xl text-gold-500 max-w-4xl mt-2 mb-2 w-full select-text">
+          <HeroMotionText phrases={motionPhrases} />
+        </h1>
 
         {/* Description subtext matching Figma geometry spacing & leading */}
         <p className="hero-subtext opacity-0 font-body-lead text-gold-100 max-w-3xl leading-relaxed mt-2 select-text">

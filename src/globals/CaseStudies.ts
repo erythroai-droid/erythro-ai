@@ -14,6 +14,9 @@ export const CaseStudies: GlobalConfig = {
     locText('cardCategory'),
     locTextarea('cardDescription'),
     locText('cardCTA'),
+    locText('viewAllProjects', {
+      admin: { description: 'Text link under the video banner, e.g. "View All Projects" (arrows are added in UI)' },
+    }),
     {
       name: 'bannerVideo',
       type: 'upload',

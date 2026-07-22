@@ -442,6 +442,47 @@
     background: transparent;
   }
 
+  /* FAQ accordion: thin gold scrollbar (site style) */
+  .faq-accordion-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 233, 199, 0.45) rgba(255, 255, 255, 0.04);
+  }
+
+  .faq-accordion-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .faq-accordion-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 233, 199, 0.45);
+    border-radius: 999px;
+  }
+
+  .faq-accordion-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 233, 199, 0.7);
+  }
+
+  .faq-accordion-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 999px;
+    margin: 10px 0;
+  }
+
+  .faq-accordion-scroll.is-light {
+    scrollbar-color: rgba(107, 98, 84, 0.45) rgba(13, 13, 13, 0.06);
+  }
+
+  .faq-accordion-scroll.is-light::-webkit-scrollbar-thumb {
+    background: rgba(107, 98, 84, 0.45);
+  }
+
+  .faq-accordion-scroll.is-light::-webkit-scrollbar-thumb:hover {
+    background: rgba(229, 36, 33, 0.55);
+  }
+
+  .faq-accordion-scroll.is-light::-webkit-scrollbar-track {
+    background: rgba(13, 13, 13, 0.06);
+  }
+
   @media (min-width: 1280px) {
     .solution-cards-track {
       scrollbar-width: auto;
@@ -564,6 +605,21 @@
       #7a0c0b 48%,
       #2a0504 72%,
       #0f0000 100%
+    );
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  /* FAQ: radial vignette (same edge-darkening idea as Let's Talk) */
+  .faq-radial-bg {
+    background-color: #1a1816;
+    background-image: radial-gradient(
+      ellipse 140% 110% at 50% 42%,
+      #2a2824 0%,
+      #262320 45%,
+      #1f1c1a 78%,
+      #1a1816 100%
     );
     background-position: center;
     background-repeat: no-repeat;

@@ -110,6 +110,7 @@ async function run() {
       mainHeading: hero.mainHeading[loc],
       subtext: hero.subtext[loc],
       ctaFind: hero.ctaFind[loc],
+      words: hero.motionHeadings.map((phrase) => ({ word: phrase[loc] })),
     })),
   )
 
@@ -136,6 +137,7 @@ async function run() {
       cardCategory: caseStudies.cardCategory[loc],
       cardDescription: caseStudies.cardDescription[loc],
       cardCTA: caseStudies.cardCTA[loc],
+      viewAllProjects: caseStudies.viewAllProjects[loc],
     })),
   )
 

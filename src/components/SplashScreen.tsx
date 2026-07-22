@@ -66,6 +66,10 @@ export default function SplashScreen() {
     const finish = () => {
       restoreScroll()
       setDone(true)
+      if (typeof window !== 'undefined') {
+        window.__erythroSplashDone = true
+        window.dispatchEvent(new Event('erythro:splash-done'))
+      }
     }
 
     // ---- Geometry: centre of the "e" within the logo (viewBox 138 x 30) ----
