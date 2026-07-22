@@ -345,7 +345,8 @@
 
   /* Premium cinematic gradient backgrounds */
   .dark-gradient-bg,
-  .solution-light-bg {
+  .solution-light-bg,
+  .faq-dark-bg {
     position: relative;
     isolation: isolate;
   }
@@ -378,6 +379,53 @@
         transparent 62%
       ),
       radial-gradient(ellipse 110% 95% at 50% 55%, #1e1e1e 0%, #161616 55%, #121212 100%);
+  }
+
+  /* FAQ dark: Gold-900 base with muted Gold-700 cursor glow */
+  .faq-dark-bg {
+    background-color: var(--gold-900, #6b6254);
+    background-image:
+      radial-gradient(
+        ellipse 130% 110% at var(--cursor-glow-x, 82%) var(--cursor-glow-y, 14%),
+        rgba(181, 165, 141, 0.28) 0%,
+        rgba(181, 165, 141, 0.12) 24%,
+        rgba(107, 98, 84, 0.04) 48%,
+        transparent 78%
+      ),
+      radial-gradient(
+        ellipse 100% 90% at -8% 108%,
+        rgba(0, 0, 0, 0.4) 0%,
+        rgba(0, 0, 0, 0.16) 35%,
+        transparent 72%
+      ),
+      radial-gradient(
+        ellipse 75% 65% at 4% -2%,
+        rgba(0, 0, 0, 0.26) 0%,
+        rgba(0, 0, 0, 0.1) 30%,
+        transparent 62%
+      ),
+      radial-gradient(
+        ellipse 110% 95% at 50% 55%,
+        #7a7060 0%,
+        var(--gold-900, #6b6254) 55%,
+        #5c5448 100%
+      );
+  }
+
+  .faq-dark-bg::after {
+    content: '';
+    position: absolute;
+    inset: -40%;
+    background-image: radial-gradient(
+      ellipse 100% 90% at var(--cursor-glow-x, 82%) var(--cursor-glow-y, 14%),
+      rgba(181, 165, 141, 0.22) 0%,
+      rgba(140, 128, 109, 0.08) 32%,
+      transparent 68%
+    );
+    filter: blur(72px);
+    transform: translateZ(0);
+    pointer-events: none;
+    z-index: 0;
   }
 
   /* Services dark: warm gold glow (upper-right) on deep charcoal + vignette */

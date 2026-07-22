@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Button from './Button'
 import { useSiteContent } from './SiteContentProvider'
+import { getServiceSlugById } from '@/lib/servicePages'
 
 interface NavbarProps {
   currentLocale: string
@@ -218,9 +219,15 @@ export default function Navbar({
 
   const content = useSiteContent()
   const { navItems } = content.navbar
+  const serviceNavItems = content.services.items
   const site = content.siteSettings
+  const [servicesOpen, setServicesOpen] = useState(true)
 
   const t = (field: Record<string, string>) => field[currentLocale] || field['en']
+
+  useEffect(() => {
+    if (!mobileOpen) setServicesOpen(true)
+  }, [mobileOpen])
 
   // Desktop: contrast from sampled backdrop. Mobile plate: follow site theme.
   const menuOnDark = mobileOpen || overDarkBg
@@ -364,28 +371,102 @@ export default function Navbar({
           {/* Menu Items — centered block, left-aligned titles + subtext (Emily Nolan style) */}
           <nav className="flex flex-1 flex-col items-center justify-center -translate-y-[50px]">
             <ul className="flex w-max max-w-full flex-col items-start gap-7 text-start">
-              {navItems.map((item) => (
-                <li key={item.href}>
-                  <a
-                    href={item.href}
-                    onClick={(e) => handleNavClick(e, item.href)}
-                    className="group relative flex flex-col items-start gap-1.5 ps-5 text-start"
-                  >
-                    <span
-                      className="pointer-events-none absolute start-0 top-[0.55em] h-px w-3 origin-left scale-x-0 bg-erythro-500 transition-transform duration-300 ease-out group-hover:scale-x-100"
-                      aria-hidden
-                    />
-                    <span className="font-sans text-[28px] font-bold uppercase leading-none tracking-[0.04em] text-white transition-all duration-300 ease-out group-hover:translate-x-2 group-hover:text-erythro-500 md:text-[32px]">
-                      {t(item.label)}
-                    </span>
-                    {'description' in item && item.description ? (
-                      <span className="font-sans text-base font-normal normal-case leading-snug tracking-normal text-white/35">
-                        {t(item.description)}
+              {navItems.map((item) => {
+                const isServices = item.href === '#services'
+
+                if (isServices) {
+                  return (
+                    <li key={item.href} className="w-full">
+                      <button
+                        type="button"
+                        onClick={() => setServicesOpen((open) => !open)}
+                        className="group relative flex w-full flex-col items-start gap-1.5 ps-5 text-start cursor-pointer"
+                        aria-expanded={servicesOpen}
+                        aria-controls="burger-services-submenu"
+                      >
+                        <span
+                          className="pointer-events-none absolute start-0 top-[0.55em] h-px w-3 origin-left scale-x-0 bg-erythro-500 transition-transform duration-300 ease-out group-hover:scale-x-100"
+                          aria-hidden
+                        />
+                        <span className="flex items-center gap-3 font-sans text-[28px] font-bold uppercase leading-none tracking-[0.04em] text-white transition-all duration-300 ease-out group-hover:translate-x-2 group-hover:text-erythro-500 md:text-[32px]">
+                          {t(item.label)}
+                          <svg
+                            className={`h-3.5 w-3.5 shrink-0 transition-transform duration-300 ${
+                              servicesOpen ? 'rotate-180' : ''
+                            }`}
+                            viewBox="0 0 12 8"
+                            fill="none"
+                            aria-hidden
+                          >
+                            <path
+                              d="M1 1.5L6 6.5L11 1.5"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </span>
+                        {'description' in item && item.description ? (
+                          <span className="font-sans text-base font-normal normal-case leading-snug tracking-normal text-white/35">
+                            {t(item.description)}
+                          </span>
+                        ) : null}
+                      </button>
+
+                      <div
+                        id="burger-services-submenu"
+                        className={`grid transition-[grid-template-rows,opacity,margin] duration-300 ease-out ${
+                          servicesOpen
+                            ? 'mt-4 grid-rows-[1fr] opacity-100'
+                            : 'mt-0 grid-rows-[0fr] opacity-0'
+                        }`}
+                      >
+                        <ul className="min-h-0 overflow-hidden flex flex-col gap-3 border-s border-white/15 ps-5">
+                          {serviceNavItems.map((service) => {
+                            const slug = service.slug || getServiceSlugById(service.id)
+                            if (!slug) return null
+                            return (
+                              <li key={service.id}>
+                                <a
+                                  href={`/services/${slug}`}
+                                  onClick={() => setMobileOpen(false)}
+                                  className="block font-sans text-sm font-medium uppercase leading-snug tracking-[0.08em] text-white/70 transition-colors duration-300 hover:text-erythro-500 md:text-[15px]"
+                                >
+                                  {t(service.title)}
+                                </a>
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      </div>
+                    </li>
+                  )
+                }
+
+                return (
+                  <li key={item.href}>
+                    <a
+                      href={item.href}
+                      onClick={(e) => handleNavClick(e, item.href)}
+                      className="group relative flex flex-col items-start gap-1.5 ps-5 text-start"
+                    >
+                      <span
+                        className="pointer-events-none absolute start-0 top-[0.55em] h-px w-3 origin-left scale-x-0 bg-erythro-500 transition-transform duration-300 ease-out group-hover:scale-x-100"
+                        aria-hidden
+                      />
+                      <span className="font-sans text-[28px] font-bold uppercase leading-none tracking-[0.04em] text-white transition-all duration-300 ease-out group-hover:translate-x-2 group-hover:text-erythro-500 md:text-[32px]">
+                        {t(item.label)}
                       </span>
-                    ) : null}
-                  </a>
-                </li>
-              ))}
+                      {'description' in item && item.description ? (
+                        <span className="font-sans text-base font-normal normal-case leading-snug tracking-normal text-white/35">
+                          {t(item.description)}
+                        </span>
+                      ) : null}
+                    </a>
+                  </li>
+                )
+              })}
             </ul>
           </nav>
 

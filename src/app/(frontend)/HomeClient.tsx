@@ -144,8 +144,8 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
         <SolutionSection locale={locale} theme={theme} />
       </div>
 
-      <div className="relative z-[35] -mt-8 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:overflow-visible lg:rounded-none lg:shadow-none">
-        <FAQSection locale={locale} />
+      <div className="relative z-[35] -mt-8 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+        <FAQSection locale={locale} theme={theme} />
       </div>
 
       {/* Footer from Figma */}
