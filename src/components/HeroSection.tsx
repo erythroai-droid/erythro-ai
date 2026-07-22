@@ -7,7 +7,6 @@ import Button from './Button'
 import HeroAnimation from './HeroAnimation'
 import HeroMotionText from './HeroMotionText'
 import { useSiteContent } from './SiteContentProvider'
-import { hero as heroCopy } from '@/translations'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -24,13 +23,15 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const isLight = theme === 'light'
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const motionPhrases = useMemo(
-    () =>
-      heroCopy.motionHeadings
-        .map((phrase) => (phrase[locale] || phrase.en || '').trim())
-        .filter(Boolean),
-    [locale],
-  )
+  const motionPhrases = useMemo(() => {
+    const fromCms = (translations.motionHeadings ?? [])
+      .map((phrase) => (phrase[locale] || phrase.en || '').trim())
+      .filter(Boolean)
+    if (fromCms.length >= 2) return fromCms
+
+    // Fallback if CMS Motion Headings are empty
+    return [t(translations.mainHeading)].filter(Boolean)
+  }, [locale, translations.mainHeading, translations.motionHeadings])
 
   const handleFindOutMoreClick = () => {
     const isMobile = window.innerWidth < 1024

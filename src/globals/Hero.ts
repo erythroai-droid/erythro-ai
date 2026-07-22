@@ -24,7 +24,7 @@ export const Hero: GlobalConfig = {
       labels: { singular: 'Phrase', plural: 'Motion Headings' },
       admin: {
         description:
-          'Rotating hero headlines (motion text). Leave empty to use the default phrases from code.',
+          'Rotating hero headlines shown on the home page. Edit per locale (en / ru / he). Need at least 2 phrases.',
       },
       fields: [locText('word', { required: true })],
     },
