@@ -1,5 +1,46 @@
 -- FAQ Section global (Payload slug: faq-section)
 -- Safe to re-run: uses IF NOT EXISTS + upserts.
+-- Answer field is Lexical richText (jsonb).
+
+CREATE OR REPLACE FUNCTION faq_lexical_from_text(t text)
+RETURNS jsonb
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT jsonb_build_object(
+    'root', jsonb_build_object(
+      'type', 'root',
+      'format', '',
+      'indent', 0,
+      'version', 1,
+      'children', jsonb_build_array(
+        jsonb_build_object(
+          'type', 'paragraph',
+          'format', '',
+          'indent', 0,
+          'version', 1,
+          'children', CASE
+            WHEN t IS NULL OR btrim(t) = '' THEN '[]'::jsonb
+            ELSE jsonb_build_array(
+              jsonb_build_object(
+                'type', 'text',
+                'text', t,
+                'format', 0,
+                'mode', 'normal',
+                'style', '',
+                'detail', 0,
+                'version', 1
+              )
+            )
+          END,
+          'direction', null,
+          'textFormat', 0
+        )
+      ),
+      'direction', null
+    )
+  );
+$$;
 
 CREATE TABLE IF NOT EXISTS "faq_section" (
   "id" serial PRIMARY KEY,
@@ -45,11 +86,33 @@ CREATE INDEX IF NOT EXISTS "faq_section_items_parent_id_idx"
 
 CREATE TABLE IF NOT EXISTS "faq_section_items_locales" (
   "question" varchar NOT NULL,
-  "answer" varchar NOT NULL,
+  "answer" jsonb,
   "id" serial PRIMARY KEY,
   "_locale" "_locales" NOT NULL,
   "_parent_id" varchar NOT NULL
 );
+
+-- Migrate legacy varchar/text answer → Lexical jsonb
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'faq_section_items_locales'
+      AND column_name = 'answer'
+      AND data_type IN ('character varying', 'text')
+  ) THEN
+    ALTER TABLE "faq_section_items_locales" ALTER COLUMN "answer" DROP NOT NULL;
+    ALTER TABLE "faq_section_items_locales"
+      ALTER COLUMN "answer" TYPE jsonb
+      USING CASE
+        WHEN answer IS NULL OR btrim(answer::text) = '' THEN NULL
+        WHEN left(btrim(answer::text), 1) = '{' THEN answer::text::jsonb
+        ELSE faq_lexical_from_text(answer::text)
+      END;
+  END IF;
+END $$;
 
 DO $$ BEGIN
   ALTER TABLE "faq_section_items_locales"
@@ -91,62 +154,62 @@ INSERT INTO "faq_section_items_locales" ("question", "answer", "_locale", "_pare
 VALUES
   (
     'How long does it take to launch a project?',
-    'Timeline depends on scope: a landing page usually takes a few weeks, while a CMS site with integrations and motion needs more time. After the brief, we provide a clear roadmap and milestones.',
+    faq_lexical_from_text('Timeline depends on scope: a landing page usually takes a few weeks, while a CMS site with integrations and motion needs more time. After the brief, we provide a clear roadmap and milestones.'),
     'en', 'faqitem00000000000000001'
   ),
   (
     'Сколько времени занимает запуск проекта?',
-    'Срок зависит от задачи: лендинг обычно занимает несколько недель, а сайт с CMS, интеграциями и анимацией требует больше времени. После брифа мы даем понятный план и этапы.',
+    faq_lexical_from_text('Срок зависит от задачи: лендинг обычно занимает несколько недель, а сайт с CMS, интеграциями и анимацией требует больше времени. После брифа мы даем понятный план и этапы.'),
     'ru', 'faqitem00000000000000001'
   ),
   (
     'כמה זמן לוקח להשיק פרויקט?',
-    'משך העבודה תלוי בהיקף: דף נחיתה לוקח בדרך כלל כמה שבועות, ואתר עם CMS, אינטגרציות ואנימציות דורש יותר זמן. אחרי הבריף אנחנו נותנים תוכנית עבודה ברורה ושלבים מסודרים.',
+    faq_lexical_from_text('משך העבודה תלוי בהיקף: דף נחיתה לוקח בדרך כלל כמה שבועות, ואתר עם CMS, אינטגרציות ואנימציות דורש יותר זמן. אחרי הבריף אנחנו נותנים תוכנית עבודה ברורה ושלבים מסודרים.'),
     'he', 'faqitem00000000000000001'
   ),
   (
     'Do you only handle design, or can you deliver everything end-to-end?',
-    'We can cover the full cycle: strategy, design, development, CMS, baseline SEO, motion, and launch. When needed, we also add branding, AI automation, and ongoing support.',
+    faq_lexical_from_text('We can cover the full cycle: strategy, design, development, CMS, baseline SEO, motion, and launch. When needed, we also add branding, AI automation, and ongoing support.'),
     'en', 'faqitem00000000000000002'
   ),
   (
     'Работаете ли вы только с дизайном, или можете сделать все под ключ?',
-    'Мы можем закрыть весь цикл: стратегия, дизайн, разработка, CMS, базовое SEO, анимации и запуск. При необходимости подключаем брендинг, AI-автоматизацию и дальнейшую поддержку.',
+    faq_lexical_from_text('Мы можем закрыть весь цикл: стратегия, дизайн, разработка, CMS, базовое SEO, анимации и запуск. При необходимости подключаем брендинг, AI-автоматизацию и дальнейшую поддержку.'),
     'ru', 'faqitem00000000000000002'
   ),
   (
     'אתם עובדים רק על עיצוב או גם על ביצוע מלא?',
-    'אנחנו יכולים ללוות את כל התהליך: אסטרטגיה, עיצוב, פיתוח, CMS, SEO בסיסי, אנימציות והשקה. לפי הצורך נוסיף גם מיתוג, אוטומציה מבוססת AI ותמיכה בהמשך.',
+    faq_lexical_from_text('אנחנו יכולים ללוות את כל התהליך: אסטרטגיה, עיצוב, פיתוח, CMS, SEO בסיסי, אנימציות והשקה. לפי הצורך נוסיף גם מיתוג, אוטומציה מבוססת AI ותמיכה בהמשך.'),
     'he', 'faqitem00000000000000002'
   ),
   (
     'Will we be able to edit the content ourselves later?',
-    'Yes. We build editor-friendly structure and admin tooling so your team can update copy, imagery, case studies, services, and SEO fields without a developer.',
+    faq_lexical_from_text('Yes. We build editor-friendly structure and admin tooling so your team can update copy, imagery, case studies, services, and SEO fields without a developer.'),
     'en', 'faqitem00000000000000003'
   ),
   (
     'Можно ли потом самостоятельно редактировать контент?',
-    'Да. Мы закладываем editor-friendly структуру и админку, чтобы вы могли менять тексты, изображения, кейсы, услуги и SEO-поля без разработчика.',
+    faq_lexical_from_text('Да. Мы закладываем editor-friendly структуру и админку, чтобы вы могли менять тексты, изображения, кейсы, услуги и SEO-поля без разработчика.'),
     'ru', 'faqitem00000000000000003'
   ),
   (
     'אפשר לערוך את התוכן לבד אחר כך?',
-    'כן. אנחנו בונים מבנה אדיטורי נוח וממשק ניהול שמאפשר לעדכן טקסטים, תמונות, עבודות, שירותים ושדות SEO בלי לפנות למפתח.',
+    faq_lexical_from_text('כן. אנחנו בונים מבנה אדיטורי נוח וממשק ניהול שמאפשר לעדכן טקסטים, תמונות, עבודות, שירותים ושדות SEO בלי לפנות למפתח.'),
     'he', 'faqitem00000000000000003'
   ),
   (
     'Do you take AI and automation projects too?',
-    'Yes. In addition to websites, we build AI agents, n8n automations, CRM-connected flows, chat, and voice experiences when they create real business value.',
+    faq_lexical_from_text('Yes. In addition to websites, we build AI agents, n8n automations, CRM-connected flows, chat, and voice experiences when they create real business value.'),
     'en', 'faqitem00000000000000004'
   ),
   (
     'Берете ли вы проекты с AI и автоматизацией?',
-    'Да. Мы делаем не только сайты, но и AI-агентов, n8n-автоматизацию, формы, CRM-связки, чат- и voice-сценарии, если это полезно для бизнеса.',
+    faq_lexical_from_text('Да. Мы делаем не только сайты, но и AI-агентов, n8n-автоматизацию, формы, CRM-связки, чат- и voice-сценарии, если это полезно для бизнеса.'),
     'ru', 'faqitem00000000000000004'
   ),
   (
     'אתם עושים גם פרויקטים עם AI ואוטומציה?',
-    'כן. מעבר לאתרים, אנחנו בונים סוכני AI, אוטומציות n8n, חיבורים ל-CRM, תהליכי צ׳אט ו-voice כאשר זה תורם ישירות לעסק.',
+    faq_lexical_from_text('כן. מעבר לאתרים, אנחנו בונים סוכני AI, אוטומציות n8n, חיבורים ל-CRM, תהליכי צ׳אט ו-voice כאשר זה תורם ישירות לעסק.'),
     'he', 'faqitem00000000000000004'
   )
 ON CONFLICT ("_locale", "_parent_id") DO UPDATE SET

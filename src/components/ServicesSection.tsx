@@ -382,7 +382,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
   useCursorGlow(sectionRef)
 
   return (
-    <div ref={wrapperRef} className="relative w-full lg:z-20">
+    <div ref={wrapperRef} className="relative w-full lg:z-20 lg:pointer-events-none">
       {/* Spacer to push Services Section down by 100vh on desktop so Case Studies is fully visible before Services slides over */}
       <div className="hidden lg:block h-screen w-full pointer-events-none" />
 
@@ -391,7 +391,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         ref={sectionRef}
         data-glow-x={isLight ? '50' : '28'}
         data-glow-y={isLight ? '36' : '72'}
-        className="pt-20 pb-20 lg:py-0 lg:pt-20 lg:h-screen lg:flex lg:flex-col lg:justify-start w-full transition-colors duration-500 border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 max-lg:rounded-t-[28px] lg:overflow-visible select-none"
+        className="pt-20 pb-20 lg:py-0 lg:pt-20 lg:h-screen lg:flex lg:flex-col lg:justify-start w-full transition-colors duration-500 border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 max-lg:rounded-t-[28px] lg:overflow-visible select-none pointer-events-auto"
       >
         <div
           className={`absolute inset-0 overflow-hidden pointer-events-none max-lg:rounded-t-[28px] ${

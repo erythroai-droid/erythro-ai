@@ -161,7 +161,7 @@ async function run() {
       sectionSubtitle: faq.sectionSubtitle[loc],
       items: faq.items.map((item) => ({
         question: item.question[loc],
-        answer: item.answer[loc],
+        answer: lexicalFromText(item.answer[loc] || item.answer.en),
       })),
     })),
   )

@@ -4,6 +4,7 @@ import config from '@payload-config'
 import { defaultSiteContent, type SiteContent, type Localized } from './defaultContent'
 import { SITE_CONTENT_TAG } from './revalidate'
 import { SERVICE_ID_TO_SLUG } from './servicePages'
+import { isLexicalDoc, lexicalFromText, lexicalToPlain } from './lexical'
 
 const LOCALES = ['en', 'ru', 'he'] as const
 
@@ -26,6 +27,42 @@ function L(v: any, fallback: Localized): Localized {
     for (const l of LOCALES) {
       if (typeof v[l] === 'string' && v[l].trim().length > 0) out[l] = v[l]
     }
+  }
+  return out
+}
+
+/** Flatten Lexical (or plain) localized values into plain Localized strings. */
+function LPlainFromLexical(v: any, fallback: Localized): Localized {
+  const out: Localized = { ...fallback }
+  if (isLexicalDoc(v)) {
+    const plain = lexicalToPlain(v)
+    if (plain) {
+      out.en = plain
+      return out
+    }
+  }
+  if (typeof v === 'string' && v.trim()) {
+    out.en = v.trim()
+    return out
+  }
+  if (v && typeof v === 'object') {
+    for (const l of LOCALES) {
+      const raw = v[l]
+      const plain = lexicalToPlain(raw) || (typeof raw === 'string' ? raw.trim() : '')
+      if (plain) out[l] = plain
+    }
+  }
+  return out
+}
+
+/** Keep Lexical docs per locale (with plain-string fallbacks converted). */
+function LRich(v: any, fallbackPlain: Localized): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  for (const l of LOCALES) {
+    const raw = v && typeof v === 'object' && !isLexicalDoc(v) ? v[l] : l === 'en' ? v : undefined
+    if (isLexicalDoc(raw)) out[l] = raw
+    else if (typeof raw === 'string' && raw.trim()) out[l] = lexicalFromText(raw)
+    else if (fallbackPlain[l]) out[l] = lexicalFromText(fallbackPlain[l])
   }
   return out
 }
@@ -241,9 +278,11 @@ export async function getSiteContent(): Promise<SiteContent> {
     if (Array.isArray(faqG?.items) && faqG.items.length) {
       content.faq.items = faqG.items.map((item: any, i: number) => {
         const fb = defaultSiteContent.faq.items[i]
+        const answerFallback = fb?.answer ?? { en: '', ru: '', he: '' }
         return {
           question: L(item.question, fb?.question ?? { en: '', ru: '', he: '' }),
-          answer: L(item.answer, fb?.answer ?? { en: '', ru: '', he: '' }),
+          answer: LPlainFromLexical(item.answer, answerFallback),
+          answerRich: LRich(item.answer, answerFallback),
         }
       })
     }

@@ -135,7 +135,7 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
       </div>
 
       {/* Services Grid with 12-column geometry */}
-      <div className="relative z-20 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+      <div className="relative z-20 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:pointer-events-none lg:contents">
         <ServicesSection locale={locale} theme={theme} />
       </div>
 

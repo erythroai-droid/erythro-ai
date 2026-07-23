@@ -553,7 +553,10 @@ export const solutions = {
 // 7. FAQ Section translations
 export interface FAQItem {
   question: Record<string, string>
+  /** Plain-text fallback / SEO; CMS rich answers live in `answerRich`. */
   answer: Record<string, string>
+  /** Lexical JSON per locale from Payload (optional until CMS is populated). */
+  answerRich?: Record<string, unknown>
 }
 
 export const faq = {

@@ -993,7 +993,7 @@ export interface Hero {
    */
   backgroundImage?: (number | null) | Media;
   /**
-   * Rotating hero headlines (motion text). Leave empty to use the default phrases from code.
+   * Rotating hero headlines shown on the home page. Edit per locale (en / ru / he). Need at least 2 phrases.
    */
   words?:
     | {
@@ -1079,9 +1079,23 @@ export interface FaqSection {
     | {
         question: string;
         /**
-         * Answer text shown when the accordion item is open
+         * Answer shown when the accordion item is open (bold, lists, links, etc.)
          */
-        answer: string;
+        answer: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
         id?: string | null;
       }[]
     | null;

@@ -148,6 +148,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
   const sectionRef = useRef<HTMLDivElement | null>(null)
   const headingRef = useRef<HTMLDivElement | null>(null)
   const cardRef = useRef<HTMLDivElement | null>(null)
+  const linkRef = useRef<HTMLDivElement | null>(null)
   const marqueeRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -156,23 +157,29 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
 
       // Desktop animation: Pinning, scrubbing & snapping
       mm.add('(min-width: 1024px)', () => {
-        gsap.set([headingRef.current, cardRef.current, marqueeRef.current], {
-          opacity: 0,
-          y: 60,
-        })
-
-        gsap.to([headingRef.current, cardRef.current, marqueeRef.current], {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          stagger: 0.25,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: wrapperRef.current,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse',
+        gsap.set(
+          [headingRef.current, cardRef.current, linkRef.current, marqueeRef.current],
+          {
+            opacity: 0,
+            y: 60,
           },
-        })
+        )
+
+        gsap.to(
+          [headingRef.current, cardRef.current, linkRef.current, marqueeRef.current],
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            stagger: 0.25,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: wrapperRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none reverse',
+            },
+          },
+        )
 
         ScrollTrigger.create({
           id: 'cases-pin',
@@ -193,23 +200,29 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
 
       // Mobile/tablet animation: Simple scroll trigger (no pinning/snapping)
       mm.add('(max-width: 1023px)', () => {
-        gsap.set([headingRef.current, cardRef.current, marqueeRef.current], {
-          opacity: 0,
-          y: 40,
-        })
-
-        gsap.to([headingRef.current, cardRef.current, marqueeRef.current], {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          stagger: 0.25,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: wrapperRef.current,
-            start: 'top 92%',
-            toggleActions: 'play none none reverse',
+        gsap.set(
+          [headingRef.current, cardRef.current, linkRef.current, marqueeRef.current],
+          {
+            opacity: 0,
+            y: 40,
           },
-        })
+        )
+
+        gsap.to(
+          [headingRef.current, cardRef.current, linkRef.current, marqueeRef.current],
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            stagger: 0.25,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: wrapperRef.current,
+              start: 'top 92%',
+              toggleActions: 'play none none reverse',
+            },
+          },
+        )
       })
     }, wrapperRef)
 
@@ -264,7 +277,10 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           ) : null}
         </div>
 
-        <div className="mt-[34px] mb-[50px] shrink-0 flex justify-center">
+        <div
+          ref={linkRef}
+          className="relative z-20 mt-[34px] mb-[50px] shrink-0 flex justify-center pointer-events-auto"
+        >
           <a
             href="/portfolio"
             aria-label={t(translations.viewAllProjects).replace(/\s*>>\s*$/, '')}

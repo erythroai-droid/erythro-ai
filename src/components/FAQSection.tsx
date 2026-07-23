@@ -1,9 +1,11 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
+import { RichText } from '@payloadcms/richtext-lexical/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useSiteContent } from './SiteContentProvider'
+import { resolveLexical } from '@/lib/lexical'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -150,6 +152,7 @@ export default function FAQSection({ locale, theme = 'light' }: FAQSectionProps)
             {items.map((item, index) => {
               const isOpen = openIndex === index
               const question = t(item.question)
+              const answerDoc = resolveLexical(item.answerRich, locale, t(item.answer))
 
               return (
                 <div
@@ -216,13 +219,15 @@ export default function FAQSection({ locale, theme = 'light' }: FAQSectionProps)
                   >
                     <div className="overflow-hidden">
                       <div className="px-6 pb-6 md:px-8">
-                        <p
-                          className={`max-w-[820px] font-sans text-base font-light leading-7 md:text-lg md:leading-8 ${
-                            isLight ? 'text-coal-900/80' : 'text-white/75'
-                          }`}
-                        >
-                          {t(item.answer)}
-                        </p>
+                        {answerDoc ? (
+                          <div
+                            className={`max-w-[820px] font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
+                              isLight ? 'text-coal-900/80' : 'text-white/75'
+                            }`}
+                          >
+                            <RichText data={answerDoc as never} />
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                   </div>

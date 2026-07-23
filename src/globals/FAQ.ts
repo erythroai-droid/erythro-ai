@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { locText, locTextarea } from '../fields/localized'
+import { locText, locTextarea, locRichText } from '../fields/localized'
 import { revalidateGlobal } from '../lib/revalidate'
 
 export const FAQ: GlobalConfig = {
@@ -37,12 +37,11 @@ export const FAQ: GlobalConfig = {
           required: true,
           label: 'Question',
         }),
-        locTextarea('answer', {
+        locRichText('answer', {
           required: true,
           label: 'Answer',
           admin: {
-            rows: 5,
-            description: 'Answer text shown when the accordion item is open',
+            description: 'Answer shown when the accordion item is open (bold, lists, links, etc.)',
           },
         }),
       ],
