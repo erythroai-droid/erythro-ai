@@ -24,9 +24,24 @@ export const Hero: GlobalConfig = {
       labels: { singular: 'Phrase', plural: 'Motion Headings' },
       admin: {
         description:
-          'Rotating hero headlines shown on the home page. Edit per locale (en / ru / he). Need at least 2 phrases.',
+          'Rotating hero headlines on the home page. Each phrase has a solid main line and an optional large background outline. Edit per locale (en / ru / he). Need at least 2 phrases.',
       },
-      fields: [locText('word', { required: true })],
+      fields: [
+        locText('word', {
+          required: true,
+          label: 'Main text',
+          admin: {
+            description: 'Solid foreground headline (the text that settles into the hero title).',
+          },
+        }),
+        locText('outline', {
+          label: 'Background outline',
+          admin: {
+            description:
+              'Large outline text behind the main headline. Leave empty to reuse the main text.',
+          },
+        }),
+      ],
     },
   ],
 }

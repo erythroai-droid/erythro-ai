@@ -110,7 +110,10 @@ async function run() {
       mainHeading: hero.mainHeading[loc],
       subtext: hero.subtext[loc],
       ctaFind: hero.ctaFind[loc],
-      words: hero.motionHeadings.map((phrase) => ({ word: phrase[loc] })),
+      words: hero.motionHeadings.map((phrase) => ({
+        word: phrase.text[loc],
+        outline: phrase.outline[loc],
+      })),
     })),
   )
 

@@ -255,7 +255,7 @@ export default function Navbar({
   }
 
   return (
-    <header className="fixed top-0 start-0 end-0 z-[60] w-full max-w-none select-none pointer-events-none overflow-visible px-0 lg:z-50">
+    <header className="fixed top-0 start-0 end-0 z-[110] w-full max-w-none select-none pointer-events-none overflow-visible px-0 lg:z-[110]">
       {/* ===== Burger header: logo + Menu on all breakpoints (home + inner) ===== */}
       <div
         className={`relative z-[70] flex w-full pointer-events-auto items-center justify-between overflow-visible px-[30px] py-5 lg:border-transparent lg:bg-transparent lg:px-[50px] lg:py-8 lg:backdrop-blur-none transition-colors duration-300 ${
@@ -358,7 +358,7 @@ export default function Navbar({
         Features a deep coal background, glass blur, and smooth layout mirror.
       */}
       <div
-        className={`fixed inset-y-0 start-0 end-0 z-[65] bg-coal-900/90 backdrop-blur-lg transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`fixed inset-y-0 start-0 end-0 z-[60] bg-coal-900/90 backdrop-blur-lg transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
           mobileOpen
             ? 'translate-x-0'
             : currentLocale === 'he'

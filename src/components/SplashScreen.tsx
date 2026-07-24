@@ -13,8 +13,7 @@ import { gsap } from 'gsap'
  * 3. The overlay fades away to reveal the page.
  *
  * The whole sequence is driven by a single GSAP timeline. The enlarge/recede
- * motion is a CSS transform on the SVG wrapper (origin pinned to the "e"
- * centre) so nothing gets clipped by the wide, short SVG viewBox.
+ * motion is a CSS transform on the SVG (origin pinned to the "e" centre).
  */
 export default function SplashScreen() {
   const [done, setDone] = useState(false)
@@ -35,25 +34,30 @@ export default function SplashScreen() {
     const ePath = eRef.current
     if (!overlay || !wrap || !svg || !ePath) return
 
-    // Lock scrolling while the intro plays. Hiding overflow removes the page's
-    // vertical scrollbar, which would otherwise widen the layout when the lock
-    // is applied and snap it back (a horizontal-scroll flash / jerk) when it is
-    // released. We reserve the scrollbar's width on <html> so the content width
-    // never changes between locked and unlocked states.
-    const root = document.documentElement
-    const scrollbarW = window.innerWidth - root.clientWidth
-    const prevBodyOverflow = document.body.style.overflow
-    const prevRootOverflow = root.style.overflow
-    const prevRootPadRight = root.style.paddingRight
-
-    root.style.overflow = 'hidden'
-    document.body.style.overflow = 'hidden'
-    if (scrollbarW > 0) root.style.paddingRight = `${scrollbarW}px`
+    // Lock scroll with position:fixed — NOT overflow:hidden on html/body.
+    // overflow:hidden on the root creates a clip rect that crops the enlarged
+    // "e" and makes the stroke look like it starts centred then jumps aside.
+    const scrollY = window.scrollY
+    const prevBody = {
+      position: document.body.style.position,
+      top: document.body.style.top,
+      left: document.body.style.left,
+      right: document.body.style.right,
+      width: document.body.style.width,
+    }
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.left = '0'
+    document.body.style.right = '0'
+    document.body.style.width = '100%'
 
     const restoreScroll = () => {
-      document.body.style.overflow = prevBodyOverflow
-      root.style.overflow = prevRootOverflow
-      root.style.paddingRight = prevRootPadRight
+      document.body.style.position = prevBody.position
+      document.body.style.top = prevBody.top
+      document.body.style.left = prevBody.left
+      document.body.style.right = prevBody.right
+      document.body.style.width = prevBody.width
+      window.scrollTo(0, scrollY)
     }
 
     const letters = lettersRef.current.filter(Boolean) as SVGPathElement[]
@@ -78,27 +82,23 @@ export default function SplashScreen() {
     const bbox = ePath.getBBox()
     const eCxFrac = (bbox.x + bbox.width / 2) / VB_W
     const eCyFrac = (bbox.y + bbox.height / 2) / VB_H
-
-    // Measure the SVG itself (not the wrapper): the wrapper carries horizontal
-    // padding (px-6) which would otherwise offset the transform origin from the
-    // glyph centre and push the enlarged "e" sideways — very noticeable on
-    // narrow mobile widths where the padding is a large fraction of the box.
-    const svgRect = svg.getBoundingClientRect()
-    const wrapW = svgRect.width || 1
-    const wrapH = svgRect.height || wrapW * (VB_H / VB_W)
     const SCALE = 4.2
-    // Translation that brings the e-centre to the SVG centre (= viewport centre,
-    // since the SVG is symmetrically centred in the viewport).
-    const tx1 = (0.5 - eCxFrac) * wrapW
-    const ty1 = (0.5 - eCyFrac) * wrapH
 
-    gsap.set(wrap, { opacity: 1 })
+    // Scale first with origin on the glyph (e stays put), THEN nudge so the
+    // live getBoundingClientRect centre hits the viewport centre. This stays
+    // correct even if the flex slot / body lock shifts the SVG box.
     gsap.set(svg, {
       transformOrigin: `${eCxFrac * 100}% ${eCyFrac * 100}%`,
-      x: tx1,
-      y: ty1,
+      x: 0,
+      y: 0,
       scale: SCALE,
+      force3D: true,
     })
+    const eRect = ePath.getBoundingClientRect()
+    const tx1 = window.innerWidth / 2 - (eRect.left + eRect.width / 2)
+    const ty1 = window.innerHeight / 2 - (eRect.top + eRect.height / 2)
+    gsap.set(svg, { x: tx1, y: ty1 })
+    gsap.set(wrap, { opacity: 1 })
 
     const applyRecede = (p: number) => {
       const s = SCALE + (1 - SCALE) * p
@@ -231,7 +231,7 @@ export default function SplashScreen() {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden splash-bg"
+      className="fixed inset-0 z-[200] flex items-center justify-center overflow-visible splash-bg"
       aria-hidden="true"
     >
       <div

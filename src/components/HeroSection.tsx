@@ -24,13 +24,27 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
   const isLight = theme === 'light'
   const containerRef = useRef<HTMLDivElement | null>(null)
   const motionPhrases = useMemo(() => {
+    const pick = (dict: Record<string, string> | undefined, fallback = '') =>
+      (dict?.[locale] || dict?.en || fallback).trim()
+
     const fromCms = (translations.motionHeadings ?? [])
-      .map((phrase) => (phrase[locale] || phrase.en || '').trim())
-      .filter(Boolean)
+      .map((phrase) => {
+        // New shape: { text, outline }; legacy flat: { en, ru, he }
+        if (phrase && typeof phrase === 'object' && 'text' in phrase) {
+          const text = pick(phrase.text as Record<string, string>)
+          const outline = pick(phrase.outline as Record<string, string> | undefined, text)
+          return text ? { text, outline: outline || text } : null
+        }
+        const text = pick(phrase as Record<string, string>)
+        return text ? { text, outline: text } : null
+      })
+      .filter((p): p is { text: string; outline: string } => Boolean(p))
+
     if (fromCms.length >= 2) return fromCms
 
     // Fallback if CMS Motion Headings are empty
-    return [t(translations.mainHeading)].filter(Boolean)
+    const fallback = t(translations.mainHeading)
+    return fallback ? [{ text: fallback, outline: fallback }] : []
   }, [locale, translations.mainHeading, translations.motionHeadings])
 
   const handleFindOutMoreClick = () => {
@@ -87,11 +101,11 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
 
         {/* Full-bleed rotating headline — no wrap on large screens */}
         <h1
-          className={`hero-heading opacity-0 font-display-5xl !font-bold uppercase mt-2 mb-2 flex w-screen max-w-none items-center justify-center select-text tracking-tight px-4 lg:whitespace-nowrap lg:text-[clamp(40px,5.5vw,72px)] lg:leading-[1.15] ${
+          className={`hero-heading opacity-0 font-display-5xl !font-bold uppercase mt-2 mb-2 flex w-screen max-w-none items-center justify-center select-text tracking-tight px-4 whitespace-nowrap !text-[clamp(18px,5.6vw,40px)] !leading-[1.15] lg:!text-[clamp(40px,5.5vw,72px)] ${
             isLight ? 'text-gold-100' : 'text-gold-500'
           }`}
         >
-          <HeroMotionText phrases={motionPhrases} theme={theme} />
+          <HeroMotionText phrases={motionPhrases} />
         </h1>
 
         {/* Description subtext matching Figma geometry spacing & leading */}

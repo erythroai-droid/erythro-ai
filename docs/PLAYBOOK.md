@@ -350,3 +350,9 @@ export default [
 3. **Кнопка поверх full-screen меню** должна жить в stacking context с `z-index` выше
    оверлея (родитель с `z-[70]`), иначе `z-index` на ребёнке не выигрывает у sibling-оверлея.
 4. **PowerShell**: коммит-сообщения через файл + `git commit -F` (без bash heredoc).
+
+### 9.10. Hero Motion (кинематографические заголовки)
+Утверждены 4 кадра вращающихся headline в Hero (`HeroMotionText`). Полное описание кадров,
+outline SVG, адаптива, z-index меню и правил выхода из красных плашек:
+
+→ **[docs/HERO_MOTION.md](./HERO_MOTION.md)**

@@ -80,27 +80,55 @@ export const hero = {
     ru: 'ИНЖЕНЕРИЯ БУДУЩЕГО',
     he: 'הנדסת העתיד',
   },
-  /** Rotating hero headline phrases (motion text), solid gold fill. */
+  /** Rotating hero headline phrases (motion text). */
   motionHeadings: [
     {
-      en: 'ENGINEERING FUTURE',
-      ru: 'ИНЖЕНЕРИЯ БУДУЩЕГО',
-      he: 'הנדסת העתיד',
+      text: {
+        en: 'ENGINEERING FUTURE',
+        ru: 'ИНЖЕНЕРИЯ БУДУЩЕГО',
+        he: 'הנדסת העתיד',
+      },
+      outline: {
+        en: 'ENGINEERING FUTURE',
+        ru: 'ИНЖЕНЕРИЯ БУДУЩЕГО',
+        he: 'הנדסת העתיד',
+      },
     },
     {
-      en: 'AI AUTOMATION',
-      ru: 'AI-АВТОМАТИЗАЦИЯ',
-      he: 'אוטומציית AI',
+      text: {
+        en: 'AI AUTOMATION',
+        ru: 'AI-АВТОМАТИЗАЦИЯ',
+        he: 'אוטומציית AI',
+      },
+      outline: {
+        en: 'AI AUTOMATION',
+        ru: 'AI-АВТОМАТИЗАЦИЯ',
+        he: 'אוטומציית AI',
+      },
     },
     {
-      en: 'SCALABLE SYSTEMS',
-      ru: 'МАСШТАБИРУЕМЫЕ СИСТЕМЫ',
-      he: 'מערכות מדרגיות',
+      text: {
+        en: 'SCALABLE SYSTEMS',
+        ru: 'МАСШТАБИРУЕМЫЕ СИСТЕМЫ',
+        he: 'מערכות מדרגיות',
+      },
+      outline: {
+        en: 'SCALABLE SYSTEMS',
+        ru: 'МАСШТАБИРУЕМЫЕ СИСТЕМЫ',
+        he: 'מערכות מדרגיות',
+      },
     },
     {
-      en: 'INTELLIGENT CODE',
-      ru: 'ИНТЕЛЛЕКТУАЛЬНЫЙ КОД',
-      he: 'קוד חכם',
+      text: {
+        en: 'INTELLIGENT CODE',
+        ru: 'ИНТЕЛЛЕКТУАЛЬНЫЙ КОД',
+        he: 'קוד חכם',
+      },
+      outline: {
+        en: 'INTELLIGENT CODE',
+        ru: 'ИНТЕЛЛЕКТУАЛЬНЫЙ КОД',
+        he: 'קוד חכם',
+      },
     },
   ],
   subtext: {

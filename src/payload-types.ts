@@ -993,11 +993,18 @@ export interface Hero {
    */
   backgroundImage?: (number | null) | Media;
   /**
-   * Rotating hero headlines shown on the home page. Edit per locale (en / ru / he). Need at least 2 phrases.
+   * Rotating hero headlines on the home page. Each phrase has a solid main line and an optional large background outline. Edit per locale (en / ru / he). Need at least 2 phrases.
    */
   words?:
     | {
+        /**
+         * Solid foreground headline (the text that settles into the hero title).
+         */
         word: string;
+        /**
+         * Large outline text behind the main headline. Leave empty to reuse the main text.
+         */
+        outline?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -1208,6 +1215,7 @@ export interface HeroSelect<T extends boolean = true> {
     | T
     | {
         word?: T;
+        outline?: T;
         id?: T;
       };
   updatedAt?: T;

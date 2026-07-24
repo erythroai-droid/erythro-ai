@@ -169,9 +169,27 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.hero.subtext = L(hero?.subtext, content.hero.subtext)
     content.hero.ctaFind = L(hero?.ctaFind, content.hero.ctaFind)
     if (Array.isArray(hero?.words) && hero.words.length >= 2) {
-      content.hero.motionHeadings = hero.words.map((item: any, i: number) =>
-        L(item.word, content.hero.motionHeadings[i] ?? { en: '', ru: '', he: '' }),
-      )
+      content.hero.motionHeadings = hero.words.map((item: any, i: number) => {
+        const fb = content.hero.motionHeadings[i]
+        const fbText =
+          fb && typeof fb === 'object' && 'text' in fb
+            ? fb.text
+            : ((fb as Record<string, string> | undefined) ?? { en: '', ru: '', he: '' })
+        const fbOutline =
+          fb && typeof fb === 'object' && 'outline' in fb
+            ? fb.outline
+            : fbText
+        const text = L(item.word, fbText)
+        const outlineRaw = item.outline
+        const hasOutline =
+          outlineRaw &&
+          typeof outlineRaw === 'object' &&
+          Object.values(outlineRaw).some((v) => typeof v === 'string' && v.trim())
+        return {
+          text,
+          outline: hasOutline ? L(outlineRaw, fbOutline) : text,
+        }
+      })
     }
     const heroBg = mediaUrl(hero?.backgroundImage)
     if (heroBg) {
