@@ -33,37 +33,36 @@ export default function HeroAnimation({
     const mm = gsap.matchMedia()
 
     mm.add('(min-width: 1024px)', () => {
-      // No pin — the container is already position:fixed.
-      // The wrapper height (220vh) provides scroll distance for the animation.
+      const el = contentRef.current
+      if (!el) return
+
+      // Opacity-only scrub — y/scale on the way back makes copy visibly settle
+      // downward after Top / scroll-to-top (even with scrub:true).
+      gsap.set(el, { clearProps: 'transform', opacity: 1 })
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: wrapperRef.current,
           start: 'top top',
-          // Finish the fade animation exactly when the next section (Case Studies)
-          // begins to slide up over the fixed hero. The wrapper is 220vh tall, so
-          // 'bottom bottom' resolves to scrollY = 220vh - 100vh = 120vh, which is the
-          // precise point where the following section enters the viewport from below.
+          // Finish the fade when the next section begins to cover the fixed hero.
+          // Wrapper is 220vh → 'bottom bottom' = 120vh of scrub distance.
           end: 'bottom bottom',
-          scrub: 1,
+          scrub: true,
           invalidateOnRefresh: true,
         },
       })
       ScrollTrigger.sort()
 
-      // Cinematic text fade out and scale
-      if (contentRef.current) {
-        tl.to(
-          contentRef.current,
-          {
-            opacity: 0,
-            scale: 0.92,
-            y: -30,
-            ease: 'power1.inOut',
-            duration: 1.2,
-          },
-          0,
-        )
-      }
+      tl.fromTo(
+        el,
+        { opacity: 1 },
+        {
+          opacity: 0,
+          ease: 'power1.inOut',
+          duration: 1.2,
+        },
+        0,
+      )
     })
 
     return () => {
@@ -100,7 +99,7 @@ export default function HeroAnimation({
             />
           ) : (
             <video
-              src={videoUrl || "/videos/Ai.mp4"}
+              src={videoUrl || "/videos/Composition_Hero.mp4"}
               autoPlay
               loop
               muted

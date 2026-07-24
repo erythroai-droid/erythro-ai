@@ -82,10 +82,28 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
 
     // Animate timeline with a slight delay for smooth initial rendering
     const tl = gsap.timeline({ delay: 0.3 })
-    tl.to(preHeading, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' })
-      .to(heading, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.4')
-      .to(subtext, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.5')
-      .to(buttons, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.5')
+    tl.to(preHeading, {
+      opacity: 1,
+      y: 0,
+      duration: 0.6,
+      ease: 'power3.out',
+      clearProps: 'transform',
+    })
+      .to(
+        heading,
+        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', clearProps: 'transform' },
+        '-=0.4',
+      )
+      .to(
+        subtext,
+        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', clearProps: 'transform' },
+        '-=0.5',
+      )
+      .to(
+        buttons,
+        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', clearProps: 'transform' },
+        '-=0.5',
+      )
   }, [])
 
   return (
@@ -95,7 +113,7 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
         className="relative mx-auto mt-12 flex w-full flex-col items-center gap-6 text-center select-none md:mt-16"
       >
         {/* Pre-Heading tag */}
-        <span className="hero-pre-heading opacity-0 font-mono text-xs md:text-sm font-bold tracking-[0.25em] text-gold-500 uppercase select-none animate-pulse px-[30px]">
+        <span className="hero-pre-heading relative -top-10 opacity-0 font-mono text-xs md:text-sm font-bold tracking-[0.25em] text-gold-500 uppercase select-none animate-pulse px-[30px]">
           {t(translations.preHeading)}
         </span>
 
@@ -109,7 +127,7 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
         </h1>
 
         {/* Description subtext matching Figma geometry spacing & leading */}
-        <p className="hero-subtext opacity-0 font-body-lead text-gold-100 mt-2 w-full max-w-none select-text px-[30px] text-center lg:whitespace-nowrap">
+        <p className="hero-subtext opacity-0 font-body-lead text-gold-100 mt-7 w-full max-w-none select-text px-[30px] text-center lg:whitespace-nowrap">
           {t(translations.subtext)}
         </p>
 

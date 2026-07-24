@@ -482,11 +482,19 @@ async function playFrame1(opts: {
 
   const applyStageFade = () => {
     const fade = getScrollFade()
-    const t = 1 - fade
+    if (fade >= 0.995) {
+      gsap.set(stageEl, {
+        opacity: 1,
+        clearProps: 'transform',
+        color: textColor,
+      })
+      return
+    }
+    // Opacity only — y/scale on reverse reads as copy sliding down into place
     gsap.set(stageEl, {
       opacity: fade,
-      scale: 1 - 0.08 * t,
-      y: -30 * t,
+      y: 0,
+      scale: 1,
       color: textColor,
     })
   }
@@ -919,11 +927,19 @@ async function playFrame2(opts: {
 
   const applyStageFade = () => {
     const fade = getScrollFade()
-    const t = 1 - fade
+    if (fade >= 0.995) {
+      gsap.set(stageEl, {
+        opacity: 1,
+        clearProps: 'transform',
+        color: textColor,
+      })
+      return
+    }
+    // Opacity only — y/scale on reverse reads as copy sliding down into place
     gsap.set(stageEl, {
       opacity: fade,
-      scale: 1 - 0.08 * t,
-      y: -30 * t,
+      y: 0,
+      scale: 1,
       color: textColor,
     })
   }
@@ -1277,11 +1293,19 @@ async function playFrame3(opts: {
 
   const applyStageFade = () => {
     const fade = getScrollFade()
-    const t = 1 - fade
+    if (fade >= 0.995) {
+      gsap.set(stageEl, {
+        opacity: 1,
+        clearProps: 'transform',
+        color: textColor,
+      })
+      return
+    }
+    // Opacity only — y/scale on reverse reads as copy sliding down into place
     gsap.set(stageEl, {
       opacity: fade,
-      scale: 1 - 0.08 * t,
-      y: -30 * t,
+      y: 0,
+      scale: 1,
       color: textColor,
     })
   }
@@ -1754,11 +1778,19 @@ async function playFrame4(opts: {
 
   const applyStageFade = () => {
     const fade = getScrollFade()
-    const t = 1 - fade
+    if (fade >= 0.995) {
+      gsap.set(stageEl, {
+        opacity: 1,
+        clearProps: 'transform',
+        color: textColor,
+      })
+      return
+    }
+    // Opacity only — y/scale on reverse reads as copy sliding down into place
     gsap.set(stageEl, {
       opacity: fade,
-      scale: 1 - 0.08 * t,
-      y: -30 * t,
+      y: 0,
+      scale: 1,
       color: textColor,
     })
   }
@@ -2155,11 +2187,15 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
 
     const applyStageScrollFade = () => {
       if (stageEl.style.display === 'none') return
-      const t = 1 - scrollFade
+      if (scrollFade >= 0.995) {
+        gsap.set(stageEl, { opacity: 1, clearProps: 'transform' })
+        return
+      }
+      // Opacity only — matching HeroAnimation (no y/scale settle on scroll-back)
       gsap.set(stageEl, {
-        opacity: scrollFade,
-        scale: 1 - 0.08 * t,
-        y: -30 * t,
+        opacity: scrollFade < 0.04 ? 0 : scrollFade,
+        y: 0,
+        scale: 1,
       })
     }
 
@@ -2306,14 +2342,19 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
           trigger: heroSection,
           start: 'top top',
           end,
-          scrub: 1,
+          scrub: true,
           invalidateOnRefresh: true,
+          fastScrollEnd: true,
           onUpdate: (self) => {
-            scrollFade = 1 - fadeEase(self.progress)
+            scrollFade = self.progress <= 0 ? 1 : 1 - fadeEase(self.progress)
             applyStageScrollFade()
             if (scrollFade < 0.04 && stageEl.style.display !== 'none') {
               gsap.set(stageEl, { opacity: 0 })
             }
+          },
+          onLeaveBack: () => {
+            scrollFade = 1
+            applyStageScrollFade()
           },
         })
         return () => st.kill()
