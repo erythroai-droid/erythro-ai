@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), var(--font-heebo), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
 
   --color-coal-100: var(--coal-100);
@@ -319,6 +319,7 @@
   }
 
   html[dir='rtl'] {
+    --font-sans: var(--font-heebo), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     font-family: var(--font-sans) !important;
   }
 }

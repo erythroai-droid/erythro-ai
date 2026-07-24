@@ -119,9 +119,7 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
 
         {/* Full-bleed rotating headline — no wrap on large screens */}
         <h1
-          className={`hero-heading opacity-0 font-display-5xl !font-bold uppercase mt-2 mb-2 flex w-screen max-w-none items-center justify-center select-text tracking-tight px-4 text-center whitespace-normal lg:whitespace-nowrap !text-[clamp(28px,9.2vw,48px)] !leading-[1.12] lg:!text-[clamp(40px,5.5vw,72px)] lg:!leading-[1.15] ${
-            isLight ? 'text-gold-100' : 'text-gold-500'
-          }`}
+          className="hero-heading opacity-0 font-display-5xl !font-bold uppercase mt-2 mb-2 flex w-screen max-w-none items-center justify-center select-text tracking-tight px-4 text-center whitespace-normal lg:whitespace-nowrap !text-[clamp(28px,9.2vw,48px)] !leading-[1.12] lg:!text-[clamp(40px,5.5vw,72px)] lg:!leading-[1.15] text-gold-500"
         >
           <HeroMotionText phrases={motionPhrases} />
         </h1>

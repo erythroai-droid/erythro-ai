@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
 import { getCachedSeoSettings } from '@/lib/getSiteContent'
 import Script from 'next/script'
-import { inter, robotoMono } from '@/lib/fonts'
+import { heebo, inter, robotoMono } from '@/lib/fonts'
 import './styles.css'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
@@ -132,7 +132,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
     <html
       lang={locale}
       dir={locale === 'he' ? 'rtl' : 'ltr'}
-      className={`${inter.variable} ${robotoMono.variable}`}
+      className={`${inter.variable} ${heebo.variable} ${robotoMono.variable}`}
     >
       <body>
         <Script

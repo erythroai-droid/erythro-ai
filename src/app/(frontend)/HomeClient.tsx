@@ -34,6 +34,11 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
   // Persist the chosen language to a cookie so the middleware and server render
   // remember it on subsequent visits.
   const setLocale = (next: string) => {
+    // Apply dir/lang before React re-renders hero motion — otherwise frames
+    // measure with the previous direction and the headline jumps after switch.
+    const root = document.documentElement
+    root.lang = next
+    root.dir = next === 'he' ? 'rtl' : 'ltr'
     setLocaleState(next)
     document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
   }
