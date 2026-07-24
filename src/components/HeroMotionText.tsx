@@ -1853,9 +1853,9 @@ async function playFrame4(opts: {
     'position:relative',
   ].join(';')
 
-  // Measure with a temporary text node, then move text inside the fill clip
+  // Measure with a temporary text node, then move text inside the fill clip.
+  // Glyph spans exist from the start — splitting later (esp. Cyrillic) jerks layout.
   const textEl = document.createElement('span')
-  textEl.textContent = mainText
   textEl.style.cssText = [
     `font-family:${fontFamily}`,
     `font-weight:${fontWeight}`,
@@ -1866,8 +1866,9 @@ async function playFrame4(opts: {
     'display:inline-flex',
     'align-items:center',
     'justify-content:center',
+    mobileWrap ? 'flex-wrap:wrap' : 'flex-wrap:nowrap',
     'line-height:1.12',
-    mobileWrap ? 'white-space:normal' : 'white-space:pre',
+    mobileWrap ? 'white-space:normal' : 'white-space:nowrap',
     mobileWrap ? `max-width:${motionMaxTextWidth(24)}px` : '',
     'text-align:center',
     'padding:0.1em 0.32em',
@@ -1875,6 +1876,17 @@ async function playFrame4(opts: {
   ]
     .filter(Boolean)
     .join(';')
+
+  const flipChars: HTMLElement[] = []
+  for (const char of mainText) {
+    const span = document.createElement('span')
+    span.className = 'hero-motion-char'
+    span.style.cssText =
+      'display:inline-block;white-space:pre;transform-origin:50% 50%;line-height:1;letter-spacing:normal;color:#ffffff;'
+    span.textContent = char === ' ' ? '\u00A0' : char
+    textEl.appendChild(span)
+    flipChars.push(span)
+  }
 
   box.appendChild(textEl)
   fgEl.appendChild(box)
@@ -1941,13 +1953,15 @@ async function playFrame4(opts: {
 
   box.appendChild(textEl)
   textEl.style.zIndex = '2'
-  gsap.set(textEl, { color: red, textShadow: 'none' })
+  gsap.set(flipChars, { color: red, textShadow: 'none' })
 
   const whiteCover = textEl.cloneNode(true) as HTMLElement
   whiteCover.style.zIndex = '3'
-  whiteCover.style.color = '#ffffff'
-  whiteCover.style.textShadow = 'none'
   whiteCover.style.pointerEvents = 'none'
+  whiteCover.querySelectorAll<HTMLElement>('.hero-motion-char').forEach((el) => {
+    el.style.color = '#ffffff'
+    el.style.textShadow = 'none'
+  })
   box.appendChild(whiteCover)
 
   gsap.set(fillEl, {
@@ -1982,11 +1996,9 @@ async function playFrame4(opts: {
 
   whiteCover.remove()
   fillEl.remove()
-  textEl.style.color = red
+  gsap.set(flipChars, { color: red, scaleX: 1, x: 0, y: 0, filter: 'none' })
 
-  // Split before spin so glyph layers paint while still static
-  const flipChars = renderChars(textEl, mainText)
-  gsap.set(flipChars, { color: red, display: 'inline-block' })
+  // Flip on existing glyphs — no DOM rebuild (that jerked Cyrillic)
   await spinCharsFrontal(flipChars, red, finalTextColor)
   if (cancelled()) return
 

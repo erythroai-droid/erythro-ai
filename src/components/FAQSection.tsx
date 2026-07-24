@@ -103,7 +103,7 @@ export default function FAQSection({ locale, theme = 'light' }: FAQSectionProps)
       <section
         id="faq"
         ref={sectionRef}
-        className={`relative z-10 w-full border-t border-b border-coal-400/5 select-none pointer-events-auto pt-20 pb-20 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:rounded-t-[28px] lg:flex lg:h-screen lg:flex-col lg:justify-start lg:overflow-hidden lg:border-t lg:py-0 lg:pt-20 lg:pb-10 ${
+        className={`relative z-10 w-full border-t border-b border-coal-400/5 select-none pointer-events-auto pt-20 pb-24 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:rounded-t-[28px] lg:flex lg:h-screen lg:flex-col lg:justify-start lg:overflow-hidden lg:border-t lg:py-0 lg:pt-20 lg:pb-16 ${
           isLight ? 'bg-gold-100' : 'bg-[#1a1816]'
         }`}
       >
@@ -139,8 +139,9 @@ export default function FAQSection({ locale, theme = 'light' }: FAQSectionProps)
           </div>
         </div>
 
-        {/* Accordion — scrolls inside so the heading stays put when items open */}
-        <div className="relative z-10 mx-auto flex w-full min-h-0 max-w-[1170px] flex-1 flex-col px-[30px] lg:overflow-hidden">
+        {/* Accordion — scrolls inside so the heading stays put when items open.
+            Bottom padding keeps the card drop-shadow inside overflow-hidden parents. */}
+        <div className="relative z-10 mx-auto flex w-full min-h-0 max-w-[1170px] flex-1 flex-col px-[30px] pb-12 lg:overflow-hidden lg:pb-14">
           <div
             ref={panelRef}
             className={`faq-accordion-scroll mx-auto flex w-full max-w-[970px] min-h-0 flex-col overflow-y-auto overflow-x-hidden rounded-[10px] border ${
