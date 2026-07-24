@@ -82,6 +82,28 @@ function motionMaxTextWidth(extraPad = 0): number {
   return Math.max(120, window.innerWidth - 32 - extraPad)
 }
 
+/** Desktop cinematic layer (outline + single-line lock). */
+function isMotionDesktop(): boolean {
+  return window.matchMedia('(min-width: 1024px)').matches
+}
+
+/** Headline size: mobile prefers larger type with wrapping; desktop fits one line. */
+function motionHeadlineFontPx(opts: {
+  text: string
+  basePx: number
+  maxWidth: number
+  fontFamily: string
+  fontWeight: string
+  letterSpacing: string
+  minPx?: number
+}): number {
+  if (!isMotionDesktop()) {
+    const preferred = Math.round(Math.min(window.innerWidth * 0.094, 48))
+    return Math.max(opts.minPx ?? 26, preferred)
+  }
+  return fitFontPx(opts)
+}
+
 function measurePhraseWidth(
   text: string,
   fontPx: number,
@@ -174,6 +196,23 @@ function getOutlineStrokeColor(): string {
   return computed && computed !== 'rgba(0, 0, 0, 0)' ? computed : '#6B6254'
 }
 
+/** Design-token fill: Tailwind `gold-500` (#FFE9C7). */
+function getGold500Color(): string {
+  const root = getComputedStyle(document.documentElement)
+  const fromVar =
+    root.getPropertyValue('--gold-500').trim() ||
+    root.getPropertyValue('--color-gold-500').trim()
+  if (fromVar) return fromVar
+
+  const probe = document.createElement('span')
+  probe.className = 'text-gold-500'
+  probe.style.cssText = 'position:absolute;left:-99999px;top:0;visibility:hidden'
+  document.body.appendChild(probe)
+  const computed = getComputedStyle(probe).color
+  probe.remove()
+  return computed && computed !== 'rgba(0, 0, 0, 0)' ? computed : '#FFE9C7'
+}
+
 function renderChars(host: HTMLElement, phrase: string): HTMLElement[] {
   host.replaceChildren()
   const frag = document.createDocumentFragment()
@@ -235,28 +274,49 @@ async function kineticSlamOut(chars: HTMLElement[]): Promise<void> {
 function explodeToChars(el: HTMLElement): HTMLElement[] {
   const text = el.textContent ?? ''
   if (!text) return []
-  const base = el.style.cssText
+  const cs = getComputedStyle(el)
+  // Only copy type styles — never parent padding/position (causes letter gaps + jerk)
+  const charCss = [
+    `font-family:${cs.fontFamily}`,
+    `font-weight:${cs.fontWeight}`,
+    `font-size:${cs.fontSize}`,
+    `letter-spacing:${cs.letterSpacing}`,
+    'text-transform:uppercase',
+    `color:${cs.color}`,
+    'display:inline-block',
+    'transform-origin:50% 50%',
+    'line-height:1',
+    'white-space:pre',
+    'padding:0',
+    'margin:0',
+    'position:static',
+  ].join(';')
   el.textContent = ''
+  el.style.padding = '0'
   const chars: HTMLElement[] = []
   for (const char of text) {
     const span = document.createElement('span')
     span.className = 'hero-motion-char'
-    span.style.cssText = [
-      base,
-      'display:inline-block',
-      'transform-origin:50% 50%',
-      'white-space:pre',
-      'position:static',
-      'left:auto',
-      'top:auto',
-      'width:auto',
-      'height:auto',
-    ].join(';')
+    span.style.cssText = charCss
     span.textContent = char === ' ' ? '\u00A0' : char
     el.appendChild(span)
     chars.push(span)
   }
   return chars
+}
+
+/** Soft blur exit for a whole phrase (no skew / sideways slam). */
+async function exitPhraseBlur(chars: HTMLElement[]): Promise<void> {
+  if (!chars.length) return
+  gsap.set(chars, { force3D: false, x: 0, y: 0, skewX: 0 })
+  await tweenTo(chars, {
+    opacity: 0,
+    filter: 'blur(14px)',
+    duration: 0.42,
+    stagger: { each: 0.01, from: 'center' },
+    ease: 'power2.in',
+    force3D: false,
+  })
 }
 
 /** Blur exit for a solid block (red plate) — avoids clipping inside overflow:hidden. */
@@ -275,7 +335,7 @@ async function exitBlockBlur(el: HTMLElement, dir: 1 | -1 = 1): Promise<void> {
  * Frame 1:
  * 1) Huge FG (~144vh) appears instantly (no entrance tween), above all layers
  * 2) Smooth settle into normal slot size/position (no overshoot)
- * 3) After FG has settled — outline BG slides in from the left
+ * 3) After FG has settled — outline words fly in (1st from left, 2nd from right)
  * 4) Hold
  * 5) Outline exits to the right; FG exits as current slam-out
  */
@@ -304,6 +364,7 @@ async function playFrame1(opts: {
   } = opts
   const mainText = phrase.text
   const outlineText = phrase.outline || phrase.text
+  const { left: outlineLeft, right: outlineRight } = splitTwoPartPhrase(outlineText)
 
   const slotRect = slotEl.getBoundingClientRect()
   const slotStyles = getComputedStyle(slotEl)
@@ -316,7 +377,7 @@ async function playFrame1(opts: {
   const fontFamily = headingStyles.fontFamily || slotStyles.fontFamily
   const fontWeight = headingStyles.fontWeight || slotStyles.fontWeight
   const letterSpacing = headingStyles.letterSpacing || slotStyles.letterSpacing
-  const normalFontPx = fitFontPx({
+  const normalFontPx = motionHeadlineFontPx({
     text: mainText,
     basePx: baseFontPx,
     maxWidth: motionMaxTextWidth(),
@@ -324,10 +385,11 @@ async function playFrame1(opts: {
     fontWeight,
     letterSpacing,
   })
-  // 4× original huge size (~36vh → ~144vh)
-  const hugeFontPx = Math.round(window.innerHeight * 1.44)
+  // 4× original huge size (~36vh → ~144vh); softer on mobile
+  const hugeFontPx = Math.round(window.innerHeight * (isMotionDesktop() ? 1.44 : 0.55))
   const textColor = getComputedStyle(slotEl.parentElement ?? slotEl).color || '#FFE9C7'
   const outlineStroke = getOutlineStrokeColor()
+  const showOutline = isMotionDesktop()
 
   const applyStageFade = () => {
     const fade = getScrollFade()
@@ -349,168 +411,113 @@ async function playFrame1(opts: {
   const targetX = slotRect.left + slotRect.width / 2 - window.innerWidth / 2
   const targetY = slotRect.top + slotRect.height / 2 - window.innerHeight / 2
 
-  // --- Prep outline BEFORE settle ---
-  // Stroke + SVG mask punch: outer ring only (no fill, no crossings inside R).
-  // Previous mask clipped to a strip because <mask> x/y/width/height were unset
-  // (defaults to a bad objectBoundingBox). Set the mask region explicitly.
+  // --- Prep outline: two word hosts (fly in from opposite sides); desktop only ---
   outlineEl.replaceChildren()
+  let leftHost: HTMLElement | null = null
+  let rightHost: HTMLElement | null = null
+  let fromX = 0
 
-  const padX = window.innerWidth * 0.04
-  const padY = window.innerHeight * 0.06
-  const slotCenterY = slotRect.top + slotRect.height / 2
-  // Fit primarily to screen width; height limited by space around the headline.
-  const maxOutlineW = window.innerWidth - padX * 2
-  const maxOutlineH =
-    2 * Math.max(40, Math.min(slotCenterY - padY, window.innerHeight - slotCenterY - padY))
+  if (showOutline) {
+    const padX = window.innerWidth * 0.04
+    const padY = window.innerHeight * 0.06
+    const slotCenterY = slotRect.top + slotRect.height / 2
+    const maxOutlineW = window.innerWidth - padX * 2
+    const maxOutlineH =
+      2 * Math.max(40, Math.min(slotCenterY - padY, window.innerHeight - slotCenterY - padY))
+    const outlineRow = document.createElement('div')
+    outlineRow.style.cssText =
+      'display:inline-flex;align-items:baseline;justify-content:center;gap:0.28em;white-space:nowrap;line-height:normal;'
 
-  const svgNS = 'http://www.w3.org/2000/svg'
-  const svg = document.createElementNS(svgNS, 'svg')
-  svg.setAttribute('overflow', 'visible')
-  svg.style.cssText = 'display:block;overflow:visible;max-width:none;'
+    leftHost = document.createElement('div')
+    leftHost.style.cssText = 'flex:0 0 auto;overflow:visible;'
+    outlineRow.appendChild(leftHost)
 
-  const maskId = `hero-ol-mask-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+    rightHost = document.createElement('div')
+    rightHost.style.cssText = 'flex:0 0 auto;overflow:visible;'
+    if (outlineRight) outlineRow.appendChild(rightHost)
 
-  const fontCss = (fontPx: number) =>
-    [
-      `font-family:${fontFamily}`,
-      `font-weight:${fontWeight}`,
-      `font-size:${fontPx}px`,
-      `letter-spacing:${letterSpacing}`,
-      'text-transform:uppercase',
-      'white-space:pre',
-    ].join(';')
+    outlineEl.appendChild(outlineRow)
 
-  const makeText = (fontPx: number, opts: { fill: string; stroke?: string; strokeW?: number }) => {
-    const t = document.createElementNS(svgNS, 'text')
-    t.setAttribute('x', '0')
-    t.setAttribute('y', '0')
-    t.setAttribute('dominant-baseline', 'alphabetic')
-    t.setAttribute('fill', opts.fill)
-    if (opts.stroke) {
-      t.setAttribute('stroke', opts.stroke)
-      t.setAttribute('stroke-width', String(opts.strokeW ?? 0))
-      t.setAttribute('stroke-linejoin', 'round')
-      t.setAttribute('stroke-linecap', 'round')
-    } else {
-      t.setAttribute('stroke', 'none')
+    const probeHost = document.createElement('div')
+    probeHost.style.cssText =
+      'position:absolute;left:0;top:0;opacity:0;pointer-events:none;z-index:-1;'
+    outlineEl.appendChild(probeHost)
+    const { fontPx: sharedOutlineFontPx } = buildMaskedOutline({
+      host: probeHost,
+      text: outlineText,
+      fontFamily,
+      fontWeight,
+      letterSpacing,
+      outlineStroke,
+      maxW: maxOutlineW,
+      maxH: maxOutlineH,
+      asLetters: false,
+    })
+    probeHost.remove()
+
+    buildMaskedOutline({
+      host: leftHost,
+      text: outlineLeft || outlineText,
+      fontFamily,
+      fontWeight,
+      letterSpacing,
+      outlineStroke,
+      maxW: maxOutlineW,
+      maxH: maxOutlineH,
+      asLetters: false,
+      fontPx: sharedOutlineFontPx,
+    })
+    if (outlineRight) {
+      buildMaskedOutline({
+        host: rightHost,
+        text: outlineRight,
+        fontFamily,
+        fontWeight,
+        letterSpacing,
+        outlineStroke,
+        maxW: maxOutlineW,
+        maxH: maxOutlineH,
+        asLetters: false,
+        fontPx: sharedOutlineFontPx,
+      })
     }
-    t.style.cssText = fontCss(fontPx)
-    t.textContent = outlineText
-    return t
-  }
 
-  // Size to fill screen width, then shrink only if height would clip.
-  let outlineFontPx = Math.min(Math.round(maxOutlineW * 0.11), 640)
-  let strokeW = Math.max(2, outlineFontPx * 0.016)
+    gsap.set(outlineEl, {
+      left: '50%',
+      top: '50%',
+      xPercent: -50,
+      yPercent: -50,
+      x: targetX,
+      y: targetY,
+      scale: 1,
+      opacity: 1,
+      zIndex: 1,
+      overflow: 'visible',
+      lineHeight: 'normal',
+      color: 'transparent',
+      WebkitTextStroke: '0 transparent',
+      textShadow: 'none',
+    })
 
-  const strokeText = makeText(outlineFontPx, {
-    fill: 'none',
-    stroke: outlineStroke,
-    strokeW,
-  })
-  svg.appendChild(strokeText)
-  outlineEl.appendChild(svg)
-
-  let bbox = { x: 0, y: 0, width: 1, height: 1 }
-  for (let i = 0; i < 48; i++) {
-    strokeW = Math.max(2, outlineFontPx * 0.016)
-    strokeText.style.fontSize = `${outlineFontPx}px`
-    strokeText.setAttribute('stroke-width', String(strokeW))
-    try {
-      bbox = strokeText.getBBox()
-      const inkW = bbox.width + strokeW
-      const inkH = bbox.height + strokeW
-      const scaleW = maxOutlineW / Math.max(inkW, 1)
-      const scaleH = maxOutlineH / Math.max(inkH, 1)
-      const next = outlineFontPx * Math.min(scaleW, scaleH) * 0.98
-      if (Math.abs(next - outlineFontPx) < 1) {
-        outlineFontPx = Math.max(24, Math.floor(next))
-        break
+    let outlineScale = 1
+    {
+      const rect = outlineEl.getBoundingClientRect()
+      if (rect.width > 0 && rect.height > 0) {
+        const fitW = (window.innerWidth - padX * 2) / rect.width
+        const fitH = (window.innerHeight - padY * 2) / rect.height
+        outlineScale = Math.min(1, fitW, fitH)
+        gsap.set(outlineEl, { scale: outlineScale })
       }
-      outlineFontPx = Math.max(24, Math.floor(next))
-    } catch {
-      break
     }
-  }
-  strokeW = Math.max(2, outlineFontPx * 0.016)
-  strokeText.style.fontSize = `${outlineFontPx}px`
-  strokeText.setAttribute('stroke-width', String(strokeW))
-  try {
-    bbox = strokeText.getBBox()
-  } catch {
-    // keep last bbox
-  }
 
-  const pad = strokeW + 24
-  const vbX = bbox.x - pad
-  const vbY = bbox.y - pad
-  const vbW = bbox.width + pad * 2
-  const vbH = bbox.height + pad * 2
-
-  const defs = document.createElementNS(svgNS, 'defs')
-  const mask = document.createElementNS(svgNS, 'mask')
-  mask.setAttribute('id', maskId)
-  mask.setAttribute('maskUnits', 'userSpaceOnUse')
-  mask.setAttribute('maskContentUnits', 'userSpaceOnUse')
-  // Explicit region — never rely on objectBoundingBox defaults (they cropped us).
-  mask.setAttribute('x', String(vbX))
-  mask.setAttribute('y', String(vbY))
-  mask.setAttribute('width', String(vbW))
-  mask.setAttribute('height', String(vbH))
-  mask.setAttribute('style', 'mask-type:luminance')
-
-  const maskBg = document.createElementNS(svgNS, 'rect')
-  maskBg.setAttribute('x', String(vbX))
-  maskBg.setAttribute('y', String(vbY))
-  maskBg.setAttribute('width', String(vbW))
-  maskBg.setAttribute('height', String(vbH))
-  maskBg.setAttribute('fill', '#ffffff')
-
-  const maskPunch = makeText(outlineFontPx, { fill: '#000000' })
-  mask.appendChild(maskBg)
-  mask.appendChild(maskPunch)
-  defs.appendChild(mask)
-  svg.insertBefore(defs, strokeText)
-
-  strokeText.setAttribute('mask', `url(#${maskId})`)
-
-  svg.setAttribute('width', String(Math.ceil(vbW)))
-  svg.setAttribute('height', String(Math.ceil(vbH)))
-  svg.setAttribute('viewBox', `${vbX} ${vbY} ${vbW} ${vbH}`)
-
-  gsap.set(outlineEl, {
-    left: '50%',
-    top: '50%',
-    xPercent: -50,
-    yPercent: -50,
-    x: -window.innerWidth * 1.15,
-    y: targetY,
-    scale: 1,
-    opacity: 1,
-    zIndex: 1,
-    overflow: 'visible',
-    lineHeight: 'normal',
-    color: 'transparent',
-    WebkitTextStroke: '0 transparent',
-    textShadow: 'none',
-  })
-
-  // Fit to viewport width (and height) at the headline position.
-  {
-    gsap.set(outlineEl, { x: targetX, y: targetY })
-    const rect = outlineEl.getBoundingClientRect()
-    if (rect.width > 0 && rect.height > 0) {
-      const fitW = (window.innerWidth - padX * 2) / rect.width
-      const fitH = (window.innerHeight - padY * 2) / rect.height
-      // Prefer width fit; never upscale past 1, never exceed height either.
-      const next = Math.min(1, fitW, fitH)
-      gsap.set(outlineEl, { scale: next })
-    }
-    gsap.set(outlineEl, { x: -window.innerWidth * 1.15, y: targetY })
+    fromX = window.innerWidth * 1.2 / Math.max(outlineScale, 0.01)
+    gsap.set(leftHost, { x: -fromX, y: 0, opacity: 1 })
+    if (outlineRight) gsap.set(rightHost, { x: fromX, y: 0, opacity: 1 })
   }
 
   // --- Foreground: instantly huge & centered, then settle via fontSize (not scale)
   // so glyphs stay sharp — transform scale on huge type causes jagged edges.
+  const mobileWrap = !isMotionDesktop()
   fgEl.textContent = ''
   gsap.set(fgEl, {
     fontSize: hugeFontPx,
@@ -532,6 +539,9 @@ async function playFrame1(opts: {
     opacity: 1,
     zIndex: 2,
     force3D: false,
+    whiteSpace: mobileWrap ? 'normal' : 'nowrap',
+    textAlign: 'center',
+    maxWidth: mobileWrap ? motionMaxTextWidth() : 'none',
   })
   const fgChars = renderChars(fgEl, mainText)
   gsap.set(fgChars, {
@@ -559,14 +569,16 @@ async function playFrame1(opts: {
   if (cancelled()) return
   fgEl.style.fontSize = `${normalFontPx}px`
 
-  // 2) Only then: outline slides in from the left
-  await tweenTo(outlineEl, {
-    x: targetX,
-    y: targetY,
-    duration: 0.85,
-    ease: 'power3.out',
-  })
-  if (cancelled()) return
+  // 2) Outline words: first from left, second from right (desktop)
+  if (showOutline && leftHost) {
+    await Promise.all([
+      tweenTo(leftHost, { x: 0, duration: 0.85, ease: 'power3.out' }),
+      outlineRight && rightHost
+        ? tweenTo(rightHost, { x: 0, duration: 0.85, ease: 'power3.out' })
+        : Promise.resolve(),
+    ])
+    if (cancelled()) return
+  }
 
   // Sync inline text to match settled FG, then keep FG visible until exit
   inlineEl.replaceChildren()
@@ -577,22 +589,22 @@ async function playFrame1(opts: {
   await wait(1.7, delayed)
   if (cancelled()) return
 
-  // Outline exits opposite (right); FG exits as current
+  // Outline words exit back to their sides; FG exits as slam-out
   const liveFgChars = Array.from(fgEl.querySelectorAll<HTMLElement>('.hero-motion-char'))
   await Promise.all([
-    tweenTo(outlineEl, {
-      x: window.innerWidth * 1.15,
-      y: targetY,
-      duration: 0.55,
-      ease: 'power3.in',
-    }),
+    showOutline && leftHost
+      ? tweenTo(leftHost, { x: -fromX, duration: 0.55, ease: 'power3.in' })
+      : Promise.resolve(),
+    showOutline && outlineRight && rightHost
+      ? tweenTo(rightHost, { x: fromX, duration: 0.55, ease: 'power3.in' })
+      : Promise.resolve(),
     kineticSlamOut(liveFgChars.length ? liveFgChars : inlineChars),
   ])
   if (cancelled()) return
 
   gsap.set(inlineEl, { opacity: 0 })
   stageEl.style.display = 'none'
-  gsap.set(fgEl, { scale: 1, x: 0, y: 0, opacity: 1 })
+  gsap.set(fgEl, { scale: 1, x: 0, y: 0, opacity: 1, maxWidth: '', whiteSpace: '' })
   gsap.set(outlineEl, { scale: 1, x: 0, y: 0, opacity: 1 })
   fgEl.replaceChildren()
   outlineEl.replaceChildren()
@@ -617,7 +629,9 @@ function buildMaskedOutline(opts: {
   maxH: number
   /** Split into tspans for letter-by-letter reveals */
   asLetters?: boolean
-}): { letterEls: SVGTSpanElement[] } {
+  /** Lock font size (same size for multi-word outlines). */
+  fontPx?: number
+}): { letterEls: SVGTSpanElement[]; fontPx: number } {
   const {
     host,
     text,
@@ -628,6 +642,7 @@ function buildMaskedOutline(opts: {
     maxW,
     maxH,
     asLetters = false,
+    fontPx: lockedFontPx,
   } = opts
 
   host.replaceChildren()
@@ -665,7 +680,7 @@ function buildMaskedOutline(opts: {
     return t
   }
 
-  let outlineFontPx = Math.min(Math.round(maxW * 0.11), 640)
+  let outlineFontPx = lockedFontPx ?? Math.min(Math.round(maxW * 0.11), 640)
   let strokeW = Math.max(2, outlineFontPx * 0.016)
 
   const strokeText = makeTextEl(outlineFontPx, 'none', true, strokeW)
@@ -684,24 +699,26 @@ function buildMaskedOutline(opts: {
   host.appendChild(svg)
 
   let bbox = { x: 0, y: 0, width: 1, height: 1 }
-  for (let i = 0; i < 48; i++) {
-    strokeW = Math.max(2, outlineFontPx * 0.016)
-    strokeText.style.fontSize = `${outlineFontPx}px`
-    strokeText.setAttribute('stroke-width', String(strokeW))
-    try {
-      bbox = strokeText.getBBox()
-      const inkW = bbox.width + strokeW
-      const inkH = bbox.height + strokeW
-      const scaleW = maxW / Math.max(inkW, 1)
-      const scaleH = maxH / Math.max(inkH, 1)
-      const next = outlineFontPx * Math.min(scaleW, scaleH) * 0.98
-      if (Math.abs(next - outlineFontPx) < 1) {
+  if (lockedFontPx == null) {
+    for (let i = 0; i < 48; i++) {
+      strokeW = Math.max(2, outlineFontPx * 0.016)
+      strokeText.style.fontSize = `${outlineFontPx}px`
+      strokeText.setAttribute('stroke-width', String(strokeW))
+      try {
+        bbox = strokeText.getBBox()
+        const inkW = bbox.width + strokeW
+        const inkH = bbox.height + strokeW
+        const scaleW = maxW / Math.max(inkW, 1)
+        const scaleH = maxH / Math.max(inkH, 1)
+        const next = outlineFontPx * Math.min(scaleW, scaleH) * 0.98
+        if (Math.abs(next - outlineFontPx) < 1) {
+          outlineFontPx = Math.max(24, Math.floor(next))
+          break
+        }
         outlineFontPx = Math.max(24, Math.floor(next))
+      } catch {
         break
       }
-      outlineFontPx = Math.max(24, Math.floor(next))
-    } catch {
-      break
     }
   }
   strokeW = Math.max(2, outlineFontPx * 0.016)
@@ -749,7 +766,7 @@ function buildMaskedOutline(opts: {
   svg.setAttribute('height', String(Math.ceil(vbH)))
   svg.setAttribute('viewBox', `${vbX} ${vbY} ${vbW} ${vbH}`)
 
-  return { letterEls }
+  return { letterEls, fontPx: outlineFontPx }
 }
 
 /**
@@ -757,8 +774,10 @@ function buildMaskedOutline(opts: {
  * 1) Left word grows in at centre, then the row shifts as the right side opens
  * 2) 2px red line grows to word height, then expands right into a red plate;
  *    white right-word appears on the plate
- * 3) Background outline reveals letter-by-letter from the centre
- * 4) Hold → exit
+ * 3) Plate folds right; second word fills red top → bottom in sync; then its
+ *    letters spin in the frontal plane → gold-500. First word stays put.
+ * 4) Background outline fades in
+ * 5) Hold → exit
  */
 async function playFrame2(opts: {
   phrase: MotionPhrase
@@ -793,7 +812,7 @@ async function playFrame2(opts: {
   const fontFamily = headingStyles.fontFamily
   const fontWeight = headingStyles.fontWeight
   const letterSpacing = headingStyles.letterSpacing
-  const fontPx = fitFontPx({
+  const fontPx = motionHeadlineFontPx({
     text: phrase.text,
     basePx: baseFontPx,
     maxWidth: motionMaxTextWidth(8),
@@ -805,6 +824,9 @@ async function playFrame2(opts: {
   const outlineStroke = getOutlineStrokeColor()
   const red =
     getComputedStyle(document.documentElement).getPropertyValue('--erythro-500').trim() || '#E52421'
+  const finalTextColor = getGold500Color()
+  const showOutline = isMotionDesktop()
+  const mobileWrap = !showOutline
 
   const applyStageFade = () => {
     const fade = getScrollFade()
@@ -865,103 +887,109 @@ async function playFrame2(opts: {
   const posX = liveSlot.left + liveSlot.width / 2 - window.innerWidth / 2
   const posY = liveSlot.top + liveSlot.height / 2 - window.innerHeight / 2
 
-  // --- Foreground: AI + red plate + AUTOMATION ---
+  // --- Foreground: AI + (red plate behind second word) ---
   const row = document.createElement('div')
-  row.style.cssText =
-    'display:inline-flex;align-items:stretch;justify-content:center;gap:0.18em;white-space:nowrap;line-height:1;'
+  row.style.cssText = mobileWrap
+    ? `display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0.18em 0.28em;max-width:${motionMaxTextWidth()}px;white-space:normal;line-height:1.12;text-align:center;`
+    : 'display:inline-flex;align-items:stretch;justify-content:center;gap:0.18em;white-space:nowrap;line-height:1;'
+
+  const wordStyle = (color: string, extra = '') =>
+    [
+      `font-family:${fontFamily}`,
+      `font-weight:${fontWeight}`,
+      `font-size:${fontPx}px`,
+      `letter-spacing:${letterSpacing}`,
+      'text-transform:uppercase',
+      `color:${color}`,
+      'display:inline-block',
+      'transform-origin:50% 50%',
+      'line-height:1',
+      'white-space:pre',
+      extra,
+    ]
+      .filter(Boolean)
+      .join(';')
 
   const aiEl = document.createElement('span')
   aiEl.textContent = aiText
-  aiEl.style.cssText = [
-    `font-family:${fontFamily}`,
-    `font-weight:${fontWeight}`,
-    `font-size:${fontPx}px`,
-    `letter-spacing:${letterSpacing}`,
-    'text-transform:uppercase',
-    `color:${textColor}`,
-    'display:inline-block',
-    'transform-origin:50% 50%',
-    'line-height:1',
-    'padding:0.08em 0',
-  ].join(';')
+  aiEl.style.cssText = wordStyle(textColor, 'padding:0.08em 0')
+
+  const plateWrap = document.createElement('span')
+  plateWrap.style.cssText =
+    'position:relative;display:inline-flex;align-items:center;flex:0 0 auto;line-height:1;overflow:visible;'
 
   const barEl = document.createElement('span')
   barEl.style.cssText = [
     `background:${red}`,
-    'display:inline-flex',
-    'align-items:center',
-    'justify-content:center',
-    'overflow:hidden',
-    'flex:0 0 auto',
+    'position:absolute',
+    'left:0',
+    'top:0',
+    'z-index:0',
     'box-sizing:border-box',
+    'pointer-events:none',
     'transform-origin:left center',
   ].join(';')
 
   const autoEl = document.createElement('span')
   autoEl.textContent = autoText
-  autoEl.style.cssText = [
-    `font-family:${fontFamily}`,
-    `font-weight:${fontWeight}`,
-    `font-size:${fontPx}px`,
-    `letter-spacing:${letterSpacing}`,
-    'text-transform:uppercase',
-    'color:#ffffff',
-    'display:inline-block',
-    'line-height:1',
-    'padding:0.08em 0.28em',
-    'white-space:pre',
-  ].join(';')
+  autoEl.style.cssText = wordStyle('#ffffff', 'position:relative;z-index:1;padding:0.08em 0.28em')
 
-  barEl.appendChild(autoEl)
+  plateWrap.appendChild(barEl)
+  plateWrap.appendChild(autoEl)
   row.appendChild(aiEl)
-  if (autoText) row.appendChild(barEl)
+  if (autoText) row.appendChild(plateWrap)
   fgEl.appendChild(row)
 
   gsap.set(fgEl, { x: posX, y: posY, scale: 1, opacity: 1 })
 
   gsap.set(aiEl, { scale: 1, opacity: 1 })
-  gsap.set(barEl, { width: 'auto', height: 'auto', opacity: 1 })
   gsap.set(autoEl, { opacity: 1 })
   const aiH = Math.max(aiEl.getBoundingClientRect().height, fontPx)
-  const autoW = autoEl.getBoundingClientRect().width
-  const barTargetW = Math.max(autoW, 8)
-  const barTargetH = aiH
+  const plateBox = plateWrap.getBoundingClientRect()
+  const barTargetW = Math.max(plateBox.width, 8)
+  const barTargetH = Math.max(plateBox.height, aiH)
 
+  gsap.set(plateWrap, { width: barTargetW, height: barTargetH })
   gsap.set(aiEl, { scale: 0, opacity: 1 })
-  gsap.set(barEl, { width: 2, height: 0, opacity: 1 })
+  gsap.set(barEl, { width: 2, height: 0, opacity: 1, left: 0, right: 'auto', x: 0 })
   gsap.set(autoEl, { opacity: 0 })
 
-  // --- Outline: identical continuous masked stroke to Frame 1 ---
-  const padX = window.innerWidth * 0.04
-  const padY = window.innerHeight * 0.06
-  const slotCenterY = liveSlot.top + liveSlot.height / 2
-  const maxOutlineW = window.innerWidth - padX * 2
-  const maxOutlineH =
-    2 * Math.max(40, Math.min(slotCenterY - padY, window.innerHeight - slotCenterY - padY))
+  // --- Outline (desktop only) ---
+  if (showOutline) {
+    const padX = window.innerWidth * 0.04
+    const padY = window.innerHeight * 0.06
+    const slotCenterY = liveSlot.top + liveSlot.height / 2
+    const maxOutlineW = window.innerWidth - padX * 2
+    const maxOutlineH =
+      2 * Math.max(40, Math.min(slotCenterY - padY, window.innerHeight - slotCenterY - padY))
 
-  buildMaskedOutline({
-    host: outlineEl,
-    text: outlineText,
-    fontFamily,
-    fontWeight,
-    letterSpacing,
-    outlineStroke,
-    maxW: maxOutlineW,
-    maxH: maxOutlineH,
-    asLetters: false,
-  })
+    buildMaskedOutline({
+      host: outlineEl,
+      text: outlineText,
+      fontFamily,
+      fontWeight,
+      letterSpacing,
+      outlineStroke,
+      maxW: maxOutlineW,
+      maxH: maxOutlineH,
+      asLetters: false,
+    })
 
-  gsap.set(outlineEl, {
-    x: posX,
-    y: posY,
-    scale: 0.92,
-    opacity: 0,
-    zIndex: 1,
-    overflow: 'visible',
-    color: 'transparent',
-    WebkitTextStroke: '0 transparent',
-    textShadow: 'none',
-  })
+    gsap.set(outlineEl, {
+      x: posX,
+      y: posY,
+      scale: 0.92,
+      opacity: 0,
+      zIndex: 1,
+      overflow: 'visible',
+      color: 'transparent',
+      WebkitTextStroke: '0 transparent',
+      textShadow: 'none',
+    })
+  } else {
+    outlineEl.replaceChildren()
+    gsap.set(outlineEl, { opacity: 0 })
+  }
 
   await tweenTo(aiEl, { scale: 1, duration: 0.55, ease: 'power3.out' })
   if (cancelled()) return
@@ -975,32 +1003,104 @@ async function playFrame2(opts: {
       tweenTo(autoEl, { opacity: 1, duration: 0.4, delay: 0.18, ease: 'power2.out' }),
     ])
     if (cancelled()) return
+
+    // Plate folds right; second word fills red top → bottom (AI stays put).
+    // Base turns red first; white cover retracts — avoids white AA fringe on red glyphs.
+    await wait(0.35, delayed)
+    if (cancelled()) return
+
+    autoEl.style.color = red
+    const whiteCover = document.createElement('span')
+    whiteCover.textContent = autoText
+    whiteCover.style.cssText = wordStyle(
+      '#ffffff',
+      'position:absolute;left:0;top:0;z-index:2;padding:0.08em 0.28em;pointer-events:none;',
+    )
+    plateWrap.appendChild(whiteCover)
+    gsap.set(whiteCover, { clipPath: 'inset(0% 0 0% 0)' })
+
+    gsap.set(barEl, { left: 'auto', right: 0, width: barTargetW, x: 0, force3D: false })
+    await Promise.all([
+      tweenTo(barEl, {
+        width: 2,
+        duration: 0.5,
+        ease: 'power3.inOut',
+        force3D: false,
+      }),
+      tweenTo(whiteCover, {
+        clipPath: 'inset(100% 0 0% 0)',
+        duration: 0.2,
+        ease: 'power3.inOut',
+        force3D: false,
+      }),
+    ])
+    if (cancelled()) return
+
+    whiteCover.remove()
+    await tweenTo(barEl, { opacity: 0, duration: 0.15, ease: 'power1.in' })
+    if (cancelled()) return
+    barEl.remove()
+
+    // Only AUTOMATION letters spin → gold-500; AI untouched
+    autoEl.textContent = ''
+    const flipChars: HTMLElement[] = []
+    for (const char of autoText) {
+      const span = document.createElement('span')
+      span.className = 'hero-motion-char'
+      span.style.cssText =
+        'display:inline-block;white-space:pre;transform-origin:50% 50%;line-height:1;backface-visibility:hidden;'
+      span.style.color = red
+      span.textContent = char === ' ' ? '\u00A0' : char
+      autoEl.appendChild(span)
+      flipChars.push(span)
+    }
+
+    gsap.set(flipChars, {
+      rotation: 0,
+      transformOrigin: '50% 50%',
+      force3D: false,
+    })
+
+    await tweenTo(flipChars, {
+      rotation: 360,
+      color: finalTextColor,
+      duration: 0.35,
+      stagger: 0.028,
+      ease: 'power2.inOut',
+      force3D: false,
+    })
+    if (cancelled()) return
+
+    gsap.set(flipChars, { rotation: 0, color: finalTextColor })
   }
 
-  await tweenTo(outlineEl, { opacity: 1, scale: 1, duration: 0.7, ease: 'power3.out' })
-  if (cancelled()) return
+  if (showOutline) {
+    await tweenTo(outlineEl, {
+      opacity: 1,
+      scale: 1,
+      duration: 1.15,
+      ease: 'sine.out',
+    })
+    if (cancelled()) return
+  }
 
   inlineEl.replaceChildren()
   const inlineChars = renderChars(inlineEl, phrase.text)
   gsap.set(inlineChars, { opacity: 1, x: 0, y: 0, scale: 1, skewX: 0, filter: 'none' })
 
-  await wait(1.7, delayed)
+  // Full phrase holds without the plate, then exits with blur (no glyph split — avoids pre-exit jerk)
+  await wait(1.5, delayed)
   if (cancelled()) return
 
-  // Exit as one stable row — per-char skew/blur was yanking AI (and the plate) vertically
-  const rowBox = row.getBoundingClientRect()
-  gsap.set(row, {
-    width: rowBox.width,
-    height: rowBox.height,
-    y: 0,
-    force3D: false,
-  })
-
+  gsap.set(row, { force3D: false, x: 0, y: 0, skewX: 0 })
   await Promise.all([
-    tweenTo(outlineEl, { opacity: 0, scale: 1.04, duration: 0.45, ease: 'power2.in' }),
+    showOutline
+      ? tweenTo(outlineEl, { opacity: 0, scale: 1.04, duration: 0.45, ease: 'power2.in' })
+      : Promise.resolve(),
     tweenTo(row, {
       opacity: 0,
-      duration: 0.4,
+      filter: 'blur(14px)',
+      duration: 0.42,
       ease: 'power2.in',
       force3D: false,
     }),
@@ -1020,8 +1120,9 @@ async function playFrame2(opts: {
  * Frame 3 — "SCALABLE SYSTEMS" (first word + rest):
  * 1) First letter flies in from afar, settles, then slides left into its final
  *    slot in the centred phrase; rest of first word wipes in to the right
- * 2) Second word rises in letter-by-letter from below (stagger cascade)
- * 3) Background outline slides in from the right
+ * 2) Second word rises as a bottom→top wipe (single growth reveal)
+ * 3) Background outline: first word from the right, second from the left
+ *    (mirror of Frame 1)
  * 4) Hold → exit
  */
 async function playFrame3(opts: {
@@ -1057,7 +1158,7 @@ async function playFrame3(opts: {
   const fontFamily = headingStyles.fontFamily
   const fontWeight = headingStyles.fontWeight
   const letterSpacing = headingStyles.letterSpacing
-  const fontPx = fitFontPx({
+  const fontPx = motionHeadlineFontPx({
     text: phrase.text,
     basePx: baseFontPx,
     maxWidth: motionMaxTextWidth(),
@@ -1067,6 +1168,8 @@ async function playFrame3(opts: {
   })
   const textColor = getComputedStyle(headingEl).color || '#FFE9C7'
   const outlineStroke = getOutlineStrokeColor()
+  const showOutline = isMotionDesktop()
+  const mobileWrap = !showOutline
 
   const applyStageFade = () => {
     const fade = getScrollFade()
@@ -1112,7 +1215,7 @@ async function playFrame3(opts: {
     fontFamily,
     fontWeight,
     letterSpacing,
-    lineHeight: 1,
+    lineHeight: mobileWrap ? 1.12 : 1,
     width: 'auto',
     height: 'auto',
     scale: 1,
@@ -1127,6 +1230,9 @@ async function playFrame3(opts: {
     top: '50%',
     opacity: 1,
     zIndex: 2,
+    maxWidth: mobileWrap ? motionMaxTextWidth() : 'none',
+    whiteSpace: mobileWrap ? 'normal' : 'nowrap',
+    textAlign: 'center',
   })
   gsap.set(outlineEl, {
     fontSize: '',
@@ -1138,7 +1244,7 @@ async function playFrame3(opts: {
     yPercent: -50,
     left: '50%',
     top: '50%',
-    opacity: 1,
+    opacity: showOutline ? 1 : 0,
     zIndex: 1,
   })
 
@@ -1147,8 +1253,9 @@ async function playFrame3(opts: {
   const posY = liveSlot.top + liveSlot.height / 2 - window.innerHeight / 2
 
   const row = document.createElement('div')
-  row.style.cssText =
-    'display:inline-flex;align-items:baseline;justify-content:flex-start;white-space:nowrap;line-height:1;'
+  row.style.cssText = mobileWrap
+    ? `display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;max-width:${motionMaxTextWidth()}px;white-space:normal;line-height:1.12;text-align:center;gap:0 0.25em;`
+    : 'display:inline-flex;align-items:baseline;justify-content:flex-start;white-space:nowrap;line-height:1;'
 
   const word1El = document.createElement('span')
   word1El.style.cssText = 'display:inline-flex;align-items:baseline;line-height:1;'
@@ -1261,82 +1368,151 @@ async function playFrame3(opts: {
   }
   if (cancelled()) return
 
-  // Second word: cascade up from below (already in the reserved right side of the line)
+  // Second word: rises as a single bottom→top wipe (growth reveal)
   if (secondWord) {
     row.appendChild(gapEl)
     row.appendChild(word2El)
 
+    const riseHost = document.createElement('span')
+    riseHost.style.cssText =
+      'display:inline-block;overflow:hidden;vertical-align:baseline;white-space:nowrap;line-height:1;'
+    const riseInner = document.createElement('span')
+    riseInner.style.cssText = 'display:inline-flex;align-items:baseline;line-height:1;'
+
     const secondChars = secondWord.split('').map((char) => {
       const el = makeChar(char)
-      word2El.appendChild(el)
+      riseInner.appendChild(el)
       return el
     })
-    gsap.set(secondChars, { opacity: 0, y: 40 })
+    gsap.set(secondChars, { opacity: 1, y: 0, x: 0, scale: 1 })
+    riseHost.appendChild(riseInner)
+    word2El.appendChild(riseHost)
 
-    await tweenTo(secondChars, {
-      opacity: 1,
-      y: 0,
-      duration: 0.5,
-      stagger: 0.045,
-      ease: 'power3.out',
+    gsap.set(riseHost, { clipPath: 'inset(100% 0 0 0)' })
+    await tweenTo(riseHost, {
+      clipPath: 'inset(0% 0 0 0)',
+      duration: 0.7,
+      ease: 'power2.out',
       force3D: false,
     })
+    if (cancelled()) return
+    gsap.set(riseHost, { overflow: 'visible', clipPath: 'none' })
   }
   if (cancelled()) return
 
-  // 3) Outline slides in from the right
-  const padX = window.innerWidth * 0.04
-  const padY = window.innerHeight * 0.06
-  const slotCenterY = liveSlot.top + liveSlot.height / 2
-  const maxOutlineW = window.innerWidth - padX * 2
-  const maxOutlineH =
-    2 * Math.max(40, Math.min(slotCenterY - padY, window.innerHeight - slotCenterY - padY))
+  // 3) Outline words (desktop only): first from right, second from left
+  let leftHost: HTMLElement | null = null
+  let rightHost: HTMLElement | null = null
+  let fromX = 0
+  const { left: outlineLeft, right: outlineRight } = splitTwoPartPhrase(outlineText)
 
-  buildMaskedOutline({
-    host: outlineEl,
-    text: outlineText,
-    fontFamily,
-    fontWeight,
-    letterSpacing,
-    outlineStroke,
-    maxW: maxOutlineW,
-    maxH: maxOutlineH,
-    asLetters: false,
-  })
+  if (showOutline) {
+    const padX = window.innerWidth * 0.04
+    const padY = window.innerHeight * 0.06
+    const slotCenterY = liveSlot.top + liveSlot.height / 2
+    const maxOutlineW = window.innerWidth - padX * 2
+    const maxOutlineH =
+      2 * Math.max(40, Math.min(slotCenterY - padY, window.innerHeight - slotCenterY - padY))
 
-  let outlineScale = 1
-  gsap.set(outlineEl, {
-    x: posX,
-    y: posY,
-    scale: 1,
-    opacity: 1,
-    zIndex: 1,
-    overflow: 'visible',
-    color: 'transparent',
-    WebkitTextStroke: '0 transparent',
-    textShadow: 'none',
-  })
-  {
-    const rect = outlineEl.getBoundingClientRect()
-    if (rect.width > 0 && rect.height > 0) {
-      const fitW = (window.innerWidth - padX * 2) / rect.width
-      const fitH = (window.innerHeight - padY * 2) / rect.height
-      outlineScale = Math.min(1, fitW, fitH)
+    outlineEl.replaceChildren()
+
+    const outlineRow = document.createElement('div')
+    outlineRow.style.cssText =
+      'display:inline-flex;align-items:baseline;justify-content:center;gap:0.28em;white-space:nowrap;line-height:normal;'
+
+    leftHost = document.createElement('div')
+    leftHost.style.cssText = 'flex:0 0 auto;overflow:visible;'
+    outlineRow.appendChild(leftHost)
+
+    rightHost = document.createElement('div')
+    rightHost.style.cssText = 'flex:0 0 auto;overflow:visible;'
+    if (outlineRight) outlineRow.appendChild(rightHost)
+
+    outlineEl.appendChild(outlineRow)
+
+    const probeHost = document.createElement('div')
+    probeHost.style.cssText =
+      'position:absolute;left:0;top:0;opacity:0;pointer-events:none;z-index:-1;'
+    outlineEl.appendChild(probeHost)
+    const { fontPx: sharedOutlineFontPx } = buildMaskedOutline({
+      host: probeHost,
+      text: outlineText,
+      fontFamily,
+      fontWeight,
+      letterSpacing,
+      outlineStroke,
+      maxW: maxOutlineW,
+      maxH: maxOutlineH,
+      asLetters: false,
+    })
+    probeHost.remove()
+
+    buildMaskedOutline({
+      host: leftHost,
+      text: outlineLeft || outlineText,
+      fontFamily,
+      fontWeight,
+      letterSpacing,
+      outlineStroke,
+      maxW: maxOutlineW,
+      maxH: maxOutlineH,
+      asLetters: false,
+      fontPx: sharedOutlineFontPx,
+    })
+    if (outlineRight) {
+      buildMaskedOutline({
+        host: rightHost,
+        text: outlineRight,
+        fontFamily,
+        fontWeight,
+        letterSpacing,
+        outlineStroke,
+        maxW: maxOutlineW,
+        maxH: maxOutlineH,
+        asLetters: false,
+        fontPx: sharedOutlineFontPx,
+      })
     }
-  }
-  gsap.set(outlineEl, {
-    x: window.innerWidth * 1.15,
-    y: posY,
-    scale: outlineScale,
-    opacity: 1,
-  })
 
-  await tweenTo(outlineEl, {
-    x: posX,
-    duration: 0.85,
-    ease: 'power3.out',
-  })
-  if (cancelled()) return
+    let outlineScale = 1
+    gsap.set(outlineEl, {
+      left: '50%',
+      top: '50%',
+      xPercent: -50,
+      yPercent: -50,
+      x: posX,
+      y: posY,
+      scale: 1,
+      opacity: 1,
+      zIndex: 1,
+      overflow: 'visible',
+      lineHeight: 'normal',
+      color: 'transparent',
+      WebkitTextStroke: '0 transparent',
+      textShadow: 'none',
+    })
+    {
+      const rect = outlineEl.getBoundingClientRect()
+      if (rect.width > 0 && rect.height > 0) {
+        const fitW = (window.innerWidth - padX * 2) / rect.width
+        const fitH = (window.innerHeight - padY * 2) / rect.height
+        outlineScale = Math.min(1, fitW, fitH)
+        gsap.set(outlineEl, { scale: outlineScale })
+      }
+    }
+
+    fromX = window.innerWidth * 1.2 / Math.max(outlineScale, 0.01)
+    gsap.set(leftHost, { x: fromX, y: 0, opacity: 1 })
+    if (outlineRight) gsap.set(rightHost, { x: -fromX, y: 0, opacity: 1 })
+
+    await Promise.all([
+      tweenTo(leftHost, { x: 0, duration: 0.85, ease: 'power3.out' }),
+      outlineRight && rightHost
+        ? tweenTo(rightHost, { x: 0, duration: 0.85, ease: 'power3.out' })
+        : Promise.resolve(),
+    ])
+    if (cancelled()) return
+  }
 
   inlineEl.replaceChildren()
   const inlineChars = renderChars(inlineEl, phrase.text)
@@ -1347,18 +1523,19 @@ async function playFrame3(opts: {
 
   const liveFgChars = Array.from(fgEl.querySelectorAll<HTMLElement>('.hero-motion-char'))
   await Promise.all([
-    tweenTo(outlineEl, {
-      x: -window.innerWidth * 1.15,
-      duration: 0.55,
-      ease: 'power2.in',
-    }),
+    showOutline && leftHost
+      ? tweenTo(leftHost, { x: fromX, duration: 0.55, ease: 'power3.in' })
+      : Promise.resolve(),
+    showOutline && outlineRight && rightHost
+      ? tweenTo(rightHost, { x: -fromX, duration: 0.55, ease: 'power3.in' })
+      : Promise.resolve(),
     kineticSlamOut(liveFgChars),
   ])
   if (cancelled()) return
 
   gsap.set(inlineEl, { opacity: 0 })
   stageEl.style.display = 'none'
-  gsap.set(fgEl, { fontSize: '', scale: 1, x: 0, y: 0, xPercent: -50, opacity: 1 })
+  gsap.set(fgEl, { fontSize: '', scale: 1, x: 0, y: 0, xPercent: -50, opacity: 1, maxWidth: '', whiteSpace: '' })
   gsap.set(outlineEl, { scale: 1, x: 0, y: 0, opacity: 1 })
   fgEl.replaceChildren()
   outlineEl.replaceChildren()
@@ -1367,10 +1544,12 @@ async function playFrame3(opts: {
 
 /**
  * Frame 4 — full phrase in a red frame:
- * 1) Red 3px border rectangle stretches from centre to full text width (no fill);
- *    main text appears inside; then plate fills red and text turns white.
- * 2) Outline split mid-height: top half slides from the right, bottom from the left
- * 3) Hold → exit
+ * 1) Red 3px border stretches from centre to full text width; fill + white text
+ *    reveal top → bottom
+ * 2) Short hold → red plate retracts top → bottom; text fills red top → bottom;
+ *    then each letter spins in the frontal plane (360°) and turns gold-500; border fades
+ * 3) Outline split mid-height: top half from the right, bottom from the left
+ * 4) Hold → exit
  */
 async function playFrame4(opts: {
   phrase: MotionPhrase
@@ -1406,7 +1585,7 @@ async function playFrame4(opts: {
   const fontWeight = headingStyles.fontWeight
   const letterSpacing = headingStyles.letterSpacing
   // Frame padding + 3px border each side
-  const fontPx = fitFontPx({
+  const fontPx = motionHeadlineFontPx({
     text: mainText,
     basePx: baseFontPx,
     maxWidth: motionMaxTextWidth(20),
@@ -1418,6 +1597,9 @@ async function playFrame4(opts: {
   const outlineStroke = getOutlineStrokeColor()
   const red =
     getComputedStyle(document.documentElement).getPropertyValue('--erythro-500').trim() || '#E52421'
+  const finalTextColor = getGold500Color()
+  const showOutline = isMotionDesktop()
+  const mobileWrap = !showOutline
 
   const applyStageFade = () => {
     const fade = getScrollFade()
@@ -1501,11 +1683,15 @@ async function playFrame4(opts: {
     'display:inline-flex',
     'align-items:center',
     'justify-content:center',
-    'line-height:1',
-    'white-space:pre',
+    'line-height:1.12',
+    mobileWrap ? 'white-space:normal' : 'white-space:pre',
+    mobileWrap ? `max-width:${motionMaxTextWidth(24)}px` : '',
+    'text-align:center',
     'padding:0.1em 0.32em',
     'box-sizing:border-box',
-  ].join(';')
+  ]
+    .filter(Boolean)
+    .join(';')
 
   box.appendChild(textEl)
   fgEl.appendChild(box)
@@ -1549,116 +1735,194 @@ async function playFrame4(opts: {
   // 1) Border rectangle stretches from centre to full text width
   await tweenTo(box, {
     width: targetW,
-    duration: 0.75,
+    duration: 0.48,
     ease: 'power3.inOut',
   })
   if (cancelled()) return
 
   // Fill + text reveal together (text only visible where red has covered)
-  await wait(0.35, delayed)
+  await wait(0.18, delayed)
   if (cancelled()) return
 
   await tweenTo(fillEl, {
     height: '100%',
-    duration: 0.55,
+    duration: 0.35,
     ease: 'power2.inOut',
   })
   if (cancelled()) return
 
-  // 2) Outline: top half from right, bottom half from left (full glyph, not cropped)
-  const padX = window.innerWidth * 0.04
-  const padY = window.innerHeight * 0.06
-  const slotCenterY = liveSlot.top + liveSlot.height / 2
-  const maxOutlineW = window.innerWidth - padX * 2
-  const maxOutlineH =
-    2 * Math.max(40, Math.min(slotCenterY - padY, window.innerHeight - slotCenterY - padY))
+  // Plate leaves top → bottom; text fills red top → bottom.
+  // Base turns red first; white cover retracts — avoids white AA fringe on red glyphs.
+  await wait(0.18, delayed)
+  if (cancelled()) return
 
-  const probe = document.createElement('div')
-  probe.style.cssText = 'position:absolute;left:-99999px;top:0;visibility:hidden;'
-  document.body.appendChild(probe)
-  buildMaskedOutline({
-    host: probe,
-    text: outlineText,
-    fontFamily,
-    fontWeight,
-    letterSpacing,
-    outlineStroke,
-    maxW: maxOutlineW,
-    maxH: maxOutlineH,
-    asLetters: false,
-  })
-  const probeSvg = probe.querySelector('svg')
-  const outlineW = Number(probeSvg?.getAttribute('width') || 1)
-  const outlineH = Number(probeSvg?.getAttribute('height') || 1)
-  const svgMarkup = probe.innerHTML
-  probe.remove()
+  box.appendChild(textEl)
+  textEl.style.zIndex = '2'
+  gsap.set(textEl, { color: red, textShadow: 'none' })
 
-  let outlineScale = Math.min(
-    1,
-    (window.innerWidth - padX * 2) / Math.max(outlineW, 1),
-    (window.innerHeight - padY * 2) / Math.max(outlineH, 1),
-  )
+  const whiteCover = textEl.cloneNode(true) as HTMLElement
+  whiteCover.style.zIndex = '3'
+  whiteCover.style.color = '#ffffff'
+  whiteCover.style.textShadow = 'none'
+  whiteCover.style.pointerEvents = 'none'
+  box.appendChild(whiteCover)
 
-  outlineEl.style.width = `${outlineW}px`
-  outlineEl.style.height = `${outlineH}px`
-  outlineEl.style.overflow = 'visible'
-
-  const remaskClone = (host: HTMLElement) => {
-    host.innerHTML = svgMarkup
-    host.querySelectorAll('mask[id]').forEach((mask) => {
-      const oldId = mask.getAttribute('id')
-      if (!oldId) return
-      const nextId = `${oldId}-${Math.random().toString(36).slice(2, 7)}`
-      mask.setAttribute('id', nextId)
-      host.querySelectorAll('[mask]').forEach((el) => {
-        const ref = el.getAttribute('mask') || ''
-        if (ref.includes(`#${oldId}`)) el.setAttribute('mask', `url(#${nextId})`)
-      })
-    })
-  }
-
-  const makeHalf = (clip: string) => {
-    const host = document.createElement('div')
-    host.style.cssText = [
-      'position:absolute',
-      'left:0',
-      'top:0',
-      `width:${outlineW}px`,
-      `height:${outlineH}px`,
-      'overflow:visible',
-      `clip-path:${clip}`,
-      `-webkit-clip-path:${clip}`,
-    ].join(';')
-    remaskClone(host)
-    return host
-  }
-
-  const topHalf = makeHalf('inset(0px 0px 50% 0px)')
-  const botHalf = makeHalf('inset(50% 0px 0px 0px)')
-  outlineEl.appendChild(topHalf)
-  outlineEl.appendChild(botHalf)
-
-  gsap.set(outlineEl, {
-    x: posX,
-    y: posY,
-    scale: outlineScale,
-    opacity: 1,
+  gsap.set(fillEl, {
+    top: 'auto',
+    bottom: 0,
+    height: '100%',
     zIndex: 1,
-    overflow: 'visible',
-    color: 'transparent',
-    WebkitTextStroke: '0 transparent',
-    textShadow: 'none',
+    force3D: false,
   })
-
-  const fromX = window.innerWidth * 1.2
-  gsap.set(topHalf, { x: fromX / outlineScale, y: 0, opacity: 1 })
-  gsap.set(botHalf, { x: -fromX / outlineScale, y: 0, opacity: 1 })
+  gsap.set(whiteCover, { clipPath: 'inset(0% 0 0% 0)' })
 
   await Promise.all([
-    tweenTo(topHalf, { x: 0, duration: 0.9, ease: 'power3.out' }),
-    tweenTo(botHalf, { x: 0, duration: 0.9, ease: 'power3.out' }),
+    tweenTo(fillEl, {
+      height: '0%',
+      duration: 0.35,
+      ease: 'power3.inOut',
+      force3D: false,
+    }),
+    tweenTo(whiteCover, {
+      clipPath: 'inset(100% 0 0% 0)',
+      duration: 0.2,
+      ease: 'power3.inOut',
+      force3D: false,
+    }),
+    tweenTo(box, {
+      borderColor: 'transparent',
+      duration: 0.28,
+      ease: 'power2.inOut',
+    }),
   ])
   if (cancelled()) return
+
+  whiteCover.remove()
+  fillEl.remove()
+  textEl.style.color = red
+
+  // Each letter spins in the frontal plane (rotateZ) and lands white
+  const flipChars = renderChars(textEl, mainText)
+  gsap.set(flipChars, {
+    color: red,
+    rotation: 0,
+    transformOrigin: '50% 50%',
+    display: 'inline-block',
+    force3D: false,
+  })
+
+  await tweenTo(flipChars, {
+    rotation: 360,
+    color: finalTextColor,
+    duration: 0.35,
+    stagger: 0.028,
+    ease: 'power2.inOut',
+    force3D: false,
+  })
+  if (cancelled()) return
+
+  gsap.set(flipChars, { rotation: 0, color: finalTextColor })
+
+  // 3) Outline (desktop only): top half from right, bottom half from left
+  let topHalf: HTMLElement | null = null
+  let botHalf: HTMLElement | null = null
+  let outlineScale = 1
+  const fromX = window.innerWidth * 1.2
+
+  if (showOutline) {
+    const padX = window.innerWidth * 0.04
+    const padY = window.innerHeight * 0.06
+    const slotCenterY = liveSlot.top + liveSlot.height / 2
+    const maxOutlineW = window.innerWidth - padX * 2
+    const maxOutlineH =
+      2 * Math.max(40, Math.min(slotCenterY - padY, window.innerHeight - slotCenterY - padY))
+
+    const probe = document.createElement('div')
+    probe.style.cssText = 'position:absolute;left:-99999px;top:0;visibility:hidden;'
+    document.body.appendChild(probe)
+    buildMaskedOutline({
+      host: probe,
+      text: outlineText,
+      fontFamily,
+      fontWeight,
+      letterSpacing,
+      outlineStroke,
+      maxW: maxOutlineW,
+      maxH: maxOutlineH,
+      asLetters: false,
+    })
+    const probeSvg = probe.querySelector('svg')
+    const outlineW = Number(probeSvg?.getAttribute('width') || 1)
+    const outlineH = Number(probeSvg?.getAttribute('height') || 1)
+    const svgMarkup = probe.innerHTML
+    probe.remove()
+
+    outlineScale = Math.min(
+      1,
+      (window.innerWidth - padX * 2) / Math.max(outlineW, 1),
+      (window.innerHeight - padY * 2) / Math.max(outlineH, 1),
+    )
+
+    outlineEl.style.width = `${outlineW}px`
+    outlineEl.style.height = `${outlineH}px`
+    outlineEl.style.overflow = 'visible'
+
+    const remaskClone = (host: HTMLElement) => {
+      host.innerHTML = svgMarkup
+      host.querySelectorAll('mask[id]').forEach((mask) => {
+        const oldId = mask.getAttribute('id')
+        if (!oldId) return
+        const nextId = `${oldId}-${Math.random().toString(36).slice(2, 7)}`
+        mask.setAttribute('id', nextId)
+        host.querySelectorAll('[mask]').forEach((el) => {
+          const ref = el.getAttribute('mask') || ''
+          if (ref.includes(`#${oldId}`)) el.setAttribute('mask', `url(#${nextId})`)
+        })
+      })
+    }
+
+    const makeHalf = (clip: string) => {
+      const host = document.createElement('div')
+      host.style.cssText = [
+        'position:absolute',
+        'left:0',
+        'top:0',
+        `width:${outlineW}px`,
+        `height:${outlineH}px`,
+        'overflow:visible',
+        `clip-path:${clip}`,
+        `-webkit-clip-path:${clip}`,
+      ].join(';')
+      remaskClone(host)
+      return host
+    }
+
+    topHalf = makeHalf('inset(0px 0px 50% 0px)')
+    botHalf = makeHalf('inset(50% 0px 0px 0px)')
+    outlineEl.appendChild(topHalf)
+    outlineEl.appendChild(botHalf)
+
+    gsap.set(outlineEl, {
+      x: posX,
+      y: posY,
+      scale: outlineScale,
+      opacity: 1,
+      zIndex: 1,
+      overflow: 'visible',
+      color: 'transparent',
+      WebkitTextStroke: '0 transparent',
+      textShadow: 'none',
+    })
+
+    gsap.set(topHalf, { x: fromX / outlineScale, y: 0, opacity: 1 })
+    gsap.set(botHalf, { x: -fromX / outlineScale, y: 0, opacity: 1 })
+
+    await Promise.all([
+      tweenTo(topHalf, { x: 0, duration: 0.9, ease: 'power3.out' }),
+      tweenTo(botHalf, { x: 0, duration: 0.9, ease: 'power3.out' }),
+    ])
+    if (cancelled()) return
+  }
 
   inlineEl.replaceChildren()
   const inlineChars = renderChars(inlineEl, mainText)
@@ -1669,8 +1933,12 @@ async function playFrame4(opts: {
 
   // Whole red frame exits with blur — char slam inside overflow looked broken
   await Promise.all([
-    tweenTo(topHalf, { x: fromX / outlineScale, duration: 0.5, ease: 'power2.in' }),
-    tweenTo(botHalf, { x: -fromX / outlineScale, duration: 0.5, ease: 'power2.in' }),
+    showOutline && topHalf
+      ? tweenTo(topHalf, { x: fromX / outlineScale, duration: 0.5, ease: 'power2.in' })
+      : Promise.resolve(),
+    showOutline && botHalf
+      ? tweenTo(botHalf, { x: -fromX / outlineScale, duration: 0.5, ease: 'power2.in' })
+      : Promise.resolve(),
     exitBlockBlur(box, -1),
   ])
   if (cancelled()) return
@@ -1888,27 +2156,37 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
     // Observe the scroll wrapper (220vh on desktop / sticky h-screen on mobile),
     // NOT the inner lg:fixed layer — that stays in the viewport forever.
     const heroSection =
+      (rootRef.current?.closest('[data-hero-scroll-root]') as HTMLElement | null) ||
       (rootRef.current?.closest('[class*="220vh"]') as HTMLElement | null) ||
       (rootRef.current?.closest('.sticky.top-0') as HTMLElement | null) ||
       rootRef.current
 
-    // Same scrub range as HeroAnimation content fade — keep frame-1 stage in sync.
+    // Same scrub fade as HeroAnimation content — desktop + mobile (fixed portal
+    // otherwise stays visible over later sections while sticky hero sticks).
     const mm = gsap.matchMedia()
-    mm.add('(min-width: 1024px)', () => {
-      if (!heroSection) return
-      const st = ScrollTrigger.create({
-        trigger: heroSection,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 1,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          scrollFade = 1 - fadeEase(self.progress)
-          applyStageScrollFade()
-        },
+    const bindScrollFade = (query: string, end: string) => {
+      mm.add(query, () => {
+        if (!heroSection) return
+        const st = ScrollTrigger.create({
+          trigger: heroSection,
+          start: 'top top',
+          end,
+          scrub: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            scrollFade = 1 - fadeEase(self.progress)
+            applyStageScrollFade()
+            if (scrollFade < 0.04 && stageEl.style.display !== 'none') {
+              gsap.set(stageEl, { opacity: 0 })
+            }
+          },
+        })
+        return () => st.kill()
       })
-      return () => st.kill()
-    })
+    }
+    bindScrollFade('(min-width: 1024px)', 'bottom bottom')
+    // Mobile sticky hero: fade across one viewport of document scroll
+    bindScrollFade('(max-width: 1023px)', 'bottom top')
 
     const io = new IntersectionObserver(
       ([entry]) => {
@@ -1918,7 +2196,9 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       },
       {
         threshold: 0,
-        rootMargin: '0px 0px -10% 0px',
+        // Mobile sticky can stay "intersecting" — rely on scroll fade + this
+        // larger bottom margin so leave fires earlier when possible.
+        rootMargin: '0px 0px -35% 0px',
       },
     )
     if (heroSection) io.observe(heroSection)
@@ -1946,8 +2226,8 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       />
       <div
         ref={fgRef}
-        className="absolute whitespace-nowrap font-bold uppercase tracking-tight"
-        style={{ lineHeight: 1.05 }}
+        className="absolute whitespace-normal text-center font-bold uppercase tracking-tight lg:whitespace-nowrap lg:text-left"
+        style={{ lineHeight: 1.12, maxWidth: 'min(100vw - 2rem, 100%)' }}
       />
     </div>
   )
@@ -1962,14 +2242,14 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
         <span
           ref={slotRef}
           aria-hidden
-          className="invisible block whitespace-nowrap px-1 py-[0.12em] lg:whitespace-nowrap"
+          className="invisible block max-w-[min(100%,92vw)] whitespace-normal px-1 py-[0.12em] text-center lg:max-w-none lg:whitespace-nowrap"
         >
           {phrases[0]?.text || '—'}
         </span>
 
         <span
           ref={inlineRef}
-          className="absolute inset-0 flex items-center justify-center whitespace-nowrap px-1 py-[0.12em] opacity-0 lg:whitespace-nowrap"
+          className="absolute inset-0 flex items-center justify-center whitespace-normal px-1 py-[0.12em] text-center opacity-0 lg:whitespace-nowrap"
           style={{ transformStyle: 'preserve-3d' }}
           aria-live="polite"
         />
