@@ -28,11 +28,24 @@ function detectLocaleFromHeader(acceptLanguage: string | null): string {
   return DEFAULT_LOCALE
 }
 
-/** Site-wide Basic Auth — on when both env vars are set. */
+/** Site-wide Basic Auth — on when either credential env is set. */
 function requireBasicAuth(request: NextRequest): NextResponse | null {
-  const user = process.env.BASIC_AUTH_USER
-  const pass = process.env.BASIC_AUTH_PASSWORD
-  if (!user || !pass) return null
+  const user = process.env.BASIC_AUTH_USER?.trim()
+  const pass = process.env.BASIC_AUTH_PASSWORD?.trim()
+
+  // Both empty → public. One set without the other → fail closed (401 for everyone).
+  if (!user && !pass) return null
+
+  const unauthorized = () =>
+    new NextResponse('Authentication required', {
+      status: 401,
+      headers: {
+        'WWW-Authenticate': 'Basic realm="Erythro.ai", charset="UTF-8"',
+        'Cache-Control': 'no-store',
+      },
+    })
+
+  if (!user || !pass) return unauthorized()
 
   const header = request.headers.get('authorization')
   if (header?.startsWith('Basic ')) {
@@ -49,13 +62,7 @@ function requireBasicAuth(request: NextRequest): NextResponse | null {
     }
   }
 
-  return new NextResponse('Authentication required', {
-    status: 401,
-    headers: {
-      'WWW-Authenticate': 'Basic realm="Erythro.ai", charset="UTF-8"',
-      'Cache-Control': 'no-store',
-    },
-  })
+  return unauthorized()
 }
 
 export function middleware(request: NextRequest) {
