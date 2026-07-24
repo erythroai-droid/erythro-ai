@@ -103,7 +103,7 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6"
       dir={isRtl ? 'rtl' : 'ltr'}
       role="dialog"
       aria-modal="true"
