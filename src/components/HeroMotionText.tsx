@@ -270,6 +270,95 @@ async function kineticSlamOut(chars: HTMLElement[]): Promise<void> {
   })
 }
 
+/**
+ * Frontal-plane letter “turn”: collapse → recolor → open (scaleX).
+ * Rotating HTML glyphs (rotateZ) always AA-sparkles; scaleX keeps text axis-aligned
+ * except for a brief edge-on frame, so edges stay clean and nothing jerks.
+ */
+function waitAnimationFrames(count = 2): Promise<void> {
+  return new Promise((resolve) => {
+    const step = (left: number) => {
+      if (left <= 0) {
+        resolve()
+        return
+      }
+      requestAnimationFrame(() => step(left - 1))
+    }
+    requestAnimationFrame(() => step(count - 1))
+  })
+}
+
+async function spinCharsFrontal(
+  chars: HTMLElement[],
+  fromColor: string,
+  toColor: string,
+): Promise<void> {
+  if (!chars.length) return
+
+  for (const el of chars) {
+    el.style.display = 'inline-block'
+    el.style.transformOrigin = '50% 50%'
+    el.style.color = fromColor
+    el.style.removeProperty('-webkit-text-stroke')
+    el.style.removeProperty('paint-order')
+    el.style.removeProperty('will-change')
+  }
+
+  gsap.set(chars, {
+    color: fromColor,
+    rotation: 0,
+    scaleX: 1,
+    scaleY: 1,
+    x: 0,
+    y: 0,
+    z: 0,
+    transformOrigin: '50% 50%',
+    force3D: false,
+    filter: 'none',
+  })
+  await waitAnimationFrames(1)
+
+  await new Promise<void>((resolve) => {
+    const tl = gsap.timeline({
+      onComplete: resolve,
+      onInterrupt: resolve,
+    })
+    chars.forEach((el, i) => {
+      const at = i * 0.024
+      tl.to(
+        el,
+        {
+          scaleX: 0,
+          duration: 0.13,
+          ease: 'power2.in',
+          force3D: false,
+        },
+        at,
+      )
+      tl.set(el, { color: toColor }, at + 0.13)
+      tl.to(
+        el,
+        {
+          scaleX: 1,
+          duration: 0.15,
+          ease: 'power2.out',
+          force3D: false,
+        },
+        at + 0.13,
+      )
+    })
+  })
+
+  gsap.set(chars, {
+    color: toColor,
+    scaleX: 1,
+    scaleY: 1,
+    rotation: 0,
+    force3D: false,
+    filter: 'none',
+  })
+}
+
 /** Split a text node/span into per-glyph spans for kinetic exit. */
 function explodeToChars(el: HTMLElement): HTMLElement[] {
   const text = el.textContent ?? ''
@@ -775,7 +864,7 @@ function buildMaskedOutline(opts: {
  * 2) 2px red line grows to word height, then expands right into a red plate;
  *    white right-word appears on the plate
  * 3) Plate folds right; second word fills red top → bottom in sync; then its
- *    letters spin in the frontal plane → gold-500. First word stays put.
+ *    letters flip in-plane (scaleX) → gold-500. First word stays put.
  * 4) Background outline fades in
  * 5) Hold → exit
  */
@@ -931,8 +1020,24 @@ async function playFrame2(opts: {
   ].join(';')
 
   const autoEl = document.createElement('span')
-  autoEl.textContent = autoText
-  autoEl.style.cssText = wordStyle('#ffffff', 'position:relative;z-index:1;padding:0.08em 0.28em')
+  autoEl.style.cssText = wordStyle(
+    '#ffffff',
+    'position:relative;z-index:1;padding:0.08em 0.28em',
+  )
+  // Glyphs exist from the start — splitting later caused a layout jerk before the flip
+  const flipChars: HTMLElement[] = []
+  if (autoText) {
+    for (const char of autoText) {
+      const span = document.createElement('span')
+      span.className = 'hero-motion-char'
+      span.style.cssText =
+        'display:inline-block;white-space:pre;transform-origin:50% 50%;line-height:1;letter-spacing:normal;'
+      span.style.color = '#ffffff'
+      span.textContent = char === ' ' ? '\u00A0' : char
+      autoEl.appendChild(span)
+      flipChars.push(span)
+    }
+  }
 
   plateWrap.appendChild(barEl)
   plateWrap.appendChild(autoEl)
@@ -1005,24 +1110,49 @@ async function playFrame2(opts: {
     if (cancelled()) return
 
     // Plate folds right; second word fills red top → bottom (AI stays put).
-    // Base turns red first; white cover retracts — avoids white AA fringe on red glyphs.
+    // Prep under an identical white glyph cover so nothing flashes before the fold.
     await wait(0.35, delayed)
     if (cancelled()) return
 
-    autoEl.style.color = red
     const whiteCover = document.createElement('span')
-    whiteCover.textContent = autoText
-    whiteCover.style.cssText = wordStyle(
-      '#ffffff',
-      'position:absolute;left:0;top:0;z-index:2;padding:0.08em 0.28em;pointer-events:none;',
-    )
+    whiteCover.style.cssText = [
+      `font-family:${fontFamily}`,
+      `font-weight:${fontWeight}`,
+      `font-size:${fontPx}px`,
+      `letter-spacing:${letterSpacing}`,
+      'text-transform:uppercase',
+      'position:absolute',
+      'left:0',
+      'top:0',
+      'z-index:2',
+      'padding:0.08em 0.28em',
+      'box-sizing:border-box',
+      'line-height:1',
+      'white-space:pre',
+      'pointer-events:none',
+      'display:inline-block',
+    ].join(';')
+    for (const char of autoText) {
+      const span = document.createElement('span')
+      span.style.cssText =
+        'display:inline-block;white-space:pre;transform-origin:50% 50%;line-height:1;letter-spacing:normal;color:#ffffff;'
+      span.textContent = char === ' ' ? '\u00A0' : char
+      whiteCover.appendChild(span)
+    }
     plateWrap.appendChild(whiteCover)
     gsap.set(whiteCover, { clipPath: 'inset(0% 0 0% 0)' })
+    // Base is fully covered — safe to go red with no visible change
+    gsap.set(flipChars, { color: red })
+    autoEl.style.color = red
 
-    gsap.set(barEl, { left: 'auto', right: 0, width: barTargetW, x: 0, force3D: false })
+    // Fold from the right without swapping left/right anchors (that caused a text/plate jerk)
+    gsap.set(barEl, {
+      transformOrigin: 'right center',
+      force3D: false,
+    })
     await Promise.all([
       tweenTo(barEl, {
-        width: 2,
+        scaleX: 0,
         duration: 0.5,
         ease: 'power3.inOut',
         force3D: false,
@@ -1037,41 +1167,15 @@ async function playFrame2(opts: {
     if (cancelled()) return
 
     whiteCover.remove()
-    await tweenTo(barEl, { opacity: 0, duration: 0.15, ease: 'power1.in' })
+    gsap.set(flipChars, { color: red, scaleX: 1, x: 0, y: 0, rotation: 0 })
+
+    await tweenTo(barEl, { opacity: 0, duration: 0.12, ease: 'power1.in' })
     if (cancelled()) return
     barEl.remove()
 
-    // Only AUTOMATION letters spin → gold-500; AI untouched
-    autoEl.textContent = ''
-    const flipChars: HTMLElement[] = []
-    for (const char of autoText) {
-      const span = document.createElement('span')
-      span.className = 'hero-motion-char'
-      span.style.cssText =
-        'display:inline-block;white-space:pre;transform-origin:50% 50%;line-height:1;backface-visibility:hidden;'
-      span.style.color = red
-      span.textContent = char === ' ' ? '\u00A0' : char
-      autoEl.appendChild(span)
-      flipChars.push(span)
-    }
-
-    gsap.set(flipChars, {
-      rotation: 0,
-      transformOrigin: '50% 50%',
-      force3D: false,
-    })
-
-    await tweenTo(flipChars, {
-      rotation: 360,
-      color: finalTextColor,
-      duration: 0.35,
-      stagger: 0.028,
-      ease: 'power2.inOut',
-      force3D: false,
-    })
+    // Only AUTOMATION letters flip → gold-500; AI untouched (no DOM rebuild)
+    await spinCharsFrontal(flipChars, red, finalTextColor)
     if (cancelled()) return
-
-    gsap.set(flipChars, { rotation: 0, color: finalTextColor })
   }
 
   if (showOutline) {
@@ -1118,8 +1222,8 @@ async function playFrame2(opts: {
 
 /**
  * Frame 3 — "SCALABLE SYSTEMS" (first word + rest):
- * 1) First letter flies in from afar, settles, then slides left into its final
- *    slot in the centred phrase; rest of first word wipes in to the right
+ * 1) First letter flies from afar toward the camera (3× peak + perspective),
+ *    then rebounds into the headline slot; rest of first word wipes in to the right
  * 2) Second word rises as a bottom→top wipe (single growth reveal)
  * 3) Background outline: first word from the right, second from the left
  *    (mirror of Frame 1)
@@ -1297,53 +1401,100 @@ async function playFrame3(opts: {
   const targetCenterX = window.innerWidth / 2 + posX
   const targetLeft = targetCenterX - fullW / 2
 
-  // 1) First letter: far → grows to ~half screen → settles to normal size (centred)
-  const halfScreenPx = Math.min(
-    Math.round(window.innerHeight * 0.5),
-    Math.round(window.innerWidth * 0.72),
+  // 1) First letter: far → flies at camera (3× peak + perspective, decelerates) → settles back
+  // Use scale (not fontSize) for the fly so layout/baseline stay centred — no vertical drift.
+  const peakPx = Math.min(
+    Math.round(window.innerHeight * 0.5 * 3),
+    Math.round(window.innerWidth * 0.72 * 3),
   )
   const startPx = Math.max(10, Math.round(fontPx * 0.08))
+  const peakScale = peakPx / Math.max(fontPx, 1)
+  const startScale = startPx / Math.max(fontPx, 1)
+
+  gsap.set(fgEl, {
+    transformPerspective: 1200,
+    transformStyle: 'preserve-3d',
+    x: posX,
+    y: posY,
+    xPercent: -50,
+    yPercent: -50,
+  })
   gsap.set(firstLetter, {
-    fontSize: startPx,
-    scale: 1,
-    rotation: 42,
-    opacity: 1,
-    force3D: false,
-  })
-
-  await tweenTo(firstLetter, {
-    fontSize: halfScreenPx,
-    rotation: 18,
-    duration: 1.15,
-    ease: 'power2.out',
-    force3D: false,
-  })
-  if (cancelled()) return
-
-  await tweenTo(firstLetter, {
     fontSize: fontPx,
-    rotation: 0,
-    duration: 0.75,
-    ease: 'power3.inOut',
-    force3D: false,
+    scale: startScale,
+    z: -1600,
+    x: 0,
+    y: 0,
+    rotationX: 20,
+    rotationY: 0,
+    rotation: 36,
+    opacity: 1,
+    transformOrigin: '50% 50%',
+    force3D: true,
+    filter: 'none',
+  })
+
+  // Approach: decelerate into the near plane (ease-out)
+  await tweenTo(firstLetter, {
+    scale: peakScale,
+    z: 360,
+    rotationX: 0,
+    rotation: 8,
+    x: 0,
+    y: 0,
+    duration: 1.15,
+    ease: 'power3.out',
+    force3D: true,
   })
   if (cancelled()) return
-  firstLetter.style.fontSize = `${fontPx}px`
 
-  // Pin left edge, then slide first letter left into its final phrase slot
+  // Rebound into place — soft ease-out, no spring overshoot
+  await tweenTo(firstLetter, {
+    scale: 1,
+    z: 0,
+    rotationX: 0,
+    rotationY: 0,
+    rotation: 0,
+    x: 0,
+    y: 0,
+    duration: 0.65,
+    ease: 'power3.out',
+    force3D: true,
+  })
+  if (cancelled()) return
+
+  // Keep identity transforms — clearProps here caused a 1-frame jerk before the left slide
+  gsap.set(firstLetter, {
+    scale: 1,
+    x: 0,
+    y: 0,
+    z: 0,
+    rotation: 0,
+    rotationX: 0,
+    rotationY: 0,
+    force3D: true,
+  })
+
+  // Seamless handoff: lock the current on-screen box, then slide left (no xPercent flip jump)
   {
-    const startLeft = fgEl.getBoundingClientRect().left
+    const rect = fgEl.getBoundingClientRect()
     gsap.set(fgEl, {
+      transformPerspective: 0,
+      transformStyle: 'flat',
       xPercent: 0,
-      x: startLeft - window.innerWidth / 2,
+      yPercent: -50,
+      x: rect.left - window.innerWidth / 2,
+      y: posY,
     })
     await tweenTo(fgEl, {
       x: targetLeft - window.innerWidth / 2,
+      y: posY,
       duration: 0.5,
       ease: 'power2.inOut',
     })
   }
   if (cancelled()) return
+  gsap.set(firstLetter, { force3D: false })
 
   // Rest of first word: wipe in to the right (left edge stays put → phrase ends centred)
   if (restFirst.length) {
@@ -1547,7 +1698,7 @@ async function playFrame3(opts: {
  * 1) Red 3px border stretches from centre to full text width; fill + white text
  *    reveal top → bottom
  * 2) Short hold → red plate retracts top → bottom; text fills red top → bottom;
- *    then each letter spins in the frontal plane (360°) and turns gold-500; border fades
+ *    then each letter flips in-plane (scaleX) and turns gold-500; border fades
  * 3) Outline split mid-height: top half from the right, bottom from the left
  * 4) Hold → exit
  */
@@ -1801,27 +1952,11 @@ async function playFrame4(opts: {
   fillEl.remove()
   textEl.style.color = red
 
-  // Each letter spins in the frontal plane (rotateZ) and lands white
+  // Split before spin so glyph layers paint while still static
   const flipChars = renderChars(textEl, mainText)
-  gsap.set(flipChars, {
-    color: red,
-    rotation: 0,
-    transformOrigin: '50% 50%',
-    display: 'inline-block',
-    force3D: false,
-  })
-
-  await tweenTo(flipChars, {
-    rotation: 360,
-    color: finalTextColor,
-    duration: 0.35,
-    stagger: 0.028,
-    ease: 'power2.inOut',
-    force3D: false,
-  })
+  gsap.set(flipChars, { color: red, display: 'inline-block' })
+  await spinCharsFrontal(flipChars, red, finalTextColor)
   if (cancelled()) return
-
-  gsap.set(flipChars, { rotation: 0, color: finalTextColor })
 
   // 3) Outline (desktop only): top half from right, bottom half from left
   let topHalf: HTMLElement | null = null
