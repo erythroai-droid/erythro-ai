@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useFormFields } from '@payloadcms/ui'
+import { mediaDocUrl, toPublicMediaUrl } from '@/lib/publicMediaUrl'
 
 /**
  * Admin edit-view preview for the Media collection.
@@ -14,6 +15,8 @@ import { useFormFields } from '@payloadcms/ui'
 export const MediaPreview: React.FC = () => {
   const url = useFormFields(([fields]) => fields?.url?.value as string | undefined)
   const mimeType = useFormFields(([fields]) => fields?.mimeType?.value as string | undefined)
+  const filename = useFormFields(([fields]) => fields?.filename?.value as string | undefined)
+  const prefix = useFormFields(([fields]) => fields?.prefix?.value as string | undefined)
 
   if (!url || typeof url !== 'string') return null
 
@@ -21,6 +24,11 @@ export const MediaPreview: React.FC = () => {
   const isImage = typeof mimeType === 'string' && mimeType.startsWith('image/')
 
   if (!isVideo && !isImage) return null
+
+  // Avoid `/api/media/file/...` — Vercel CDN can cache bad Range (200 vs 206).
+  // Client rewrite needs NEXT_PUBLIC_BLOB_STORE_ID when url is still a proxy path.
+  const src =
+    mediaDocUrl({ url, filename, prefix }) || toPublicMediaUrl(url)
 
   const mediaStyle: React.CSSProperties = {
     display: 'block',
@@ -46,7 +54,7 @@ export const MediaPreview: React.FC = () => {
 
       {isVideo ? (
         <video
-          src={url}
+          src={src}
           controls
           playsInline
           preload="metadata"
@@ -54,7 +62,7 @@ export const MediaPreview: React.FC = () => {
         />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={url} alt="Media preview" style={{ ...mediaStyle, objectFit: 'contain' }} />
+        <img src={src} alt="Media preview" style={{ ...mediaStyle, objectFit: 'contain' }} />
       )}
     </div>
   )
@@ -64,6 +72,7 @@ type MediaRow = {
   url?: unknown
   mimeType?: unknown
   filename?: unknown
+  prefix?: unknown
 }
 
 /**
@@ -82,6 +91,13 @@ export const MediaPreviewCell: React.FC<{ rowData?: MediaRow }> = ({ rowData }) 
 
   if (!isVideo && !isImage) return <span>—</span>
 
+  const src =
+    mediaDocUrl({
+      url,
+      filename: rowData?.filename,
+      prefix: rowData?.prefix,
+    }) || toPublicMediaUrl(url)
+
   const thumbStyle: React.CSSProperties = {
     display: 'block',
     height: 48,
@@ -96,10 +112,10 @@ export const MediaPreviewCell: React.FC<{ rowData?: MediaRow }> = ({ rowData }) 
   return isVideo ? (
     // The `#t=0.1` media fragment nudges the browser to paint an early frame as
     // the thumbnail instead of a blank black box.
-    <video src={`${url}#t=0.1`} muted playsInline preload="metadata" style={thumbStyle} />
+    <video src={`${src}#t=0.1`} muted playsInline preload="metadata" style={thumbStyle} />
   ) : (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={url} alt="" style={thumbStyle} />
+    <img src={src} alt="" style={thumbStyle} />
   )
 }
 

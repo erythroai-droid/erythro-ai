@@ -48,11 +48,22 @@ function CardVideo({
     const video = videoRef.current
     if (!container || !video) return
 
+    // Cached/fast Blob responses can fire canplay before React attaches JSX
+    // handlers — then videoReady stays false and the card stays invisible.
+    const markReady = () => setVideoReady(true)
+    if (video.readyState >= 2) markReady()
+    video.addEventListener('loadeddata', markReady)
+    video.addEventListener('canplay', markReady)
+    video.addEventListener('playing', markReady)
+
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            video.preload = 'auto'
+            if (video.preload !== 'auto') {
+              video.preload = 'auto'
+              video.load()
+            }
             void video.play().catch(() => {})
           } else {
             video.pause()
@@ -66,6 +77,9 @@ function CardVideo({
 
     return () => {
       observer.disconnect()
+      video.removeEventListener('loadeddata', markReady)
+      video.removeEventListener('canplay', markReady)
+      video.removeEventListener('playing', markReady)
     }
   }, [src])
 
@@ -94,10 +108,8 @@ function CardVideo({
         muted
         loop
         playsInline
-        preload="auto"
+        preload="none"
         aria-label={label}
-        onLoadedData={() => setVideoReady(true)}
-        onCanPlay={() => setVideoReady(true)}
         onError={() => setVideoReady(false)}
       />
     </div>

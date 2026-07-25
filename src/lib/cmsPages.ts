@@ -17,6 +17,7 @@ import {
   type LocaleListMap,
 } from './servicePages'
 import { lexicalFromParagraphs, lexicalFromText, isLexicalDoc, lexicalToPlain } from './lexical'
+import { mediaDocUrl } from './publicMediaUrl'
 import {
   ORDER_PLANS,
   getOrderPlan as getStaticOrderPlan,
@@ -31,7 +32,8 @@ const LOCALES = ['en', 'ru', 'he'] as const
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 function mediaUrl(v: any): string | undefined {
-  return v && typeof v === 'object' && typeof v.url === 'string' ? v.url : undefined
+  // Prefer public Blob URL — `/api/media/file/...` breaks <video> Range on Vercel CDN.
+  return mediaDocUrl(v)
 }
 
 function hasLocalizedSeo(v: any): boolean {

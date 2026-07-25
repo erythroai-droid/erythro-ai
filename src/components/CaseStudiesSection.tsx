@@ -55,7 +55,8 @@ function CaseStudyVideo({
     const prefetch = () => {
       if (prefetchedRef.current) return
       prefetchedRef.current = true
-      el.preload = 'auto'
+      // metadata only — full `auto` fights Hero for bandwidth on mobile/CDN.
+      el.preload = 'metadata'
       el.load()
     }
 
@@ -82,14 +83,17 @@ function CaseStudyVideo({
       ([entry]) => {
         if (entry.isIntersecting) {
           prefetch()
+          // Show as soon as the section is on screen — don't wait for play().
+          // Cached Blob videos often skip canplay JSX handlers otherwise.
           setVisible(true)
-          el.play().catch(() => {})
+          if (el.readyState < 2) el.preload = 'auto'
+          void el.play().catch(() => {})
         } else {
           setVisible(false)
           el.pause()
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.05 },
     )
 
     if (prefetchObserver && section) prefetchObserver.observe(section)

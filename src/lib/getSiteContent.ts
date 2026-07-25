@@ -5,6 +5,7 @@ import { defaultSiteContent, type SiteContent, type Localized } from './defaultC
 import { SITE_CONTENT_TAG } from './revalidate'
 import { SERVICE_ID_TO_SLUG } from './servicePages'
 import { isLexicalDoc, lexicalFromText, lexicalToPlain } from './lexical'
+import { mediaDocUrl } from './publicMediaUrl'
 
 const LOCALES = ['en', 'ru', 'he'] as const
 
@@ -77,35 +78,9 @@ function isPopulatedMedia(v: any): boolean {
   return !!(v && typeof v === 'object' && (typeof v.url === 'string' || typeof v.mimeType === 'string'))
 }
 
-/**
- * Rewrite Payload media proxy paths to the public Vercel Blob URL.
- * `/api/media/file/...` breaks <video> on Vercel (200 instead of 206 for Range).
- */
-function toPublicMediaUrl(url: string): string {
-  const trimmed = url.trim()
-  if (!trimmed) return trimmed
-  if (trimmed.includes('blob.vercel-storage.com')) return trimmed
-
-  const token = process.env.BLOB_READ_WRITE_TOKEN
-  const storeId = token?.match(/^vercel_blob_rw_([a-z\d]+)_/i)?.[1]?.toLowerCase()
-  if (!storeId) return trimmed
-
-  const match = trimmed.match(/\/(?:api\/)?media\/file\/(.+)$/i)
-  if (!match?.[1]) return trimmed
-
-  const filename = match[1]
-    .split('/')
-    .map((part) => encodeURIComponent(decodeURIComponent(part)))
-    .join('/')
-  return `https://${storeId}.public.blob.vercel-storage.com/${filename}`
-}
-
+/** Prefer public Blob URL; rewrite `/api/media/file/...` when possible. */
 function mediaUrl(v: any): string | undefined {
-  if (typeof v === 'string' && v.trim()) return toPublicMediaUrl(v.trim())
-  if (v && typeof v === 'object' && typeof v.url === 'string' && v.url.trim()) {
-    return toPublicMediaUrl(v.url.trim())
-  }
-  return undefined
+  return mediaDocUrl(v)
 }
 
 async function resolveMediaDoc(payload: any, raw: any): Promise<any | null> {
@@ -424,7 +399,7 @@ export async function getSiteContent(): Promise<SiteContent> {
  * unaffected. Invalidated via the `SITE_CONTENT_TAG` tag whenever content is
  * edited in the Payload admin (see src/lib/revalidate.ts).
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v4'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v5'], {
   tags: [SITE_CONTENT_TAG],
 })
 

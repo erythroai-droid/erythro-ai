@@ -88,6 +88,9 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Protect pages + admin + api; skip Next internals and static files.
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  // Protect pages + admin + api; skip Next internals, static files, and media
+  // proxy paths (even without a file extension in the matcher edge cases).
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|api/media|.*\\..*).*)',
+  ],
 }
