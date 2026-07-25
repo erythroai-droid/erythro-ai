@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { PortfolioProject } from '@/lib/portfolioProjects'
+import ProjectNav, { type ProjectNavNeighbor } from './ProjectNav'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -13,9 +14,20 @@ if (typeof window !== 'undefined') {
 interface ProjectBodyProps {
   project: PortfolioProject
   theme?: 'light' | 'dark'
+  locale?: string
+  prev?: ProjectNavNeighbor | null
+  next?: ProjectNavNeighbor | null
+  portfolioHref?: string
 }
 
-export default function ProjectBody({ project, theme = 'dark' }: ProjectBodyProps) {
+export default function ProjectBody({
+  project,
+  theme = 'dark',
+  locale = 'en',
+  prev = null,
+  next = null,
+  portfolioHref = '/portfolio',
+}: ProjectBodyProps) {
   const isLight = theme === 'light'
   const sectionRef = useRef<HTMLElement | null>(null)
 
@@ -30,7 +42,7 @@ export default function ProjectBody({ project, theme = 'dark' }: ProjectBodyProp
           id: 'project-body-pin',
           trigger: sectionRef.current,
           start: 'bottom bottom',
-          end: '+=100%',
+          end: '+=160%',
           pin: true,
           pinSpacing: false,
           invalidateOnRefresh: true,
@@ -106,9 +118,17 @@ export default function ProjectBody({ project, theme = 'dark' }: ProjectBodyProp
             ) : null}
           </div>
         ))}
+
+        <ProjectNav
+          locale={locale}
+          theme={theme}
+          prev={prev}
+          next={next}
+          portfolioHref={portfolioHref}
+        />
       </div>
 
-      <div className="h-[80px] w-full shrink-0 lg:h-[120px]" aria-hidden />
+      <div className="h-[42svh] min-h-[220px] w-full shrink-0 lg:h-[48vh] lg:min-h-[280px]" aria-hidden />
     </section>
   )
 }

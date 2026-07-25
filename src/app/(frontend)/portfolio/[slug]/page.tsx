@@ -6,6 +6,7 @@ import ProjectClient from './ProjectClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import {
   getAllPortfolioSlugsCms,
+  getCachedPortfolioProjects,
   getPortfolioProjectBySlug,
 } from '@/lib/cmsPages'
 import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
@@ -80,9 +81,31 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const project = await getPortfolioProjectBySlug(slug, initialLocale)
   if (!project) notFound()
 
-  const content = await getCachedSiteContent()
+  const [content, projects] = await Promise.all([
+    getCachedSiteContent(),
+    getCachedPortfolioProjects(initialLocale),
+  ])
+
+  const index = projects.findIndex((p) => p.slug === project.slug)
+  const prevProject =
+    index > 0 ? projects[index - 1] : projects.length > 1 ? projects[projects.length - 1] : null
+  const nextProject =
+    index >= 0 && index < projects.length - 1
+      ? projects[index + 1]
+      : projects.length > 1
+        ? projects[0]
+        : null
+
+  const toNeighbor = (p: (typeof projects)[number] | null) =>
+    p ? { slug: p.slug, title: p.title } : null
 
   return (
-    <ProjectClient initialLocale={initialLocale} content={content} project={project} />
+    <ProjectClient
+      initialLocale={initialLocale}
+      content={content}
+      project={project}
+      prev={toNeighbor(prevProject)}
+      next={toNeighbor(nextProject)}
+    />
   )
 }

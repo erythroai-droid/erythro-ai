@@ -21,9 +21,17 @@ interface ProjectClientProps {
   initialLocale: string
   content: SiteContent
   project: PortfolioProject
+  prev: { slug: string; title: string } | null
+  next: { slug: string; title: string } | null
 }
 
-export default function ProjectClient({ initialLocale, content, project }: ProjectClientProps) {
+export default function ProjectClient({
+  initialLocale,
+  content,
+  project,
+  prev,
+  next,
+}: ProjectClientProps) {
   const a11yTranslations = content.accessibility
   const [locale, setLocaleState] = useState(initialLocale)
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
@@ -109,7 +117,14 @@ export default function ProjectClient({ initialLocale, content, project }: Proje
           </div>
 
           <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
-            <ProjectBody project={project} theme={theme} />
+            <ProjectBody
+              project={project}
+              theme={theme}
+              locale={locale}
+              prev={prev}
+              next={next}
+              portfolioHref={content.caseStudies.viewAllHref || '/portfolio'}
+            />
           </div>
 
           <div className="relative z-30 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
