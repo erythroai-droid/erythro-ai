@@ -1,5 +1,6 @@
 import type { GlobalConfig } from 'payload'
 import { locText, locTextarea } from '../fields/localized'
+import { ctaHrefField } from '../fields/ctaHref'
 import { revalidateGlobal } from '../lib/revalidate'
 
 export const CaseStudies: GlobalConfig = {
@@ -14,8 +15,16 @@ export const CaseStudies: GlobalConfig = {
     locText('cardCategory'),
     locTextarea('cardDescription'),
     locText('cardCTA'),
+    ctaHrefField('cardCtaHref', {
+      defaultValue: '/portfolio',
+      admin: { description: 'Optional link for the card CTA label (if shown).' },
+    }),
     locText('viewAllProjects', {
       admin: { description: 'Text link under the video banner, e.g. "View All Projects" (arrows are added in UI)' },
+    }),
+    ctaHrefField('viewAllHref', {
+      defaultValue: '/portfolio',
+      admin: { description: 'Banner + “View all projects” link. Default /portfolio.' },
     }),
     {
       name: 'bannerVideo',

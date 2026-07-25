@@ -7,6 +7,8 @@ import Button from './Button'
 import HeroAnimation from './HeroAnimation'
 import HeroMotionText from './HeroMotionText'
 import { useSiteContent } from './SiteContentProvider'
+import { useContactModal } from './ContactModal'
+import { isContactModalHref, navigateCtaHref } from '@/lib/ctaNav'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -20,6 +22,7 @@ interface HeroSectionProps {
 
 export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSectionProps) {
   const translations = useSiteContent().hero
+  const { open: openContact } = useContactModal()
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const isLight = theme === 'light'
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -48,25 +51,31 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
   }, [locale, translations.mainHeading, translations.motionHeadings])
 
   const handleFindOutMoreClick = () => {
-    const isMobile = window.innerWidth < 1024
-    if (isMobile) {
-      const target = document.getElementById('contacts')
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth' })
-      }
-    } else {
-      const st = ScrollTrigger.getById('services-pin')
-      if (st) {
-        // Let's Talk is fully open at ~80% of the timeline scroll distance
-        const scrollPosition = st.start + 0.8 * (st.end - st.start)
-        window.scrollTo({ top: scrollPosition, behavior: 'smooth' })
+    const href = (translations.ctaHref || '#contacts').trim()
+
+    if (isContactModalHref(href)) {
+      openContact()
+      return
+    }
+
+    // Preserve legacy dual scroll when pointing at contacts
+    if (href === '#contacts' || href === '') {
+      const isMobile = window.innerWidth < 1024
+      if (isMobile) {
+        document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' })
       } else {
-        const target = document.querySelector('footer')
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth' })
+        const st = ScrollTrigger.getById('services-pin')
+        if (st) {
+          const scrollPosition = st.start + 0.8 * (st.end - st.start)
+          window.scrollTo({ top: scrollPosition, behavior: 'smooth' })
+        } else {
+          document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' })
         }
       }
+      return
     }
+
+    navigateCtaHref(href, { openContact })
   }
 
   useEffect(() => {

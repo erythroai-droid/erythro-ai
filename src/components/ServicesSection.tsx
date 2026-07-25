@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
+import { navigateCtaHref } from '@/lib/ctaNav'
 import Button from './Button'
 import { useCursorGlow } from '@/hooks/useCursorGlow'
 import { getServiceSlugById } from '@/lib/servicePages'
@@ -645,7 +646,12 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
 
         {/* Button */}
         <div ref={buttonRef} className="relative z-10 mt-2 pointer-events-auto">
-            <Button variant="white-outline" onClick={openContact}>
+            <Button
+              variant="white-outline"
+              onClick={() =>
+                navigateCtaHref(navTranslations.ctaHref || '#contact-modal', { openContact })
+              }
+            >
               {t(navTranslations.ctaLabel)}
             </Button>
           </div>
@@ -744,7 +750,12 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         </div>
 
         <div ref={mobileButtonRef} className="relative z-10 mt-2">
-          <Button variant="white-outline" onClick={openContact}>
+          <Button
+            variant="white-outline"
+            onClick={() =>
+              navigateCtaHref(navTranslations.ctaHref || '#contact-modal', { openContact })
+            }
+          >
             {t(navTranslations.ctaLabel)}
           </Button>
         </div>

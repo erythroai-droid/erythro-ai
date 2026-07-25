@@ -162,12 +162,18 @@ export async function getSiteContent(): Promise<SiteContent> {
       }))
     }
     if (hasContent(header?.ctaLabel)) content.navbar.ctaLabel = L(header.ctaLabel, content.navbar.ctaLabel)
+    if (typeof header?.ctaHref === 'string' && header.ctaHref.trim()) {
+      content.navbar.ctaHref = header.ctaHref.trim()
+    }
 
     // --- Hero global ---
     content.hero.preHeading = L(hero?.preHeading, content.hero.preHeading)
     content.hero.mainHeading = L(hero?.mainHeading, content.hero.mainHeading)
     content.hero.subtext = L(hero?.subtext, content.hero.subtext)
     content.hero.ctaFind = L(hero?.ctaFind, content.hero.ctaFind)
+    if (typeof hero?.ctaHref === 'string' && hero.ctaHref.trim()) {
+      content.hero.ctaHref = hero.ctaHref.trim()
+    }
     if (Array.isArray(hero?.words) && hero.words.length >= 2) {
       content.hero.motionHeadings = hero.words.map((item: any, i: number) => {
         const fb = content.hero.motionHeadings[i]
@@ -200,6 +206,9 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.services.sectionTitle = L(servicesIntro?.sectionTitle, content.services.sectionTitle)
     content.services.sectionSubtitle = L(servicesIntro?.sectionSubtitle, content.services.sectionSubtitle)
     content.services.startCTA = L(servicesIntro?.startCTA, content.services.startCTA)
+    if (typeof servicesIntro?.startCtaHref === 'string' && servicesIntro.startCtaHref.trim()) {
+      content.services.startCtaHref = servicesIntro.startCtaHref.trim()
+    }
     content.services.priceLabel = L(servicesIntro?.priceLabel, content.services.priceLabel)
 
     if (Array.isArray(servicesRes?.docs) && servicesRes.docs.length) {
@@ -241,10 +250,16 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.caseStudies.cardCategory = L(caseStudiesG?.cardCategory, content.caseStudies.cardCategory)
     content.caseStudies.cardDescription = L(caseStudiesG?.cardDescription, content.caseStudies.cardDescription)
     content.caseStudies.cardCTA = L(caseStudiesG?.cardCTA, content.caseStudies.cardCTA)
+    if (typeof caseStudiesG?.cardCtaHref === 'string' && caseStudiesG.cardCtaHref.trim()) {
+      content.caseStudies.cardCtaHref = caseStudiesG.cardCtaHref.trim()
+    }
     content.caseStudies.viewAllProjects = L(
       caseStudiesG?.viewAllProjects,
       content.caseStudies.viewAllProjects,
     )
+    if (typeof caseStudiesG?.viewAllHref === 'string' && caseStudiesG.viewAllHref.trim()) {
+      content.caseStudies.viewAllHref = caseStudiesG.viewAllHref.trim()
+    }
     const caseStudyVideo = mediaUrl(caseStudiesG?.bannerVideo)
     if (caseStudyVideo) content.caseStudies.video = caseStudyVideo
     const caseStudyVideoMobile = mediaUrl(caseStudiesG?.bannerVideoMobile)
@@ -254,6 +269,9 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.solutions.sectionTitle = L(solutionsIntro?.sectionTitle, content.solutions.sectionTitle)
     content.solutions.sectionSubtitle = L(solutionsIntro?.sectionSubtitle, content.solutions.sectionSubtitle)
     content.solutions.ctaLabel = L(solutionsIntro?.ctaLabel, content.solutions.ctaLabel)
+    if (typeof solutionsIntro?.ctaHref === 'string') {
+      content.solutions.ctaHref = solutionsIntro.ctaHref.trim()
+    }
 
     if (Array.isArray(plansRes?.docs) && plansRes.docs.length) {
       content.solutions.cards = plansRes.docs.map((d: any, i: number) => {
@@ -286,6 +304,11 @@ export async function getSiteContent(): Promise<SiteContent> {
           ...(hasContent(d.disclaimer) || fb?.disclaimer
             ? { disclaimer: L(d.disclaimer, fb?.disclaimer ?? { en: '', ru: '', he: '' }) }
             : {}),
+          ...(typeof d.ctaHref === 'string' && d.ctaHref.trim()
+            ? { ctaHref: d.ctaHref.trim() }
+            : fb?.ctaHref
+              ? { ctaHref: fb.ctaHref }
+              : {}),
         }
       })
     }
@@ -309,6 +332,9 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.footer.ctaHeadingLine1 = L(footer?.ctaHeadingLine1, content.footer.ctaHeadingLine1)
     content.footer.ctaHeadingLine2 = L(footer?.ctaHeadingLine2, content.footer.ctaHeadingLine2)
     content.footer.ctaButton = L(footer?.ctaButton, content.footer.ctaButton)
+    if (typeof footer?.ctaHref === 'string' && footer.ctaHref.trim()) {
+      content.footer.ctaHref = footer.ctaHref.trim()
+    }
     content.footer.companyTitle = L(footer?.companyTitle, content.footer.companyTitle)
     content.footer.contactTitle = L(footer?.contactTitle, content.footer.contactTitle)
     content.footer.emailLabel = L(footer?.emailLabel, content.footer.emailLabel)

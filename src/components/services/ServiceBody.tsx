@@ -8,6 +8,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { tLocale, type ServicePage } from '@/lib/servicePages'
 import { currencySymbol } from '@/lib/orderPlans'
 import { isLexicalDoc, lexicalFromParagraphs, lexicalFromText, type LexicalDoc } from '@/lib/lexical'
+import { useSiteContent } from '@/components/SiteContentProvider'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -36,6 +37,7 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
   const isLight = theme === 'light'
   const sectionRef = useRef<HTMLElement | null>(null)
   const title = tLocale(service.title, locale)
+  const portfolioHref = useSiteContent().caseStudies.viewAllHref || '/portfolio'
 
   const summaryDoc = pickLexical(
     service.summaryRich,
@@ -148,7 +150,7 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
 
         <div>
           <Link
-            href="/portfolio"
+            href={portfolioHref}
             className={`inline-flex items-center justify-center gap-2 select-none font-button-base font-medium uppercase tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer ${
               isLight
                 ? 'rounded-[var(--xl,40px)] border border-[var(--gold-100,#fff)] bg-erythro-500 px-8 py-3 text-white hover:border-erythro-500 hover:bg-erythro-500 hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)]'

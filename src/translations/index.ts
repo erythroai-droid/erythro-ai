@@ -47,6 +47,8 @@ export const navbar = {
     ru: 'ОБСУДИТЬ...',
     he: 'בואו נדבר...',
   },
+  /** Primary CTA target — #contact-modal opens the contact form. */
+  ctaHref: '#contact-modal',
 }
 
 // 1b. Cookie consent banner translations
@@ -141,6 +143,8 @@ export const hero = {
     ru: 'ПОДРОБНЕЕ',
     he: 'למידע נוסף',
   },
+  /** Hero CTA — #contacts keeps legacy mobile/desktop scroll behaviour. */
+  ctaHref: '#contacts',
 }
 
 // 3. Services translations
@@ -174,6 +178,7 @@ export const services = {
     ru: 'НАЧАТЬ РАБОТУ',
     he: 'בואו נתחיל',
   },
+  startCtaHref: '#contact-modal',
   priceLabel: {
     en: 'Starting from',
     ru: 'От',
@@ -380,11 +385,13 @@ export const caseStudies = {
     ru: 'НАЧАТЬ РАБОТУ',
     he: 'להתחיל עכשיו',
   },
+  cardCtaHref: '/portfolio',
   viewAllProjects: {
     en: 'View All Projects',
     ru: 'Смотреть все проекты',
     he: 'כל הפרויקטים',
   },
+  viewAllHref: '/portfolio',
   video:
     'https://wgw9moyqjdjcaq9l.public.blob.vercel-storage.com/Dynamic%20Urban%20Slideshow.mp4',
   videoMobile: '/videos/Cases/Dynamic%20Urban%20Slideshow_mobile.mp4',
@@ -401,9 +408,9 @@ export type SolutionCurrency = 'ILS' | 'USD' | 'EUR'
 
 export interface SolutionCardItem {
   id: string
-  price: string
   /** Currency code for price display. Default ILS (₪). */
   currency?: SolutionCurrency
+  price: string
   pricePrefix?: Record<string, string>
   priceNote?: boolean
   originalPrice?: string
@@ -411,6 +418,8 @@ export interface SolutionCardItem {
   features: SolutionFeature[]
   disclaimer?: Record<string, string>
   featured?: boolean
+  /** Optional plan CTA override; empty → /order/{id}. */
+  ctaHref?: string
 }
 
 export const solutions = {
@@ -429,6 +438,8 @@ export const solutions = {
     ru: 'Начать сейчас',
     he: 'להתחיל עכשיו',
   },
+  /** Empty = each plan uses its own ctaHref or /order/{id}. */
+  ctaHref: '',
   cards: [
     {
       id: 'free-start',
@@ -667,6 +678,7 @@ export const footer = {
     ru: 'Начать сейчас',
     he: 'להתחיל עכשיו',
   },
+  ctaHref: '#contact-modal',
   companyTitle: {
     en: 'Company',
     ru: 'Компания',

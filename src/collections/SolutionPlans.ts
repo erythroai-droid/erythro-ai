@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { locText } from '../fields/localized'
+import { ctaHrefField } from '../fields/ctaHref'
 import { seoFields } from '../fields/seo'
 import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
 
@@ -70,6 +71,12 @@ export const SolutionPlans: CollectionConfig = {
       fields: [locText('label'), locText('value'), locText('full')],
     },
     locText('disclaimer'),
+    ctaHrefField('ctaHref', {
+      admin: {
+        description:
+          'Plan button link. Leave empty for /order/{slug}. Or set #contact-modal / any URL.',
+      },
+    }),
     locText('subtitle', {
       admin: { description: 'Subtitle on the order page under the plan title' },
     }),

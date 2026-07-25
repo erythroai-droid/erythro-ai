@@ -376,6 +376,10 @@ export interface SolutionPlan {
     | null;
   disclaimer?: string | null;
   /**
+   * Plan button link. Leave empty for /order/{slug}. Or set #contact-modal / any URL.
+   */
+  ctaHref?: string | null;
+  /**
    * Subtitle on the order page under the plan title
    */
   subtitle?: string | null;
@@ -798,6 +802,7 @@ export interface SolutionPlansSelect<T extends boolean = true> {
         id?: T;
       };
   disclaimer?: T;
+  ctaHref?: T;
   subtitle?: T;
   promo?: T;
   periods?:
@@ -969,9 +974,13 @@ export interface Header {
       }[]
     | null;
   /**
-   * Primary call-to-action label
+   * Primary call-to-action label (Let’s Talk, etc.)
    */
   ctaLabel?: string | null;
+  /**
+   * Link for the Let’s Talk / primary CTA buttons. Default #contact-modal opens the contact form.
+   */
+  ctaHref?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -988,6 +997,10 @@ export interface Hero {
    * "Find out more" button label
    */
   ctaFind?: string | null;
+  /**
+   * Find out more link. Default #contacts (mobile → contacts, desktop → Let’s Talk scroll). Use #contact-modal for the form, or any URL/path.
+   */
+  ctaHref?: string | null;
   /**
    * Optional hero background image
    */
@@ -1020,6 +1033,10 @@ export interface ServicesSection {
   sectionTitle?: string | null;
   sectionSubtitle?: string | null;
   startCTA?: string | null;
+  /**
+   * Link for the services “start” CTA when used.
+   */
+  startCtaHref?: string | null;
   priceLabel?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1037,9 +1054,17 @@ export interface CaseStudy {
   cardDescription?: string | null;
   cardCTA?: string | null;
   /**
+   * Optional link for the card CTA label (if shown).
+   */
+  cardCtaHref?: string | null;
+  /**
    * Text link under the video banner, e.g. "View All Projects" (arrows are added in UI)
    */
   viewAllProjects?: string | null;
+  /**
+   * Banner + “View all projects” link. Default /portfolio.
+   */
+  viewAllHref?: string | null;
   /**
    * Desktop banner video (1024px+). Shown instead of the static default when set.
    */
@@ -1060,6 +1085,10 @@ export interface SolutionsSection {
   sectionTitle?: string | null;
   sectionSubtitle?: string | null;
   ctaLabel?: string | null;
+  /**
+   * Optional override for all plan buttons. Leave empty to use each plan’s own link (or /order/{slug}).
+   */
+  ctaHref?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1118,6 +1147,10 @@ export interface Footer {
   ctaHeadingLine1?: string | null;
   ctaHeadingLine2?: string | null;
   ctaButton?: string | null;
+  /**
+   * Footer CTA button link. Default #contact-modal opens the contact form.
+   */
+  ctaHref?: string | null;
   companyTitle?: string | null;
   companyLinks?:
     | {
@@ -1197,6 +1230,7 @@ export interface HeaderSelect<T extends boolean = true> {
         id?: T;
       };
   ctaLabel?: T;
+  ctaHref?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1210,6 +1244,7 @@ export interface HeroSelect<T extends boolean = true> {
   mainHeading?: T;
   subtext?: T;
   ctaFind?: T;
+  ctaHref?: T;
   backgroundImage?: T;
   words?:
     | T
@@ -1230,6 +1265,7 @@ export interface ServicesSectionSelect<T extends boolean = true> {
   sectionTitle?: T;
   sectionSubtitle?: T;
   startCTA?: T;
+  startCtaHref?: T;
   priceLabel?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1246,7 +1282,9 @@ export interface CaseStudiesSelect<T extends boolean = true> {
   cardCategory?: T;
   cardDescription?: T;
   cardCTA?: T;
+  cardCtaHref?: T;
   viewAllProjects?: T;
+  viewAllHref?: T;
   bannerVideo?: T;
   bannerVideoMobile?: T;
   updatedAt?: T;
@@ -1261,6 +1299,7 @@ export interface SolutionsSectionSelect<T extends boolean = true> {
   sectionTitle?: T;
   sectionSubtitle?: T;
   ctaLabel?: T;
+  ctaHref?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1291,6 +1330,7 @@ export interface FooterSelect<T extends boolean = true> {
   ctaHeadingLine1?: T;
   ctaHeadingLine2?: T;
   ctaButton?: T;
+  ctaHref?: T;
   companyTitle?: T;
   companyLinks?:
     | T

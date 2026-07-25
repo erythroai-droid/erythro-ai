@@ -1,5 +1,6 @@
 import type { GlobalConfig } from 'payload'
 import { locText, locTextarea } from '../fields/localized'
+import { ctaHrefField } from '../fields/ctaHref'
 import { revalidateGlobal } from '../lib/revalidate'
 
 export const Hero: GlobalConfig = {
@@ -12,6 +13,12 @@ export const Hero: GlobalConfig = {
     locText('mainHeading'),
     locTextarea('subtext'),
     locText('ctaFind', { admin: { description: '"Find out more" button label' } }),
+    ctaHrefField('ctaHref', {
+      admin: {
+        description:
+          'Find out more link. Default #contacts (mobile → contacts, desktop → Let’s Talk scroll). Use #contact-modal for the form, or any URL/path.',
+      },
+    }),
     {
       name: 'backgroundImage',
       type: 'upload',

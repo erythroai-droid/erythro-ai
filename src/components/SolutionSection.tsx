@@ -6,6 +6,8 @@ import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
 import { currencySymbol } from '@/lib/orderPlans'
 import { useCursorGlow } from '@/hooks/useCursorGlow'
+import { useContactModal } from './ContactModal'
+import { isContactModalHref, navigateCtaHref } from '@/lib/ctaNav'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -35,6 +37,7 @@ interface SolutionCardData {
   features: SolutionFeature[]
   disclaimer?: Record<string, string>
   featured?: boolean
+  ctaHref?: string
 }
 
 function capitalizeFeatureLabel(text: string): string {
@@ -58,15 +61,18 @@ function SolutionCard({
   card,
   locale,
   ctaLabel,
+  sectionCtaHref,
   theme = 'dark',
 }: {
   card: SolutionCardData
   locale: string
   ctaLabel: string
+  sectionCtaHref?: string
   theme?: 'light' | 'dark'
 }) {
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const router = useRouter()
+  const { open: openContact } = useContactModal()
 
   const isFeatured = card.featured
   const isLight = theme === 'light'
@@ -76,6 +82,23 @@ function SolutionCard({
     : isLight
       ? 'border-coal-900 text-coal-900 hover:!bg-erythro-500 hover:!text-white hover:!border-erythro-500'
       : 'border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)]'
+
+  const handleCta = () => {
+    const href = (card.ctaHref || sectionCtaHref || '').trim()
+    if (!href) {
+      router.push(`/order/${card.id}`)
+      return
+    }
+    if (isContactModalHref(href)) {
+      openContact()
+      return
+    }
+    if (href.startsWith('/') && !href.startsWith('//')) {
+      router.push(href)
+      return
+    }
+    navigateCtaHref(href, { openContact })
+  }
 
   const cardWidthClass = isFeatured ? 'w-[300px] flex-none' : 'w-[270px] flex-none'
 
@@ -207,7 +230,7 @@ function SolutionCard({
         <Button
           variant="solution-cta"
           className={solutionButtonClassName}
-          onClick={() => router.push(`/order/${card.id}`)}
+          onClick={handleCta}
         >
           {ctaLabel}
         </Button>
@@ -354,6 +377,7 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
               card={card}
               locale={locale}
               ctaLabel={t(translations.ctaLabel)}
+              sectionCtaHref={translations.ctaHref}
               theme={theme}
             />
           ))}

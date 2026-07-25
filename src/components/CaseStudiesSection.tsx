@@ -139,6 +139,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
   const translations = useSiteContent().caseStudies
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const isDesktop = useIsDesktop()
+  const portfolioHref = translations.viewAllHref || '/portfolio'
   const videoSrc =
     isDesktop === null
       ? null
@@ -264,7 +265,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
         {/* Mobile: 9:16 portrait player; desktop: flex slot for 16:9 video */}
         <Link
           ref={cardRef}
-          href="/portfolio"
+          href={portfolioHref}
           aria-label={t(translations.viewAllProjects).replace(/\s*>>\s*$/, '')}
           className="relative mx-auto block w-full max-w-[420px] aspect-[9/16] overflow-hidden bg-white transition-opacity duration-300 hover:opacity-95 lg:max-w-none lg:aspect-auto lg:flex-1 lg:min-h-0"
         >
@@ -285,7 +286,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           className="relative z-20 mt-[34px] mb-[50px] shrink-0 flex justify-center pointer-events-auto"
         >
           <a
-            href="/portfolio"
+            href={portfolioHref}
             aria-label={t(translations.viewAllProjects).replace(/\s*>>\s*$/, '')}
             className="group inline-flex items-center gap-1.5 font-sans text-[11px] font-medium uppercase tracking-[0.12em] text-gold-900 transition-colors duration-300 hover:text-erythro-500"
           >

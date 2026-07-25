@@ -1,5 +1,6 @@
 import type { GlobalConfig } from 'payload'
 import { locText } from '../fields/localized'
+import { ctaHrefField } from '../fields/ctaHref'
 import { revalidateGlobal } from '../lib/revalidate'
 
 export const Footer: GlobalConfig = {
@@ -11,6 +12,12 @@ export const Footer: GlobalConfig = {
     locText('ctaHeadingLine1'),
     locText('ctaHeadingLine2'),
     locText('ctaButton'),
+    ctaHrefField('ctaHref', {
+      defaultValue: '#contact-modal',
+      admin: {
+        description: 'Footer CTA button link. Default #contact-modal opens the contact form.',
+      },
+    }),
     locText('companyTitle'),
     {
       name: 'companyLinks',

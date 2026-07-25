@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
+import { navigateCtaHref } from '@/lib/ctaNav'
 import Button from './Button'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -377,7 +378,13 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
                 <br />
                 {t(translations.ctaHeadingLine2)}
               </p>
-              <Button variant="solution-cta" className={footerButtonClassName} onClick={openContact}>
+              <Button
+                variant="solution-cta"
+                className={footerButtonClassName}
+                onClick={() =>
+                  navigateCtaHref(translations.ctaHref || '#contact-modal', { openContact })
+                }
+              >
                 {t(translations.ctaButton)}
               </Button>
             </div>

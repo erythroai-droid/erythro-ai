@@ -3,6 +3,8 @@
 import React, { useEffect, useRef } from 'react'
 import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
+import { useContactModal } from './ContactModal'
+import { navigateCtaHref } from '@/lib/ctaNav'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -20,7 +22,7 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
   const content = useSiteContent()
   const translations = content.letsTalk
   const navTranslations = content.navbar
-  const site = content.siteSettings
+  const { open: openContact } = useContactModal()
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const isSimple = variant === 'simple'
 
@@ -356,11 +358,14 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
 
       {/* Let's Talk Button */}
       <div ref={buttonRef} className="relative z-10 mt-2">
-        <a href={`mailto:${site.email}`} className="inline-block">
-          <Button variant="white-outline">
-            {t(navTranslations.ctaLabel)}
-          </Button>
-        </a>
+        <Button
+          variant="white-outline"
+          onClick={() =>
+            navigateCtaHref(navTranslations.ctaHref || '#contact-modal', { openContact })
+          }
+        >
+          {t(navTranslations.ctaLabel)}
+        </Button>
       </div>
     </section>
   )
