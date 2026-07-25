@@ -493,9 +493,13 @@ export interface PortfolioProject {
    */
   cardImage?: (number | null) | Media;
   /**
-   * Full-bleed hero image or video
+   * Full-bleed hero image or video (desktop)
    */
   heroMedia?: (number | null) | Media;
+  /**
+   * Hero image or video for mobile (<1024px). Falls back to desktop hero if empty.
+   */
+  heroMediaMobile?: (number | null) | Media;
   body?:
     | {
         heading?: string | null;
@@ -864,6 +868,7 @@ export interface PortfolioProjectsSelect<T extends boolean = true> {
       };
   cardImage?: T;
   heroMedia?: T;
+  heroMediaMobile?: T;
   body?:
     | T
     | {

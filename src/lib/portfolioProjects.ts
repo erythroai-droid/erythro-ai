@@ -26,7 +26,7 @@ export interface PortfolioProject {
   stack: string[]
   client: string
   link?: string
-  hero: { type: 'image' | 'video'; src: string }
+  hero: { type: 'image' | 'video'; src: string; srcMobile?: string }
   summary: string
   body: PortfolioBodySection[]
   seoTitle?: string

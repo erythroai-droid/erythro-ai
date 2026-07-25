@@ -79,7 +79,16 @@ export const PortfolioProjects: CollectionConfig = {
       name: 'heroMedia',
       type: 'upload',
       relationTo: 'media',
-      admin: { description: 'Full-bleed hero image or video' },
+      admin: { description: 'Full-bleed hero image or video (desktop)' },
+    },
+    {
+      name: 'heroMediaMobile',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description:
+          'Hero image or video for mobile (<1024px). Falls back to desktop hero if empty.',
+      },
     },
     {
       name: 'body',

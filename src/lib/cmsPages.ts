@@ -91,6 +91,8 @@ function mapPortfolioDoc(d: any, i: number, locale: string): PortfolioProject {
   const fb = PORTFOLIO_PROJECTS[i] || PORTFOLIO_PROJECTS[0]
   const cardUrl = mediaUrl(d.cardImage) || fb.image
   const heroUrl = mediaUrl(d.heroMedia) || mediaUrl(d.cardImage) || fb.hero.src
+  const heroMobileUrl =
+    mediaUrl(d.heroMediaMobile) || fb.hero.srcMobile || undefined
   const mime = d.heroMedia?.mimeType || ''
   const heroType: 'image' | 'video' = String(mime).startsWith('video/') ? 'video' : 'image'
 
@@ -140,7 +142,11 @@ function mapPortfolioDoc(d: any, i: number, locale: string): PortfolioProject {
     stack,
     client: d.client || fb.client,
     ...(d.link || fb.link ? { link: d.link || fb.link } : {}),
-    hero: { type: heroType, src: heroUrl },
+    hero: {
+      type: heroType,
+      src: heroUrl,
+      ...(heroMobileUrl && heroMobileUrl !== heroUrl ? { srcMobile: heroMobileUrl } : {}),
+    },
     summary: pickStr(d.summary, locale, fb.summary),
     body,
     ...(pickStr(d.seo?.title, locale)

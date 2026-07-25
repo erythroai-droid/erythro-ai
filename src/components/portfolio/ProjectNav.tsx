@@ -69,46 +69,53 @@ export default function ProjectNav({
   const baseBtn =
     'inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-[var(--xl,40px)] border px-4 py-0 font-sans text-[11px] font-medium uppercase tracking-[1.8px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] active:scale-[0.97] active:duration-100 sm:h-11 sm:px-5 sm:text-[12px] sm:tracking-[2px]'
 
+  const sideBtn = `${baseBtn} flex-1 sm:flex-none`
+
   return (
     <nav
       aria-label={locale === 'ru' ? 'Навигация по проектам' : locale === 'he' ? 'ניווט בין פרויקטים' : 'Project navigation'}
-      className="flex w-full items-center justify-between gap-2 sm:gap-3"
+      className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
     >
-      {prev ? (
-        <Link
-          href={`/portfolio/${prev.slug}`}
-          className={`${baseBtn} ${outlineClass}`}
-          title={prev.title}
-        >
-          <ArrowIcon direction="prev" />
-          <span>{labels.prev}</span>
-        </Link>
-      ) : (
-        <span className={`${baseBtn} cursor-not-allowed opacity-35 ${outlineClass}`} aria-hidden>
-          <ArrowIcon direction="prev" />
-          <span>{labels.prev}</span>
-        </span>
-      )}
+      <div className="flex w-full items-center gap-2 sm:contents">
+        {prev ? (
+          <Link
+            href={`/portfolio/${prev.slug}`}
+            className={`${sideBtn} ${outlineClass}`}
+            title={prev.title}
+          >
+            <ArrowIcon direction="prev" />
+            <span>{labels.prev}</span>
+          </Link>
+        ) : (
+          <span className={`${sideBtn} cursor-not-allowed opacity-35 ${outlineClass}`} aria-hidden>
+            <ArrowIcon direction="prev" />
+            <span>{labels.prev}</span>
+          </span>
+        )}
 
-      <Link href={portfolioHref} className={`${baseBtn} ${accentClass}`}>
+        {next ? (
+          <Link
+            href={`/portfolio/${next.slug}`}
+            className={`${sideBtn} sm:order-last ${outlineClass}`}
+            title={next.title}
+          >
+            <span>{labels.next}</span>
+            <ArrowIcon direction="next" />
+          </Link>
+        ) : (
+          <span
+            className={`${sideBtn} cursor-not-allowed opacity-35 sm:order-last ${outlineClass}`}
+            aria-hidden
+          >
+            <span>{labels.next}</span>
+            <ArrowIcon direction="next" />
+          </span>
+        )}
+      </div>
+
+      <Link href={portfolioHref} className={`${baseBtn} w-full sm:w-auto ${accentClass}`}>
         {labels.portfolio}
       </Link>
-
-      {next ? (
-        <Link
-          href={`/portfolio/${next.slug}`}
-          className={`${baseBtn} ${outlineClass}`}
-          title={next.title}
-        >
-          <span>{labels.next}</span>
-          <ArrowIcon direction="next" />
-        </Link>
-      ) : (
-        <span className={`${baseBtn} cursor-not-allowed opacity-35 ${outlineClass}`} aria-hidden>
-          <span>{labels.next}</span>
-          <ArrowIcon direction="next" />
-        </span>
-      )}
     </nav>
   )
 }

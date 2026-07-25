@@ -15,6 +15,92 @@ interface ProjectHeroProps {
   project: PortfolioProject
 }
 
+function HeroMedia({
+  type,
+  src,
+  srcMobile,
+}: {
+  type: 'image' | 'video'
+  src: string
+  srcMobile?: string
+}) {
+  const mobileSrc = srcMobile || src
+  const hasSeparateMobile = Boolean(srcMobile && srcMobile !== src)
+
+  if (type === 'video') {
+    if (!hasSeparateMobile) {
+      return (
+        <video
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          src={src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden
+        />
+      )
+    }
+
+    return (
+      <>
+        <video
+          className="absolute inset-0 h-full w-full object-cover object-center lg:hidden"
+          src={mobileSrc}
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden
+        />
+        <video
+          className="absolute inset-0 hidden h-full w-full object-cover object-center lg:block"
+          src={src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden
+        />
+      </>
+    )
+  }
+
+  if (!hasSeparateMobile) {
+    return (
+      <Image
+        src={src}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center"
+      />
+    )
+  }
+
+  return (
+    <>
+      <Image
+        src={mobileSrc}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center lg:hidden"
+      />
+      <Image
+        src={src}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="hidden object-cover object-center lg:block"
+      />
+    </>
+  )
+}
+
 export default function ProjectHero({ project }: ProjectHeroProps) {
   const sectionRef = useRef<HTMLElement | null>(null)
 
@@ -52,36 +138,21 @@ export default function ProjectHero({ project }: ProjectHeroProps) {
     <section
       ref={sectionRef}
       id="project-hero"
-      className="relative z-10 flex min-h-screen w-full flex-col justify-end overflow-hidden"
+      className="relative z-10 flex w-full flex-col overflow-hidden bg-coal-900 lg:min-h-screen lg:justify-end"
     >
-      <div className="absolute inset-0 z-0">
-        {project.hero.type === 'video' ? (
-          <video
-            className="h-full w-full object-cover"
-            src={project.hero.src}
-            autoPlay
-            muted
-            loop
-            playsInline
-            aria-hidden
-          />
-        ) : (
-          <Image
-            src={project.hero.src}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-        )}
+      <div className="relative aspect-[16/10] w-full shrink-0 sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full lg:w-full">
+        <HeroMedia
+          type={project.hero.type}
+          src={project.hero.src}
+          srcMobile={project.hero.srcMobile}
+        />
         <div
-          className="absolute inset-0 bg-gradient-to-t from-coal-900 via-coal-900/55 to-coal-900/20"
+          className="absolute inset-0 bg-gradient-to-t from-coal-900 via-coal-900/40 to-transparent lg:via-coal-900/55 lg:to-coal-900/20"
           aria-hidden
         />
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-[1170px] px-[30px] pb-16 pt-[140px] md:pb-20 lg:pb-24">
+      <div className="relative z-10 mx-auto w-full max-w-[1170px] px-[30px] pb-12 pt-8 md:pb-16 lg:pb-24 lg:pt-[140px]">
         <p className="mb-4 font-sans text-xs uppercase tracking-[0.24em] text-white/55">
           {project.categoryLabel}
         </p>
