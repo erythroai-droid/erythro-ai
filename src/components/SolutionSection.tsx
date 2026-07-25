@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'nextjs-toploader/app'
 import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
 import { currencySymbol } from '@/lib/orderPlans'
@@ -78,10 +78,10 @@ function SolutionCard({
   const isLight = theme === 'light'
 
   const solutionButtonClassName = isFeatured
-    ? 'border-white text-white hover:bg-white hover:text-coal-900 hover:border-white active:bg-white active:text-coal-900 active:border-white'
+    ? 'border-white text-white hover:bg-white hover:text-coal-900 hover:border-white active:bg-white active:text-coal-900 active:border-white aria-busy:bg-white aria-busy:text-coal-900 aria-busy:border-white'
     : isLight
-      ? 'border-coal-900 text-coal-900 hover:!bg-erythro-500 hover:!text-white hover:!border-erythro-500 active:!bg-erythro-500 active:!text-white active:!border-erythro-500'
-      : 'border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)] active:bg-[var(--Button-Tertiary-link,#FFE9C7)] active:text-coal-900 active:border-[var(--Button-Tertiary-link,#FFE9C7)]'
+      ? 'border-coal-900 text-coal-900 hover:!bg-erythro-500 hover:!text-white hover:!border-erythro-500 active:!bg-erythro-500 active:!text-white active:!border-erythro-500 aria-busy:!bg-erythro-500 aria-busy:!text-white aria-busy:!border-erythro-500'
+      : 'border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)] active:bg-[var(--Button-Tertiary-link,#FFE9C7)] active:text-coal-900 active:border-[var(--Button-Tertiary-link,#FFE9C7)] aria-busy:bg-[var(--Button-Tertiary-link,#FFE9C7)] aria-busy:text-coal-900 aria-busy:border-[var(--Button-Tertiary-link,#FFE9C7)]'
 
   const handleCta = () => {
     const href = (card.ctaHref || sectionCtaHref || '').trim()

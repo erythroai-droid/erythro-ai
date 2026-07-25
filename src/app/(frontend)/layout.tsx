@@ -5,6 +5,7 @@ import { getCachedSeoSettings } from '@/lib/getSiteContent'
 import Script from 'next/script'
 import { heebo, inter, robotoMono } from '@/lib/fonts'
 import SplashHost from '@/components/SplashHost'
+import NavigationTopLoader from '@/components/NavigationTopLoader'
 import './styles.css'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
@@ -150,6 +151,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           `}
         </Script>
         <SplashHost />
+        <NavigationTopLoader />
         <main>{children}</main>
       </body>
     </html>

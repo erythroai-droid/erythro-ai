@@ -10,6 +10,7 @@ import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import { isContactModalHref, navigateCtaHref } from '@/lib/ctaNav'
 import { waitForSplashDone } from '@/lib/splash'
+import { suspendSectionAutoSnap } from '@/hooks/useSectionAutoSnap'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -63,6 +64,8 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
     if (href === '#contacts' || href === '') {
       const isMobile = window.innerWidth < 1024
       if (isMobile) {
+        // Pause section auto-snap so Cases/Services don't intercept the scroll.
+        suspendSectionAutoSnap(2200)
         document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' })
       } else {
         const st = ScrollTrigger.getById('services-pin')

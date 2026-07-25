@@ -64,6 +64,11 @@ export default function SplashScreen() {
       if (scrollY > 0) {
         refreshScrollLayout(scrollY)
         requestAnimationFrame(() => refreshScrollLayout(scrollY))
+      } else {
+        // Client navigations must start at the top — do not keep the previous route's Y.
+        window.scrollTo(0, 0)
+        ScrollTrigger.refresh(true)
+        window.scrollTo(0, 0)
       }
       setDone(true)
       markSplashDone()
@@ -82,7 +87,7 @@ export default function SplashScreen() {
       if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 1, y: 0 })
       // Start hidden — appearance is the 1.5s fade-in.
       gsap.set(wrap, { opacity: 0 })
-      if (scrollY > 0) window.scrollTo(0, scrollY)
+      window.scrollTo(0, scrollY > 0 ? scrollY : 0)
 
       const reduceMotion =
         typeof window !== 'undefined' &&

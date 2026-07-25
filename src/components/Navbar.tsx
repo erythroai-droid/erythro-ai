@@ -239,6 +239,7 @@ export default function Navbar({
       e.preventDefault()
       // On inner pages, hash targets live on the home page.
       if (forceBurger) {
+        window.dispatchEvent(new Event('erythro:nav-start'))
         window.location.href = `/${href}`
         setMobileOpen(false)
         return

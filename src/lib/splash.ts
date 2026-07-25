@@ -73,7 +73,8 @@ export function resolveSplashNavigation(pathname: string): {
   const path = pathname.split('?')[0] || '/'
 
   if (forced === 'full') return { mode: 'full', scrollY: 0 }
-  if (forced === 'quick') return { mode: 'quick', scrollY }
+  // Client route changes set this flag — never carry the previous page's scrollY.
+  if (forced === 'quick') return { mode: 'quick', scrollY: 0 }
   if (path !== '/') return { mode: 'quick', scrollY: 0 }
   if (scrollY > MID_PAGE_SCROLL_PX) return { mode: 'quick', scrollY }
   return { mode: 'full', scrollY: 0 }
