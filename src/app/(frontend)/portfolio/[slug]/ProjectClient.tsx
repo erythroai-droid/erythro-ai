@@ -46,7 +46,8 @@ export default function ProjectClient({ initialLocale, content, project }: Proje
     root.dir = locale === 'he' ? 'rtl' : 'ltr'
   }, [locale])
 
-  const pickA11y = (field: Record<string, string>) => field[locale] || field.en
+  const pickA11y = (field?: Record<string, string> | null) =>
+    (field && (field[locale] || field.en)) || ''
 
   const a11yLabels = useMemo(
     () => ({

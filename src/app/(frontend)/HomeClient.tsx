@@ -75,7 +75,8 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
 
   // Resolve accessibility panel strings for the active locale. The panel
   // module itself is locale-agnostic; the app supplies the translated labels.
-  const pickA11y = (field: Record<string, string>) => field[locale] || field.en
+  const pickA11y = (field?: Record<string, string> | null) =>
+    (field && (field[locale] || field.en)) || ''
   const faqA11yLabel = locale === 'ru' ? 'Раздел FAQ' : locale === 'he' ? 'מדור שאלות ותשובות' : 'FAQ section'
 
   const a11yLabels = useMemo(

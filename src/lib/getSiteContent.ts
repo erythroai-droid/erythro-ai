@@ -395,6 +395,17 @@ export async function getSiteContent(): Promise<SiteContent> {
     return structuredClone(defaultSiteContent)
   }
 
+  // Keep newly added static keys (e.g. statementLink, privacyLink) even if a
+  // cached/partial merge somehow omitted them.
+  content.accessibility = {
+    ...defaultSiteContent.accessibility,
+    ...content.accessibility,
+  }
+  content.cookieConsent = {
+    ...defaultSiteContent.cookieConsent,
+    ...content.cookieConsent,
+  }
+
   return content
 }
 
@@ -406,7 +417,7 @@ export async function getSiteContent(): Promise<SiteContent> {
  * unaffected. Invalidated via the `SITE_CONTENT_TAG` tag whenever content is
  * edited in the Payload admin (see src/lib/revalidate.ts).
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v6'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v7'], {
   tags: [SITE_CONTENT_TAG],
 })
 

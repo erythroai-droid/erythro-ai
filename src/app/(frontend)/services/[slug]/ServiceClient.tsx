@@ -46,7 +46,8 @@ export default function ServiceClient({ initialLocale, content, service }: Servi
     root.dir = locale === 'he' ? 'rtl' : 'ltr'
   }, [locale])
 
-  const pickA11y = (field: Record<string, string>) => field[locale] || field.en
+  const pickA11y = (field?: Record<string, string> | null) =>
+    (field && (field[locale] || field.en)) || ''
   const serviceTitle = tLocale(service.title, locale)
 
   const a11yLabels = useMemo(

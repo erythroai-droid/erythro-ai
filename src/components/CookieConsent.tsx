@@ -56,7 +56,7 @@ export default function CookieConsent({ locale, theme }: CookieConsentProps) {
         >
           {t(translations.message)}{' '}
           <Link href="/privacy" className={linkClass}>
-            {t(translations.privacyLink)}
+            {t(translations.privacyLink || { en: 'Privacy Policy', ru: 'Конфиденциальность', he: 'מדיניות פרטיות' })}
           </Link>
         </p>
         <div className="flex items-center gap-3 shrink-0">
