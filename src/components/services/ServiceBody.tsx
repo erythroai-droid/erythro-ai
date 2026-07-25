@@ -151,10 +151,10 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
         <div>
           <Link
             href={portfolioHref}
-            className={`inline-flex items-center justify-center gap-2 select-none font-button-base font-medium uppercase tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer ${
+            className={`inline-flex items-center justify-center gap-2 select-none font-button-base font-medium uppercase tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer active:scale-[0.97] active:duration-100 ${
               isLight
-                ? 'rounded-[var(--xl,40px)] border border-[var(--gold-100,#fff)] bg-erythro-500 px-8 py-3 text-white hover:border-erythro-500 hover:bg-erythro-500 hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)]'
-                : 'rounded-[var(--xl,40px)] border border-gold-500 bg-transparent px-8 py-3 text-gold-500 hover:border-[var(--Button-Primary-stroke-hover,#FFE9C7)] hover:bg-[var(--Button-Primary-hover,#FFE9C7)] hover:text-coal-900 hover:shadow-[0_3px_20px_0_var(--Buttons-Primary,rgba(255,233,199,0.30))]'
+                ? 'rounded-[var(--xl,40px)] border border-[var(--gold-100,#fff)] bg-erythro-500 px-8 py-3 text-white hover:border-erythro-500 hover:bg-erythro-500 hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)] active:bg-erythro-700 active:border-erythro-700 active:shadow-[0_2px_12px_0_rgba(229,36,33,0.45)]'
+                : 'rounded-[var(--xl,40px)] border border-gold-500 bg-transparent px-8 py-3 text-gold-500 hover:border-[var(--Button-Primary-stroke-hover,#FFE9C7)] hover:bg-[var(--Button-Primary-hover,#FFE9C7)] hover:text-coal-900 hover:shadow-[0_3px_20px_0_var(--Buttons-Primary,rgba(255,233,199,0.30))] active:border-[var(--Button-Primary-stroke-hover,#FFE9C7)] active:bg-[var(--Button-Primary-hover,#FFE9C7)] active:text-coal-900 active:shadow-[0_3px_20px_0_var(--Buttons-Primary,rgba(255,233,199,0.30))]'
             }`}
           >
             {portfolioCta}

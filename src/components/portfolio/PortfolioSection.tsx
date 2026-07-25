@@ -197,12 +197,12 @@ export default function PortfolioSection({
                 role="tab"
                 aria-selected={active}
                 onClick={() => handleFilterChange(filter.id)}
-                className={`portfolio-filter-btn cursor-pointer rounded-full border px-4 py-2 font-sans text-xs uppercase tracking-[1.6px] md:px-5 md:text-[12px] ${
+                className={`portfolio-filter-btn cursor-pointer rounded-full border px-4 py-2 font-sans text-xs uppercase tracking-[1.6px] transition-all duration-200 active:scale-[0.97] md:px-5 md:text-[12px] ${
                   active
-                    ? 'is-active border-erythro-500 bg-erythro-500 text-white shadow-[0_4px_18px_0_rgba(229,36,33,0.35)]'
+                    ? 'is-active border-erythro-500 bg-erythro-500 text-white shadow-[0_4px_18px_0_rgba(229,36,33,0.35)] active:brightness-90'
                     : isLight
-                      ? 'border-coal-900 bg-white text-coal-900 hover:border-erythro-500 hover:bg-white hover:text-erythro-500'
-                      : 'border-white/80 bg-white/5 text-white/80 hover:border-gold-500 hover:bg-gold-500 hover:text-coal-900 hover:shadow-[0_3px_16px_0_rgba(255,233,199,0.35)]'
+                      ? 'border-coal-900 bg-white text-coal-900 hover:border-erythro-500 hover:bg-white hover:text-erythro-500 active:border-erythro-500 active:text-erythro-500'
+                      : 'border-white/80 bg-white/5 text-white/80 hover:border-gold-500 hover:bg-gold-500 hover:text-coal-900 hover:shadow-[0_3px_16px_0_rgba(255,233,199,0.35)] active:border-gold-500 active:bg-gold-500 active:text-coal-900'
                 }`}
               >
                 {filter.label}
