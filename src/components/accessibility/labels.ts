@@ -12,6 +12,8 @@ export interface AccessibilityLabels {
   reset: string
   /** Small footer credit line (only rendered when `showPoweredBy` is true). */
   poweredBy: string
+  /** Link to the full accessibility statement page. */
+  statementLink: string
   /** Accessible label for the close (X) button. */
   closeLabel: string
   /** Announced in the live region when screen-reader mode is turned on. */
@@ -43,6 +45,7 @@ export const defaultAccessibilityLabels: AccessibilityLabels = {
   title: 'Accessibility',
   reset: 'Reset Settings',
   poweredBy: '',
+  statementLink: 'Accessibility Statement',
   closeLabel: 'Close accessibility panel',
   screenReaderEnabled: 'Screen reader mode enabled',
   biggerText: 'Bigger Text',

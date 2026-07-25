@@ -66,7 +66,7 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
           id: 'service-body-pin',
           trigger: sectionRef.current,
           start: 'bottom bottom',
-          end: '+=100%',
+          end: '+=160%',
           pin: true,
           pinSpacing: false,
           invalidateOnRefresh: true,
@@ -162,7 +162,8 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
         </div>
       </div>
 
-      <div className="h-[80px] w-full shrink-0 lg:h-[120px]" aria-hidden />
+      {/* Hold space after CTA so Let’s Talk doesn’t ride up immediately on scroll. */}
+      <div className="h-[42svh] min-h-[220px] w-full shrink-0 lg:h-[48vh] lg:min-h-[280px]" aria-hidden />
     </section>
   )
 }

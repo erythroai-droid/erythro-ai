@@ -269,6 +269,15 @@ export default function AccessibilityPanel({
         </div>
 
         <div className="a11y-footer">
+          {t.statementLink && (
+            <a
+              href="/accessibility"
+              className="a11y-statement-link"
+              onClick={onClose}
+            >
+              {t.statementLink}
+            </a>
+          )}
           <button type="button" className="a11y-reset" onClick={resetAll}>
             {t.reset}
           </button>

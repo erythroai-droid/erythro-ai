@@ -3,7 +3,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useCursorGlow } from '@/hooks/useCursorGlow'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
@@ -35,8 +34,6 @@ export default function PortfolioSection({
   const isFirstRender = useRef(true)
   const isFiltering = useRef(false)
   const pendingFilter = useRef<PortfolioCategory | null>(null)
-
-  useCursorGlow(sectionRef)
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -158,8 +155,6 @@ export default function PortfolioSection({
     <section
       ref={sectionRef}
       id="portfolio"
-      data-glow-x={isLight ? '50' : '82'}
-      data-glow-y={isLight ? '32' : '14'}
       className={`relative z-10 min-h-screen w-full overflow-hidden pt-[100px] ${
         isLight ? 'bg-gold-100' : 'dark-gradient-bg'
       }`}

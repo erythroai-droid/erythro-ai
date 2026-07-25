@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
 
@@ -33,6 +34,11 @@ export default function CookieConsent({ locale, theme }: CookieConsentProps) {
 
   if (!visible) return null
 
+  const linkClass =
+    theme === 'light'
+      ? 'text-coal-900 underline underline-offset-2 decoration-coal-900/30 transition-colors hover:text-erythro-500 hover:decoration-erythro-500'
+      : 'text-gold-500 underline underline-offset-2 decoration-gold-500/40 transition-colors hover:text-gold-100 hover:decoration-gold-100'
+
   return (
     <div className="fixed inset-x-0 bottom-6 z-[60] w-full px-[30px] max-w-[1170px] mx-auto pointer-events-none">
       {/* Pill matches the navbar geometry/colors and reacts to the active theme */}
@@ -48,7 +54,10 @@ export default function CookieConsent({ locale, theme }: CookieConsentProps) {
             theme === 'light' ? 'text-coal-900/70' : 'text-gold-100/80'
           }`}
         >
-          {t(translations.message)}
+          {t(translations.message)}{' '}
+          <Link href="/privacy" className={linkClass}>
+            {t(translations.privacyLink)}
+          </Link>
         </p>
         <div className="flex items-center gap-3 shrink-0">
           <button

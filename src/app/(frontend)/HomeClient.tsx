@@ -83,6 +83,7 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
       title: pickA11y(a11yTranslations.title),
       reset: pickA11y(a11yTranslations.reset),
       poweredBy: pickA11y(a11yTranslations.poweredBy),
+      statementLink: pickA11y(a11yTranslations.statementLink),
       closeLabel: pickA11y(a11yTranslations.closeLabel),
       screenReaderEnabled: pickA11y(a11yTranslations.screenReaderEnabled),
       biggerText: pickA11y(a11yTranslations.biggerText),

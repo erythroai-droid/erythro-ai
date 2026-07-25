@@ -58,6 +58,11 @@ export const cookieConsent = {
     ru: 'На нашем сайте используются cookies, чтобы запомнить выбранный язык и улучшить ваш опыт.',
     he: 'אנו משתמשים בעוגיות באתר שלנו כדי לזכור את העדפת השפה שלך ולשפר את החוויה.',
   },
+  privacyLink: {
+    en: 'Privacy Policy',
+    ru: 'Конфиденциальность',
+    he: 'מדיניות פרטיות',
+  },
   accept: {
     en: 'Accept',
     ru: 'Принять',
@@ -833,6 +838,11 @@ export const accessibility = {
     en: 'Powered by Erythro.ai',
     ru: 'Создано на Erythro.ai',
     he: 'מופעל על ידי Erythro.ai',
+  },
+  statementLink: {
+    en: 'Accessibility Statement',
+    ru: 'Заявление о доступности',
+    he: 'הצהרת נגישות',
   },
   closeLabel: {
     en: 'Close accessibility panel',
