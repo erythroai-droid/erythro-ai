@@ -39,7 +39,8 @@
 .a11y-overlay {
   position: fixed;
   inset: 0;
-  z-index: 70;
+  /* Above hero cinematic stage (z-100) and navbar (z-110); below splash (z-200). */
+  z-index: 115;
   background: var(--a11y-overlay);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -51,7 +52,7 @@
   position: fixed;
   top: 0;
   bottom: 0;
-  z-index: 80;
+  z-index: 116;
   width: 100%;
   max-width: var(--a11y-width);
   display: flex;
