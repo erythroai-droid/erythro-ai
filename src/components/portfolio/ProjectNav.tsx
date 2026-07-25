@@ -34,7 +34,7 @@ function ArrowIcon({ direction }: { direction: 'prev' | 'next' }) {
       height="11"
       viewBox="0 0 10 11"
       fill="none"
-      className={`h-2.5 w-2.5 shrink-0 ${direction === 'prev' ? 'rotate-180' : ''}`}
+      className={`h-2.5 w-2.5 shrink-0 rtl:-scale-x-100 ${direction === 'prev' ? 'rotate-180' : ''}`}
       aria-hidden
     >
       <path
