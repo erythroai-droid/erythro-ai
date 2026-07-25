@@ -19,11 +19,13 @@
 
 Stage portal всегда `dir="ltr"` (математика transform). RTL-скрипт / страница Hebrew задают `direction` на текстовых хостах FG и на рядах outline.
 
-### Мобиле (`< lg`)
+### Мобиле / планшет (`< xl`, 1280px)
 
-- Фоновый outline **отключён**.
-- Передний текст крупнее (`clamp(28px, 9.2vw, 48px)` + `motionHeadlineFontPx`), разрешён **перенос строк**.
-- Fade при прокрутке обязателен (portal `fixed`).
+- Кинематографические кадры 1–4 и фоновый outline **отключены**.
+- Цикл — простой kinetic slam на inline-слоте (короткий разлёт букв, без portal).
+- Передний текст с переносом; nowrap / крупный кегль — с `xl`.
+- `overflow-x: clip` на `html`/`body` и stage, чтобы outline/slam не давали горизонтальный скролл.
+- Fade при прокрутке обязателен на sticky hero.
 
 `prefers-reduced-motion: reduce` или одна фраза → статичный текст без цикла.
 

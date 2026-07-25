@@ -428,8 +428,8 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
               ref={cardsRowRef}
               className="flex flex-col lg:flex-row gap-6 lg:gap-10 w-full lg:w-max px-[30px] lg:px-0"
               style={{
-                paddingLeft: 'max(30px, calc((100vw - 1170px) / 2 + 30px))',
-                paddingRight: 'max(30px, calc((100vw - 1170px) / 2 + 30px))',
+                paddingLeft: 'max(30px, calc((100% - 1170px) / 2 + 30px))',
+                paddingRight: 'max(30px, calc((100% - 1170px) / 2 + 30px))',
               }}
             >
               {translations.items.map((item) => {

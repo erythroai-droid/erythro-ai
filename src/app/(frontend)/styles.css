@@ -216,6 +216,8 @@
   html {
     background: var(--bg-primary);
     -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+    overscroll-behavior-x: none;
     /* Hide the vertical scrollbar everywhere. The page still scrolls; removing
        the scrollbar gutter keeps the layout width constant so the splash
        intro's scroll lock/unlock can't cause a horizontal shift / jerk. */
@@ -234,6 +236,9 @@
     background-color: var(--bg-primary);
     color: var(--text-main);
     font-family: var(--font-sans);
+    overflow-x: clip;
+    overscroll-behavior-x: none;
+    max-width: 100%;
     scrollbar-width: none;
     -ms-overflow-style: none;
     transition:
@@ -859,6 +864,18 @@
   .hero-subtext {
     font-weight: 100;
     letter-spacing: 0.2em;
+    font-size: 18px;
+    line-height: 30px;
+  }
+
+  @media (max-width: 1023px) {
+    .hero-subtext {
+      font-size: clamp(12px, 3.2vw, 15px);
+      line-height: 1.5;
+      letter-spacing: 0.06em;
+      max-width: 22rem;
+      margin-inline: auto;
+    }
   }
 
   .font-body-base {

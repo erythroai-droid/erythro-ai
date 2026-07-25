@@ -79,10 +79,10 @@ function wait(seconds: number, bag: gsap.core.Tween[]): Promise<void> {
 
 /** Max width for motion headlines (viewport minus side padding). */
 function motionMaxTextWidth(extraPad = 0): number {
-  return Math.max(120, window.innerWidth - 32 - extraPad)
+  return Math.max(120, window.innerWidth - 40 - extraPad)
 }
 
-/** Desktop cinematic layer (outline + single-line lock). */
+/** Desktop cinematic layer (outline + multi-shot frames). Phones stay simple. */
 function isMotionDesktop(): boolean {
   return window.matchMedia('(min-width: 1024px)').matches
 }
@@ -106,6 +106,13 @@ function containsRtlScript(text: string): boolean {
   return /[\u0590-\u05FF]/.test(text)
 }
 
+function longestWord(text: string): string {
+  return text
+    .trim()
+    .split(/\s+/)
+    .reduce((a, b) => (b.length > a.length ? b : a), '')
+}
+
 /**
  * Outline word fly-in starts.
  * frame1 LTR: first from left, second from right
@@ -125,7 +132,7 @@ function outlineEntranceX(
   return { first: -base.first, second: -base.second }
 }
 
-/** Headline size: mobile prefers larger type with wrapping; desktop fits one line. */
+/** Headline size: mobile wraps by word and must fit the longest word; desktop fits one line. */
 function motionHeadlineFontPx(opts: {
   text: string
   basePx: number
@@ -136,8 +143,15 @@ function motionHeadlineFontPx(opts: {
   minPx?: number
 }): number {
   if (!isMotionDesktop()) {
-    const preferred = Math.round(Math.min(window.innerWidth * 0.094, 48))
-    return Math.max(opts.minPx ?? 26, preferred)
+    // Wrapping can't break a word — size to the longest word so nothing overflows.
+    const preferred = Math.round(Math.min(window.innerWidth * 0.072, 40, opts.basePx))
+    const word = longestWord(opts.text) || opts.text
+    return fitFontPx({
+      ...opts,
+      text: word,
+      basePx: Math.max(opts.minPx ?? 20, preferred),
+      minPx: opts.minPx ?? 16,
+    })
   }
   return fitFontPx(opts)
 }
@@ -251,30 +265,54 @@ function getGold500Color(): string {
   return computed && computed !== 'rgba(0, 0, 0, 0)' ? computed : '#FFE9C7'
 }
 
+/**
+ * Per-glyph spans for kinetic slam, grouped into words so lines wrap on
+ * word boundaries (not mid-word letter wraps from flex/inline-block chars).
+ */
 function renderChars(host: HTMLElement, phrase: string): HTMLElement[] {
   host.replaceChildren()
   const frag = document.createDocumentFragment()
-  for (const char of phrase) {
-    const span = document.createElement('span')
-    span.className = 'hero-motion-char inline-block'
-    span.style.whiteSpace = 'pre'
-    span.style.transformOrigin = '50% 50%'
-    span.textContent = char === ' ' ? '\u00A0' : char
-    frag.appendChild(span)
-  }
+  const words = phrase.trim().split(/\s+/).filter(Boolean)
+
+  words.forEach((word, wordIndex) => {
+    const wordEl = document.createElement('span')
+    wordEl.className = 'hero-motion-word'
+    wordEl.style.cssText = [
+      'display:inline-block',
+      'white-space:nowrap',
+      'vertical-align:baseline',
+      wordIndex < words.length - 1 ? 'margin-inline-end:0.28em' : '',
+    ]
+      .filter(Boolean)
+      .join(';')
+
+    for (const char of word) {
+      const span = document.createElement('span')
+      span.className = 'hero-motion-char inline-block'
+      span.style.whiteSpace = 'pre'
+      span.style.transformOrigin = '50% 50%'
+      span.textContent = char
+      wordEl.appendChild(span)
+    }
+    frag.appendChild(wordEl)
+  })
+
   host.appendChild(frag)
   return Array.from(host.querySelectorAll<HTMLElement>('.hero-motion-char'))
 }
 
 /** Kinetic slam-in (current Envato-like entrance). */
 async function kineticSlamIn(chars: HTMLElement[]): Promise<void> {
+  const travel = isMotionDesktop() ? 120 : 36
+  const skew = isMotionDesktop() ? 18 : 8
+  const blur = isMotionDesktop() ? 18 : 8
   chars.forEach((el, i) => {
     gsap.set(el, {
-      x: i % 2 === 0 ? -120 : 120,
+      x: i % 2 === 0 ? -travel : travel,
       opacity: 0,
       scale: 1.12,
-      skewX: i % 2 === 0 ? 18 : -18,
-      filter: 'blur(18px)',
+      skewX: i % 2 === 0 ? skew : -skew,
+      filter: `blur(${blur}px)`,
     })
   })
   await tweenTo(chars, {
@@ -297,11 +335,14 @@ async function kineticSlamIn(chars: HTMLElement[]): Promise<void> {
 /** Current-style exit for foreground. */
 async function kineticSlamOut(chars: HTMLElement[]): Promise<void> {
   if (!chars.length) return
+  const travel = isMotionDesktop() ? 100 : 28
+  const skew = isMotionDesktop() ? 14 : 6
+  const blur = isMotionDesktop() ? 16 : 8
   await tweenTo(chars, {
-    x: (i) => (i % 2 === 0 ? 100 : -100),
+    x: (i) => (i % 2 === 0 ? travel : -travel),
     opacity: 0,
-    skewX: (i) => (i % 2 === 0 ? -14 : 14),
-    filter: 'blur(16px)',
+    skewX: (i) => (i % 2 === 0 ? -skew : skew),
+    filter: `blur(${blur}px)`,
     duration: 0.38,
     stagger: { each: 0.016, from: 'edges' },
     ease: 'power3.in',
@@ -647,7 +688,7 @@ async function playFrame1(opts: {
       }
     }
 
-    fromX = window.innerWidth * 1.2 / Math.max(outlineScale, 0.01)
+    fromX = Math.min(window.innerWidth * 0.55, 720) / Math.max(outlineScale, 0.01)
     const fly = outlineEntranceX(fromX, 'frame1', rtl)
     flyFirst = fly.first
     flySecond = fly.second
@@ -1853,7 +1894,7 @@ async function playFrame3(opts: {
       }
     }
 
-    fromX = window.innerWidth * 1.2 / Math.max(outlineScale, 0.01)
+    fromX = Math.min(window.innerWidth * 0.55, 720) / Math.max(outlineScale, 0.01)
     const fly = outlineEntranceX(fromX, 'frame3', rtl)
     flyFirst = fly.first
     flySecond = fly.second
@@ -2189,7 +2230,7 @@ async function playFrame4(opts: {
   let topHalf: HTMLElement | null = null
   let botHalf: HTMLElement | null = null
   let outlineScale = 1
-  const fromX = window.innerWidth * 1.2
+  const fromX = Math.min(window.innerWidth * 0.55, 720)
   const rtl = isMotionRtl()
   // LTR: top ← right (+), bottom ← left (−); RTL mirrors
   let topFromX = rtl ? -fromX : fromX
@@ -2356,10 +2397,24 @@ async function playFrame4(opts: {
 async function playPlaceholderFrame(opts: {
   phrase: MotionPhrase
   inlineEl: HTMLElement
+  slotEl: HTMLElement
   delayed: gsap.core.Tween[]
   cancelled: () => boolean
 }): Promise<void> {
-  const { phrase, inlineEl, delayed, cancelled } = opts
+  const { phrase, inlineEl, slotEl, delayed, cancelled } = opts
+  const headingEl = (slotEl.closest('.hero-heading') as HTMLElement | null) ?? slotEl
+  const headingStyles = getComputedStyle(headingEl)
+  const baseFontPx = Number.parseFloat(headingStyles.fontSize) || 28
+  const fontPx = motionHeadlineFontPx({
+    text: phrase.text,
+    basePx: baseFontPx,
+    maxWidth: motionMaxTextWidth(8),
+    fontFamily: headingStyles.fontFamily,
+    fontWeight: headingStyles.fontWeight,
+    letterSpacing: headingStyles.letterSpacing,
+    minPx: 16,
+  })
+  gsap.set([inlineEl, slotEl], { fontSize: fontPx })
   gsap.set(inlineEl, { opacity: 1 })
   const chars = renderChars(inlineEl, phrase.text)
   await kineticSlamIn(chars)
@@ -2404,7 +2459,25 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+    const applyMobileFitFont = (text: string) => {
+      if (isMotionDesktop()) return
+      const headingEl = (slotEl.closest('.hero-heading') as HTMLElement | null) ?? slotEl
+      const headingStyles = getComputedStyle(headingEl)
+      const baseFontPx = Number.parseFloat(headingStyles.fontSize) || 28
+      const fontPx = motionHeadlineFontPx({
+        text,
+        basePx: baseFontPx,
+        maxWidth: motionMaxTextWidth(8),
+        fontFamily: headingStyles.fontFamily,
+        fontWeight: headingStyles.fontWeight,
+        letterSpacing: headingStyles.letterSpacing,
+        minPx: 16,
+      })
+      gsap.set([inlineEl, slotEl], { fontSize: fontPx })
+    }
+
     if (reduced || list.length < 2) {
+      applyMobileFitFont(list[0]?.text ?? '')
       inlineEl.textContent = list[0]?.text ?? ''
       gsap.set(inlineEl, { opacity: 1 })
       return
@@ -2499,6 +2572,7 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
     }
 
     const showStaticPhrase = () => {
+      applyMobileFitFont(list[0].text)
       const chars = renderChars(inlineEl, list[0].text)
       gsap.set(inlineEl, { opacity: 1 })
       gsap.set(chars, {
@@ -2550,7 +2624,18 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
         let index = 0
         while (!isCancelled()) {
           const phrase = list[index]
-          if (index === 0) {
+          // Phones: simple inline slam only — no portal/outline/cinematic shots
+          // (those overflow horizontally and break wrapping layouts).
+          if (!isMotionDesktop()) {
+            hideStage()
+            await playPlaceholderFrame({
+              phrase,
+              inlineEl,
+              slotEl,
+              delayed,
+              cancelled: isCancelled,
+            })
+          } else if (index === 0) {
             await playFrame1({
               phrase,
               stageEl,
@@ -2602,6 +2687,7 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
             await playPlaceholderFrame({
               phrase,
               inlineEl,
+              slotEl,
               delayed,
               cancelled: isCancelled,
             })
@@ -2683,8 +2769,8 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
   const stage = (
     <div
       ref={stageRef}
-      className="pointer-events-none fixed inset-0 z-[100] hidden overflow-visible"
-      style={{ contain: 'none' }}
+      className="pointer-events-none fixed inset-0 z-[100] hidden overflow-hidden"
+      style={{ contain: 'paint' }}
       dir="ltr"
       aria-hidden
     >
@@ -2696,29 +2782,34 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       <div
         ref={fgRef}
         className="absolute whitespace-normal text-center font-bold uppercase tracking-tight lg:whitespace-nowrap lg:text-left"
-        style={{ lineHeight: 1.12, maxWidth: 'min(100vw - 2rem, 100%)' }}
+        style={{ lineHeight: 1.12, maxWidth: 'calc(100% - 2rem)' }}
       />
     </div>
   )
+
+  // Slot sized to the longest phrase so shorter ones don't clip longer cycles.
+  const slotPhrase =
+    phrases.reduce((longest, p) => (p.text.length > longest.length ? p.text : longest), '') ||
+    '—'
 
   return (
     <>
       <div
         ref={rootRef}
-        className={`relative inline-flex max-w-full items-center justify-center overflow-visible ${className}`}
+        className={`relative inline-flex min-w-0 max-w-full items-center justify-center overflow-visible ${className}`}
       >
         {/* Layout slot — measures normal size/position for the bounce target */}
         <span
           ref={slotRef}
           aria-hidden
-          className="invisible block max-w-[min(100%,92vw)] whitespace-normal px-1 py-[0.12em] text-center lg:max-w-none lg:whitespace-nowrap"
+          className="invisible block max-w-full whitespace-normal px-1 py-[0.12em] text-center lg:max-w-[min(100%,calc(100%-2rem))] lg:whitespace-nowrap"
         >
-          {phrases[0]?.text || '—'}
+          {slotPhrase}
         </span>
 
         <span
           ref={inlineRef}
-          className="absolute inset-0 flex items-center justify-center whitespace-normal px-1 py-[0.12em] text-center opacity-0 lg:whitespace-nowrap"
+          className="absolute inset-0 flex flex-wrap content-center items-center justify-center whitespace-normal px-1 py-[0.12em] text-center opacity-0 lg:flex-nowrap lg:whitespace-nowrap"
           style={{ transformStyle: 'preserve-3d' }}
           aria-live="polite"
         />

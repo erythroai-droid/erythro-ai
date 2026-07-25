@@ -346,7 +346,7 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
         {/* Cards container (full screen width, max-w-none) */}
         <div
           ref={cardsRef}
-          className="solution-cards-track relative z-10 flex min-h-0 w-full flex-1 flex-col items-center gap-[30px] px-[30px] py-8 pb-16 lg:flex-row lg:flex-nowrap lg:items-center lg:justify-start lg:gap-[30px] lg:overflow-x-auto lg:overscroll-x-contain lg:snap-x lg:snap-mandatory lg:scroll-px-[30px] lg:py-6 lg:pb-10 xl:justify-center xl:overflow-x-visible xl:snap-none"
+          className="solution-cards-track relative z-10 flex min-h-0 w-full flex-1 flex-col items-center gap-[30px] px-[30px] py-8 pb-16 lg:flex-row lg:flex-nowrap lg:items-center lg:justify-start lg:gap-[30px] lg:overflow-x-auto lg:overscroll-x-contain lg:snap-x lg:snap-mandatory lg:scroll-px-[30px] lg:py-6 lg:pb-10 xl:justify-center xl:overflow-x-clip xl:snap-none"
         >
           {translations.cards.map((card) => (
             <SolutionCard

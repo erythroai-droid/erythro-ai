@@ -110,31 +110,31 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
     <HeroAnimation videoUrl={translations.backgroundImage} navbar={navbar}>
       <div
         ref={containerRef}
-        className="relative mx-auto mt-12 flex w-full flex-col items-center gap-6 text-center select-none md:mt-16"
+        className="relative mx-auto mt-12 flex w-full flex-col items-center gap-1.5 text-center select-none md:mt-16 md:gap-2"
       >
         {/* Pre-Heading tag */}
-        <span className="hero-pre-heading relative -top-10 opacity-0 font-mono text-xs md:text-sm font-bold tracking-[0.25em] text-gold-500 uppercase select-none animate-pulse px-[30px]">
+        <span className="hero-pre-heading opacity-0 font-mono text-xs md:text-sm font-bold tracking-[0.25em] text-gold-500 uppercase select-none animate-pulse px-[30px] mb-0">
           {t(translations.preHeading)}
         </span>
 
         {/* Full-bleed rotating headline — no wrap on large screens */}
         <h1
-          className="hero-heading opacity-0 font-display-5xl !font-bold uppercase mt-2 mb-2 flex w-screen max-w-none items-center justify-center select-text tracking-tight px-4 text-center whitespace-normal lg:whitespace-nowrap !text-[clamp(28px,9.2vw,48px)] !leading-[1.12] lg:!text-[clamp(40px,5.5vw,72px)] lg:!leading-[1.15] text-gold-500"
+          className="hero-heading opacity-0 font-display-5xl !font-bold uppercase mt-0 mb-0 flex min-w-0 w-full max-w-full items-center justify-center select-text tracking-tight px-4 text-center whitespace-normal lg:whitespace-nowrap !text-[clamp(18px,6.2vw,40px)] !leading-[1.12] lg:!text-[clamp(36px,4.8vw,72px)] lg:!leading-[1.15] text-gold-500"
         >
           <HeroMotionText phrases={motionPhrases} />
         </h1>
 
         {/* Description subtext matching Figma geometry spacing & leading */}
-        <p className="hero-subtext opacity-0 font-body-lead text-gold-100 mt-7 w-full max-w-none select-text px-[30px] text-center lg:whitespace-nowrap">
+        <p className="hero-subtext opacity-0 font-body-lead text-gold-100 mt-1 w-full max-w-full select-text px-[30px] text-center whitespace-normal lg:mt-2">
           {t(translations.subtext)}
         </p>
 
         {/* Action Button Group */}
-        <div className="hero-buttons opacity-0 flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 w-full sm:w-auto px-[30px]">
+        <div className="hero-buttons opacity-0 flex items-center justify-center gap-4 mt-6 w-full px-[30px] md:mt-8">
           <Button
             onClick={handleFindOutMoreClick}
             variant="gold-outline"
-            className={`w-full sm:w-auto min-w-[180px] ${
+            className={`w-auto min-w-[183px] ${
               isLight
                 ? 'hover:!border-erythro-500 hover:!bg-erythro-500 hover:!text-white'
                 : 'hover:!border-gold-500 hover:!bg-gold-500 hover:!text-coal-900'
