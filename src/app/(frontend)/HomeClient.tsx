@@ -8,7 +8,6 @@ import ServicesSection from '@/components/ServicesSection'
 import SolutionSection from '@/components/SolutionSection'
 import FAQSection from '@/components/FAQSection'
 import FooterSection from '@/components/FooterSection'
-import SplashScreen from '@/components/SplashScreen'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import ChatButton from '@/components/ChatButton'
 import ScrollSideButton from '@/components/portfolio/ScrollSideButton'
@@ -17,6 +16,7 @@ import CookieConsent from '@/components/CookieConsent'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
 import { ContactModalProvider } from '@/components/ContactModal'
 import type { SiteContent } from '@/lib/defaultContent'
+import { persistHomeScrollY } from '@/lib/splash'
 
 const LOCALE_COOKIE = 'NEXT_LOCALE'
 
@@ -43,16 +43,10 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
     document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
   }
 
-  // Persist scroll before unload so a mid-page refresh can skip the splash
-  // lock and re-open ScrollTrigger pins at the right place.
+  // Persist scroll before unload so a mid-page refresh can use the quick splash
+  // and restore ScrollTrigger pins at the right place.
   useEffect(() => {
-    const persist = () => {
-      try {
-        sessionStorage.setItem('erythro:home-scroll', String(window.scrollY))
-      } catch {
-        // ignore
-      }
-    }
+    const persist = () => persistHomeScrollY()
     window.addEventListener('pagehide', persist)
     window.addEventListener('beforeunload', persist)
     return () => {
@@ -123,7 +117,6 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
   return (
     <SiteContentProvider value={content}>
     <ContactModalProvider locale={locale}>
-    <SplashScreen />
     <div
       dir={locale === 'he' ? 'rtl' : 'ltr'}
       className={`min-h-screen font-sans transition-colors duration-500 bg-primary text-main ${

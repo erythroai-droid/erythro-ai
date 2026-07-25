@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { getCachedSeoSettings } from '@/lib/getSiteContent'
 import Script from 'next/script'
 import { heebo, inter, robotoMono } from '@/lib/fonts'
+import SplashHost from '@/components/SplashHost'
 import './styles.css'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
@@ -148,6 +149,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
             gtag('config', 'G-F3BTVWGDRS');
           `}
         </Script>
+        <SplashHost />
         <main>{children}</main>
       </body>
     </html>

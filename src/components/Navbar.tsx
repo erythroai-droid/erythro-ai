@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import Button from './Button'
 import { useSiteContent } from './SiteContentProvider'
 import { getServiceSlugById } from '@/lib/servicePages'
+import { navigateHomeWithFullSplash } from '@/lib/splash'
 
 interface NavbarProps {
   currentLocale: string
@@ -269,6 +270,11 @@ export default function Navbar({
           <a
             href="/"
             aria-label="Erythro.ai"
+            onClick={(e) => {
+              e.preventDefault()
+              setMobileOpen(false)
+              navigateHomeWithFullSplash()
+            }}
             className={`relative z-10 flex items-center select-none cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
               logoHidden
                 ? '-translate-y-[140%] opacity-0 pointer-events-none'

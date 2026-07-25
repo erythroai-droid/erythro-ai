@@ -1,57 +1,33 @@
 'use client'
 
 import React, { useLayoutEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import {
+  markSplashDone,
+  resetSplashDone,
+  resolveSplashNavigation,
+} from '@/lib/splash'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
 }
 
-const HOME_SCROLL_KEY = 'erythro:home-scroll'
-/** Above this, treat reload as mid-page and skip the splash lock. */
-const MID_PAGE_SCROLL_PX = 80
-
-function readSavedScrollY(): number {
-  let stored = 0
-  try {
-    const raw = sessionStorage.getItem(HOME_SCROLL_KEY)
-    if (raw != null) {
-      sessionStorage.removeItem(HOME_SCROLL_KEY)
-      const n = Number(raw)
-      if (Number.isFinite(n) && n > 0) stored = n
-    }
-  } catch {
-    // ignore quota / private mode
-  }
-  return Math.max(window.scrollY, stored)
-}
-
-function markSplashDone() {
-  window.__erythroSplashDone = true
-  window.dispatchEvent(new Event('erythro:splash-done'))
-}
-
 function refreshScrollLayout(scrollY: number) {
   window.scrollTo(0, scrollY)
   ScrollTrigger.refresh(true)
-  // Pins recalculate height; re-apply after refresh so we don't land in a gap.
   window.scrollTo(0, scrollY)
 }
 
 /**
  * Brand intro overlay.
  *
- * 1. On a red "Let's talk" backdrop the standalone "e" mark from the logo is
- *    drawn (stroke reveal + fill).
- * 2. The "e" then recedes back into its natural position while the rest of the
- *    erythro.ai wordmark draws in around it.
- * 3. The overlay fades away to reveal the page.
- *
- * The whole sequence is driven by a single GSAP timeline. The enlarge/recede
- * motion is a CSS transform on the SVG (origin pinned to the "e" centre).
+ * - `full` — stroke-draw animation (home at top / logo click).
+ * - `quick` — red plate + finished logo fading in over 1.5s (mid-page / inner pages).
  */
 export default function SplashScreen() {
+  const pathname = usePathname() || '/'
   const [done, setDone] = useState(false)
 
   const overlayRef = useRef<HTMLDivElement | null>(null)
@@ -64,29 +40,14 @@ export default function SplashScreen() {
   const taglineRef = useRef<HTMLParagraphElement | null>(null)
 
   useLayoutEffect(() => {
-    // Take over restoration so body { position:fixed } during splash cannot
-    // fight the browser and leave ScrollTriggers measured at scrollY === 0.
     try {
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
     } catch {
       // ignore
     }
 
-    const scrollY = readSavedScrollY()
-
-    // Mid-page reload (e.g. Lets Talk): locking the body would make every pin /
-    // scrub section init as if we were at the top — content stays opacity 0 /
-    // clipPath closed after restore. Skip the intro entirely.
-    if (scrollY > MID_PAGE_SCROLL_PX) {
-      window.scrollTo(0, scrollY)
-      setDone(true)
-      markSplashDone()
-      requestAnimationFrame(() => {
-        refreshScrollLayout(scrollY)
-        requestAnimationFrame(() => refreshScrollLayout(scrollY))
-      })
-      return
-    }
+    resetSplashDone()
+    const { mode, scrollY } = resolveSplashNavigation(pathname)
 
     const overlay = overlayRef.current
     const wrap = logoWrapRef.current
@@ -94,9 +55,59 @@ export default function SplashScreen() {
     const ePath = eRef.current
     if (!overlay || !wrap || !svg || !ePath) return
 
+    const letters = lettersRef.current.filter(Boolean) as SVGPathElement[]
+    const restFills = [boxRef.current, ...textRef.current].filter(Boolean) as SVGPathElement[]
+    const allMarks = [ePath, ...letters, ...restFills]
+
+    const finish = (restore?: () => void) => {
+      restore?.()
+      if (scrollY > 0) {
+        refreshScrollLayout(scrollY)
+        requestAnimationFrame(() => refreshScrollLayout(scrollY))
+      }
+      setDone(true)
+      markSplashDone()
+    }
+
+    // ---- Quick: finished logo fades in (1.5s), no body lock ----
+    if (mode === 'quick') {
+      gsap.set(svg, { x: 0, y: 0, scale: 1, clearProps: 'transform' })
+      gsap.set(allMarks, {
+        opacity: 1,
+        fillOpacity: 1,
+        strokeWidth: 0,
+        strokeDashoffset: 0,
+        strokeDasharray: 'none',
+      })
+      if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 1, y: 0 })
+      // Start hidden — appearance is the 1.5s fade-in.
+      gsap.set(wrap, { opacity: 0 })
+      if (scrollY > 0) window.scrollTo(0, scrollY)
+
+      const reduceMotion =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+      const appear = reduceMotion ? 0.4 : 1.5
+      const hold = reduceMotion ? 0.2 : 0.35
+      const fade = reduceMotion ? 0.25 : 0.45
+      const tl = gsap.timeline()
+      tl.to(wrap, { opacity: 1, duration: appear, ease: 'power2.out' })
+        .to({}, { duration: hold })
+        .to(overlay, {
+          opacity: 0,
+          duration: fade,
+          ease: 'power2.inOut',
+          onComplete: () => finish(),
+        })
+
+      return () => {
+        tl.kill()
+      }
+    }
+
+    // ---- Full: animated draw + body lock (home at top) ----
     // Lock scroll with position:fixed — NOT overflow:hidden on html/body.
-    // overflow:hidden on the root creates a clip rect that crops the enlarged
-    // "e" and makes the stroke look like it starts centred then jumps aside.
     const prevBody = {
       position: document.body.style.position,
       top: document.body.style.top,
@@ -119,18 +130,9 @@ export default function SplashScreen() {
       refreshScrollLayout(scrollY)
     }
 
-    const letters = lettersRef.current.filter(Boolean) as SVGPathElement[]
-    const restFills = [boxRef.current, ...textRef.current].filter(Boolean) as SVGPathElement[]
-
     const reduceMotion =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    const finish = () => {
-      restoreScroll()
-      setDone(true)
-      markSplashDone()
-    }
 
     // ---- Geometry: centre of the "e" within the logo (viewBox 138 x 30) ----
     const VB_W = 138
@@ -140,9 +142,6 @@ export default function SplashScreen() {
     const eCyFrac = (bbox.y + bbox.height / 2) / VB_H
     const SCALE = 4.2
 
-    // Scale first with origin on the glyph (e stays put), THEN nudge so the
-    // live getBoundingClientRect centre hits the viewport centre. This stays
-    // correct even if the flex slot / body lock shifts the SVG box.
     gsap.set(svg, {
       transformOrigin: `${eCxFrac * 100}% ${eCyFrac * 100}%`,
       x: 0,
@@ -161,19 +160,11 @@ export default function SplashScreen() {
       gsap.set(svg, { x: tx1 * (1 - p), y: ty1 * (1 - p), scale: s })
     }
 
-    // ---- Prepare every path for a "draw" (stroke reveal) ----
-    // Each path is clipped to its own shape, so only the *inner* half of the
-    // (centred) stroke is visible — an inside outline that never spills past the
-    // silhouette or jumps when the fill arrives. The width is doubled so the
-    // visible inner half equals the intended line thickness. The stroke is
-    // removed entirely once a glyph has filled, keeping the final logo crisp.
     const STROKE_W = 0.55
     const prep = (el: SVGPathElement, stroke: string, hidden: boolean) => {
       const len = el.getTotalLength()
       gsap.set(el, {
         fillOpacity: 0,
-        // Keep the path fully hidden until its own draw begins so stray
-        // start-caps of not-yet-drawn glyphs don't flash on screen.
         opacity: hidden ? 0 : 1,
         stroke,
         strokeWidth: STROKE_W * 2,
@@ -187,12 +178,10 @@ export default function SplashScreen() {
     if (boxRef.current) prep(boxRef.current, '#FFFFFF', true)
     textRef.current.forEach((el) => el && prep(el, '#E52421', true))
 
-    // The "digital agency" tagline stays hidden (and slightly lowered) until the
-    // wordmark has settled, then fades up — matching the og-image lockup.
     if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 0, y: 8 })
 
     if (reduceMotion) {
-      gsap.set([ePath, ...letters, ...restFills], {
+      gsap.set(allMarks, {
         opacity: 1,
         fillOpacity: 1,
         strokeWidth: 0,
@@ -204,60 +193,73 @@ export default function SplashScreen() {
         opacity: 0,
         duration: 0.4,
         delay: 1.1,
-        // Restore the scrollbar while the overlay is still opaque so the
-        // layout change is hidden, then dissolve to a stable page.
         onStart: restoreScroll,
-        onComplete: finish,
+        onComplete: () => finish(restoreScroll),
       })
-      return restoreScroll
+      return () => restoreScroll()
     }
 
     const proxy = { p: 0 }
-
     const tl = gsap.timeline()
 
-    // Phase 1 — trace the big "e" outline first, hold, then fill it.
     tl.to(ePath, { strokeDashoffset: 0, duration: 1.4, ease: 'power1.inOut' })
       .to({}, { duration: 0.15 })
       .to(ePath, { fillOpacity: 1, duration: 0.45, ease: 'power1.out' })
       .to({}, { duration: 0.25 })
 
-    // Phase 2 — "e" recedes into place while the wordmark draws in
     tl.add('recede')
-      .to(proxy, {
-        p: 1,
-        duration: 1.3,
-        ease: 'power3.inOut',
-        onUpdate: () => applyRecede(proxy.p),
-      }, 'recede')
+      .to(
+        proxy,
+        {
+          p: 1,
+          duration: 1.3,
+          ease: 'power3.inOut',
+          onUpdate: () => applyRecede(proxy.p),
+        },
+        'recede',
+      )
       .set(letters, { opacity: 1 }, 'recede+=0.25')
-      .to(letters, {
-        strokeDashoffset: 0,
-        duration: 0.9,
-        stagger: 0.07,
-        ease: 'power2.out',
-      }, 'recede+=0.25')
-      .to(letters, {
-        fillOpacity: 1,
-        duration: 0.5,
-        stagger: 0.07,
-        ease: 'power1.out',
-      }, 'recede+=0.6')
+      .to(
+        letters,
+        {
+          strokeDashoffset: 0,
+          duration: 0.9,
+          stagger: 0.07,
+          ease: 'power2.out',
+        },
+        'recede+=0.25',
+      )
+      .to(
+        letters,
+        {
+          fillOpacity: 1,
+          duration: 0.5,
+          stagger: 0.07,
+          ease: 'power1.out',
+        },
+        'recede+=0.6',
+      )
       .set(restFills, { opacity: 1 }, 'recede+=0.65')
-      .to(restFills, {
-        strokeDashoffset: 0,
-        duration: 0.7,
-        ease: 'power2.out',
-      }, 'recede+=0.65')
-      .to(restFills, {
-        fillOpacity: 1,
-        duration: 0.45,
-        ease: 'power1.out',
-      }, 'recede+=1.0')
-      // Drop the stroke once everything is filled so no thin outline lingers.
-      .set([ePath, ...letters, ...restFills], { strokeWidth: 0 }, 'recede+=1.45')
+      .to(
+        restFills,
+        {
+          strokeDashoffset: 0,
+          duration: 0.7,
+          ease: 'power2.out',
+        },
+        'recede+=0.65',
+      )
+      .to(
+        restFills,
+        {
+          fillOpacity: 1,
+          duration: 0.45,
+          ease: 'power1.out',
+        },
+        'recede+=1.0',
+      )
+      .set(allMarks, { strokeWidth: 0 }, 'recede+=1.45')
 
-    // Reveal the "digital agency" tagline once the wordmark is fully drawn.
     if (taglineRef.current) {
       tl.to(
         taglineRef.current,
@@ -266,21 +268,23 @@ export default function SplashScreen() {
       )
     }
 
-    // Outro — unlock scroll while the overlay is still fully opaque so the
-    // returning scrollbar can't shift / jerk the revealed page.
-    tl.to(overlay, {
-      opacity: 0,
-      duration: 0.6,
-      ease: 'power2.inOut',
-      onStart: restoreScroll,
-      onComplete: finish,
-    }, '+=1')
+    tl.to(
+      overlay,
+      {
+        opacity: 0,
+        duration: 0.6,
+        ease: 'power2.inOut',
+        onStart: restoreScroll,
+        onComplete: () => finish(restoreScroll),
+      },
+      '+=1',
+    )
 
     return () => {
       tl.kill()
       restoreScroll()
     }
-  }, [])
+  }, [pathname])
 
   if (done) return null
 
