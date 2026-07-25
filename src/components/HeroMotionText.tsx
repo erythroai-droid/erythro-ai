@@ -2554,9 +2554,15 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       gsap.set([inlineEl, slotEl], {
         fontSize: fontPx,
         maxWidth,
+        height: maxH > 0 ? maxH : '',
         minHeight: maxH > 0 ? maxH : '',
       })
-      gsap.set(headingEl, { minHeight: maxH > 0 ? maxH : '' })
+      // Lock the heading box itself so pre/subtitles don't shift when motion paints.
+      gsap.set(headingEl, {
+        fontSize: fontPx,
+        height: maxH > 0 ? maxH : '',
+        minHeight: maxH > 0 ? maxH : '',
+      })
       return fontPx
     }
 
@@ -2566,6 +2572,10 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       gsap.set(inlineEl, { opacity: 1 })
       return
     }
+
+    // Lock mobile type size ASAP so HeroSection intro doesn't later jump when
+    // motion starts. Re-measured after fonts.ready (still under splash).
+    let mobileFontPx = lockMobileHeadlineLayout(list.map((p) => p.text))
 
     let runId = 0
     let running = false
@@ -2687,9 +2697,6 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       gsap.set(inlineEl, { opacity: 0 })
 
       const run = async () => {
-        await waitForSplashDone()
-        if (isCancelled()) return
-
         // Wait for locale fonts (Heebo/Inter) so slot + outline measure correctly
         try {
           if (document.fonts?.ready) await document.fonts.ready
@@ -2702,12 +2709,17 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
         })
         if (isCancelled()) return
 
+        // Re-lock after fonts while splash still covers the hero — applying this
+        // after splash (when subtitles are visible) was causing the first-frame jump.
+        if (!isMotionDesktop()) {
+          mobileFontPx = lockMobileHeadlineLayout(list.map((p) => p.text))
+        }
+
+        await waitForSplashDone()
+        if (isCancelled()) return
+
         const heading = rootRef.current?.closest('.hero-heading') as HTMLElement | null
         if (heading) gsap.set(heading, { opacity: 1, y: 0 })
-
-        const mobileFontPx = !isMotionDesktop()
-          ? lockMobileHeadlineLayout(list.map((p) => p.text))
-          : null
 
         let index = 0
         while (!isCancelled()) {
@@ -2853,8 +2865,8 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       io.disconnect()
       stopMotion()
       const headingEl = slotEl.closest('.hero-heading') as HTMLElement | null
-      gsap.set([inlineEl, slotEl], { minHeight: '', fontSize: '', maxWidth: '' })
-      if (headingEl) gsap.set(headingEl, { minHeight: '' })
+      gsap.set([inlineEl, slotEl], { minHeight: '', height: '', fontSize: '', maxWidth: '' })
+      if (headingEl) gsap.set(headingEl, { minHeight: '', height: '', fontSize: '' })
     }
   }, [phrasesKey, mounted])
 

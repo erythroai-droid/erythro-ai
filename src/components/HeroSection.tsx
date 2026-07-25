@@ -76,12 +76,13 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
     const heading = containerRef.current.querySelector('.hero-heading')
     const subtext = containerRef.current.querySelector('.hero-subtext')
     const buttons = containerRef.current.querySelector('.hero-buttons')
+    const targets = [preHeading, heading, subtext, buttons]
 
     // Prepare initial position
-    gsap.set([preHeading, heading, subtext, buttons], { y: 20 })
+    gsap.set(targets, { y: 20, opacity: 0 })
 
-    // Animate timeline with a slight delay for smooth initial rendering
-    const tl = gsap.timeline({ delay: 0.3 })
+    let cancelled = false
+    const tl = gsap.timeline({ paused: true })
     tl.to(preHeading, {
       opacity: 1,
       y: 0,
@@ -104,6 +105,28 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
         { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', clearProps: 'transform' },
         '-=0.5',
       )
+
+    // Wait for fonts so HeroMotionText can lock mobile type size before the
+    // intro fades in — otherwise the first lock after splash jerks subtitles.
+    ;(async () => {
+      try {
+        if (document.fonts?.ready) await document.fonts.ready
+      } catch {
+        /* ignore */
+      }
+      if (cancelled) return
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+      })
+      if (cancelled) return
+      tl.delay(0.15)
+      tl.play()
+    })()
+
+    return () => {
+      cancelled = true
+      tl.kill()
+    }
   }, [])
 
   return (
