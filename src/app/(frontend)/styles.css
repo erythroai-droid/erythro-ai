@@ -870,7 +870,7 @@
 
   @media (max-width: 1023px) {
     .hero-subtext {
-      font-size: clamp(12px, 3.2vw, 15px);
+      font-size: 14px;
       line-height: 1.5;
       letter-spacing: 0.06em;
       max-width: 22rem;

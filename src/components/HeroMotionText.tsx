@@ -82,6 +82,11 @@ function motionMaxTextWidth(extraPad = 0): number {
   return Math.max(120, window.innerWidth - 40 - extraPad)
 }
 
+/** Mobile headline band: 20px inset from each screen edge. */
+function motionMobileMaxWidth(): number {
+  return Math.max(120, window.innerWidth - 40)
+}
+
 /** Desktop cinematic layer (outline + multi-shot frames). Phones stay simple. */
 function isMotionDesktop(): boolean {
   return window.matchMedia('(min-width: 1024px)').matches
@@ -132,7 +137,7 @@ function outlineEntranceX(
   return { first: -base.first, second: -base.second }
 }
 
-/** Headline size: mobile wraps by word and must fit the longest word; desktop fits one line. */
+/** Headline size: mobile wraps (up to ~2 lines) as large as possible; desktop fits one line. */
 function motionHeadlineFontPx(opts: {
   text: string
   basePx: number
@@ -143,14 +148,16 @@ function motionHeadlineFontPx(opts: {
   minPx?: number
 }): number {
   if (!isMotionDesktop()) {
-    // Wrapping can't break a word — size to the longest word so nothing overflows.
-    const preferred = Math.round(Math.min(window.innerWidth * 0.072, 40, opts.basePx))
+    // Prefer a bold mobile size; only shrink so the longest word fits the
+    // 20px-inset band (wrapping handles the rest — typically 1–2 lines).
+    const preferred = Math.round(Math.min(window.innerWidth * 0.11, 48))
     const word = longestWord(opts.text) || opts.text
     return fitFontPx({
       ...opts,
       text: word,
-      basePx: Math.max(opts.minPx ?? 20, preferred),
-      minPx: opts.minPx ?? 16,
+      maxWidth: Math.min(opts.maxWidth, motionMobileMaxWidth()),
+      basePx: preferred,
+      minPx: opts.minPx ?? 22,
     })
   }
   return fitFontPx(opts)
@@ -2393,6 +2400,69 @@ async function playFrame4(opts: {
   outlineEl.textContent = ''
 }
 
+/** Shared mobile headline size so phrase swaps don't resize the hero stack. */
+function resolveSharedMobileFontPx(
+  texts: string[],
+  opts: {
+    basePx: number
+    fontFamily: string
+    fontWeight: string
+    letterSpacing: string
+    minPx?: number
+  },
+): number {
+  const maxWidth = motionMobileMaxWidth()
+  let shared = Number.POSITIVE_INFINITY
+  for (const text of texts) {
+    if (!text.trim()) continue
+    shared = Math.min(
+      shared,
+      motionHeadlineFontPx({
+        text,
+        maxWidth,
+        basePx: opts.basePx,
+        fontFamily: opts.fontFamily,
+        fontWeight: opts.fontWeight,
+        letterSpacing: opts.letterSpacing,
+        minPx: opts.minPx ?? 22,
+      }),
+    )
+  }
+  return Number.isFinite(shared) ? shared : Math.round(Math.min(window.innerWidth * 0.11, 48))
+}
+
+/** Approximate wrapped phrase height at a given size (plain text ≈ char-word layout). */
+function measureWrappedPhraseHeight(
+  text: string,
+  fontPx: number,
+  maxWidth: number,
+  fontFamily: string,
+  fontWeight: string,
+  letterSpacing: string,
+): number {
+  const el = document.createElement('div')
+  el.style.cssText = [
+    'position:absolute',
+    'left:-99999px',
+    'top:0',
+    'visibility:hidden',
+    `width:${maxWidth}px`,
+    'text-align:center',
+    'text-transform:uppercase',
+    'line-height:1.12',
+    'white-space:normal',
+    `font-family:${fontFamily}`,
+    `font-weight:${fontWeight}`,
+    `font-size:${fontPx}px`,
+    `letter-spacing:${letterSpacing}`,
+  ].join(';')
+  el.textContent = text
+  document.body.appendChild(el)
+  const h = el.getBoundingClientRect().height
+  el.remove()
+  return h
+}
+
 /** Placeholder frames 5+ until designed shot-by-shot. */
 async function playPlaceholderFrame(opts: {
   phrase: MotionPhrase
@@ -2400,22 +2470,16 @@ async function playPlaceholderFrame(opts: {
   slotEl: HTMLElement
   delayed: gsap.core.Tween[]
   cancelled: () => boolean
+  /** Locked size for the whole cycle — avoids subtitle jump on phrase swap. */
+  fontPx?: number
 }): Promise<void> {
-  const { phrase, inlineEl, slotEl, delayed, cancelled } = opts
-  const headingEl = (slotEl.closest('.hero-heading') as HTMLElement | null) ?? slotEl
-  const headingStyles = getComputedStyle(headingEl)
-  const baseFontPx = Number.parseFloat(headingStyles.fontSize) || 28
-  const fontPx = motionHeadlineFontPx({
-    text: phrase.text,
-    basePx: baseFontPx,
-    maxWidth: motionMaxTextWidth(8),
-    fontFamily: headingStyles.fontFamily,
-    fontWeight: headingStyles.fontWeight,
-    letterSpacing: headingStyles.letterSpacing,
-    minPx: 16,
+  const { phrase, inlineEl, delayed, cancelled, fontPx } = opts
+  gsap.set(inlineEl, {
+    opacity: 1,
+    ...(fontPx != null
+      ? { fontSize: fontPx, maxWidth: motionMobileMaxWidth(), width: '100%' }
+      : {}),
   })
-  gsap.set([inlineEl, slotEl], { fontSize: fontPx })
-  gsap.set(inlineEl, { opacity: 1 })
   const chars = renderChars(inlineEl, phrase.text)
   await kineticSlamIn(chars)
   if (cancelled()) return
@@ -2459,25 +2523,45 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    const applyMobileFitFont = (text: string) => {
-      if (isMotionDesktop()) return
+    const lockMobileHeadlineLayout = (texts: string[]) => {
+      if (isMotionDesktop()) return null
       const headingEl = (slotEl.closest('.hero-heading') as HTMLElement | null) ?? slotEl
       const headingStyles = getComputedStyle(headingEl)
-      const baseFontPx = Number.parseFloat(headingStyles.fontSize) || 28
-      const fontPx = motionHeadlineFontPx({
-        text,
+      const baseFontPx = Number.parseFloat(headingStyles.fontSize) || 36
+      const maxWidth = motionMobileMaxWidth()
+      const fontPx = resolveSharedMobileFontPx(texts, {
         basePx: baseFontPx,
-        maxWidth: motionMaxTextWidth(8),
         fontFamily: headingStyles.fontFamily,
         fontWeight: headingStyles.fontWeight,
         letterSpacing: headingStyles.letterSpacing,
-        minPx: 16,
+        minPx: 22,
       })
-      gsap.set([inlineEl, slotEl], { fontSize: fontPx })
+      let maxH = 0
+      for (const text of texts) {
+        if (!text.trim()) continue
+        maxH = Math.max(
+          maxH,
+          measureWrappedPhraseHeight(
+            text,
+            fontPx,
+            maxWidth,
+            headingStyles.fontFamily,
+            headingStyles.fontWeight,
+            headingStyles.letterSpacing,
+          ),
+        )
+      }
+      gsap.set([inlineEl, slotEl], {
+        fontSize: fontPx,
+        maxWidth,
+        minHeight: maxH > 0 ? maxH : '',
+      })
+      gsap.set(headingEl, { minHeight: maxH > 0 ? maxH : '' })
+      return fontPx
     }
 
     if (reduced || list.length < 2) {
-      applyMobileFitFont(list[0]?.text ?? '')
+      lockMobileHeadlineLayout(list.map((p) => p.text))
       inlineEl.textContent = list[0]?.text ?? ''
       gsap.set(inlineEl, { opacity: 1 })
       return
@@ -2572,7 +2656,7 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
     }
 
     const showStaticPhrase = () => {
-      applyMobileFitFont(list[0].text)
+      lockMobileHeadlineLayout(list.map((p) => p.text))
       const chars = renderChars(inlineEl, list[0].text)
       gsap.set(inlineEl, { opacity: 1 })
       gsap.set(chars, {
@@ -2621,6 +2705,10 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
         const heading = rootRef.current?.closest('.hero-heading') as HTMLElement | null
         if (heading) gsap.set(heading, { opacity: 1, y: 0 })
 
+        const mobileFontPx = !isMotionDesktop()
+          ? lockMobileHeadlineLayout(list.map((p) => p.text))
+          : null
+
         let index = 0
         while (!isCancelled()) {
           const phrase = list[index]
@@ -2634,6 +2722,7 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
               slotEl,
               delayed,
               cancelled: isCancelled,
+              fontPx: mobileFontPx ?? 28,
             })
           } else if (index === 0) {
             await playFrame1({
@@ -2763,6 +2852,9 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       mm.revert()
       io.disconnect()
       stopMotion()
+      const headingEl = slotEl.closest('.hero-heading') as HTMLElement | null
+      gsap.set([inlineEl, slotEl], { minHeight: '', fontSize: '', maxWidth: '' })
+      if (headingEl) gsap.set(headingEl, { minHeight: '' })
     }
   }, [phrasesKey, mounted])
 
@@ -2796,20 +2888,20 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
     <>
       <div
         ref={rootRef}
-        className={`relative inline-flex min-w-0 max-w-full items-center justify-center overflow-visible ${className}`}
+        className={`relative inline-flex min-w-0 w-full max-w-full items-center justify-center overflow-visible lg:w-auto ${className}`}
       >
         {/* Layout slot — measures normal size/position for the bounce target */}
         <span
           ref={slotRef}
           aria-hidden
-          className="invisible block max-w-full whitespace-normal px-1 py-[0.12em] text-center lg:max-w-[min(100%,calc(100%-2rem))] lg:whitespace-nowrap"
+          className="invisible block w-full max-w-full whitespace-normal py-[0.12em] text-center lg:w-auto lg:max-w-[min(100%,calc(100%-2rem))] lg:whitespace-nowrap"
         >
           {slotPhrase}
         </span>
 
         <span
           ref={inlineRef}
-          className="absolute inset-0 flex flex-wrap content-center items-center justify-center whitespace-normal px-1 py-[0.12em] text-center opacity-0 lg:flex-nowrap lg:whitespace-nowrap"
+          className="absolute inset-0 flex w-full flex-wrap content-center items-center justify-center whitespace-normal py-[0.12em] text-center opacity-0 lg:w-auto lg:flex-nowrap lg:whitespace-nowrap"
           style={{ transformStyle: 'preserve-3d' }}
           aria-live="polite"
         />

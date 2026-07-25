@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useSiteContent } from './SiteContentProvider'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -147,7 +148,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const sectionRef = useRef<HTMLDivElement | null>(null)
   const headingRef = useRef<HTMLDivElement | null>(null)
-  const cardRef = useRef<HTMLDivElement | null>(null)
+  const cardRef = useRef<HTMLAnchorElement | null>(null)
   const linkRef = useRef<HTMLDivElement | null>(null)
   const marqueeRef = useRef<HTMLDivElement | null>(null)
 
@@ -261,9 +262,11 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
         </div>
 
         {/* Mobile: 9:16 portrait player; desktop: flex slot for 16:9 video */}
-        <div
+        <Link
           ref={cardRef}
-          className="relative mx-auto w-full max-w-[420px] aspect-[9/16] overflow-hidden bg-white lg:max-w-none lg:aspect-auto lg:flex-1 lg:min-h-0"
+          href="/portfolio"
+          aria-label={t(translations.viewAllProjects).replace(/\s*>>\s*$/, '')}
+          className="relative mx-auto block w-full max-w-[420px] aspect-[9/16] overflow-hidden bg-white transition-opacity duration-300 hover:opacity-95 lg:max-w-none lg:aspect-auto lg:flex-1 lg:min-h-0"
         >
           {videoSrc ? (
             <CaseStudyVideo
@@ -275,7 +278,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
               portrait={isDesktop === false}
             />
           ) : null}
-        </div>
+        </Link>
 
         <div
           ref={linkRef}

@@ -81,10 +81,10 @@ export default function HeroAnimation({
     <div
       ref={wrapperRef}
       data-hero-scroll-root
-      className="sticky lg:relative top-0 lg:top-auto z-0 lg:z-auto w-full bg-coal-900 h-screen lg:h-[220vh]"
+      className="sticky lg:relative top-0 lg:top-auto z-0 lg:z-auto w-full bg-coal-900 h-[calc(100dvh-50px)] lg:h-[220vh]"
     >
       {/* Container: normal-flow on mobile (scrolls away), pinned (fixed) on desktop */}
-      <div ref={containerRef} className="absolute inset-0 lg:fixed w-full h-screen bg-coal-900 overflow-hidden" style={{ zIndex: 0 }}>
+      <div ref={containerRef} className="absolute inset-0 lg:fixed w-full h-[calc(100dvh-50px)] lg:h-screen bg-coal-900 overflow-hidden" style={{ zIndex: 0 }}>
         
         {/* Pinned Navbar */}
         {navbar}
