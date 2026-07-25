@@ -8,6 +8,17 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
 }
 
+/** Prefer <video> for Blob/media URLs unless the path clearly looks like an image. */
+function isProbablyImageUrl(url: string): boolean {
+  if (/\.(png|jpe?g|gif|webp|svg|avif)(\?|$)/i.test(url)) return true
+  if (/\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(url)) return false
+  // Vercel Blob video uploads often keep the original name; if not, still prefer video
+  // for hero backgrounds so a missing extension never renders as a broken <img>.
+  if (url.includes('blob.vercel-storage.com')) return false
+  if (url.includes('/api/media/file/')) return false
+  return true
+}
+
 interface HeroAnimationProps {
   videoUrl?: string
   imagesCount?: number
@@ -91,7 +102,7 @@ export default function HeroAnimation({
 
         {/* Background Media (Video or Image) */}
         <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0">
-          {videoUrl && !/\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(videoUrl) ? (
+          {videoUrl && isProbablyImageUrl(videoUrl) ? (
             <img
               src={videoUrl}
               alt="Hero Background"
@@ -99,7 +110,7 @@ export default function HeroAnimation({
             />
           ) : (
             <video
-              src={videoUrl || "/videos/Composition_Hero.mp4"}
+              src={videoUrl || undefined}
               autoPlay
               loop
               muted

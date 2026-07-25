@@ -67,18 +67,56 @@ function LRich(v: any, fallbackPlain: Localized): Record<string, unknown> {
   return out
 }
 
-function mediaUrl(v: any): string | undefined {
-  return v && typeof v === 'object' && typeof v.url === 'string' ? v.url : undefined
+function mediaRelationId(v: any): number | string | null {
+  if (typeof v === 'number') return v
+  if (typeof v === 'string' && v.length > 0) return v
+  return null
 }
 
 function isPopulatedMedia(v: any): boolean {
   return !!(v && typeof v === 'object' && (typeof v.url === 'string' || typeof v.mimeType === 'string'))
 }
 
-function mediaRelationId(v: any): number | string | null {
-  if (typeof v === 'number') return v
-  if (typeof v === 'string' && v.length > 0) return v
-  return null
+/**
+ * Rewrite Payload media proxy paths to the public Vercel Blob URL.
+ * `/api/media/file/...` breaks <video> on Vercel (200 instead of 206 for Range).
+ */
+function toPublicMediaUrl(url: string): string {
+  const trimmed = url.trim()
+  if (!trimmed) return trimmed
+  if (trimmed.includes('blob.vercel-storage.com')) return trimmed
+
+  const token = process.env.BLOB_READ_WRITE_TOKEN
+  const storeId = token?.match(/^vercel_blob_rw_([a-z\d]+)_/i)?.[1]?.toLowerCase()
+  if (!storeId) return trimmed
+
+  const match = trimmed.match(/\/(?:api\/)?media\/file\/(.+)$/i)
+  if (!match?.[1]) return trimmed
+
+  const filename = match[1]
+    .split('/')
+    .map((part) => encodeURIComponent(decodeURIComponent(part)))
+    .join('/')
+  return `https://${storeId}.public.blob.vercel-storage.com/${filename}`
+}
+
+function mediaUrl(v: any): string | undefined {
+  if (typeof v === 'string' && v.trim()) return toPublicMediaUrl(v.trim())
+  if (v && typeof v === 'object' && typeof v.url === 'string' && v.url.trim()) {
+    return toPublicMediaUrl(v.url.trim())
+  }
+  return undefined
+}
+
+async function resolveMediaDoc(payload: any, raw: any): Promise<any | null> {
+  if (isPopulatedMedia(raw)) return raw
+  const id = mediaRelationId(raw)
+  if (id == null) return null
+  try {
+    return await payload.findByID({ collection: 'media', id, depth: 0 })
+  } catch {
+    return null
+  }
 }
 
 function isVideoMedia(media: any, url?: string): boolean {
@@ -197,7 +235,8 @@ export async function getSiteContent(): Promise<SiteContent> {
         }
       })
     }
-    const heroBg = mediaUrl(hero?.backgroundImage)
+    const heroMedia = await resolveMediaDoc(payload, hero?.backgroundImage)
+    const heroBg = mediaUrl(heroMedia)
     if (heroBg) {
       content.hero.backgroundImage = heroBg
     }
@@ -260,10 +299,14 @@ export async function getSiteContent(): Promise<SiteContent> {
     if (typeof caseStudiesG?.viewAllHref === 'string' && caseStudiesG.viewAllHref.trim()) {
       content.caseStudies.viewAllHref = caseStudiesG.viewAllHref.trim()
     }
-    const caseStudyVideo = mediaUrl(caseStudiesG?.bannerVideo)
+    const caseStudyVideoDoc = await resolveMediaDoc(payload, caseStudiesG?.bannerVideo)
+    const caseStudyVideo = mediaUrl(caseStudyVideoDoc)
     if (caseStudyVideo) content.caseStudies.video = caseStudyVideo
-    const caseStudyVideoMobile = mediaUrl(caseStudiesG?.bannerVideoMobile)
+    const caseStudyVideoMobileDoc = await resolveMediaDoc(payload, caseStudiesG?.bannerVideoMobile)
+    const caseStudyVideoMobile = mediaUrl(caseStudyVideoMobileDoc)
     if (caseStudyVideoMobile) content.caseStudies.videoMobile = caseStudyVideoMobile
+    // If only desktop banner is set, don't keep a broken local mobile fallback.
+    else if (caseStudyVideo) content.caseStudies.videoMobile = caseStudyVideo
 
     // --- Solutions section intro + cards ---
     content.solutions.sectionTitle = L(solutionsIntro?.sectionTitle, content.solutions.sectionTitle)
@@ -381,7 +424,7 @@ export async function getSiteContent(): Promise<SiteContent> {
  * unaffected. Invalidated via the `SITE_CONTENT_TAG` tag whenever content is
  * edited in the Payload admin (see src/lib/revalidate.ts).
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v3'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v4'], {
   tags: [SITE_CONTENT_TAG],
 })
 

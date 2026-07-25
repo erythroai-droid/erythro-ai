@@ -392,9 +392,9 @@ export const caseStudies = {
     he: 'כל הפרויקטים',
   },
   viewAllHref: '/portfolio',
-  video:
-    'https://wgw9moyqjdjcaq9l.public.blob.vercel-storage.com/Dynamic%20Urban%20Slideshow.mp4',
-  videoMobile: '/videos/Cases/Dynamic%20Urban%20Slideshow_mobile.mp4',
+  // Prefer CMS/Blob uploads. Local paths and stale blob URLs break on Vercel.
+  video: '',
+  videoMobile: '',
 }
 
 // 6. Solution Section translations

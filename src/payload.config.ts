@@ -75,9 +75,9 @@ export default buildConfig({
       enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
       // Vercel Functions reject request bodies > ~4.5 MB. Client uploads go
       // straight to Blob from the browser and bypass that limit (needed for video).
+      // Re-uploading the same filename (e.g. replacing a video) otherwise fails
+      // on newer @vercel/blob; keep clientUploads for large video files.
       clientUploads: true,
-      // Re-uploading the same filename (e.g. replacing a video) otherwise fails.
-      allowOverwrite: true,
       collections: {
         media: {
           // Serve media straight from the public Blob URL instead of proxying
