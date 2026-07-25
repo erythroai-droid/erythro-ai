@@ -57,13 +57,16 @@
   max-width: var(--a11y-width);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 0;
   padding: 24px;
   background: var(--a11y-panel-bg);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   transition: transform 0.5s var(--a11y-ease);
   user-select: none;
   box-sizing: border-box;
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 .a11y-panel * {
@@ -86,11 +89,24 @@
   transform: translateX(0);
 }
 
+/* Scrollable options area; header scrolls with content, footer stays pinned */
+.a11y-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-inline-end: 2px;
+  margin-inline-end: -2px;
+}
+
 /* ------------------------------ Header ----------------------------- */
 .a11y-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--a11y-border);
 }
@@ -101,7 +117,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  white-space: nowrap;
+  line-height: 1.25;
   color: var(--a11y-text);
 }
 
@@ -183,6 +199,7 @@
 
 /* ------------------------------ Footer ----------------------------- */
 .a11y-footer {
+  flex-shrink: 0;
   padding-top: 24px;
   border-top: 1px solid var(--a11y-border);
   display: flex;

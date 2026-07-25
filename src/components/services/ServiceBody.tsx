@@ -163,7 +163,10 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
       </div>
 
       {/* Hold space after CTA so Let’s Talk doesn’t ride up immediately on scroll. */}
-      <div className="h-[42svh] min-h-[220px] w-full shrink-0 lg:h-[48vh] lg:min-h-[280px]" aria-hidden />
+      <div
+        className="h-20 w-full shrink-0 md:h-24 lg:h-[48vh] lg:min-h-[280px]"
+        aria-hidden
+      />
     </section>
   )
 }

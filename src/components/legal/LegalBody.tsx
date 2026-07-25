@@ -92,6 +92,9 @@ export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyPro
           </p>
         )}
       </article>
+
+      {/* Mobile: 30px before Let’s Talk; +2rem offsets the next section’s -mt-8 */}
+      <div className="h-[calc(30px+2rem)] w-full shrink-0 lg:hidden" aria-hidden />
     </section>
   )
 }

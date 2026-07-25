@@ -239,7 +239,7 @@ export default function AccessibilityPanel({
         aria-modal="true"
         aria-label={t.title}
       >
-        <div>
+        <div className="a11y-body">
           <div className="a11y-header">
             <h2 className="a11y-title">{t.title}</h2>
             <button type="button" className="a11y-close" onClick={onClose} aria-label={t.closeLabel}>
