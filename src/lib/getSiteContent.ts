@@ -367,11 +367,18 @@ export async function getSiteContent(): Promise<SiteContent> {
       }))
     }
     if (Array.isArray(footer?.legalLinks) && footer.legalLinks.length) {
-      content.footer.legalLinks = footer.legalLinks.map((n: any, i: number) => ({
-        id: n.key || defaultSiteContent.footer.legalLinks[i]?.id || `legal-${i}`,
-        href: n.href ?? '#',
-        label: L(n.label, defaultSiteContent.footer.legalLinks[i]?.label ?? {}),
-      }))
+      content.footer.legalLinks = footer.legalLinks.map((n: any, i: number) => {
+        const fallback = defaultSiteContent.footer.legalLinks.find(
+          (d) => d.id === (n.key || defaultSiteContent.footer.legalLinks[i]?.id),
+        ) || defaultSiteContent.footer.legalLinks[i]
+        const rawHref = typeof n.href === 'string' ? n.href.trim() : ''
+        return {
+          id: n.key || fallback?.id || `legal-${i}`,
+          // CMS often still has "#" from seed — prefer real default routes.
+          href: rawHref && rawHref !== '#' ? rawHref : fallback?.href || '#',
+          label: L(n.label, fallback?.label ?? {}),
+        }
+      })
     }
 
     // --- Site settings (contacts + cookie) ---
@@ -399,7 +406,7 @@ export async function getSiteContent(): Promise<SiteContent> {
  * unaffected. Invalidated via the `SITE_CONTENT_TAG` tag whenever content is
  * edited in the Payload admin (see src/lib/revalidate.ts).
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v5'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v6'], {
   tags: [SITE_CONTENT_TAG],
 })
 

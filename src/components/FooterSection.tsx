@@ -445,7 +445,7 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
                 <a
                   key={link.id}
                   href={link.href}
-                  className="text-xs uppercase tracking-[2.4px] text-white transition-colors duration-300 hover:text-gold-500"
+                  className="text-xs uppercase tracking-[2.4px] text-white transition-colors duration-300 hover:text-gold-500 active:text-gold-500"
                 >
                   {t(link.label)}
                 </a>

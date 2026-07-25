@@ -731,12 +731,12 @@ export const footer = {
   legalLinks: [
     {
       id: 'privacy',
-      href: '#',
+      href: '/privacy',
       label: { en: 'Privacy', ru: 'Конфиденциальность', he: 'פרטיות' },
     },
     {
       id: 'terms',
-      href: '#',
+      href: '/terms',
       label: {
         en: 'Terms & conditions',
         ru: 'Условия использования',
@@ -745,7 +745,7 @@ export const footer = {
     },
     {
       id: 'accessibility',
-      href: '#',
+      href: '/accessibility',
       label: { en: 'Accessibility', ru: 'Доступность', he: 'נגישות' },
     },
   ],
