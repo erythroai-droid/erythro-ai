@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { waitForSplashDone } from '@/lib/splash'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -17,44 +18,6 @@ interface MotionPhrase {
 interface HeroMotionTextProps {
   phrases: MotionPhrase[]
   className?: string
-}
-
-declare global {
-  interface Window {
-    __erythroSplashDone?: boolean
-  }
-}
-
-/** Resolves when the brand splash is gone (event, DOM, or flag). */
-function waitForSplashDone(): Promise<void> {
-  if (typeof window === 'undefined') return Promise.resolve()
-  if (window.__erythroSplashDone) return Promise.resolve()
-  if (!document.querySelector('.splash-bg')) {
-    window.__erythroSplashDone = true
-    return Promise.resolve()
-  }
-
-  return new Promise((resolve) => {
-    let settled = false
-    const finish = () => {
-      if (settled) return
-      settled = true
-      window.__erythroSplashDone = true
-      window.removeEventListener('erythro:splash-done', finish)
-      observer.disconnect()
-      window.clearTimeout(fallback)
-      resolve()
-    }
-
-    window.addEventListener('erythro:splash-done', finish)
-
-    const observer = new MutationObserver(() => {
-      if (!document.querySelector('.splash-bg')) finish()
-    })
-    observer.observe(document.body, { childList: true, subtree: true })
-
-    const fallback = window.setTimeout(finish, 10000)
-  })
 }
 
 function tweenTo(
@@ -135,6 +98,17 @@ function outlineEntranceX(
       : { first: fromX, second: -fromX }
   if (!rtl) return base
   return { first: -base.first, second: -base.second }
+}
+
+/**
+ * GSAP `x` distance that parks a host fully past the viewport edge.
+ * `min(55vw, 720)` was too small for wide outline words — they peeked in.
+ */
+function outlineClearanceX(host: HTMLElement, outlineScale: number): number {
+  const scale = Math.max(outlineScale, 0.01)
+  const w = host.getBoundingClientRect().width / scale
+  const margin = Math.max(64, window.innerWidth * 0.1)
+  return window.innerWidth * 0.5 + w * 0.5 + margin
 }
 
 /** Headline size: mobile wraps (up to ~2 lines) as large as possible; desktop fits one line. */
@@ -585,10 +559,11 @@ async function playFrame1(opts: {
     })
   }
 
-  // Cinematic stage above everything — opacity follows hero scroll fade
+  // Cinematic stage above everything — keep invisible until hosts are parked
+  // fully off-screen (otherwise wide outline glyphs flash at the edges).
   stageEl.style.display = 'block'
+  gsap.set(stageEl, { opacity: 0 })
   gsap.set(inlineEl, { opacity: 0 })
-  applyStageFade()
 
   // Target: normal slot center (needed for outline prep before entrance)
   const targetX = slotRect.left + slotRect.width / 2 - window.innerWidth / 2
@@ -667,6 +642,7 @@ async function playFrame1(opts: {
       })
     }
 
+    // Invisible while measuring — avoids a one-frame center/edge flash on reload.
     gsap.set(outlineEl, {
       left: '50%',
       top: '50%',
@@ -675,7 +651,7 @@ async function playFrame1(opts: {
       x: targetX,
       y: targetY,
       scale: 1,
-      opacity: 1,
+      autoAlpha: 0,
       zIndex: 1,
       overflow: 'visible',
       lineHeight: 'normal',
@@ -683,6 +659,8 @@ async function playFrame1(opts: {
       WebkitTextStroke: '0 transparent',
       textShadow: 'none',
     })
+    gsap.set(leftHost, { autoAlpha: 0 })
+    if (outlineRight) gsap.set(rightHost, { autoAlpha: 0 })
 
     let outlineScale = 1
     {
@@ -695,13 +673,19 @@ async function playFrame1(opts: {
       }
     }
 
-    fromX = Math.min(window.innerWidth * 0.55, 720) / Math.max(outlineScale, 0.01)
+    fromX = Math.max(
+      outlineClearanceX(leftHost, outlineScale),
+      outlineRight && rightHost ? outlineClearanceX(rightHost, outlineScale) : 0,
+    )
     const fly = outlineEntranceX(fromX, 'frame1', rtl)
     flyFirst = fly.first
     flySecond = fly.second
-    gsap.set(leftHost, { x: flyFirst, y: 0, opacity: 1 })
-    if (outlineRight) gsap.set(rightHost, { x: flySecond, y: 0, opacity: 1 })
+    gsap.set(leftHost, { x: flyFirst, y: 0 })
+    if (outlineRight) gsap.set(rightHost, { x: flySecond, y: 0 })
+    gsap.set(outlineEl, { autoAlpha: 1 })
   }
+
+  applyStageFade()
 
   // --- Foreground: instantly huge & centered, then settle via fontSize (not scale)
   // so glyphs stay sharp — transform scale on huge type causes jagged edges.
@@ -765,6 +749,8 @@ async function playFrame1(opts: {
 
   // 2) Outline words: first from left, second from right (desktop)
   if (showOutline && leftHost) {
+    gsap.set(leftHost, { autoAlpha: 1 })
+    if (outlineRight && rightHost) gsap.set(rightHost, { autoAlpha: 1 })
     await Promise.all([
       tweenTo(leftHost, { x: 0, duration: 0.85, ease: 'power3.out' }),
       outlineRight && rightHost
@@ -1883,7 +1869,7 @@ async function playFrame3(opts: {
       x: posX,
       y: posY,
       scale: 1,
-      opacity: 1,
+      autoAlpha: 0,
       zIndex: 1,
       overflow: 'visible',
       lineHeight: 'normal',
@@ -1891,6 +1877,8 @@ async function playFrame3(opts: {
       WebkitTextStroke: '0 transparent',
       textShadow: 'none',
     })
+    gsap.set(leftHost, { autoAlpha: 0 })
+    if (outlineRight) gsap.set(rightHost, { autoAlpha: 0 })
     {
       const rect = outlineEl.getBoundingClientRect()
       if (rect.width > 0 && rect.height > 0) {
@@ -1901,12 +1889,18 @@ async function playFrame3(opts: {
       }
     }
 
-    fromX = Math.min(window.innerWidth * 0.55, 720) / Math.max(outlineScale, 0.01)
+    fromX = Math.max(
+      outlineClearanceX(leftHost, outlineScale),
+      outlineRight && rightHost ? outlineClearanceX(rightHost, outlineScale) : 0,
+    )
     const fly = outlineEntranceX(fromX, 'frame3', rtl)
     flyFirst = fly.first
     flySecond = fly.second
-    gsap.set(leftHost, { x: flyFirst, y: 0, opacity: 1 })
-    if (outlineRight) gsap.set(rightHost, { x: flySecond, y: 0, opacity: 1 })
+    gsap.set(leftHost, { x: flyFirst, y: 0 })
+    if (outlineRight) gsap.set(rightHost, { x: flySecond, y: 0 })
+    gsap.set(outlineEl, { autoAlpha: 1 })
+    gsap.set(leftHost, { autoAlpha: 1 })
+    if (outlineRight && rightHost) gsap.set(rightHost, { autoAlpha: 1 })
 
     await Promise.all([
       tweenTo(leftHost, { x: 0, duration: 0.85, ease: 'power3.out' }),
@@ -2237,7 +2231,7 @@ async function playFrame4(opts: {
   let topHalf: HTMLElement | null = null
   let botHalf: HTMLElement | null = null
   let outlineScale = 1
-  const fromX = Math.min(window.innerWidth * 0.55, 720)
+  let fromX = Math.min(window.innerWidth * 0.55, 720)
   const rtl = isMotionRtl()
   // LTR: top ← right (+), bottom ← left (−); RTL mirrors
   let topFromX = rtl ? -fromX : fromX
@@ -2313,6 +2307,10 @@ async function playFrame4(opts: {
       1,
       (window.innerWidth - padX * 2) / Math.max(outlineW, 1),
       (window.innerHeight - padY * 2) / Math.max(outlineH, 1),
+    )
+    fromX = Math.max(
+      outlineClearanceX(topHalf, outlineScale),
+      outlineClearanceX(botHalf, outlineScale),
     )
     topFromX = (rtl ? -fromX : fromX) / Math.max(outlineScale, 0.01)
     botFromX = (rtl ? fromX : -fromX) / Math.max(outlineScale, 0.01)
@@ -2856,10 +2854,19 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
         rootMargin: '0px 0px -35% 0px',
       },
     )
-    if (heroSection) io.observe(heroSection)
-
-    startMotion()
-
+    if (heroSection) {
+      io.observe(heroSection)
+      // Mid-page reload skips splash and must NOT start the fixed cinematic
+      // portal (outline flash over Lets Talk / FAQ). Only run while the hero
+      // scroll root actually intersects the viewport.
+      const rect = heroSection.getBoundingClientRect()
+      const vh = window.innerHeight
+      const visiblyInHero = rect.bottom > vh * 0.35 && rect.top < vh * 0.65
+      if (visiblyInHero) startMotion()
+      else hideStage()
+    } else {
+      startMotion()
+    }
     return () => {
       mm.revert()
       io.disconnect()
@@ -2874,7 +2881,7 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
     <div
       ref={stageRef}
       className="pointer-events-none fixed inset-0 z-[100] hidden overflow-hidden"
-      style={{ contain: 'paint' }}
+      style={{ contain: 'paint', opacity: 0 }}
       dir="ltr"
       aria-hidden
     >

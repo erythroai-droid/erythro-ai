@@ -2,6 +2,42 @@
 
 import React, { useLayoutEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger)
+}
+
+const HOME_SCROLL_KEY = 'erythro:home-scroll'
+/** Above this, treat reload as mid-page and skip the splash lock. */
+const MID_PAGE_SCROLL_PX = 80
+
+function readSavedScrollY(): number {
+  let stored = 0
+  try {
+    const raw = sessionStorage.getItem(HOME_SCROLL_KEY)
+    if (raw != null) {
+      sessionStorage.removeItem(HOME_SCROLL_KEY)
+      const n = Number(raw)
+      if (Number.isFinite(n) && n > 0) stored = n
+    }
+  } catch {
+    // ignore quota / private mode
+  }
+  return Math.max(window.scrollY, stored)
+}
+
+function markSplashDone() {
+  window.__erythroSplashDone = true
+  window.dispatchEvent(new Event('erythro:splash-done'))
+}
+
+function refreshScrollLayout(scrollY: number) {
+  window.scrollTo(0, scrollY)
+  ScrollTrigger.refresh(true)
+  // Pins recalculate height; re-apply after refresh so we don't land in a gap.
+  window.scrollTo(0, scrollY)
+}
 
 /**
  * Brand intro overlay.
@@ -28,6 +64,30 @@ export default function SplashScreen() {
   const taglineRef = useRef<HTMLParagraphElement | null>(null)
 
   useLayoutEffect(() => {
+    // Take over restoration so body { position:fixed } during splash cannot
+    // fight the browser and leave ScrollTriggers measured at scrollY === 0.
+    try {
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+    } catch {
+      // ignore
+    }
+
+    const scrollY = readSavedScrollY()
+
+    // Mid-page reload (e.g. Lets Talk): locking the body would make every pin /
+    // scrub section init as if we were at the top — content stays opacity 0 /
+    // clipPath closed after restore. Skip the intro entirely.
+    if (scrollY > MID_PAGE_SCROLL_PX) {
+      window.scrollTo(0, scrollY)
+      setDone(true)
+      markSplashDone()
+      requestAnimationFrame(() => {
+        refreshScrollLayout(scrollY)
+        requestAnimationFrame(() => refreshScrollLayout(scrollY))
+      })
+      return
+    }
+
     const overlay = overlayRef.current
     const wrap = logoWrapRef.current
     const svg = svgRef.current
@@ -37,7 +97,6 @@ export default function SplashScreen() {
     // Lock scroll with position:fixed — NOT overflow:hidden on html/body.
     // overflow:hidden on the root creates a clip rect that crops the enlarged
     // "e" and makes the stroke look like it starts centred then jumps aside.
-    const scrollY = window.scrollY
     const prevBody = {
       position: document.body.style.position,
       top: document.body.style.top,
@@ -57,7 +116,7 @@ export default function SplashScreen() {
       document.body.style.left = prevBody.left
       document.body.style.right = prevBody.right
       document.body.style.width = prevBody.width
-      window.scrollTo(0, scrollY)
+      refreshScrollLayout(scrollY)
     }
 
     const letters = lettersRef.current.filter(Boolean) as SVGPathElement[]
@@ -70,10 +129,7 @@ export default function SplashScreen() {
     const finish = () => {
       restoreScroll()
       setDone(true)
-      if (typeof window !== 'undefined') {
-        window.__erythroSplashDone = true
-        window.dispatchEvent(new Event('erythro:splash-done'))
-      }
+      markSplashDone()
     }
 
     // ---- Geometry: centre of the "e" within the logo (viewBox 138 x 30) ----

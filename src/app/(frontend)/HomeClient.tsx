@@ -43,6 +43,24 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
     document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
   }
 
+  // Persist scroll before unload so a mid-page refresh can skip the splash
+  // lock and re-open ScrollTrigger pins at the right place.
+  useEffect(() => {
+    const persist = () => {
+      try {
+        sessionStorage.setItem('erythro:home-scroll', String(window.scrollY))
+      } catch {
+        // ignore
+      }
+    }
+    window.addEventListener('pagehide', persist)
+    window.addEventListener('beforeunload', persist)
+    return () => {
+      window.removeEventListener('pagehide', persist)
+      window.removeEventListener('beforeunload', persist)
+    }
+  }, [])
+
   // Automatically toggle dark class on the HTML/Body element for Tailwind
   useEffect(() => {
     const root = window.document.documentElement

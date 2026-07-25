@@ -9,6 +9,7 @@ import HeroMotionText from './HeroMotionText'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import { isContactModalHref, navigateCtaHref } from '@/lib/ctaNav'
+import { waitForSplashDone } from '@/lib/splash'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -117,12 +118,15 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
 
     // Wait for fonts so HeroMotionText can lock mobile type size before the
     // intro fades in — otherwise the first lock after splash jerks subtitles.
+    // Wait for splash so pre/heading stay opacity-0 under the brand overlay.
     ;(async () => {
       try {
         if (document.fonts?.ready) await document.fonts.ready
       } catch {
         /* ignore */
       }
+      if (cancelled) return
+      await waitForSplashDone()
       if (cancelled) return
       await new Promise<void>((resolve) => {
         requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
@@ -131,7 +135,6 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
       tl.delay(0.15)
       tl.play()
     })()
-
     return () => {
       cancelled = true
       tl.kill()
