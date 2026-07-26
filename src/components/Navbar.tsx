@@ -14,6 +14,11 @@ interface NavbarProps {
   onOpenAccessibility: () => void
   /** When true, hash nav links jump to home (`/#…`) instead of in-page scroll. */
   forceBurger?: boolean
+  /**
+   * Force header ink when the page top is known light/dark.
+   * `auto` samples the backdrop (home / service & project heroes).
+   */
+  headerContrast?: 'auto' | 'light' | 'dark'
 }
 
 // Accessibility (person) glyph used in the burger menu CTA
@@ -117,14 +122,14 @@ export default function Navbar({
   setTheme,
   onOpenAccessibility,
   forceBurger = false,
+  headerContrast = 'auto',
 }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   // Desktop: logo only at page top — hides on scroll and stays hidden until top
   const [logoHidden, setLogoHidden] = useState(false)
   // Desktop inner pages: Menu/logo contrast vs content under the fixed header
   // (mix-blend fails inside a fixed stacking context, so we sample the backdrop).
-  // Prefer white logo until the first backdrop sample (heroes are usually dark).
-  const [overDarkBg, setOverDarkBg] = useState(true)
+  const [overDarkBg, setOverDarkBg] = useState(theme === 'dark')
   // Always false on SSR; sync after mount to avoid hydration mismatch.
   const [isDesktop, setIsDesktop] = useState(false)
   const menuBtnRef = useRef<HTMLButtonElement | null>(null)
@@ -164,16 +169,21 @@ export default function Navbar({
 
     const isDarkAtPoint = (x: number, y: number) => {
       const stack = document.elementsFromPoint(x, y)
+
+      // Prefer explicit page hints anywhere under the sample point.
       for (const el of stack) {
         if (!(el instanceof Element)) continue
         if (el.closest('header')) continue
-        if (el.closest('[aria-label="Toggle menu"]')) continue
-
-        // Explicit page/section hint wins over media / gradient heuristics.
         const contrastHost = el.closest('[data-menu-contrast]')
         if (contrastHost instanceof HTMLElement) {
           return contrastHost.dataset.menuContrast === 'dark'
         }
+      }
+
+      for (const el of stack) {
+        if (!(el instanceof Element)) continue
+        if (el.closest('header')) continue
+        if (el.closest('[aria-label="Toggle menu"]')) continue
 
         const tag = el.tagName
         if (tag === 'IMG' || tag === 'VIDEO' || tag === 'CANVAS') return true
@@ -236,11 +246,14 @@ export default function Navbar({
     if (!mobileOpen) setServicesOpen(true)
   }, [mobileOpen])
 
-  // Light plate only when the backdrop under the header is light; over dark heroes
-  // (services/projects/home) keep transparent chrome + white logo/menu.
-  const plateIsLight = theme === 'light' && !mobileOpen && !isDesktop && !overDarkBg
-  const logoOnDark = mobileOpen || theme === 'dark' || overDarkBg
-  const menuOnDark = mobileOpen || theme === 'dark' || overDarkBg
+  // Light plate / dark ink when page top is light; white ink over dark heroes.
+  const overDarkChrome =
+    mobileOpen ||
+    headerContrast === 'dark' ||
+    (headerContrast !== 'light' && (theme === 'dark' || overDarkBg))
+  const plateIsLight = theme === 'light' && !mobileOpen && !isDesktop && !overDarkChrome
+  const logoOnDark = overDarkChrome
+  const menuOnDark = overDarkChrome
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {

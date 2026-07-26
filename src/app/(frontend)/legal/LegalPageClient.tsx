@@ -82,6 +82,7 @@ export default function LegalPageClient({
             setTheme={setTheme}
             onOpenAccessibility={() => setIsAccessibilityOpen(true)}
             forceBurger
+            headerContrast={theme === 'light' ? 'light' : 'dark'}
           />
 
           <div className="relative z-10 pt-[72px] lg:pt-[100px]" data-menu-contrast={theme === 'light' ? 'light' : 'dark'}>

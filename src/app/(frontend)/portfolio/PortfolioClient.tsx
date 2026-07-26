@@ -85,6 +85,7 @@ export default function PortfolioClient({
             setTheme={setTheme}
             onOpenAccessibility={() => setIsAccessibilityOpen(true)}
             forceBurger
+            headerContrast={theme === 'light' ? 'light' : 'dark'}
           />
 
           {/*
