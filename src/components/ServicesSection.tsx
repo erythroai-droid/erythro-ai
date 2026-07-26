@@ -676,7 +676,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
       <div
         id="contacts"
         ref={mobileContactRef}
-        className="relative z-20 -mt-8 flex min-h-[100svh] w-full flex-col items-center justify-center gap-8 overflow-hidden rounded-t-[28px] py-[80px] pb-[220px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lets-talk-bg md:gap-[30px] md:py-[120px] md:pb-[240px] lg:hidden"
+        className="relative z-20 -mt-8 flex min-h-[100svh] w-full flex-col items-center justify-center gap-8 overflow-hidden rounded-t-[28px] py-[80px] pb-[220px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lets-talk-bg pointer-events-auto md:gap-[30px] md:py-[120px] md:pb-[240px] lg:hidden"
       >
         <div
           className="solution-section-noise absolute inset-0 z-[1] pointer-events-none"
@@ -761,7 +761,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           </span>
         </div>
 
-        <div ref={mobileButtonRef} className="relative z-10 mt-2">
+        <div ref={mobileButtonRef} className="relative z-10 mt-2 pointer-events-auto">
           <Button
             variant="white-outline"
             onClick={() =>
