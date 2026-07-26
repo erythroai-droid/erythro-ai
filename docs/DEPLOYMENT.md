@@ -312,20 +312,3 @@ mobile stacking на главной, страница `/portfolio` и её GSAP/
 **`PLAYBOOK.md` §9 — «Хроника после базового деплоя»**.
 
 ---
-
-## 11. Basic Auth (временный замок сайта)
-
-Сайт закрывается HTTP Basic Auth в `src/middleware.ts`.
-
-| Env | Назначение |
-|---|---|
-| `BASIC_AUTH_USER` | логин |
-| `BASIC_AUTH_PASSWORD` | пароль |
-
-Оба должны быть заданы — иначе замок **выключен**. Защищаются страницы, `/admin` и `/api`
-(статика `_next` / файлы с расширением пропускаются).
-
-**Vercel → Project → Settings → Environment Variables** (Production / Preview):
-добавить обе переменные → Redeploy.
-
-Снять замок: удалить переменные (или очистить) и redeploy.
