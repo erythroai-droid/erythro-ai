@@ -61,3 +61,6 @@ node_modules/
 .antigravityrules
 .vscode/
 
+
+.vercel
+.env*
