@@ -436,7 +436,7 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
             ref={barRef}
             className="flex w-full flex-col items-start justify-between gap-4 border-t border-white/5 pt-6 lg:flex-row lg:items-center"
           >
-            <p className="text-xs uppercase tracking-[2.4px] text-white">
+            <p className="text-xs uppercase leading-5 tracking-[2.4px] text-white lg:leading-normal">
               {t(translations.copyright)}
             </p>
 

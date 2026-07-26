@@ -123,15 +123,20 @@ export default function Navbar({
   const [logoHidden, setLogoHidden] = useState(false)
   // Desktop inner pages: Menu/logo contrast vs content under the fixed header
   // (mix-blend fails inside a fixed stacking context, so we sample the backdrop).
-  const [overDarkBg, setOverDarkBg] = useState(true)
+  // Default from theme so light pages don't flash a white logo on a light plate.
+  const [overDarkBg, setOverDarkBg] = useState(theme === 'dark')
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : false,
+  )
   const menuBtnRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY
       // Desktop only: hide logo after a short scroll. Mobile keeps logo + Menu.
-      const isDesktop = window.matchMedia('(min-width: 1024px)').matches
-      setLogoHidden(isDesktop && y > 24)
+      const desktop = window.matchMedia('(min-width: 1024px)').matches
+      setIsDesktop(desktop)
+      setLogoHidden(desktop && y > 24)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('resize', handleScroll)
@@ -186,15 +191,15 @@ export default function Navbar({
     let raf = 0
     const update = () => {
       raf = 0
-      const isDesktop = window.matchMedia('(min-width: 1024px)').matches
+      const desktop = window.matchMedia('(min-width: 1024px)').matches
       // Mobile header uses a theme plate — follow theme. Desktop samples backdrop.
-      if (!isDesktop || mobileOpen) {
+      if (!desktop || mobileOpen) {
         setOverDarkBg(theme === 'dark')
         return
       }
       const btn = menuBtnRef.current
       if (!btn) {
-        setOverDarkBg(true)
+        setOverDarkBg(theme === 'dark')
         return
       }
       const rect = btn.getBoundingClientRect()
@@ -230,9 +235,10 @@ export default function Navbar({
     if (!mobileOpen) setServicesOpen(true)
   }, [mobileOpen])
 
-  // Desktop: contrast from sampled backdrop. Mobile plate: follow site theme.
-  const menuOnDark = mobileOpen || overDarkBg
-  const logoOnDark = mobileOpen || overDarkBg || theme === 'dark'
+  // Light mobile plate is always light — keep logo/menu dark until the drawer opens.
+  const plateIsLight = theme === 'light' && !mobileOpen && !isDesktop
+  const menuOnDark = mobileOpen || (!plateIsLight && overDarkBg)
+  const logoOnDark = mobileOpen || (!plateIsLight && (overDarkBg || theme === 'dark'))
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {

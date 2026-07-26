@@ -29,10 +29,12 @@ export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyPro
   const title = tLegal(page.title, locale)
   const bodyTone = isLight ? 'text-coal-900/85' : 'text-white/80'
   const headingTone = isLight ? 'text-coal-900' : 'text-white'
+  const accentTone = isLight ? 'text-gold-900' : 'text-gold-500'
 
   return (
     <section
       id="legal-body"
+      data-menu-contrast={isLight ? 'light' : 'dark'}
       className={`relative z-20 w-full shadow-[0_-12px_30px_rgba(0,0,0,0.28)] ${
         isLight ? 'bg-gold-100 text-coal-900' : 'dark-gradient-bg text-white'
       }`}
@@ -43,7 +45,7 @@ export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyPro
             <span className="text-erythro-500">{title.charAt(0)}</span>
             <span>{title.slice(1)}</span>
           </h1>
-          <p className="m-0 font-sans text-sm font-light tracking-[0.04em] text-gold-500 md:text-base">
+          <p className={`m-0 font-sans text-sm font-light tracking-[0.04em] md:text-base ${accentTone}`}>
             {tLegal(page.updatedLabel, locale)}: {formatUpdatedAt(page.updatedAt, locale)}
           </p>
           <p className={`m-0 max-w-[720px] font-sans text-lg font-light leading-8 md:text-xl md:leading-9 ${bodyTone}`}>
@@ -87,7 +89,7 @@ export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyPro
         </div>
 
         {page.closing && (
-          <p className="m-0 border-t border-white/10 pt-8 font-sans text-base font-light leading-7 text-gold-500 md:text-lg">
+          <p className={`m-0 border-t border-white/10 pt-8 font-sans text-base font-light leading-7 md:text-lg ${accentTone}`}>
             {tLegal(page.closing, locale)}
           </p>
         )}

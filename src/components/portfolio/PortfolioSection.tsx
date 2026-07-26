@@ -155,6 +155,7 @@ export default function PortfolioSection({
     <section
       ref={sectionRef}
       id="portfolio"
+      data-menu-contrast={isLight ? 'light' : 'dark'}
       className={`relative z-10 min-h-screen w-full overflow-hidden pt-[100px] ${
         isLight ? 'bg-gold-100' : 'dark-gradient-bg'
       }`}

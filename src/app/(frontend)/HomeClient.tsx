@@ -17,7 +17,6 @@ import { SiteContentProvider } from '@/components/SiteContentProvider'
 import { ContactModalProvider } from '@/components/ContactModal'
 import type { SiteContent } from '@/lib/defaultContent'
 import { persistHomeScrollY } from '@/lib/splash'
-import { useSectionAutoSnap } from '@/hooks/useSectionAutoSnap'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface HomeClientProps {
@@ -85,8 +84,6 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
     () => ['cases', 'services', 'contacts', 'solutions', 'faq', 'footer'],
     [],
   )
-
-  useSectionAutoSnap(scrollSectionIds)
 
   return (
     <SiteContentProvider value={content}>

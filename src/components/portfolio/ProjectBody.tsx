@@ -57,6 +57,7 @@ export default function ProjectBody({
     <section
       ref={sectionRef}
       id="project-body"
+      data-menu-contrast={isLight ? 'light' : 'dark'}
       className={`relative z-20 w-full shadow-[0_-12px_30px_rgba(0,0,0,0.28)] ${
         isLight ? 'bg-gold-100 text-coal-900' : 'dark-gradient-bg text-white'
       }`}
