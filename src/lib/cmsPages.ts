@@ -87,8 +87,27 @@ function pickStr(v: any, locale: string, fallback = ''): string {
   return fallback
 }
 
-function mapPortfolioDoc(d: any, i: number, locale: string): PortfolioProject {
-  const fb = PORTFOLIO_PROJECTS[i] || PORTFOLIO_PROJECTS[0]
+function mapPortfolioDoc(d: any, locale: string): PortfolioProject {
+  // Prefer slug match so CMS docs never inherit unrelated seed project fields by index.
+  const fb =
+    PORTFOLIO_PROJECTS.find((p) => p.slug === d.slug) ||
+    ({
+      id: String(d.id ?? ''),
+      slug: d.slug || 'project',
+      title: 'Project',
+      category: 'other',
+      categoryLabel: 'Other',
+      description: '',
+      tags: [],
+      image: '/images/portfolio/case-1.png',
+      date: '',
+      stack: [],
+      client: '',
+      hero: { type: 'image' as const, src: '/images/portfolio/case-1.png' },
+      summary: '',
+      body: [],
+    } satisfies PortfolioProject)
+
   const cardUrl = mediaUrl(d.cardImage) || fb.image
   const heroUrl = mediaUrl(d.heroMedia) || mediaUrl(d.cardImage) || fb.hero.src
   const heroMobileUrl =
@@ -98,22 +117,19 @@ function mapPortfolioDoc(d: any, i: number, locale: string): PortfolioProject {
 
   const body: PortfolioBodySection[] =
     Array.isArray(d.body) && d.body.length
-      ? d.body.map((section: any, si: number) => {
-          const fbSection = fb.body[si]
+      ? d.body.map((section: any) => {
           const paragraphs =
             Array.isArray(section.paragraphs) && section.paragraphs.length
               ? section.paragraphs.map((p: any) => pickStr(p.text, locale)).filter(Boolean)
-              : fbSection?.paragraphs || []
+              : []
           const images =
             Array.isArray(section.images) && section.images.length
               ? section.images.map((img: any) => mediaUrl(img.image)).filter(Boolean)
-              : fbSection?.images || []
+              : []
           return {
             ...(pickStr(section.heading, locale)
               ? { heading: pickStr(section.heading, locale) }
-              : fbSection?.heading
-                ? { heading: fbSection.heading }
-                : {}),
+              : {}),
             paragraphs,
             images: images as string[],
           }
@@ -169,7 +185,7 @@ async function fetchPortfolioProjects(locale: string): Promise<PortfolioProject[
       sort: 'order',
     })
     if (!res.docs?.length) return PORTFOLIO_PROJECTS
-    return res.docs.map((d: any, i: number) => mapPortfolioDoc(d, i, locale))
+    return res.docs.map((d: any) => mapPortfolioDoc(d, locale))
   } catch (err) {
     console.error('[cmsPages] portfolio fallback:', err)
     return PORTFOLIO_PROJECTS
@@ -389,7 +405,8 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 }
 
 export const getCachedPortfolioProjects = (locale: string) =>
-  unstable_cache(() => fetchPortfolioProjects(locale), [`portfolio-projects-${locale}`], {
+  // v2: bust Data Cache that may still hold seed fallback from pre-migration errors
+  unstable_cache(() => fetchPortfolioProjects(locale), [`portfolio-projects-v2-${locale}`], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
