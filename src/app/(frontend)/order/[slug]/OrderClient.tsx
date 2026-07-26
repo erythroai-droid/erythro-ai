@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import FooterSection from '@/components/FooterSection'
 import { AccessibilityPanel } from '@/components/accessibility'
@@ -17,8 +17,7 @@ import {
   tLocale,
   type OrderPlan,
 } from '@/lib/orderPlans'
-
-const LOCALE_COOKIE = 'NEXT_LOCALE'
+import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface OrderClientProps {
   initialLocale: string
@@ -28,26 +27,8 @@ interface OrderClientProps {
 
 export default function OrderClient({ initialLocale, content, plan }: OrderClientProps) {
   const a11yTranslations = content.accessibility
-  const [locale, setLocaleState] = useState(initialLocale)
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'light')
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
-
-  const setLocale = (next: string) => {
-    setLocaleState(next)
-    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
-  }
-
-  useEffect(() => {
-    const root = window.document.documentElement
-    if (theme === 'dark') root.classList.add('dark')
-    else root.classList.remove('dark')
-  }, [theme])
-
-  useEffect(() => {
-    const root = window.document.documentElement
-    root.lang = locale
-    root.dir = locale === 'he' ? 'rtl' : 'ltr'
-  }, [locale])
 
   const pickA11y = (field?: Record<string, string> | null) =>
     (field && (field[locale] || field.en)) || ''

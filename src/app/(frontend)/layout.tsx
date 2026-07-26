@@ -6,6 +6,7 @@ import Script from 'next/script'
 import { heebo, inter, robotoMono } from '@/lib/fonts'
 import SplashHost from '@/components/SplashHost'
 import NavigationTopLoader from '@/components/NavigationTopLoader'
+import { THEME_BOOTSTRAP_SCRIPT, THEME_COOKIE, isSiteTheme } from '@/lib/sitePrefs'
 import './styles.css'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
@@ -129,14 +130,20 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
 
   const cookieStore = await cookies()
   const locale = resolveLocale(cookieStore.get('NEXT_LOCALE')?.value)
+  const themeCookie = cookieStore.get(THEME_COOKIE)?.value
+  const themeClass = isSiteTheme(themeCookie) && themeCookie === 'dark' ? 'dark' : ''
 
   return (
     <html
       lang={locale}
       dir={locale === 'he' ? 'rtl' : 'ltr'}
-      className={`${inter.variable} ${heebo.variable} ${robotoMono.variable}`}
+      className={`${inter.variable} ${heebo.variable} ${robotoMono.variable} ${themeClass}`.trim()}
+      suppressHydrationWarning
     >
       <body>
+        <Script id="theme-bootstrap" strategy="beforeInteractive">
+          {THEME_BOOTSTRAP_SCRIPT}
+        </Script>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-F3BTVWGDRS"
           strategy="afterInteractive"

@@ -18,8 +18,7 @@ import { ContactModalProvider } from '@/components/ContactModal'
 import type { SiteContent } from '@/lib/defaultContent'
 import { persistHomeScrollY } from '@/lib/splash'
 import { useSectionAutoSnap } from '@/hooks/useSectionAutoSnap'
-
-const LOCALE_COOKIE = 'NEXT_LOCALE'
+import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface HomeClientProps {
   initialLocale: string
@@ -28,21 +27,8 @@ interface HomeClientProps {
 
 export default function HomeClient({ initialLocale, content }: HomeClientProps) {
   const a11yTranslations = content.accessibility
-  const [locale, setLocaleState] = useState(initialLocale)
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark')
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
-
-  // Persist the chosen language to a cookie so the middleware and server render
-  // remember it on subsequent visits.
-  const setLocale = (next: string) => {
-    // Apply dir/lang before React re-renders hero motion — otherwise frames
-    // measure with the previous direction and the headline jumps after switch.
-    const root = document.documentElement
-    root.lang = next
-    root.dir = next === 'he' ? 'rtl' : 'ltr'
-    setLocaleState(next)
-    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
-  }
 
   // Persist scroll before unload so a mid-page refresh can use the quick splash
   // and restore ScrollTrigger pins at the right place.
@@ -55,23 +41,6 @@ export default function HomeClient({ initialLocale, content }: HomeClientProps) 
       window.removeEventListener('beforeunload', persist)
     }
   }, [])
-
-  // Automatically toggle dark class on the HTML/Body element for Tailwind
-  useEffect(() => {
-    const root = window.document.documentElement
-    if (theme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-  }, [theme])
-
-  // Keep the document language/direction in sync with the active locale
-  useEffect(() => {
-    const root = window.document.documentElement
-    root.lang = locale
-    root.dir = locale === 'he' ? 'rtl' : 'ltr'
-  }, [locale])
 
   // Resolve accessibility panel strings for the active locale. The panel
   // module itself is locale-agnostic; the app supplies the translated labels.
