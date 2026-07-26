@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import LegalPageClient from '../legal/LegalPageClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getLegalPage, tLegal } from '@/lib/legalPages'
+import { getRequestPrefs } from '@/lib/requestPrefs'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -35,11 +36,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TermsPage() {
-  const cookieStore = await cookies()
-  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
-  const initialLocale =
-    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+  const { initialLocale, initialTheme } = await getRequestPrefs()
   const content = await getCachedSiteContent()
 
-  return <LegalPageClient initialLocale={initialLocale} content={content} pageId={PAGE_ID} />
+  return (
+    <LegalPageClient
+      initialLocale={initialLocale}
+      initialTheme={initialTheme}
+      content={content}
+      pageId={PAGE_ID}
+    />
+  )
 }

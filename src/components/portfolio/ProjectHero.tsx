@@ -138,6 +138,7 @@ export default function ProjectHero({ project }: ProjectHeroProps) {
     <section
       ref={sectionRef}
       id="project-hero"
+      data-menu-contrast="dark"
       className="relative z-10 flex w-full flex-col overflow-hidden bg-coal-900 lg:min-h-screen lg:justify-end"
     >
       <div className="relative aspect-[16/10] w-full shrink-0 sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full lg:w-full">

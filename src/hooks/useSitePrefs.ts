@@ -11,23 +11,28 @@ import {
 
 /**
  * Shared locale + theme state with cookie/localStorage persistence.
+ * Pass `initialTheme` from the request cookie so SSR and the first client
+ * render match. When omitted, both sides start from `defaultTheme` and
+ * localStorage is applied only after mount.
  */
 export function useSitePrefs(
   initialLocale: string,
   defaultTheme: SiteTheme = 'dark',
+  initialTheme?: SiteTheme,
 ) {
   const [locale, setLocaleState] = useState(initialLocale)
-  const [theme, setThemeState] = useState<SiteTheme>(() => {
-    if (typeof window === 'undefined') return defaultTheme
-    return readStoredTheme() ?? defaultTheme
-  })
+  const [theme, setThemeState] = useState<SiteTheme>(initialTheme ?? defaultTheme)
 
-  // Hydrate theme from storage; keep locale storage aligned with cookie/SSR.
   useEffect(() => {
-    const stored = readStoredTheme()
-    if (stored) setThemeState(stored)
+    if (initialTheme) {
+      persistTheme(initialTheme)
+    } else {
+      const stored = readStoredTheme()
+      if (stored) setThemeState(stored)
+      else persistTheme(defaultTheme)
+    }
     if (isSiteLocale(initialLocale)) persistLocale(initialLocale)
-  }, [initialLocale])
+  }, [initialLocale, initialTheme, defaultTheme])
 
   useEffect(() => {
     const root = document.documentElement

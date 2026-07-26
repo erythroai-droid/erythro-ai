@@ -18,6 +18,7 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface ProjectClientProps {
   initialLocale: string
+  initialTheme?: 'light' | 'dark'
   content: SiteContent
   project: PortfolioProject
   prev: { slug: string; title: string } | null
@@ -26,13 +27,14 @@ interface ProjectClientProps {
 
 export default function ProjectClient({
   initialLocale,
+  initialTheme,
   content,
   project,
   prev,
   next,
 }: ProjectClientProps) {
   const a11yTranslations = content.accessibility
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale)
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   const pickA11y = (field?: Record<string, string> | null) =>

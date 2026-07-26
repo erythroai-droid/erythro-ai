@@ -18,13 +18,14 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface ServiceClientProps {
   initialLocale: string
+  initialTheme?: 'light' | 'dark'
   content: SiteContent
   service: ServicePage
 }
 
-export default function ServiceClient({ initialLocale, content, service }: ServiceClientProps) {
+export default function ServiceClient({ initialLocale, initialTheme, content, service }: ServiceClientProps) {
   const a11yTranslations = content.accessibility
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale)
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   const pickA11y = (field?: Record<string, string> | null) =>

@@ -123,11 +123,10 @@ export default function Navbar({
   const [logoHidden, setLogoHidden] = useState(false)
   // Desktop inner pages: Menu/logo contrast vs content under the fixed header
   // (mix-blend fails inside a fixed stacking context, so we sample the backdrop).
-  // Default from theme so light pages don't flash a white logo on a light plate.
-  const [overDarkBg, setOverDarkBg] = useState(theme === 'dark')
-  const [isDesktop, setIsDesktop] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : false,
-  )
+  // Prefer white logo until the first backdrop sample (heroes are usually dark).
+  const [overDarkBg, setOverDarkBg] = useState(true)
+  // Always false on SSR; sync after mount to avoid hydration mismatch.
+  const [isDesktop, setIsDesktop] = useState(false)
   const menuBtnRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
@@ -194,10 +193,9 @@ export default function Navbar({
     let raf = 0
     const update = () => {
       raf = 0
-      const desktop = window.matchMedia('(min-width: 1024px)').matches
-      // Mobile header uses a theme plate — follow theme. Desktop samples backdrop.
-      if (!desktop || mobileOpen) {
-        setOverDarkBg(theme === 'dark')
+      // Open drawer is always dark chrome.
+      if (mobileOpen) {
+        setOverDarkBg(true)
         return
       }
       const btn = menuBtnRef.current
@@ -238,12 +236,11 @@ export default function Navbar({
     if (!mobileOpen) setServicesOpen(true)
   }, [mobileOpen])
 
-  // Light theme on inner pages (forceBurger): always dark logo/menu on the light plate/bg.
-  // Home keeps backdrop sampling on desktop so the mark stays white over the dark hero.
-  const logoOnDark =
-    mobileOpen || theme === 'dark' || (!forceBurger && isDesktop && overDarkBg)
-  const menuOnDark =
-    mobileOpen || theme === 'dark' || (!forceBurger && isDesktop && overDarkBg)
+  // Light plate only when the backdrop under the header is light; over dark heroes
+  // (services/projects/home) keep transparent chrome + white logo/menu.
+  const plateIsLight = theme === 'light' && !mobileOpen && !isDesktop && !overDarkBg
+  const logoOnDark = mobileOpen || theme === 'dark' || overDarkBg
+  const menuOnDark = mobileOpen || theme === 'dark' || overDarkBg
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
@@ -274,7 +271,7 @@ export default function Navbar({
         className={`relative z-[70] flex w-full pointer-events-auto items-center justify-between overflow-visible px-[30px] py-5 lg:border-transparent lg:bg-transparent lg:px-[50px] lg:py-8 lg:backdrop-blur-none transition-colors duration-300 ${
           mobileOpen
             ? 'max-lg:border-transparent max-lg:bg-transparent max-lg:backdrop-blur-none'
-            : theme === 'light'
+            : plateIsLight
               ? 'max-lg:border-b max-lg:border-coal-900/10 max-lg:bg-gold-100 max-lg:backdrop-blur-md'
               : 'max-lg:border-b max-lg:border-white/5 max-lg:bg-coal-900/50 max-lg:backdrop-blur-md'
         }`}

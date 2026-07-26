@@ -17,17 +17,19 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface PortfolioClientProps {
   initialLocale: string
+  initialTheme?: 'light' | 'dark'
   content: SiteContent
   projects: PortfolioProject[]
 }
 
 export default function PortfolioClient({
   initialLocale,
+  initialTheme,
   content,
   projects,
 }: PortfolioClientProps) {
   const a11yTranslations = content.accessibility
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale)
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   const pickA11y = (field?: Record<string, string> | null) =>

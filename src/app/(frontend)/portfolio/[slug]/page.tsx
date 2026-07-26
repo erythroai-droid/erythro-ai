@@ -10,6 +10,7 @@ import {
   getPortfolioProjectBySlug,
 } from '@/lib/cmsPages'
 import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
+import { getRequestPrefs } from '@/lib/requestPrefs'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -73,10 +74,7 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { slug } = await params
 
-  const cookieStore = await cookies()
-  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
-  const initialLocale =
-    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+  const { initialLocale, initialTheme } = await getRequestPrefs()
 
   const project = await getPortfolioProjectBySlug(slug, initialLocale)
   if (!project) notFound()
@@ -102,6 +100,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   return (
     <ProjectClient
       initialLocale={initialLocale}
+      initialTheme={initialTheme}
       content={content}
       project={project}
       prev={toNeighbor(prevProject)}

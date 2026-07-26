@@ -21,13 +21,14 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface OrderClientProps {
   initialLocale: string
+  initialTheme?: 'light' | 'dark'
   content: SiteContent
   plan: OrderPlan
 }
 
-export default function OrderClient({ initialLocale, content, plan }: OrderClientProps) {
+export default function OrderClient({ initialLocale, initialTheme, content, plan }: OrderClientProps) {
   const a11yTranslations = content.accessibility
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'light')
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'light', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   const pickA11y = (field?: Record<string, string> | null) =>

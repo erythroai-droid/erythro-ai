@@ -1,12 +1,10 @@
 import React from 'react'
 import type { Metadata } from 'next'
-import { cookies } from 'next/headers'
 import PortfolioClient from './PortfolioClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getCachedPortfolioProjects } from '@/lib/cmsPages'
+import { getRequestPrefs } from '@/lib/requestPrefs'
 
-const SUPPORTED_LOCALES = ['en', 'ru', 'he']
-const DEFAULT_LOCALE = 'en'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
 export const metadata: Metadata = {
@@ -25,10 +23,7 @@ export const metadata: Metadata = {
 }
 
 export default async function PortfolioPage() {
-  const cookieStore = await cookies()
-  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
-  const initialLocale =
-    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+  const { initialLocale, initialTheme } = await getRequestPrefs()
 
   const [content, projects] = await Promise.all([
     getCachedSiteContent(),
@@ -36,6 +31,11 @@ export default async function PortfolioPage() {
   ])
 
   return (
-    <PortfolioClient initialLocale={initialLocale} content={content} projects={projects} />
+    <PortfolioClient
+      initialLocale={initialLocale}
+      initialTheme={initialTheme}
+      content={content}
+      projects={projects}
+    />
   )
 }

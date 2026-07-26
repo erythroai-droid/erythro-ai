@@ -6,6 +6,7 @@ import ServiceClient from './ServiceClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getAllServiceSlugsCms, getServicePageBySlug } from '@/lib/cmsPages'
 import { getAllServiceSlugs, tLocale } from '@/lib/servicePages'
+import { getRequestPrefs } from '@/lib/requestPrefs'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -75,14 +76,15 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
 
   if (!service) notFound()
 
-  const cookieStore = await cookies()
-  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
-  const initialLocale =
-    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
-
+  const { initialLocale, initialTheme } = await getRequestPrefs()
   const content = await getCachedSiteContent()
 
   return (
-    <ServiceClient initialLocale={initialLocale} content={content} service={service} />
+    <ServiceClient
+      initialLocale={initialLocale}
+      initialTheme={initialTheme}
+      content={content}
+      service={service}
+    />
   )
 }

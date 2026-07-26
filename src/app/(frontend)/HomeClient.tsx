@@ -21,12 +21,13 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface HomeClientProps {
   initialLocale: string
+  initialTheme?: 'light' | 'dark'
   content: SiteContent
 }
 
-export default function HomeClient({ initialLocale, content }: HomeClientProps) {
+export default function HomeClient({ initialLocale, initialTheme, content }: HomeClientProps) {
   const a11yTranslations = content.accessibility
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale)
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   // Persist scroll before unload so a mid-page refresh can use the quick splash

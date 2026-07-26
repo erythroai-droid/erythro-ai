@@ -6,6 +6,7 @@ import OrderClient from './OrderClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getAllOrderSlugsCms, getOrderPlanBySlug } from '@/lib/cmsPages'
 import { getAllOrderSlugs, tLocale } from '@/lib/orderPlans'
+import { getRequestPrefs } from '@/lib/requestPrefs'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -63,12 +64,15 @@ export default async function OrderPage({ params }: OrderPageProps) {
   const plan = await getOrderPlanBySlug(slug)
   if (!plan) notFound()
 
-  const cookieStore = await cookies()
-  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
-  const initialLocale =
-    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
-
+  const { initialLocale, initialTheme } = await getRequestPrefs('light')
   const content = await getCachedSiteContent()
 
-  return <OrderClient initialLocale={initialLocale} content={content} plan={plan} />
+  return (
+    <OrderClient
+      initialLocale={initialLocale}
+      initialTheme={initialTheme}
+      content={content}
+      plan={plan}
+    />
+  )
 }

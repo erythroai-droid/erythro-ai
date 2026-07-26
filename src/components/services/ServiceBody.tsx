@@ -81,6 +81,7 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
     <section
       ref={sectionRef}
       id="service-body"
+      data-menu-contrast={isLight ? 'light' : 'dark'}
       className={`relative z-20 w-full shadow-[0_-12px_30px_rgba(0,0,0,0.28)] ${
         isLight ? 'bg-gold-100 text-coal-900' : 'dark-gradient-bg text-white'
       }`}

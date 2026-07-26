@@ -16,18 +16,20 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface LegalPageClientProps {
   initialLocale: string
+  initialTheme?: 'light' | 'dark'
   content: SiteContent
   pageId: LegalPageId
 }
 
 export default function LegalPageClient({
   initialLocale,
+  initialTheme,
   content,
   pageId,
 }: LegalPageClientProps) {
   const page = getLegalPage(pageId)
   const a11yTranslations = content.accessibility
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale)
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   const pickA11y = (field?: Record<string, string> | null) =>
