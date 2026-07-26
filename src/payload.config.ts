@@ -23,7 +23,6 @@ import { SolutionsIntro } from './globals/SolutionsIntro'
 import { FAQ } from './globals/FAQ'
 import { Footer } from './globals/Footer'
 import { SiteSettings } from './globals/SiteSettings'
-import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -60,9 +59,6 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
-    // Run pending migrations on production boot (e.g. new heroMediaMobile column).
-    // Also run explicitly in CI via `payload migrate` before `next build`.
-    prodMigrations: migrations,
   }),
   localization: {
     locales: [
