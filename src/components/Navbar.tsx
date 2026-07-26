@@ -170,14 +170,17 @@ export default function Navbar({
         if (el.closest('header')) continue
         if (el.closest('[aria-label="Toggle menu"]')) continue
 
+        // Explicit page/section hint wins over media / gradient heuristics.
+        const contrastHost = el.closest('[data-menu-contrast]')
+        if (contrastHost instanceof HTMLElement) {
+          return contrastHost.dataset.menuContrast === 'dark'
+        }
+
         const tag = el.tagName
         if (tag === 'IMG' || tag === 'VIDEO' || tag === 'CANVAS') return true
 
         let node: Element | null = el
         while (node && node !== document.documentElement) {
-          if (node instanceof HTMLElement && node.dataset.menuContrast) {
-            return node.dataset.menuContrast === 'dark'
-          }
           const style = getComputedStyle(node)
           const bg = parseRgb(style.backgroundColor)
           if (bg && bg.a >= 0.15) return luminance(bg.r, bg.g, bg.b) < 0.55
@@ -235,10 +238,12 @@ export default function Navbar({
     if (!mobileOpen) setServicesOpen(true)
   }, [mobileOpen])
 
-  // Light mobile plate is always light — keep logo/menu dark until the drawer opens.
-  const plateIsLight = theme === 'light' && !mobileOpen && !isDesktop
-  const menuOnDark = mobileOpen || (!plateIsLight && overDarkBg)
-  const logoOnDark = mobileOpen || (!plateIsLight && (overDarkBg || theme === 'dark'))
+  // Light theme on inner pages (forceBurger): always dark logo/menu on the light plate/bg.
+  // Home keeps backdrop sampling on desktop so the mark stays white over the dark hero.
+  const logoOnDark =
+    mobileOpen || theme === 'dark' || (!forceBurger && isDesktop && overDarkBg)
+  const menuOnDark =
+    mobileOpen || theme === 'dark' || (!forceBurger && isDesktop && overDarkBg)
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {

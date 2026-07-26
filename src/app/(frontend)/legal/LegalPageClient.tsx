@@ -82,7 +82,7 @@ export default function LegalPageClient({
             forceBurger
           />
 
-          <div className="relative z-10 pt-[72px] lg:pt-[100px]">
+          <div className="relative z-10 pt-[72px] lg:pt-[100px]" data-menu-contrast={theme === 'light' ? 'light' : 'dark'}>
             <LegalBody page={page} locale={locale} theme={theme} />
           </div>
 
