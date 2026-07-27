@@ -66,9 +66,10 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
             id: 'lets-talk-simple-pin',
             trigger: wrapperRef.current,
             start: 'top top',
-          end: '+=140%',
+            // Match Solutions: hold ~2 viewports so Footer doesn't ride up immediately.
+            // Works together with the desktop spacer rendered after this section.
+            end: '+=200%',
             pin: true,
-            // Like Solutions: stay pinned while Footer rides up over it
             pinSpacing: false,
             invalidateOnRefresh: true,
           })
@@ -374,6 +375,8 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
     return (
       <div className="relative z-30 w-full pointer-events-none shadow-[0_-12px_30px_rgba(0,0,0,0.28)]">
         <div className="pointer-events-auto">{section}</div>
+        {/* Desktop hold: one viewport of scroll while Let’s Talk stays pinned, then Footer rides up. */}
+        <div className="hidden lg:block h-screen w-full pointer-events-none" aria-hidden />
       </div>
     )
   }
