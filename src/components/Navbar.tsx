@@ -248,13 +248,15 @@ export default function Navbar({
 
   // Mobile plate + ink follow theme only (stable while scrolling).
   // Desktop has no plate; logo/menu ink samples the backdrop under the header.
+  // Do not OR with theme on desktop — a white Case Studies block must keep dark
+  // ink even when the site theme is dark.
   const plateIsLight = theme === 'light' && !mobileOpen
   const overDarkChrome =
     mobileOpen ||
     (!isDesktop
       ? theme === 'dark'
       : headerContrast === 'dark' ||
-        (headerContrast !== 'light' && (theme === 'dark' || overDarkBg)))
+        (headerContrast !== 'light' && overDarkBg))
   const logoOnDark = overDarkChrome
   const menuOnDark = overDarkChrome
 
