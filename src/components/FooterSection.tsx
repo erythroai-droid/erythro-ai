@@ -318,16 +318,16 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
   }, [])
 
   return (
-    <div className="relative z-40 w-full pointer-events-none">
+    <div className="relative z-40 w-full pointer-events-none lg:bg-[#0D0D0D]">
       {/* Hold while FAQ stays fully visible before Footer rides up (home only) */}
       {pinSpacer && (
-        <div className="hidden lg:block h-[100vh] w-full pointer-events-none" aria-hidden />
+        <div className="hidden lg:block h-[100vh] w-full pointer-events-none bg-[#0D0D0D]" aria-hidden />
       )}
 
       <footer
         id="footer"
         ref={footerRef}
-        className="relative w-full py-[60px] transition-colors duration-500 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:py-0 lg:h-screen lg:flex lg:flex-col lg:justify-center select-none pointer-events-auto overflow-hidden"
+        className="relative w-full py-[60px] transition-colors duration-500 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:-mt-[2px] lg:py-0 lg:h-screen lg:flex lg:flex-col lg:justify-center select-none pointer-events-auto overflow-hidden"
         style={{ background: 'var(--background-footer-bg, #0D0D0D)' }}
       >
         <div className="absolute inset-0 bg-noise opacity-5 pointer-events-none z-[1]" />
