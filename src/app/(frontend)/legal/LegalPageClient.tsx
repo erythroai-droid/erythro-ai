@@ -76,7 +76,9 @@ export default function LegalPageClient({
             theme === 'light' ? 'bg-gold-100' : 'bg-coal-900'
           }`}
         >
-          <HeaderChipStrip page="legal" />
+          <div className="relative z-10 lg:contents">
+            <HeaderChipStrip page="legal" />
+          </div>
           <Navbar
             currentLocale={locale}
             setLocale={setLocale}
@@ -87,8 +89,8 @@ export default function LegalPageClient({
             headerContrast="auto"
           />
 
-          <div className="relative z-10 pt-[150px]">
-            <div className="relative z-20 max-lg:-mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)]">
+          <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
+            <div>
               <LegalBody page={page} locale={locale} theme={theme} />
             </div>
           </div>

@@ -66,7 +66,9 @@ export default function OrderClient({ initialLocale, initialTheme, content, plan
             theme === 'light' ? 'bg-[#F4F1EC]' : 'bg-coal-900'
           }`}
         >
-          <HeaderChipStrip page="order" />
+          <div className="relative z-10 lg:contents">
+            <HeaderChipStrip page="order" />
+          </div>
           <Navbar
             currentLocale={locale}
             setLocale={setLocale}
@@ -77,9 +79,9 @@ export default function OrderClient({ initialLocale, initialTheme, content, plan
             headerContrast="auto"
           />
 
-          <div className="relative z-10 pt-[150px]">
+          <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0">
             <div
-              className={`relative z-20 max-lg:-mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] ${
+              className={`relative ${
                 theme === 'light' ? 'bg-[#F4F1EC] text-coal-900' : 'dark-gradient-bg text-main'
               }`}
             >
