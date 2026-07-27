@@ -99,7 +99,7 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
   }
 
   const inputClass =
-    'w-full rounded-[12px] border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 outline-none transition-colors focus:border-gold-500 focus:bg-white/[0.06]'
+    'w-full rounded-[10px] border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 outline-none transition-colors focus:border-gold-500 focus:bg-white/[0.06]'
 
   return (
     <div
@@ -118,7 +118,7 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
       />
 
       {/* Panel */}
-      <div className="relative max-h-[90vh] w-full max-w-[460px] overflow-y-auto rounded-[20px] border border-white/10 bg-coal-900 p-6 sm:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
+      <div className="relative max-h-[90vh] w-full max-w-[460px] overflow-y-auto rounded-[10px] border border-white/10 bg-coal-900 p-6 sm:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
         <button
           type="button"
           onClick={onClose}

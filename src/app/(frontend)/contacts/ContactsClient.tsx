@@ -10,25 +10,21 @@ import { ContactModalProvider } from '@/components/ContactModal'
 import LetsTalkSection from '@/components/LetsTalkSection'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import HeaderChipStrip from '@/components/HeaderChipStrip'
-import LegalBody from '@/components/legal/LegalBody'
+import ContactsBody from '@/components/contacts/ContactsBody'
 import type { SiteContent } from '@/lib/defaultContent'
-import { getLegalPage, type LegalPageId } from '@/lib/legalPages'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 
-interface LegalPageClientProps {
+interface ContactsClientProps {
   initialLocale: string
   initialTheme?: 'light' | 'dark'
   content: SiteContent
-  pageId: LegalPageId
 }
 
-export default function LegalPageClient({
+export default function ContactsClient({
   initialLocale,
   initialTheme,
   content,
-  pageId,
-}: LegalPageClientProps) {
-  const page = getLegalPage(pageId)
+}: ContactsClientProps) {
   const a11yTranslations = content.accessibility
   const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
@@ -60,7 +56,7 @@ export default function LegalPageClient({
 
   const a11yTargets = useMemo(
     () => [
-      { id: 'legal-body', label: pickA11y(a11yTranslations.screenReaderDetails) },
+      { id: 'contacts-page', label: pickA11y(a11yTranslations.screenReaderContacts) },
       { id: 'contacts', label: pickA11y(a11yTranslations.screenReaderContacts) },
       { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
     ],
@@ -88,7 +84,7 @@ export default function LegalPageClient({
           />
 
           <div className="relative z-10 pt-[72px] lg:pt-[100px]">
-            <LegalBody page={page} locale={locale} theme={theme} />
+            <ContactsBody locale={locale} theme={theme} />
           </div>
 
           <div className="relative z-30 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">

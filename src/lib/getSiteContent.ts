@@ -166,13 +166,18 @@ export async function getSiteContent(): Promise<SiteContent> {
 
     // --- Navbar (Header global) ---
     if (Array.isArray(header?.navItems) && header.navItems.length) {
-      content.navbar.navItems = header.navItems.map((n: any, i: number) => ({
-        label: L(n.label, defaultSiteContent.navbar.navItems[i]?.label ?? {}),
-        description:
-          defaultSiteContent.navbar.navItems[i]?.description ??
-          ({ en: '', ru: '', he: '' } as Record<string, string>),
-        href: n.href ?? defaultSiteContent.navbar.navItems[i]?.href ?? '#',
-      }))
+      content.navbar.navItems = header.navItems.map((n: any, i: number) => {
+        const fallbackHref = defaultSiteContent.navbar.navItems[i]?.href ?? '#'
+        const rawHref = n.href ?? fallbackHref
+        return {
+          label: L(n.label, defaultSiteContent.navbar.navItems[i]?.label ?? {}),
+          description:
+            defaultSiteContent.navbar.navItems[i]?.description ??
+            ({ en: '', ru: '', he: '' } as Record<string, string>),
+          // Legacy hash target → dedicated contacts page
+          href: rawHref === '#contacts' ? '/contacts' : rawHref,
+        }
+      })
     }
     if (hasContent(header?.ctaLabel)) content.navbar.ctaLabel = L(header.ctaLabel, content.navbar.ctaLabel)
     if (typeof header?.ctaHref === 'string' && header.ctaHref.trim()) {

@@ -9,6 +9,7 @@ import { SiteContentProvider } from '@/components/SiteContentProvider'
 import { ContactModalProvider, useContactModal } from '@/components/ContactModal'
 import Button from '@/components/Button'
 import WhatsAppButton from '@/components/WhatsAppButton'
+import HeaderChipStrip from '@/components/HeaderChipStrip'
 import type { SiteContent } from '@/lib/defaultContent'
 import {
   calcPlanAmount,
@@ -61,10 +62,11 @@ export default function OrderClient({ initialLocale, initialTheme, content, plan
       <ContactModalProvider locale={locale}>
         <div
           dir={locale === 'he' ? 'rtl' : 'ltr'}
-          className={`min-h-screen font-sans transition-colors duration-500 ${
-            theme === 'light' ? 'bg-[#F4F1EC] text-coal-900' : 'bg-primary text-main'
+          className={`relative min-h-screen font-sans transition-colors duration-500 ${
+            theme === 'light' ? 'bg-[#F4F1EC]' : 'bg-coal-900'
           }`}
         >
+          <HeaderChipStrip />
           <Navbar
             currentLocale={locale}
             setLocale={setLocale}
@@ -72,9 +74,18 @@ export default function OrderClient({ initialLocale, initialTheme, content, plan
             setTheme={setTheme}
             onOpenAccessibility={() => setIsAccessibilityOpen(true)}
             forceBurger
+            headerContrast="auto"
           />
 
-          <OrderCheckout plan={plan} locale={locale} theme={theme} />
+          <div className="relative z-10 pt-[72px] lg:pt-[100px]">
+            <div
+              className={
+                theme === 'light' ? 'bg-[#F4F1EC] text-coal-900' : 'dark-gradient-bg text-main'
+              }
+            >
+              <OrderCheckout plan={plan} locale={locale} theme={theme} />
+            </div>
+          </div>
 
           <div className="relative z-40">
             <FooterSection locale={locale} theme={theme} pinSpacer={false} />
@@ -198,7 +209,7 @@ function OrderCheckout({
   return (
     <main
       id="order-main"
-      className="relative z-10 mx-auto w-full max-w-[1170px] px-[30px] pb-16 pt-[110px] lg:pb-24 lg:pt-[130px]"
+      className="relative z-10 mx-auto w-full max-w-[1170px] px-[30px] pb-16 pt-8 lg:pb-24 lg:pt-12"
     >
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-10">
         {/* Left column */}

@@ -11,6 +11,7 @@ import PortfolioSection from '@/components/portfolio/PortfolioSection'
 import ScrollSideButton from '@/components/portfolio/ScrollSideButton'
 import LetsTalkSection from '@/components/LetsTalkSection'
 import WhatsAppButton from '@/components/WhatsAppButton'
+import HeaderChipStrip from '@/components/HeaderChipStrip'
 import type { SiteContent } from '@/lib/defaultContent'
 import type { PortfolioProject } from '@/lib/portfolioProjects'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
@@ -74,10 +75,11 @@ export default function PortfolioClient({
       <ContactModalProvider locale={locale}>
         <div
           dir={locale === 'he' ? 'rtl' : 'ltr'}
-          className={`min-h-screen font-sans transition-colors duration-500 bg-primary text-main ${
-            locale === 'he' ? 'font-sans' : ''
+          className={`relative min-h-screen font-sans transition-colors duration-500 ${
+            theme === 'light' ? 'bg-gold-100' : 'bg-coal-900'
           }`}
         >
+          <HeaderChipStrip />
           <Navbar
             currentLocale={locale}
             setLocale={setLocale}
@@ -85,15 +87,18 @@ export default function PortfolioClient({
             setTheme={setTheme}
             onOpenAccessibility={() => setIsAccessibilityOpen(true)}
             forceBurger
-            headerContrast={theme === 'light' ? 'light' : 'dark'}
+            headerContrast="auto"
           />
 
           {/*
             Mobile stack: rounded overlap. Desktop: lg:contents so GSAP pin
             (Let's Talk → Footer) works like Solutions on the home page.
+            Top padding is outside the section so the chip header strip shows.
           */}
-          <div className="relative z-10 lg:contents">
-            <PortfolioSection theme={theme} locale={locale} projects={projects} />
+          <div className="relative z-10 pt-[72px] lg:pt-[100px] lg:contents">
+            <div className="lg:pt-[100px]">
+              <PortfolioSection theme={theme} locale={locale} projects={projects} />
+            </div>
           </div>
 
           <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">

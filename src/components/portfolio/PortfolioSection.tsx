@@ -156,7 +156,7 @@ export default function PortfolioSection({
       ref={sectionRef}
       id="portfolio"
       data-menu-contrast={isLight ? 'light' : 'dark'}
-      className={`relative z-10 min-h-screen w-full overflow-hidden pt-[100px] ${
+      className={`relative z-10 min-h-screen w-full overflow-hidden ${
         isLight ? 'bg-gold-100' : 'dark-gradient-bg'
       }`}
     >
@@ -164,7 +164,7 @@ export default function PortfolioSection({
         <div className="solution-section-noise absolute inset-0 z-[1] pointer-events-none" aria-hidden />
       )}
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col items-center px-[30px]">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col items-center px-[30px] pb-16 pt-10 lg:pb-24 lg:pt-12">
         <div className="mb-10 flex flex-col items-center gap-[5px] text-center lg:mb-12">
           <h1 className="font-sans text-[32px] font-extralight uppercase leading-tight tracking-[9.6px] lg:text-[48px] lg:leading-[60px]">
             <span className="text-erythro-500">P</span>

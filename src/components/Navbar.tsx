@@ -168,6 +168,19 @@ export default function Navbar({
       0.2126 * r + 0.7152 * g + 0.0722 * b
 
     const isDarkAtPoint = (x: number, y: number) => {
+      // Chip header strip uses pointer-events: none (skipped by hit-testing),
+      // so detect it by geometry — otherwise scroll-back-to-top keeps light chrome.
+      const chipStrip = document.querySelector('[data-header-chip-strip]')
+      if (chipStrip instanceof HTMLElement) {
+        const stripStyle = getComputedStyle(chipStrip)
+        if (stripStyle.display !== 'none' && stripStyle.visibility !== 'hidden') {
+          const rect = chipStrip.getBoundingClientRect()
+          if (y >= rect.top && y <= rect.bottom && x >= rect.left && x <= rect.right) {
+            return true
+          }
+        }
+      }
+
       const stack = document.elementsFromPoint(x, y)
 
       // Prefer explicit page hints anywhere under the sample point.
@@ -274,7 +287,9 @@ export default function Navbar({
         targetElement.scrollIntoView({ behavior: 'smooth' })
       }
       setMobileOpen(false)
+      return
     }
+    setMobileOpen(false)
   }
 
   return (

@@ -39,7 +39,7 @@ export const navbar = {
         ru: 'Связаться с нами',
         he: 'צרו קשר ומצאו אותנו',
       },
-      href: '#contacts',
+      href: '/contacts',
     },
   ],
   ctaLabel: {

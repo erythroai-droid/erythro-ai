@@ -39,7 +39,11 @@ export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyPro
         isLight ? 'bg-gold-100 text-coal-900' : 'dark-gradient-bg text-white'
       }`}
     >
-      <article className="mx-auto flex w-full max-w-[1170px] flex-col gap-10 px-[30px] py-12 md:gap-14 md:py-16 lg:gap-16 lg:py-20">
+      {!isLight && (
+        <div className="solution-section-noise absolute inset-0 z-[1] pointer-events-none" aria-hidden />
+      )}
+
+      <article className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col gap-10 px-[30px] py-12 md:gap-14 md:py-16 lg:gap-16 lg:py-20">
         <header className="flex flex-col gap-4">
           <h1 className="m-0 font-sans text-[28px] font-extralight uppercase tracking-[0.08em] md:text-[40px] md:tracking-[0.1em]">
             <span className="text-erythro-500">{title.charAt(0)}</span>
@@ -89,7 +93,11 @@ export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyPro
         </div>
 
         {page.closing && (
-          <p className={`m-0 border-t border-white/10 pt-8 font-sans text-base font-light leading-7 md:text-lg ${accentTone}`}>
+          <p
+            className={`m-0 border-t pt-8 font-sans text-base font-light leading-7 md:text-lg ${
+              isLight ? 'border-coal-900/10' : 'border-white/10'
+            } ${accentTone}`}
+          >
             {tLegal(page.closing, locale)}
           </p>
         )}
