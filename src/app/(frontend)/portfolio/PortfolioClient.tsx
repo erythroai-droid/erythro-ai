@@ -96,7 +96,7 @@ export default function PortfolioClient({
             Top padding is outside the section so the chip header strip shows.
           */}
           <div className="relative z-10 pt-[150px] lg:contents">
-            <div className="lg:pt-[150px]">
+            <div className="relative z-20 max-lg:-mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:pt-[150px]">
               <PortfolioSection theme={theme} locale={locale} projects={projects} />
             </div>
           </div>
