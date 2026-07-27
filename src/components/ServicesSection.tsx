@@ -206,7 +206,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             id: 'services-pin',
             trigger: sectionRef.current,
             start: 'top top',
-            end: '+=600%', // Pin for horizontal scroll + LetsTalk reveal + hold phase
+            end: '+=760%', // Horizontal scroll + first/last card holds + LetsTalk reveal
             pin: true,
             pinSpacing: false, // SolutionSection will slide over it
             scrub: 1, // Smooth scrub
@@ -215,7 +215,10 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         })
         ScrollTrigger.sort()
 
-        // 2. Horizontal scroll (stops when the last card is fully visible)
+        // Hold on the first card (Design & Branding) — felt when scrolling back up to Cases
+        tl.to({}, { duration: 1.4 })
+
+        // Horizontal scroll (stops when the last card is fully visible)
         const maxScroll = () => {
           if (!cardsRowRef.current) return 0
           return cardsRowRef.current.scrollWidth - window.innerWidth
@@ -225,6 +228,9 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           ease: 'none',
           duration: 2.0,
         })
+
+        // Hold on the last service card before Let’s Talk opens
+        tl.to({}, { duration: 1.2 })
 
         // 3. LetsTalk Background opens from middle up and down
         tl.fromTo(
@@ -237,7 +243,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             duration: 1.0,
             ease: 'power2.inOut',
           },
-          '+=0.6',
+          '+=0.4',
         )
 
         // Fade in the logo quickly at the start of block reveal
@@ -396,8 +402,8 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
 
   return (
     <div ref={wrapperRef} className="relative w-full lg:z-20 lg:pointer-events-none">
-      {/* Spacer to push Services Section down by 100vh on desktop so Case Studies is fully visible before Services slides over */}
-      <div className="hidden lg:block h-screen w-full pointer-events-none" />
+      {/* Lead-in so Cases stays visible before Services slides over / when scrolling back up. */}
+      <div className="hidden lg:block h-[160vh] w-full pointer-events-none" />
 
       <section
         id="services"

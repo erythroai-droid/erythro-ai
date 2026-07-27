@@ -191,7 +191,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           id: 'cases-pin',
           trigger: wrapperRef.current,
           start: 'top top',
-          end: '+=200%', // Pin for 2 viewport heights to allow Services to slide over
+          end: '+=260%', // Cover the Services lead-in spacer + overlap
           pin: true,
           pinSpacing: false, // Services will slide over Case Studies
           snap: {
@@ -253,6 +253,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
       <section 
         id="cases" 
         ref={sectionRef}
+        data-menu-contrast="light"
         className="pt-20 pb-20 lg:py-0 lg:pt-16 lg:pb-0 lg:h-screen lg:flex lg:flex-col lg:overflow-hidden w-full transition-colors duration-500 bg-white border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 select-none"
       >
       <div className="max-w-[1170px] mx-auto px-[30px] w-full lg:flex lg:flex-1 lg:min-h-0 lg:flex-col">

@@ -56,7 +56,7 @@ export default function HeroAnimation({
           trigger: wrapperRef.current,
           start: 'top top',
           // Finish the fade when the next section begins to cover the fixed hero.
-          // Wrapper is 220vh → 'bottom bottom' = 120vh of scrub distance.
+          // Wrapper is 160vh → 'bottom bottom' = 60vh of scrub distance.
           end: 'bottom bottom',
           scrub: true,
           invalidateOnRefresh: true,
@@ -84,7 +84,7 @@ export default function HeroAnimation({
   return (
     /*
      * Wrapper height drives the scroll behaviour:
-     * - Desktop (lg+): 220vh (100vh visible + 120vh of scrub distance for the content
+     * - Desktop (lg+): 160vh (100vh visible + 60vh of scrub distance for the content
      *   fade animation), with the inner container pinned via `fixed`.
      * - Mobile: a plain 100vh section that scrolls normally — no fixed container, no
      *   dead scroll distance.
@@ -92,7 +92,7 @@ export default function HeroAnimation({
     <div
       ref={wrapperRef}
       data-hero-scroll-root
-      className="sticky lg:relative top-0 lg:top-auto z-0 lg:z-auto w-full bg-coal-900 h-[calc(100dvh-20px)] lg:h-[220vh]"
+      className="sticky lg:relative top-0 lg:top-auto z-0 lg:z-auto w-full bg-coal-900 h-[calc(100dvh-20px)] lg:h-[160vh]"
     >
       {/* Container: normal-flow on mobile (scrolls away), pinned (fixed) on desktop */}
       <div ref={containerRef} className="absolute inset-0 lg:fixed w-full h-[calc(100dvh-20px)] lg:h-screen bg-coal-900 overflow-hidden" style={{ zIndex: 0 }}>

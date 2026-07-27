@@ -2578,7 +2578,7 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
     let runId = 0
     let running = false
     const delayed: gsap.core.Tween[] = []
-    // Mirrors HeroAnimation content fade (power1.inOut over the 220vh scrub).
+    // Mirrors HeroAnimation content fade (power1.inOut over the 160vh scrub).
     let scrollFade = 1
     const fadeEase = gsap.parseEase('power1.inOut')
     const getScrollFade = () => scrollFade
@@ -2801,11 +2801,11 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       void run()
     }
 
-    // Observe the scroll wrapper (220vh on desktop / sticky h-screen on mobile),
+    // Observe the scroll wrapper (160vh on desktop / sticky h-screen on mobile),
     // NOT the inner lg:fixed layer — that stays in the viewport forever.
     const heroSection =
       (rootRef.current?.closest('[data-hero-scroll-root]') as HTMLElement | null) ||
-      (rootRef.current?.closest('[class*="220vh"]') as HTMLElement | null) ||
+      (rootRef.current?.closest('[class*="160vh"]') as HTMLElement | null) ||
       (rootRef.current?.closest('.sticky.top-0') as HTMLElement | null) ||
       rootRef.current
 
