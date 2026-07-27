@@ -254,7 +254,7 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
     <section
       id="contacts"
       ref={wrapperRef}
-      className="relative w-full overflow-hidden select-none flex flex-col items-center justify-center gap-8 md:gap-[30px] bg-transparent shadow-[0_-12px_30px_rgba(0,0,0,0.28)] py-[60px] pb-[100px] md:py-[100px] md:pb-[140px] lg:py-0 lg:h-screen"
+      className="relative w-full overflow-hidden select-none flex flex-col items-center justify-center gap-8 md:gap-[30px] bg-transparent shadow-[0_-12px_30px_rgba(0,0,0,0.28)] py-[60px] pb-[100px] md:py-[100px] md:pb-[140px] lg:min-h-screen lg:py-0 lg:h-screen"
       style={isSimple ? undefined : { clipPath: 'inset(50% 0% 50% 0%)' }}
     >
       {/* Background container that opens from the center */}
