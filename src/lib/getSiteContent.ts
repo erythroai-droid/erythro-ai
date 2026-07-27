@@ -386,12 +386,31 @@ export async function getSiteContent(): Promise<SiteContent> {
       })
     }
 
-    // --- Site settings (contacts + cookie) ---
+    // --- Site settings (contacts + cookie + page heroes) ---
     if (settings?.email) content.siteSettings.email = settings.email
     if (settings?.phone) content.siteSettings.phone = settings.phone
     if (settings?.phoneDisplay) content.siteSettings.phoneDisplay = settings.phoneDisplay
     if (settings?.facebook) content.siteSettings.facebook = settings.facebook
     if (settings?.tiktok) content.siteSettings.tiktok = settings.tiktok
+
+    content.siteSettings.pageHeroes = content.siteSettings.pageHeroes ?? {}
+    const pageHeroFields: Array<{ key: 'contacts' | 'portfolio' | 'legal' | 'order'; field: string }> = [
+      { key: 'contacts', field: 'contactsHeroMedia' },
+      { key: 'portfolio', field: 'portfolioHeroMedia' },
+      { key: 'legal', field: 'legalHeroMedia' },
+      { key: 'order', field: 'orderHeroMedia' },
+    ]
+    for (const { key, field } of pageHeroFields) {
+      const media = await resolveMediaDoc(payload, settings?.[field])
+      const url = mediaUrl(media)
+      if (url) {
+        content.siteSettings.pageHeroes[key] = {
+          type: isVideoMedia(media, url) ? 'video' : 'image',
+          src: url,
+        }
+      }
+    }
+
     content.cookieConsent.message = L(settings?.cookieMessage, content.cookieConsent.message)
     content.cookieConsent.accept = L(settings?.cookieAccept, content.cookieConsent.accept)
     content.cookieConsent.decline = L(settings?.cookieDecline, content.cookieConsent.decline)
@@ -422,7 +441,7 @@ export async function getSiteContent(): Promise<SiteContent> {
  * unaffected. Invalidated via the `SITE_CONTENT_TAG` tag whenever content is
  * edited in the Payload admin (see src/lib/revalidate.ts).
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v7'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v8'], {
   tags: [SITE_CONTENT_TAG],
 })
 

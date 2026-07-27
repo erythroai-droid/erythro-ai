@@ -244,7 +244,7 @@ export interface Service {
    */
   image?: (number | null) | Media;
   /**
-   * Wide header image/video for /services/[slug]. Recommended: 1920×300 px, minimum 1600×250 px. Images are stored in original quality without upload compression. Falls back to the card media.
+   * Wide header image/video for /services/[slug]. Recommended: 1920×150 px (matches contacts/portfolio header strip), minimum 1600×150 px. Images are stored in original quality without upload compression. Falls back to the card media.
    */
   heroMedia?: (number | null) | Media;
   /**
@@ -1219,6 +1219,22 @@ export interface SiteSetting {
    * Social share image (1200x630 recommended)
    */
   ogImage?: (number | null) | Media;
+  /**
+   * /contacts — Recommended: 1920×150 px. Images keep original quality. Video (MP4/WebM) autoplays muted.
+   */
+  contactsHeroMedia?: (number | null) | Media;
+  /**
+   * /portfolio — Recommended: 1920×150 px. Images keep original quality. Video (MP4/WebM) autoplays muted.
+   */
+  portfolioHeroMedia?: (number | null) | Media;
+  /**
+   * Legal pages (privacy, terms, accessibility) — Recommended: 1920×150 px.
+   */
+  legalHeroMedia?: (number | null) | Media;
+  /**
+   * /order/[slug] — Recommended: 1920×150 px.
+   */
+  orderHeroMedia?: (number | null) | Media;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1378,6 +1394,10 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   seoTitle?: T;
   seoDescription?: T;
   ogImage?: T;
+  contactsHeroMedia?: T;
+  portfolioHeroMedia?: T;
+  legalHeroMedia?: T;
+  orderHeroMedia?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

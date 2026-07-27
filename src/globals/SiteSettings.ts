@@ -46,6 +46,47 @@ export const SiteSettings: GlobalConfig = {
             },
           ],
         },
+        {
+          label: 'Page Heroes',
+          fields: [
+            {
+              name: 'contactsHeroMedia',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description:
+                  '/contacts — Recommended: 1920×150 px. Images keep original quality. Video (MP4/WebM) autoplays muted.',
+              },
+            },
+            {
+              name: 'portfolioHeroMedia',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description:
+                  '/portfolio — Recommended: 1920×150 px. Images keep original quality. Video (MP4/WebM) autoplays muted.',
+              },
+            },
+            {
+              name: 'legalHeroMedia',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description:
+                  'Legal pages (privacy, terms, accessibility) — Recommended: 1920×150 px.',
+              },
+            },
+            {
+              name: 'orderHeroMedia',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description:
+                  '/order/[slug] — Recommended: 1920×150 px.',
+              },
+            },
+          ],
+        },
       ],
     },
   ],

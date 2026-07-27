@@ -259,12 +259,15 @@ export default function Navbar({
     if (!mobileOpen) setServicesOpen(true)
   }, [mobileOpen])
 
-  // Light plate / dark ink when page top is light; white ink over dark heroes.
+  // Mobile plate + ink follow theme only (stable while scrolling).
+  // Desktop has no plate; logo/menu ink samples the backdrop under the header.
+  const plateIsLight = theme === 'light' && !mobileOpen
   const overDarkChrome =
     mobileOpen ||
-    headerContrast === 'dark' ||
-    (headerContrast !== 'light' && (theme === 'dark' || overDarkBg))
-  const plateIsLight = theme === 'light' && !mobileOpen && !isDesktop && !overDarkChrome
+    (!isDesktop
+      ? theme === 'dark'
+      : headerContrast === 'dark' ||
+        (headerContrast !== 'light' && (theme === 'dark' || overDarkBg)))
   const logoOnDark = overDarkChrome
   const menuOnDark = overDarkChrome
 

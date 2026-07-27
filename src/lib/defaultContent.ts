@@ -15,12 +15,22 @@ import {
 
 export type Localized = Record<string, string>
 
+/** Desktop header strip media (contacts / portfolio / legal / order). */
+export interface PageHeroMedia {
+  type: 'image' | 'video'
+  src: string
+}
+
+export type PageHeroKey = 'contacts' | 'portfolio' | 'legal' | 'order'
+
 export interface SiteSettingsContent {
   email: string
   phone: string
   phoneDisplay: string
   facebook: string
   tiktok: string
+  /** Per-page header strip heroes from Site Settings → Page Heroes. */
+  pageHeroes: Partial<Record<PageHeroKey, PageHeroMedia>>
 }
 
 export interface SiteContent {
@@ -63,5 +73,6 @@ export const defaultSiteContent: SiteContent = {
     phoneDisplay: '+972 50 931 27 46',
     facebook: 'https://facebook.com/erythro.ai',
     tiktok: 'https://tiktok.com/@erythro.ai',
+    pageHeroes: {},
   },
 }

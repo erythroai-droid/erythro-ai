@@ -44,7 +44,7 @@ export default function ServiceHero({ service }: ServiceHeroProps) {
       ref={sectionRef}
       id="service-hero"
       data-menu-contrast="dark"
-      className="relative z-10 h-[300px] w-full overflow-hidden"
+      className="relative z-10 h-[150px] w-full overflow-hidden"
     >
       <div className="absolute inset-0 z-0">
         {service.hero.type === 'video' ? (

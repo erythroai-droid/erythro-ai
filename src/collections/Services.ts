@@ -42,7 +42,7 @@ export const Services: CollectionConfig = {
       relationTo: 'media',
       admin: {
         description:
-          'Wide header image/video for /services/[slug]. Recommended: 1920×300 px, minimum 1600×250 px. Images are stored in original quality without upload compression. Falls back to the card media.',
+          'Wide header image/video for /services/[slug]. Recommended: 1920×150 px (matches contacts/portfolio header strip), minimum 1600×150 px. Images are stored in original quality without upload compression. Falls back to the card media.',
       },
     },
     {

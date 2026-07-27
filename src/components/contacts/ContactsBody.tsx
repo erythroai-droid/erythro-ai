@@ -108,7 +108,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
             <span className={headingTone}>{title.slice(1)}</span>
           </h1>
           <p
-            className={`m-0 font-sans text-lg font-light leading-8 md:text-xl md:leading-9 whitespace-nowrap ${bodyTone}`}
+            className={`m-0 w-full font-sans text-lg font-light leading-8 whitespace-normal md:text-xl md:leading-9 lg:whitespace-nowrap ${bodyTone}`}
           >
             {intro}
           </p>

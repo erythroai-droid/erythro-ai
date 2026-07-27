@@ -617,19 +617,17 @@
     background-size: cover;
   }
 
-  /* Header band on pages without a hero image — desktop only */
+  /* Header band on pages without a service/project hero (all breakpoints).
+     Media is rendered by HeaderChipStrip (CMS upload or small_chip.jpg fallback). */
   .header-chip-strip-bg {
     background-color: #0d0d0d;
-    background-image: url('/images/small_chip.jpg');
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-size: cover;
   }
 
   .header-chip-strip-bg::after {
     content: '';
     position: absolute;
     inset: 0;
+    z-index: 1;
     pointer-events: none;
     /* Same radial falloff shape as .lets-talk-bg, darkening the photo edges */
     background-image: radial-gradient(
@@ -640,17 +638,6 @@
       rgba(15, 0, 0, 0.78) 72%,
       #0f0000 100%
     );
-  }
-
-  @media (max-width: 1023px) {
-    .header-chip-strip-bg {
-      display: none !important;
-      background-image: none;
-    }
-
-    .header-chip-strip-bg::after {
-      content: none;
-    }
   }
 
   /* FAQ: radial vignette (same edge-darkening idea as Let's Talk) */

@@ -72,7 +72,7 @@ export default function ContactsClient({
             theme === 'light' ? 'bg-gold-100' : 'bg-coal-900'
           }`}
         >
-          <HeaderChipStrip />
+          <HeaderChipStrip page="contacts" />
           <Navbar
             currentLocale={locale}
             setLocale={setLocale}
@@ -83,7 +83,7 @@ export default function ContactsClient({
             headerContrast="auto"
           />
 
-          <div className="relative z-10 pt-[72px] lg:pt-[100px]">
+          <div className="relative z-10 pt-[150px]">
             <ContactsBody locale={locale} theme={theme} />
           </div>
 

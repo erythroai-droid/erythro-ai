@@ -52,7 +52,7 @@ export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyPro
           <p className={`m-0 font-sans text-sm font-light tracking-[0.04em] md:text-base ${accentTone}`}>
             {tLegal(page.updatedLabel, locale)}: {formatUpdatedAt(page.updatedAt, locale)}
           </p>
-          <p className={`m-0 max-w-[720px] font-sans text-lg font-light leading-8 md:text-xl md:leading-9 ${bodyTone}`}>
+          <p className={`m-0 w-full max-w-none font-sans text-lg font-light leading-8 whitespace-normal md:text-xl md:leading-9 lg:max-w-[720px] ${bodyTone}`}>
             {tLegal(page.intro, locale)}
           </p>
         </header>

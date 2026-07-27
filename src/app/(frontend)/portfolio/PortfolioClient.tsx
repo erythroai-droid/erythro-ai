@@ -79,7 +79,7 @@ export default function PortfolioClient({
             theme === 'light' ? 'bg-gold-100' : 'bg-coal-900'
           }`}
         >
-          <HeaderChipStrip />
+          <HeaderChipStrip page="portfolio" />
           <Navbar
             currentLocale={locale}
             setLocale={setLocale}
@@ -95,8 +95,8 @@ export default function PortfolioClient({
             (Let's Talk → Footer) works like Solutions on the home page.
             Top padding is outside the section so the chip header strip shows.
           */}
-          <div className="relative z-10 pt-[72px] lg:pt-[100px] lg:contents">
-            <div className="lg:pt-[100px]">
+          <div className="relative z-10 pt-[150px] lg:contents">
+            <div className="lg:pt-[150px]">
               <PortfolioSection theme={theme} locale={locale} projects={projects} />
             </div>
           </div>
