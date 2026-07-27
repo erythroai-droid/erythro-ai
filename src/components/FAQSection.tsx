@@ -49,12 +49,12 @@ export default function FAQSection({ locale, theme = 'light' }: FAQSectionProps)
           },
         })
 
-        // Keep FAQ pinned: ~100vh hold, then Footer slides up over it
+        // Keep FAQ pinned longer before Footer slides up over it
         ScrollTrigger.create({
           id: 'faq-pin',
           trigger: sectionRef.current,
           start: 'top top',
-          end: '+=200%',
+          end: '+=250%',
           pin: true,
           pinSpacing: false,
           invalidateOnRefresh: true,

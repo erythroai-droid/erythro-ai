@@ -318,10 +318,11 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
   }, [])
 
   return (
-    <div className="relative z-40 w-full pointer-events-none lg:bg-[#0D0D0D]">
-      {/* Hold while FAQ stays fully visible before Footer rides up (home only) */}
+    <div className="relative z-40 w-full pointer-events-none">
+      {/* Hold while FAQ stays fully visible before Footer rides up (home).
+          Keep transparent so the pinned previous section shows through. */}
       {pinSpacer && (
-        <div className="hidden lg:block h-[100vh] w-full pointer-events-none bg-[#0D0D0D]" aria-hidden />
+        <div className="hidden lg:block h-[140vh] w-full pointer-events-none" aria-hidden />
       )}
 
       <footer
