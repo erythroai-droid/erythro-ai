@@ -393,7 +393,7 @@ export default function Navbar({
         Features a deep coal background, glass blur, and smooth layout mirror.
       */}
       <div
-        className={`fixed inset-y-0 start-0 end-0 z-[60] bg-coal-900/90 backdrop-blur-lg transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`fixed inset-y-0 start-0 end-0 z-[60] overflow-y-auto overscroll-contain bg-coal-900/90 backdrop-blur-lg transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
           mobileOpen
             ? 'translate-x-0'
             : currentLocale === 'he'
@@ -402,7 +402,7 @@ export default function Navbar({
         }`}
         style={{ pointerEvents: mobileOpen ? 'auto' : 'none' }}
       >
-        <div className="flex h-full flex-col justify-between p-12 pt-28 lg:pt-32">
+        <div className="flex min-h-full flex-col justify-between p-12 pt-28 lg:pt-32">
           {/* Menu Items — centered block, left-aligned titles + subtext (Emily Nolan style) */}
           <nav className="flex flex-1 flex-col items-center justify-center -translate-y-[50px]">
             <ul className="flex w-max max-w-full flex-col items-start gap-7 text-start">
