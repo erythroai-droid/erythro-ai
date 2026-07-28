@@ -206,7 +206,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             id: 'services-pin',
             trigger: sectionRef.current,
             start: 'top top',
-            end: '+=520%', // Keep pin ≤ Solutions lead-in so no empty gap after LetsTalk
+            end: '+=760%', // Longer than Solutions lead-in so Solutions rides up over pinned LetsTalk
             pin: true,
             pinSpacing: false, // SolutionSection will slide over it
             scrub: 1, // Smooth scrub
