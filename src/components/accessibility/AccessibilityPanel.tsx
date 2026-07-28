@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
+import gsap from 'gsap'
 import './accessibility.css'
 import {
   AccessibilityLabels,
@@ -70,6 +71,9 @@ const CLASS_MAP: Record<SettingKey, string> = {
 }
 
 const LIVE_REGION_ID = 'a11y-live-region'
+
+const SPEAKABLE =
+  'p, h1, h2, h3, h4, h5, h6, li, a, button, label, td, th, figcaption, [aria-label], [role="heading"], [role="button"], [role="link"]'
 
 const ICONS: Record<SettingKey, React.ReactNode> = {
   biggerText: (
@@ -144,6 +148,106 @@ const OPTION_ORDER: SettingKey[] = [
   'screenReader',
 ]
 
+function ensureLiveRegion(): HTMLElement {
+  let el = document.getElementById(LIVE_REGION_ID)
+  if (!el) {
+    el = document.createElement('div')
+    el.id = LIVE_REGION_ID
+    el.className = 'a11y-sr-only'
+    el.setAttribute('role', 'status')
+    el.setAttribute('aria-live', 'polite')
+    el.setAttribute('aria-atomic', 'true')
+    document.body.appendChild(el)
+  }
+  return el
+}
+
+function announce(message: string) {
+  const el = ensureLiveRegion()
+  el.textContent = ''
+  window.setTimeout(() => {
+    el.textContent = message
+  }, 50)
+}
+
+function getSpeechLang(): string {
+  const lang = document.documentElement.lang || 'en'
+  if (lang.startsWith('he')) return 'he-IL'
+  if (lang.startsWith('ru')) return 'ru-RU'
+  return 'en-US'
+}
+
+function stopSpeech() {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return
+  window.speechSynthesis.cancel()
+}
+
+function speak(text: string) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return
+  const trimmed = text.replace(/\s+/g, ' ').trim()
+  if (!trimmed) return
+  stopSpeech()
+  const utter = new SpeechSynthesisUtterance(trimmed.slice(0, 500))
+  utter.lang = getSpeechLang()
+  utter.rate = 0.95
+  window.speechSynthesis.speak(utter)
+}
+
+function readableFromElement(el: Element): string {
+  if (!(el instanceof HTMLElement)) return ''
+  const aria = el.getAttribute('aria-label')
+  if (aria?.trim()) return aria.trim()
+  const labelledBy = el.getAttribute('aria-labelledby')
+  if (labelledBy) {
+    const parts = labelledBy
+      .split(/\s+/)
+      .map((id) => document.getElementById(id)?.textContent?.trim())
+      .filter(Boolean)
+    if (parts.length) return parts.join(' ')
+  }
+  return (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim()
+}
+
+function applyLandmarkLabels(targets: ScreenReaderTarget[], enabled: boolean) {
+  targets.forEach(({ id, label }) => {
+    const el = document.getElementById(id)
+    if (!el) return
+    if (enabled) {
+      if (!el.hasAttribute('data-a11y-labeled')) {
+        el.setAttribute('data-a11y-prev-aria-label', el.getAttribute('aria-label') ?? '')
+        el.setAttribute('data-a11y-labeled', 'true')
+      }
+      el.setAttribute('aria-label', label)
+    } else if (el.hasAttribute('data-a11y-labeled')) {
+      const prev = el.getAttribute('data-a11y-prev-aria-label')
+      if (prev) el.setAttribute('aria-label', prev)
+      else el.removeAttribute('aria-label')
+      el.removeAttribute('data-a11y-prev-aria-label')
+      el.removeAttribute('data-a11y-labeled')
+    }
+  })
+}
+
+function setPausedMedia(paused: boolean) {
+  if (paused) {
+    gsap.globalTimeline.pause()
+    document.querySelectorAll('video').forEach((video) => {
+      if (!video.paused) {
+        video.dataset.a11yWasPlaying = 'true'
+        video.pause()
+      }
+    })
+  } else {
+    gsap.globalTimeline.resume()
+    document.querySelectorAll('video').forEach((video) => {
+      if (video.dataset.a11yWasPlaying === 'true') {
+        delete video.dataset.a11yWasPlaying
+        void video.play().catch(() => {})
+      }
+    })
+  }
+}
+
 export default function AccessibilityPanel({
   isOpen,
   onClose,
@@ -153,14 +257,19 @@ export default function AccessibilityPanel({
   rtl = false,
   showPoweredBy = false,
 }: AccessibilityPanelProps) {
+  const titleId = useId()
+  const closeBtnRef = useRef<HTMLButtonElement>(null)
+  const prevFocusRef = useRef<HTMLElement | null>(null)
+  const prevScreenReaderRef = useRef<boolean | null>(null)
+  const [hydrated, setHydrated] = useState(false)
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS)
+
   const t = useMemo<AccessibilityLabels>(
     () => ({ ...defaultAccessibilityLabels, ...labels }),
     [labels],
   )
 
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS)
-
-  // Load persisted settings on mount.
+  // Load persisted settings once — do not write defaults before hydrate.
   useEffect(() => {
     try {
       const stored = localStorage.getItem(storageKey)
@@ -169,67 +278,147 @@ export default function AccessibilityPanel({
       }
     } catch (e) {
       console.error('Failed to load accessibility settings', e)
+    } finally {
+      setHydrated(true)
     }
   }, [storageKey])
 
-  // Sync settings -> <html> classes + localStorage.
+  // Sync settings → <html> classes + localStorage (after hydrate only).
   useEffect(() => {
+    if (!hydrated) return
+
     const root = document.documentElement
     ;(Object.keys(CLASS_MAP) as SettingKey[]).forEach((key) => {
       root.classList.toggle(CLASS_MAP[key], settings[key])
     })
+
+    setPausedMedia(settings.pauseAnimations)
 
     try {
       localStorage.setItem(storageKey, JSON.stringify(settings))
     } catch (e) {
       console.error(e)
     }
-  }, [settings, storageKey])
+  }, [settings, storageKey, hydrated])
 
-  // Screen-reader live region + landmark labelling.
+  // Screen-reader mode: live region, TTS announce, landmark labels.
   useEffect(() => {
-    let liveRegion = document.getElementById(LIVE_REGION_ID) as HTMLDivElement | null
+    if (!hydrated) return
+
+    const wasOn = prevScreenReaderRef.current
+    prevScreenReaderRef.current = settings.screenReader
 
     if (settings.screenReader) {
-      if (!liveRegion) {
-        liveRegion = document.createElement('div')
-        liveRegion.id = LIVE_REGION_ID
-        liveRegion.className = 'a11y-sr-only'
-        liveRegion.setAttribute('aria-live', 'polite')
-        liveRegion.setAttribute('aria-atomic', 'true')
-        document.body.appendChild(liveRegion)
+      ensureLiveRegion()
+      applyLandmarkLabels(screenReaderTargets, true)
+      if (wasOn === false) {
+        announce(t.screenReaderEnabled)
+        speak(t.screenReaderEnabled)
       }
-
-      screenReaderTargets.forEach(({ id, label }) => {
-        const element = document.getElementById(id)
-        if (element && !element.dataset.a11yLabeled) {
-          element.setAttribute('aria-label', label)
-          element.dataset.a11yLabeled = 'true'
-        }
-      })
-
-      liveRegion.textContent = t.screenReaderEnabled
     } else {
-      document.querySelectorAll('[data-a11y-labeled="true"]').forEach((element) => {
-        element.removeAttribute('aria-label')
-        element.removeAttribute('data-a11y-labeled')
-      })
+      stopSpeech()
+      applyLandmarkLabels(screenReaderTargets, false)
+      const live = document.getElementById(LIVE_REGION_ID)
+      if (live) live.textContent = ''
+    }
+  }, [settings.screenReader, screenReaderTargets, t.screenReaderEnabled, hydrated])
 
-      if (liveRegion) {
-        liveRegion.textContent = ''
+  // Re-label landmarks if sections mount later (client hydration / lazy UI).
+  useEffect(() => {
+    if (!hydrated || !settings.screenReader || screenReaderTargets.length === 0) return
+    const observer = new MutationObserver(() => {
+      applyLandmarkLabels(screenReaderTargets, true)
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+    applyLandmarkLabels(screenReaderTargets, true)
+    return () => observer.disconnect()
+  }, [hydrated, settings.screenReader, screenReaderTargets])
+
+  // Click / keyboard focus → read aloud while Screen Reader mode is on.
+  useEffect(() => {
+    if (!hydrated || !settings.screenReader) return
+
+    // Avoid double-speaking when a click also focuses the same control.
+    let skipFocusSpeak = false
+
+    const fromEventTarget = (target: EventTarget | null): string => {
+      if (!(target instanceof Element)) return ''
+      if (target.closest('.a11y-panel, .a11y-overlay')) return ''
+      const el = target.closest(SPEAKABLE)
+      if (!el) return ''
+      return readableFromElement(el)
+    }
+
+    const onPointerDown = () => {
+      skipFocusSpeak = true
+    }
+
+    const onClick = (e: MouseEvent) => {
+      const text = fromEventTarget(e.target)
+      if (text) speak(text)
+    }
+
+    const onFocusIn = (e: FocusEvent) => {
+      if (skipFocusSpeak) {
+        skipFocusSpeak = false
+        return
+      }
+      const text = fromEventTarget(e.target)
+      if (text) speak(text)
+    }
+
+    document.addEventListener('pointerdown', onPointerDown, true)
+    document.addEventListener('click', onClick, true)
+    document.addEventListener('focusin', onFocusIn, true)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true)
+      document.removeEventListener('click', onClick, true)
+      document.removeEventListener('focusin', onFocusIn, true)
+    }
+  }, [hydrated, settings.screenReader])
+
+  // Escape closes; move focus into panel on open and restore on close.
+  useEffect(() => {
+    if (!isOpen) return
+    prevFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const focusTimer = window.setTimeout(() => closeBtnRef.current?.focus(), 0)
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose()
       }
     }
-  }, [settings.screenReader, screenReaderTargets, t.screenReaderEnabled])
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.clearTimeout(focusTimer)
+      document.removeEventListener('keydown', onKeyDown)
+      prevFocusRef.current?.focus?.()
+    }
+  }, [isOpen, onClose])
+
+  useEffect(() => {
+    return () => {
+      stopSpeech()
+      setPausedMedia(false)
+      applyLandmarkLabels(screenReaderTargets, false)
+      document.getElementById(LIVE_REGION_ID)?.remove()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- unmount cleanup only
+  }, [])
 
   const toggleOption = (id: SettingKey) => {
     setSettings((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
-  const resetAll = () => setSettings(DEFAULT_SETTINGS)
+  const resetAll = () => {
+    stopSpeech()
+    setSettings(DEFAULT_SETTINGS)
+  }
 
   return (
     <>
-      {isOpen && <div className="a11y-overlay" onClick={onClose} />}
+      {isOpen && <div className="a11y-overlay" onClick={onClose} aria-hidden="true" />}
 
       <div
         className={`a11y-panel ${rtl ? 'a11y-panel--left' : 'a11y-panel--right'} ${
@@ -237,12 +426,22 @@ export default function AccessibilityPanel({
         }`}
         role="dialog"
         aria-modal="true"
-        aria-label={t.title}
+        aria-labelledby={titleId}
+        aria-hidden={!isOpen}
       >
         <div className="a11y-body">
           <div className="a11y-header">
-            <h2 className="a11y-title">{t.title}</h2>
-            <button type="button" className="a11y-close" onClick={onClose} aria-label={t.closeLabel}>
+            <h2 id={titleId} className="a11y-title">
+              {t.title}
+            </h2>
+            <button
+              ref={closeBtnRef}
+              type="button"
+              className="a11y-close"
+              onClick={onClose}
+              aria-label={t.closeLabel}
+              tabIndex={isOpen ? 0 : -1}
+            >
               <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -259,6 +458,7 @@ export default function AccessibilityPanel({
                   onClick={() => toggleOption(id)}
                   aria-pressed={active}
                   className={`a11y-card ${active ? 'is-active' : ''}`}
+                  tabIndex={isOpen ? 0 : -1}
                 >
                   {ICONS[id]}
                   <span className="a11y-card-label">{t[id]}</span>
@@ -274,11 +474,12 @@ export default function AccessibilityPanel({
               href="/accessibility"
               className="a11y-statement-link"
               onClick={onClose}
+              tabIndex={isOpen ? 0 : -1}
             >
               {t.statementLink}
             </a>
           )}
-          <button type="button" className="a11y-reset" onClick={resetAll}>
+          <button type="button" className="a11y-reset" onClick={resetAll} tabIndex={isOpen ? 0 : -1}>
             {t.reset}
           </button>
           {showPoweredBy && t.poweredBy && <div className="a11y-powered">{t.poweredBy}</div>}

@@ -900,9 +900,9 @@ export const accessibility = {
     he: 'קורא מסך',
   },
   screenReaderEnabled: {
-    en: 'Screen reader mode enabled',
-    ru: 'Режим экранного диктора включён',
-    he: 'מצב קורא מסך הופעל',
+    en: 'Screen reader mode enabled. Click or focus text on the page to hear it read aloud.',
+    ru: 'Режим экранного диктора включён. Нажмите или сфокусируйте текст на странице, чтобы услышать озвучку.',
+    he: 'מצב קורא מסך הופעל. לחצו או התמקדו בטקסט בעמוד כדי לשמוע הקראה.',
   },
   screenReaderServices: {
     en: 'Services section',

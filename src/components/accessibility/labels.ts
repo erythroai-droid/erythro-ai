@@ -16,7 +16,7 @@ export interface AccessibilityLabels {
   statementLink: string
   /** Accessible label for the close (X) button. */
   closeLabel: string
-  /** Announced in the live region when screen-reader mode is turned on. */
+  /** Announced in the live region (and via TTS) when screen-reader mode is turned on. */
   screenReaderEnabled: string
 
   // Option tile labels
@@ -47,7 +47,8 @@ export const defaultAccessibilityLabels: AccessibilityLabels = {
   poweredBy: '',
   statementLink: 'Accessibility Statement',
   closeLabel: 'Close accessibility panel',
-  screenReaderEnabled: 'Screen reader mode enabled',
+  screenReaderEnabled:
+    'Screen reader mode enabled. Click or focus text on the page to hear it read aloud.',
   biggerText: 'Bigger Text',
   dyslexia: 'Dyslexia Friendly',
   contrast: 'High Contrast',

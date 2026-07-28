@@ -296,6 +296,11 @@ html.a11y-monochrome {
   filter: grayscale(100%) !important;
 }
 
+/* Both filters must compose — later rule alone would override contrast. */
+html.a11y-high-contrast.a11y-monochrome {
+  filter: contrast(1.4) saturate(1.1) grayscale(100%) !important;
+}
+
 html.a11y-highlight-links a {
   background-color: #ffeb3b !important;
   color: #000000 !important;
