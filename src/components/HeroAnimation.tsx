@@ -101,11 +101,11 @@ export default function HeroAnimation({
         {navbar}
 
         {/* Background Media (Video or Image) */}
-        <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0">
+        <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0" aria-hidden="true">
           {videoUrl && isProbablyImageUrl(videoUrl) ? (
             <img
               src={videoUrl}
-              alt="Hero Background"
+              alt=""
               className="w-full h-full object-cover opacity-85"
             />
           ) : (

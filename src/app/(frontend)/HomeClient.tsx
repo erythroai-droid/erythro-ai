@@ -76,6 +76,7 @@ export default function HomeClient({ initialLocale, initialTheme, content }: Hom
       { id: 'solutions', label: pickA11y(a11yTranslations.screenReaderSolutions) },
       { id: 'faq', label: faqA11yLabel },
       { id: 'contacts', label: pickA11y(a11yTranslations.screenReaderContacts) },
+      { id: 'contacts-mobile', label: pickA11y(a11yTranslations.screenReaderContacts) },
       { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
     ],
     [faqA11yLabel, locale],

@@ -567,6 +567,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         {/* ============================================================== */}
         <div
           ref={overlayRef}
+          id="contacts"
           className="absolute inset-0 z-25 hidden lg:flex flex-col items-center justify-center gap-8 md:gap-[30px] bg-transparent pointer-events-none"
           style={{
             clipPath: 'inset(50% 0% 50% 0%)',
@@ -682,7 +683,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
       {/* MOBILE LETS TALK FLOW BLOCK (Renders sequentially below services) */}
       {/* ============================================================== */}
       <div
-        id="contacts"
+        id="contacts-mobile"
         ref={mobileContactRef}
         className="relative z-20 -mt-8 flex min-h-[100svh] w-full flex-col items-center justify-center gap-8 overflow-hidden rounded-t-[28px] py-[80px] pb-[220px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lets-talk-bg pointer-events-auto md:gap-[30px] md:py-[120px] md:pb-[240px] lg:hidden"
       >

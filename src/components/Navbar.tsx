@@ -5,6 +5,7 @@ import Button from './Button'
 import { useSiteContent } from './SiteContentProvider'
 import { getServiceSlugById } from '@/lib/servicePages'
 import { navigateHomeWithFullSplash } from '@/lib/splash'
+import { getSectionElement } from '@/lib/domSection'
 
 interface NavbarProps {
   currentLocale: string
@@ -271,9 +272,10 @@ export default function Navbar({
         return
       }
       const targetId = href.substring(1)
-      const targetElement = targetId === 'contacts'
-        ? document.querySelector('footer')
-        : document.getElementById(targetId)
+      const targetElement =
+        targetId === 'contacts'
+          ? getSectionElement('contacts') || document.querySelector('footer')
+          : getSectionElement(targetId) || document.getElementById(targetId)
       
       if (targetElement) {
         targetElement.scrollIntoView({ behavior: 'smooth' })
@@ -337,11 +339,21 @@ export default function Navbar({
                 ? 'text-white hover:text-gold-500'
                 : 'text-coal-900 hover:text-erythro-500'
             }`}
-            aria-label="Toggle menu"
+            aria-label={mobileOpen ? (currentLocale === 'ru' ? 'Закрыть меню' : currentLocale === 'he' ? 'סגירת תפריט' : 'Close menu') : (currentLocale === 'ru' ? 'Открыть меню' : currentLocale === 'he' ? 'פתיחת תפריט' : 'Open menu')}
             aria-expanded={mobileOpen}
           >
             <span className="font-sans text-xs uppercase tracking-[2.4px]">
-              {mobileOpen ? 'Close' : 'Menu'}
+              {mobileOpen
+                ? currentLocale === 'ru'
+                  ? 'Закрыть'
+                  : currentLocale === 'he'
+                    ? 'סגירה'
+                    : 'Close'
+                : currentLocale === 'ru'
+                  ? 'Меню'
+                  : currentLocale === 'he'
+                    ? 'תפריט'
+                    : 'Menu'}
             </span>
             <svg
               width="21"

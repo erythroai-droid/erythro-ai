@@ -6,6 +6,7 @@ import Script from 'next/script'
 import { heebo, inter, robotoMono } from '@/lib/fonts'
 import SplashHost from '@/components/SplashHost'
 import NavigationTopLoader from '@/components/NavigationTopLoader'
+import SkipToContent from '@/components/SkipToContent'
 import { THEME_BOOTSTRAP_SCRIPT, THEME_COOKIE, isSiteTheme } from '@/lib/sitePrefs'
 import './styles.css'
 
@@ -157,9 +158,10 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
             gtag('config', 'G-F3BTVWGDRS');
           `}
         </Script>
+        <SkipToContent locale={locale} />
         <SplashHost />
         <NavigationTopLoader />
-        <main>{children}</main>
+        <main id="main-content">{children}</main>
       </body>
     </html>
   )

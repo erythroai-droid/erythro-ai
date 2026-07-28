@@ -25,6 +25,7 @@ interface PortfolioSectionProps {
 
 export default function PortfolioSection({
   theme = 'dark',
+  locale = 'en',
   projects: allProjects,
   filters,
 }: PortfolioSectionProps) {
@@ -183,8 +184,14 @@ export default function PortfolioSection({
 
         <div
           className="mb-12 flex w-full max-w-[900px] flex-wrap items-center justify-center gap-2 md:gap-3"
-          role="tablist"
-          aria-label="Project filters"
+          role="group"
+          aria-label={
+            locale === 'ru'
+              ? 'Фильтры проектов'
+              : locale === 'he'
+                ? 'מסנני פרויקטים'
+                : 'Project filters'
+          }
         >
           {filters.map((filter) => {
             const active = activeFilter === filter.id
@@ -192,8 +199,7 @@ export default function PortfolioSection({
               <button
                 key={filter.id}
                 type="button"
-                role="tab"
-                aria-selected={active}
+                aria-pressed={active}
                 onClick={() => handleFilterChange(filter.id)}
                 className={`portfolio-filter-btn cursor-pointer rounded-full border px-4 py-2 font-sans text-xs uppercase tracking-[1.6px] transition-all duration-200 active:scale-[0.97] md:px-5 md:text-[12px] ${
                   active

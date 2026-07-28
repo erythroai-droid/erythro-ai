@@ -1,3 +1,5 @@
+import { getSectionElement } from '@/lib/domSection'
+
 /** Opens the site contact modal instead of navigating. */
 export const CONTACT_MODAL_HREF = '#contact-modal'
 
@@ -37,7 +39,7 @@ export function navigateCtaHref(
       return true
     }
     const id = raw.slice(1)
-    const el = document.getElementById(id)
+    const el = getSectionElement(id) || document.getElementById(id)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' })
       return true

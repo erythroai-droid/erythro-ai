@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from 'react'
 import { contactForm } from '@/translations'
 
 interface ContactModalContextValue {
@@ -44,6 +44,8 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const form = contactForm
   const isRtl = locale === 'he'
+  const titleId = useId()
+  const errorId = useId()
 
   const [status, setStatus] = useState<Status>('idle')
   const [values, setValues] = useState({ name: '', email: '', phone: '', message: '' })
@@ -78,6 +80,7 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setValues((v) => ({ ...v, [e.target.name]: e.target.value }))
+    if (status === 'error') setStatus('idle')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,7 +102,8 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
   }
 
   const inputClass =
-    'w-full rounded-[10px] border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 outline-none transition-colors focus:border-gold-500 focus:bg-white/[0.06]'
+    'w-full rounded-[10px] border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 outline-none transition-colors focus:border-gold-500 focus:bg-white/[0.06] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
+  const labelClass = 'mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-white/70'
 
   return (
     <div
@@ -107,9 +111,8 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
       dir={isRtl ? 'rtl' : 'ltr'}
       role="dialog"
       aria-modal="true"
-      aria-label={t(form.title)}
+      aria-labelledby={titleId}
     >
-      {/* Overlay */}
       <button
         type="button"
         aria-label={t(form.close)}
@@ -117,15 +120,11 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
         className="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
       />
 
-      {/* Panel */}
       <div className="relative max-h-[90vh] w-full max-w-[460px] overflow-y-auto rounded-[10px] border border-white/10 bg-coal-900 p-6 sm:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
         <button
           type="button"
           onClick={onClose}
           aria-label={t(form.close)}
-          // Logical `end` keeps the close button in the corner opposite where
-          // the heading text starts: top-right for LTR, top-left for RTL (he),
-          // so it never overlaps the right-aligned Hebrew title.
           className="absolute top-4 end-4 flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -134,13 +133,13 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
         </button>
 
         {status !== 'success' && (
-          <h2 className="mb-6 max-w-[85%] font-semibold normal-case tracking-normal text-[22px] leading-snug text-gold-100 sm:text-[24px]">
+          <h2 id={titleId} className="mb-6 max-w-[85%] font-semibold normal-case tracking-normal text-[22px] leading-snug text-gold-100 sm:text-[24px]">
             {t(form.title)}
           </h2>
         )}
 
         {status === 'success' ? (
-          <div className="py-6 text-center">
+          <div className="py-6 text-center" role="status" aria-live="polite">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="m5 13 4 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -157,50 +156,81 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-            <input
-              ref={firstFieldRef}
-              name="name"
-              type="text"
-              required
-              value={values.name}
-              onChange={handleChange}
-              placeholder={t(form.name)}
-              className={inputClass}
-              autoComplete="name"
-            />
-            <input
-              name="email"
-              type="email"
-              required
-              value={values.email}
-              onChange={handleChange}
-              placeholder={t(form.email)}
-              className={inputClass}
-              autoComplete="email"
-              dir="ltr"
-            />
-            <input
-              name="phone"
-              type="tel"
-              value={values.phone}
-              onChange={handleChange}
-              placeholder={t(form.phone)}
-              className={inputClass}
-              autoComplete="tel"
-              dir="ltr"
-            />
-            <textarea
-              name="message"
-              required
-              value={values.message}
-              onChange={handleChange}
-              placeholder={t(form.message)}
-              rows={4}
-              className={`${inputClass} resize-none`}
-            />
+            <div>
+              <label htmlFor="contact-modal-name" className={labelClass}>
+                {t(form.name)}
+              </label>
+              <input
+                ref={firstFieldRef}
+                id="contact-modal-name"
+                name="name"
+                type="text"
+                required
+                value={values.name}
+                onChange={handleChange}
+                placeholder={t(form.name)}
+                className={inputClass}
+                autoComplete="name"
+                aria-required="true"
+              />
+            </div>
+            <div>
+              <label htmlFor="contact-modal-email" className={labelClass}>
+                {t(form.email)}
+              </label>
+              <input
+                id="contact-modal-email"
+                name="email"
+                type="email"
+                required
+                value={values.email}
+                onChange={handleChange}
+                placeholder={t(form.email)}
+                className={inputClass}
+                autoComplete="email"
+                dir="ltr"
+                aria-required="true"
+              />
+            </div>
+            <div>
+              <label htmlFor="contact-modal-phone" className={labelClass}>
+                {t(form.phone)}
+              </label>
+              <input
+                id="contact-modal-phone"
+                name="phone"
+                type="tel"
+                value={values.phone}
+                onChange={handleChange}
+                placeholder={t(form.phone)}
+                className={inputClass}
+                autoComplete="tel"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <label htmlFor="contact-modal-message" className={labelClass}>
+                {t(form.message)}
+              </label>
+              <textarea
+                id="contact-modal-message"
+                name="message"
+                required
+                value={values.message}
+                onChange={handleChange}
+                placeholder={t(form.message)}
+                rows={4}
+                className={`${inputClass} resize-none`}
+                aria-required="true"
+                aria-invalid={status === 'error' || undefined}
+                aria-describedby={status === 'error' ? errorId : undefined}
+              />
+            </div>
 
             {status === 'error' && (
-              <p className="text-sm text-erythro-500">{t(form.error)}</p>
+              <p id={errorId} role="alert" className="text-sm text-erythro-500">
+                {t(form.error)}
+              </p>
             )}
 
             <button

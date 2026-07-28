@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect } from 'react'
 import { useBackdropContrast } from '@/hooks/useBackdropContrast'
+import { getSectionElement } from '@/lib/domSection'
 
 interface ScrollSideButtonProps {
   label?: string
@@ -34,7 +35,7 @@ export default function ScrollSideButton({
       let active = 1
 
       sectionIds.forEach((id, index) => {
-        const el = document.getElementById(id)
+        const el = getSectionElement(id)
         if (!el) return
         const rect = el.getBoundingClientRect()
         if (rect.top <= mid && rect.bottom > mid * 0.35) {
@@ -61,7 +62,7 @@ export default function ScrollSideButton({
   const scrollToNext = () => {
     const nextIndex = Math.min(current, total - 1)
     const nextId = sectionIds[nextIndex]
-    const target = nextId ? document.getElementById(nextId) : null
+    const target = nextId ? getSectionElement(nextId) : null
     if (target && current < total) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' })
       return

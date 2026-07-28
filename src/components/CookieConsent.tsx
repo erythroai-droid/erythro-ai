@@ -40,7 +40,17 @@ export default function CookieConsent({ locale, theme }: CookieConsentProps) {
       : 'text-gold-500 underline underline-offset-2 decoration-gold-500/40 transition-colors hover:text-gold-100 hover:decoration-gold-100'
 
   return (
-    <div className="fixed inset-x-0 bottom-6 z-[60] w-full px-[30px] max-w-[1170px] mx-auto pointer-events-none">
+    <div
+      className="fixed inset-x-0 bottom-6 z-[60] w-full px-[30px] max-w-[1170px] mx-auto pointer-events-none"
+      role="region"
+      aria-label={
+        locale === 'ru'
+          ? 'Согласие на использование cookie'
+          : locale === 'he'
+            ? 'הסכמה לקובצי Cookie'
+            : 'Cookie consent'
+      }
+    >
       {/* Pill matches the navbar geometry/colors and reacts to the active theme */}
       <div
         className={`pointer-events-auto w-full flex flex-col sm:flex-row items-center gap-4 rounded-[40px] border px-[30px] py-4 backdrop-blur-md transition-colors duration-500 ${

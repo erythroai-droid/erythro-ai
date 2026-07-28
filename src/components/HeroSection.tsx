@@ -9,6 +9,7 @@ import HeroMotionText from './HeroMotionText'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import { isContactModalHref, navigateCtaHref } from '@/lib/ctaNav'
+import { getSectionElement } from '@/lib/domSection'
 import { waitForSplashDone } from '@/lib/splash'
 
 if (typeof window !== 'undefined') {
@@ -63,7 +64,7 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
     if (href === '#contacts' || href === '') {
       const isMobile = window.innerWidth < 1024
       if (isMobile) {
-        document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' })
+        getSectionElement('contacts')?.scrollIntoView({ behavior: 'smooth' })
       } else {
         const st = ScrollTrigger.getById('services-pin')
         if (st) {

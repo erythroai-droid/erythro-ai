@@ -96,8 +96,8 @@ export default function Button({
 
   // Base classes with premium micro-transitions
   const baseClasses = isFixedSizeButton
-      ? `inline-flex items-center justify-center shrink-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer select-none gap-[10px] ${pressedMotion}`
-      : `inline-flex items-center justify-center font-button-base font-medium rounded-radius-2xl tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer select-none gap-2 ${pressedMotion}`
+      ? `inline-flex items-center justify-center shrink-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500 cursor-pointer select-none gap-[10px] ${pressedMotion}`
+      : `inline-flex items-center justify-center font-button-base font-medium rounded-radius-2xl tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500 cursor-pointer select-none gap-2 ${pressedMotion}`
 
   // Map variant to styling classes
   let variantClasses = ''

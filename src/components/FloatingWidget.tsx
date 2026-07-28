@@ -224,7 +224,7 @@ export default function FloatingWidget({
       <button
         onClick={onOpenAccessibility}
         className="w-[44px] h-[44px] rounded-full bg-erythro-500 hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center border border-white/10 hover:border-gold-500 hover:shadow-lg hover:shadow-gold-500/30 transition-all duration-300 cursor-pointer relative group"
-        aria-label="Accessibility Settings"
+        aria-label={locale === 'ru' ? 'Настройки доступности' : locale === 'he' ? 'הגדרות נגישות' : 'Accessibility settings'}
       >
         <HumanIcon className="w-[18px] h-[18px] transition-transform duration-300 group-hover:scale-110" />
         <span className="absolute bottom-[52px] left-1/2 -translate-x-1/2 px-2 py-1 bg-black/80 border border-white/10 text-[13.5px] font-bold text-white uppercase tracking-widest rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
@@ -243,7 +243,7 @@ export default function FloatingWidget({
         <button
           onClick={scrollToTop}
           className="w-[44px] h-[44px] rounded-full bg-coal-800 hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center border border-white/10 hover:border-gold-500 hover:shadow-lg hover:shadow-gold-500/30 transition-all duration-300 cursor-pointer relative group overflow-hidden"
-          aria-label="Back to Top"
+          aria-label={locale === 'ru' ? 'Наверх' : locale === 'he' ? 'לראש העמוד' : 'Back to top'}
         >
           <svg
             className="w-[16px] h-[16px] transition-transform duration-300 group-hover:-translate-y-1"
@@ -270,6 +270,8 @@ export default function FloatingWidget({
               <button
                 onClick={() => handleMobileSubmenu('contacts')}
                 className="w-[37px] h-[37px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
+                aria-label={locale === 'ru' ? 'Контакты' : locale === 'he' ? 'יצירת קשר' : 'Contacts'}
+                aria-expanded={activeMobileSubmenu === 'contacts'}
               >
                 <PhoneIcon className="w-[15px] h-[15px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-12" />
               </button>
@@ -292,6 +294,8 @@ export default function FloatingWidget({
               <button
                 onClick={() => handleMobileSubmenu('bell')}
                 className="w-[37px] h-[37px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
+                aria-label={locale === 'ru' ? 'Соцсети' : locale === 'he' ? 'רשתות חברתיות' : 'Social links'}
+                aria-expanded={activeMobileSubmenu === 'bell'}
               >
                 <BellIcon className="w-[15px] h-[15px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-[-12deg]" />
               </button>
@@ -303,6 +307,7 @@ export default function FloatingWidget({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-[30px] h-[30px] rounded-full hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center transition-all group/fb-link"
+                    aria-label="Facebook"
                   >
                     <FacebookIcon className="w-[11px] h-[15px] transition-transform duration-300 group-hover/fb-link:scale-115" />
                   </a>
@@ -311,6 +316,7 @@ export default function FloatingWidget({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-[30px] h-[30px] rounded-full hover:bg-gold-500 hover:text-coal-900 text-white flex items-center justify-center transition-all group/tt-link"
+                    aria-label="TikTok"
                   >
                     <TikTokIcon className="w-[15px] h-[15px] transition-transform duration-300 group-hover/tt-link:scale-115" />
                   </a>
@@ -323,6 +329,8 @@ export default function FloatingWidget({
               <button
                 onClick={() => handleMobileSubmenu('theme')}
                 className="w-[37px] h-[37px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
+                aria-label={locale === 'ru' ? 'Тема оформления' : locale === 'he' ? 'ערכת נושא' : 'Theme'}
+                aria-expanded={activeMobileSubmenu === 'theme'}
               >
                 <ThemeIcon className="w-[14px] h-[14px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-12" />
               </button>
@@ -334,6 +342,8 @@ export default function FloatingWidget({
                     className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all cursor-pointer hover:bg-gold-500 hover:text-coal-900 group/sun-btn ${
                       theme === 'light' ? 'bg-erythro-500 text-white' : 'text-white/60'
                     }`}
+                    aria-label={locale === 'ru' ? 'Светлая тема' : locale === 'he' ? 'ערכת נושא בהירה' : 'Light theme'}
+                    aria-pressed={theme === 'light'}
                   >
                     <svg className="w-[14px] h-[14px] transition-transform duration-300 group-hover/sun-btn:rotate-45 group-hover/sun-btn:scale-115" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm-12.37 1.06l-1.06 1.06c-.39.39-.39 1.03 0 1.41.39.39 1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0zm12.37-13.43a.996.996 0 000-1.41l-1.06-1.06c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.38.39 1.02.39 1.41 0z" />
@@ -344,6 +354,8 @@ export default function FloatingWidget({
                     className={`w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all cursor-pointer hover:bg-gold-500 hover:text-coal-900 group/moon-btn ${
                       theme === 'dark' ? 'bg-erythro-500 text-white' : 'text-white/60'
                     }`}
+                    aria-label={locale === 'ru' ? 'Тёмная тема' : locale === 'he' ? 'ערכת נושא כהה' : 'Dark theme'}
+                    aria-pressed={theme === 'dark'}
                   >
                     <svg className="w-[13px] h-[13px] transition-transform duration-300 group-hover/moon-btn:-rotate-12 group-hover/moon-btn:scale-115" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12.3 22h-.1c-5.4 0-9.8-4.4-9.8-9.8 0-5.1 3.9-9.3 9-9.8.6-.1 1.1.4 1 1-.5 2.5.2 5.1 1.9 6.8 1.7 1.7 4.3 2.4 6.8 1.9.6-.1 1.1.4 1 1-.9 5.2-5.3 9-10.8 8.9z" />
@@ -358,6 +370,8 @@ export default function FloatingWidget({
               <button
                 onClick={() => handleMobileSubmenu('lang')}
                 className="w-[37px] h-[37px] rounded-full bg-coal-800 border border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500 flex items-center justify-center transition-all duration-300 cursor-pointer shadow-md group/btn"
+                aria-label={locale === 'ru' ? 'Язык' : locale === 'he' ? 'שפה' : 'Language'}
+                aria-expanded={activeMobileSubmenu === 'lang'}
               >
                 <LangIcon className="w-[15px] h-[15px] transition-transform duration-300 group-hover/btn:scale-110 group-hover/btn:rotate-12" />
               </button>
@@ -366,6 +380,7 @@ export default function FloatingWidget({
                 <div className={submenuInnerClass}>
                   {['en', 'ru', 'he'].map((lg) => {
                     const Icon = lg === 'en' ? ENIcon : lg === 'ru' ? RUIcon : HEIcon
+                    const langName = lg === 'en' ? 'English' : lg === 'ru' ? 'Русский' : 'עברית'
                     return (
                       <button
                         key={lg}
@@ -378,6 +393,9 @@ export default function FloatingWidget({
                             ? 'bg-erythro-500 text-white'
                             : 'text-white/60'
                         }`}
+                        aria-label={langName}
+                        aria-pressed={locale === lg}
+                        lang={lg}
                       >
                         <Icon className="w-[14px] h-[9px] transition-transform duration-300 group-hover/lang-opt:scale-115" />
                       </button>
@@ -397,7 +415,20 @@ export default function FloatingWidget({
               ? 'bg-white border-white text-black hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500'
               : 'bg-coal-800 border-white/10 text-white hover:bg-gold-500 hover:text-coal-900 hover:border-gold-500'
           }`}
-          aria-label="Toggle Controls Menu"
+          aria-label={
+            isMenuOpen
+              ? locale === 'ru'
+                ? 'Закрыть панель управления'
+                : locale === 'he'
+                  ? 'סגירת לוח בקרה'
+                  : 'Close controls menu'
+              : locale === 'ru'
+                ? 'Открыть панель управления'
+                : locale === 'he'
+                  ? 'פתיחת לוח בקרה'
+                  : 'Open controls menu'
+          }
+          aria-expanded={isMenuOpen}
         >
           {isMenuOpen ? (
             <svg className="w-[18px] h-[18px] transition-transform duration-300 rotate-90" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

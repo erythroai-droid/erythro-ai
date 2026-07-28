@@ -33,8 +33,11 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
     ? 'border-coal-900/10 bg-white/70'
     : 'border-white/10 bg-white/[0.04]'
   const inputClass = isLight
-    ? 'w-full rounded-[10px] border border-coal-900/15 bg-white px-4 py-3 text-coal-900 placeholder:text-coal-900/40 outline-none transition-colors focus:border-erythro-500'
-    : 'w-full rounded-[10px] border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 outline-none transition-colors focus:border-gold-500 focus:bg-white/[0.06]'
+    ? 'w-full rounded-[10px] border border-coal-900/15 bg-white px-4 py-3 text-coal-900 placeholder:text-coal-900/40 outline-none transition-colors focus:border-erythro-500 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
+    : 'w-full rounded-[10px] border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 outline-none transition-colors focus:border-gold-500 focus:bg-white/[0.06] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
+  const labelClass = isLight
+    ? 'mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-coal-900/70'
+    : 'mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-white/70'
   const linkClass = isLight
     ? 'text-coal-900 transition-colors hover:text-erythro-500'
     : 'text-white transition-colors hover:text-gold-500'
@@ -45,6 +48,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setValues((v) => ({ ...v, [e.target.name]: e.target.value }))
+    if (status === 'error') setStatus('idle')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -227,50 +231,81 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                     {formHeading}
                   </h2>
                   <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-                    <input
-                      ref={firstFieldRef}
-                      name="name"
-                      type="text"
-                      required
-                      value={values.name}
-                      onChange={handleChange}
-                      placeholder={t(form.name)}
-                      className={inputClass}
-                      autoComplete="name"
-                    />
-                    <input
-                      name="email"
-                      type="email"
-                      required
-                      value={values.email}
-                      onChange={handleChange}
-                      placeholder={t(form.email)}
-                      className={inputClass}
-                      autoComplete="email"
-                      dir="ltr"
-                    />
-                    <input
-                      name="phone"
-                      type="tel"
-                      value={values.phone}
-                      onChange={handleChange}
-                      placeholder={t(form.phone)}
-                      className={inputClass}
-                      autoComplete="tel"
-                      dir="ltr"
-                    />
-                    <textarea
-                      name="message"
-                      required
-                      value={values.message}
-                      onChange={handleChange}
-                      placeholder={t(form.message)}
-                      rows={5}
-                      className={`${inputClass} resize-none`}
-                    />
+                    <div>
+                      <label htmlFor="contacts-page-name" className={labelClass}>
+                        {t(form.name)}
+                      </label>
+                      <input
+                        ref={firstFieldRef}
+                        id="contacts-page-name"
+                        name="name"
+                        type="text"
+                        required
+                        value={values.name}
+                        onChange={handleChange}
+                        placeholder={t(form.name)}
+                        className={inputClass}
+                        autoComplete="name"
+                        aria-required="true"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="contacts-page-email" className={labelClass}>
+                        {t(form.email)}
+                      </label>
+                      <input
+                        id="contacts-page-email"
+                        name="email"
+                        type="email"
+                        required
+                        value={values.email}
+                        onChange={handleChange}
+                        placeholder={t(form.email)}
+                        className={inputClass}
+                        autoComplete="email"
+                        dir="ltr"
+                        aria-required="true"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="contacts-page-phone" className={labelClass}>
+                        {t(form.phone)}
+                      </label>
+                      <input
+                        id="contacts-page-phone"
+                        name="phone"
+                        type="tel"
+                        value={values.phone}
+                        onChange={handleChange}
+                        placeholder={t(form.phone)}
+                        className={inputClass}
+                        autoComplete="tel"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="contacts-page-message" className={labelClass}>
+                        {t(form.message)}
+                      </label>
+                      <textarea
+                        id="contacts-page-message"
+                        name="message"
+                        required
+                        value={values.message}
+                        onChange={handleChange}
+                        placeholder={t(form.message)}
+                        rows={5}
+                        className={`${inputClass} resize-none`}
+                        aria-required="true"
+                        aria-invalid={status === 'error' || undefined}
+                        aria-describedby={status === 'error' ? 'contacts-page-error' : undefined}
+                      />
+                    </div>
 
                     {status === 'error' && (
-                      <p className="m-0 text-sm text-erythro-500">{t(form.error)}</p>
+                      <p id="contacts-page-error" role="alert" className="m-0 text-sm text-erythro-500">
+                        {t(form.error)}
+                      </p>
                     )}
 
                     <button
