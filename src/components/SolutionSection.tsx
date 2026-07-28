@@ -330,8 +330,9 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
 
   return (
     <div className="relative z-30 w-full pointer-events-none">
-      {/* Spacer: Services/LetsTalk stays pinned; last ~100vh is Solutions riding up full-screen (like Services over Cases) */}
-      <div className="hidden lg:block h-[500vh] w-full pointer-events-none" />
+      {/* Lead-in while LetsTalk finishes (incl. CTA). Must be < Services pin end
+          so Solutions still rides up over the pinned section (no empty gap after). */}
+      <div className="hidden lg:block h-[780vh] w-full pointer-events-none" />
 
       <section
         id="solutions"

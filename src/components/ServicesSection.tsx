@@ -206,7 +206,9 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             id: 'services-pin',
             trigger: sectionRef.current,
             start: 'top top',
-            end: '+=760%', // Longer than Solutions lead-in so Solutions rides up over pinned LetsTalk
+            // Pin must outlast Solutions lead-in (ride-up), but lead-in must reach
+            // ~button-complete progress (~80% of this timeline) so CTA isn’t covered early.
+            end: '+=950%',
             pin: true,
             pinSpacing: false, // SolutionSection will slide over it
             scrub: 1, // Smooth scrub
