@@ -330,9 +330,8 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
 
   return (
     <div className="relative z-30 w-full pointer-events-none">
-      {/* Spacer must be >= Services pin end so LetsTalk (and its button) finish
-          before Solutions rides up. Extra ~100vh is the Solutions overlap itself. */}
-      <div className="hidden lg:block h-[1000vh] w-full pointer-events-none" />
+      {/* Spacer: Services/LetsTalk stays pinned; last ~100vh is Solutions riding up full-screen (like Services over Cases) */}
+      <div className="hidden lg:block h-[500vh] w-full pointer-events-none" />
 
       <section
         id="solutions"
