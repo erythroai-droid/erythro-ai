@@ -28,6 +28,9 @@
  * ```css
  * :root { --a11y-accent: #2563eb; --a11y-panel-bg: #111827; }
  * ```
+ *
+ * Deferred site-level WCAG work (focus trap, burger inert, GSAP/motion,
+ * captions) lives in `./DEFERRED-P3.md` — revisit later; do not ship casually.
  */
 export { default as AccessibilityPanel } from './AccessibilityPanel'
 export type { AccessibilityPanelProps } from './AccessibilityPanel'
