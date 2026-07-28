@@ -315,7 +315,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         )
 
         // 7. Hold phase to keep Let's Talk fully visible and interactive before Solutions slides over
-        tl.to({}, { duration: 2.3 })
+        tl.to({}, { duration: 3.0 })
       })
 
       // Mobile/tablet animation: Simple scroll trigger (no pinning/snapping)
