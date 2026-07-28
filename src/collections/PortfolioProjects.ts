@@ -11,6 +11,12 @@ export const PortfolioProjects: CollectionConfig = {
     defaultColumns: ['title', 'slug', 'category', 'order'],
     group: 'Pages',
   },
+  access: {
+    read: ({ req }) => Boolean(req.user),
+    create: ({ req }) => Boolean(req.user),
+    update: ({ req }) => Boolean(req.user),
+    delete: ({ req }) => Boolean(req.user),
+  },
   hooks: { afterChange: [revalidateOnChange], afterDelete: [revalidateOnDelete] },
   fields: [
     {

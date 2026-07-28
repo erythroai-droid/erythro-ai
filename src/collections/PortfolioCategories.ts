@@ -6,14 +6,18 @@ export const PortfolioCategories: CollectionConfig = {
   slug: 'portfolio-categories',
   labels: { singular: 'Portfolio Category', plural: 'Portfolio Categories' },
   admin: {
-    useAsTitle: 'label',
-    defaultColumns: ['label', 'value', 'order', 'showInFilters'],
+    // Non-localized title — localized `label` breaks admin list/nav titles
+    useAsTitle: 'value',
+    defaultColumns: ['value', 'order', 'showInFilters', 'updatedAt'],
     group: 'Pages',
     description:
       'Categories for portfolio projects and the filter chips on /portfolio. Edit labels, add/remove items, and reorder here.',
   },
   access: {
     read: () => true,
+    create: ({ req }) => Boolean(req.user),
+    update: ({ req }) => Boolean(req.user),
+    delete: ({ req }) => Boolean(req.user),
   },
   hooks: { afterChange: [revalidateOnChange], afterDelete: [revalidateOnDelete] },
   fields: [
