@@ -3,8 +3,10 @@ import { unstable_cache } from 'next/cache'
 import config from '@payload-config'
 import { SITE_CONTENT_TAG } from './revalidate'
 import {
+  PORTFOLIO_FILTERS,
   PORTFOLIO_PROJECTS,
   type PortfolioCategory,
+  type PortfolioFilter,
   type PortfolioProject,
   type PortfolioBodySection,
 } from './portfolioProjects'
@@ -89,9 +91,9 @@ function pickStr(v: any, locale: string, fallback = ''): string {
 
 function mapPortfolioDoc(d: any, locale: string): PortfolioProject {
   // Prefer slug match so CMS docs never inherit unrelated seed project fields by index.
-  const fb =
+  const fb: PortfolioProject =
     PORTFOLIO_PROJECTS.find((p) => p.slug === d.slug) ||
-    ({
+    {
       id: String(d.id ?? ''),
       slug: d.slug || 'project',
       title: 'Project',
@@ -103,10 +105,10 @@ function mapPortfolioDoc(d: any, locale: string): PortfolioProject {
       date: '',
       stack: [],
       client: '',
-      hero: { type: 'image' as const, src: '/images/portfolio/case-1.png' },
+      hero: { type: 'image', src: '/images/portfolio/case-1.png' },
       summary: '',
       body: [],
-    } satisfies PortfolioProject)
+    }
 
   const cardUrl = mediaUrl(d.cardImage) || fb.image
   const heroUrl = mediaUrl(d.heroMedia) || mediaUrl(d.cardImage) || fb.hero.src
@@ -145,12 +147,25 @@ function mapPortfolioDoc(d: any, locale: string): PortfolioProject {
       ? d.tags.map((t: any) => t.tag).filter(Boolean)
       : fb.tags
 
+  const catDoc =
+    d.category && typeof d.category === 'object' && !Array.isArray(d.category)
+      ? d.category
+      : null
+  const categoryValue =
+    (typeof catDoc?.value === 'string' && catDoc.value) ||
+    (typeof d.category === 'string' && d.category) ||
+    fb.category
+  const categoryLabel =
+    pickStr(d.categoryLabel, locale) ||
+    pickStr(catDoc?.label, locale) ||
+    fb.categoryLabel
+
   return {
     id: String(d.id ?? fb.id),
     slug: d.slug || fb.slug,
     title: pickStr(d.title, locale, fb.title),
-    category: (d.category || fb.category) as Exclude<PortfolioCategory, 'all'>,
-    categoryLabel: pickStr(d.categoryLabel, locale, fb.categoryLabel),
+    category: categoryValue as Exclude<PortfolioCategory, 'all'>,
+    categoryLabel,
     description: pickStr(d.description, locale, fb.description),
     tags,
     image: cardUrl,
@@ -189,6 +204,34 @@ async function fetchPortfolioProjects(locale: string): Promise<PortfolioProject[
   } catch (err) {
     console.error('[cmsPages] portfolio fallback:', err)
     return PORTFOLIO_PROJECTS
+  }
+}
+
+async function fetchPortfolioCategories(locale: string): Promise<PortfolioFilter[]> {
+  try {
+    const payload = await getPayload({ config })
+    const res = await payload.find({
+      collection: 'portfolio-categories',
+      locale: 'all',
+      depth: 0,
+      limit: 100,
+      sort: 'order',
+      where: { showInFilters: { equals: true } },
+    })
+    if (!res.docs?.length) {
+      return PORTFOLIO_FILTERS.filter((f) => f.id !== 'all')
+    }
+    return res.docs
+      .map((d: any) => {
+        const id = typeof d.value === 'string' ? d.value.trim() : ''
+        const label = pickStr(d.label, locale, id)
+        if (!id || !label) return null
+        return { id, label } satisfies PortfolioFilter
+      })
+      .filter(Boolean) as PortfolioFilter[]
+  } catch (err) {
+    console.error('[cmsPages] portfolio categories fallback:', err)
+    return PORTFOLIO_FILTERS.filter((f) => f.id !== 'all')
   }
 }
 
@@ -405,8 +448,14 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 }
 
 export const getCachedPortfolioProjects = (locale: string) =>
-  // v2: bust Data Cache that may still hold seed fallback from pre-migration errors
-  unstable_cache(() => fetchPortfolioProjects(locale), [`portfolio-projects-v2-${locale}`], {
+  // v3: categories are CMS-managed; bust older category-select cache entries
+  unstable_cache(() => fetchPortfolioProjects(locale), [`portfolio-projects-v3-${locale}`], {
+    tags: [SITE_CONTENT_TAG],
+    revalidate: false,
+  })()
+
+export const getCachedPortfolioCategories = (locale: string) =>
+  unstable_cache(() => fetchPortfolioCategories(locale), [`portfolio-categories-v1-${locale}`], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

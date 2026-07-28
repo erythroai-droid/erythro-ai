@@ -11,6 +11,7 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Services } from './collections/Services'
 import { SolutionPlans } from './collections/SolutionPlans'
+import { PortfolioCategories } from './collections/PortfolioCategories'
 import { PortfolioProjects } from './collections/PortfolioProjects'
 import { Partners } from './collections/Partners'
 import { ContactSubmissions } from './collections/ContactSubmissions'
@@ -46,6 +47,7 @@ export default buildConfig({
     Pages,
     Services,
     SolutionPlans,
+    PortfolioCategories,
     PortfolioProjects,
     Partners,
     ContactSubmissions,

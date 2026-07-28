@@ -6,9 +6,9 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
-  PORTFOLIO_FILTERS,
   matchesPortfolioFilter,
   type PortfolioCategory,
+  type PortfolioFilter,
   type PortfolioProject,
 } from '@/lib/portfolioProjects'
 
@@ -20,11 +20,13 @@ interface PortfolioSectionProps {
   theme?: 'light' | 'dark'
   locale?: string
   projects: PortfolioProject[]
+  filters: PortfolioFilter[]
 }
 
 export default function PortfolioSection({
   theme = 'dark',
   projects: allProjects,
+  filters,
 }: PortfolioSectionProps) {
   const isLight = theme === 'light'
   const sectionRef = React.useRef<HTMLElement | null>(null)
@@ -184,7 +186,7 @@ export default function PortfolioSection({
           role="tablist"
           aria-label="Project filters"
         >
-          {PORTFOLIO_FILTERS.map((filter) => {
+          {filters.map((filter) => {
             const active = activeFilter === filter.id
             return (
               <button

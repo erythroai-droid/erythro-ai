@@ -13,7 +13,7 @@ import LetsTalkSection from '@/components/LetsTalkSection'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import HeaderChipStrip from '@/components/HeaderChipStrip'
 import type { SiteContent } from '@/lib/defaultContent'
-import type { PortfolioProject } from '@/lib/portfolioProjects'
+import type { PortfolioFilter, PortfolioProject } from '@/lib/portfolioProjects'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface PortfolioClientProps {
@@ -21,6 +21,7 @@ interface PortfolioClientProps {
   initialTheme?: 'light' | 'dark'
   content: SiteContent
   projects: PortfolioProject[]
+  filters: PortfolioFilter[]
 }
 
 export default function PortfolioClient({
@@ -28,6 +29,7 @@ export default function PortfolioClient({
   initialTheme,
   content,
   projects,
+  filters,
 }: PortfolioClientProps) {
   const a11yTranslations = content.accessibility
   const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
@@ -99,7 +101,7 @@ export default function PortfolioClient({
           */}
           <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
             <div>
-              <PortfolioSection theme={theme} locale={locale} projects={projects} />
+              <PortfolioSection theme={theme} locale={locale} projects={projects} filters={filters} />
             </div>
           </div>
 

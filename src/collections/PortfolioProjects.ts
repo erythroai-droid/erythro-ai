@@ -23,18 +23,20 @@ export const PortfolioProjects: CollectionConfig = {
     locText('title', { required: true }),
     {
       name: 'category',
-      type: 'select',
+      type: 'relationship',
+      relationTo: 'portfolio-categories',
       required: true,
-      options: [
-        { label: 'AI Agents', value: 'ai' },
-        { label: 'CRM Systems', value: 'crm' },
-        { label: 'Websites', value: 'websites' },
-        { label: 'Landing Pages', value: 'landing' },
-        { label: 'Apps', value: 'apps' },
-        { label: 'Other', value: 'other' },
-      ],
+      admin: {
+        description:
+          'Pick from Portfolio Categories (Pages → Portfolio Categories). Edit that list to add/remove options.',
+      },
     },
-    locText('categoryLabel', { required: true }),
+    locText('categoryLabel', {
+      admin: {
+        description:
+          'Optional override for the label on cards/hero. Leave empty to use the category’s localized label.',
+      },
+    }),
     locTextarea('description', {
       required: true,
       admin: { description: 'Short card description on /portfolio' },

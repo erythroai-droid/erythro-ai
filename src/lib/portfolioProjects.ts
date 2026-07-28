@@ -1,11 +1,9 @@
-export type PortfolioCategory =
-  | 'all'
-  | 'ai'
-  | 'crm'
-  | 'websites'
-  | 'landing'
-  | 'apps'
-  | 'other'
+export type PortfolioCategory = string
+
+export interface PortfolioFilter {
+  id: PortfolioCategory
+  label: string
+}
 
 export interface PortfolioBodySection {
   heading?: string
@@ -33,7 +31,8 @@ export interface PortfolioProject {
   seoDescription?: string
 }
 
-export const PORTFOLIO_FILTERS: { id: PortfolioCategory; label: string }[] = [
+/** Fallback filters when CMS categories are empty. */
+export const PORTFOLIO_FILTERS: PortfolioFilter[] = [
   { id: 'all', label: 'All Projects' },
   { id: 'ai', label: 'AI Agents' },
   { id: 'crm', label: 'CRM Systems' },
@@ -42,6 +41,16 @@ export const PORTFOLIO_FILTERS: { id: PortfolioCategory; label: string }[] = [
   { id: 'apps', label: 'Apps' },
   { id: 'other', label: 'Other' },
 ]
+
+export function buildPortfolioFilters(
+  categories: PortfolioFilter[],
+  allLabel = 'All Projects',
+): PortfolioFilter[] {
+  const chips = categories.length
+    ? categories
+    : PORTFOLIO_FILTERS.filter((f) => f.id !== 'all')
+  return [{ id: 'all', label: allLabel }, ...chips]
+}
 
 export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
   {

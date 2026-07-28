@@ -72,6 +72,7 @@ export interface Config {
     pages: Page;
     services: Service;
     'solution-plans': SolutionPlan;
+    'portfolio-categories': PortfolioCategory;
     'portfolio-projects': PortfolioProject;
     partners: Partner;
     'contact-submissions': ContactSubmission;
@@ -87,6 +88,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     'solution-plans': SolutionPlansSelect<false> | SolutionPlansSelect<true>;
+    'portfolio-categories': PortfolioCategoriesSelect<false> | PortfolioCategoriesSelect<true>;
     'portfolio-projects': PortfolioProjectsSelect<false> | PortfolioProjectsSelect<true>;
     partners: PartnersSelect<false> | PartnersSelect<true>;
     'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
@@ -448,6 +450,31 @@ export interface SolutionPlan {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolio-categories".
+ */
+export interface PortfolioCategory {
+  id: number;
+  /**
+   * Shown on filters and project cards (localized)
+   */
+  label: string;
+  /**
+   * Stable id used for filtering (e.g. "ai", "crm"). Prefer lowercase, no spaces. Changing this breaks existing project links until you re-save them.
+   */
+  value: string;
+  /**
+   * Sort order for filter chips (ascending)
+   */
+  order?: number | null;
+  /**
+   * Show this category in the /portfolio filter row
+   */
+  showInFilters?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "portfolio-projects".
  */
 export interface PortfolioProject {
@@ -457,8 +484,14 @@ export interface PortfolioProject {
    */
   slug: string;
   title: string;
-  category: 'ai' | 'crm' | 'websites' | 'landing' | 'apps' | 'other';
-  categoryLabel: string;
+  /**
+   * Pick from Portfolio Categories (Pages → Portfolio Categories). Edit that list to add/remove options.
+   */
+  category: number | PortfolioCategory;
+  /**
+   * Optional override for the label on cards/hero. Leave empty to use the category’s localized label.
+   */
+  categoryLabel?: string | null;
   /**
    * Short card description on /portfolio
    */
@@ -617,6 +650,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'solution-plans';
         value: number | SolutionPlan;
+      } | null)
+    | ({
+        relationTo: 'portfolio-categories';
+        value: number | PortfolioCategory;
       } | null)
     | ({
         relationTo: 'portfolio-projects';
@@ -837,6 +874,18 @@ export interface SolutionPlansSelect<T extends boolean = true> {
         description?: T;
       };
   order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "portfolio-categories_select".
+ */
+export interface PortfolioCategoriesSelect<T extends boolean = true> {
+  label?: T;
+  value?: T;
+  order?: T;
+  showInFilters?: T;
   updatedAt?: T;
   createdAt?: T;
 }
