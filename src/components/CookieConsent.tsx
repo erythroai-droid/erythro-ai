@@ -21,7 +21,7 @@ export default function CookieConsent({ locale, theme }: CookieConsentProps) {
   const translations = useSiteContent().cookieConsent
   const [visible, setVisible] = useState(false)
 
-  const t = (field: Record<string, string>) => field[locale] || field['en']
+  const t = (field?: Record<string, string> | null) => field?.[locale] || field?.en || ''
 
   useEffect(() => {
     if (!getConsentValue()) {
