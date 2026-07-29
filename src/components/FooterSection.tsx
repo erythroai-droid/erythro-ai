@@ -96,6 +96,9 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
   const site = content.siteSettings
   const { open: openContact } = useContactModal()
   const t = (field?: Record<string, string> | null) => field?.[locale] || field?.en || ''
+  const cookieSettingsLabel =
+    t(cookieConsent.manage) ||
+    (locale === 'ru' ? 'Настройки Cookie' : locale === 'he' ? 'הגדרות Cookie' : 'Cookie Settings')
 
   const footerButtonClassName =
     'border-[var(--Button-Tertiary-link,#FFE9C7)] text-[var(--Button-Tertiary-link,#FFE9C7)] hover:bg-[var(--Button-Tertiary-link,#FFE9C7)] hover:text-coal-900 hover:border-[var(--Button-Tertiary-link,#FFE9C7)] active:bg-[var(--Button-Tertiary-link,#FFE9C7)] active:text-coal-900 active:border-[var(--Button-Tertiary-link,#FFE9C7)] aria-busy:bg-[var(--Button-Tertiary-link,#FFE9C7)] aria-busy:text-coal-900 aria-busy:border-[var(--Button-Tertiary-link,#FFE9C7)]'
@@ -458,7 +461,7 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
                 onClick={openConsentSettings}
                 className="text-xs uppercase tracking-[2.4px] text-white transition-colors duration-300 hover:text-gold-500 active:text-gold-500"
               >
-                {t(cookieConsent.manage)}
+                {cookieSettingsLabel}
               </button>
             </div>
           </div>
