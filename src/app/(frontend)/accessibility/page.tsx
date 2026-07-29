@@ -3,7 +3,8 @@ import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import LegalPageClient from '../legal/LegalPageClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
-import { getCachedLegalPage, tLegal } from '@/lib/legalPages'
+import { getCachedLegalPage } from '@/lib/legalPages.server'
+import { tLegal } from '@/lib/legalPages'
 import { getRequestPrefs } from '@/lib/requestPrefs'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
