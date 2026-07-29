@@ -68,6 +68,11 @@ export const cookieConsent = {
     ru: 'Принять',
     he: 'אישור',
   },
+  manage: {
+    en: 'Cookie Settings',
+    ru: 'Настройки Cookie',
+    he: 'הגדרות Cookie',
+  },
   decline: {
     en: 'Decline',
     ru: 'Отклонить',

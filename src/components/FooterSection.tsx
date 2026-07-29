@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import { navigateCtaHref } from '@/lib/ctaNav'
+import { openConsentSettings } from '@/lib/privacyConsent'
 import Button from './Button'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -91,6 +92,7 @@ function FooterLinkItem({
 export default function FooterSection({ locale, pinSpacer = true }: FooterSectionProps) {
   const content = useSiteContent()
   const translations = content.footer
+  const cookieConsent = content.cookieConsent
   const site = content.siteSettings
   const { open: openContact } = useContactModal()
   const t = (field: Record<string, string>) => field[locale] || field['en']
@@ -451,6 +453,13 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
                   {t(link.label)}
                 </a>
               ))}
+              <button
+                type="button"
+                onClick={openConsentSettings}
+                className="text-xs uppercase tracking-[2.4px] text-white transition-colors duration-300 hover:text-gold-500 active:text-gold-500"
+              >
+                {t(cookieConsent.manage)}
+              </button>
             </div>
           </div>
         </div>

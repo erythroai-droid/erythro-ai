@@ -139,13 +139,13 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         },
         paragraphs: {
           en: [
-            'We use essential cookies needed for basic site functions (for example, language preference, site theme, and your cookie consent choice). Google Analytics is loaded only after you accept analytics cookies via the cookie banner. If you decline, non-essential analytics should not be loaded; essential cookies may still be set. Browser settings can also block cookies, which may affect some features.',
+            'We use essential cookies needed for basic site functions (for example, language preference, site theme, and your cookie consent choice). Google Analytics is loaded only after you accept analytics cookies via the cookie banner. If you decline, non-essential analytics should not be loaded; essential cookies may still be set. You can revisit your choice through the cookie settings control in the site footer. Browser settings can also block cookies, which may affect some features.',
           ],
           ru: [
-            'Мы используем необходимые cookie для базовой работы сайта (например, язык, тему сайта и выбор согласия на cookie). Google Analytics загружается только после вашего согласия через баннер cookie. Если вы отклоните необязательные cookie, аналитика загружаться не должна; необходимые cookie могут сохраняться. Настройки браузера также позволяют блокировать cookie, что может ограничить функции сайта.',
+            'Мы используем необходимые cookie для базовой работы сайта (например, язык, тему сайта и выбор согласия на cookie). Google Analytics загружается только после вашего согласия через баннер cookie. Если вы отклоните необязательные cookie, аналитика загружаться не должна; необходимые cookie могут сохраняться. Вы можете пересмотреть свой выбор через настройки cookie в футере сайта. Настройки браузера также позволяют блокировать cookie, что может ограничить функции сайта.',
           ],
           he: [
-            'אנו משתמשים ב־Cookie חיוניים לתפקוד בסיסי של האתר (למשל העדפת שפה, ערכת נושא ובחירת הסכמה ל־Cookie). Google Analytics נטען רק לאחר אישורכם באמצעות באנר ה־Cookie. אם תדחו Cookie שאינם חיוניים, אנליטיקה לא אמורה להיטען; Cookie חיוניים עשויים להישמר. ניתן גם לחסום Cookie בהגדרות הדפדפן, מה שעשוי להשפיע על חלק מהפונקציות.',
+            'אנו משתמשים ב־Cookie חיוניים לתפקוד בסיסי של האתר (למשל העדפת שפה, ערכת נושא ובחירת הסכמה ל־Cookie). Google Analytics נטען רק לאחר אישורכם באמצעות באנר ה־Cookie. אם תדחו Cookie שאינם חיוניים, אנליטיקה לא אמורה להיטען; Cookie חיוניים עשויים להישמר. ניתן לשנות את הבחירה גם דרך בקרת הגדרות ה־Cookie שבכותרת התחתונה של האתר. ניתן גם לחסום Cookie בהגדרות הדפדפן, מה שעשוי להשפיע על חלק מהפונקציות.',
           ],
         },
       },
@@ -157,13 +157,13 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         },
         paragraphs: {
           en: [
-            'We do not sell personal data. We may share data with service providers who help us host, analyse, communicate, or deliver projects (for example, hosting, email, analytics), under appropriate confidentiality and security obligations. Some providers may process data outside Israel; where required, we take steps consistent with Israeli law to protect the information. We may also disclose data if required by law or to protect rights and safety.',
+            'We do not sell personal data. We may share data with service providers who help us host, analyse, communicate, or deliver projects, including providers such as Google LLC (analytics), hosting/deployment providers, and managed database providers used for site operations and contact submissions, under appropriate confidentiality and security obligations. Some providers may process data outside Israel; where required, we take steps consistent with Israeli law to protect the information. We may also disclose data if required by law or to protect rights and safety.',
           ],
           ru: [
-            'Мы не продаём персональные данные. Мы можем передавать их подрядчикам, которые помогают с хостингом, аналитикой, коммуникацией или реализацией проектов, при обязательствах конфиденциальности и безопасности. Часть обработчиков может находиться за пределами Израиля; где требуется, мы принимаем меры, соответствующие израильскому праву. Данные также могут быть раскрыты по закону или для защиты прав и безопасности.',
+            'Мы не продаём персональные данные. Мы можем передавать их подрядчикам, которые помогают с хостингом, аналитикой, коммуникацией или реализацией проектов, включая таких поставщиков, как Google LLC (аналитика), провайдеры хостинга/деплоя и управляемые провайдеры баз данных, используемые для работы сайта и хранения заявок из контактной формы, при обязательствах конфиденциальности и безопасности. Часть обработчиков может находиться за пределами Израиля; где требуется, мы принимаем меры, соответствующие израильскому праву. Данные также могут быть раскрыты по закону или для защиты прав и безопасности.',
           ],
           he: [
-            'איננו מוכרים מידע אישי. אנו עשויים לשתף מידע עם ספקי שירות המסייעים באחסון, אנליטיקה, תקשורת או ביצוע פרויקטים, בכפוף להתחייבויות סודיות ואבטחה. חלק מהספקים עשויים לעבד מידע מחוץ לישראל; כנדרש בדין ננקוט צעדים להגנה על המידע. ייתכן גם גילוי מידע אם נדרש על פי דין או להגנה על זכויות ובטיחות.',
+            'איננו מוכרים מידע אישי. אנו עשויים לשתף מידע עם ספקי שירות המסייעים באחסון, אנליטיקה, תקשורת או ביצוע פרויקטים, לרבות ספקים כגון Google LLC (אנליטיקה), ספקי אחסון/פריסה וספקי מסדי נתונים מנוהלים המשמשים לתפעול האתר ושמירת פניות מטופס יצירת הקשר, בכפוף להתחייבויות סודיות ואבטחה. חלק מהספקים עשויים לעבד מידע מחוץ לישראל; כנדרש בדין ננקוט צעדים להגנה על המידע. ייתכן גם גילוי מידע אם נדרש על פי דין או להגנה על זכויות ובטיחות.',
           ],
         },
       },

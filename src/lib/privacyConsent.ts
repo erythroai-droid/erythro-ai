@@ -2,6 +2,7 @@ export const CONSENT_COOKIE = 'cookie_consent'
 export const CONSENT_ACCEPTED = 'accepted'
 export const CONSENT_DECLINED = 'declined'
 export const CONSENT_EVENT = 'erythro:cookie-consent-changed'
+export const CONSENT_OPEN_EVENT = 'erythro:cookie-consent-open'
 
 export type ConsentValue = typeof CONSENT_ACCEPTED | typeof CONSENT_DECLINED
 
@@ -29,6 +30,11 @@ export function setConsentValue(value: ConsentValue) {
   if (typeof document === 'undefined') return
   document.cookie = `${CONSENT_COOKIE}=${value}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
   window.dispatchEvent(new CustomEvent(CONSENT_EVENT, { detail: value }))
+}
+
+export function openConsentSettings() {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new Event(CONSENT_OPEN_EVENT))
 }
 
 function expireCookie(name: string, domain?: string) {

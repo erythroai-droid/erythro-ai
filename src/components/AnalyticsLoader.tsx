@@ -23,7 +23,12 @@ declare global {
 function updateAnalyticsConsent(consent: ConsentValue) {
   if (typeof window === 'undefined' || typeof window.gtag !== 'function') return
   window.gtag('consent', 'update', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
     analytics_storage: consent === CONSENT_ACCEPTED ? 'granted' : 'denied',
+    functionality_storage: 'granted',
+    security_storage: 'granted',
   })
 }
 
@@ -63,8 +68,19 @@ export default function AnalyticsLoader() {
           function gtag(){dataLayer.push(arguments);}
           window.gtag = gtag;
           gtag('js', new Date());
-          gtag('consent', 'default', { analytics_storage: 'granted' });
-          gtag('config', '${GA_ID}', { anonymize_ip: true });
+          gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'granted',
+            functionality_storage: 'granted',
+            security_storage: 'granted'
+          });
+          gtag('config', '${GA_ID}', {
+            anonymize_ip: true,
+            allow_google_signals: false,
+            allow_ad_personalization_signals: false
+          });
         `}
       </Script>
     </>

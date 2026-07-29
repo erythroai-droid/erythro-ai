@@ -7,6 +7,7 @@ import Button from './Button'
 import {
   clearAnalyticsCookies,
   getConsentValue,
+  CONSENT_OPEN_EVENT,
   setConsentValue,
   type ConsentValue,
 } from '@/lib/privacyConsent'
@@ -26,6 +27,10 @@ export default function CookieConsent({ locale, theme }: CookieConsentProps) {
     if (!getConsentValue()) {
       setVisible(true)
     }
+
+    const onOpen = () => setVisible(true)
+    window.addEventListener(CONSENT_OPEN_EVENT, onOpen)
+    return () => window.removeEventListener(CONSENT_OPEN_EVENT, onOpen)
   }, [])
 
   const handleConsent = (value: ConsentValue) => {
