@@ -24,6 +24,9 @@ import { SolutionsIntro } from './globals/SolutionsIntro'
 import { FAQ } from './globals/FAQ'
 import { Footer } from './globals/Footer'
 import { SiteSettings } from './globals/SiteSettings'
+import { LegalPrivacy } from './globals/LegalPrivacy'
+import { LegalTerms } from './globals/LegalTerms'
+import { LegalAccessibility } from './globals/LegalAccessibility'
 import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
@@ -52,7 +55,7 @@ export default buildConfig({
     Partners,
     ContactSubmissions,
   ],
-  globals: [Header, Hero, ServicesIntro, CaseStudies, SolutionsIntro, FAQ, Footer, SiteSettings],
+  globals: [Header, Hero, ServicesIntro, CaseStudies, SolutionsIntro, FAQ, Footer, SiteSettings, LegalPrivacy, LegalTerms, LegalAccessibility],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'fallback-secret-key-replace-in-prod',
   typescript: {

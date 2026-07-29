@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import LegalPageClient from '../legal/LegalPageClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
-import { getLegalPage, tLegal } from '@/lib/legalPages'
+import { getCachedLegalPage, tLegal } from '@/lib/legalPages'
 import { getRequestPrefs } from '@/lib/requestPrefs'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
@@ -12,7 +12,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 const PAGE_ID = 'privacy' as const
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = getLegalPage(PAGE_ID)
+  const page = await getCachedLegalPage(PAGE_ID)
   const cookieStore = await cookies()
   const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
   const locale =
@@ -37,14 +37,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PrivacyPage() {
   const { initialLocale, initialTheme } = await getRequestPrefs()
-  const content = await getCachedSiteContent()
+  const [content, page] = await Promise.all([getCachedSiteContent(), getCachedLegalPage(PAGE_ID)])
 
   return (
     <LegalPageClient
       initialLocale={initialLocale}
       initialTheme={initialTheme}
       content={content}
-      pageId={PAGE_ID}
+      page={page}
     />
   )
 }

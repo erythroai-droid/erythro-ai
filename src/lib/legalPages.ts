@@ -1,4 +1,13 @@
-/** Localized legal pages — Israeli law oriented (he/en/ru). */
+import { unstable_cache } from 'next/cache'
+import { SITE_CONTENT_TAG } from './revalidate'
+
+/**
+ * Localized legal pages — Israeli law oriented (he/en/ru).
+ *
+ * Static defaults live in `legalPages`. At runtime, `getCachedLegalPage()`
+ * fetches the editable version from Payload CMS and merges it over the
+ * static defaults so the site never renders empty if CMS is unavailable.
+ */
 
 export type LegalLocale = 'en' | 'ru' | 'he'
 export type LegalPageId = 'privacy' | 'terms' | 'accessibility'
@@ -635,6 +644,115 @@ export function getLegalPage(id: LegalPageId): LegalPage {
   return legalPages[id]
 }
 
+// ── CMS-backed fetch ──────────────────────────────────────────────────────────
+
+const GLOBAL_SLUGS: Record<LegalPageId, string> = {
+  privacy: 'legal-privacy',
+  terms: 'legal-terms',
+  accessibility: 'legal-accessibility',
+}
+
+const LOCALES: LegalLocale[] = ['en', 'ru', 'he']
+
+/** Split newline-separated text into a non-empty string array. */
+function splitLines(v: unknown): string[] {
+  if (typeof v !== 'string' || !v.trim()) return []
+  return v
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+/**
+ * Pick a localized value from a Payload `locale: 'all'` object.
+ * Falls back to 'en' or the static default.
+ */
+function pick(
+  obj: Record<string, unknown> | null | undefined,
+  locale: LegalLocale,
+  fallback: string,
+): string {
+  if (!obj) return fallback
+  const v = obj[locale] ?? obj['en']
+  return typeof v === 'string' && v.trim() ? v.trim() : fallback
+}
+
+function pickAll(obj: Record<string, unknown> | null | undefined, fallback: LocalizedString): LocalizedString {
+  if (!obj) return fallback
+  const out: LocalizedString = { ...fallback }
+  for (const l of LOCALES) {
+    const v = obj[l]
+    if (typeof v === 'string' && v.trim()) out[l] = v.trim()
+  }
+  return out
+}
+
+function pickAllLines(obj: Record<string, unknown> | null | undefined, fallback: LocalizedParagraphs): LocalizedParagraphs {
+  if (!obj) return fallback
+  const out: LocalizedParagraphs = { ...fallback }
+  for (const l of LOCALES) {
+    const lines = splitLines(obj[l])
+    if (lines.length) out[l] = lines
+  }
+  return out
+}
+
+/**
+ * Fetch a legal page from Payload CMS and merge over the static default.
+ * Returns the static default on any error.
+ */
+export async function fetchLegalPage(id: LegalPageId): Promise<LegalPage> {
+  const fallback = legalPages[id]
+  try {
+    const { getPayload } = await import('payload')
+    const config = (await import('@payload-config')).default
+    const payload = await getPayload({ config })
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw = (await (payload as any).findGlobal({
+      slug: GLOBAL_SLUGS[id],
+      locale: 'all',
+      depth: 0,
+    })) as any
+
+    if (!raw) return fallback
+
+    const page: LegalPage = {
+      ...fallback,
+    }
+
+    if (raw.updatedAt && typeof raw.updatedAt === 'string' && raw.updatedAt.trim()) {
+      page.updatedAt = raw.updatedAt.trim()
+    }
+
+    page.title = pickAll(raw.title, fallback.title)
+    page.metaDescription = pickAll(raw.metaDescription, fallback.metaDescription)
+    page.intro = pickAll(raw.intro, fallback.intro)
+    if (raw.closing) page.closing = pickAll(raw.closing, fallback.closing ?? { en: '', ru: '', he: '' })
+
+    if (Array.isArray(raw.sections) && raw.sections.length) {
+      page.sections = raw.sections.map((s: any, i: number) => {
+        const fb = fallback.sections[i]
+        const section: LegalSection = {
+          heading: pickAll(s.heading, fb?.heading ?? { en: '', ru: '', he: '' }),
+          paragraphs: pickAllLines(s.paragraphs, fb?.paragraphs ?? { en: [], ru: [], he: [] }),
+        }
+        if (s.bullets) {
+          const bullets = pickAllLines(s.bullets, fb?.bullets ?? { en: [], ru: [], he: [] })
+          const hasBullets = LOCALES.some((l) => bullets[l].length > 0)
+          if (hasBullets) section.bullets = bullets
+        }
+        return section
+      })
+    }
+
+    return page
+  } catch (err) {
+    console.error(`[fetchLegalPage:${id}] falling back to static:`, err)
+    return fallback
+  }
+}
+
 export function tLegal(field: LocalizedString, locale: string): string {
   const key = (locale === 'ru' || locale === 'he' ? locale : 'en') as LegalLocale
   return field[key] || field.en
@@ -643,4 +761,15 @@ export function tLegal(field: LocalizedString, locale: string): string {
 export function tLegalList(field: LocalizedParagraphs, locale: string): string[] {
   const key = (locale === 'ru' || locale === 'he' ? locale : 'en') as LegalLocale
   return field[key] || field.en
+}
+
+/**
+ * Cached variant of {@link fetchLegalPage}.
+ * Shares the site-content cache tag so edits in Payload admin
+ * automatically invalidate this cache along with all other site content.
+ */
+export function getCachedLegalPage(id: LegalPageId): Promise<LegalPage> {
+  return unstable_cache(() => fetchLegalPage(id), [`legal-page-${id}`], {
+    tags: [SITE_CONTENT_TAG],
+  })()
 }

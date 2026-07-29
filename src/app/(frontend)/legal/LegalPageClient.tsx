@@ -12,23 +12,22 @@ import WhatsAppButton from '@/components/WhatsAppButton'
 import HeaderChipStrip from '@/components/HeaderChipStrip'
 import LegalBody from '@/components/legal/LegalBody'
 import type { SiteContent } from '@/lib/defaultContent'
-import { getLegalPage, type LegalPageId } from '@/lib/legalPages'
+import { type LegalPage } from '@/lib/legalPages'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface LegalPageClientProps {
   initialLocale: string
   initialTheme?: 'light' | 'dark'
   content: SiteContent
-  pageId: LegalPageId
+  page: LegalPage
 }
 
 export default function LegalPageClient({
   initialLocale,
   initialTheme,
   content,
-  pageId,
+  page,
 }: LegalPageClientProps) {
-  const page = getLegalPage(pageId)
   const a11yTranslations = content.accessibility
   const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
