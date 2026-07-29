@@ -442,7 +442,7 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
             ref={barRef}
             className="flex w-full flex-col items-start justify-between gap-8 border-t border-white/5 pt-6 lg:flex-row lg:items-start lg:gap-4"
           >
-            <p className="text-xs uppercase leading-5 tracking-[2.4px] text-white lg:leading-5">
+            <p className="text-xs uppercase leading-[1.5] text-white">
               {t(translations.copyright)}
             </p>
 
@@ -451,7 +451,7 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
                 <a
                   key={link.id}
                   href={link.href}
-                  className="text-xs uppercase leading-5 tracking-[2.4px] text-white transition-colors duration-300 hover:text-gold-500 active:text-gold-500"
+                  className="text-xs uppercase leading-[1.5] text-white transition-colors duration-300 hover:text-gold-500 active:text-gold-500"
                 >
                   {t(link.label)}
                 </a>
@@ -459,7 +459,7 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
               <button
                 type="button"
                 onClick={openConsentSettings}
-                className="text-xs uppercase leading-5 tracking-[2.4px] text-white transition-colors duration-300 hover:text-gold-500 active:text-gold-500"
+                className="text-xs uppercase leading-[1.5] text-white transition-colors duration-300 hover:text-gold-500 active:text-gold-500"
               >
                 {cookieSettingsLabel}
               </button>
