@@ -50,7 +50,7 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
       ru: 'Последнее обновление',
       he: 'עודכן לאחרונה',
     },
-    updatedAt: '2026-07-26',
+    updatedAt: '2026-07-29',
     intro: {
       en: 'This Privacy Policy explains how Erythro.ai (“we”, “us”) processes personal information when you visit erythro.ai, contact us, or use our services. We process data in accordance with the Israeli Privacy Protection Law, 5741-1981 (including Amendment 13), and applicable regulations.',
       ru: 'Настоящая Политика конфиденциальности объясняет, как Erythro.ai («мы») обрабатывает персональные данные при посещении сайта erythro.ai, обращении к нам или использовании наших услуг. Мы обрабатываем данные в соответствии с Законом Израиля о защите конфиденциальности 5741-1981 (включая Поправку 13) и применимыми нормами.',
@@ -139,13 +139,13 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         },
         paragraphs: {
           en: [
-            'We use essential cookies needed for basic site functions (for example, language preference and cookie consent choice). With your consent via the cookie banner, we may use Google Analytics or similar tools to understand usage. You can decline non-essential cookies; essential cookies may still be set. Browser settings can also block cookies, which may affect some features.',
+            'We use essential cookies needed for basic site functions (for example, language preference, site theme, and your cookie consent choice). Google Analytics is loaded only after you accept analytics cookies via the cookie banner. If you decline, non-essential analytics should not be loaded; essential cookies may still be set. Browser settings can also block cookies, which may affect some features.',
           ],
           ru: [
-            'Мы используем необходимые cookie для базовой работы сайта (например, язык и выбор согласия на cookie). При вашем согласии через баннер можем использовать Google Analytics или аналогичные инструменты. Вы можете отклонить необязательные cookie; необходимые могут сохраняться. Настройки браузера также позволяют блокировать cookie, что может ограничить функции сайта.',
+            'Мы используем необходимые cookie для базовой работы сайта (например, язык, тему сайта и выбор согласия на cookie). Google Analytics загружается только после вашего согласия через баннер cookie. Если вы отклоните необязательные cookie, аналитика загружаться не должна; необходимые cookie могут сохраняться. Настройки браузера также позволяют блокировать cookie, что может ограничить функции сайта.',
           ],
           he: [
-            'אנו משתמשים ב־Cookie חיוניים לתפקוד בסיסי של האתר (למשל העדפת שפה ובחירת הסכמה ל־Cookie). בהסכמתכם באמצעות באנר ה־Cookie ייתכן שימוש ב־Google Analytics או כלים דומים. ניתן לדחות Cookie שאינם חיוניים; Cookie חיוניים עשויים להישמר. ניתן גם לחסום Cookie בהגדרות הדפדפן, מה שעשוי להשפיע על חלק מהפונקציות.',
+            'אנו משתמשים ב־Cookie חיוניים לתפקוד בסיסי של האתר (למשל העדפת שפה, ערכת נושא ובחירת הסכמה ל־Cookie). Google Analytics נטען רק לאחר אישורכם באמצעות באנר ה־Cookie. אם תדחו Cookie שאינם חיוניים, אנליטיקה לא אמורה להיטען; Cookie חיוניים עשויים להישמר. ניתן גם לחסום Cookie בהגדרות הדפדפן, מה שעשוי להשפיע על חלק מהפונקציות.',
           ],
         },
       },

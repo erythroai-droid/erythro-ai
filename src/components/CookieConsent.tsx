@@ -4,8 +4,12 @@ import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
-
-const CONSENT_COOKIE = 'cookie_consent'
+import {
+  clearAnalyticsCookies,
+  getConsentValue,
+  setConsentValue,
+  type ConsentValue,
+} from '@/lib/privacyConsent'
 
 interface CookieConsentProps {
   locale: string
@@ -19,16 +23,16 @@ export default function CookieConsent({ locale, theme }: CookieConsentProps) {
   const t = (field: Record<string, string>) => field[locale] || field['en']
 
   useEffect(() => {
-    const hasConsent = document.cookie
-      .split('; ')
-      .some((entry) => entry.startsWith(`${CONSENT_COOKIE}=`))
-    if (!hasConsent) {
+    if (!getConsentValue()) {
       setVisible(true)
     }
   }, [])
 
-  const handleConsent = (value: 'accepted' | 'declined') => {
-    document.cookie = `${CONSENT_COOKIE}=${value}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
+  const handleConsent = (value: ConsentValue) => {
+    setConsentValue(value)
+    if (value === 'declined') {
+      clearAnalyticsCookies()
+    }
     setVisible(false)
   }
 

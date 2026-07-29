@@ -2,8 +2,8 @@ import React from 'react'
 import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
 import { getCachedSeoSettings } from '@/lib/getSiteContent'
-import Script from 'next/script'
 import { heebo, inter, robotoMono } from '@/lib/fonts'
+import AnalyticsLoader from '@/components/AnalyticsLoader'
 import SplashHost from '@/components/SplashHost'
 import NavigationTopLoader from '@/components/NavigationTopLoader'
 import SkipToContent from '@/components/SkipToContent'
@@ -142,22 +142,11 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       suppressHydrationWarning
     >
       <body>
-        <Script id="theme-bootstrap" strategy="beforeInteractive">
-          {THEME_BOOTSTRAP_SCRIPT}
-        </Script>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-F3BTVWGDRS"
-          strategy="afterInteractive"
+        <script
+          id="theme-bootstrap"
+          dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }}
         />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-F3BTVWGDRS');
-          `}
-        </Script>
+        <AnalyticsLoader />
         <SkipToContent locale={locale} />
         <SplashHost />
         <NavigationTopLoader />
