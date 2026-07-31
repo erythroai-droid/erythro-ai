@@ -13,14 +13,22 @@ interface LegalBodyProps {
   theme?: 'light' | 'dark'
 }
 
-function formatUpdatedAt(iso: string, locale: string): string {
+function formatUpdatedAt(value: string, locale: string): string {
   try {
+    const trimmed = value.trim()
+    // Accept date-only (2026-07-29) or full ISO (2026-07-31T07:49:44.673Z)
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(trimmed)
+      ? new Date(`${trimmed}T12:00:00`)
+      : new Date(trimmed)
+
+    if (Number.isNaN(date.getTime())) return trimmed
+
     return new Intl.DateTimeFormat(
       locale === 'he' ? 'he-IL' : locale === 'ru' ? 'ru-RU' : 'en-GB',
       { year: 'numeric', month: 'long', day: 'numeric' },
-    ).format(new Date(`${iso}T12:00:00`))
+    ).format(date)
   } catch {
-    return iso
+    return value
   }
 }
 
@@ -52,7 +60,7 @@ export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyPro
           <p className={`m-0 font-sans text-sm font-light tracking-[0.04em] md:text-base ${accentTone}`}>
             {tLegal(page.updatedLabel, locale)}: {formatUpdatedAt(page.updatedAt, locale)}
           </p>
-          <p className={`m-0 w-full max-w-none font-sans text-lg font-light leading-8 whitespace-normal md:text-xl md:leading-9 lg:max-w-[720px] ${bodyTone}`}>
+          <p className={`m-0 w-full font-sans text-lg font-light leading-8 whitespace-normal md:text-xl md:leading-9 ${bodyTone}`}>
             {tLegal(page.intro, locale)}
           </p>
         </header>

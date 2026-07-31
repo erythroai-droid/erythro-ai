@@ -26,11 +26,11 @@ export const legalPageFields: Field[] = [
     admin: { description: 'SEO meta description (~155 chars)' },
   },
   {
-    name: 'updatedAt',
+    name: 'statementDate',
     type: 'text',
     admin: {
       description:
-        'ISO date displayed as "Last updated" (e.g. 2026-07-29). One date shared across all locales.',
+        'Date shown as "Last updated" (e.g. 2026-07-29 or 29.07.2026). One date for all locales — not overwritten on save.',
     },
   },
   {

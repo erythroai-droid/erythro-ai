@@ -75,8 +75,15 @@ export async function fetchLegalPage(id: LegalPageId): Promise<LegalPage> {
       ...fallback,
     }
 
-    if (raw.updatedAt && typeof raw.updatedAt === 'string' && raw.updatedAt.trim()) {
-      page.updatedAt = raw.updatedAt.trim()
+    // Prefer explicit statementDate; fall back to legacy updatedAt text if present.
+    const statementDate =
+      (typeof raw.statementDate === 'string' && raw.statementDate.trim()) ||
+      (typeof raw.updatedAt === 'string' &&
+      /^\d{4}-\d{2}-\d{2}/.test(raw.updatedAt.trim()) &&
+      raw.updatedAt.trim()) ||
+      null
+    if (statementDate) {
+      page.updatedAt = statementDate
     }
 
     page.title = pickAll(raw.title, fallback.title)
