@@ -1,0 +1,53 @@
+# Runs automated tests on every PR and push to main.
+#
+# Secrets (GitHub → Settings → Secrets and variables → Actions):
+#   DATABASE_URL   — Postgres connection string (required for api.int.spec)
+#   PAYLOAD_SECRET — Payload CMS secret (optional; fallback used if missing)
+#
+# To block Vercel production until this passes:
+# 1. Vercel → Project → Settings → Build and Deployment → Deployment Checks
+# 2. Add Checks → GitHub → select "Unit Tests" → Required
+
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run unit / integration tests
+        # With DATABASE_URL secret: runs all int tests including api.int.spec.
+        # Without it: api suite is skipped (describe.skipIf).
+        run: pnpm run test:int
