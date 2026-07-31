@@ -53,7 +53,10 @@ export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyPro
 
       <article className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col gap-10 px-[30px] py-12 md:gap-14 md:py-16 lg:gap-16 lg:py-20">
         <header className="flex flex-col gap-4">
-          <h1 className="m-0 font-sans text-[28px] font-extralight uppercase tracking-[0.08em] md:text-[40px] md:tracking-[0.1em]">
+          <h1
+            lang={locale}
+            className="m-0 max-w-full break-words font-sans text-[28px] font-extralight uppercase leading-[1.2] tracking-normal hyphens-auto md:text-[40px] md:tracking-[0.1em]"
+          >
             <span className="text-erythro-500">{title.charAt(0)}</span>
             <span>{title.slice(1)}</span>
           </h1>
