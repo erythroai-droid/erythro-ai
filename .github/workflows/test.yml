@@ -76,8 +76,6 @@ jobs:
         id: db
         env:
           RAW_DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          # Project region from Supabase (ap-southeast-1). Used only to rewrite
-          # IPv6-only direct host → IPv4 session pooler for GitHub Actions.
           SUPABASE_REGION: ap-southeast-1
         run: |
           if [ -z "$RAW_DATABASE_URL" ]; then
@@ -86,31 +84,9 @@ jobs:
             exit 0
           fi
 
-          url="$RAW_DATABASE_URL"
-
-          # Direct db.*.supabase.co is IPv6-only → ENETUNREACH on GHA runners.
-          # Rewrite to Supavisor session pooler (IPv4, port 5432).
-          if [[ "$url" =~ ^(postgres(ql)?://)([^:]+):([^@]+)@db\.([a-z0-9]+)\.supabase\.co(:[0-9]+)?/([^?]+) ]]; then
-            scheme="${BASH_REMATCH[1]}"
-            pass="${BASH_REMATCH[4]}"
-            ref="${BASH_REMATCH[5]}"
-            dbname="${BASH_REMATCH[7]}"
-            url="${scheme}postgres.${ref}:${pass}@aws-0-${SUPABASE_REGION}.pooler.supabase.com:5432/${dbname}"
-            echo "Rewrote direct Supabase URL to session pooler (IPv4)"
-          fi
-
-          if [[ "$url" != *"sslmode="* ]]; then
-            if [[ "$url" == *"?"* ]]; then
-              url="${url}&sslmode=no-verify"
-            else
-              url="${url}?sslmode=no-verify"
-            fi
-          else
-            # require still verifies the chain and fails on Supabase from GHA
-            url="${url//sslmode=require/sslmode=no-verify}"
-          fi
-
-          echo "DATABASE_URL=$url" >> "$GITHUB_ENV"
+          export DATABASE_URL="$RAW_DATABASE_URL"
+          resolved="$(node scripts/ci-resolve-supabase-url.mjs)"
+          echo "DATABASE_URL=$resolved" >> "$GITHUB_ENV"
           echo "skip=false" >> "$GITHUB_OUTPUT"
           echo "DATABASE_URL ready"
 
