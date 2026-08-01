@@ -411,7 +411,10 @@ export const caseStudies = {
 export interface SolutionFeature {
   label?: Record<string, string>
   value?: Record<string, string>
+  /** Plain-text description under Value on the order page (fallback / SEO). */
   full?: Record<string, string>
+  /** Lexical rich-text description under Value on the order page only. */
+  fullRich?: Record<string, unknown>
 }
 
 export type SolutionCurrency = 'ILS' | 'USD' | 'EUR'

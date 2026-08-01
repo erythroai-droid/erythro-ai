@@ -132,10 +132,12 @@ export function calcTaxAmount(
 export function featureLines(features: SolutionFeature[], locale: string): string[] {
   return features
     .map((feature) => {
-      if (feature.full) return tLocale(feature.full, locale)
       const label = feature.label ? tLocale(feature.label, locale) : ''
       const value = feature.value ? tLocale(feature.value, locale) : ''
-      return `${label} ${value}`.trim()
+      const primary = `${label} ${value}`.trim()
+      if (primary) return primary
+      // Legacy full-only rows (no label/value) still surface as a line
+      return feature.full ? tLocale(feature.full, locale).trim() : ''
     })
     .filter(Boolean)
 }

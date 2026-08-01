@@ -373,7 +373,7 @@ export const solution_plans_features_locales = pgTable(
   {
     label: varchar('label'),
     value: varchar('value'),
-    full: varchar('full'),
+    full: jsonb('full'),
     id: serial('id').primaryKey(),
     _locale: enum__locales('_locale').notNull(),
     _parentID: varchar('_parent_id').notNull(),

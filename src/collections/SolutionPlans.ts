@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { locText, locTextarea } from '../fields/localized'
+import { locText, locTextarea, locRichText } from '../fields/localized'
 import { ctaHrefField } from '../fields/ctaHref'
 import { seoFields } from '../fields/seo'
 import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
@@ -66,9 +66,18 @@ export const SolutionPlans: CollectionConfig = {
       labels: { singular: 'Feature', plural: 'Features' },
       admin: {
         description:
-          'Fill "label" + "value" for a two-column row, OR "full" for a single full-width row.',
+          'Label + Value show on public cards and the order page. Full is an optional description under Value on the order page only.',
       },
-      fields: [locText('label'), locText('value'), locText('full')],
+      fields: [
+        locText('label'),
+        locText('value'),
+        locRichText('full', {
+          label: 'Full (description)',
+          admin: {
+            description: 'Shown under Value on the order page only. Leave empty to hide.',
+          },
+        }),
+      ],
     },
     locText('disclaimer'),
     ctaHrefField('ctaHref', {
