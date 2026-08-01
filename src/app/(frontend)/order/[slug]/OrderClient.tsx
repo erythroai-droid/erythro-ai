@@ -172,6 +172,7 @@ function OrderCheckout({
         : locale === 'he'
           ? 'אחריות להחזר — לדיון פרטני'
           : 'Money-back terms — discussed individually',
+    savings: locale === 'ru' ? 'Экономия' : locale === 'he' ? 'חיסכון' : 'Save',
     recommended: locale === 'ru' ? 'Рекомендуем' : locale === 'he' ? 'מומלץ' : 'Recommended',
     perMonth: locale === 'ru' ? '/мес' : locale === 'he' ? '/חודש' : '/mo',
   }
@@ -240,24 +241,45 @@ function OrderCheckout({
             </div>
 
             {plan.periods.length > 0 ? (
-              <label className="flex w-full max-w-[280px] flex-col gap-2">
-                <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>{copy.period}</span>
-                <select
-                  value={periodId}
-                  onChange={(e) => setPeriodId(e.target.value)}
-                  className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
-                    isLight
-                      ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
-                      : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
-                  }`}
-                >
-                  {plan.periods.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {tLocale(p.label, locale)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                <label className="flex w-full flex-col gap-2 md:max-w-[280px]">
+                  <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>{copy.period}</span>
+                  <select
+                    value={periodId}
+                    onChange={(e) => setPeriodId(e.target.value)}
+                    className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
+                      isLight
+                        ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
+                        : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
+                    }`}
+                  >
+                    {plan.periods.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {tLocale(p.label, locale)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="flex flex-wrap items-center gap-3 md:justify-end" dir="ltr">
+                  {pricing.savings > 0 ? (
+                    <span className={`text-sm line-through opacity-50 ${muted}`}>
+                      {money(pricing.list)}
+                      {pricing.perMonth ? copy.perMonth : ''}
+                    </span>
+                  ) : null}
+                  <span className="text-xl font-bold tracking-wide md:text-2xl">
+                    {pricing.perMonth
+                      ? `${money(pricing.perMonth)}${copy.perMonth}`
+                      : money(pricing.base)}
+                  </span>
+                  {pricing.savings > 0 ? (
+                    <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-600">
+                      {copy.savings} {money(pricing.savings)}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
             ) : null}
 
             {paymentNote ? (
