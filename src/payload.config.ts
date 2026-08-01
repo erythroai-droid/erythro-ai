@@ -64,6 +64,11 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
+      // Supabase pooler presents a cert chain that fails default Node verify on GHA.
+      // Enable only when explicitly requested (CI sets DATABASE_SSL_INSECURE=1).
+      ...(process.env.DATABASE_SSL_INSECURE === '1'
+        ? { ssl: { rejectUnauthorized: false } }
+        : {}),
     },
     prodMigrations: migrations,
   }),
