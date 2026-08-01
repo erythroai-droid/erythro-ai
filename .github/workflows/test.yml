@@ -76,14 +76,29 @@ jobs:
         id: db
         env:
           RAW_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Project region from Supabase (ap-southeast-1). Used only to rewrite
+          # IPv6-only direct host → IPv4 session pooler for GitHub Actions.
+          SUPABASE_REGION: ap-southeast-1
         run: |
           if [ -z "$RAW_DATABASE_URL" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "DATABASE_URL secret is empty — skipping API tests"
             exit 0
           fi
+
           url="$RAW_DATABASE_URL"
-          # Supabase / cloud Postgres require TLS from GitHub runners.
+
+          # Direct db.*.supabase.co is IPv6-only → ENETUNREACH on GHA runners.
+          # Rewrite to Supavisor session pooler (IPv4, port 5432).
+          if [[ "$url" =~ ^(postgres(ql)?://)([^:]+):([^@]+)@db\.([a-z0-9]+)\.supabase\.co(:[0-9]+)?/([^?]+) ]]; then
+            scheme="${BASH_REMATCH[1]}"
+            pass="${BASH_REMATCH[4]}"
+            ref="${BASH_REMATCH[5]}"
+            dbname="${BASH_REMATCH[7]}"
+            url="${scheme}postgres.${ref}:${pass}@aws-0-${SUPABASE_REGION}.pooler.supabase.com:5432/${dbname}"
+            echo "Rewrote direct Supabase URL to session pooler (IPv4)"
+          fi
+
           if [[ "$url" != *"sslmode="* ]]; then
             if [[ "$url" == *"?"* ]]; then
               url="${url}&sslmode=require"
@@ -91,9 +106,10 @@ jobs:
               url="${url}?sslmode=require"
             fi
           fi
+
           echo "DATABASE_URL=$url" >> "$GITHUB_ENV"
           echo "skip=false" >> "$GITHUB_OUTPUT"
-          echo "DATABASE_URL configured (sslmode ensured)"
+          echo "DATABASE_URL ready"
 
       - name: Run API integration test
         if: steps.db.outputs.skip != 'true'
