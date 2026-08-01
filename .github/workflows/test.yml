@@ -94,4 +94,6 @@ jobs:
         if: steps.db.outputs.skip != 'true'
         env:
           DATABASE_SSL_INSECURE: '1'
+          # Keep Payload off the production migrate/push paths during CI init.
+          NODE_ENV: test
         run: pnpm exec vitest run --config ./vitest.config.mts tests/int/api.int.spec.ts

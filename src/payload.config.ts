@@ -62,6 +62,9 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
+    // In CI, never auto-push / introspect schema against remote Supabase —
+    // that hangs for minutes on the session pooler. Migrations run on Vercel build.
+    push: process.env.CI === 'true' ? false : undefined,
     pool: {
       connectionString: process.env.DATABASE_URL || '',
       // Supabase pooler presents a cert chain that fails default Node verify on GHA.
