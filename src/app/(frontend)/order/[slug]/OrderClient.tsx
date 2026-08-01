@@ -13,6 +13,7 @@ import HeaderChipStrip from '@/components/HeaderChipStrip'
 import type { SiteContent } from '@/lib/defaultContent'
 import {
   calcPlanAmount,
+  calcTaxAmount,
   featureLines,
   formatPrice,
   tLocale,
@@ -126,13 +127,13 @@ function OrderCheckout({
 }) {
   const { open: openContact } = useContactModal()
   const isLight = theme === 'light'
-  const [periodId, setPeriodId] = useState(plan.defaultPeriodId)
+  const [periodId, setPeriodId] = useState(plan.defaultPeriodId || plan.periods[0]?.id || '')
   const [selectedAddons, setSelectedAddons] = useState<string[]>(
     plan.addons.filter((a) => a.recommended || a.mandatory).map((a) => a.id),
   )
 
   const title = tLocale(plan.card.title, locale)
-  const subtitle = tLocale(plan.subtitle, locale)
+  const subtitle = tLocale(plan.subtitle, locale).trim()
   const features = featureLines(plan.card.features, locale)
   const pricing = calcPlanAmount(plan, periodId)
   const period = plan.periods.find((p) => p.id === periodId) || plan.periods[0]
@@ -142,11 +143,19 @@ function OrderCheckout({
     .filter((a) => selectedAddons.includes(a.id))
     .reduce((sum, a) => sum + a.price, 0)
 
-  const total = pricing.base + addonTotal
-  const listTotal = pricing.list + addonTotal
+  const paymentNote = tLocale(plan.paymentNote, locale).trim()
+  const promoText = tLocale(plan.promo, locale).trim()
+  const taxNote = tLocale(plan.taxNote, locale).trim()
+  const taxValue = tLocale(plan.taxValue, locale).trim()
+  const subtotal = pricing.base + addonTotal
+  const taxAmount = calcTaxAmount(subtotal, taxNote, taxValue)
+  const total = subtotal + taxAmount
+  const listTotal = pricing.list + addonTotal + taxAmount
+  const showTaxRow = Boolean(taxNote || taxValue || taxAmount > 0)
+  const accent = isLight ? 'text-gold-900' : 'text-gold-800'
 
   const copy = {
-    period: locale === 'ru' ? 'Способ оплаты' : locale === 'he' ? 'אופן תשלום' : 'Payment method',
+    period: locale === 'ru' ? 'Варианты оплаты' : locale === 'he' ? 'אפשרויות תשלום' : 'Payment options',
     summary: locale === 'ru' ? 'Итог заказа' : locale === 'he' ? 'סיכום הזמנה' : 'Order summary',
     total: locale === 'ru' ? 'Всего' : locale === 'he' ? 'סה״כ' : 'Total',
     taxes: locale === 'ru' ? 'Налоги' : locale === 'he' ? 'מיסים' : 'Taxes',
@@ -163,17 +172,9 @@ function OrderCheckout({
         : locale === 'he'
           ? 'אחריות להחזר — לדיון פרטני'
           : 'Money-back terms — discussed individually',
-    savings: locale === 'ru' ? 'Экономия' : locale === 'he' ? 'חיסכון' : 'Save',
     recommended: locale === 'ru' ? 'Рекомендуем' : locale === 'he' ? 'מומלץ' : 'Recommended',
     perMonth: locale === 'ru' ? '/мес' : locale === 'he' ? '/חודש' : '/mo',
   }
-
-  const paymentNote = tLocale(plan.paymentNote, locale).trim()
-  const promoText = tLocale(plan.promo, locale).trim()
-  const taxNote = tLocale(plan.taxNote, locale).trim()
-  const taxValue = tLocale(plan.taxValue, locale).trim()
-  const showTaxRow = Boolean(taxNote || taxValue)
-  const accent = isLight ? 'text-gold-900' : 'text-gold-800'
 
   const toggleAddon = (id: string) => {
     if (plan.addons.some((addon) => addon.id === id && addon.mandatory)) return
@@ -234,12 +235,12 @@ function OrderCheckout({
                 <h1 className="font-sans text-xl font-bold uppercase tracking-[0.04em] md:text-2xl">
                   {title}
                 </h1>
-                <p className={`mt-1 text-sm ${muted}`}>{subtitle}</p>
+                {subtitle ? <p className={`mt-1 text-sm ${muted}`}>{subtitle}</p> : null}
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <label className="flex w-full flex-col gap-2 md:max-w-[280px]">
+            {plan.periods.length > 0 ? (
+              <label className="flex w-full max-w-[280px] flex-col gap-2">
                 <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>{copy.period}</span>
                 <select
                   value={periodId}
@@ -257,31 +258,6 @@ function OrderCheckout({
                   ))}
                 </select>
               </label>
-
-              <div className="flex flex-wrap items-center gap-3 md:justify-end" dir="ltr">
-                {pricing.savings > 0 ? (
-                  <span className={`text-sm line-through opacity-50 ${muted}`}>
-                    {money(pricing.list)}
-                    {pricing.perMonth ? copy.perMonth : ''}
-                  </span>
-                ) : null}
-                <span className="text-xl font-bold tracking-wide md:text-2xl">
-                  {pricing.perMonth
-                    ? `${money(pricing.perMonth)}${copy.perMonth}`
-                    : money(pricing.base)}
-                </span>
-                {pricing.savings > 0 ? (
-                  <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-600">
-                    {copy.savings} {money(pricing.savings)}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-
-            {plan.card.pricePrefix ? (
-              <p className={`mt-2 text-xs ${muted}`}>
-                {tLocale(plan.card.pricePrefix, locale)} {money(pricing.base)}
-              </p>
             ) : null}
 
             {paymentNote ? (
@@ -297,18 +273,21 @@ function OrderCheckout({
               </div>
             ) : null}
 
-            <ul className="mt-6 flex flex-col gap-2.5 border-t border-current/10 pt-6">
-              {features.map((line) => (
-                <li key={line} className="flex items-start gap-3 text-sm leading-6">
-                  <span className="mt-2 h-1 w-1 shrink-0 rotate-45 bg-erythro-500" />
-                  <span className={isLight ? 'text-coal-900/85' : 'text-white/85'}>{line}</span>
-                </li>
-              ))}
-            </ul>
-
-            {plan.card.disclaimer ? (
-              <p className={`mt-4 text-[11px] ${muted}`}>{tLocale(plan.card.disclaimer, locale)}</p>
+            {features.length > 0 ? (
+              <ul className="mt-6 flex flex-col gap-2.5 border-t border-current/10 pt-6">
+                {features.map((line) => (
+                  <li key={line} className="flex items-start gap-3 text-sm leading-6">
+                    <span className="mt-2 h-1 w-1 shrink-0 rotate-45 bg-erythro-500" />
+                    <span className={isLight ? 'text-coal-900/85' : 'text-white/85'}>{line}</span>
+                  </li>
+                ))}
+              </ul>
             ) : null}
+
+            {(() => {
+              const disclaimer = tLocale(plan.card.disclaimer, locale).trim()
+              return disclaimer ? <p className={`mt-4 text-[11px] ${muted}`}>{disclaimer}</p> : null
+            })()}
           </section>
 
           {/* Add-ons */}
@@ -316,6 +295,7 @@ function OrderCheckout({
             const checked = selectedAddons.includes(addon.id)
             const isMandatory = Boolean(addon.mandatory)
             const note = tLocale(addon.note, locale).trim()
+            const description = tLocale(addon.description, locale).trim()
             return (
               <section key={addon.id} className={`rounded-[10px] p-6 md:p-7 ${cardCls}`}>
                 <div className="flex items-start gap-3">
@@ -338,9 +318,9 @@ function OrderCheckout({
                         </span>
                       ) : null}
                     </div>
-                    <p className={`mt-2 text-sm leading-6 ${muted}`}>
-                      {tLocale(addon.description, locale)}
-                    </p>
+                    {description ? (
+                      <p className={`mt-2 text-sm leading-6 ${muted}`}>{description}</p>
+                    ) : null}
                     {note ? (
                       <p className="mt-3 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300">
                         {note}
@@ -412,11 +392,12 @@ function OrderCheckout({
                     <p className={`mt-0.5 text-xs uppercase tracking-[0.04em] ${muted}`}>{taxNote}</p>
                   ) : null}
                 </div>
-                {taxValue ? (
-                  <p className={`shrink-0 text-xs font-semibold uppercase tracking-[0.04em] ${muted}`}>
-                    {taxValue}
-                  </p>
-                ) : null}
+                <p
+                  className={`shrink-0 text-sm font-semibold ${taxAmount > 0 ? '' : `text-xs uppercase tracking-[0.04em] ${muted}`}`}
+                  dir="ltr"
+                >
+                  {taxAmount > 0 ? money(taxAmount) : taxValue}
+                </p>
               </li>
             ) : null}
           </ul>

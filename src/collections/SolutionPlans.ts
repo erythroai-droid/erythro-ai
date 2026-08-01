@@ -89,11 +89,15 @@ export const SolutionPlans: CollectionConfig = {
       },
     }),
     locText('taxNote', {
-      admin: { description: 'Subtitle under Taxes on the order summary, e.g. "17%"' },
+      admin: {
+        description:
+          'Tax rate under Taxes, e.g. "17%". Parsed as percent and added to the order total.',
+      },
     }),
     locText('taxValue', {
       admin: {
-        description: 'Right-side tax value on the order summary, e.g. "Included" / "Включено"',
+        description:
+          'Optional. Fixed tax amount (number) if taxNote has no %, or a label when tax is not calculated.',
       },
     }),
     {

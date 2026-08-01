@@ -22,7 +22,6 @@ import { lexicalFromParagraphs, lexicalFromText, isLexicalDoc, lexicalToPlain } 
 import { mediaDocUrl } from './publicMediaUrl'
 import {
   ORDER_PLANS,
-  DEFAULT_PAYMENT_NOTE,
   getOrderPlan as getStaticOrderPlan,
   type OrderPlan,
   type OrderAddon,
@@ -43,6 +42,11 @@ function hasLocalizedSeo(v: any): boolean {
   if (typeof v === 'string') return v.trim().length > 0
   if (!v || typeof v !== 'object') return false
   return LOCALES.some((l) => typeof v[l] === 'string' && v[l].trim().length > 0)
+}
+
+/** CMS-only locale map — empty admin fields stay empty (no static stubs). */
+function locMapCms(v: any): LocaleMap {
+  return locMap(v, { en: '', ru: '', he: '' })
 }
 
 function locMap(v: any, fallback: LocaleMap = { en: '' }): LocaleMap {
@@ -365,73 +369,68 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
         ? d.currency
         : fb.card.currency || 'ILS',
     title: locMap(d.title, fb.card.title) as SolutionCardItem['title'],
-    features: fb.card.features,
-    ...(d.pricePrefix || fb.card.pricePrefix
-      ? { pricePrefix: locMap(d.pricePrefix, fb.card.pricePrefix || { en: '' }) as SolutionCardItem['pricePrefix'] }
+    features: [],
+    ...(hasLocalizedSeo(d.pricePrefix)
+      ? { pricePrefix: locMapCms(d.pricePrefix) as SolutionCardItem['pricePrefix'] }
       : {}),
-    ...(d.originalPrice || fb.card.originalPrice
-      ? { originalPrice: d.originalPrice ?? fb.card.originalPrice }
-      : {}),
-    ...(d.priceNote ?? fb.card.priceNote ? { priceNote: !!(d.priceNote ?? fb.card.priceNote) } : {}),
-    ...(d.featured ?? fb.card.featured ? { featured: !!(d.featured ?? fb.card.featured) } : {}),
-    ...(d.disclaimer || fb.card.disclaimer
-      ? { disclaimer: locMap(d.disclaimer, fb.card.disclaimer || { en: '' }) as SolutionCardItem['disclaimer'] }
+    ...(d.originalPrice ? { originalPrice: d.originalPrice } : {}),
+    ...(d.priceNote ? { priceNote: true } : {}),
+    ...(d.featured ? { featured: true } : {}),
+    ...(hasLocalizedSeo(d.disclaimer)
+      ? { disclaimer: locMapCms(d.disclaimer) as SolutionCardItem['disclaimer'] }
       : {}),
   }
 
   if (Array.isArray(d.features) && d.features.length) {
-    card.features = d.features.map((f: any, fi: number) => {
-      const ff = fb.card.features[fi]
+    card.features = d.features.map((f: any) => {
       const hasFull = f.full && (typeof f.full === 'string' || f.full?.en || f.full?.ru || f.full?.he)
       const row: SolutionCardItem['features'][number] = {
-        label: locMap(f.label, ff?.label || { en: '' }) as any,
-        value: locMap(f.value, ff?.value || { en: '' }) as any,
+        label: locMapCms(f.label) as any,
+        value: locMapCms(f.value) as any,
       }
       if (hasFull) {
-        row.full = locMap(f.full, ff?.full || { en: '' }) as SolutionCardItem['features'][0]['full']
+        row.full = locMapCms(f.full) as SolutionCardItem['features'][0]['full']
       }
       return row
     })
   }
 
-  let periods: OrderPeriod[] = fb.periods
+  let periods: OrderPeriod[] = []
   if (Array.isArray(d.periods) && d.periods.length) {
     periods = d.periods.map((p: any) => ({
       id: p.periodId || 'full',
-      label: locMap(p.label, { en: 'Pay in full', ru: 'Одним платежом', he: 'תשלום מלא' }),
+      label: locMapCms(p.label),
       months: typeof p.months === 'number' ? p.months : 1,
       discountPercent: typeof p.discountPercent === 'number' ? p.discountPercent : 0,
     }))
   }
 
-  let addons: OrderAddon[] = fb.addons
+  let addons: OrderAddon[] = []
   if (Array.isArray(d.addons) && d.addons.length) {
     addons = d.addons.map((a: any) => ({
       id: a.addonId || String(a.id),
-      name: locMap(a.name, { en: '' }),
-      description: locMap(a.description, { en: '' }),
+      name: locMapCms(a.name),
+      description: locMapCms(a.description),
       price: typeof a.price === 'number' ? a.price : Number(a.price) || 0,
       ...(a.recommended ? { recommended: true } : {}),
       ...(a.mandatory ? { mandatory: true } : {}),
-      ...(a.note ? { note: locMap(a.note, { en: '' }) } : {}),
+      ...(hasLocalizedSeo(a.note) ? { note: locMapCms(a.note) } : {}),
     }))
   }
 
   return {
     slug: d.slug || fb.slug,
     card,
-    subtitle: locMap(d.subtitle, fb.subtitle),
+    subtitle: locMapCms(d.subtitle),
     periods,
-    defaultPeriodId: periods[0]?.id || fb.defaultPeriodId,
+    defaultPeriodId: periods[0]?.id || '',
     addons,
-    ...(d.promo || fb.promo ? { promo: locMap(d.promo, fb.promo || { en: '' }) } : {}),
-    paymentNote: locMap(d.paymentNote, fb.paymentNote || DEFAULT_PAYMENT_NOTE),
-    taxNote: locMap(d.taxNote, fb.taxNote || { en: '' }),
-    taxValue: locMap(d.taxValue, fb.taxValue || { en: '' }),
-    ...(hasLocalizedSeo(d.seo?.title) ? { seoTitle: locMap(d.seo.title, { en: '' }) } : {}),
-    ...(hasLocalizedSeo(d.seo?.description)
-      ? { seoDescription: locMap(d.seo.description, { en: '' }) }
-      : {}),
+    ...(hasLocalizedSeo(d.promo) ? { promo: locMapCms(d.promo) } : {}),
+    ...(hasLocalizedSeo(d.paymentNote) ? { paymentNote: locMapCms(d.paymentNote) } : {}),
+    ...(hasLocalizedSeo(d.taxNote) ? { taxNote: locMapCms(d.taxNote) } : {}),
+    ...(hasLocalizedSeo(d.taxValue) ? { taxValue: locMapCms(d.taxValue) } : {}),
+    ...(hasLocalizedSeo(d.seo?.title) ? { seoTitle: locMapCms(d.seo.title) } : {}),
+    ...(hasLocalizedSeo(d.seo?.description) ? { seoDescription: locMapCms(d.seo.description) } : {}),
   }
 }
 
