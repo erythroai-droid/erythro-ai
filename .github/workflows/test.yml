@@ -8,6 +8,7 @@
 # Vercel → Deployment Checks → add "Unit Tests" (and optionally "API Tests") → Required
 
 name: Tests
+# ci smoke: verify Actions + Vercel deployment checks
 
 on:
   pull_request:
