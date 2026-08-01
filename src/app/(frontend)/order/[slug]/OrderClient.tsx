@@ -272,6 +272,9 @@ function OrderCheckout({
                     {pricing.perMonth
                       ? `${money(pricing.perMonth)}${copy.perMonth}`
                       : money(pricing.base)}
+                    {plan.card.priceNote ? (
+                      <span className="relative -top-3 inline-block text-sm leading-none">*</span>
+                    ) : null}
                   </span>
                   {pricing.savings > 0 ? (
                     <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-600">
