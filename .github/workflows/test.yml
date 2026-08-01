@@ -101,10 +101,13 @@ jobs:
 
           if [[ "$url" != *"sslmode="* ]]; then
             if [[ "$url" == *"?"* ]]; then
-              url="${url}&sslmode=require"
+              url="${url}&sslmode=no-verify"
             else
-              url="${url}?sslmode=require"
+              url="${url}?sslmode=no-verify"
             fi
+          else
+            # require still verifies the chain and fails on Supabase from GHA
+            url="${url//sslmode=require/sslmode=no-verify}"
           fi
 
           echo "DATABASE_URL=$url" >> "$GITHUB_ENV"
