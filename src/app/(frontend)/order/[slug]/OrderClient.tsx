@@ -146,17 +146,17 @@ function OrderCheckout({
   const listTotal = pricing.list + addonTotal
 
   const copy = {
-    period: locale === 'ru' ? 'Период' : locale === 'he' ? 'תקופה' : 'Period',
+    period: locale === 'ru' ? 'Способ оплаты' : locale === 'he' ? 'אופן תשלום' : 'Payment method',
     summary: locale === 'ru' ? 'Итог заказа' : locale === 'he' ? 'סיכום הזמנה' : 'Order summary',
     total: locale === 'ru' ? 'Всего' : locale === 'he' ? 'סה״כ' : 'Total',
-    taxes: locale === 'ru' ? 'Налоги' : locale === 'he' ? 'מסים' : 'Taxes',
-    included: locale === 'ru' ? 'Включено' : locale === 'he' ? 'כלול' : 'Included',
+    taxes: locale === 'ru' ? 'Налоги' : locale === 'he' ? 'מיסים' : 'Taxes',
+    planRow: locale === 'ru' ? 'Тариф' : locale === 'he' ? 'מסלול' : 'Plan',
     continue:
       locale === 'ru'
         ? 'Отправить заказ'
         : locale === 'he'
           ? 'שלח הזמנה'
-          : 'Send order',
+          : 'Submit order',
     guarantee:
       locale === 'ru'
         ? 'Гарантия возврата — обсуждается индивидуально'
@@ -166,13 +166,14 @@ function OrderCheckout({
     savings: locale === 'ru' ? 'Экономия' : locale === 'he' ? 'חיסכון' : 'Save',
     recommended: locale === 'ru' ? 'Рекомендуем' : locale === 'he' ? 'מומלץ' : 'Recommended',
     perMonth: locale === 'ru' ? '/мес' : locale === 'he' ? '/חודש' : '/mo',
-    renew:
-      locale === 'ru'
-        ? 'После оплаты свяжемся для старта и реквизитов.'
-        : locale === 'he'
-          ? 'אחרי התשלום ניצור קשר לתחילת העבודה ולפרטי תשלום.'
-          : 'After payment we will contact you to start and confirm details.',
   }
+
+  const paymentNote = tLocale(plan.paymentNote, locale).trim()
+  const promoText = tLocale(plan.promo, locale).trim()
+  const taxNote = tLocale(plan.taxNote, locale).trim()
+  const taxValue = tLocale(plan.taxValue, locale).trim()
+  const showTaxRow = Boolean(taxNote || taxValue)
+  const accent = isLight ? 'text-gold-900' : 'text-gold-800'
 
   const toggleAddon = (id: string) => {
     if (plan.addons.some((addon) => addon.id === id && addon.mandatory)) return
@@ -219,13 +220,15 @@ function OrderCheckout({
           {/* Plan card */}
           <section className={`rounded-[10px] p-6 md:p-8 ${cardCls}`}>
             <div className="mb-6 flex items-start gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-erythro-500/15 text-erythro-500">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path
-                    d="M4 7h16v10H4V7Zm2 2v6h12V9H6Z"
-                    fill="currentColor"
-                  />
-                </svg>
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[5px] bg-erythro-500">
+                <img
+                  src="/images/icons/cloud_sql.svg"
+                  alt=""
+                  width={22}
+                  height={22}
+                  className="size-[22px]"
+                  aria-hidden
+                />
               </div>
               <div>
                 <h1 className="font-sans text-xl font-bold uppercase tracking-[0.04em] md:text-2xl">
@@ -281,14 +284,16 @@ function OrderCheckout({
               </p>
             ) : null}
 
-            <p className={`mt-4 text-xs leading-5 ${muted}`}>{copy.renew}</p>
+            {paymentNote ? (
+              <p className={`mt-4 text-xs leading-5 ${muted}`}>{paymentNote}</p>
+            ) : null}
 
-            {plan.promo ? (
+            {promoText ? (
               <div className="mt-5 flex items-start gap-3 rounded-[10px] border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
                 <span className="mt-0.5 text-emerald-500" aria-hidden>
                   ✓
                 </span>
-                <p>{tLocale(plan.promo, locale)}</p>
+                <p>{promoText}</p>
               </div>
             ) : null}
 
@@ -356,43 +361,70 @@ function OrderCheckout({
           id="order-summary"
           className={`lg:sticky lg:top-28 ${cardCls} rounded-[10px] p-6 md:p-7`}
         >
-          <h2 className="mb-5 font-sans text-lg font-bold uppercase tracking-[0.06em]">
+          <h2 className={`mb-6 font-sans text-lg font-bold uppercase tracking-[0.06em] ${accent}`}>
             {copy.summary}
           </h2>
 
-          <ul className="flex flex-col gap-4 border-b border-current/10 pb-5">
+          <ul className="flex flex-col gap-5 border-b border-current/10 pb-5">
             <li className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold">{title}</p>
-                <p className={`text-xs ${muted}`}>{tLocale(period?.label, locale)}</p>
+              <div className="min-w-0">
+                <p className="text-sm font-bold uppercase tracking-[0.04em]">{copy.planRow}</p>
+                <p className={`mt-0.5 text-xs uppercase tracking-[0.04em] ${muted}`}>{title}</p>
               </div>
-              <div className="text-end text-sm" dir="ltr">
+              <div className="shrink-0 text-end text-sm" dir="ltr">
                 {pricing.savings > 0 ? (
                   <p className={`text-xs line-through opacity-50`}>{money(pricing.list)}</p>
                 ) : null}
-                <p className="font-semibold">{money(pricing.base)}</p>
+                <p className="font-semibold">
+                  {pricing.perMonth
+                    ? `${money(pricing.perMonth)}${copy.perMonth}`
+                    : money(pricing.base)}
+                </p>
               </div>
             </li>
 
             {plan.addons
               .filter((a) => selectedAddons.includes(a.id))
-              .map((addon) => (
-                <li key={addon.id} className="flex items-start justify-between gap-4 text-sm">
-                  <p>{tLocale(addon.name, locale)}</p>
-                  <p className="shrink-0 font-semibold" dir="ltr">
-                    {money(addon.price)}
-                  </p>
-                </li>
-              ))}
+              .map((addon) => {
+                const addonDesc = tLocale(addon.description, locale).trim()
+                return (
+                  <li key={addon.id} className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold uppercase tracking-[0.04em]">
+                        {tLocale(addon.name, locale)}
+                      </p>
+                      {addonDesc ? (
+                        <p className={`mt-0.5 text-xs leading-5 ${muted}`}>{addonDesc}</p>
+                      ) : null}
+                    </div>
+                    <p className="shrink-0 text-sm font-semibold" dir="ltr">
+                      {money(addon.price)}
+                    </p>
+                  </li>
+                )
+              })}
 
-            <li className={`flex items-center justify-between text-sm ${muted}`}>
-              <span>{copy.taxes}</span>
-              <span>{copy.included}</span>
-            </li>
+            {showTaxRow ? (
+              <li className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold uppercase tracking-[0.04em]">{copy.taxes}</p>
+                  {taxNote ? (
+                    <p className={`mt-0.5 text-xs uppercase tracking-[0.04em] ${muted}`}>{taxNote}</p>
+                  ) : null}
+                </div>
+                {taxValue ? (
+                  <p className={`shrink-0 text-xs font-semibold uppercase tracking-[0.04em] ${muted}`}>
+                    {taxValue}
+                  </p>
+                ) : null}
+              </li>
+            ) : null}
           </ul>
 
           <div className="mt-5 flex items-end justify-between gap-4">
-            <span className="text-base font-bold uppercase tracking-[0.08em]">{copy.total}</span>
+            <span className={`text-base font-bold uppercase tracking-[0.08em] ${accent}`}>
+              {copy.total}
+            </span>
             <div className="text-end" dir="ltr">
               {listTotal > total ? (
                 <p className={`text-xs line-through opacity-50`}>{money(listTotal)}</p>
@@ -404,7 +436,7 @@ function OrderCheckout({
           <div className="mt-6">
             <Button
               variant="light-accent"
-              className="w-full !rounded-[10px] !border-transparent uppercase hover:!border-transparent hover:!shadow-[0_3px_20px_0_var(--erythro-alpha-30,rgba(229,36,33,0.30))]"
+              className="w-full !rounded-[5px] !border-transparent uppercase hover:!border-transparent hover:!shadow-[0_3px_20px_0_var(--erythro-alpha-30,rgba(229,36,33,0.30))]"
               onClick={handleContinue}
             >
               {copy.continue}

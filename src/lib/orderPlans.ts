@@ -29,8 +29,28 @@ export interface OrderPlan {
   defaultPeriodId: string
   addons: OrderAddon[]
   promo?: LocaleMap
+  /** Note under payment method select on the order page */
+  paymentNote?: LocaleMap
+  /** Tax subtitle, e.g. "17%" — hide tax row when both taxNote and taxValue empty */
+  taxNote?: LocaleMap
+  /** Tax right-side value, e.g. "Included" */
+  taxValue?: LocaleMap
   seoTitle?: LocaleMap
   seoDescription?: LocaleMap
+}
+
+/** Fallback copy under payment method (legacy renew blurb). */
+export const DEFAULT_PAYMENT_NOTE: LocaleMap = {
+  en: 'After payment we will contact you to start and confirm details.',
+  ru: 'После оплаты свяжемся для старта и реквизитов.',
+  he: 'אחרי התשלום ניצור קשר לתחילת העבודה ולפרטי תשלום.',
+}
+
+export const DEFAULT_TAX_NOTE: LocaleMap = { en: '17%', ru: '17%', he: '17%' }
+export const DEFAULT_TAX_VALUE: LocaleMap = {
+  en: 'Included',
+  ru: 'Включено',
+  he: 'כלול',
 }
 
 const PERIOD_FULL: OrderPeriod = {
@@ -156,6 +176,9 @@ function buildOrderPlan(card: SolutionCardItem): OrderPlan {
     defaultPeriodId: PERIOD_FULL.id,
     addons: card.id === 'free-start' ? SHARED_ADDONS.slice(0, 1) : SHARED_ADDONS,
     promo: PROMOS[card.id],
+    paymentNote: DEFAULT_PAYMENT_NOTE,
+    taxNote: DEFAULT_TAX_NOTE,
+    taxValue: DEFAULT_TAX_VALUE,
   }
 }
 

@@ -22,6 +22,7 @@ import { lexicalFromParagraphs, lexicalFromText, isLexicalDoc, lexicalToPlain } 
 import { mediaDocUrl } from './publicMediaUrl'
 import {
   ORDER_PLANS,
+  DEFAULT_PAYMENT_NOTE,
   getOrderPlan as getStaticOrderPlan,
   type OrderPlan,
   type OrderAddon,
@@ -381,13 +382,15 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
   if (Array.isArray(d.features) && d.features.length) {
     card.features = d.features.map((f: any, fi: number) => {
       const ff = fb.card.features[fi]
-      if (f.full && (typeof f.full === 'string' || f.full?.en || f.full?.ru || f.full?.he)) {
-        return { full: locMap(f.full, ff?.full || { en: '' }) as SolutionCardItem['features'][0]['full'] }
-      }
-      return {
+      const hasFull = f.full && (typeof f.full === 'string' || f.full?.en || f.full?.ru || f.full?.he)
+      const row: SolutionCardItem['features'][number] = {
         label: locMap(f.label, ff?.label || { en: '' }) as any,
         value: locMap(f.value, ff?.value || { en: '' }) as any,
       }
+      if (hasFull) {
+        row.full = locMap(f.full, ff?.full || { en: '' }) as SolutionCardItem['features'][0]['full']
+      }
+      return row
     })
   }
 
@@ -422,6 +425,9 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
     defaultPeriodId: periods[0]?.id || fb.defaultPeriodId,
     addons,
     ...(d.promo || fb.promo ? { promo: locMap(d.promo, fb.promo || { en: '' }) } : {}),
+    paymentNote: locMap(d.paymentNote, fb.paymentNote || DEFAULT_PAYMENT_NOTE),
+    taxNote: locMap(d.taxNote, fb.taxNote || { en: '' }),
+    taxValue: locMap(d.taxValue, fb.taxValue || { en: '' }),
     ...(hasLocalizedSeo(d.seo?.title) ? { seoTitle: locMap(d.seo.title, { en: '' }) } : {}),
     ...(hasLocalizedSeo(d.seo?.description)
       ? { seoDescription: locMap(d.seo.description, { en: '' }) }

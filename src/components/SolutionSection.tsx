@@ -45,18 +45,6 @@ function capitalizeFeatureLabel(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
-function splitFeatureFull(text: string) {
-  const colonIndex = text.indexOf(':')
-  if (colonIndex === -1) {
-    return { labelPart: '', valuePart: capitalizeFeatureLabel(text) }
-  }
-
-  return {
-    labelPart: capitalizeFeatureLabel(text.slice(0, colonIndex + 1)),
-    valuePart: text.slice(colonIndex + 1),
-  }
-}
-
 function SolutionCard({
   card,
   locale,
@@ -165,6 +153,9 @@ function SolutionCard({
 
       <ul className="flex w-full flex-1 flex-col gap-4 py-4 ps-4">
         {card.features.map((feature, index) => {
+          // `full` is order-page only — skip on public solution cards
+          if (feature.full && t(feature.full).trim()) return null
+
           const dotClass = isFeatured ? 'bg-white' : 'bg-erythro-500'
           const textClass = isFeatured ? 'text-white' : isLight ? 'text-coal-900' : 'text-white'
           const labelClass = isFeatured
@@ -172,29 +163,6 @@ function SolutionCard({
             : isLight
               ? 'text-coal-900'
               : 'text-gold-500'
-
-          if (feature.full) {
-            const text = t(feature.full)
-            const { labelPart, valuePart } = splitFeatureFull(text)
-
-            return (
-              <li key={index} className="relative flex items-start gap-2.5">
-                <span
-                  className={`absolute -start-4 top-2.5 size-1 shrink-0 rounded-[1px] ${dotClass}`}
-                />
-                <p className={`break-words text-base leading-6 lg:text-sm ${textClass}`}>
-                  {labelPart ? (
-                    <>
-                      <span className={`font-bold ${labelClass}`}>{labelPart}</span>
-                      <span className="font-normal">{valuePart}</span>
-                    </>
-                  ) : (
-                    valuePart
-                  )}
-                </p>
-              </li>
-            )
-          }
 
           return (
             <li key={index} className="relative flex items-start gap-2.5">
