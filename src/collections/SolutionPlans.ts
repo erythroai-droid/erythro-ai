@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { locText } from '../fields/localized'
+import { locText, locTextarea } from '../fields/localized'
 import { ctaHrefField } from '../fields/ctaHref'
 import { seoFields } from '../fields/seo'
 import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
@@ -82,6 +82,19 @@ export const SolutionPlans: CollectionConfig = {
     }),
     locText('promo', {
       admin: { description: 'Green promo callout on the order page' },
+    }),
+    locTextarea('paymentNote', {
+      admin: {
+        description: 'Text under the payment method selector on the order page',
+      },
+    }),
+    locText('taxNote', {
+      admin: { description: 'Subtitle under Taxes on the order summary, e.g. "17%"' },
+    }),
+    locText('taxValue', {
+      admin: {
+        description: 'Right-side tax value on the order summary, e.g. "Included" / "Включено"',
+      },
     }),
     {
       name: 'periods',

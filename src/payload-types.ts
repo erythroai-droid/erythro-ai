@@ -110,6 +110,9 @@ export interface Config {
     'faq-section': FaqSection;
     footer: Footer;
     'site-settings': SiteSetting;
+    'legal-privacy': LegalPrivacy;
+    'legal-terms': LegalTerm;
+    'legal-accessibility': LegalAccessibility;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -120,6 +123,9 @@ export interface Config {
     'faq-section': FaqSectionSelect<false> | FaqSectionSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'legal-privacy': LegalPrivacySelect<false> | LegalPrivacySelect<true>;
+    'legal-terms': LegalTermsSelect<false> | LegalTermsSelect<true>;
+    'legal-accessibility': LegalAccessibilitySelect<false> | LegalAccessibilitySelect<true>;
   };
   locale: 'en' | 'ru' | 'he';
   widgets: {
@@ -390,6 +396,18 @@ export interface SolutionPlan {
    */
   promo?: string | null;
   /**
+   * Text under the payment method selector on the order page
+   */
+  paymentNote?: string | null;
+  /**
+   * Subtitle under Taxes on the order summary, e.g. "17%"
+   */
+  taxNote?: string | null;
+  /**
+   * Right-side tax value on the order summary, e.g. "Included" / "Включено"
+   */
+  taxValue?: string | null;
+  /**
    * Optional. If empty, defaults (pay in full / 12 payments when priceNote) are used.
    */
   periods?:
@@ -449,6 +467,8 @@ export interface SolutionPlan {
   createdAt: string;
 }
 /**
+ * Categories for portfolio projects and the filter chips on /portfolio. Edit labels, add/remove items, and reorder here.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "portfolio-categories".
  */
@@ -846,6 +866,9 @@ export interface SolutionPlansSelect<T extends boolean = true> {
   ctaHref?: T;
   subtitle?: T;
   promo?: T;
+  paymentNote?: T;
+  taxNote?: T;
+  taxValue?: T;
   periods?:
     | T
     | {
@@ -1289,6 +1312,153 @@ export interface SiteSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legal-privacy".
+ */
+export interface LegalPrivacy {
+  id: number;
+  /**
+   * Page heading shown to visitors
+   */
+  title: string;
+  /**
+   * SEO meta description (~155 chars)
+   */
+  metaDescription?: string | null;
+  /**
+   * Date shown as "Last updated" (e.g. 2026-07-29 or 29.07.2026). One date for all locales — not overwritten on save.
+   */
+  statementDate?: string | null;
+  /**
+   * Introductory paragraph shown before the first section
+   */
+  intro?: string | null;
+  /**
+   * Page sections. Each section has a heading, body text (one paragraph per line), and optional bullets (one item per line).
+   */
+  sections?:
+    | {
+        /**
+         * Section heading, e.g. "1. Data controller"
+         */
+        heading: string;
+        /**
+         * Body paragraphs — one paragraph per line. Empty lines are ignored.
+         */
+        paragraphs?: string | null;
+        /**
+         * Bullet list items — one item per line. Leave empty if no bullets.
+         */
+        bullets?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional closing line at the bottom (e.g. contact info)
+   */
+  closing?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legal-terms".
+ */
+export interface LegalTerm {
+  id: number;
+  /**
+   * Page heading shown to visitors
+   */
+  title: string;
+  /**
+   * SEO meta description (~155 chars)
+   */
+  metaDescription?: string | null;
+  /**
+   * Date shown as "Last updated" (e.g. 2026-07-29 or 29.07.2026). One date for all locales — not overwritten on save.
+   */
+  statementDate?: string | null;
+  /**
+   * Introductory paragraph shown before the first section
+   */
+  intro?: string | null;
+  /**
+   * Page sections. Each section has a heading, body text (one paragraph per line), and optional bullets (one item per line).
+   */
+  sections?:
+    | {
+        /**
+         * Section heading, e.g. "1. Data controller"
+         */
+        heading: string;
+        /**
+         * Body paragraphs — one paragraph per line. Empty lines are ignored.
+         */
+        paragraphs?: string | null;
+        /**
+         * Bullet list items — one item per line. Leave empty if no bullets.
+         */
+        bullets?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional closing line at the bottom (e.g. contact info)
+   */
+  closing?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legal-accessibility".
+ */
+export interface LegalAccessibility {
+  id: number;
+  /**
+   * Page heading shown to visitors
+   */
+  title: string;
+  /**
+   * SEO meta description (~155 chars)
+   */
+  metaDescription?: string | null;
+  /**
+   * Date shown as "Last updated" (e.g. 2026-07-29 or 29.07.2026). One date for all locales — not overwritten on save.
+   */
+  statementDate?: string | null;
+  /**
+   * Introductory paragraph shown before the first section
+   */
+  intro?: string | null;
+  /**
+   * Page sections. Each section has a heading, body text (one paragraph per line), and optional bullets (one item per line).
+   */
+  sections?:
+    | {
+        /**
+         * Section heading, e.g. "1. Data controller"
+         */
+        heading: string;
+        /**
+         * Body paragraphs — one paragraph per line. Empty lines are ignored.
+         */
+        paragraphs?: string | null;
+        /**
+         * Bullet list items — one item per line. Leave empty if no bullets.
+         */
+        bullets?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional closing line at the bottom (e.g. contact info)
+   */
+  closing?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -1447,6 +1617,72 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   portfolioHeroMedia?: T;
   legalHeroMedia?: T;
   orderHeroMedia?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legal-privacy_select".
+ */
+export interface LegalPrivacySelect<T extends boolean = true> {
+  title?: T;
+  metaDescription?: T;
+  statementDate?: T;
+  intro?: T;
+  sections?:
+    | T
+    | {
+        heading?: T;
+        paragraphs?: T;
+        bullets?: T;
+        id?: T;
+      };
+  closing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legal-terms_select".
+ */
+export interface LegalTermsSelect<T extends boolean = true> {
+  title?: T;
+  metaDescription?: T;
+  statementDate?: T;
+  intro?: T;
+  sections?:
+    | T
+    | {
+        heading?: T;
+        paragraphs?: T;
+        bullets?: T;
+        id?: T;
+      };
+  closing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "legal-accessibility_select".
+ */
+export interface LegalAccessibilitySelect<T extends boolean = true> {
+  title?: T;
+  metaDescription?: T;
+  statementDate?: T;
+  intro?: T;
+  sections?:
+    | T
+    | {
+        heading?: T;
+        paragraphs?: T;
+        bullets?: T;
+        id?: T;
+      };
+  closing?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
