@@ -277,7 +277,11 @@ function OrderCheckout({
                     ) : null}
                   </span>
                   {pricing.savings > 0 ? (
-                    <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-600">
+                    <span
+                      className={`rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${
+                        isLight ? 'text-emerald-900' : 'text-emerald-300'
+                      }`}
+                    >
                       {copy.savings} {money(pricing.savings)}
                     </span>
                   ) : null}
@@ -290,8 +294,17 @@ function OrderCheckout({
             ) : null}
 
             {promoText ? (
-              <div className="mt-5 flex items-start gap-3 rounded-[10px] border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">
-                <span className="mt-0.5 text-emerald-500" aria-hidden>
+              <div
+                className={`mt-5 flex items-start gap-3 rounded-[10px] border px-4 py-3 text-sm ${
+                  isLight
+                    ? 'border-emerald-700/30 bg-emerald-500/15 text-emerald-950'
+                    : 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'
+                }`}
+              >
+                <span
+                  className={`mt-0.5 ${isLight ? 'text-emerald-800' : 'text-emerald-400'}`}
+                  aria-hidden
+                >
                   ✓
                 </span>
                 <p>{promoText}</p>
@@ -347,7 +360,13 @@ function OrderCheckout({
                       <p className={`mt-2 text-sm leading-6 ${muted}`}>{description}</p>
                     ) : null}
                     {note ? (
-                      <p className="mt-3 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300">
+                      <p
+                        className={`mt-3 rounded-lg px-3 py-2 text-xs ${
+                          isLight
+                            ? 'bg-emerald-500/15 text-emerald-950'
+                            : 'bg-emerald-500/10 text-emerald-300'
+                        }`}
+                      >
                         {note}
                       </p>
                     ) : null}
