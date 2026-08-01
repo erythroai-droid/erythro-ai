@@ -1,12 +1,11 @@
 # Runs automated tests on every PR and push to main.
 #
 # Secrets (GitHub → Settings → Secrets and variables → Actions):
-#   DATABASE_URL   — Postgres connection string (required for api.int.spec)
-#   PAYLOAD_SECRET — Payload CMS secret (optional; fallback used if missing)
+#   DATABASE_URL   — Postgres URL (required for API Tests job)
+#   PAYLOAD_SECRET — Payload CMS secret (optional for API Tests)
 #
-# To block Vercel production until this passes:
-# 1. Vercel → Project → Settings → Build and Deployment → Deployment Checks
-# 2. Add Checks → GitHub → select "Unit Tests" → Required
+# To block Vercel production until checks pass:
+# Vercel → Deployment Checks → add "Unit Tests" (and optionally "API Tests") → Required
 
 name: Tests
 
@@ -23,10 +22,36 @@ jobs:
   unit:
     name: Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run unit tests
+        # Pure suites only — no DB required.
+        run: pnpm exec vitest run --config ./vitest.config.mts --exclude tests/int/api.int.spec.ts
+
+  api:
+    name: API Tests
+    runs-on: ubuntu-latest
     timeout-minutes: 20
 
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
 
     steps:
@@ -47,7 +72,29 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run unit / integration tests
-        # With DATABASE_URL secret: runs all int tests including api.int.spec.
-        # Without it: api suite is skipped (describe.skipIf).
-        run: pnpm run test:int
+      - name: Prepare DATABASE_URL
+        id: db
+        env:
+          RAW_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$RAW_DATABASE_URL" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "DATABASE_URL secret is empty — skipping API tests"
+            exit 0
+          fi
+          url="$RAW_DATABASE_URL"
+          # Supabase / cloud Postgres require TLS from GitHub runners.
+          if [[ "$url" != *"sslmode="* ]]; then
+            if [[ "$url" == *"?"* ]]; then
+              url="${url}&sslmode=require"
+            else
+              url="${url}?sslmode=require"
+            fi
+          fi
+          echo "DATABASE_URL=$url" >> "$GITHUB_ENV"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "DATABASE_URL configured (sslmode ensured)"
+
+      - name: Run API integration test
+        if: steps.db.outputs.skip != 'true'
+        run: pnpm exec vitest run --config ./vitest.config.mts tests/int/api.int.spec.ts

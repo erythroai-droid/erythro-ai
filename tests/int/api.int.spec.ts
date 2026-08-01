@@ -9,9 +9,19 @@ describe.skipIf(!hasDatabase)('API', () => {
   let payload: Payload
 
   beforeAll(async () => {
-    const payloadConfig = await config
-    payload = await getPayload({ config: payloadConfig })
-  }, 60_000)
+    try {
+      const payloadConfig = await config
+      payload = await getPayload({ config: payloadConfig })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      throw new Error(
+        `Failed to init Payload against DATABASE_URL. ` +
+          `Check GitHub secret DATABASE_URL (password, host, ?sslmode=require). ` +
+          `Original error: ${message}`,
+        { cause: err },
+      )
+    }
+  }, 90_000)
 
   it('fetches users', async () => {
     const users = await payload.find({
