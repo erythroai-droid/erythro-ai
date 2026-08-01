@@ -372,13 +372,30 @@ export interface SolutionPlan {
    */
   featured?: boolean | null;
   /**
-   * Fill "label" + "value" for a two-column row, OR "full" for a single full-width row.
+   * Label + Value show on public cards and the order page. Full is an optional description under Value on the order page only.
    */
   features?:
     | {
         label?: string | null;
         value?: string | null;
-        full?: string | null;
+        /**
+         * Shown under Value on the order page only. Leave empty to hide.
+         */
+        full?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
         id?: string | null;
       }[]
     | null;
@@ -400,11 +417,11 @@ export interface SolutionPlan {
    */
   paymentNote?: string | null;
   /**
-   * Subtitle under Taxes on the order summary, e.g. "17%"
+   * Tax rate under Taxes, e.g. "17%". Parsed as percent and added to the order total.
    */
   taxNote?: string | null;
   /**
-   * Right-side tax value on the order summary, e.g. "Included" / "Включено"
+   * Optional. Fixed tax amount (number) if taxNote has no %, or a label when tax is not calculated.
    */
   taxValue?: string | null;
   /**

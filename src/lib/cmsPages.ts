@@ -383,13 +383,32 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
 
   if (Array.isArray(d.features) && d.features.length) {
     card.features = d.features.map((f: any) => {
-      const hasFull = f.full && (typeof f.full === 'string' || f.full?.en || f.full?.ru || f.full?.he)
       const row: SolutionCardItem['features'][number] = {
         label: locMapCms(f.label) as any,
         value: locMapCms(f.value) as any,
       }
+
+      const fullPlain: LocaleMap = { en: '', ru: '', he: '' }
+      const fullRich: Record<string, unknown> = {}
+      let hasFull = false
+      for (const loc of LOCALES) {
+        const raw =
+          f.full && typeof f.full === 'object' && !Array.isArray(f.full) && !isLexicalDoc(f.full)
+            ? (f.full as Record<string, unknown>)[loc] ?? (f.full as Record<string, unknown>).en
+            : f.full
+        if (isLexicalDoc(raw)) {
+          fullRich[loc] = raw
+          fullPlain[loc] = lexicalToPlain(raw)
+          if (fullPlain[loc]) hasFull = true
+        } else if (typeof raw === 'string' && raw.trim()) {
+          fullRich[loc] = lexicalFromText(raw)
+          fullPlain[loc] = raw.trim()
+          hasFull = true
+        }
+      }
       if (hasFull) {
-        row.full = locMapCms(f.full) as SolutionCardItem['features'][0]['full']
+        row.full = fullPlain
+        row.fullRich = fullRich
       }
       return row
     })

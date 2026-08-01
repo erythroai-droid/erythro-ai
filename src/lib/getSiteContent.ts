@@ -301,11 +301,41 @@ export async function getSiteContent(): Promise<SiteContent> {
         const fb = defaultSiteContent.solutions.cards[i]
         const features = (d.features ?? []).map((f: any, fi: number) => {
           const fbF = fb?.features?.[fi]
-          if (hasContent(f.full)) return { full: L(f.full, fbF?.full ?? { en: '', ru: '', he: '' }) }
-          return {
+          const row: {
+            label?: Record<string, string>
+            value?: Record<string, string>
+            full?: Record<string, string>
+            fullRich?: Record<string, unknown>
+          } = {
             label: L(f.label, fbF?.label ?? { en: '', ru: '', he: '' }),
             value: L(f.value, fbF?.value ?? { en: '', ru: '', he: '' }),
           }
+          if (hasContent(f.full) || isLexicalDoc(f.full) || LOCALES.some((l) => isLexicalDoc(f.full?.[l])) || fbF?.full) {
+            // Keep plain full for order-page fallbacks; public cards ignore it.
+            const fullPlain: Record<string, string> = { en: '', ru: '', he: '' }
+            const fullRich: Record<string, unknown> = {}
+            for (const loc of LOCALES) {
+              const raw =
+                f.full && typeof f.full === 'object' && !Array.isArray(f.full) && !isLexicalDoc(f.full)
+                  ? (f.full as Record<string, unknown>)[loc] ?? (f.full as Record<string, unknown>).en
+                  : f.full
+              if (isLexicalDoc(raw)) {
+                fullRich[loc] = raw
+                fullPlain[loc] = lexicalToPlain(raw)
+              } else if (typeof raw === 'string' && raw.trim()) {
+                fullRich[loc] = lexicalFromText(raw)
+                fullPlain[loc] = raw.trim()
+              } else if (fbF?.full?.[loc]) {
+                fullPlain[loc] = fbF.full[loc]
+                fullRich[loc] = lexicalFromText(fbF.full[loc])
+              }
+            }
+            if (LOCALES.some((loc) => fullPlain[loc])) {
+              row.full = fullPlain
+              row.fullRich = fullRich
+            }
+          }
+          return row
         })
         return {
           id: (typeof d.slug === 'string' && d.slug.trim()) || fb?.id || String(d.id),

@@ -153,8 +153,10 @@ function SolutionCard({
 
       <ul className="flex w-full flex-1 flex-col gap-4 py-4 ps-4">
         {card.features.map((feature, index) => {
-          // `full` is order-page only — skip on public solution cards
-          if (feature.full && t(feature.full).trim()) return null
+          const labelText = feature.label ? t(feature.label).trim() : ''
+          const valueText = feature.value ? t(feature.value).trim() : ''
+          // `full` is order-page description only — ignore on public cards
+          if (!labelText && !valueText) return null
 
           const dotClass = isFeatured ? 'bg-white' : 'bg-erythro-500'
           const textClass = isFeatured ? 'text-white' : isLight ? 'text-coal-900' : 'text-white'
@@ -170,24 +172,24 @@ function SolutionCard({
                 className={`absolute -start-4 top-2.5 size-1 shrink-0 rounded-[1px] ${dotClass}`}
               />
               <p className={`break-words text-base leading-6 lg:text-sm ${textClass}`}>
-                {feature.label && (
+                {labelText ? (
                   <span className={`font-bold ${labelClass}`}>
-                    {capitalizeFeatureLabel(t(feature.label))}{' '}
+                    {capitalizeFeatureLabel(labelText)}{' '}
                   </span>
-                )}
-                {feature.value &&
-                  (() => {
-                    const value = t(feature.value)
-                    const isPrice = /[₪$€]/.test(value)
-                    return (
-                      <span
-                        {...(isPrice ? { dir: 'ltr' as const } : {})}
-                        className={`font-normal ${isPrice ? 'inline-block' : ''}`}
-                      >
-                        {value}
-                      </span>
-                    )
-                  })()}
+                ) : null}
+                {valueText
+                  ? (() => {
+                      const isPrice = /[₪$€]/.test(valueText)
+                      return (
+                        <span
+                          {...(isPrice ? { dir: 'ltr' as const } : {})}
+                          className={`font-normal ${isPrice ? 'inline-block' : ''}`}
+                        >
+                          {valueText}
+                        </span>
+                      )
+                    })()
+                  : null}
               </p>
             </li>
           )

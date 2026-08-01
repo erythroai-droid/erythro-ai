@@ -14,11 +14,12 @@ import type { SiteContent } from '@/lib/defaultContent'
 import {
   calcPlanAmount,
   calcTaxAmount,
-  featureLines,
   formatPrice,
   tLocale,
   type OrderPlan,
 } from '@/lib/orderPlans'
+import { isLexicalDoc, lexicalToPlain, resolveLexical } from '@/lib/lexical'
+import { RichText } from '@payloadcms/richtext-lexical/react'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface OrderClientProps {
@@ -134,10 +135,28 @@ function OrderCheckout({
 
   const title = tLocale(plan.card.title, locale)
   const subtitle = tLocale(plan.subtitle, locale).trim()
-  const features = featureLines(plan.card.features, locale)
   const pricing = calcPlanAmount(plan, periodId)
   const period = plan.periods.find((p) => p.id === periodId) || plan.periods[0]
   const money = (amount: number) => formatPrice(amount, locale, plan.card.currency)
+
+  const featureRows = plan.card.features
+    .map((feature, index) => {
+      const label = tLocale(feature.label, locale).trim()
+      const value = tLocale(feature.value, locale).trim()
+      const plainFull = tLocale(feature.full, locale).trim()
+      const richDoc = resolveLexical(feature.fullRich, locale, plainFull || null)
+      const hasDesc = Boolean(richDoc && lexicalToPlain(richDoc)) || Boolean(plainFull)
+      if (!label && !value && !hasDesc) return null
+      return { index, label, value, richDoc, plainFull, hasDesc }
+    })
+    .filter(Boolean) as Array<{
+    index: number
+    label: string
+    value: string
+    richDoc: ReturnType<typeof resolveLexical>
+    plainFull: string
+    hasDesc: boolean
+  }>
 
   const addonTotal = plan.addons
     .filter((a) => selectedAddons.includes(a.id))
@@ -311,12 +330,30 @@ function OrderCheckout({
               </div>
             ) : null}
 
-            {features.length > 0 ? (
+            {featureRows.length > 0 ? (
               <ul className="mt-6 flex flex-col gap-2.5 border-t border-current/10 pt-6">
-                {features.map((line) => (
-                  <li key={line} className="flex items-start gap-3 text-sm leading-6">
+                {featureRows.map((row) => (
+                  <li key={row.index} className="flex items-start gap-3 text-sm leading-6">
                     <span className="mt-2 h-1 w-1 shrink-0 rotate-45 bg-erythro-500" />
-                    <span className={isLight ? 'text-coal-900/85' : 'text-white/85'}>{line}</span>
+                    <div className={`min-w-0 flex-1 ${isLight ? 'text-coal-900/85' : 'text-white/85'}`}>
+                      {row.label || row.value ? (
+                        <p className="m-0">
+                          {row.label ? <span className="font-semibold">{row.label} </span> : null}
+                          {row.value ? <span>{row.value}</span> : null}
+                        </p>
+                      ) : null}
+                      {row.hasDesc ? (
+                        <div
+                          className={`feature-full-desc mt-1 text-xs leading-5 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
+                        >
+                          {row.richDoc && isLexicalDoc(row.richDoc) ? (
+                            <RichText data={row.richDoc as never} />
+                          ) : (
+                            <p>{row.plainFull}</p>
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
                   </li>
                 ))}
               </ul>
