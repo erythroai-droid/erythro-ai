@@ -532,35 +532,12 @@ function OrderCheckout({
                   />
 
                   <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4">
-                    {/* Col 1 / row 1 — title */}
-                    <h2 className="font-sans text-base font-bold uppercase tracking-[0.04em]">
-                      {tLocale(addon.name, locale)}
-                    </h2>
+                    {/* Col 1 — title + content (independent of price column height) */}
+                    <div className="min-w-0">
+                      <h2 className="font-sans text-base font-bold uppercase tracking-[0.04em]">
+                        {tLocale(addon.name, locale)}
+                      </h2>
 
-                    {/* Col 2 — price + savings */}
-                    <div
-                      className="flex flex-col items-end justify-start gap-2 self-start pt-0.5"
-                      dir="ltr"
-                    >
-                      {amounts.savings > 0 ? (
-                        <span className={`text-sm leading-5 line-through opacity-50 ${muted}`}>
-                          {money(amounts.list)}
-                        </span>
-                      ) : null}
-                      <span className="text-sm font-semibold leading-5">{money(amounts.final)}</span>
-                      {amounts.savings > 0 ? (
-                        <span
-                          className={`${badgeCls} bg-emerald-500/15 ${
-                            isLight ? 'text-emerald-900' : 'text-emerald-300'
-                          }`}
-                        >
-                          {copy.savings} {money(amounts.savings)}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    {/* Col 1 — recommended, copy, term */}
-                    <div className="col-start-1 flex flex-col">
                       {addon.recommended ? (
                         <div className="mt-2">
                           <span className={`${badgeCls} bg-erythro-500/15 text-erythro-500`}>
@@ -609,6 +586,28 @@ function OrderCheckout({
                         >
                           {note}
                         </p>
+                      ) : null}
+                    </div>
+
+                    {/* Col 2 — price + savings */}
+                    <div
+                      className="flex flex-col items-end gap-2 pt-0.5"
+                      dir="ltr"
+                    >
+                      {amounts.savings > 0 ? (
+                        <span className={`text-sm leading-5 line-through opacity-50 ${muted}`}>
+                          {money(amounts.list)}
+                        </span>
+                      ) : null}
+                      <span className="text-sm font-semibold leading-5">{money(amounts.final)}</span>
+                      {amounts.savings > 0 ? (
+                        <span
+                          className={`${badgeCls} bg-emerald-500/15 ${
+                            isLight ? 'text-emerald-900' : 'text-emerald-300'
+                          }`}
+                        >
+                          {copy.savings} {money(amounts.savings)}
+                        </span>
                       ) : null}
                     </div>
                   </div>
