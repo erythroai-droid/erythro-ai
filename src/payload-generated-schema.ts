@@ -512,6 +512,7 @@ export const solution_plans_locales = pgTable(
     disclaimer: varchar('disclaimer'),
     subtitle: varchar('subtitle'),
     promo: varchar('promo'),
+    includes: jsonb('includes'),
     paymentNote: varchar('payment_note'),
     taxNote: varchar('tax_note'),
     taxValue: varchar('tax_value'),

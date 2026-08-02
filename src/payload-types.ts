@@ -413,6 +413,24 @@ export interface SolutionPlan {
    */
   promo?: string | null;
   /**
+   * Detailed “what’s included in development” block on the order page (rich text). Shown last in the plan card.
+   */
+  includes?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
    * Text under the payment method selector on the order page
    */
   paymentNote?: string | null;
@@ -883,6 +901,7 @@ export interface SolutionPlansSelect<T extends boolean = true> {
   ctaHref?: T;
   subtitle?: T;
   promo?: T;
+  includes?: T;
   paymentNote?: T;
   taxNote?: T;
   taxValue?: T;

@@ -194,6 +194,12 @@ function OrderCheckout({
     savings: locale === 'ru' ? 'Экономия' : locale === 'he' ? 'חיסכון' : 'Save',
     recommended: locale === 'ru' ? 'Рекомендуем' : locale === 'he' ? 'מומלץ' : 'Recommended',
     perMonth: locale === 'ru' ? '/мес' : locale === 'he' ? '/חודש' : '/mo',
+    includes:
+      locale === 'ru'
+        ? 'Что входит в разработку'
+        : locale === 'he'
+          ? 'מה כלול בפיתוח'
+          : "What's included in development",
   }
 
   const toggleAddon = (id: string) => {
@@ -292,7 +298,9 @@ function OrderCheckout({
                       ? `${money(pricing.perMonth)}${copy.perMonth}`
                       : money(pricing.base)}
                     {plan.card.priceNote ? (
-                      <span className="relative -top-3 inline-block text-sm leading-none">*</span>
+                      <span className="relative -top-3 inline-block text-sm leading-none text-erythro-500">
+                        *
+                      </span>
                     ) : null}
                   </span>
                   {pricing.savings > 0 ? (
@@ -330,6 +338,13 @@ function OrderCheckout({
               </div>
             ) : null}
 
+            {(() => {
+              const disclaimer = tLocale(plan.card.disclaimer, locale).trim()
+              return disclaimer ? (
+                <p className={`mt-3 text-[11px] leading-5 ${muted}`}>{disclaimer}</p>
+              ) : null
+            })()}
+
             {featureRows.length > 0 ? (
               <ul className="mt-6 flex flex-col gap-2.5 border-t border-current/10 pt-6">
                 {featureRows.map((row) => (
@@ -360,8 +375,29 @@ function OrderCheckout({
             ) : null}
 
             {(() => {
-              const disclaimer = tLocale(plan.card.disclaimer, locale).trim()
-              return disclaimer ? <p className={`mt-4 text-[11px] ${muted}`}>{disclaimer}</p> : null
+              const plainIncludes = tLocale(plan.includes, locale).trim()
+              const includesDoc = resolveLexical(plan.includesRich, locale, plainIncludes || null)
+              const hasIncludes =
+                Boolean(includesDoc && lexicalToPlain(includesDoc)) || Boolean(plainIncludes)
+              if (!hasIncludes) return null
+              return (
+                <div className="mt-6 border-t border-current/10 pt-6">
+                  <h2 className="mb-3 font-sans text-base font-bold uppercase tracking-[0.04em]">
+                    {copy.includes}
+                  </h2>
+                  <div
+                    className={`order-includes text-sm leading-6 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
+                      isLight ? 'text-coal-900/85' : 'text-white/85'
+                    }`}
+                  >
+                    {includesDoc && isLexicalDoc(includesDoc) ? (
+                      <RichText data={includesDoc as never} />
+                    ) : (
+                      <p>{plainIncludes}</p>
+                    )}
+                  </div>
+                </div>
+              )
             })()}
           </section>
 

@@ -31,6 +31,10 @@ export interface OrderPlan {
   promo?: LocaleMap
   /** Note under payment options select on the order page */
   paymentNote?: LocaleMap
+  /** Plain fallback for the “what’s included” block */
+  includes?: LocaleMap
+  /** Lexical rich text for the “what’s included” block (order page) */
+  includesRich?: Record<string, unknown>
   /** Tax subtitle / rate, e.g. "17%" — used to compute tax added to total */
   taxNote?: LocaleMap
   /** Optional right-side tax label when no numeric rate (legacy display) */
