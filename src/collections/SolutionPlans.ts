@@ -92,6 +92,13 @@ export const SolutionPlans: CollectionConfig = {
     locText('promo', {
       admin: { description: 'Green promo callout on the order page' },
     }),
+    locRichText('includes', {
+      label: "What's included",
+      admin: {
+        description:
+          'Detailed “what’s included in development” block on the order page (rich text). Shown last in the plan card.',
+      },
+    }),
     locTextarea('paymentNote', {
       admin: {
         description: 'Text under the payment method selector on the order page',

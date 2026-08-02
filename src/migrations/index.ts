@@ -6,6 +6,7 @@ import * as migration_20260729_120000_add_legal_pages_globals from './20260729_1
 import * as migration_20260731_120000_legal_statement_date from './20260731_120000_legal_statement_date'
 import * as migration_20260801_120000_solution_plan_order_fields from './20260801_120000_solution_plan_order_fields'
 import * as migration_20260802_120000_solution_feature_full_richtext from './20260802_120000_solution_feature_full_richtext'
+import * as migration_20260802_140000_solution_plan_includes from './20260802_140000_solution_plan_includes'
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20260802_120000_solution_feature_full_richtext.up,
     down: migration_20260802_120000_solution_feature_full_richtext.down,
     name: '20260802_120000_solution_feature_full_richtext',
+  },
+  {
+    up: migration_20260802_140000_solution_plan_includes.up,
+    down: migration_20260802_140000_solution_plan_includes.down,
+    name: '20260802_140000_solution_plan_includes',
   },
 ]

@@ -446,6 +446,31 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
     addons,
     ...(hasLocalizedSeo(d.promo) ? { promo: locMapCms(d.promo) } : {}),
     ...(hasLocalizedSeo(d.paymentNote) ? { paymentNote: locMapCms(d.paymentNote) } : {}),
+    ...(() => {
+      const includesPlain: LocaleMap = { en: '', ru: '', he: '' }
+      const includesRich: Record<string, unknown> = {}
+      let hasIncludes = false
+      for (const loc of LOCALES) {
+        const raw =
+          d.includes &&
+          typeof d.includes === 'object' &&
+          !Array.isArray(d.includes) &&
+          !isLexicalDoc(d.includes)
+            ? (d.includes as Record<string, unknown>)[loc] ??
+              (d.includes as Record<string, unknown>).en
+            : d.includes
+        if (isLexicalDoc(raw)) {
+          includesRich[loc] = raw
+          includesPlain[loc] = lexicalToPlain(raw)
+          if (includesPlain[loc]) hasIncludes = true
+        } else if (typeof raw === 'string' && raw.trim()) {
+          includesRich[loc] = lexicalFromText(raw)
+          includesPlain[loc] = raw.trim()
+          hasIncludes = true
+        }
+      }
+      return hasIncludes ? { includes: includesPlain, includesRich } : {}
+    })(),
     ...(hasLocalizedSeo(d.taxNote) ? { taxNote: locMapCms(d.taxNote) } : {}),
     ...(hasLocalizedSeo(d.taxValue) ? { taxValue: locMapCms(d.taxValue) } : {}),
     ...(hasLocalizedSeo(d.seo?.title) ? { seoTitle: locMapCms(d.seo.title) } : {}),
