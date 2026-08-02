@@ -15,10 +15,35 @@ export interface OrderAddon {
   id: string
   name: LocaleMap
   description: LocaleMap
+  /** Monthly price in plan currency */
   price: number
+  /** Discount % for 1 / 6 / 12 month terms */
+  discountMonths1?: number
+  discountMonths6?: number
+  discountMonths12?: number
   recommended?: boolean
   mandatory?: boolean
   note?: LocaleMap
+}
+
+export const ADDON_TERM_MONTHS = [1, 6, 12] as const
+export type AddonTermMonths = (typeof ADDON_TERM_MONTHS)[number]
+
+export function addonTermDiscount(addon: OrderAddon, months: number): number {
+  if (months === 6) return Math.max(0, addon.discountMonths6 || 0)
+  if (months === 12) return Math.max(0, addon.discountMonths12 || 0)
+  return Math.max(0, addon.discountMonths1 || 0)
+}
+
+/** list = monthly × months; final applies term discount % */
+export function calcAddonAmount(
+  monthlyPrice: number,
+  months: number,
+  discountPercent = 0,
+): { list: number; final: number; savings: number } {
+  const list = Math.round(monthlyPrice * months)
+  const final = Math.round(list * (1 - Math.max(0, discountPercent) / 100))
+  return { list, final, savings: Math.max(0, list - final) }
 }
 
 export interface OrderPlan {

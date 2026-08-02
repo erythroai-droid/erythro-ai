@@ -12,10 +12,14 @@ import WhatsAppButton from '@/components/WhatsAppButton'
 import HeaderChipStrip from '@/components/HeaderChipStrip'
 import type { SiteContent } from '@/lib/defaultContent'
 import {
+  ADDON_TERM_MONTHS,
+  addonTermDiscount,
+  calcAddonAmount,
   calcPlanAmount,
   calcTaxAmount,
   formatPrice,
   tLocale,
+  type AddonTermMonths,
   type OrderPlan,
 } from '@/lib/orderPlans'
 import { isLexicalDoc, lexicalToPlain, resolveLexical } from '@/lib/lexical'
@@ -132,6 +136,11 @@ function OrderCheckout({
   const [selectedAddons, setSelectedAddons] = useState<string[]>(
     plan.addons.filter((a) => a.recommended || a.mandatory).map((a) => a.id),
   )
+  const [addonTermMonths, setAddonTermMonths] = useState<Record<string, AddonTermMonths>>(() => {
+    const initial: Record<string, AddonTermMonths> = {}
+    for (const addon of plan.addons) initial[addon.id] = 1
+    return initial
+  })
   const [openFeatureIndex, setOpenFeatureIndex] = useState<number | null>(null)
   const [includesOpen, setIncludesOpen] = useState(false)
 
@@ -160,9 +169,16 @@ function OrderCheckout({
     hasDesc: boolean
   }>
 
-  const addonTotal = plan.addons
+  const selectedAddonPricing = plan.addons
     .filter((a) => selectedAddons.includes(a.id))
-    .reduce((sum, a) => sum + a.price, 0)
+    .map((addon) => {
+      const months = addonTermMonths[addon.id] || 1
+      const discount = addonTermDiscount(addon, months)
+      const amounts = calcAddonAmount(addon.price, months, discount)
+      return { addon, months, discount, ...amounts }
+    })
+
+  const addonTotal = selectedAddonPricing.reduce((sum, row) => sum + row.final, 0)
 
   const paymentNote = tLocale(plan.paymentNote, locale).trim()
   const promoText = tLocale(plan.promo, locale).trim()
@@ -171,16 +187,29 @@ function OrderCheckout({
   const subtotal = pricing.base + addonTotal
   const taxAmount = calcTaxAmount(subtotal, taxNote, taxValue)
   const total = subtotal + taxAmount
-  const listTotal = pricing.list + addonTotal + taxAmount
-  const showTaxRow = Boolean(taxNote || taxValue || taxAmount > 0)
   const accent = isLight ? 'text-gold-900' : 'text-gold-800'
 
   const copy = {
     period: locale === 'ru' ? 'Варианты оплаты' : locale === 'he' ? 'אפשרויות תשלום' : 'Payment options',
     summary: locale === 'ru' ? 'Итог заказа' : locale === 'he' ? 'סיכום הזמנה' : 'Order summary',
-    total: locale === 'ru' ? 'Всего' : locale === 'he' ? 'סה״כ' : 'Total',
+    subtotal: locale === 'ru' ? 'Итого' : locale === 'he' ? 'ביניים' : 'Subtotal',
+    totalDue:
+      locale === 'ru' ? 'Всего к оплате' : locale === 'he' ? 'סה״כ לתשלום' : 'Total due',
     taxes: locale === 'ru' ? 'Налоги' : locale === 'he' ? 'מיסים' : 'Taxes',
     planRow: locale === 'ru' ? 'Тариф' : locale === 'he' ? 'מסלול' : 'Plan',
+    term: locale === 'ru' ? 'Срок подписки' : locale === 'he' ? 'תקופת מנוי' : 'Subscription term',
+    monthsLabel: (n: number) =>
+      locale === 'ru'
+        ? n === 1
+          ? '1 месяц'
+          : `${n} месяцев`
+        : locale === 'he'
+          ? n === 1
+            ? 'חודש 1'
+            : `${n} חודשים`
+          : n === 1
+            ? '1 month'
+            : `${n} months`,
     continue:
       locale === 'ru'
         ? 'Отправить заказ'
@@ -213,15 +242,19 @@ function OrderCheckout({
   }
 
   const handleContinue = () => {
-    const addonNames = plan.addons
-      .filter((a) => selectedAddons.includes(a.id))
-      .map((a) => tLocale(a.name, locale))
+    const addonLines = selectedAddonPricing
+      .map(
+        ({ addon, months, final }) =>
+          `${tLocale(addon.name, locale)} (${copy.monthsLabel(months)}): ${money(final)}`,
+      )
       .join(', ')
     const draft = [
       `Order: ${title}`,
       `Period: ${tLocale(period?.label, locale)}`,
+      `Subtotal: ${money(subtotal)}`,
+      `Tax: ${money(taxAmount)}`,
       `Total: ${money(total)}`,
-      addonNames ? `Add-ons: ${addonNames}` : null,
+      addonLines ? `Add-ons: ${addonLines}` : null,
     ]
       .filter(Boolean)
       .join('\n')
@@ -369,12 +402,12 @@ function OrderCheckout({
               const titleClass = `min-w-0 text-sm leading-6 ${
                 isLight ? 'text-coal-900/85' : 'text-white/85'
               }`
-              const rowBtnClass = `group flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 py-3 text-start transition-colors duration-300 ${
+              const rowBtnClass = `group flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 px-6 py-3 text-start transition-colors duration-300 md:px-8 ${
                 isLight ? 'hover:bg-erythro-500/5' : 'hover:bg-gold-500/10'
               }`
 
               return (
-                <div className="mt-6 flex flex-col border-t border-current/10">
+                <div className="mt-6 -mx-6 flex flex-col border-t border-current/10 md:-mx-8">
                   {featureRows.map((row) => {
                     const isOpen = openFeatureIndex === row.index
                     const title = (
@@ -391,7 +424,7 @@ function OrderCheckout({
                       return (
                         <div
                           key={row.index}
-                          className="flex min-h-14 items-center justify-between gap-4 border-b border-current/10 py-3"
+                          className="flex min-h-14 items-center justify-between gap-4 border-b border-current/10 px-6 py-3 md:px-8"
                         >
                           <p className={`m-0 ${titleClass}`}>{title}</p>
                           <span className="h-8 w-8 shrink-0" aria-hidden />
@@ -419,7 +452,7 @@ function OrderCheckout({
                         >
                           <div className="overflow-hidden">
                             <div
-                              className={`feature-full-desc pb-3 text-xs leading-5 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
+                              className={`feature-full-desc px-6 pb-3 text-xs leading-5 md:px-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
                             >
                               {row.richDoc && isLexicalDoc(row.richDoc) ? (
                                 <RichText data={row.richDoc as never} />
@@ -453,7 +486,7 @@ function OrderCheckout({
                       >
                         <div className="overflow-hidden">
                           <div
-                            className={`order-includes pb-3 text-sm leading-6 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
+                            className={`order-includes px-6 pb-3 text-sm leading-6 md:px-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
                               isLight ? 'text-coal-900/85' : 'text-white/85'
                             }`}
                           >
@@ -478,6 +511,9 @@ function OrderCheckout({
             const isMandatory = Boolean(addon.mandatory)
             const note = tLocale(addon.note, locale).trim()
             const description = tLocale(addon.description, locale).trim()
+            const months = addonTermMonths[addon.id] || 1
+            const discount = addonTermDiscount(addon, months)
+            const amounts = calcAddonAmount(addon.price, months, discount)
             return (
               <section key={addon.id} className={`rounded-[10px] p-6 md:p-7 ${cardCls}`}>
                 <div className="flex items-start gap-3">
@@ -503,6 +539,31 @@ function OrderCheckout({
                     {description ? (
                       <p className={`mt-2 text-sm leading-6 ${muted}`}>{description}</p>
                     ) : null}
+
+                    <label className="mt-4 flex w-full max-w-[280px] flex-col gap-2">
+                      <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
+                        {copy.term}
+                      </span>
+                      <select
+                        value={months}
+                        onChange={(e) => {
+                          const next = Number(e.target.value) as AddonTermMonths
+                          setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
+                        }}
+                        className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
+                          isLight
+                            ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
+                            : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
+                        }`}
+                      >
+                        {ADDON_TERM_MONTHS.map((n) => (
+                          <option key={n} value={n}>
+                            {copy.monthsLabel(n)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
                     {note ? (
                       <p
                         className={`mt-3 rounded-lg px-3 py-2 text-xs ${
@@ -515,9 +576,25 @@ function OrderCheckout({
                       </p>
                     ) : null}
                   </div>
-                  <p className="shrink-0 text-sm font-semibold" dir="ltr">
-                    {money(addon.price)}
-                  </p>
+                  <div className="flex shrink-0 flex-col items-end gap-2" dir="ltr">
+                    {amounts.savings > 0 ? (
+                      <span className={`text-sm line-through opacity-50 ${muted}`}>
+                        {money(amounts.list)}
+                      </span>
+                    ) : null}
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <p className="text-sm font-semibold">{money(amounts.final)}</p>
+                      {amounts.savings > 0 ? (
+                        <span
+                          className={`rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${
+                            isLight ? 'text-emerald-900' : 'text-emerald-300'
+                          }`}
+                        >
+                          {copy.savings} {money(amounts.savings)}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
               </section>
             )
@@ -533,7 +610,7 @@ function OrderCheckout({
             {copy.summary}
           </h2>
 
-          <ul className="flex flex-col gap-5 border-b border-current/10 pb-5">
+          <ul className="flex flex-col gap-5">
             <li className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-sm font-bold uppercase tracking-[0.04em]">{copy.planRow}</p>
@@ -551,55 +628,54 @@ function OrderCheckout({
               </div>
             </li>
 
-            {plan.addons
-              .filter((a) => selectedAddons.includes(a.id))
-              .map((addon) => {
-                const addonDesc = tLocale(addon.description, locale).trim()
-                return (
-                  <li key={addon.id} className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold uppercase tracking-[0.04em]">
-                        {tLocale(addon.name, locale)}
-                      </p>
-                      {addonDesc ? (
-                        <p className={`mt-0.5 text-xs leading-5 ${muted}`}>{addonDesc}</p>
-                      ) : null}
-                    </div>
-                    <p className="shrink-0 text-sm font-semibold" dir="ltr">
-                      {money(addon.price)}
-                    </p>
-                  </li>
-                )
-              })}
-
-            {showTaxRow ? (
-              <li className="flex items-start justify-between gap-4">
+            {selectedAddonPricing.map(({ addon, months, list, final, savings }) => (
+              <li key={addon.id} className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-sm font-bold uppercase tracking-[0.04em]">{copy.taxes}</p>
-                  {taxNote ? (
-                    <p className={`mt-0.5 text-xs uppercase tracking-[0.04em] ${muted}`}>{taxNote}</p>
-                  ) : null}
+                  <p className="text-sm font-bold uppercase tracking-[0.04em]">
+                    {tLocale(addon.name, locale)}
+                  </p>
+                  <p className={`mt-0.5 text-xs ${muted}`}>{copy.monthsLabel(months)}</p>
                 </div>
-                <p
-                  className={`shrink-0 text-sm font-semibold ${taxAmount > 0 ? '' : `text-xs uppercase tracking-[0.04em] ${muted}`}`}
-                  dir="ltr"
-                >
-                  {taxAmount > 0 ? money(taxAmount) : taxValue}
-                </p>
+                <div className="shrink-0 text-end text-sm" dir="ltr">
+                  {savings > 0 ? (
+                    <p className={`text-xs line-through opacity-50`}>{money(list)}</p>
+                  ) : null}
+                  <p className="font-semibold">{money(final)}</p>
+                </div>
               </li>
-            ) : null}
+            ))}
           </ul>
 
-          <div className="mt-5 flex items-end justify-between gap-4">
-            <span className={`text-base font-bold uppercase tracking-[0.08em] ${accent}`}>
-              {copy.total}
-            </span>
-            <div className="text-end" dir="ltr">
-              {listTotal > total ? (
-                <p className={`text-xs line-through opacity-50`}>{money(listTotal)}</p>
-              ) : null}
-              <p className="text-2xl font-bold tracking-wide">{money(total)}</p>
+          <div className="mt-5 flex flex-col gap-4 border-t border-current/10 pt-5">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-sm font-bold uppercase tracking-[0.04em]">{copy.subtotal}</span>
+              <span className="text-sm font-semibold" dir="ltr">
+                {money(subtotal)}
+              </span>
             </div>
+
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-bold uppercase tracking-[0.04em]">{copy.taxes}</p>
+                {taxNote ? (
+                  <p className={`mt-0.5 text-xs uppercase tracking-[0.04em] ${muted}`}>{taxNote}</p>
+                ) : null}
+              </div>
+              <p className="shrink-0 text-sm font-semibold" dir="ltr">
+                {taxAmount > 0
+                  ? money(taxAmount)
+                  : taxValue || money(0)}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 flex items-end justify-between gap-4 border-t border-current/10 pt-5">
+            <span className={`text-base font-bold uppercase tracking-[0.08em] ${accent}`}>
+              {copy.totalDue}
+            </span>
+            <p className="text-2xl font-bold tracking-wide" dir="ltr">
+              {money(total)}
+            </p>
           </div>
 
           <div className="mt-6">
