@@ -200,6 +200,7 @@ function OrderCheckout({
         : locale === 'he'
           ? 'מה כלול בפיתוח'
           : "What's included in development",
+    moreDetails: locale === 'ru' ? 'Подробнее' : locale === 'he' ? 'פרטים נוספים' : 'More details',
   }
 
   const toggleAddon = (id: string) => {
@@ -340,9 +341,21 @@ function OrderCheckout({
 
             {(() => {
               const disclaimer = tLocale(plan.card.disclaimer, locale).trim()
-              return disclaimer ? (
-                <p className={`mt-3 text-[11px] leading-5 ${muted}`}>{disclaimer}</p>
-              ) : null
+              if (!disclaimer) return null
+              const starIndex = disclaimer.indexOf('*')
+              return (
+                <p className={`mt-3 text-[11px] leading-5 ${muted}`}>
+                  {starIndex === -1 ? (
+                    disclaimer
+                  ) : (
+                    <>
+                      {disclaimer.slice(0, starIndex)}
+                      <span className="text-erythro-500">*</span>
+                      {disclaimer.slice(starIndex + 1)}
+                    </>
+                  )}
+                </p>
+              )
             })()}
 
             {featureRows.length > 0 ? (
@@ -358,15 +371,30 @@ function OrderCheckout({
                         </p>
                       ) : null}
                       {row.hasDesc ? (
-                        <div
-                          className={`feature-full-desc mt-1 text-xs leading-5 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
-                        >
-                          {row.richDoc && isLexicalDoc(row.richDoc) ? (
-                            <RichText data={row.richDoc as never} />
-                          ) : (
-                            <p>{row.plainFull}</p>
-                          )}
-                        </div>
+                        <details className="group mt-1">
+                          <summary
+                            className={`cursor-pointer list-none text-xs font-medium uppercase tracking-[0.08em] outline-none transition-colors marker:content-none [&::-webkit-details-marker]:hidden ${muted} hover:text-erythro-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-erythro-500`}
+                          >
+                            <span className="inline-flex items-center gap-1.5">
+                              <span
+                                className="inline-block text-[10px] transition-transform group-open:rotate-90"
+                                aria-hidden
+                              >
+                                ▸
+                              </span>
+                              {copy.moreDetails}
+                            </span>
+                          </summary>
+                          <div
+                            className={`feature-full-desc mt-2 text-xs leading-5 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
+                          >
+                            {row.richDoc && isLexicalDoc(row.richDoc) ? (
+                              <RichText data={row.richDoc as never} />
+                            ) : (
+                              <p>{row.plainFull}</p>
+                            )}
+                          </div>
+                        </details>
                       ) : null}
                     </div>
                   </li>
@@ -381,12 +409,22 @@ function OrderCheckout({
                 Boolean(includesDoc && lexicalToPlain(includesDoc)) || Boolean(plainIncludes)
               if (!hasIncludes) return null
               return (
-                <div className="mt-6 border-t border-current/10 pt-6">
-                  <h2 className="mb-3 font-sans text-base font-bold uppercase tracking-[0.04em]">
-                    {copy.includes}
-                  </h2>
+                <details className="group mt-6 border-t border-current/10 pt-6">
+                  <summary
+                    className="cursor-pointer list-none font-sans text-base font-bold uppercase tracking-[0.04em] outline-none marker:content-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-erythro-500 [&::-webkit-details-marker]:hidden"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <span
+                        className="inline-block text-xs font-normal transition-transform group-open:rotate-90"
+                        aria-hidden
+                      >
+                        ▸
+                      </span>
+                      {copy.includes}
+                    </span>
+                  </summary>
                   <div
-                    className={`order-includes text-sm leading-6 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
+                    className={`order-includes mt-3 text-sm leading-6 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
                       isLight ? 'text-coal-900/85' : 'text-white/85'
                     }`}
                   >
@@ -396,7 +434,7 @@ function OrderCheckout({
                       <p>{plainIncludes}</p>
                     )}
                   </div>
-                </div>
+                </details>
               )
             })()}
           </section>
