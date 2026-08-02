@@ -431,6 +431,14 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
       name: locMapCms(a.name),
       description: locMapCms(a.description),
       price: typeof a.price === 'number' ? a.price : Number(a.price) || 0,
+      discountMonths1:
+        typeof a.discountMonths1 === 'number' ? a.discountMonths1 : Number(a.discountMonths1) || 0,
+      discountMonths6:
+        typeof a.discountMonths6 === 'number' ? a.discountMonths6 : Number(a.discountMonths6) || 0,
+      discountMonths12:
+        typeof a.discountMonths12 === 'number'
+          ? a.discountMonths12
+          : Number(a.discountMonths12) || 0,
       ...(a.recommended ? { recommended: true } : {}),
       ...(a.mandatory ? { mandatory: true } : {}),
       ...(hasLocalizedSeo(a.note) ? { note: locMapCms(a.note) } : {}),

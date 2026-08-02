@@ -162,7 +162,25 @@ export const SolutionPlans: CollectionConfig = {
           name: 'price',
           type: 'number',
           required: true,
-          admin: { description: 'Amount in the plan currency (number)' },
+          admin: { description: 'Monthly price in the plan currency' },
+        },
+        {
+          name: 'discountMonths1',
+          type: 'number',
+          defaultValue: 0,
+          admin: { description: 'Discount % for 1-month term (0 = no discount)' },
+        },
+        {
+          name: 'discountMonths6',
+          type: 'number',
+          defaultValue: 0,
+          admin: { description: 'Discount % for 6-month term (0 = no discount)' },
+        },
+        {
+          name: 'discountMonths12',
+          type: 'number',
+          defaultValue: 0,
+          admin: { description: 'Discount % for 12-month term (0 = no discount)' },
         },
         {
           name: 'recommended',

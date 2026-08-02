@@ -469,9 +469,21 @@ export interface SolutionPlan {
         name: string;
         description?: string | null;
         /**
-         * Amount in the plan currency (number)
+         * Monthly price in the plan currency
          */
         price: number;
+        /**
+         * Discount % for 1-month term (0 = no discount)
+         */
+        discountMonths1?: number | null;
+        /**
+         * Discount % for 6-month term (0 = no discount)
+         */
+        discountMonths6?: number | null;
+        /**
+         * Discount % for 12-month term (0 = no discount)
+         */
+        discountMonths12?: number | null;
         recommended?: boolean | null;
         /**
          * Always include this add-on in the order. Customers cannot deselect it.
@@ -921,6 +933,9 @@ export interface SolutionPlansSelect<T extends boolean = true> {
         name?: T;
         description?: T;
         price?: T;
+        discountMonths1?: T;
+        discountMonths6?: T;
+        discountMonths12?: T;
         recommended?: T;
         mandatory?: T;
         note?: T;
