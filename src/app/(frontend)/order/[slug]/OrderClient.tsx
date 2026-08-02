@@ -293,47 +293,49 @@ function OrderCheckout({
                   aria-hidden
                 />
               </div>
-              <div className="min-w-0 flex-1">
+              <div>
                 <h1 className="font-sans text-xl font-bold uppercase tracking-[0.04em] md:text-2xl">
                   {title}
                 </h1>
                 {subtitle ? <p className={`mt-1 text-sm ${muted}`}>{subtitle}</p> : null}
-                {pricing.savings > 0 ? (
-                  <div className="mt-2 flex w-full items-center justify-end">
-                    <span
-                      className={`inline-flex w-fit shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
-                        isLight ? 'text-emerald-900' : 'text-emerald-300'
-                      }`}
-                    >
-                      {copy.savings} {money(pricing.savings)}
-                    </span>
-                  </div>
-                ) : null}
               </div>
             </div>
 
             {plan.periods.length > 0 ? (
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <label className="flex w-full flex-col gap-2 md:max-w-[280px]">
-                  <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
-                    {copy.period}
-                  </span>
-                  <select
-                    value={periodId}
-                    onChange={(e) => setPeriodId(e.target.value)}
-                    className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
-                      isLight
-                        ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
-                        : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
-                    }`}
-                  >
-                    {plan.periods.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {tLocale(p.label, locale)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <div className="flex w-full min-w-0 flex-col gap-2 md:max-w-[280px]">
+                  {pricing.savings > 0 ? (
+                    <div className="flex w-full items-center justify-end">
+                      <span
+                        className={`inline-flex w-fit shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
+                          isLight ? 'text-emerald-900' : 'text-emerald-300'
+                        }`}
+                      >
+                        {copy.savings} {money(pricing.savings)}
+                      </span>
+                    </div>
+                  ) : null}
+                  <label className="flex w-full flex-col gap-2">
+                    <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
+                      {copy.period}
+                    </span>
+                    <select
+                      value={periodId}
+                      onChange={(e) => setPeriodId(e.target.value)}
+                      className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
+                        isLight
+                          ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
+                          : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
+                      }`}
+                    >
+                      {plan.periods.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {tLocale(p.label, locale)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
 
                 <div className="flex shrink-0 flex-col items-end gap-1" dir="ltr">
                   {pricing.savings > 0 ? (
@@ -532,6 +534,7 @@ function OrderCheckout({
                     className="mt-1 size-5 shrink-0 accent-[var(--erythro-500,#e52421)] disabled:cursor-not-allowed disabled:opacity-100"
                     aria-label={tLocale(addon.name, locale)}
                   />
+                  {/* Col 1: content + badges */}
                   <div className="min-w-0 flex-1">
                     <h2 className="font-sans text-base font-bold uppercase tracking-[0.04em]">
                       {tLocale(addon.name, locale)}
@@ -558,62 +561,57 @@ function OrderCheckout({
                       </div>
                     ) : null}
 
-                    <div className="mt-2 flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        {description ? (
-                          <p className={`text-sm leading-6 ${muted}`}>{description}</p>
-                        ) : null}
+                    {description ? (
+                      <p className={`mt-2 text-sm leading-6 ${muted}`}>{description}</p>
+                    ) : null}
 
-                        {!isMandatory ? (
-                          <label
-                            className={`flex w-full max-w-[280px] flex-col gap-2 ${description ? 'mt-4' : ''}`}
-                          >
-                            <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
-                              {copy.term}
-                            </span>
-                            <select
-                              value={months}
-                              onChange={(e) => {
-                                const next = Number(e.target.value) as AddonTermMonths
-                                setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
-                              }}
-                              className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
-                                isLight
-                                  ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
-                                  : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
-                              }`}
-                            >
-                              {ADDON_TERM_MONTHS.map((n) => (
-                                <option key={n} value={n}>
-                                  {copy.monthsLabel(n)}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        ) : null}
+                    {!isMandatory ? (
+                      <label className="mt-4 flex w-full max-w-[280px] flex-col gap-2">
+                        <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
+                          {copy.term}
+                        </span>
+                        <select
+                          value={months}
+                          onChange={(e) => {
+                            const next = Number(e.target.value) as AddonTermMonths
+                            setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
+                          }}
+                          className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
+                            isLight
+                              ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
+                              : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
+                          }`}
+                        >
+                          {ADDON_TERM_MONTHS.map((n) => (
+                            <option key={n} value={n}>
+                              {copy.monthsLabel(n)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : null}
 
-                        {note ? (
-                          <p
-                            className={`mt-3 rounded-lg px-3 py-2 text-xs ${
-                              isLight
-                                ? 'bg-emerald-500/15 text-emerald-950'
-                                : 'bg-emerald-500/10 text-emerald-300'
-                            }`}
-                          >
-                            {note}
-                          </p>
-                        ) : null}
-                      </div>
+                    {note ? (
+                      <p
+                        className={`mt-3 rounded-lg px-3 py-2 text-xs ${
+                          isLight
+                            ? 'bg-emerald-500/15 text-emerald-950'
+                            : 'bg-emerald-500/10 text-emerald-300'
+                        }`}
+                      >
+                        {note}
+                      </p>
+                    ) : null}
+                  </div>
 
-                      <div className="flex shrink-0 flex-col items-end gap-1" dir="ltr">
-                        {amounts.savings > 0 ? (
-                          <span className={`text-sm line-through opacity-50 ${muted}`}>
-                            {money(amounts.list)}
-                          </span>
-                        ) : null}
-                        <p className="text-sm font-semibold">{money(amounts.final)}</p>
-                      </div>
-                    </div>
+                  {/* Col 2: price */}
+                  <div className="flex shrink-0 flex-col items-end gap-1" dir="ltr">
+                    {amounts.savings > 0 ? (
+                      <span className={`text-sm line-through opacity-50 ${muted}`}>
+                        {money(amounts.list)}
+                      </span>
+                    ) : null}
+                    <p className="text-sm font-semibold">{money(amounts.final)}</p>
                   </div>
                 </div>
               </section>
