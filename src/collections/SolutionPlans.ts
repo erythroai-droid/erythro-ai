@@ -168,19 +168,28 @@ export const SolutionPlans: CollectionConfig = {
           name: 'discountMonths1',
           type: 'number',
           defaultValue: 0,
-          admin: { description: 'Discount % for 1-month term (0 = no discount)' },
+          admin: {
+            description: 'Discount % for 1-month term (0 = no discount)',
+            condition: (_, siblingData) => !siblingData?.mandatory,
+          },
         },
         {
           name: 'discountMonths6',
           type: 'number',
           defaultValue: 0,
-          admin: { description: 'Discount % for 6-month term (0 = no discount)' },
+          admin: {
+            description: 'Discount % for 6-month term (0 = no discount)',
+            condition: (_, siblingData) => !siblingData?.mandatory,
+          },
         },
         {
           name: 'discountMonths12',
           type: 'number',
           defaultValue: 0,
-          admin: { description: 'Discount % for 12-month term (0 = no discount)' },
+          admin: {
+            description: 'Discount % for 12-month term (0 = no discount)',
+            condition: (_, siblingData) => !siblingData?.mandatory,
+          },
         },
         {
           name: 'recommended',
@@ -193,7 +202,7 @@ export const SolutionPlans: CollectionConfig = {
           defaultValue: false,
           admin: {
             description:
-              'Always include this add-on in the order. Customers cannot deselect it.',
+              'Always include this add-on in the order. Customers cannot deselect it. Subscription term (1/6/12) is hidden — price is charged as a single monthly rate.',
           },
         },
         locText('note'),
