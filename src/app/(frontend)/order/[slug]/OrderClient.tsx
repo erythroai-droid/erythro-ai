@@ -534,84 +534,91 @@ function OrderCheckout({
                     className="mt-1 size-5 shrink-0 accent-[var(--erythro-500,#e52421)] disabled:cursor-not-allowed disabled:opacity-100"
                     aria-label={tLocale(addon.name, locale)}
                   />
-                  {/* Col 1: content + badges */}
-                  <div className="min-w-0 flex-1">
+
+                  <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4">
+                    {/* Col 1 / row 1 — title */}
                     <h2 className="font-sans text-base font-bold uppercase tracking-[0.04em]">
                       {tLocale(addon.name, locale)}
                     </h2>
 
-                    {addon.recommended || amounts.savings > 0 ? (
-                      <div className="mt-2 flex w-full items-center justify-between gap-2">
-                        {addon.recommended ? (
-                          <span className={`${badgeCls} bg-erythro-500/15 text-erythro-500`}>
-                            {copy.recommended}
+                    {/* Col 2 / row 1 — price level with title */}
+                    <div
+                      className="flex flex-col items-end justify-start gap-0.5 self-start pt-0.5"
+                      dir="ltr"
+                    >
+                      {amounts.savings > 0 ? (
+                        <span className={`text-sm leading-5 line-through opacity-50 ${muted}`}>
+                          {money(amounts.list)}
+                        </span>
+                      ) : null}
+                      <span className="text-sm font-semibold leading-5">{money(amounts.final)}</span>
+                    </div>
+
+                    {/* Col 1 only — badges, copy, term */}
+                    <div className="col-start-1 flex flex-col">
+                      {addon.recommended || amounts.savings > 0 ? (
+                        <div className="mt-2 flex w-full items-center justify-between gap-2">
+                          {addon.recommended ? (
+                            <span className={`${badgeCls} bg-erythro-500/15 text-erythro-500`}>
+                              {copy.recommended}
+                            </span>
+                          ) : (
+                            <span aria-hidden className="w-0" />
+                          )}
+                          {amounts.savings > 0 ? (
+                            <span
+                              className={`${badgeCls} bg-emerald-500/15 ${
+                                isLight ? 'text-emerald-900' : 'text-emerald-300'
+                              }`}
+                            >
+                              {copy.savings} {money(amounts.savings)}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {description ? (
+                        <p className={`mt-2 text-sm leading-6 ${muted}`}>{description}</p>
+                      ) : null}
+
+                      {!isMandatory ? (
+                        <label className="mt-4 flex w-full max-w-[280px] flex-col gap-2">
+                          <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
+                            {copy.term}
                           </span>
-                        ) : (
-                          <span aria-hidden className="w-0" />
-                        )}
-                        {amounts.savings > 0 ? (
-                          <span
-                            className={`${badgeCls} bg-emerald-500/15 ${
-                              isLight ? 'text-emerald-900' : 'text-emerald-300'
+                          <select
+                            value={months}
+                            onChange={(e) => {
+                              const next = Number(e.target.value) as AddonTermMonths
+                              setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
+                            }}
+                            className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
+                              isLight
+                                ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
+                                : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
                             }`}
                           >
-                            {copy.savings} {money(amounts.savings)}
-                          </span>
-                        ) : null}
-                      </div>
-                    ) : null}
+                            {ADDON_TERM_MONTHS.map((n) => (
+                              <option key={n} value={n}>
+                                {copy.monthsLabel(n)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      ) : null}
 
-                    {description ? (
-                      <p className={`mt-2 text-sm leading-6 ${muted}`}>{description}</p>
-                    ) : null}
-
-                    {!isMandatory ? (
-                      <label className="mt-4 flex w-full max-w-[280px] flex-col gap-2">
-                        <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
-                          {copy.term}
-                        </span>
-                        <select
-                          value={months}
-                          onChange={(e) => {
-                            const next = Number(e.target.value) as AddonTermMonths
-                            setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
-                          }}
-                          className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
+                      {note ? (
+                        <p
+                          className={`mt-3 rounded-lg px-3 py-2 text-xs ${
                             isLight
-                              ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
-                              : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
+                              ? 'bg-emerald-500/15 text-emerald-950'
+                              : 'bg-emerald-500/10 text-emerald-300'
                           }`}
                         >
-                          {ADDON_TERM_MONTHS.map((n) => (
-                            <option key={n} value={n}>
-                              {copy.monthsLabel(n)}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    ) : null}
-
-                    {note ? (
-                      <p
-                        className={`mt-3 rounded-lg px-3 py-2 text-xs ${
-                          isLight
-                            ? 'bg-emerald-500/15 text-emerald-950'
-                            : 'bg-emerald-500/10 text-emerald-300'
-                        }`}
-                      >
-                        {note}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  {/* Col 2: price */}
-                  <div className="flex shrink-0 flex-col items-end gap-1" dir="ltr">
-                    {amounts.savings > 0 ? (
-                      <span className={`text-sm line-through opacity-50 ${muted}`}>
-                        {money(amounts.list)}
-                      </span>
-                    ) : null}
-                    <p className="text-sm font-semibold">{money(amounts.final)}</p>
+                          {note}
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </section>
