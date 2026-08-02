@@ -132,6 +132,8 @@ function OrderCheckout({
   const [selectedAddons, setSelectedAddons] = useState<string[]>(
     plan.addons.filter((a) => a.recommended || a.mandatory).map((a) => a.id),
   )
+  const [openFeatureIndex, setOpenFeatureIndex] = useState<number | null>(null)
+  const [includesOpen, setIncludesOpen] = useState(false)
 
   const title = tLocale(plan.card.title, locale)
   const subtitle = tLocale(plan.subtitle, locale).trim()
@@ -200,7 +202,6 @@ function OrderCheckout({
         : locale === 'he'
           ? 'מה כלול בפיתוח'
           : "What's included in development",
-    moreDetails: locale === 'ru' ? 'Подробнее' : locale === 'he' ? 'פרטים נוספים' : 'More details',
   }
 
   const toggleAddon = (id: string) => {
@@ -359,34 +360,54 @@ function OrderCheckout({
             })()}
 
             {featureRows.length > 0 ? (
-              <ul className="mt-6 flex flex-col gap-2.5 border-t border-current/10 pt-6">
-                {featureRows.map((row) => (
-                  <li key={row.index} className="flex items-start gap-3 text-sm leading-6">
-                    <span className="mt-2 h-1 w-1 shrink-0 rotate-45 bg-erythro-500" />
-                    <div className={`min-w-0 flex-1 ${isLight ? 'text-coal-900/85' : 'text-white/85'}`}>
-                      {row.label || row.value ? (
-                        <p className="m-0">
-                          {row.label ? <span className="font-semibold">{row.label} </span> : null}
-                          {row.value ? <span>{row.value}</span> : null}
+              <ul className="mt-6 flex flex-col border-t border-current/10 pt-4">
+                {featureRows.map((row) => {
+                  const isOpen = openFeatureIndex === row.index
+                  const title = (
+                    <>
+                      {row.label ? <span className="font-semibold">{row.label} </span> : null}
+                      {row.value ? <span>{row.value}</span> : null}
+                      {!row.label && !row.value ? <span>{row.plainFull.slice(0, 80)}</span> : null}
+                    </>
+                  )
+
+                  if (!row.hasDesc) {
+                    return (
+                      <li key={row.index} className="flex items-start gap-3 border-b border-current/10 py-3 text-sm leading-6 last:border-b-0">
+                        <span className="mt-2 h-1 w-1 shrink-0 rotate-45 bg-erythro-500" />
+                        <p className={`m-0 min-w-0 flex-1 ${isLight ? 'text-coal-900/85' : 'text-white/85'}`}>
+                          {title}
                         </p>
-                      ) : null}
-                      {row.hasDesc ? (
-                        <details className="group mt-1">
-                          <summary
-                            className={`cursor-pointer list-none text-xs font-medium uppercase tracking-[0.08em] outline-none transition-colors marker:content-none [&::-webkit-details-marker]:hidden ${muted} hover:text-erythro-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-erythro-500`}
-                          >
-                            <span className="inline-flex items-center gap-1.5">
-                              <span
-                                className="inline-block text-[10px] transition-transform group-open:rotate-90"
-                                aria-hidden
-                              >
-                                ▸
-                              </span>
-                              {copy.moreDetails}
-                            </span>
-                          </summary>
+                      </li>
+                    )
+                  }
+
+                  return (
+                    <li key={row.index} className="border-b border-current/10 last:border-b-0">
+                      <button
+                        type="button"
+                        onClick={() => setOpenFeatureIndex(isOpen ? null : row.index)}
+                        className={`group flex w-full cursor-pointer items-center justify-between gap-4 py-3 text-start transition-colors duration-300 ${
+                          isLight ? 'hover:bg-erythro-500/5' : 'hover:bg-gold-500/10'
+                        }`}
+                        aria-expanded={isOpen}
+                        aria-controls={`order-feature-${row.index}`}
+                      >
+                        <span className="flex min-w-0 items-start gap-3 text-sm leading-6">
+                          <span className="mt-2 h-1 w-1 shrink-0 rotate-45 bg-erythro-500" />
+                          <span className={isLight ? 'text-coal-900/85' : 'text-white/85'}>{title}</span>
+                        </span>
+                        <OrderAccordionPlus isOpen={isOpen} isLight={isLight} size="sm" />
+                      </button>
+                      <div
+                        id={`order-feature-${row.index}`}
+                        className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                          isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                        }`}
+                      >
+                        <div className="overflow-hidden">
                           <div
-                            className={`feature-full-desc mt-2 text-xs leading-5 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
+                            className={`feature-full-desc ps-4 pb-3 text-xs leading-5 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
                           >
                             {row.richDoc && isLexicalDoc(row.richDoc) ? (
                               <RichText data={row.richDoc as never} />
@@ -394,11 +415,11 @@ function OrderCheckout({
                               <p>{row.plainFull}</p>
                             )}
                           </div>
-                        </details>
-                      ) : null}
-                    </div>
-                  </li>
-                ))}
+                        </div>
+                      </div>
+                    </li>
+                  )
+                })}
               </ul>
             ) : null}
 
@@ -409,32 +430,42 @@ function OrderCheckout({
                 Boolean(includesDoc && lexicalToPlain(includesDoc)) || Boolean(plainIncludes)
               if (!hasIncludes) return null
               return (
-                <details className="group mt-6 border-t border-current/10 pt-6">
-                  <summary
-                    className="cursor-pointer list-none font-sans text-base font-bold uppercase tracking-[0.04em] outline-none marker:content-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-erythro-500 [&::-webkit-details-marker]:hidden"
+                <div className="mt-6 border-t border-current/10 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIncludesOpen((open) => !open)}
+                    className={`group flex w-full cursor-pointer items-center justify-between gap-4 py-3 text-start transition-colors duration-300 ${
+                      isLight ? 'hover:bg-erythro-500/5' : 'hover:bg-gold-500/10'
+                    }`}
+                    aria-expanded={includesOpen}
+                    aria-controls="order-includes"
                   >
-                    <span className="inline-flex items-center gap-2">
-                      <span
-                        className="inline-block text-xs font-normal transition-transform group-open:rotate-90"
-                        aria-hidden
-                      >
-                        ▸
-                      </span>
+                    <span className="font-sans text-base font-bold uppercase tracking-[0.04em]">
                       {copy.includes}
                     </span>
-                  </summary>
+                    <OrderAccordionPlus isOpen={includesOpen} isLight={isLight} />
+                  </button>
                   <div
-                    className={`order-includes mt-3 text-sm leading-6 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
-                      isLight ? 'text-coal-900/85' : 'text-white/85'
+                    id="order-includes"
+                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                      includesOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                     }`}
                   >
-                    {includesDoc && isLexicalDoc(includesDoc) ? (
-                      <RichText data={includesDoc as never} />
-                    ) : (
-                      <p>{plainIncludes}</p>
-                    )}
+                    <div className="overflow-hidden">
+                      <div
+                        className={`order-includes pb-3 text-sm leading-6 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
+                          isLight ? 'text-coal-900/85' : 'text-white/85'
+                        }`}
+                      >
+                        {includesDoc && isLexicalDoc(includesDoc) ? (
+                          <RichText data={includesDoc as never} />
+                        ) : (
+                          <p>{plainIncludes}</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </details>
+                </div>
               )
             })()}
           </section>
@@ -586,5 +617,46 @@ function OrderCheckout({
         </aside>
       </div>
     </main>
+  )
+}
+
+function OrderAccordionPlus({
+  isOpen,
+  isLight,
+  size = 'md',
+}: {
+  isOpen: boolean
+  isLight: boolean
+  size?: 'sm' | 'md'
+}) {
+  const box = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10'
+  const icon = size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'
+  return (
+    <span
+      className={`flex ${box} shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
+        isOpen
+          ? isLight
+            ? 'border-erythro-500 bg-erythro-500 text-white'
+            : 'border-gold-500 bg-gold-500 text-coal-900'
+          : isLight
+            ? 'border-coal-900/10 bg-gold-100 text-coal-900 group-hover:border-erythro-500 group-hover:bg-erythro-500 group-hover:text-white'
+            : 'border-white/15 bg-white/5 text-white group-hover:border-gold-500 group-hover:bg-gold-500 group-hover:text-coal-900'
+      }`}
+      aria-hidden
+    >
+      <svg
+        className={`${icon} transition-transform duration-300 ${isOpen ? 'rotate-45' : ''}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M12 5V19M5 12H19"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+    </span>
   )
 }
