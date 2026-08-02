@@ -303,41 +303,28 @@ function OrderCheckout({
 
             {plan.periods.length > 0 ? (
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div className="flex w-full min-w-0 flex-col gap-2 md:max-w-[280px]">
-                  {pricing.savings > 0 ? (
-                    <div className="flex w-full items-center justify-end">
-                      <span
-                        className={`inline-flex w-fit shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
-                          isLight ? 'text-emerald-900' : 'text-emerald-300'
-                        }`}
-                      >
-                        {copy.savings} {money(pricing.savings)}
-                      </span>
-                    </div>
-                  ) : null}
-                  <label className="flex w-full flex-col gap-2">
-                    <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
-                      {copy.period}
-                    </span>
-                    <select
-                      value={periodId}
-                      onChange={(e) => setPeriodId(e.target.value)}
-                      className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
-                        isLight
-                          ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
-                          : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
-                      }`}
-                    >
-                      {plan.periods.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {tLocale(p.label, locale)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
+                <label className="flex w-full flex-col gap-2 md:max-w-[280px]">
+                  <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
+                    {copy.period}
+                  </span>
+                  <select
+                    value={periodId}
+                    onChange={(e) => setPeriodId(e.target.value)}
+                    className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
+                      isLight
+                        ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
+                        : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
+                    }`}
+                  >
+                    {plan.periods.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {tLocale(p.label, locale)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-                <div className="flex shrink-0 flex-col items-end gap-1" dir="ltr">
+                <div className="flex shrink-0 flex-col items-end gap-2" dir="ltr">
                   {pricing.savings > 0 ? (
                     <span className={`text-sm line-through opacity-50 ${muted}`}>
                       {money(pricing.list)}
@@ -354,6 +341,15 @@ function OrderCheckout({
                       </span>
                     ) : null}
                   </span>
+                  {pricing.savings > 0 ? (
+                    <span
+                      className={`inline-flex w-fit shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
+                        isLight ? 'text-emerald-900' : 'text-emerald-300'
+                      }`}
+                    >
+                      {copy.savings} {money(pricing.savings)}
+                    </span>
+                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -541,9 +537,9 @@ function OrderCheckout({
                       {tLocale(addon.name, locale)}
                     </h2>
 
-                    {/* Col 2 / row 1 — price level with title */}
+                    {/* Col 2 — price + savings */}
                     <div
-                      className="flex flex-col items-end justify-start gap-0.5 self-start pt-0.5"
+                      className="flex flex-col items-end justify-start gap-2 self-start pt-0.5"
                       dir="ltr"
                     >
                       {amounts.savings > 0 ? (
@@ -552,28 +548,24 @@ function OrderCheckout({
                         </span>
                       ) : null}
                       <span className="text-sm font-semibold leading-5">{money(amounts.final)}</span>
+                      {amounts.savings > 0 ? (
+                        <span
+                          className={`${badgeCls} bg-emerald-500/15 ${
+                            isLight ? 'text-emerald-900' : 'text-emerald-300'
+                          }`}
+                        >
+                          {copy.savings} {money(amounts.savings)}
+                        </span>
+                      ) : null}
                     </div>
 
-                    {/* Col 1 only — badges, copy, term */}
+                    {/* Col 1 — recommended, copy, term */}
                     <div className="col-start-1 flex flex-col">
-                      {addon.recommended || amounts.savings > 0 ? (
-                        <div className="mt-2 flex w-full items-center justify-between gap-2">
-                          {addon.recommended ? (
-                            <span className={`${badgeCls} bg-erythro-500/15 text-erythro-500`}>
-                              {copy.recommended}
-                            </span>
-                          ) : (
-                            <span aria-hidden className="w-0" />
-                          )}
-                          {amounts.savings > 0 ? (
-                            <span
-                              className={`${badgeCls} bg-emerald-500/15 ${
-                                isLight ? 'text-emerald-900' : 'text-emerald-300'
-                              }`}
-                            >
-                              {copy.savings} {money(amounts.savings)}
-                            </span>
-                          ) : null}
+                      {addon.recommended ? (
+                        <div className="mt-2">
+                          <span className={`${badgeCls} bg-erythro-500/15 text-erythro-500`}>
+                            {copy.recommended}
+                          </span>
                         </div>
                       ) : null}
 
