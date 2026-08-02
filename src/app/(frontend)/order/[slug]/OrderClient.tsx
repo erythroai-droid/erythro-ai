@@ -373,11 +373,13 @@ function OrderCheckout({
 
                   if (!row.hasDesc) {
                     return (
-                      <li key={row.index} className="flex items-start gap-3 border-b border-current/10 py-3 text-sm leading-6 last:border-b-0">
-                        <span className="mt-2 h-1 w-1 shrink-0 rotate-45 bg-erythro-500" />
-                        <p className={`m-0 min-w-0 flex-1 ${isLight ? 'text-coal-900/85' : 'text-white/85'}`}>
-                          {title}
-                        </p>
+                      <li
+                        key={row.index}
+                        className={`border-b border-current/10 py-3 text-sm leading-6 last:border-b-0 ${
+                          isLight ? 'text-coal-900/85' : 'text-white/85'
+                        }`}
+                      >
+                        <p className="m-0">{title}</p>
                       </li>
                     )
                   }
@@ -393,9 +395,12 @@ function OrderCheckout({
                         aria-expanded={isOpen}
                         aria-controls={`order-feature-${row.index}`}
                       >
-                        <span className="flex min-w-0 items-start gap-3 text-sm leading-6">
-                          <span className="mt-2 h-1 w-1 shrink-0 rotate-45 bg-erythro-500" />
-                          <span className={isLight ? 'text-coal-900/85' : 'text-white/85'}>{title}</span>
+                        <span
+                          className={`min-w-0 text-sm leading-6 ${
+                            isLight ? 'text-coal-900/85' : 'text-white/85'
+                          }`}
+                        >
+                          {title}
                         </span>
                         <OrderAccordionPlus isOpen={isOpen} isLight={isLight} size="sm" />
                       </button>
@@ -407,7 +412,7 @@ function OrderCheckout({
                       >
                         <div className="overflow-hidden">
                           <div
-                            className={`feature-full-desc ps-4 pb-3 text-xs leading-5 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
+                            className={`feature-full-desc pb-3 text-xs leading-5 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
                           >
                             {row.richDoc && isLexicalDoc(row.richDoc) ? (
                               <RichText data={row.richDoc as never} />
@@ -440,10 +445,14 @@ function OrderCheckout({
                     aria-expanded={includesOpen}
                     aria-controls="order-includes"
                   >
-                    <span className="font-sans text-base font-bold uppercase tracking-[0.04em]">
+                    <span
+                      className={`text-sm font-semibold leading-6 ${
+                        isLight ? 'text-coal-900/85' : 'text-white/85'
+                      }`}
+                    >
                       {copy.includes}
                     </span>
-                    <OrderAccordionPlus isOpen={includesOpen} isLight={isLight} />
+                    <OrderAccordionPlus isOpen={includesOpen} isLight={isLight} size="sm" />
                   </button>
                   <div
                     id="order-includes"
