@@ -172,8 +172,9 @@ function OrderCheckout({
   const selectedAddonPricing = plan.addons
     .filter((a) => selectedAddons.includes(a.id))
     .map((addon) => {
-      const months = addonTermMonths[addon.id] || 1
-      const discount = addonTermDiscount(addon, months)
+      // Mandatory add-ons have no term picker — always bill 1× monthly price
+      const months: AddonTermMonths = addon.mandatory ? 1 : addonTermMonths[addon.id] || 1
+      const discount = addon.mandatory ? 0 : addonTermDiscount(addon, months)
       const amounts = calcAddonAmount(addon.price, months, discount)
       return { addon, months, discount, ...amounts }
     })
@@ -243,10 +244,10 @@ function OrderCheckout({
 
   const handleContinue = () => {
     const addonLines = selectedAddonPricing
-      .map(
-        ({ addon, months, final }) =>
-          `${tLocale(addon.name, locale)} (${copy.monthsLabel(months)}): ${money(final)}`,
-      )
+      .map(({ addon, months, final }) => {
+        const term = addon.mandatory ? '' : ` (${copy.monthsLabel(months)})`
+        return `${tLocale(addon.name, locale)}${term}: ${money(final)}`
+      })
       .join(', ')
     const draft = [
       `Order: ${title}`,
@@ -511,8 +512,8 @@ function OrderCheckout({
             const isMandatory = Boolean(addon.mandatory)
             const note = tLocale(addon.note, locale).trim()
             const description = tLocale(addon.description, locale).trim()
-            const months = addonTermMonths[addon.id] || 1
-            const discount = addonTermDiscount(addon, months)
+            const months: AddonTermMonths = isMandatory ? 1 : addonTermMonths[addon.id] || 1
+            const discount = isMandatory ? 0 : addonTermDiscount(addon, months)
             const amounts = calcAddonAmount(addon.price, months, discount)
             return (
               <section key={addon.id} className={`rounded-[10px] p-6 md:p-7 ${cardCls}`}>
@@ -540,29 +541,31 @@ function OrderCheckout({
                       <p className={`mt-2 text-sm leading-6 ${muted}`}>{description}</p>
                     ) : null}
 
-                    <label className="mt-4 flex w-full max-w-[280px] flex-col gap-2">
-                      <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
-                        {copy.term}
-                      </span>
-                      <select
-                        value={months}
-                        onChange={(e) => {
-                          const next = Number(e.target.value) as AddonTermMonths
-                          setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
-                        }}
-                        className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
-                          isLight
-                            ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
-                            : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
-                        }`}
-                      >
-                        {ADDON_TERM_MONTHS.map((n) => (
-                          <option key={n} value={n}>
-                            {copy.monthsLabel(n)}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    {!isMandatory ? (
+                      <label className="mt-4 flex w-full max-w-[280px] flex-col gap-2">
+                        <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
+                          {copy.term}
+                        </span>
+                        <select
+                          value={months}
+                          onChange={(e) => {
+                            const next = Number(e.target.value) as AddonTermMonths
+                            setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
+                          }}
+                          className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
+                            isLight
+                              ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
+                              : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
+                          }`}
+                        >
+                          {ADDON_TERM_MONTHS.map((n) => (
+                            <option key={n} value={n}>
+                              {copy.monthsLabel(n)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : null}
 
                     {note ? (
                       <p
@@ -634,7 +637,9 @@ function OrderCheckout({
                   <p className="text-sm font-bold uppercase tracking-[0.04em]">
                     {tLocale(addon.name, locale)}
                   </p>
-                  <p className={`mt-0.5 text-xs ${muted}`}>{copy.monthsLabel(months)}</p>
+                  {!addon.mandatory ? (
+                    <p className={`mt-0.5 text-xs ${muted}`}>{copy.monthsLabel(months)}</p>
+                  ) : null}
                 </div>
                 <div className="shrink-0 text-end text-sm" dir="ltr">
                   {savings > 0 ? (

@@ -486,7 +486,7 @@ export interface SolutionPlan {
         discountMonths12?: number | null;
         recommended?: boolean | null;
         /**
-         * Always include this add-on in the order. Customers cannot deselect it.
+         * Always include this add-on in the order. Customers cannot deselect it. Subscription term (1/6/12) is hidden — price is charged as a single monthly rate.
          */
         mandatory?: boolean | null;
         note?: string | null;

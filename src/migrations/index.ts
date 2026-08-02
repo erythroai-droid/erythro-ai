@@ -8,6 +8,7 @@ import * as migration_20260801_120000_solution_plan_order_fields from './2026080
 import * as migration_20260802_120000_solution_feature_full_richtext from './20260802_120000_solution_feature_full_richtext'
 import * as migration_20260802_140000_solution_plan_includes from './20260802_140000_solution_plan_includes'
 import * as migration_20260803_120000_addon_term_discounts from './20260803_120000_addon_term_discounts'
+import * as migration_20260803_130000_fix_addon_discount_columns from './20260803_130000_fix_addon_discount_columns'
 
 export const migrations = [
   {
@@ -59,5 +60,10 @@ export const migrations = [
     up: migration_20260803_120000_addon_term_discounts.up,
     down: migration_20260803_120000_addon_term_discounts.down,
     name: '20260803_120000_addon_term_discounts',
+  },
+  {
+    up: migration_20260803_130000_fix_addon_discount_columns.up,
+    down: migration_20260803_130000_fix_addon_discount_columns.down,
+    name: '20260803_130000_fix_addon_discount_columns',
   },
 ]
