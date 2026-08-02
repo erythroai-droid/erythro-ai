@@ -359,121 +359,114 @@ function OrderCheckout({
               )
             })()}
 
-            {featureRows.length > 0 ? (
-              <ul className="mt-6 flex flex-col border-t border-current/10 pt-4">
-                {featureRows.map((row) => {
-                  const isOpen = openFeatureIndex === row.index
-                  const title = (
-                    <>
-                      {row.label ? <span className="font-semibold">{row.label} </span> : null}
-                      {row.value ? <span>{row.value}</span> : null}
-                      {!row.label && !row.value ? <span>{row.plainFull.slice(0, 80)}</span> : null}
-                    </>
-                  )
-
-                  if (!row.hasDesc) {
-                    return (
-                      <li
-                        key={row.index}
-                        className={`border-b border-current/10 py-3 text-sm leading-6 last:border-b-0 ${
-                          isLight ? 'text-coal-900/85' : 'text-white/85'
-                        }`}
-                      >
-                        <p className="m-0">{title}</p>
-                      </li>
-                    )
-                  }
-
-                  return (
-                    <li key={row.index} className="border-b border-current/10 last:border-b-0">
-                      <button
-                        type="button"
-                        onClick={() => setOpenFeatureIndex(isOpen ? null : row.index)}
-                        className={`group flex w-full cursor-pointer items-center justify-between gap-4 py-3 text-start transition-colors duration-300 ${
-                          isLight ? 'hover:bg-erythro-500/5' : 'hover:bg-gold-500/10'
-                        }`}
-                        aria-expanded={isOpen}
-                        aria-controls={`order-feature-${row.index}`}
-                      >
-                        <span
-                          className={`min-w-0 text-sm leading-6 ${
-                            isLight ? 'text-coal-900/85' : 'text-white/85'
-                          }`}
-                        >
-                          {title}
-                        </span>
-                        <OrderAccordionPlus isOpen={isOpen} isLight={isLight} size="sm" />
-                      </button>
-                      <div
-                        id={`order-feature-${row.index}`}
-                        className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-                          isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                        }`}
-                      >
-                        <div className="overflow-hidden">
-                          <div
-                            className={`feature-full-desc pb-3 text-xs leading-5 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
-                          >
-                            {row.richDoc && isLexicalDoc(row.richDoc) ? (
-                              <RichText data={row.richDoc as never} />
-                            ) : (
-                              <p>{row.plainFull}</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            ) : null}
-
             {(() => {
               const plainIncludes = tLocale(plan.includes, locale).trim()
               const includesDoc = resolveLexical(plan.includesRich, locale, plainIncludes || null)
               const hasIncludes =
                 Boolean(includesDoc && lexicalToPlain(includesDoc)) || Boolean(plainIncludes)
-              if (!hasIncludes) return null
+              if (!featureRows.length && !hasIncludes) return null
+
+              const titleClass = `min-w-0 text-sm leading-6 ${
+                isLight ? 'text-coal-900/85' : 'text-white/85'
+              }`
+              const rowBtnClass = `group flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 py-3 text-start transition-colors duration-300 ${
+                isLight ? 'hover:bg-erythro-500/5' : 'hover:bg-gold-500/10'
+              }`
+
               return (
-                <div className="mt-6 border-t border-current/10 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIncludesOpen((open) => !open)}
-                    className={`group flex w-full cursor-pointer items-center justify-between gap-4 py-3 text-start transition-colors duration-300 ${
-                      isLight ? 'hover:bg-erythro-500/5' : 'hover:bg-gold-500/10'
-                    }`}
-                    aria-expanded={includesOpen}
-                    aria-controls="order-includes"
-                  >
-                    <span
-                      className={`text-sm font-semibold leading-6 ${
-                        isLight ? 'text-coal-900/85' : 'text-white/85'
-                      }`}
-                    >
-                      {copy.includes}
-                    </span>
-                    <OrderAccordionPlus isOpen={includesOpen} isLight={isLight} size="sm" />
-                  </button>
-                  <div
-                    id="order-includes"
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-                      includesOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                    }`}
-                  >
-                    <div className="overflow-hidden">
+                <div className="mt-6 flex flex-col border-t border-current/10">
+                  {featureRows.map((row) => {
+                    const isOpen = openFeatureIndex === row.index
+                    const title = (
+                      <>
+                        {row.label ? <span className="font-semibold">{row.label} </span> : null}
+                        {row.value ? <span>{row.value}</span> : null}
+                        {!row.label && !row.value ? (
+                          <span>{row.plainFull.slice(0, 80)}</span>
+                        ) : null}
+                      </>
+                    )
+
+                    if (!row.hasDesc) {
+                      return (
+                        <div
+                          key={row.index}
+                          className="flex min-h-14 items-center justify-between gap-4 border-b border-current/10 py-3"
+                        >
+                          <p className={`m-0 ${titleClass}`}>{title}</p>
+                          <span className="h-8 w-8 shrink-0" aria-hidden />
+                        </div>
+                      )
+                    }
+
+                    return (
+                      <div key={row.index} className="border-b border-current/10">
+                        <button
+                          type="button"
+                          onClick={() => setOpenFeatureIndex(isOpen ? null : row.index)}
+                          className={rowBtnClass}
+                          aria-expanded={isOpen}
+                          aria-controls={`order-feature-${row.index}`}
+                        >
+                          <span className={titleClass}>{title}</span>
+                          <OrderAccordionPlus isOpen={isOpen} isLight={isLight} size="sm" />
+                        </button>
+                        <div
+                          id={`order-feature-${row.index}`}
+                          className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                            isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                          }`}
+                        >
+                          <div className="overflow-hidden">
+                            <div
+                              className={`feature-full-desc pb-3 text-xs leading-5 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
+                            >
+                              {row.richDoc && isLexicalDoc(row.richDoc) ? (
+                                <RichText data={row.richDoc as never} />
+                              ) : (
+                                <p>{row.plainFull}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+
+                  {hasIncludes ? (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setIncludesOpen((open) => !open)}
+                        className={rowBtnClass}
+                        aria-expanded={includesOpen}
+                        aria-controls="order-includes"
+                      >
+                        <span className={`${titleClass} font-semibold`}>{copy.includes}</span>
+                        <OrderAccordionPlus isOpen={includesOpen} isLight={isLight} size="sm" />
+                      </button>
                       <div
-                        className={`order-includes pb-3 text-sm leading-6 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
-                          isLight ? 'text-coal-900/85' : 'text-white/85'
+                        id="order-includes"
+                        className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                          includesOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                         }`}
                       >
-                        {includesDoc && isLexicalDoc(includesDoc) ? (
-                          <RichText data={includesDoc as never} />
-                        ) : (
-                          <p>{plainIncludes}</p>
-                        )}
+                        <div className="overflow-hidden">
+                          <div
+                            className={`order-includes pb-3 text-sm leading-6 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
+                              isLight ? 'text-coal-900/85' : 'text-white/85'
+                            }`}
+                          >
+                            {includesDoc && isLexicalDoc(includesDoc) ? (
+                              <RichText data={includesDoc as never} />
+                            ) : (
+                              <p>{plainIncludes}</p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : null}
                 </div>
               )
             })()}
