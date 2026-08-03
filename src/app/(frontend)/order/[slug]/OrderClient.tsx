@@ -348,25 +348,6 @@ function OrderCheckout({
             ) : null}
 
             {(() => {
-              const disclaimer = tLocale(plan.card.disclaimer, locale).trim()
-              if (!disclaimer) return null
-              const starIndex = disclaimer.indexOf('*')
-              return (
-                <p className={`mt-3 text-[11px] leading-5 ${muted}`}>
-                  {starIndex === -1 ? (
-                    disclaimer
-                  ) : (
-                    <>
-                      {disclaimer.slice(0, starIndex)}
-                      <span className="text-erythro-500">*</span>
-                      {disclaimer.slice(starIndex + 1)}
-                    </>
-                  )}
-                </p>
-              )
-            })()}
-
-            {(() => {
               const plainIncludes = tLocale(plan.includes, locale).trim()
               const includesDoc = resolveLexical(plan.includesRich, locale, plainIncludes || null)
               const hasIncludes =
@@ -510,6 +491,25 @@ function OrderCheckout({
                 ) : null}
               </div>
             </div>
+
+            {(() => {
+              const disclaimer = tLocale(plan.card.disclaimer, locale).trim()
+              if (!disclaimer) return null
+              const starIndex = disclaimer.indexOf('*')
+              return (
+                <p className={`mt-3 text-[11px] leading-5 ${muted}`}>
+                  {starIndex === -1 ? (
+                    disclaimer
+                  ) : (
+                    <>
+                      {disclaimer.slice(0, starIndex)}
+                      <span className="text-erythro-500">*</span>
+                      {disclaimer.slice(starIndex + 1)}
+                    </>
+                  )}
+                </p>
+              )
+            })()}
           </section>
 
           {/* Add-ons */}
