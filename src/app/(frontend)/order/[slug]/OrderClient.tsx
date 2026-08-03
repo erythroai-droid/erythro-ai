@@ -303,56 +303,26 @@ function OrderCheckout({
             </div>
 
             {plan.periods.length > 0 ? (
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <label className="flex w-full flex-col gap-2 md:max-w-[280px]">
-                  <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
-                    {copy.period}
-                  </span>
-                  <select
-                    value={periodId}
-                    onChange={(e) => setPeriodId(e.target.value)}
-                    className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
-                      isLight
-                        ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
-                        : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
-                    }`}
-                  >
-                    {plan.periods.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {tLocale(p.label, locale)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <div className="flex shrink-0 flex-col items-end gap-2" dir="ltr">
-                  {pricing.savings > 0 ? (
-                    <span className={`text-sm line-through opacity-50 ${muted}`}>
-                      {money(pricing.list)}
-                      {pricing.perMonth ? copy.perMonth : ''}
-                    </span>
-                  ) : null}
-                  <span className="text-xl font-bold tracking-wide md:text-2xl">
-                    {pricing.perMonth
-                      ? `${money(pricing.perMonth)}${copy.perMonth}`
-                      : money(pricing.base)}
-                    {plan.card.priceNote ? (
-                      <span className="relative -top-3 inline-block text-sm leading-none text-erythro-500">
-                        *
-                      </span>
-                    ) : null}
-                  </span>
-                  {pricing.savings > 0 ? (
-                    <span
-                      className={`inline-flex w-fit shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
-                        isLight ? 'text-emerald-900' : 'text-emerald-300'
-                      }`}
-                    >
-                      {copy.savings} {money(pricing.savings)}
-                    </span>
-                  ) : null}
-                </div>
-              </div>
+              <label className="flex w-full flex-col gap-2">
+                <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
+                  {copy.period}
+                </span>
+                <select
+                  value={periodId}
+                  onChange={(e) => setPeriodId(e.target.value)}
+                  className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
+                    isLight
+                      ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
+                      : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
+                  }`}
+                >
+                  {plan.periods.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {tLocale(p.label, locale)}
+                    </option>
+                  ))}
+                </select>
+              </label>
             ) : null}
 
             {paymentNote ? (
@@ -395,6 +365,39 @@ function OrderCheckout({
                 </p>
               )
             })()}
+
+            <div className="mt-5 flex items-start justify-between gap-4 border-t border-current/10 pt-5">
+              <span className="text-sm font-bold uppercase tracking-[0.04em]">
+                {copy.addonTotal}
+              </span>
+              <div className="flex flex-col items-end gap-2" dir="ltr">
+                {pricing.savings > 0 ? (
+                  <span className={`text-sm line-through opacity-50 ${muted}`}>
+                    {money(pricing.list)}
+                    {pricing.perMonth ? copy.perMonth : ''}
+                  </span>
+                ) : null}
+                <span className="text-xl font-bold tracking-wide md:text-2xl">
+                  {pricing.perMonth
+                    ? `${money(pricing.perMonth)}${copy.perMonth}`
+                    : money(pricing.base)}
+                  {plan.card.priceNote ? (
+                    <span className="relative -top-3 inline-block text-sm leading-none text-erythro-500">
+                      *
+                    </span>
+                  ) : null}
+                </span>
+                {pricing.savings > 0 ? (
+                  <span
+                    className={`inline-flex w-fit shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
+                      isLight ? 'text-emerald-900' : 'text-emerald-300'
+                    }`}
+                  >
+                    {copy.savings} {money(pricing.savings)}
+                  </span>
+                ) : null}
+              </div>
+            </div>
 
             {(() => {
               const plainIncludes = tLocale(plan.includes, locale).trim()
