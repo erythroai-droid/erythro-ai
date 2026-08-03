@@ -18,6 +18,7 @@ import {
   calcPlanAmount,
   calcTaxAmount,
   formatPrice,
+  localizeShekelPlacement,
   tLocale,
   type AddonTermMonths,
   type OrderPlan,
@@ -368,7 +369,11 @@ function OrderCheckout({
                     const title = (
                       <>
                         {row.label ? <span className="font-semibold">{row.label} </span> : null}
-                        {row.value ? <span>{row.value}</span> : null}
+                        {row.value ? (
+                          <span dir={/[₪$€]/.test(row.value) ? 'ltr' : undefined}>
+                            {localizeShekelPlacement(row.value, locale)}
+                          </span>
+                        ) : null}
                         {!row.label && !row.value ? (
                           <span>{row.plainFull.slice(0, 80)}</span>
                         ) : null}
