@@ -194,6 +194,7 @@ function OrderCheckout({
     period: locale === 'ru' ? 'Варианты оплаты' : locale === 'he' ? 'אפשרויות תשלום' : 'Payment options',
     summary: locale === 'ru' ? 'Итог заказа' : locale === 'he' ? 'סיכום הזמנה' : 'Order summary',
     subtotal: locale === 'ru' ? 'Итого' : locale === 'he' ? 'ביניים' : 'Subtotal',
+    addonTotal: locale === 'ru' ? 'Итого:' : locale === 'he' ? 'סה״כ:' : 'Total:',
     totalDue:
       locale === 'ru' ? 'Всего к оплате' : locale === 'he' ? 'סה״כ לתשלום' : 'Total due',
     taxes: locale === 'ru' ? 'Налоги' : locale === 'he' ? 'מיסים' : 'Taxes',
@@ -531,85 +532,83 @@ function OrderCheckout({
                     aria-label={tLocale(addon.name, locale)}
                   />
 
-                  <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4">
-                    {/* Col 1 — title + content (independent of price column height) */}
-                    <div className="min-w-0">
-                      <h2 className="font-sans text-base font-bold uppercase tracking-[0.04em]">
-                        {tLocale(addon.name, locale)}
-                      </h2>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="font-sans text-base font-bold uppercase tracking-[0.04em]">
+                      {tLocale(addon.name, locale)}
+                    </h2>
 
-                      {addon.recommended ? (
-                        <div className="mt-2">
-                          <span className={`${badgeCls} bg-erythro-500/15 text-erythro-500`}>
-                            {copy.recommended}
-                          </span>
-                        </div>
-                      ) : null}
+                    {addon.recommended ? (
+                      <div className="mt-2">
+                        <span className={`${badgeCls} bg-erythro-500/15 text-erythro-500`}>
+                          {copy.recommended}
+                        </span>
+                      </div>
+                    ) : null}
 
-                      {description ? (
-                        <p className={`mt-2 text-sm leading-6 ${muted}`}>{description}</p>
-                      ) : null}
+                    {description ? (
+                      <p className={`mt-2 text-sm leading-6 ${muted}`}>{description}</p>
+                    ) : null}
 
-                      {!isMandatory ? (
-                        <label className="mt-4 flex w-full max-w-[280px] flex-col gap-2">
-                          <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
-                            {copy.term}
-                          </span>
-                          <select
-                            value={months}
-                            onChange={(e) => {
-                              const next = Number(e.target.value) as AddonTermMonths
-                              setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
-                            }}
-                            className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
-                              isLight
-                                ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
-                                : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
-                            }`}
-                          >
-                            {ADDON_TERM_MONTHS.map((n) => (
-                              <option key={n} value={n}>
-                                {copy.monthsLabel(n)}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      ) : null}
-
-                      {note ? (
-                        <p
-                          className={`mt-3 rounded-lg px-3 py-2 text-xs ${
+                    {!isMandatory ? (
+                      <label className="mt-4 flex w-full flex-col gap-2">
+                        <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
+                          {copy.term}
+                        </span>
+                        <select
+                          value={months}
+                          onChange={(e) => {
+                            const next = Number(e.target.value) as AddonTermMonths
+                            setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
+                          }}
+                          className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
                             isLight
-                              ? 'bg-emerald-500/15 text-emerald-950'
-                              : 'bg-emerald-500/10 text-emerald-300'
+                              ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
+                              : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
                           }`}
                         >
-                          {note}
-                        </p>
-                      ) : null}
-                    </div>
+                          {ADDON_TERM_MONTHS.map((n) => (
+                            <option key={n} value={n}>
+                              {copy.monthsLabel(n)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : null}
 
-                    {/* Col 2 — price + savings */}
-                    <div
-                      className="flex flex-col items-end gap-2 pt-0.5"
-                      dir="ltr"
-                    >
-                      {amounts.savings > 0 ? (
-                        <span className={`text-sm leading-5 line-through opacity-50 ${muted}`}>
-                          {money(amounts.list)}
-                        </span>
-                      ) : null}
-                      <span className="text-sm font-semibold leading-5">{money(amounts.final)}</span>
-                      {amounts.savings > 0 ? (
-                        <span
-                          className={`${badgeCls} bg-emerald-500/15 ${
-                            isLight ? 'text-emerald-900' : 'text-emerald-300'
-                          }`}
-                        >
-                          {copy.savings} {money(amounts.savings)}
-                        </span>
-                      ) : null}
-                    </div>
+                    {note ? (
+                      <p
+                        className={`mt-3 rounded-lg px-3 py-2 text-xs ${
+                          isLight
+                            ? 'bg-emerald-500/15 text-emerald-950'
+                            : 'bg-emerald-500/10 text-emerald-300'
+                        }`}
+                      >
+                        {note}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="mt-5 flex items-start justify-between gap-4 border-t border-current/10 pt-5">
+                  <span className="text-sm font-bold uppercase tracking-[0.04em]">
+                    {copy.addonTotal}
+                  </span>
+                  <div className="flex flex-col items-end gap-2" dir="ltr">
+                    {amounts.savings > 0 ? (
+                      <span className={`text-sm leading-5 line-through opacity-50 ${muted}`}>
+                        {money(amounts.list)}
+                      </span>
+                    ) : null}
+                    <span className="text-base font-semibold leading-5">{money(amounts.final)}</span>
+                    {amounts.savings > 0 ? (
+                      <span
+                        className={`${badgeCls} bg-emerald-500/15 ${
+                          isLight ? 'text-emerald-900' : 'text-emerald-300'
+                        }`}
+                      >
+                        {copy.savings} {money(amounts.savings)}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               </section>
