@@ -28,6 +28,8 @@ function useIsDesktop() {
   return isDesktop
 }
 
+const CASE_STUDY_POSTER = '/images/Dynamic-Urban-Slideshow.jpg'
+
 /** Prefetches near the section; plays and fades in only while the block is in view. */
 function CaseStudyVideo({
   src,
@@ -43,14 +45,22 @@ function CaseStudyVideo({
   portrait?: boolean
 }) {
   const ref = useRef<HTMLVideoElement | null>(null)
-  const [visible, setVisible] = useState(false)
+  const [inView, setInView] = useState(false)
+  const [ready, setReady] = useState(false)
+  const [failed, setFailed] = useState(false)
   const prefetchedRef = useRef(false)
+
+  useEffect(() => {
+    setReady(false)
+    setFailed(false)
+    prefetchedRef.current = false
+  }, [src])
 
   useEffect(() => {
     const el = ref.current
     const section = sectionRef.current
     const container = containerRef.current
-    if (!el) return
+    if (!el || failed) return
 
     const prefetch = () => {
       if (prefetchedRef.current) return
@@ -64,8 +74,17 @@ function CaseStudyVideo({
       el.currentTime = 0
       el.play().catch(() => {})
     }
+    const onCanPlay = () => setReady(true)
+    const onError = () => {
+      setFailed(true)
+      setReady(false)
+    }
+
     el.loop = true
     el.addEventListener('ended', onEnded)
+    el.addEventListener('canplay', onCanPlay)
+    el.addEventListener('error', onError)
+    if (el.readyState >= 3) setReady(true)
 
     // Start buffering ~1 viewport before the user reaches Case Studies.
     const prefetchObserver = section
@@ -83,13 +102,11 @@ function CaseStudyVideo({
       ([entry]) => {
         if (entry.isIntersecting) {
           prefetch()
-          // Show as soon as the section is on screen — don't wait for play().
-          // Cached Blob videos often skip canplay JSX handlers otherwise.
-          setVisible(true)
+          setInView(true)
           if (el.readyState < 2) el.preload = 'auto'
           void el.play().catch(() => {})
         } else {
-          setVisible(false)
+          setInView(false)
           el.pause()
         }
       },
@@ -101,19 +118,26 @@ function CaseStudyVideo({
 
     return () => {
       el.removeEventListener('ended', onEnded)
+      el.removeEventListener('canplay', onCanPlay)
+      el.removeEventListener('error', onError)
       prefetchObserver?.disconnect()
       playObserver.disconnect()
     }
-  }, [src, sectionRef, containerRef])
+  }, [src, sectionRef, containerRef, failed])
+
+  if (failed) return null
+
+  const showVideo = inView && ready
 
   return (
     <video
       key={src}
       ref={ref}
       src={src}
+      poster={CASE_STUDY_POSTER}
       className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
         portrait ? '' : 'scale-[1.14]'
-      } ${visible ? 'opacity-100' : 'opacity-0'}`}
+      } ${showVideo ? 'opacity-100' : 'opacity-0'}`}
       muted
       loop
       playsInline
@@ -272,8 +296,16 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           ref={cardRef}
           href={portfolioHref}
           aria-label={t(translations.viewAllProjects).replace(/\s*>>\s*$/, '')}
-          className="relative mx-auto block w-full max-w-[420px] aspect-[9/16] overflow-hidden bg-white transition-opacity duration-300 hover:opacity-95 lg:max-w-none lg:aspect-auto lg:flex-1 lg:min-h-0"
+          className="relative mx-auto block w-full max-w-[420px] aspect-[9/16] overflow-hidden bg-[#0D0D0D] transition-opacity duration-300 hover:opacity-95 lg:max-w-none lg:aspect-auto lg:flex-1 lg:min-h-0"
         >
+          <img
+            src={CASE_STUDY_POSTER}
+            alt=""
+            className={`absolute inset-0 h-full w-full object-cover ${
+              isDesktop === false ? '' : 'lg:scale-[1.14]'
+            }`}
+            aria-hidden
+          />
           {videoSrc ? (
             <CaseStudyVideo
               key={videoSrc}
