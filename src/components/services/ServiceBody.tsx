@@ -138,10 +138,22 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
                       </p>
                     ) : null}
                   </div>
-                  <p className="shrink-0 font-sans text-base tracking-[0.04em] md:text-lg">
+                  <p
+                    className="shrink-0 font-sans text-base tracking-[0.04em] md:text-lg"
+                    dir={locale === 'he' ? 'ltr' : undefined}
+                  >
                     {prefix ? <span className="opacity-60">{prefix} </span> : null}
-                    <span className="font-medium">{offering.price}</span>
-                    <span className="opacity-60"> {currencySymbol(service.currency || 'USD')}</span>
+                    {locale === 'he' ? (
+                      <>
+                        <span className="opacity-60">{currencySymbol(service.currency || 'USD')}</span>
+                        <span className="font-medium">{offering.price}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-medium">{offering.price}</span>
+                        <span className="opacity-60"> {currencySymbol(service.currency || 'USD')}</span>
+                      </>
+                    )}
                   </p>
                 </li>
               )
