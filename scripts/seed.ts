@@ -267,7 +267,6 @@ async function run() {
           features: card.features.map((f) => ({
             ...(f.label ? { label: f.label[loc] } : {}),
             ...(f.value ? { value: f.value[loc] } : {}),
-            ...(f.full ? { full: f.full[loc] } : {}),
           })),
           ...(plan?.subtitle ? { subtitle: plan.subtitle[loc] || plan.subtitle.en } : {}),
           ...(plan?.promo ? { promo: plan.promo[loc] || plan.promo.en } : {}),

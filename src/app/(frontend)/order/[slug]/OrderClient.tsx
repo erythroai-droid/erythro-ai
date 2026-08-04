@@ -145,7 +145,6 @@ function OrderCheckout({
     for (const addon of plan.addons) initial[addon.id] = 1
     return initial
   })
-  const [openFeatureIndex, setOpenFeatureIndex] = useState<number | null>(null)
   const [openAddonFullId, setOpenAddonFullId] = useState<string | null>(null)
   const [includesOpen, setIncludesOpen] = useState(false)
 
@@ -162,19 +161,13 @@ function OrderCheckout({
     .map((feature, index) => {
       const label = tLocale(feature.label, locale).trim()
       const value = tLocale(feature.value, locale).trim()
-      const plainFull = tLocale(feature.full, locale).trim()
-      const richDoc = resolveLexical(feature.fullRich, locale, plainFull || null)
-      const hasDesc = Boolean(richDoc && lexicalToPlain(richDoc)) || Boolean(plainFull)
-      if (!label && !value && !hasDesc) return null
-      return { index, label, value, richDoc, plainFull, hasDesc }
+      if (!label && !value) return null
+      return { index, label, value }
     })
     .filter(Boolean) as Array<{
     index: number
     label: string
     value: string
-    richDoc: ReturnType<typeof resolveLexical>
-    plainFull: string
-    hasDesc: boolean
   }>
 
   const selectedAddonPricing = plan.addons
@@ -359,7 +352,44 @@ function OrderCheckout({
               const includesDoc = resolveLexical(plan.includesRich, locale, plainIncludes || null)
               const hasIncludes =
                 Boolean(includesDoc && lexicalToPlain(includesDoc)) || Boolean(plainIncludes)
-              if (!featureRows.length && !hasIncludes) return null
+              if (!featureRows.length && !hasIncludes) {
+                return (
+                  <div className="mt-6 -mx-6 border-t border-current/10 px-6 pt-4 md:-mx-8 md:px-8">
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm font-bold uppercase tracking-[0.04em]">
+                        {copy.addonTotal}
+                      </span>
+                      <div className="flex flex-col items-end gap-2" dir="ltr">
+                        {pricing.savings > 0 ? (
+                          <span className={`text-sm line-through opacity-50 ${muted}`}>
+                            {money(pricing.list)}
+                            {pricing.perMonth ? copy.perMonth : ''}
+                          </span>
+                        ) : null}
+                        <span className="text-xl font-bold tracking-wide md:text-2xl">
+                          {pricing.perMonth
+                            ? `${money(pricing.perMonth)}${copy.perMonth}`
+                            : money(pricing.base)}
+                          {plan.card.priceNote ? (
+                            <span className="relative -top-3 inline-block text-sm leading-none text-erythro-500">
+                              *
+                            </span>
+                          ) : null}
+                        </span>
+                        {pricing.savings > 0 ? (
+                          <span
+                            className={`inline-flex w-fit shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
+                              isLight ? 'text-emerald-900' : 'text-emerald-300'
+                            }`}
+                          >
+                            {copy.savings} {money(pricing.savings)}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
 
               const titleClass = `min-w-0 text-sm leading-6 ${
                 isLight ? 'text-coal-900/85' : 'text-white/85'
@@ -371,65 +401,22 @@ function OrderCheckout({
               return (
                 <div className="mt-6 -mx-6 flex flex-col border-t border-current/10 md:-mx-8">
                   {featureRows.map((row, rowPos) => {
-                    const isOpen = openFeatureIndex === row.index
                     const isLastFeature = rowPos === featureRows.length - 1 && !hasIncludes
                     const rowBorder = isLastFeature ? '' : 'border-b border-current/10'
-                    const title = (
-                      <>
-                        {row.label ? <span className="font-semibold">{row.label} </span> : null}
-                        {row.value ? (
-                          <span dir={/[₪$€]/.test(row.value) ? 'ltr' : undefined}>
-                            {localizeShekelPlacement(row.value, locale)}
-                          </span>
-                        ) : null}
-                        {!row.label && !row.value ? (
-                          <span>{row.plainFull.slice(0, 80)}</span>
-                        ) : null}
-                      </>
-                    )
-
-                    if (!row.hasDesc) {
-                      return (
-                        <div
-                          key={row.index}
-                          className={`flex min-h-14 items-center justify-between gap-4 px-6 py-3 md:px-8 ${rowBorder}`}
-                        >
-                          <p className={`m-0 ${titleClass}`}>{title}</p>
-                          <span className="h-8 w-8 shrink-0" aria-hidden />
-                        </div>
-                      )
-                    }
-
                     return (
-                      <div key={row.index} className={rowBorder}>
-                        <button
-                          type="button"
-                          onClick={() => setOpenFeatureIndex(isOpen ? null : row.index)}
-                          className={rowBtnClass}
-                          aria-expanded={isOpen}
-                          aria-controls={`order-feature-${row.index}`}
-                        >
-                          <span className={titleClass}>{title}</span>
-                          <OrderAccordionPlus isOpen={isOpen} isLight={isLight} size="sm" />
-                        </button>
-                        <div
-                          id={`order-feature-${row.index}`}
-                          className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-                            isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                          }`}
-                        >
-                          <div className="overflow-hidden">
-                            <div
-                              className={`feature-full-desc px-6 pb-3 text-xs leading-5 md:px-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
-                            >
-                              {row.richDoc && isLexicalDoc(row.richDoc) ? (
-                                <RichText data={row.richDoc as never} />
-                              ) : (
-                                <p>{row.plainFull}</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
+                      <div
+                        key={row.index}
+                        className={`flex min-h-14 items-center justify-between gap-4 px-6 py-3 md:px-8 ${rowBorder}`}
+                      >
+                        <p className={`m-0 ${titleClass}`}>
+                          {row.label ? <span className="font-semibold">{row.label} </span> : null}
+                          {row.value ? (
+                            <span dir={/[₪$€]/.test(row.value) ? 'ltr' : undefined}>
+                              {localizeShekelPlacement(row.value, locale)}
+                            </span>
+                          ) : null}
+                        </p>
+                        <span className="h-8 w-8 shrink-0" aria-hidden />
                       </div>
                     )
                   })}
@@ -468,42 +455,42 @@ function OrderCheckout({
                       </div>
                     </div>
                   ) : null}
+
+                  <div className="flex items-start justify-between gap-4 border-t border-current/10 px-6 pt-4 md:px-8">
+                    <span className="text-sm font-bold uppercase tracking-[0.04em]">
+                      {copy.addonTotal}
+                    </span>
+                    <div className="flex flex-col items-end gap-2" dir="ltr">
+                      {pricing.savings > 0 ? (
+                        <span className={`text-sm line-through opacity-50 ${muted}`}>
+                          {money(pricing.list)}
+                          {pricing.perMonth ? copy.perMonth : ''}
+                        </span>
+                      ) : null}
+                      <span className="text-xl font-bold tracking-wide md:text-2xl">
+                        {pricing.perMonth
+                          ? `${money(pricing.perMonth)}${copy.perMonth}`
+                          : money(pricing.base)}
+                        {plan.card.priceNote ? (
+                          <span className="relative -top-3 inline-block text-sm leading-none text-erythro-500">
+                            *
+                          </span>
+                        ) : null}
+                      </span>
+                      {pricing.savings > 0 ? (
+                        <span
+                          className={`inline-flex w-fit shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
+                            isLight ? 'text-emerald-900' : 'text-emerald-300'
+                          }`}
+                        >
+                          {copy.savings} {money(pricing.savings)}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
               )
             })()}
-
-            <div className="mt-5 flex items-start justify-between gap-4 border-t border-current/10 pt-5">
-              <span className="text-sm font-bold uppercase tracking-[0.04em]">
-                {copy.addonTotal}
-              </span>
-              <div className="flex flex-col items-end gap-2" dir="ltr">
-                {pricing.savings > 0 ? (
-                  <span className={`text-sm line-through opacity-50 ${muted}`}>
-                    {money(pricing.list)}
-                    {pricing.perMonth ? copy.perMonth : ''}
-                  </span>
-                ) : null}
-                <span className="text-xl font-bold tracking-wide md:text-2xl">
-                  {pricing.perMonth
-                    ? `${money(pricing.perMonth)}${copy.perMonth}`
-                    : money(pricing.base)}
-                  {plan.card.priceNote ? (
-                    <span className="relative -top-3 inline-block text-sm leading-none text-erythro-500">
-                      *
-                    </span>
-                  ) : null}
-                </span>
-                {pricing.savings > 0 ? (
-                  <span
-                    className={`inline-flex w-fit shrink-0 whitespace-nowrap rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
-                      isLight ? 'text-emerald-900' : 'text-emerald-300'
-                    }`}
-                  >
-                    {copy.savings} {money(pricing.savings)}
-                  </span>
-                ) : null}
-              </div>
-            </div>
 
             {(() => {
               const disclaimer = tLocale(plan.card.disclaimer, locale).trim()
@@ -673,31 +660,60 @@ function OrderCheckout({
                         <span className="h-8 w-8 shrink-0" aria-hidden />
                       </div>
                     )}
-                  </div>
-                ) : null}
 
-                <div className="mt-5 flex items-start justify-between gap-4 border-t border-current/10 pt-5">
-                  <span className="text-sm font-bold uppercase tracking-[0.04em]">
-                    {copy.addonTotal}
-                  </span>
-                  <div className="flex flex-col items-end gap-2" dir="ltr">
-                    {amounts.savings > 0 ? (
-                      <span className={`text-sm leading-5 line-through opacity-50 ${muted}`}>
-                        {money(amounts.list)}
+                    <div className="flex items-start justify-between gap-4 border-t border-current/10 px-6 pt-4 md:px-8">
+                      <span className="text-sm font-bold uppercase tracking-[0.04em]">
+                        {copy.addonTotal}
                       </span>
-                    ) : null}
-                    <span className="text-base font-semibold leading-5">{money(amounts.final)}</span>
-                    {amounts.savings > 0 ? (
-                      <span
-                        className={`${badgeCls} bg-emerald-500/15 ${
-                          isLight ? 'text-emerald-900' : 'text-emerald-300'
-                        }`}
-                      >
-                        {copy.savings} {money(amounts.savings)}
-                      </span>
-                    ) : null}
+                      <div className="flex flex-col items-end gap-2" dir="ltr">
+                        {amounts.savings > 0 ? (
+                          <span className={`text-sm leading-5 line-through opacity-50 ${muted}`}>
+                            {money(amounts.list)}
+                          </span>
+                        ) : null}
+                        <span className="text-base font-semibold leading-5">
+                          {money(amounts.final)}
+                        </span>
+                        {amounts.savings > 0 ? (
+                          <span
+                            className={`${badgeCls} bg-emerald-500/15 ${
+                              isLight ? 'text-emerald-900' : 'text-emerald-300'
+                            }`}
+                          >
+                            {copy.savings} {money(amounts.savings)}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="mt-6 -mx-6 border-t border-current/10 px-6 pt-4 md:-mx-8 md:px-8">
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm font-bold uppercase tracking-[0.04em]">
+                        {copy.addonTotal}
+                      </span>
+                      <div className="flex flex-col items-end gap-2" dir="ltr">
+                        {amounts.savings > 0 ? (
+                          <span className={`text-sm leading-5 line-through opacity-50 ${muted}`}>
+                            {money(amounts.list)}
+                          </span>
+                        ) : null}
+                        <span className="text-base font-semibold leading-5">
+                          {money(amounts.final)}
+                        </span>
+                        {amounts.savings > 0 ? (
+                          <span
+                            className={`${badgeCls} bg-emerald-500/15 ${
+                              isLight ? 'text-emerald-900' : 'text-emerald-300'
+                            }`}
+                          >
+                            {copy.savings} {money(amounts.savings)}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </section>
             )
           })}

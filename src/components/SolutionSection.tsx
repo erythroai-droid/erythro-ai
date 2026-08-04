@@ -23,7 +23,6 @@ interface SolutionSectionProps {
 interface SolutionFeature {
   label?: Record<string, string>
   value?: Record<string, string>
-  full?: Record<string, string>
 }
 
 interface SolutionCardData {
@@ -155,7 +154,6 @@ function SolutionCard({
         {card.features.map((feature, index) => {
           const labelText = feature.label ? t(feature.label).trim() : ''
           const valueText = feature.value ? t(feature.value).trim() : ''
-          // `full` is order-page description only — ignore on public cards
           if (!labelText && !valueText) return null
 
           const dotClass = isFeatured ? 'bg-white' : 'bg-erythro-500'

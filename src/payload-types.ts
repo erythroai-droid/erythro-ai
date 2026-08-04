@@ -372,34 +372,12 @@ export interface SolutionPlan {
    */
   featured?: boolean | null;
   /**
-   * Label + Value show on public cards and (unless Home only) on the order package block. Full is an optional description under Value on the order page. For Subscription, prefer Home only here and a matching Add-on for the order page.
+   * Label + Value show on homepage cards and on the order package accordion. For Subscription use Label + Value only (homepage); put details on the Monthly subscription Add-on.
    */
   features?:
     | {
         label?: string | null;
         value?: string | null;
-        /**
-         * Shown under Value on the order page only. Leave empty to hide.
-         */
-        full?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        /**
-         * Show this row only on homepage Solutions cards. Hidden from the order page package accordion — put purchasable items (e.g. Subscription) in Add-ons instead.
-         */
-        homeOnly?: boolean | null;
         id?: string | null;
       }[]
     | null;
@@ -931,8 +909,6 @@ export interface SolutionPlansSelect<T extends boolean = true> {
     | {
         label?: T;
         value?: T;
-        full?: T;
-        homeOnly?: T;
         id?: T;
       };
   disclaimer?: T;

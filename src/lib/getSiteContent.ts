@@ -304,35 +304,31 @@ export async function getSiteContent(): Promise<SiteContent> {
           const row: {
             label?: Record<string, string>
             value?: Record<string, string>
-            full?: Record<string, string>
-            fullRich?: Record<string, unknown>
           } = {
             label: L(f.label, fbF?.label ?? { en: '', ru: '', he: '' }),
             value: L(f.value, fbF?.value ?? { en: '', ru: '', he: '' }),
           }
-          if (hasContent(f.full) || isLexicalDoc(f.full) || LOCALES.some((l) => isLexicalDoc(f.full?.[l])) || fbF?.full) {
-            // Keep plain full for order-page fallbacks; public cards ignore it.
-            const fullPlain: Record<string, string> = { en: '', ru: '', he: '' }
-            const fullRich: Record<string, unknown> = {}
+
+          const hasLabel = LOCALES.some((l) => Boolean(row.label?.[l]?.trim()))
+          const hasValue = LOCALES.some((l) => Boolean(row.value?.[l]?.trim()))
+          if (
+            !hasLabel &&
+            !hasValue &&
+            (hasContent(f.full) ||
+              isLexicalDoc(f.full) ||
+              LOCALES.some((l) => isLexicalDoc(f.full?.[l])))
+          ) {
+            const legacy: Record<string, string> = { en: '', ru: '', he: '' }
             for (const loc of LOCALES) {
               const raw =
                 f.full && typeof f.full === 'object' && !Array.isArray(f.full) && !isLexicalDoc(f.full)
                   ? (f.full as Record<string, unknown>)[loc] ?? (f.full as Record<string, unknown>).en
                   : f.full
-              if (isLexicalDoc(raw)) {
-                fullRich[loc] = raw
-                fullPlain[loc] = lexicalToPlain(raw)
-              } else if (typeof raw === 'string' && raw.trim()) {
-                fullRich[loc] = lexicalFromText(raw)
-                fullPlain[loc] = raw.trim()
-              } else if (fbF?.full?.[loc]) {
-                fullPlain[loc] = fbF.full[loc]
-                fullRich[loc] = lexicalFromText(fbF.full[loc])
-              }
+              if (isLexicalDoc(raw)) legacy[loc] = lexicalToPlain(raw)
+              else if (typeof raw === 'string' && raw.trim()) legacy[loc] = raw.trim()
             }
-            if (LOCALES.some((loc) => fullPlain[loc])) {
-              row.full = fullPlain
-              row.fullRich = fullRich
+            if (LOCALES.some((loc) => Boolean(legacy[loc]))) {
+              row.value = legacy
             }
           }
           return row

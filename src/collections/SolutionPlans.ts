@@ -66,18 +66,11 @@ export const SolutionPlans: CollectionConfig = {
       labels: { singular: 'Feature', plural: 'Features' },
       admin: {
         description:
-          'Label + Value show on homepage cards and on the order package accordion. Full expands under the row on the order page. For “Подписка / Subscription” use Label + Value only (homepage); put price details and Full on the Monthly subscription Add-on.',
+          'Label + Value show on homepage cards and on the order package accordion. For “Подписка / Subscription” use Label + Value only (homepage); put price details and Full on the Monthly subscription Add-on.',
       },
       fields: [
         locText('label'),
         locText('value'),
-        locRichText('full', {
-          label: 'Full (description)',
-          admin: {
-            description:
-              'Expandable details under this row on the order package card. Ignored for Subscription rows (use the Add-on Full field instead).',
-          },
-        }),
       ],
     },
     locText('disclaimer'),
