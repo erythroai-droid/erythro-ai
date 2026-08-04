@@ -45,7 +45,7 @@ export function isSubscriptionFeatureLabel(label: LocaleMap | undefined): boolea
   return /subscription|подписка|מנוי/.test(blob)
 }
 
-/** Build a mandatory Monthly subscription add-on from a homepage-only feature row. */
+/** Build a Monthly subscription add-on from a homepage “Подписка” feature row. */
 export function subscriptionAddonFromFeature(feature: SolutionFeature): OrderAddon {
   const price =
     parsePrice(feature.value?.en || '') ||
@@ -57,7 +57,6 @@ export function subscriptionAddonFromFeature(feature: SolutionFeature): OrderAdd
     name: { ...SUBSCRIPTION_ADDON_NAME },
     description: { en: '', ru: '', he: '' },
     price,
-    mandatory: true,
     recommended: true,
   }
   if (feature.full && Object.values(feature.full).some(Boolean)) {
@@ -119,10 +118,8 @@ function buildOrderPlan(card: SolutionCardItem): OrderPlan {
     slug: card.id,
     card: {
       ...card,
-      // Homepage-only / subscription rows stay on Solutions cards only
-      features: card.features.filter(
-        (f) => !f.homeOnly && !isSubscriptionFeatureLabel(f.label),
-      ),
+      // Subscription rows stay on Solutions cards only — order uses the Add-on card
+      features: card.features.filter((f) => !isSubscriptionFeatureLabel(f.label)),
     },
     subtitle: { en: '', ru: '', he: '' },
     /** Periods / promo / tax come from CMS only — subscription add-on may be derived above */

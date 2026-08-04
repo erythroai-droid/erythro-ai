@@ -268,7 +268,6 @@ async function run() {
             ...(f.label ? { label: f.label[loc] } : {}),
             ...(f.value ? { value: f.value[loc] } : {}),
             ...(f.full ? { full: f.full[loc] } : {}),
-            ...(f.homeOnly ? { homeOnly: true } : {}),
           })),
           ...(plan?.subtitle ? { subtitle: plan.subtitle[loc] || plan.subtitle.en } : {}),
           ...(plan?.promo ? { promo: plan.promo[loc] || plan.promo.en } : {}),
