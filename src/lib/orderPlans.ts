@@ -59,12 +59,6 @@ export function subscriptionAddonFromFeature(feature: SolutionFeature): OrderAdd
     price,
     recommended: true,
   }
-  if (feature.full && Object.values(feature.full).some(Boolean)) {
-    addon.full = { en: '', ru: '', he: '', ...feature.full }
-  }
-  if (feature.fullRich) {
-    addon.fullRich = feature.fullRich
-  }
   return addon
 }
 
@@ -225,10 +219,7 @@ export function featureLines(features: SolutionFeature[], locale: string): strin
     .map((feature) => {
       const label = feature.label ? tLocale(feature.label, locale) : ''
       const value = feature.value ? tLocale(feature.value, locale) : ''
-      const primary = `${label} ${value}`.trim()
-      if (primary) return primary
-      // Legacy full-only rows (no label/value) still surface as a line
-      return feature.full ? tLocale(feature.full, locale).trim() : ''
+      return `${label} ${value}`.trim()
     })
     .filter(Boolean)
 }

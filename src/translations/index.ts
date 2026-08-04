@@ -411,10 +411,6 @@ export const caseStudies = {
 export interface SolutionFeature {
   label?: Record<string, string>
   value?: Record<string, string>
-  /** Plain-text description under Value on the order page (fallback / SEO). */
-  full?: Record<string, string>
-  /** Lexical rich-text description under Value on the order page only. */
-  fullRich?: Record<string, unknown>
 }
 
 export type SolutionCurrency = 'ILS' | 'USD' | 'EUR'
@@ -499,10 +495,11 @@ export const solutions = {
           },
         },
         {
-          full: {
-            en: 'AI: Integration of a ready-made chatbot for booking and answering FAQs',
-            ru: 'AI: Интеграция готового чат-бота для записи и ответов на FAQ',
-            he: 'AI: שילוב צ׳אטבוט מוכן לקביעת תורים ומענה על שאלות נפוצות',
+          label: { en: 'AI:', ru: 'AI:', he: 'AI:' },
+          value: {
+            en: 'Integration of a ready-made chatbot for booking and answering FAQs',
+            ru: 'Интеграция готового чат-бота для записи и ответов на FAQ',
+            he: 'שילוב צ׳אטבוט מוכן לקביעת תורים ומענה על שאלות נפוצות',
           },
         },
         {
@@ -532,17 +529,19 @@ export const solutions = {
           },
         },
         {
-          full: {
-            en: 'Automation: n8n (integration with your CRM, WhatsApp and newsletters)',
-            ru: 'Автоматизация: n8n (интеграция с CRM, WhatsApp и рассылками)',
-            he: 'אוטומציה: n8n (אינטגרציה עם CRM, WhatsApp וניוזלטרים)',
+          label: { en: 'Automation:', ru: 'Автоматизация:', he: 'אוטומציה:' },
+          value: {
+            en: 'n8n (integration with your CRM, WhatsApp and newsletters)',
+            ru: 'n8n (интеграция с CRM, WhatsApp и рассылками)',
+            he: 'n8n (אינטגרציה עם CRM, WhatsApp וניוזלטרים)',
           },
         },
         {
-          full: {
-            en: 'Training: Personal workshop for the team (2-3 hours)',
-            ru: 'Обучение: Персональный воркшоп для команды (2–3 часа)',
-            he: 'הדרכה: סדנה אישית לצוות (2–3 שעות)',
+          label: { en: 'Training:', ru: 'Обучение:', he: 'הדרכה:' },
+          value: {
+            en: 'Personal workshop for the team (2-3 hours)',
+            ru: 'Персональный воркшоп для команды (2–3 часа)',
+            he: 'סדנה אישית לצוות (2–3 שעות)',
           },
         },
         {
@@ -568,24 +567,27 @@ export const solutions = {
       },
       features: [
         {
-          full: {
-            en: 'Stack: React, Java Spring Boot, Docker, custom AI agents',
-            ru: 'Стек: React, Java Spring Boot, Docker, кастомные AI-агенты',
-            he: 'סטאק: React, Java Spring Boot, Docker, סוכני AI מותאמים',
+          label: { en: 'Stack:', ru: 'Стек:', he: 'סטאק:' },
+          value: {
+            en: 'React, Java Spring Boot, Docker, custom AI agents',
+            ru: 'React, Java Spring Boot, Docker, кастомные AI-агенты',
+            he: 'React, Java Spring Boot, Docker, סוכני AI מותאמים',
           },
         },
         {
-          full: {
-            en: 'Support: 24/7 monitoring, DevOps, big data work',
-            ru: 'Поддержка: мониторинг 24/7, DevOps, работа с big data',
-            he: 'תמיכה: ניטור 24/7, DevOps, עבודה עם big data',
+          label: { en: 'Support:', ru: 'Поддержка:', he: 'תמיכה:' },
+          value: {
+            en: '24/7 monitoring, DevOps, big data work',
+            ru: 'мониторинг 24/7, DevOps, работа с big data',
+            he: 'ניטור 24/7, DevOps, עבודה עם big data',
           },
         },
         {
-          full: {
-            en: 'Training: Comprehensive implementation program.',
-            ru: 'Обучение: комплексная программа внедрения.',
-            he: 'הדרכה: תוכנית הטמעה מקיפה.',
+          label: { en: 'Training:', ru: 'Обучение:', he: 'הדרכה:' },
+          value: {
+            en: 'Comprehensive implementation program.',
+            ru: 'комплексная программа внедрения.',
+            he: 'תוכנית הטמעה מקיפה.',
           },
         },
         {

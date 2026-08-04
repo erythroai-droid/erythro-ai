@@ -388,35 +388,30 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
     card.features = d.features
       .filter((f: any) => !isSubscriptionFeatureLabel(locMapCms(f.label)))
       .map((f: any) => {
-      const row: SolutionCardItem['features'][number] = {
-        label: locMapCms(f.label) as any,
-        value: locMapCms(f.value) as any,
-      }
-
-      const fullPlain: LocaleMap = { en: '', ru: '', he: '' }
-      const fullRich: Record<string, unknown> = {}
-      let hasFull = false
-      for (const loc of LOCALES) {
-        const raw =
-          f.full && typeof f.full === 'object' && !Array.isArray(f.full) && !isLexicalDoc(f.full)
-            ? (f.full as Record<string, unknown>)[loc] ?? (f.full as Record<string, unknown>).en
-            : f.full
-        if (isLexicalDoc(raw)) {
-          fullRich[loc] = raw
-          fullPlain[loc] = lexicalToPlain(raw)
-          if (fullPlain[loc]) hasFull = true
-        } else if (typeof raw === 'string' && raw.trim()) {
-          fullRich[loc] = lexicalFromText(raw)
-          fullPlain[loc] = raw.trim()
-          hasFull = true
+        const row: SolutionCardItem['features'][number] = {
+          label: locMapCms(f.label) as any,
+          value: locMapCms(f.value) as any,
         }
-      }
-      if (hasFull) {
-        row.full = fullPlain
-        row.fullRich = fullRich
-      }
-      return row
-    })
+
+        // Legacy CMS rows that only had Full — surface as Value so they still show
+        const hasLabel = LOCALES.some((loc) => Boolean(row.label?.[loc]?.trim()))
+        const hasValue = LOCALES.some((loc) => Boolean(row.value?.[loc]?.trim()))
+        if (!hasLabel && !hasValue) {
+          const legacy: LocaleMap = { en: '', ru: '', he: '' }
+          for (const loc of LOCALES) {
+            const raw =
+              f.full && typeof f.full === 'object' && !Array.isArray(f.full) && !isLexicalDoc(f.full)
+                ? (f.full as Record<string, unknown>)[loc] ?? (f.full as Record<string, unknown>).en
+                : f.full
+            if (isLexicalDoc(raw)) legacy[loc] = lexicalToPlain(raw)
+            else if (typeof raw === 'string' && raw.trim()) legacy[loc] = raw.trim()
+          }
+          if (LOCALES.some((loc) => Boolean(legacy[loc]))) {
+            row.value = legacy as any
+          }
+        }
+        return row
+      })
   }
 
   let periods: OrderPeriod[] = []
@@ -490,32 +485,6 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
       const featureRow: SolutionCardItem['features'][number] = {
         label: locMapCms(homeSub.label) as any,
         value: locMapCms(homeSub.value) as any,
-      }
-      const fullPlain: LocaleMap = { en: '', ru: '', he: '' }
-      const fullRich: Record<string, unknown> = {}
-      let hasFull = false
-      for (const loc of LOCALES) {
-        const raw =
-          homeSub.full &&
-          typeof homeSub.full === 'object' &&
-          !Array.isArray(homeSub.full) &&
-          !isLexicalDoc(homeSub.full)
-            ? (homeSub.full as Record<string, unknown>)[loc] ??
-              (homeSub.full as Record<string, unknown>).en
-            : homeSub.full
-        if (isLexicalDoc(raw)) {
-          fullRich[loc] = raw
-          fullPlain[loc] = lexicalToPlain(raw)
-          if (fullPlain[loc]) hasFull = true
-        } else if (typeof raw === 'string' && raw.trim()) {
-          fullRich[loc] = lexicalFromText(raw)
-          fullPlain[loc] = raw.trim()
-          hasFull = true
-        }
-      }
-      if (hasFull) {
-        featureRow.full = fullPlain
-        featureRow.fullRich = fullRich
       }
       addons = [subscriptionAddonFromFeature(featureRow), ...addons]
     }
