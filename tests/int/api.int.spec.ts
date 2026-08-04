@@ -30,13 +30,14 @@ const CRITICAL_GLOBALS = ['site-settings', 'header', 'footer', 'hero'] as const
 const REQUIRED_COLUMNS: Record<string, string[]> = {
   solution_plans_addons: [
     'addon_id',
-    'price',
     'discount_months1',
     'discount_months6',
     'discount_months12',
     'recommended',
     'mandatory',
   ],
+  // Localized addon display price (renamed from price to avoid colliding with plan.price)
+  solution_plans_addons_locales: ['name', 'price_display', 'full'],
   solution_plans: ['slug', 'price', 'currency', 'featured'],
   solution_plans_features: ['home_only'],
   solution_plans_locales: ['title', 'includes'],
@@ -108,7 +109,7 @@ describe.skipIf(!hasDatabase)('API', () => {
       }
       // Catch the previous migrate typo that left wrong names behind
       if (table === 'solution_plans_addons') {
-        for (const wrong of ['discount_months_1', 'discount_months_6', 'discount_months_12']) {
+        for (const wrong of ['discount_months_1', 'discount_months_6', 'discount_months_12', 'price']) {
           expect(present.has(wrong), `leftover misnamed column "${table}.${wrong}"`).toBe(false)
         }
       }
