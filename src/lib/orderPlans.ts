@@ -71,7 +71,11 @@ export interface OrderPlan {
 function buildOrderPlan(card: SolutionCardItem): OrderPlan {
   return {
     slug: card.id,
-    card,
+    card: {
+      ...card,
+      // Homepage-only rows (e.g. Subscription display) stay on Solutions cards only
+      features: card.features.filter((f) => !f.homeOnly),
+    },
     subtitle: { en: '', ru: '', he: '' },
     /** Periods / add-ons / promo / tax come from CMS only — no hardcoded stubs */
     periods: [],

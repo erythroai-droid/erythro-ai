@@ -356,6 +356,7 @@ export const solution_plans_features = pgTable(
     _order: integer('_order').notNull(),
     _parentID: integer('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
+    homeOnly: boolean('home_only').default(false),
   },
   (columns) => [
     index('solution_plans_features_order_idx').on(columns._order),
