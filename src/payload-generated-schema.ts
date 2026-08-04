@@ -441,7 +441,6 @@ export const solution_plans_addons = pgTable(
     _parentID: integer('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
     addonId: varchar('addon_id').notNull(),
-    price: varchar('price').notNull(),
     discountMonths1: numeric('discount_months1', { mode: 'number' }).default(0),
     discountMonths6: numeric('discount_months6', { mode: 'number' }).default(0),
     discountMonths12: numeric('discount_months12', { mode: 'number' }).default(0),
@@ -464,6 +463,7 @@ export const solution_plans_addons_locales = pgTable(
   {
     name: varchar('name').notNull(),
     description: varchar('description'),
+    price: varchar('price'),
     note: varchar('note'),
     full: jsonb('full'),
     id: serial('id').primaryKey(),

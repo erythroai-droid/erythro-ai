@@ -431,10 +431,17 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
         id: a.addonId || String(a.id),
         name: locMapCms(a.name),
         description: locMapCms(a.description),
-        price:
-          typeof a.price === 'number'
-            ? `${a.price}₪/мес`
-            : String(a.price ?? '').trim() || '0',
+        price: (() => {
+          if (a.price && typeof a.price === 'object' && !Array.isArray(a.price)) {
+            return locMapCms(a.price)
+          }
+          if (typeof a.price === 'number') {
+            const s = `${a.price}₪/мес`
+            return { en: s, ru: s, he: s }
+          }
+          const s = String(a.price ?? '').trim()
+          return { en: s, ru: s, he: s }
+        })(),
         discountMonths1:
           typeof a.discountMonths1 === 'number' ? a.discountMonths1 : Number(a.discountMonths1) || 0,
         discountMonths6:

@@ -156,14 +156,13 @@ export const SolutionPlans: CollectionConfig = {
         },
         locText('name', { required: true }),
         locText('description'),
-        {
-          name: 'price',
-          type: 'text',
+        locText('price', {
           required: true,
           admin: {
-            description: 'Same format as Feature Value, e.g. "350₪/мес" or "₪350/חודש"',
+            description:
+              'Per locale, same format as Feature Value — e.g. en "350₪/mth", ru "350₪/мес", he "₪350/חודש"',
           },
-        },
+        }),
         locRichText('full', {
           label: 'Full (description)',
           admin: {
