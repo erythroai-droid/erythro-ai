@@ -372,7 +372,7 @@ export interface SolutionPlan {
    */
   featured?: boolean | null;
   /**
-   * Label + Value show on public cards and the order page. Full is an optional description under Value on the order page only.
+   * Label + Value show on public cards and (unless Home only) on the order package block. Full is an optional description under Value on the order page. For Subscription, prefer Home only here and a matching Add-on for the order page.
    */
   features?:
     | {
@@ -396,6 +396,10 @@ export interface SolutionPlan {
           };
           [k: string]: unknown;
         } | null;
+        /**
+         * Show this row only on homepage Solutions cards. Hidden from the order page package accordion — put purchasable items (e.g. Subscription) in Add-ons instead.
+         */
+        homeOnly?: boolean | null;
         id?: string | null;
       }[]
     | null;
@@ -907,6 +911,7 @@ export interface SolutionPlansSelect<T extends boolean = true> {
         label?: T;
         value?: T;
         full?: T;
+        homeOnly?: T;
         id?: T;
       };
   disclaimer?: T;

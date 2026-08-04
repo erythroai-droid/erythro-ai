@@ -66,7 +66,7 @@ export const SolutionPlans: CollectionConfig = {
       labels: { singular: 'Feature', plural: 'Features' },
       admin: {
         description:
-          'Label + Value show on public cards and the order page. Full is an optional description under Value on the order page only.',
+          'Label + Value show on public cards and (unless Home only) on the order package block. Full is an optional description under Value on the order page. For Subscription, prefer Home only here and a matching Add-on for the order page.',
       },
       fields: [
         locText('label'),
@@ -77,6 +77,15 @@ export const SolutionPlans: CollectionConfig = {
             description: 'Shown under Value on the order page only. Leave empty to hide.',
           },
         }),
+        {
+          name: 'homeOnly',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description:
+              'Show this row only on homepage Solutions cards. Hidden from the order page package accordion — put purchasable items (e.g. Subscription) in Add-ons instead.',
+          },
+        },
       ],
     },
     locText('disclaimer'),
@@ -149,6 +158,10 @@ export const SolutionPlans: CollectionConfig = {
       name: 'addons',
       type: 'array',
       labels: { singular: 'Add-on', plural: 'Order add-ons' },
+      admin: {
+        description:
+          'Optional order extras (e.g. Subscription). Use together with a Home-only Features row if the line should still appear on homepage cards.',
+      },
       fields: [
         {
           name: 'addonId',

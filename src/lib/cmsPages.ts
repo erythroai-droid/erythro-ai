@@ -382,7 +382,9 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
   }
 
   if (Array.isArray(d.features) && d.features.length) {
-    card.features = d.features.map((f: any) => {
+    card.features = d.features
+      .filter((f: any) => !f?.homeOnly)
+      .map((f: any) => {
       const row: SolutionCardItem['features'][number] = {
         label: locMapCms(f.label) as any,
         value: locMapCms(f.value) as any,
