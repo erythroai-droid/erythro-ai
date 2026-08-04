@@ -13,6 +13,7 @@ import HeaderChipStrip from '@/components/HeaderChipStrip'
 import type { SiteContent } from '@/lib/defaultContent'
 import {
   ADDON_TERM_MONTHS,
+  addonMonthlyAmount,
   addonTermDiscount,
   calcAddonAmount,
   calcPlanAmount,
@@ -175,7 +176,7 @@ function OrderCheckout({
     .map((addon) => {
       const months: AddonTermMonths = addonTermMonths[addon.id] || 1
       const discount = addonTermDiscount(addon, months)
-      const amounts = calcAddonAmount(addon.price, months, discount)
+      const amounts = calcAddonAmount(addonMonthlyAmount(addon), months, discount)
       return { addon, months, discount, ...amounts }
     })
 
@@ -230,10 +231,10 @@ function OrderCheckout({
     subscriptionLabel: locale === 'ru' ? 'Подписка:' : locale === 'he' ? 'מנוי:' : 'Subscription:',
     includes:
       locale === 'ru'
-        ? 'Что входит в разработку'
+        ? 'Что входит в разработку?'
         : locale === 'he'
-          ? 'מה כלול בפיתוח'
-          : "What's included in development",
+          ? 'מה כלול בפיתוח?'
+          : "What's included in development?",
   }
 
   const toggleAddon = (id: string) => {
@@ -521,18 +522,19 @@ function OrderCheckout({
             const description = tLocale(addon.description, locale).trim()
             const months: AddonTermMonths = addonTermMonths[addon.id] || 1
             const discount = addonTermDiscount(addon, months)
-            const amounts = calcAddonAmount(addon.price, months, discount)
+            const amounts = calcAddonAmount(addonMonthlyAmount(addon), months, discount)
             const plainFull = tLocale(addon.full, locale).trim()
             const fullDoc = resolveLexical(addon.fullRich, locale, plainFull || null)
             const hasFull = Boolean(fullDoc && lexicalToPlain(fullDoc)) || Boolean(plainFull)
             const badgeCls =
               'inline-flex w-fit shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]'
-            const titleClass = `min-w-0 text-sm leading-6 ${
+            const includesTitleClass = `min-w-0 text-sm font-semibold leading-6 ${
               isLight ? 'text-coal-900/85' : 'text-white/85'
             }`
             const rowBtnClass = `group flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 px-6 py-3 text-start transition-colors duration-300 md:px-8 ${
               isLight ? 'hover:bg-erythro-500/5' : 'hover:bg-gold-500/10'
             }`
+            const priceDisplay = localizeShekelPlacement(String(addon.price || '').trim(), locale)
             const fullOpen = openAddonFullId === addon.id
             return (
               <section key={addon.id} className={`overflow-hidden rounded-[10px] p-6 md:p-8 ${cardCls}`}>
@@ -612,18 +614,15 @@ function OrderCheckout({
                           aria-expanded={fullOpen}
                           aria-controls={`order-addon-full-${addon.id}`}
                         >
-                          <span className={titleClass}>
-                            <span className="font-semibold">
-                              {isSubscription ? copy.subscriptionLabel : tLocale(addon.name, locale)}{' '}
-                            </span>
+                          <span className={includesTitleClass}>
                             {isSubscription ? (
-                              <span dir="ltr">
-                                {localizeShekelPlacement(
-                                  `${money(addon.price)}${copy.perMonth}`,
-                                  locale,
-                                )}
-                              </span>
-                            ) : null}
+                              <>
+                                {copy.subscriptionLabel}{' '}
+                                <span dir="ltr">{priceDisplay}</span>
+                              </>
+                            ) : (
+                              tLocale(addon.name, locale)
+                            )}
                           </span>
                           <OrderAccordionPlus isOpen={fullOpen} isLight={isLight} size="sm" />
                         </button>
@@ -635,7 +634,9 @@ function OrderCheckout({
                         >
                           <div className="overflow-hidden">
                             <div
-                              className={`feature-full-desc px-6 pb-3 text-xs leading-5 md:px-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
+                              className={`order-includes px-6 pb-3 text-sm leading-6 md:px-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
+                                isLight ? 'text-coal-900/85' : 'text-white/85'
+                              }`}
                             >
                               {fullDoc && isLexicalDoc(fullDoc) ? (
                                 <RichText data={fullDoc as never} />
@@ -648,14 +649,9 @@ function OrderCheckout({
                       </div>
                     ) : (
                       <div className="flex min-h-14 items-center justify-between gap-4 px-6 py-3 md:px-8">
-                        <p className={`m-0 ${titleClass}`}>
-                          <span className="font-semibold">{copy.subscriptionLabel} </span>
-                          <span dir="ltr">
-                            {localizeShekelPlacement(
-                              `${money(addon.price)}${copy.perMonth}`,
-                              locale,
-                            )}
-                          </span>
+                        <p className={`m-0 ${includesTitleClass}`}>
+                          {copy.subscriptionLabel}{' '}
+                          <span dir="ltr">{priceDisplay}</span>
                         </p>
                         <span className="h-8 w-8 shrink-0" aria-hidden />
                       </div>

@@ -158,15 +158,17 @@ export const SolutionPlans: CollectionConfig = {
         locText('description'),
         {
           name: 'price',
-          type: 'number',
+          type: 'text',
           required: true,
-          admin: { description: 'Monthly price in the plan currency' },
+          admin: {
+            description: 'Same format as Feature Value, e.g. "350₪/мес" or "₪350/חודש"',
+          },
         },
         locRichText('full', {
           label: 'Full (description)',
           admin: {
             description:
-              'Expandable details under the “Subscription: {price}/mo” line on the order add-on card.',
+              'Expandable details under the “Subscription: {price}” line on the order add-on card.',
           },
         }),
         {

@@ -11,6 +11,7 @@ import * as migration_20260803_120000_addon_term_discounts from './20260803_1200
 import * as migration_20260803_130000_fix_addon_discount_columns from './20260803_130000_fix_addon_discount_columns'
 import * as migration_20260804_120000_feature_home_only from './20260804_120000_feature_home_only'
 import * as migration_20260804_210000_addon_full_description from './20260804_210000_addon_full_description'
+import * as migration_20260805_010000_addon_price_text from './20260805_010000_addon_price_text'
 
 export const migrations = [
   {
@@ -77,5 +78,10 @@ export const migrations = [
     up: migration_20260804_210000_addon_full_description.up,
     down: migration_20260804_210000_addon_full_description.down,
     name: '20260804_210000_addon_full_description',
+  },
+  {
+    up: migration_20260805_010000_addon_price_text.up,
+    down: migration_20260805_010000_addon_price_text.down,
+    name: '20260805_010000_addon_price_text',
   },
 ]

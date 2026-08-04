@@ -431,7 +431,10 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
         id: a.addonId || String(a.id),
         name: locMapCms(a.name),
         description: locMapCms(a.description),
-        price: typeof a.price === 'number' ? a.price : Number(a.price) || 0,
+        price:
+          typeof a.price === 'number'
+            ? `${a.price}₪/мес`
+            : String(a.price ?? '').trim() || '0',
         discountMonths1:
           typeof a.discountMonths1 === 'number' ? a.discountMonths1 : Number(a.discountMonths1) || 0,
         discountMonths6:

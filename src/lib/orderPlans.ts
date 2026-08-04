@@ -15,8 +15,8 @@ export interface OrderAddon {
   id: string
   name: LocaleMap
   description: LocaleMap
-  /** Monthly price in plan currency */
-  price: number
+  /** Display price like Feature Value, e.g. "350₪/мес" */
+  price: string
   /** Discount % for 1 / 6 / 12 month terms */
   discountMonths1?: number
   discountMonths6?: number
@@ -48,18 +48,14 @@ export function isSubscriptionFeatureLabel(label: LocaleMap | undefined): boolea
 /** Build a Monthly subscription add-on from a homepage “Подписка” feature row. */
 export function subscriptionAddonFromFeature(feature: SolutionFeature): OrderAddon {
   const price =
-    parsePrice(feature.value?.en || '') ||
-    parsePrice(feature.value?.ru || '') ||
-    parsePrice(feature.value?.he || '') ||
-    0
-  const addon: OrderAddon = {
+    (feature.value?.ru || feature.value?.en || feature.value?.he || '').trim() || '0'
+  return {
     id: SUBSCRIPTION_ADDON_ID,
     name: { ...SUBSCRIPTION_ADDON_NAME },
     description: { en: '', ru: '', he: '' },
     price,
     recommended: true,
   }
-  return addon
 }
 
 export const ADDON_TERM_MONTHS = [1, 6, 12] as const
@@ -69,6 +65,11 @@ export function addonTermDiscount(addon: OrderAddon, months: number): number {
   if (months === 6) return Math.max(0, addon.discountMonths6 || 0)
   if (months === 12) return Math.max(0, addon.discountMonths12 || 0)
   return Math.max(0, addon.discountMonths1 || 0)
+}
+
+/** Parsed monthly amount from display price ("350₪/мес" → 350) */
+export function addonMonthlyAmount(addon: OrderAddon): number {
+  return parsePrice(addon.price)
 }
 
 /** list = monthly × months; final applies term discount % */
