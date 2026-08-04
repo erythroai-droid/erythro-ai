@@ -386,10 +386,7 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
 
   if (Array.isArray(d.features) && d.features.length) {
     card.features = d.features
-      .filter(
-        (f: any) =>
-          !f?.homeOnly && !isSubscriptionFeatureLabel(locMapCms(f.label)),
-      )
+      .filter((f: any) => !isSubscriptionFeatureLabel(locMapCms(f.label)))
       .map((f: any) => {
       const row: SolutionCardItem['features'][number] = {
         label: locMapCms(f.label) as any,
@@ -475,18 +472,11 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
         addon.full = fullPlain
         addon.fullRich = fullRich
       }
-      if (
-        addon.id === SUBSCRIPTION_ADDON_ID ||
-        isSubscriptionFeatureLabel(addon.name)
-      ) {
-        addon.mandatory = true
-        addon.recommended = true
-      }
       return addon
     })
   }
 
-  // “Подписка” feature → mandatory Monthly subscription add-on when CMS has no addon yet
+  // “Подписка” feature → Monthly subscription add-on when CMS has no addon yet
   const hasSubscriptionAddon = addons.some(
     (a) =>
       a.id === SUBSCRIPTION_ADDON_ID ||
@@ -500,7 +490,6 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
       const featureRow: SolutionCardItem['features'][number] = {
         label: locMapCms(homeSub.label) as any,
         value: locMapCms(homeSub.value) as any,
-        homeOnly: true,
       }
       const fullPlain: LocaleMap = { en: '', ru: '', he: '' }
       const fullRich: Record<string, unknown> = {}

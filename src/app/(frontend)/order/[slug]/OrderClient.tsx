@@ -289,7 +289,7 @@ function OrderCheckout({
         {/* Left column */}
         <div className="flex flex-col gap-5">
           {/* Plan card */}
-          <section className={`rounded-[10px] p-6 md:p-8 ${cardCls}`}>
+          <section className={`overflow-hidden rounded-[10px] p-6 md:p-8 ${cardCls}`}>
             <div className="mb-6 flex items-start gap-4">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[5px] bg-erythro-500">
                 <img
@@ -370,8 +370,10 @@ function OrderCheckout({
 
               return (
                 <div className="mt-6 -mx-6 flex flex-col border-t border-current/10 md:-mx-8">
-                  {featureRows.map((row) => {
+                  {featureRows.map((row, rowPos) => {
                     const isOpen = openFeatureIndex === row.index
+                    const isLastFeature = rowPos === featureRows.length - 1 && !hasIncludes
+                    const rowBorder = isLastFeature ? '' : 'border-b border-current/10'
                     const title = (
                       <>
                         {row.label ? <span className="font-semibold">{row.label} </span> : null}
@@ -390,7 +392,7 @@ function OrderCheckout({
                       return (
                         <div
                           key={row.index}
-                          className="flex min-h-14 items-center justify-between gap-4 border-b border-current/10 px-6 py-3 md:px-8"
+                          className={`flex min-h-14 items-center justify-between gap-4 px-6 py-3 md:px-8 ${rowBorder}`}
                         >
                           <p className={`m-0 ${titleClass}`}>{title}</p>
                           <span className="h-8 w-8 shrink-0" aria-hidden />
@@ -399,7 +401,7 @@ function OrderCheckout({
                     }
 
                     return (
-                      <div key={row.index} className="border-b border-current/10">
+                      <div key={row.index} className={rowBorder}>
                         <button
                           type="button"
                           onClick={() => setOpenFeatureIndex(isOpen ? null : row.index)}
@@ -546,7 +548,7 @@ function OrderCheckout({
             }`
             const fullOpen = openAddonFullId === addon.id
             return (
-              <section key={addon.id} className={`rounded-[10px] p-6 md:p-7 ${cardCls}`}>
+              <section key={addon.id} className={`overflow-hidden rounded-[10px] p-6 md:p-8 ${cardCls}`}>
                 <div className="flex items-start gap-3">
                   <input
                     type="checkbox"
@@ -613,9 +615,9 @@ function OrderCheckout({
                 </div>
 
                 {isSubscription || hasFull ? (
-                  <div className="mt-5 -mx-6 flex flex-col border-t border-current/10 md:-mx-8">
+                  <div className="mt-6 -mx-6 flex flex-col border-t border-current/10 md:-mx-8">
                     {hasFull ? (
-                      <div className="border-b border-current/10">
+                      <div>
                         <button
                           type="button"
                           onClick={() => setOpenAddonFullId(fullOpen ? null : addon.id)}
@@ -658,7 +660,7 @@ function OrderCheckout({
                         </div>
                       </div>
                     ) : (
-                      <div className="flex min-h-14 items-center justify-between gap-4 border-b border-current/10 px-6 py-3 md:px-8">
+                      <div className="flex min-h-14 items-center justify-between gap-4 px-6 py-3 md:px-8">
                         <p className={`m-0 ${titleClass}`}>
                           <span className="font-semibold">{copy.subscriptionLabel} </span>
                           <span dir="ltr">

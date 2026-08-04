@@ -415,11 +415,6 @@ export interface SolutionFeature {
   full?: Record<string, string>
   /** Lexical rich-text description under Value on the order page only. */
   fullRich?: Record<string, unknown>
-  /**
-   * Homepage Solutions cards only — omitted from the order page package accordion.
-   * Purchasable counterparts (e.g. Subscription) belong in plan Add-ons.
-   */
-  homeOnly?: boolean
 }
 
 export type SolutionCurrency = 'ILS' | 'USD' | 'EUR'
@@ -483,7 +478,6 @@ export const solutions = {
         {
           label: { en: 'Subscription:', ru: 'Подписка:', he: 'מנוי:' },
           value: { en: '199₪/mth', ru: '199₪/мес', he: '₪199/חודש' },
-          homeOnly: true,
         },
       ],
     },
@@ -514,7 +508,6 @@ export const solutions = {
         {
           label: { en: 'Subscription:', ru: 'Подписка:', he: 'מנוי:' },
           value: { en: '350₪/mth', ru: '350₪/мес', he: '₪350/חודש' },
-          homeOnly: true,
         },
       ],
     },
@@ -555,7 +548,6 @@ export const solutions = {
         {
           label: { en: 'Subscription:', ru: 'Подписка:', he: 'מנוי:' },
           value: { en: '650₪/mth', ru: '650₪/мес', he: '₪650/חודש' },
-          homeOnly: true,
         },
       ],
       disclaimer: {
@@ -599,7 +591,6 @@ export const solutions = {
         {
           label: { en: 'Subscription:', ru: 'Подписка:', he: 'מנוי:' },
           value: { en: '2500₪/mth', ru: '2500₪/мес', he: '₪2500/חודש' },
-          homeOnly: true,
         },
       ],
       disclaimer: {
