@@ -454,11 +454,11 @@ export interface SolutionPlan {
         name: string;
         description?: string | null;
         /**
-         * Same format as Feature Value, e.g. "350₪/мес" or "₪350/חודש"
+         * Per locale, same format as Feature Value — e.g. en "350₪/mth", ru "350₪/мес", he "₪350/חודש"
          */
-        price: string;
+        priceDisplay: string;
         /**
-         * Expandable details under the “Subscription: {price}/mo” line on the order add-on card.
+         * Expandable details under the “Subscription: {price}” line on the order add-on card.
          */
         full?: {
           root: {
@@ -934,7 +934,7 @@ export interface SolutionPlansSelect<T extends boolean = true> {
         addonId?: T;
         name?: T;
         description?: T;
-        price?: T;
+        priceDisplay?: T;
         full?: T;
         discountMonths1?: T;
         discountMonths6?: T;

@@ -176,7 +176,7 @@ function OrderCheckout({
     .map((addon) => {
       const months: AddonTermMonths = addonTermMonths[addon.id] || 1
       const discount = addonTermDiscount(addon, months)
-      const amounts = calcAddonAmount(addonMonthlyAmount(addon), months, discount)
+      const amounts = calcAddonAmount(addonMonthlyAmount(addon, locale), months, discount)
       return { addon, months, discount, ...amounts }
     })
 
@@ -522,7 +522,7 @@ function OrderCheckout({
             const description = tLocale(addon.description, locale).trim()
             const months: AddonTermMonths = addonTermMonths[addon.id] || 1
             const discount = addonTermDiscount(addon, months)
-            const amounts = calcAddonAmount(addonMonthlyAmount(addon), months, discount)
+            const amounts = calcAddonAmount(addonMonthlyAmount(addon, locale), months, discount)
             const plainFull = tLocale(addon.full, locale).trim()
             const fullDoc = resolveLexical(addon.fullRich, locale, plainFull || null)
             const hasFull = Boolean(fullDoc && lexicalToPlain(fullDoc)) || Boolean(plainFull)
@@ -534,7 +534,10 @@ function OrderCheckout({
             const rowBtnClass = `group flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 px-6 py-3 text-start transition-colors duration-300 md:px-8 ${
               isLight ? 'hover:bg-erythro-500/5' : 'hover:bg-gold-500/10'
             }`
-            const priceDisplay = localizeShekelPlacement(String(addon.price || '').trim(), locale)
+            const priceDisplay = localizeShekelPlacement(
+              tLocale(addon.price, locale).trim(),
+              locale,
+            )
             const fullOpen = openAddonFullId === addon.id
             return (
               <section key={addon.id} className={`overflow-hidden rounded-[10px] p-6 md:p-8 ${cardCls}`}>
