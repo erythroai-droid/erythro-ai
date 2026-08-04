@@ -372,7 +372,7 @@ export interface SolutionPlan {
    */
   featured?: boolean | null;
   /**
-   * Label + Value show on homepage cards and on the order package accordion. For Subscription use Label + Value only (homepage); put details on the Monthly subscription Add-on.
+   * Label + Value show on homepage cards and on the order package accordion. For “Подписка / Subscription” use Label + Value only (homepage); put price details and Full on the Monthly subscription Add-on.
    */
   features?:
     | {
@@ -443,7 +443,7 @@ export interface SolutionPlan {
       }[]
     | null;
   /**
-   * Optional order extras (e.g. Subscription). Use together with a Home-only Features row if the line should still appear on homepage cards.
+   * Optional order extras (e.g. Monthly subscription). Pair with a Features row “Подписка: …” if the price should still show on homepage cards.
    */
   addons?:
     | {
@@ -454,9 +454,9 @@ export interface SolutionPlan {
         name: string;
         description?: string | null;
         /**
-         * Monthly price in the plan currency
+         * Same format as Feature Value, e.g. "350₪/мес" or "₪350/חודש"
          */
-        price: number;
+        price: string;
         /**
          * Expandable details under the “Subscription: {price}/mo” line on the order add-on card.
          */
