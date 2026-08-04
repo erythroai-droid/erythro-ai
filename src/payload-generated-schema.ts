@@ -465,6 +465,7 @@ export const solution_plans_addons_locales = pgTable(
     name: varchar('name').notNull(),
     description: varchar('description'),
     note: varchar('note'),
+    full: jsonb('full'),
     id: serial('id').primaryKey(),
     _locale: enum__locales('_locale').notNull(),
     _parentID: varchar('_parent_id').notNull(),

@@ -464,6 +464,9 @@ export interface SolutionPlan {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Optional order extras (e.g. Subscription). Use together with a Home-only Features row if the line should still appear on homepage cards.
+   */
   addons?:
     | {
         /**
@@ -476,6 +479,24 @@ export interface SolutionPlan {
          * Monthly price in the plan currency
          */
         price: number;
+        /**
+         * Expandable details under the “Subscription: {price}/mo” line on the order add-on card.
+         */
+        full?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
         /**
          * Discount % for 1-month term (0 = no discount)
          */
@@ -490,7 +511,7 @@ export interface SolutionPlan {
         discountMonths12?: number | null;
         recommended?: boolean | null;
         /**
-         * Always include this add-on in the order. Customers cannot deselect it. Subscription term (1/6/12) is hidden — price is charged as a single monthly rate.
+         * Always include this add-on (e.g. Monthly subscription). Customers cannot deselect it; term 1/6/12 stays available.
          */
         mandatory?: boolean | null;
         note?: string | null;
@@ -938,6 +959,7 @@ export interface SolutionPlansSelect<T extends boolean = true> {
         name?: T;
         description?: T;
         price?: T;
+        full?: T;
         discountMonths1?: T;
         discountMonths6?: T;
         discountMonths12?: T;

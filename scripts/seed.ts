@@ -291,7 +291,11 @@ async function run() {
                   price: a.price,
                   recommended: !!a.recommended,
                   mandatory: !!a.mandatory,
+                  discountMonths1: a.discountMonths1 || 0,
+                  discountMonths6: a.discountMonths6 || 0,
+                  discountMonths12: a.discountMonths12 || 0,
                   ...(a.note ? { note: a.note[loc] || a.note.en } : {}),
+                  ...(a.full ? { full: a.full[loc] || a.full.en } : {}),
                 })),
               }
             : {}),

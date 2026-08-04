@@ -23,6 +23,9 @@ import { mediaDocUrl } from './publicMediaUrl'
 import {
   ORDER_PLANS,
   getOrderPlan as getStaticOrderPlan,
+  isSubscriptionFeatureLabel,
+  subscriptionAddonFromFeature,
+  SUBSCRIPTION_ADDON_ID,
   type OrderPlan,
   type OrderAddon,
   type OrderPeriod,
@@ -383,7 +386,10 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
 
   if (Array.isArray(d.features) && d.features.length) {
     card.features = d.features
-      .filter((f: any) => !f?.homeOnly)
+      .filter(
+        (f: any) =>
+          !f?.homeOnly && !isSubscriptionFeatureLabel(locMapCms(f.label)),
+      )
       .map((f: any) => {
       const row: SolutionCardItem['features'][number] = {
         label: locMapCms(f.label) as any,
@@ -428,23 +434,102 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
 
   let addons: OrderAddon[] = []
   if (Array.isArray(d.addons) && d.addons.length) {
-    addons = d.addons.map((a: any) => ({
-      id: a.addonId || String(a.id),
-      name: locMapCms(a.name),
-      description: locMapCms(a.description),
-      price: typeof a.price === 'number' ? a.price : Number(a.price) || 0,
-      discountMonths1:
-        typeof a.discountMonths1 === 'number' ? a.discountMonths1 : Number(a.discountMonths1) || 0,
-      discountMonths6:
-        typeof a.discountMonths6 === 'number' ? a.discountMonths6 : Number(a.discountMonths6) || 0,
-      discountMonths12:
-        typeof a.discountMonths12 === 'number'
-          ? a.discountMonths12
-          : Number(a.discountMonths12) || 0,
-      ...(a.recommended ? { recommended: true } : {}),
-      ...(a.mandatory ? { mandatory: true } : {}),
-      ...(hasLocalizedSeo(a.note) ? { note: locMapCms(a.note) } : {}),
-    }))
+    addons = d.addons.map((a: any) => {
+      const addon: OrderAddon = {
+        id: a.addonId || String(a.id),
+        name: locMapCms(a.name),
+        description: locMapCms(a.description),
+        price: typeof a.price === 'number' ? a.price : Number(a.price) || 0,
+        discountMonths1:
+          typeof a.discountMonths1 === 'number' ? a.discountMonths1 : Number(a.discountMonths1) || 0,
+        discountMonths6:
+          typeof a.discountMonths6 === 'number' ? a.discountMonths6 : Number(a.discountMonths6) || 0,
+        discountMonths12:
+          typeof a.discountMonths12 === 'number'
+            ? a.discountMonths12
+            : Number(a.discountMonths12) || 0,
+        ...(a.recommended ? { recommended: true } : {}),
+        ...(a.mandatory ? { mandatory: true } : {}),
+        ...(hasLocalizedSeo(a.note) ? { note: locMapCms(a.note) } : {}),
+      }
+
+      const fullPlain: LocaleMap = { en: '', ru: '', he: '' }
+      const fullRich: Record<string, unknown> = {}
+      let hasFull = false
+      for (const loc of LOCALES) {
+        const raw =
+          a.full && typeof a.full === 'object' && !Array.isArray(a.full) && !isLexicalDoc(a.full)
+            ? (a.full as Record<string, unknown>)[loc] ?? (a.full as Record<string, unknown>).en
+            : a.full
+        if (isLexicalDoc(raw)) {
+          fullRich[loc] = raw
+          fullPlain[loc] = lexicalToPlain(raw)
+          if (fullPlain[loc]) hasFull = true
+        } else if (typeof raw === 'string' && raw.trim()) {
+          fullRich[loc] = lexicalFromText(raw)
+          fullPlain[loc] = raw.trim()
+          hasFull = true
+        }
+      }
+      if (hasFull) {
+        addon.full = fullPlain
+        addon.fullRich = fullRich
+      }
+      if (
+        addon.id === SUBSCRIPTION_ADDON_ID ||
+        isSubscriptionFeatureLabel(addon.name)
+      ) {
+        addon.mandatory = true
+        addon.recommended = true
+      }
+      return addon
+    })
+  }
+
+  // “Подписка” feature → mandatory Monthly subscription add-on when CMS has no addon yet
+  const hasSubscriptionAddon = addons.some(
+    (a) =>
+      a.id === SUBSCRIPTION_ADDON_ID ||
+      isSubscriptionFeatureLabel(a.name),
+  )
+  if (!hasSubscriptionAddon && Array.isArray(d.features)) {
+    const homeSub = d.features.find((f: any) =>
+      isSubscriptionFeatureLabel(locMapCms(f.label)),
+    )
+    if (homeSub) {
+      const featureRow: SolutionCardItem['features'][number] = {
+        label: locMapCms(homeSub.label) as any,
+        value: locMapCms(homeSub.value) as any,
+        homeOnly: true,
+      }
+      const fullPlain: LocaleMap = { en: '', ru: '', he: '' }
+      const fullRich: Record<string, unknown> = {}
+      let hasFull = false
+      for (const loc of LOCALES) {
+        const raw =
+          homeSub.full &&
+          typeof homeSub.full === 'object' &&
+          !Array.isArray(homeSub.full) &&
+          !isLexicalDoc(homeSub.full)
+            ? (homeSub.full as Record<string, unknown>)[loc] ??
+              (homeSub.full as Record<string, unknown>).en
+            : homeSub.full
+        if (isLexicalDoc(raw)) {
+          fullRich[loc] = raw
+          fullPlain[loc] = lexicalToPlain(raw)
+          if (fullPlain[loc]) hasFull = true
+        } else if (typeof raw === 'string' && raw.trim()) {
+          fullRich[loc] = lexicalFromText(raw)
+          fullPlain[loc] = raw.trim()
+          hasFull = true
+        }
+      }
+      if (hasFull) {
+        featureRow.full = fullPlain
+        featureRow.fullRich = fullRich
+      }
+      addons = [subscriptionAddonFromFeature(featureRow), ...addons]
+    }
   }
 
   return {

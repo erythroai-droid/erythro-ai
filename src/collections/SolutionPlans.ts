@@ -177,13 +177,19 @@ export const SolutionPlans: CollectionConfig = {
           required: true,
           admin: { description: 'Monthly price in the plan currency' },
         },
+        locRichText('full', {
+          label: 'Full (description)',
+          admin: {
+            description:
+              'Expandable details under the “Subscription: {price}/mo” line on the order add-on card.',
+          },
+        }),
         {
           name: 'discountMonths1',
           type: 'number',
           defaultValue: 0,
           admin: {
             description: 'Discount % for 1-month term (0 = no discount)',
-            condition: (_, siblingData) => !siblingData?.mandatory,
           },
         },
         {
@@ -192,7 +198,6 @@ export const SolutionPlans: CollectionConfig = {
           defaultValue: 0,
           admin: {
             description: 'Discount % for 6-month term (0 = no discount)',
-            condition: (_, siblingData) => !siblingData?.mandatory,
           },
         },
         {
@@ -201,7 +206,6 @@ export const SolutionPlans: CollectionConfig = {
           defaultValue: 0,
           admin: {
             description: 'Discount % for 12-month term (0 = no discount)',
-            condition: (_, siblingData) => !siblingData?.mandatory,
           },
         },
         {
@@ -215,7 +219,7 @@ export const SolutionPlans: CollectionConfig = {
           defaultValue: false,
           admin: {
             description:
-              'Always include this add-on in the order. Customers cannot deselect it. Subscription term (1/6/12) is hidden — price is charged as a single monthly rate.',
+              'Always include this add-on (e.g. Monthly subscription). Customers cannot deselect it; term 1/6/12 stays available.',
           },
         },
         locText('note'),

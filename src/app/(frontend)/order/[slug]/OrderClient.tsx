@@ -18,9 +18,12 @@ import {
   calcPlanAmount,
   calcTaxAmount,
   formatPrice,
+  isSubscriptionFeatureLabel,
   localizeShekelPlacement,
+  SUBSCRIPTION_ADDON_ID,
   tLocale,
   type AddonTermMonths,
+  type OrderAddon,
   type OrderPlan,
 } from '@/lib/orderPlans'
 import { isLexicalDoc, lexicalToPlain, resolveLexical } from '@/lib/lexical'
@@ -143,7 +146,11 @@ function OrderCheckout({
     return initial
   })
   const [openFeatureIndex, setOpenFeatureIndex] = useState<number | null>(null)
+  const [openAddonFullId, setOpenAddonFullId] = useState<string | null>(null)
   const [includesOpen, setIncludesOpen] = useState(false)
+
+  const isSubscriptionAddon = (addon: OrderAddon) =>
+    addon.id === SUBSCRIPTION_ADDON_ID || isSubscriptionFeatureLabel(addon.name)
 
   const title = tLocale(plan.card.title, locale)
   const subtitle = tLocale(plan.subtitle, locale).trim()
@@ -173,9 +180,8 @@ function OrderCheckout({
   const selectedAddonPricing = plan.addons
     .filter((a) => selectedAddons.includes(a.id))
     .map((addon) => {
-      // Mandatory add-ons have no term picker — always bill 1× monthly price
-      const months: AddonTermMonths = addon.mandatory ? 1 : addonTermMonths[addon.id] || 1
-      const discount = addon.mandatory ? 0 : addonTermDiscount(addon, months)
+      const months: AddonTermMonths = addonTermMonths[addon.id] || 1
+      const discount = addonTermDiscount(addon, months)
       const amounts = calcAddonAmount(addon.price, months, discount)
       return { addon, months, discount, ...amounts }
     })
@@ -228,6 +234,7 @@ function OrderCheckout({
     savings: locale === 'ru' ? 'Экономия' : locale === 'he' ? 'חיסכון' : 'Save',
     recommended: locale === 'ru' ? 'Рекомендуем' : locale === 'he' ? 'מומלץ' : 'Recommended',
     perMonth: locale === 'ru' ? '/мес' : locale === 'he' ? '/חודש' : '/mo',
+    subscriptionLabel: locale === 'ru' ? 'Подписка:' : locale === 'he' ? 'מנוי:' : 'Subscription:',
     includes:
       locale === 'ru'
         ? 'Что входит в разработку'
@@ -247,8 +254,7 @@ function OrderCheckout({
   const handleContinue = () => {
     const addonLines = selectedAddonPricing
       .map(({ addon, months, final }) => {
-        const term = addon.mandatory ? '' : ` (${copy.monthsLabel(months)})`
-        return `${tLocale(addon.name, locale)}${term}: ${money(final)}`
+        return `${tLocale(addon.name, locale)} (${copy.monthsLabel(months)}): ${money(final)}`
       })
       .join(', ')
     const draft = [
@@ -521,13 +527,24 @@ function OrderCheckout({
           {plan.addons.map((addon) => {
             const checked = selectedAddons.includes(addon.id)
             const isMandatory = Boolean(addon.mandatory)
+            const isSubscription = isSubscriptionAddon(addon)
             const note = tLocale(addon.note, locale).trim()
             const description = tLocale(addon.description, locale).trim()
-            const months: AddonTermMonths = isMandatory ? 1 : addonTermMonths[addon.id] || 1
-            const discount = isMandatory ? 0 : addonTermDiscount(addon, months)
+            const months: AddonTermMonths = addonTermMonths[addon.id] || 1
+            const discount = addonTermDiscount(addon, months)
             const amounts = calcAddonAmount(addon.price, months, discount)
+            const plainFull = tLocale(addon.full, locale).trim()
+            const fullDoc = resolveLexical(addon.fullRich, locale, plainFull || null)
+            const hasFull = Boolean(fullDoc && lexicalToPlain(fullDoc)) || Boolean(plainFull)
             const badgeCls =
               'inline-flex w-fit shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]'
+            const titleClass = `min-w-0 text-sm leading-6 ${
+              isLight ? 'text-coal-900/85' : 'text-white/85'
+            }`
+            const rowBtnClass = `group flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 px-6 py-3 text-start transition-colors duration-300 md:px-8 ${
+              isLight ? 'hover:bg-erythro-500/5' : 'hover:bg-gold-500/10'
+            }`
+            const fullOpen = openAddonFullId === addon.id
             return (
               <section key={addon.id} className={`rounded-[10px] p-6 md:p-7 ${cardCls}`}>
                 <div className="flex items-start gap-3">
@@ -557,31 +574,29 @@ function OrderCheckout({
                       <p className={`mt-2 text-sm leading-6 ${muted}`}>{description}</p>
                     ) : null}
 
-                    {!isMandatory ? (
-                      <label className="mt-4 flex w-full flex-col gap-2">
-                        <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
-                          {copy.term}
-                        </span>
-                        <select
-                          value={months}
-                          onChange={(e) => {
-                            const next = Number(e.target.value) as AddonTermMonths
-                            setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
-                          }}
-                          className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
-                            isLight
-                              ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
-                              : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
-                          }`}
-                        >
-                          {ADDON_TERM_MONTHS.map((n) => (
-                            <option key={n} value={n}>
-                              {copy.monthsLabel(n)}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    ) : null}
+                    <label className="mt-4 flex w-full flex-col gap-2">
+                      <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
+                        {copy.term}
+                      </span>
+                      <select
+                        value={months}
+                        onChange={(e) => {
+                          const next = Number(e.target.value) as AddonTermMonths
+                          setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
+                        }}
+                        className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
+                          isLight
+                            ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
+                            : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
+                        }`}
+                      >
+                        {ADDON_TERM_MONTHS.map((n) => (
+                          <option key={n} value={n}>
+                            {copy.monthsLabel(n)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
 
                     {note ? (
                       <p
@@ -596,6 +611,68 @@ function OrderCheckout({
                     ) : null}
                   </div>
                 </div>
+
+                {isSubscription || hasFull ? (
+                  <div className="mt-5 -mx-6 flex flex-col border-t border-current/10 md:-mx-8">
+                    {hasFull ? (
+                      <div className="border-b border-current/10">
+                        <button
+                          type="button"
+                          onClick={() => setOpenAddonFullId(fullOpen ? null : addon.id)}
+                          className={rowBtnClass}
+                          aria-expanded={fullOpen}
+                          aria-controls={`order-addon-full-${addon.id}`}
+                        >
+                          <span className={titleClass}>
+                            <span className="font-semibold">
+                              {isSubscription ? copy.subscriptionLabel : tLocale(addon.name, locale)}{' '}
+                            </span>
+                            {isSubscription ? (
+                              <span dir="ltr">
+                                {localizeShekelPlacement(
+                                  `${money(addon.price)}${copy.perMonth}`,
+                                  locale,
+                                )}
+                              </span>
+                            ) : null}
+                          </span>
+                          <OrderAccordionPlus isOpen={fullOpen} isLight={isLight} size="sm" />
+                        </button>
+                        <div
+                          id={`order-addon-full-${addon.id}`}
+                          className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                            fullOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                          }`}
+                        >
+                          <div className="overflow-hidden">
+                            <div
+                              className={`feature-full-desc px-6 pb-3 text-xs leading-5 md:px-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-1.5 [&_ul]:my-1.5 [&_ul]:list-disc [&_ul]:ps-4 [&_ol]:my-1.5 [&_ol]:list-decimal [&_ol]:ps-4 [&_li]:my-0.5 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${muted}`}
+                            >
+                              {fullDoc && isLexicalDoc(fullDoc) ? (
+                                <RichText data={fullDoc as never} />
+                              ) : (
+                                <p>{plainFull}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex min-h-14 items-center justify-between gap-4 border-b border-current/10 px-6 py-3 md:px-8">
+                        <p className={`m-0 ${titleClass}`}>
+                          <span className="font-semibold">{copy.subscriptionLabel} </span>
+                          <span dir="ltr">
+                            {localizeShekelPlacement(
+                              `${money(addon.price)}${copy.perMonth}`,
+                              locale,
+                            )}
+                          </span>
+                        </p>
+                        <span className="h-8 w-8 shrink-0" aria-hidden />
+                      </div>
+                    )}
+                  </div>
+                ) : null}
 
                 <div className="mt-5 flex items-start justify-between gap-4 border-t border-current/10 pt-5">
                   <span className="text-sm font-bold uppercase tracking-[0.04em]">
@@ -657,9 +734,7 @@ function OrderCheckout({
                   <p className="text-sm font-bold uppercase tracking-[0.04em]">
                     {tLocale(addon.name, locale)}
                   </p>
-                  {!addon.mandatory ? (
-                    <p className={`mt-0.5 text-xs ${muted}`}>{copy.monthsLabel(months)}</p>
-                  ) : null}
+                  <p className={`mt-0.5 text-xs ${muted}`}>{copy.monthsLabel(months)}</p>
                 </div>
                 <div className="shrink-0 text-end text-sm" dir="ltr">
                   {savings > 0 ? (
