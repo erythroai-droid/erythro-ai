@@ -463,7 +463,7 @@ export const solution_plans_addons_locales = pgTable(
   {
     name: varchar('name').notNull(),
     description: varchar('description'),
-    price: varchar('price'),
+    priceDisplay: varchar('price_display'),
     note: varchar('note'),
     full: jsonb('full'),
     id: serial('id').primaryKey(),

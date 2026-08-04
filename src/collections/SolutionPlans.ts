@@ -156,7 +156,8 @@ export const SolutionPlans: CollectionConfig = {
         },
         locText('name', { required: true }),
         locText('description'),
-        locText('price', {
+        locText('priceDisplay', {
+          label: 'Price',
           required: true,
           admin: {
             description:

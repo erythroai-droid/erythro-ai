@@ -13,6 +13,7 @@ import * as migration_20260804_120000_feature_home_only from './20260804_120000_
 import * as migration_20260804_210000_addon_full_description from './20260804_210000_addon_full_description'
 import * as migration_20260805_010000_addon_price_text from './20260805_010000_addon_price_text'
 import * as migration_20260805_020000_addon_price_localized from './20260805_020000_addon_price_localized'
+import * as migration_20260805_030000_addon_price_display_rename from './20260805_030000_addon_price_display_rename'
 
 export const migrations = [
   {
@@ -89,5 +90,10 @@ export const migrations = [
     up: migration_20260805_020000_addon_price_localized.up,
     down: migration_20260805_020000_addon_price_localized.down,
     name: '20260805_020000_addon_price_localized',
+  },
+  {
+    up: migration_20260805_030000_addon_price_display_rename.up,
+    down: migration_20260805_030000_addon_price_display_rename.down,
+    name: '20260805_030000_addon_price_display_rename',
   },
 ]

@@ -432,14 +432,15 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
         name: locMapCms(a.name),
         description: locMapCms(a.description),
         price: (() => {
-          if (a.price && typeof a.price === 'object' && !Array.isArray(a.price)) {
-            return locMapCms(a.price)
+          const raw = a.priceDisplay ?? a.price
+          if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+            return locMapCms(raw)
           }
-          if (typeof a.price === 'number') {
-            const s = `${a.price}₪/мес`
+          if (typeof raw === 'number') {
+            const s = `${raw}₪/мес`
             return { en: s, ru: s, he: s }
           }
-          const s = String(a.price ?? '').trim()
+          const s = String(raw ?? '').trim()
           return { en: s, ru: s, he: s }
         })(),
         discountMonths1:

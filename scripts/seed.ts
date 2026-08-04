@@ -286,7 +286,7 @@ async function run() {
                   addonId: a.id,
                   name: a.name[loc] || a.name.en,
                   description: a.description[loc] || a.description.en,
-                  price:
+                  priceDisplay:
                     typeof a.price === 'string'
                       ? a.price
                       : a.price?.[loc] || a.price?.en || '',
