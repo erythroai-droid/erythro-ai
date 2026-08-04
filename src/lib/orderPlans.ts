@@ -24,6 +24,49 @@ export interface OrderAddon {
   recommended?: boolean
   mandatory?: boolean
   note?: LocaleMap
+  /** Plain fallback for expandable “Subscription: price/mo” details */
+  full?: LocaleMap
+  /** Lexical rich text for expandable details on the order add-on card */
+  fullRich?: Record<string, unknown>
+}
+
+export const SUBSCRIPTION_ADDON_ID = 'subscription'
+
+export const SUBSCRIPTION_ADDON_NAME: LocaleMap = {
+  en: 'Monthly subscription',
+  ru: 'Ежемесячная подписка',
+  he: 'מנוי חודשי',
+}
+
+export function isSubscriptionFeatureLabel(label: LocaleMap | undefined): boolean {
+  const blob = Object.values(label || {})
+    .join(' ')
+    .toLowerCase()
+  return /subscription|подписка|מנוי/.test(blob)
+}
+
+/** Build a mandatory Monthly subscription add-on from a homepage-only feature row. */
+export function subscriptionAddonFromFeature(feature: SolutionFeature): OrderAddon {
+  const price =
+    parsePrice(feature.value?.en || '') ||
+    parsePrice(feature.value?.ru || '') ||
+    parsePrice(feature.value?.he || '') ||
+    0
+  const addon: OrderAddon = {
+    id: SUBSCRIPTION_ADDON_ID,
+    name: { ...SUBSCRIPTION_ADDON_NAME },
+    description: { en: '', ru: '', he: '' },
+    price,
+    mandatory: true,
+    recommended: true,
+  }
+  if (feature.full && Object.values(feature.full).some(Boolean)) {
+    addon.full = { en: '', ru: '', he: '', ...feature.full }
+  }
+  if (feature.fullRich) {
+    addon.fullRich = feature.fullRich
+  }
+  return addon
 }
 
 export const ADDON_TERM_MONTHS = [1, 6, 12] as const
@@ -69,18 +112,23 @@ export interface OrderPlan {
 }
 
 function buildOrderPlan(card: SolutionCardItem): OrderPlan {
+  const homeSubscription = card.features.find((f) => isSubscriptionFeatureLabel(f.label))
+  const addons = homeSubscription ? [subscriptionAddonFromFeature(homeSubscription)] : []
+
   return {
     slug: card.id,
     card: {
       ...card,
-      // Homepage-only rows (e.g. Subscription display) stay on Solutions cards only
-      features: card.features.filter((f) => !f.homeOnly),
+      // Homepage-only / subscription rows stay on Solutions cards only
+      features: card.features.filter(
+        (f) => !f.homeOnly && !isSubscriptionFeatureLabel(f.label),
+      ),
     },
     subtitle: { en: '', ru: '', he: '' },
-    /** Periods / add-ons / promo / tax come from CMS only — no hardcoded stubs */
+    /** Periods / promo / tax come from CMS only — subscription add-on may be derived above */
     periods: [],
     defaultPeriodId: '',
-    addons: [],
+    addons,
   }
 }
 
