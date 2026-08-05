@@ -248,7 +248,12 @@ function OrderCheckout({
     savings: locale === 'ru' ? 'Экономия' : locale === 'he' ? 'חיסכון' : 'Save',
     recommended: locale === 'ru' ? 'Рекомендуем' : locale === 'he' ? 'מומלץ' : 'Recommended',
     perMonth: locale === 'ru' ? '/мес' : locale === 'he' ? '/חודש' : '/mo',
-    subscriptionLabel: locale === 'ru' ? 'Подписка:' : locale === 'he' ? 'מנוי:' : 'Subscription:',
+    subscriptionIncludes:
+      locale === 'ru'
+        ? 'Что входит в подписку?'
+        : locale === 'he'
+          ? 'מה כלול במנוי?'
+          : "What's included in the subscription?",
     includes:
       locale === 'ru'
         ? 'Что входит в разработку?'
@@ -555,10 +560,6 @@ function OrderCheckout({
             const rowBtnClass = `group flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 px-6 py-3 text-start transition-colors duration-300 md:px-8 ${
               isLight ? 'hover:bg-erythro-500/5' : 'hover:bg-gold-500/10'
             }`
-            const priceDisplay = localizeShekelPlacement(
-              tLocale(addon.price, locale).trim(),
-              locale,
-            )
             const fullOpen = openAddonFullId === addon.id
             return (
               <section key={addon.id} className={`overflow-hidden rounded-[10px] p-6 md:p-8 ${cardCls}`}>
@@ -641,14 +642,9 @@ function OrderCheckout({
                           aria-controls={`order-addon-full-${addon.id}`}
                         >
                           <span className={includesTitleClass}>
-                            {isSubscription ? (
-                              <>
-                                {copy.subscriptionLabel}{' '}
-                                <span dir="ltr">{priceDisplay}</span>
-                              </>
-                            ) : (
-                              tLocale(addon.name, locale)
-                            )}
+                            {isSubscription
+                              ? copy.subscriptionIncludes
+                              : tLocale(addon.name, locale)}
                           </span>
                           <OrderAccordionPlus isOpen={fullOpen} isLight={isLight} size="sm" />
                         </button>
@@ -676,8 +672,7 @@ function OrderCheckout({
                     ) : (
                       <div className="flex min-h-14 items-center justify-between gap-4 px-6 py-3 md:px-8">
                         <p className={`m-0 ${includesTitleClass}`}>
-                          {copy.subscriptionLabel}{' '}
-                          <span dir="ltr">{priceDisplay}</span>
+                          {copy.subscriptionIncludes}
                         </p>
                         <span className="h-8 w-8 shrink-0" aria-hidden />
                       </div>
@@ -838,7 +833,14 @@ function OrderCheckout({
       </div>
 
       <div className="mt-12 md:mt-16">
-        <ProjectNav locale={locale} theme={theme} kind="solutions" prev={prev} next={next} />
+        <ProjectNav
+          locale={locale}
+          theme={theme}
+          kind="solutions"
+          prev={prev}
+          next={next}
+          showListLink={false}
+        />
       </div>
     </main>
   )
