@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react'
 import { useRouter } from 'nextjs-toploader/app'
 import { useSiteContent } from './SiteContentProvider'
 import Button from './Button'
-import { currencySymbol, localizeShekelPlacement } from '@/lib/orderPlans'
+import { currencySymbol } from '@/lib/orderPlans'
 import { useCursorGlow } from '@/hooks/useCursorGlow'
 import { useContactModal } from './ContactModal'
 import { isContactModalHref, navigateCtaHref } from '@/lib/ctaNav'
@@ -175,20 +175,7 @@ function SolutionCard({
                     {capitalizeFeatureLabel(labelText)}{' '}
                   </span>
                 ) : null}
-                {valueText
-                  ? (() => {
-                      const displayValue = localizeShekelPlacement(valueText, locale)
-                      const isPrice = /[₪$€]/.test(displayValue)
-                      return (
-                        <span
-                          {...(isPrice ? { dir: 'ltr' as const } : {})}
-                          className={`font-normal ${isPrice ? 'inline-block' : ''}`}
-                        >
-                          {displayValue}
-                        </span>
-                      )
-                    })()
-                  : null}
+                {valueText ? <span className="font-normal">{valueText}</span> : null}
               </p>
             </li>
           )

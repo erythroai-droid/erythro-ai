@@ -166,15 +166,6 @@ export function currencySymbol(currency?: string): string {
   return CURRENCY_SYMBOL[currency || 'ILS'] || CURRENCY_SYMBOL.ILS
 }
 
-/**
- * In Hebrew UI the shekel sign sits to the left of the amount
- * ("₪ 1,350" / "₪199"), including CMS strings like "199₪/חודש".
- */
-export function localizeShekelPlacement(text: string, locale: string): string {
-  if (locale !== 'he' || !text.includes('₪')) return text
-  return text.replace(/(\d[\d\s.,]*)\s*₪/g, '₪$1')
-}
-
 export function formatPrice(amount: number, locale: string, currency?: string): string {
   const formatted = new Intl.NumberFormat(
     locale === 'he' ? 'he-IL' : locale === 'ru' ? 'ru-RU' : 'en-US',

@@ -20,7 +20,6 @@ import {
   calcTaxAmount,
   formatPrice,
   isSubscriptionFeatureLabel,
-  localizeShekelPlacement,
   SUBSCRIPTION_ADDON_ID,
   tLocale,
   type AddonTermMonths,
@@ -437,11 +436,7 @@ function OrderCheckout({
                       >
                         <p className={`m-0 ${titleClass}`}>
                           {row.label ? <span className="font-semibold">{row.label} </span> : null}
-                          {row.value ? (
-                            <span dir={/[₪$€]/.test(row.value) ? 'ltr' : undefined}>
-                              {localizeShekelPlacement(row.value, locale)}
-                            </span>
-                          ) : null}
+                          {row.value ? <span>{row.value}</span> : null}
                         </p>
                         <span className="h-8 w-8 shrink-0" aria-hidden />
                       </div>
