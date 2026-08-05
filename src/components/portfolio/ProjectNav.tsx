@@ -21,6 +21,8 @@ interface ProjectNavProps {
   listHref?: string
   /** Override prev/next base path (default: /portfolio or /order) */
   itemBasePath?: string
+  /** Render the index link next to prev/next */
+  showListLink?: boolean
   /** @deprecated Use listHref — kept for portfolio callers */
   portfolioHref?: string
 }
@@ -75,6 +77,7 @@ export default function ProjectNav({
   listHref,
   itemBasePath,
   portfolioHref,
+  showListLink = true,
 }: ProjectNavProps) {
   const labels = tNav(locale, kind)
   const isLight = theme === 'light'
@@ -149,9 +152,11 @@ export default function ProjectNav({
         )}
       </div>
 
-      <Link href={indexHref} className={`${baseBtn} w-full sm:w-auto ${accentClass}`}>
-        {labels.list}
-      </Link>
+      {showListLink ? (
+        <Link href={indexHref} className={`${baseBtn} w-full sm:w-auto ${accentClass}`}>
+          {labels.list}
+        </Link>
+      ) : null}
     </nav>
   )
 }
