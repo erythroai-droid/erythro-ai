@@ -489,7 +489,7 @@ export interface SolutionPlan {
         discountMonths12?: number | null;
         recommended?: boolean | null;
         /**
-         * Always include this add-on (e.g. Monthly subscription). Customers cannot deselect it; term 1/6/12 stays available.
+         * Always include this add-on. Customers cannot deselect it; subscription term (1/6/12) is hidden — price is charged as a single monthly rate.
          */
         mandatory?: boolean | null;
         note?: string | null;
