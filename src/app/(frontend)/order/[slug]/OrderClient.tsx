@@ -30,15 +30,25 @@ import {
 import { isLexicalDoc, lexicalToPlain, resolveLexical } from '@/lib/lexical'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
+import ProjectNav, { type ProjectNavNeighbor } from '@/components/portfolio/ProjectNav'
 
 interface OrderClientProps {
   initialLocale: string
   initialTheme?: 'light' | 'dark'
   content: SiteContent
   plan: OrderPlan
+  prev?: ProjectNavNeighbor | null
+  next?: ProjectNavNeighbor | null
 }
 
-export default function OrderClient({ initialLocale, initialTheme, content, plan }: OrderClientProps) {
+export default function OrderClient({
+  initialLocale,
+  initialTheme,
+  content,
+  plan,
+  prev = null,
+  next = null,
+}: OrderClientProps) {
   const a11yTranslations = content.accessibility
   const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'light', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
@@ -96,7 +106,13 @@ export default function OrderClient({ initialLocale, initialTheme, content, plan
                 theme === 'light' ? 'bg-[#F4F1EC] text-coal-900' : 'dark-gradient-bg text-main'
               }`}
             >
-              <OrderCheckout plan={plan} locale={locale} theme={theme} />
+              <OrderCheckout
+                plan={plan}
+                locale={locale}
+                theme={theme}
+                prev={prev}
+                next={next}
+              />
             </div>
           </div>
 
@@ -130,10 +146,14 @@ function OrderCheckout({
   plan,
   locale,
   theme,
+  prev,
+  next,
 }: {
   plan: OrderPlan
   locale: string
   theme: 'light' | 'dark'
+  prev: ProjectNavNeighbor | null
+  next: ProjectNavNeighbor | null
 }) {
   const { open: openContact } = useContactModal()
   const isLight = theme === 'light'
@@ -174,8 +194,8 @@ function OrderCheckout({
   const selectedAddonPricing = plan.addons
     .filter((a) => selectedAddons.includes(a.id))
     .map((addon) => {
-      const months: AddonTermMonths = addonTermMonths[addon.id] || 1
-      const discount = addonTermDiscount(addon, months)
+      const months: AddonTermMonths = addon.mandatory ? 1 : addonTermMonths[addon.id] || 1
+      const discount = addon.mandatory ? 0 : addonTermDiscount(addon, months)
       const amounts = calcAddonAmount(addonMonthlyAmount(addon, locale), months, discount)
       return { addon, months, discount, ...amounts }
     })
@@ -248,7 +268,8 @@ function OrderCheckout({
   const handleContinue = () => {
     const addonLines = selectedAddonPricing
       .map(({ addon, months, final }) => {
-        return `${tLocale(addon.name, locale)} (${copy.monthsLabel(months)}): ${money(final)}`
+        const term = addon.mandatory ? '' : ` (${copy.monthsLabel(months)})`
+        return `${tLocale(addon.name, locale)}${term}: ${money(final)}`
       })
       .join(', ')
     const draft = [
@@ -520,8 +541,8 @@ function OrderCheckout({
             const isSubscription = isSubscriptionAddon(addon)
             const note = tLocale(addon.note, locale).trim()
             const description = tLocale(addon.description, locale).trim()
-            const months: AddonTermMonths = addonTermMonths[addon.id] || 1
-            const discount = addonTermDiscount(addon, months)
+            const months: AddonTermMonths = isMandatory ? 1 : addonTermMonths[addon.id] || 1
+            const discount = isMandatory ? 0 : addonTermDiscount(addon, months)
             const amounts = calcAddonAmount(addonMonthlyAmount(addon, locale), months, discount)
             const plainFull = tLocale(addon.full, locale).trim()
             const fullDoc = resolveLexical(addon.fullRich, locale, plainFull || null)
@@ -568,29 +589,31 @@ function OrderCheckout({
                       <p className={`mt-2 text-sm leading-6 ${muted}`}>{description}</p>
                     ) : null}
 
-                    <label className="mt-4 flex w-full flex-col gap-2">
-                      <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
-                        {copy.term}
-                      </span>
-                      <select
-                        value={months}
-                        onChange={(e) => {
-                          const next = Number(e.target.value) as AddonTermMonths
-                          setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
-                        }}
-                        className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
-                          isLight
-                            ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
-                            : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
-                        }`}
-                      >
-                        {ADDON_TERM_MONTHS.map((n) => (
-                          <option key={n} value={n}>
-                            {copy.monthsLabel(n)}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    {!isMandatory ? (
+                      <label className="mt-4 flex w-full flex-col gap-2">
+                        <span className={`text-xs uppercase tracking-[0.16em] ${muted}`}>
+                          {copy.term}
+                        </span>
+                        <select
+                          value={months}
+                          onChange={(e) => {
+                            const next = Number(e.target.value) as AddonTermMonths
+                            setAddonTermMonths((prev) => ({ ...prev, [addon.id]: next }))
+                          }}
+                          className={`h-12 w-full rounded-[10px] border px-4 text-sm outline-none transition-colors ${
+                            isLight
+                              ? 'border-coal-900/15 bg-[#F7F5F1] text-coal-900 focus:border-erythro-500'
+                              : 'border-white/15 bg-coal-900 text-white focus:border-gold-500'
+                          }`}
+                        >
+                          {ADDON_TERM_MONTHS.map((n) => (
+                            <option key={n} value={n}>
+                              {copy.monthsLabel(n)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : null}
 
                     {note ? (
                       <p
@@ -751,7 +774,9 @@ function OrderCheckout({
                   <p className="text-sm font-bold uppercase tracking-[0.04em]">
                     {tLocale(addon.name, locale)}
                   </p>
-                  <p className={`mt-0.5 text-xs ${muted}`}>{copy.monthsLabel(months)}</p>
+                  {!addon.mandatory ? (
+                    <p className={`mt-0.5 text-xs ${muted}`}>{copy.monthsLabel(months)}</p>
+                  ) : null}
                 </div>
                 <div className="shrink-0 text-end text-sm" dir="ltr">
                   {savings > 0 ? (
@@ -810,6 +835,10 @@ function OrderCheckout({
             {copy.guarantee}
           </p>
         </aside>
+      </div>
+
+      <div className="mt-12 md:mt-16">
+        <ProjectNav locale={locale} theme={theme} kind="solutions" prev={prev} next={next} />
       </div>
     </main>
   )

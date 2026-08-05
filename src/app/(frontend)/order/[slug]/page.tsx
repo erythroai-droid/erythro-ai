@@ -4,8 +4,8 @@ import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import OrderClient from './OrderClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
-import { getAllOrderSlugsCms, getOrderPlanBySlug } from '@/lib/cmsPages'
-import { getAllOrderSlugs, tLocale } from '@/lib/orderPlans'
+import { getAllOrderSlugsCms, getCachedOrderPlans, getOrderPlanBySlug } from '@/lib/cmsPages'
+import { getAllOrderSlugs, ORDER_PLANS, tLocale } from '@/lib/orderPlans'
 import { getRequestPrefs } from '@/lib/requestPrefs'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
@@ -65,7 +65,29 @@ export default async function OrderPage({ params }: OrderPageProps) {
   if (!plan) notFound()
 
   const { initialLocale, initialTheme } = await getRequestPrefs('light')
-  const content = await getCachedSiteContent()
+  const [content, plans] = await Promise.all([
+    getCachedSiteContent(),
+    getCachedOrderPlans().catch(() => ORDER_PLANS),
+  ])
+
+  const list = plans.length ? plans : ORDER_PLANS
+  const index = list.findIndex((p) => p.slug === plan.slug)
+  const prevPlan =
+    index > 0 ? list[index - 1] : list.length > 1 ? list[list.length - 1] : null
+  const nextPlan =
+    index >= 0 && index < list.length - 1
+      ? list[index + 1]
+      : list.length > 1
+        ? list[0]
+        : null
+
+  const toNeighbor = (p: (typeof list)[number] | null) =>
+    p
+      ? {
+          slug: p.slug,
+          title: tLocale(p.card.title, initialLocale),
+        }
+      : null
 
   return (
     <OrderClient
@@ -73,6 +95,8 @@ export default async function OrderPage({ params }: OrderPageProps) {
       initialTheme={initialTheme}
       content={content}
       plan={plan}
+      prev={toNeighbor(prevPlan)}
+      next={toNeighbor(nextPlan)}
     />
   )
 }

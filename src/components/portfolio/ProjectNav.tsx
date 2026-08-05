@@ -8,22 +8,40 @@ export interface ProjectNavNeighbor {
   title: string
 }
 
+export type ListingNavKind = 'portfolio' | 'solutions'
+
 interface ProjectNavProps {
   locale: string
   theme?: 'light' | 'dark'
   prev: ProjectNavNeighbor | null
   next: ProjectNavNeighbor | null
+  /** portfolio (default) or solutions — labels + default paths */
+  kind?: ListingNavKind
+  /** Override list/index link (default: /portfolio or /#solutions) */
+  listHref?: string
+  /** Override prev/next base path (default: /portfolio or /order) */
+  itemBasePath?: string
+  /** @deprecated Use listHref — kept for portfolio callers */
   portfolioHref?: string
 }
 
-function tNav(locale: string) {
+function tNav(locale: string, kind: ListingNavKind) {
+  if (kind === 'solutions') {
+    if (locale === 'ru') {
+      return { prev: 'Предыдущий', next: 'Следующий', list: 'Все решения' }
+    }
+    if (locale === 'he') {
+      return { prev: 'הקודם', next: 'הבא', list: 'כל הפתרונות' }
+    }
+    return { prev: 'Previous', next: 'Next', list: 'All solutions' }
+  }
   if (locale === 'ru') {
-    return { prev: 'Предыдущий', next: 'Следующий', portfolio: 'Все проекты' }
+    return { prev: 'Предыдущий', next: 'Следующий', list: 'Все проекты' }
   }
   if (locale === 'he') {
-    return { prev: 'הקודם', next: 'הבא', portfolio: 'כל הפרויקטים' }
+    return { prev: 'הקודם', next: 'הבא', list: 'כל הפרויקטים' }
   }
-  return { prev: 'Previous', next: 'Next', portfolio: 'All projects' }
+  return { prev: 'Previous', next: 'Next', list: 'All projects' }
 }
 
 function ArrowIcon({ direction }: { direction: 'prev' | 'next' }) {
@@ -53,10 +71,28 @@ export default function ProjectNav({
   theme = 'dark',
   prev,
   next,
-  portfolioHref = '/portfolio',
+  kind = 'portfolio',
+  listHref,
+  itemBasePath,
+  portfolioHref,
 }: ProjectNavProps) {
-  const labels = tNav(locale)
+  const labels = tNav(locale, kind)
   const isLight = theme === 'light'
+  const basePath = itemBasePath ?? (kind === 'solutions' ? '/order' : '/portfolio')
+  const indexHref =
+    listHref ?? portfolioHref ?? (kind === 'solutions' ? '/#solutions' : '/portfolio')
+  const ariaLabel =
+    kind === 'solutions'
+      ? locale === 'ru'
+        ? 'Навигация по решениям'
+        : locale === 'he'
+          ? 'ניווט בין פתרונות'
+          : 'Solutions navigation'
+      : locale === 'ru'
+        ? 'Навигация по проектам'
+        : locale === 'he'
+          ? 'ניווט בין פרויקטים'
+          : 'Project navigation'
 
   const outlineClass = isLight
     ? 'border-coal-900 text-coal-900 hover:bg-coal-900 hover:text-white active:bg-coal-900 active:text-white'
@@ -73,13 +109,13 @@ export default function ProjectNav({
 
   return (
     <nav
-      aria-label={locale === 'ru' ? 'Навигация по проектам' : locale === 'he' ? 'ניווט בין פרויקטים' : 'Project navigation'}
+      aria-label={ariaLabel}
       className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
     >
       <div className="flex w-full items-center gap-2 sm:contents">
         {prev ? (
           <Link
-            href={`/portfolio/${prev.slug}`}
+            href={`${basePath}/${prev.slug}`}
             className={`${sideBtn} ${outlineClass}`}
             title={prev.title}
           >
@@ -95,7 +131,7 @@ export default function ProjectNav({
 
         {next ? (
           <Link
-            href={`/portfolio/${next.slug}`}
+            href={`${basePath}/${next.slug}`}
             className={`${sideBtn} sm:order-last ${outlineClass}`}
             title={next.title}
           >
@@ -113,8 +149,8 @@ export default function ProjectNav({
         )}
       </div>
 
-      <Link href={portfolioHref} className={`${baseBtn} w-full sm:w-auto ${accentClass}`}>
-        {labels.portfolio}
+      <Link href={indexHref} className={`${baseBtn} w-full sm:w-auto ${accentClass}`}>
+        {labels.list}
       </Link>
     </nav>
   )
