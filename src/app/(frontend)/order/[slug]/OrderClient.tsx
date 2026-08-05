@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from '@/components/Navbar'
 import FooterSection from '@/components/FooterSection'
 import { AccessibilityPanel } from '@/components/accessibility'
@@ -30,6 +32,13 @@ import { isLexicalDoc, lexicalToPlain, resolveLexical } from '@/lib/lexical'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 import ProjectNav, { type ProjectNavNeighbor } from '@/components/portfolio/ProjectNav'
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger)
+}
+
+/** Accordion open/close duration; keep in sync with the grid-rows transition. */
+const ACCORDION_MS = 300
 
 interface OrderClientProps {
   initialLocale: string
@@ -167,6 +176,13 @@ function OrderCheckout({
   })
   const [openAddonFullId, setOpenAddonFullId] = useState<string | null>(null)
   const [includesOpen, setIncludesOpen] = useState(false)
+
+  // The footer is pinned by ScrollTrigger with cached measurements; without a
+  // refresh an expanded accordion grows the page and the pin overlaps content.
+  useEffect(() => {
+    const timer = window.setTimeout(() => ScrollTrigger.refresh(), ACCORDION_MS + 50)
+    return () => window.clearTimeout(timer)
+  }, [includesOpen, openAddonFullId, selectedAddons, periodId])
 
   const isSubscriptionAddon = (addon: OrderAddon) =>
     addon.id === SUBSCRIPTION_ADDON_ID || isSubscriptionFeatureLabel(addon.name)
