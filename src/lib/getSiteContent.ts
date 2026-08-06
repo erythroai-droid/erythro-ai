@@ -169,6 +169,18 @@ export async function getSiteContent(): Promise<SiteContent> {
       content.navbar.navItems = header.navItems.map((n: any, i: number) => {
         const fallbackHref = defaultSiteContent.navbar.navItems[i]?.href ?? '#'
         const rawHref = n.href ?? fallbackHref
+        const children = Array.isArray(n.children)
+          ? n.children
+              .map((c: any) => {
+                const childHref = typeof c?.href === 'string' ? c.href.trim() : ''
+                if (!childHref) return null
+                return {
+                  label: L(c.label, { en: '', ru: '', he: '' }),
+                  href: childHref === '#contacts' ? '/contacts' : childHref,
+                }
+              })
+              .filter(Boolean)
+          : []
         return {
           label: L(n.label, defaultSiteContent.navbar.navItems[i]?.label ?? {}),
           description:
@@ -176,6 +188,7 @@ export async function getSiteContent(): Promise<SiteContent> {
             ({ en: '', ru: '', he: '' } as Record<string, string>),
           // Legacy hash target → dedicated contacts page
           href: rawHref === '#contacts' ? '/contacts' : rawHref,
+          children,
         }
       })
     }
@@ -361,6 +374,36 @@ export async function getSiteContent(): Promise<SiteContent> {
         }
       })
     }
+
+    // Fill empty nav submenus from Services / Solutions collections so existing
+    // Header rows keep working until editors add Submenu Items in admin.
+    content.navbar.navItems = content.navbar.navItems.map((item) => {
+      if (Array.isArray(item.children) && item.children.length > 0) return item
+
+      if (item.href === '#services') {
+        const children = content.services.items
+          .map((service) => {
+            const slug = service.slug || (service.id ? SERVICE_ID_TO_SLUG[service.id] : undefined)
+            if (!slug) return null
+            return {
+              label: service.title,
+              href: `/services/${slug}`,
+            }
+          })
+          .filter(Boolean) as Array<{ label: Localized; href: string }>
+        return { ...item, children }
+      }
+
+      if (item.href === '#solutions') {
+        const children = content.solutions.cards.map((card) => ({
+          label: card.title,
+          href: `/order/${card.id}`,
+        }))
+        return { ...item, children }
+      }
+
+      return { ...item, children: item.children ?? [] }
+    })
 
     // --- FAQ section ---
     content.faq.sectionTitle = L(faqG?.sectionTitle, content.faq.sectionTitle)

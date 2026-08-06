@@ -1061,6 +1061,46 @@ export const header_nav_items_locales = pgTable(
   ],
 )
 
+export const header_nav_items_children = pgTable(
+  'header_nav_items_children',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: varchar('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    href: varchar('href').notNull(),
+  },
+  (columns) => [
+    index('header_nav_items_children_order_idx').on(columns._order),
+    index('header_nav_items_children_parent_id_idx').on(columns._parentID),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [header_nav_items.id],
+      name: 'header_nav_items_children_parent_id_fk',
+    }).onDelete('cascade'),
+  ],
+)
+
+export const header_nav_items_children_locales = pgTable(
+  'header_nav_items_children_locales',
+  {
+    label: varchar('label').notNull(),
+    id: serial('id').primaryKey(),
+    _locale: enum__locales('_locale').notNull(),
+    _parentID: varchar('_parent_id').notNull(),
+  },
+  (columns) => [
+    uniqueIndex('header_nav_items_children_locales_locale_parent_id_unique').on(
+      columns._locale,
+      columns._parentID,
+    ),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [header_nav_items_children.id],
+      name: 'header_nav_items_children_locales_parent_id_fk',
+    }).onDelete('cascade'),
+  ],
+)
+
 export const header = pgTable('header', {
   id: serial('id').primaryKey(),
   ctaHref: varchar('cta_href').default('#contact-modal'),
@@ -2201,6 +2241,29 @@ export const relations_header_nav_items_locales = relations(
     }),
   }),
 )
+export const relations_header_nav_items_children_locales = relations(
+  header_nav_items_children_locales,
+  ({ one }) => ({
+    _parentID: one(header_nav_items_children, {
+      fields: [header_nav_items_children_locales._parentID],
+      references: [header_nav_items_children.id],
+      relationName: '_locales',
+    }),
+  }),
+)
+export const relations_header_nav_items_children = relations(
+  header_nav_items_children,
+  ({ one, many }) => ({
+    _parentID: one(header_nav_items, {
+      fields: [header_nav_items_children._parentID],
+      references: [header_nav_items.id],
+      relationName: 'children',
+    }),
+    _locales: many(header_nav_items_children_locales, {
+      relationName: '_locales',
+    }),
+  }),
+)
 export const relations_header_nav_items = relations(header_nav_items, ({ one, many }) => ({
   _parentID: one(header, {
     fields: [header_nav_items._parentID],
@@ -2209,6 +2272,9 @@ export const relations_header_nav_items = relations(header_nav_items, ({ one, ma
   }),
   _locales: many(header_nav_items_locales, {
     relationName: '_locales',
+  }),
+  children: many(header_nav_items_children, {
+    relationName: 'children',
   }),
 }))
 export const relations_header_locales = relations(header_locales, ({ one }) => ({
@@ -2607,6 +2673,8 @@ type DatabaseSchema = {
   payload_migrations: typeof payload_migrations
   header_nav_items: typeof header_nav_items
   header_nav_items_locales: typeof header_nav_items_locales
+  header_nav_items_children: typeof header_nav_items_children
+  header_nav_items_children_locales: typeof header_nav_items_children_locales
   header: typeof header
   header_locales: typeof header_locales
   hero_words: typeof hero_words
@@ -2685,6 +2753,8 @@ type DatabaseSchema = {
   relations_payload_preferences: typeof relations_payload_preferences
   relations_payload_migrations: typeof relations_payload_migrations
   relations_header_nav_items_locales: typeof relations_header_nav_items_locales
+  relations_header_nav_items_children_locales: typeof relations_header_nav_items_children_locales
+  relations_header_nav_items_children: typeof relations_header_nav_items_children
   relations_header_nav_items: typeof relations_header_nav_items
   relations_header_locales: typeof relations_header_locales
   relations_header: typeof relations_header
