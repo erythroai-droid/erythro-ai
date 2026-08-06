@@ -49,6 +49,9 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 
+# Database dumps (pnpm db:backup)
+/backups/
+
 # QA test screenshots
 /qa/
 /public/images/Let`s talk.png
