@@ -13,6 +13,7 @@ export const navbar = {
         he: 'צפו בעבודות נבחרות',
       },
       href: '#cases',
+      children: [] as Array<{ label: TranslationDict; href: string }>,
     },
     {
       label: { en: 'SERVICES', ru: 'УСЛУГИ', he: 'שירותים' },
@@ -22,6 +23,7 @@ export const navbar = {
         he: 'מה נוכל לבנות בשבילכם',
       },
       href: '#services',
+      children: [] as Array<{ label: TranslationDict; href: string }>,
     },
     {
       label: { en: 'SOLUTIONS', ru: 'РЕШЕНИЯ', he: 'פתרונות' },
@@ -31,6 +33,7 @@ export const navbar = {
         he: 'חבילות מוכנות',
       },
       href: '#solutions',
+      children: [] as Array<{ label: TranslationDict; href: string }>,
     },
     {
       label: { en: 'CONTACTS', ru: 'КОНТАКТЫ', he: 'יצירת קשר' },
@@ -40,6 +43,7 @@ export const navbar = {
         he: 'צרו קשר ומצאו אותנו',
       },
       href: '/contacts',
+      children: [] as Array<{ label: TranslationDict; href: string }>,
     },
   ],
   ctaLabel: {

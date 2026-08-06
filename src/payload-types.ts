@@ -1094,13 +1094,29 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Header {
   id: number;
+  /**
+   * Top-level menu entries. Add Submenu Items under any row (Services, Solutions, etc.) to show a dropdown in the burger menu.
+   */
   navItems?:
     | {
         label: string;
         /**
-         * e.g. #services
+         * Parent link target, e.g. #services, #solutions, /contacts. Clicking the parent still scrolls/navigates here when there is no submenu handler.
          */
         href: string;
+        /**
+         * Optional nested links shown under this item in the burger menu. Leave empty to hide the accordion (except Services/Solutions fallbacks from CMS collections).
+         */
+        children?:
+          | {
+              label: string;
+              /**
+               * e.g. /services/design, /order/business-automation, #cases
+               */
+              href: string;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -1521,6 +1537,13 @@ export interface HeaderSelect<T extends boolean = true> {
     | {
         label?: T;
         href?: T;
+        children?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
         id?: T;
       };
   ctaLabel?: T;

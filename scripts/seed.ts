@@ -96,7 +96,14 @@ async function run() {
     payload,
     'header',
     byLocale((loc) => ({
-      navItems: navbar.navItems.map((n) => ({ label: n.label[loc], href: n.href })),
+      navItems: navbar.navItems.map((n) => ({
+        label: n.label[loc],
+        href: n.href,
+        children: (n.children ?? []).map((c) => ({
+          label: c.label[loc],
+          href: c.href,
+        })),
+      })),
       ctaLabel: navbar.ctaLabel[loc],
     })),
   )
