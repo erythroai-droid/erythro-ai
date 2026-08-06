@@ -237,17 +237,12 @@ export default function Navbar({
   const content = useSiteContent()
   const { navItems } = content.navbar
   const site = content.siteSettings
-  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({})
+  const [openSubmenuKey, setOpenSubmenuKey] = useState<string | null>(null)
 
   const t = (field: Record<string, string>) => field[currentLocale] || field['en']
 
-  const isSubmenuOpen = (key: string) => openSubmenus[key] !== false
-
   const toggleSubmenu = (key: string) => {
-    setOpenSubmenus((prev) => ({
-      ...prev,
-      [key]: prev[key] === false,
-    }))
+    setOpenSubmenuKey((prev) => (prev === key ? null : key))
   }
 
   // Mobile plate + ink follow theme only (stable while scrolling).
@@ -425,7 +420,7 @@ export default function Navbar({
                 const children = Array.isArray(item.children) ? item.children : []
                 const hasChildren = children.length > 0
                 const submenuKey = item.href
-                const submenuOpen = isSubmenuOpen(submenuKey)
+                const submenuOpen = openSubmenuKey === submenuKey
                 const submenuId = `burger-submenu-${submenuKey.replace(/[^a-zA-Z0-9_-]/g, '-')}`
 
                 if (hasChildren) {
@@ -476,7 +471,7 @@ export default function Navbar({
                             : 'mt-0 grid-rows-[0fr] opacity-0'
                         }`}
                       >
-                        <ul className="min-h-0 overflow-hidden flex flex-col gap-3 border-s border-white/15 ps-5">
+                        <ul className="min-h-0 overflow-hidden flex flex-col gap-2 border-s border-white/15 ps-5">
                           {children.map((child) => (
                             <li key={`${item.href}-${child.href}`}>
                               <a
@@ -485,7 +480,7 @@ export default function Navbar({
                                   handleNavClick(e, child.href)
                                   setMobileOpen(false)
                                 }}
-                                className="block font-sans text-sm font-medium uppercase leading-snug tracking-[0.08em] text-white/70 transition-colors duration-300 hover:text-erythro-500 md:text-[15px]"
+                                className="block font-sans text-[11px] font-medium uppercase leading-snug tracking-[0.08em] text-white/70 transition-colors duration-300 hover:text-erythro-500 md:text-xs"
                               >
                                 {t(child.label)}
                               </a>
