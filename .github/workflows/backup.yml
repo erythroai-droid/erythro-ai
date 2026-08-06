@@ -1,0 +1,71 @@
+# Nightly Supabase dump, kept as a workflow artifact.
+#
+# Secrets (GitHub → Settings → Secrets and variables → Actions):
+#   DATABASE_URL — Postgres URL (direct or session pooler; 6543 is rewritten to 5432)
+#
+# Download: Actions → Database Backup → run → Artifacts.
+# Restore:  pg_restore --clean --if-exists --no-owner -d "<uri>" erythro-<stamp>.dump
+#
+# Artifacts expire after 30 days — copy anything you want to keep long-term off GitHub.
+
+name: Database Backup
+
+on:
+  schedule:
+    # 02:17 UTC daily — off the hour to avoid GitHub's cron rush.
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  dump:
+    name: Dump Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare DATABASE_URL
+        env:
+          RAW_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_REGION: ap-southeast-1
+        run: |
+          if [ -z "$RAW_DATABASE_URL" ]; then
+            echo "DATABASE_URL secret is empty" >&2
+            exit 1
+          fi
+
+          export DATABASE_URL="$RAW_DATABASE_URL"
+          resolved="$(node scripts/ci-resolve-supabase-url.mjs)"
+          echo "DATABASE_URL=$resolved" >> "$GITHUB_ENV"
+          echo "DATABASE_URL ready"
+
+      - name: Dump database
+        run: pnpm db:backup
+
+      - name: Upload dump
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_number }}
+          path: backups/*.dump
+          retention-days: 30
+          if-no-files-found: error
