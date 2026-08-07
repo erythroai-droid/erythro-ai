@@ -22,15 +22,15 @@ const COPY = {
   },
   ru: {
     top: 'Наверх',
-    scroll: 'Прокрутка',
+    scroll: 'Вниз',
     topAria: 'Наверх',
-    scrollAria: 'Прокрутка, следующий раздел',
+    scrollAria: 'Вниз, следующий раздел',
   },
   he: {
     top: 'למעלה',
-    scroll: 'גלילה',
+    scroll: 'למטה',
     topAria: 'חזרה לראש העמוד',
-    scrollAria: 'גלילה, למדור הבא',
+    scrollAria: 'למטה, למדור הבא',
   },
 } as const
 

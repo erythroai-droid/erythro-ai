@@ -183,9 +183,14 @@ export async function getSiteContent(): Promise<SiteContent> {
           : []
         return {
           label: L(n.label, defaultSiteContent.navbar.navItems[i]?.label ?? {}),
-          description:
-            defaultSiteContent.navbar.navItems[i]?.description ??
-            ({ en: '', ru: '', he: '' } as Record<string, string>),
+          description: L(
+            n.description,
+            defaultSiteContent.navbar.navItems[i]?.description ?? {
+              en: '',
+              ru: '',
+              he: '',
+            },
+          ),
           // Legacy hash target → dedicated contacts page
           href: rawHref === '#contacts' ? '/contacts' : rawHref,
           children,
