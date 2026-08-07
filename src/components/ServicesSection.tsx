@@ -200,6 +200,8 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             trigger: sectionRef.current,
             start: 'top 80%',
             toggleActions: 'play none none reverse',
+            // Re-evaluate after pin/refresh so hash / menu jumps still reveal cards.
+            invalidateOnRefresh: true,
           },
         })
 
@@ -228,7 +230,8 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           return cardsRowRef.current.scrollWidth - window.innerWidth
         }
         tl.to(cardsRowRef.current, {
-          x: () => (locale === 'he' ? 1 : -1) * maxScroll(),
+          // Track is forced LTR so translateX is stable in HE and LTR locales.
+          x: () => -maxScroll(),
           ease: 'none',
           duration: 2.0,
         })
@@ -384,6 +387,11 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
       })
     }, wrapperRef)
 
+    // After locale/dir changes, refresh so pin start + reveal match the new layout.
+    requestAnimationFrame(() => {
+      ScrollTrigger.refresh()
+    })
+
     return () => ctx.revert()
   }, [locale])
 
@@ -435,11 +443,15 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             </p>
           </div>
 
-          {/* Service Cards Horizontal Scroll Track */}
+          {/* Service Cards Horizontal Scroll Track.
+              Keep the track LTR even on Hebrew pages: RTL packs the first card
+              to the far physical right of a w-max row, so the viewport can show
+              empty space until the scrub moves. */}
           <div className="w-full overflow-hidden lg:overflow-x-clip lg:overflow-y-visible py-6 lg:py-8">
             <div
               ref={cardsRowRef}
-              className="flex flex-col lg:flex-row gap-6 lg:gap-10 w-full lg:w-max px-[30px] lg:px-0"
+              dir="ltr"
+              className="flex flex-col lg:flex-row gap-6 lg:gap-10 w-full lg:w-max px-[30px] lg:px-0 lg:ms-0 lg:me-auto"
               style={{
                 paddingLeft: 'max(30px, calc((100% - 1170px) / 2 + 30px))',
                 paddingRight: 'max(30px, calc((100% - 1170px) / 2 + 30px))',
@@ -453,6 +465,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                 return (
                   <div
                     key={item.id}
+                    dir={isRtl ? 'rtl' : 'ltr'}
                     className="shrink-0 w-full lg:w-[1170px] px-1 py-2 lg:px-2 lg:py-3"
                   >
                     <div
