@@ -46,7 +46,12 @@ export default function HomeClient({ initialLocale, initialTheme, content }: Hom
   // module itself is locale-agnostic; the app supplies the translated labels.
   const pickA11y = (field?: Record<string, string> | null) =>
     (field && (field[locale] || field.en)) || ''
-  const faqA11yLabel = locale === 'ru' ? 'Раздел FAQ' : locale === 'he' ? 'מדור שאלות ותשובות' : 'FAQ section'
+  const faqA11yLabel =
+    locale === 'ru'
+      ? 'Раздел «Вопросы и ответы»'
+      : locale === 'he'
+        ? 'מדור שאלות נפוצות'
+        : 'FAQ section'
 
   const a11yLabels = useMemo(
     () => ({
@@ -142,7 +147,7 @@ export default function HomeClient({ initialLocale, initialTheme, content }: Hom
         <FooterSection locale={locale} theme={theme} />
       </div>
 
-      <ScrollSideButton label="Scroll" theme={theme} sectionIds={scrollSectionIds} />
+      <ScrollSideButton locale={locale} theme={theme} sectionIds={scrollSectionIds} />
 
       {/* Desktop chat CTA → contact modal; mobile keeps WhatsApp */}
       <ChatButton />

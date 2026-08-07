@@ -1,11 +1,11 @@
-'use client'
-
 import React, { useRef, useState, useEffect } from 'react'
 import { useBackdropContrast } from '@/hooks/useBackdropContrast'
 import { getSectionElement } from '@/lib/domSection'
 
 interface ScrollSideButtonProps {
+  /** @deprecated Prefer `locale` — label is localized automatically. */
   label?: string
+  locale?: string
   theme?: 'light' | 'dark'
   /** Section element ids in page order — used for 01|04 counter and scroll targets. */
   sectionIds?: string[]
@@ -13,16 +13,45 @@ interface ScrollSideButtonProps {
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
 
+const COPY = {
+  en: {
+    top: 'Top',
+    scroll: 'Scroll',
+    topAria: 'Back to top',
+    scrollAria: 'Scroll, next section',
+  },
+  ru: {
+    top: 'Наверх',
+    scroll: 'Прокрутка',
+    topAria: 'Наверх',
+    scrollAria: 'Прокрутка, следующий раздел',
+  },
+  he: {
+    top: 'למעלה',
+    scroll: 'גלילה',
+    topAria: 'חזרה לראש העמוד',
+    scrollAria: 'גלילה, למדור הבא',
+  },
+} as const
+
+function pickCopy(locale?: string) {
+  if (locale === 'ru' || locale === 'he') return COPY[locale]
+  return COPY.en
+}
+
 /**
  * Side scroll control:
  * Top → animated line → Scroll, with section counter on either side of the line.
  * Hover Top: pause fill, turn Top + line red. Click Top → page top; Click Scroll → next section.
  */
 export default function ScrollSideButton({
-  label = 'Scroll',
+  label,
+  locale = 'en',
   theme = 'dark',
   sectionIds = ['portfolio', 'contacts', 'footer'],
 }: ScrollSideButtonProps) {
+  const copy = pickCopy(locale)
+  const scrollLabel = label && label !== 'Scroll' ? label : copy.scroll
   const total = sectionIds.length
   const [current, setCurrent] = useState(1)
   const [topHover, setTopHover] = useState(false)
@@ -89,12 +118,12 @@ export default function ScrollSideButton({
         onMouseLeave={() => setTopHover(false)}
         onFocus={() => setTopHover(true)}
         onBlur={() => setTopHover(false)}
-        aria-label="Back to top"
+        aria-label={copy.topAria}
         className={`cursor-pointer font-sans text-[9px] uppercase tracking-[0.18em] [writing-mode:vertical-lr] rotate-180 transition-colors duration-300 ${
           topHover ? 'text-erythro-500' : muted
         }`}
       >
-        Top
+        {copy.top}
       </button>
 
       <div className="flex items-center gap-2">
@@ -127,10 +156,10 @@ export default function ScrollSideButton({
       <button
         type="button"
         onClick={scrollToNext}
-        aria-label={`${label}, next section`}
+        aria-label={copy.scrollAria}
         className={`cursor-pointer font-sans text-[9px] uppercase tracking-[0.18em] [writing-mode:vertical-lr] rotate-180 transition-colors duration-300 ${muted}`}
       >
-        {label}
+        {scrollLabel}
       </button>
     </div>
   )

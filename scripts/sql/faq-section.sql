@@ -133,8 +133,8 @@ ON CONFLICT ("id") DO UPDATE SET "updated_at" = NOW();
 INSERT INTO "faq_section_locales" ("section_title", "section_subtitle", "_locale", "_parent_id")
 VALUES
   ('FAQ', 'Quick answers to the questions we get most often before a project starts.', 'en', 1),
-  ('FAQ', 'Коротко отвечаем на частые вопросы перед стартом проекта.', 'ru', 1),
-  ('FAQ', 'תשובות קצרות לשאלות הנפוצות לפני תחילת פרויקט.', 'he', 1)
+  ('ВОПРОСЫ И ОТВЕТЫ', 'Коротко отвечаем на частые вопросы перед стартом проекта.', 'ru', 1),
+  ('שאלות נפוצות', 'תשובות קצרות לשאלות הנפוצות לפני תחילת פרויקט.', 'he', 1)
 ON CONFLICT ("_locale", "_parent_id") DO UPDATE SET
   "section_title" = EXCLUDED."section_title",
   "section_subtitle" = EXCLUDED."section_subtitle";
@@ -184,7 +184,7 @@ VALUES
   ),
   (
     'Will we be able to edit the content ourselves later?',
-    faq_lexical_from_text('Yes. We build editor-friendly structure and admin tooling so your team can update copy, imagery, case studies, services, and SEO fields without a developer.'),
+    faq_lexical_from_text('Yes. We build editor-friendly structure and admin tooling, so your team can update copy, imagery, case studies, services, and SEO fields without a developer.'),
     'en', 'faqitem00000000000000003'
   ),
   (

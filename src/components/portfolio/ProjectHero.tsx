@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { PortfolioProject } from '@/lib/portfolioProjects'
+import BidiText from '@/components/BidiText'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -168,7 +169,7 @@ export default function ProjectHero({ project }: ProjectHeroProps) {
                 {item.label}
               </dt>
               <dd className="font-sans text-sm font-normal leading-snug text-white md:text-[15px]">
-                {item.value}
+                <BidiText forceLtr={item.label === 'Stack'}>{item.value}</BidiText>
               </dd>
             </div>
           ))}
