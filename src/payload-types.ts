@@ -1101,6 +1101,10 @@ export interface Header {
     | {
         label: string;
         /**
+         * Subtitle under the burger-menu title (e.g. “What we can build for you”). Leave empty to hide.
+         */
+        description?: string | null;
+        /**
          * Parent link target, e.g. #services, #solutions, /contacts. Clicking the parent still scrolls/navigates here when there is no submenu handler.
          */
         href: string;
@@ -1536,6 +1540,7 @@ export interface HeaderSelect<T extends boolean = true> {
     | T
     | {
         label?: T;
+        description?: T;
         href?: T;
         children?:
           | T

@@ -15,6 +15,7 @@ import * as migration_20260805_010000_addon_price_text from './20260805_010000_a
 import * as migration_20260805_020000_addon_price_localized from './20260805_020000_addon_price_localized'
 import * as migration_20260805_030000_addon_price_display_rename from './20260805_030000_addon_price_display_rename'
 import * as migration_20260807_010000_header_nav_children from './20260807_010000_header_nav_children'
+import * as migration_20260808_010000_header_nav_description from './20260808_010000_header_nav_description'
 
 export const migrations = [
   {
@@ -101,5 +102,10 @@ export const migrations = [
     up: migration_20260807_010000_header_nav_children.up,
     down: migration_20260807_010000_header_nav_children.down,
     name: '20260807_010000_header_nav_children',
+  },
+  {
+    up: migration_20260808_010000_header_nav_description.up,
+    down: migration_20260808_010000_header_nav_description.down,
+    name: '20260808_010000_header_nav_description',
   },
 ]

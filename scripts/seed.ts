@@ -98,6 +98,7 @@ async function run() {
     byLocale((loc) => ({
       navItems: navbar.navItems.map((n) => ({
         label: n.label[loc],
+        description: n.description?.[loc] ?? '',
         href: n.href,
         children: (n.children ?? []).map((c) => ({
           label: c.label[loc],

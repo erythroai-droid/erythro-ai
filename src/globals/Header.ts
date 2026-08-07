@@ -19,6 +19,12 @@ export const Header: GlobalConfig = {
       },
       fields: [
         locText('label', { required: true }),
+        locText('description', {
+          admin: {
+            description:
+              'Subtitle under the burger-menu title (e.g. “What we can build for you”). Leave empty to hide.',
+          },
+        }),
         {
           name: 'href',
           type: 'text',

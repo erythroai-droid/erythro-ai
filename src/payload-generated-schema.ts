@@ -1044,6 +1044,7 @@ export const header_nav_items_locales = pgTable(
   'header_nav_items_locales',
   {
     label: varchar('label').notNull(),
+    description: varchar('description'),
     id: serial('id').primaryKey(),
     _locale: enum__locales('_locale').notNull(),
     _parentID: varchar('_parent_id').notNull(),
