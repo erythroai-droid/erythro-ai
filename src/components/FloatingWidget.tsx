@@ -283,7 +283,7 @@ export default function FloatingWidget({
                     className="px-[14px] py-[7px] rounded-full hover:bg-gold-500 hover:text-coal-900 text-[18px] font-mono font-bold text-white flex items-center gap-1.5 transition-all whitespace-nowrap group/phone-link"
                   >
                     <PhoneIcon className="w-[9.5px] h-[9.5px] transition-transform duration-300 group-hover/phone-link:scale-110 group-hover/phone-link:rotate-12" />
-                    <span>{site.phoneDisplay}</span>
+                    <bdi dir="ltr">{site.phoneDisplay}</bdi>
                   </a>
                 </div>
               </div>

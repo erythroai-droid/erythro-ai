@@ -8,6 +8,7 @@ import { currencySymbol } from '@/lib/orderPlans'
 import { useCursorGlow } from '@/hooks/useCursorGlow'
 import { useContactModal } from './ContactModal'
 import { isContactModalHref, navigateCtaHref } from '@/lib/ctaNav'
+import StylizedSectionTitle from './StylizedSectionTitle'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -272,18 +273,6 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
     return () => ctx.revert()
   }, [])
 
-  const renderStylizedTitle = (text: string) => {
-    if (!text) return null
-    const firstChar = text.charAt(0)
-    const rest = text.slice(1)
-    return (
-      <>
-        <span className="text-erythro-500">{firstChar}</span>
-        <span className={isLight ? 'text-coal-900' : 'text-white'}>{rest}</span>
-      </>
-    )
-  }
-
   return (
     <div className="relative z-30 w-full pointer-events-none">
       {/* Lead-in while LetsTalk finishes (incl. CTA). Must be < Services pin end
@@ -311,7 +300,10 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
             className="flex flex-col items-center gap-[5px] text-center"
           >
             <h2 className="font-sans text-[32px] font-extralight uppercase leading-tight tracking-[9.6px] lg:text-[48px] lg:leading-[60px]">
-              {renderStylizedTitle(t(translations.sectionTitle))}
+              <StylizedSectionTitle
+                text={t(translations.sectionTitle)}
+                restClassName={isLight ? 'text-coal-900' : 'text-white'}
+              />
             </h2>
             <p
               className={`font-sans text-base font-light leading-8 tracking-[3.2px] ${

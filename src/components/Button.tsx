@@ -165,7 +165,7 @@ export default function Button({
     >
       <span>{children}</span>
       {showArrow && (
-        <span className="inline-block transform transition-transform duration-300 rtl:rotate-180 shrink-0">
+        <span className="inline-block shrink-0 transition-transform duration-300 rtl:-scale-x-100">
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="11" viewBox="0 0 10 11" fill="none" className="w-2.5 h-2.5">
             <path
               d="M9.67029 5.15683L5.15651 5.15753M5.15004 5.15753L0.250037 5.15753M5.15004 0.25L9.40026 4.5004C9.57253 4.67269 9.6693 4.90636 9.6693 5.15C9.6693 5.39364 9.57253 5.62731 9.40026 5.7996L5.15004 10.05"

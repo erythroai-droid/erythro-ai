@@ -417,13 +417,17 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
               <p className="px-2 text-2xl font-bold leading-9 text-white">
                 {t(translations.contactTitle)}
               </p>
-              <FooterLinkItem href={`mailto:${site.email}`}>
+              <FooterLinkItem href={`mailto:${site.email.toLowerCase()}`}>
                 <span className="font-bold uppercase">{t(translations.emailLabel)} </span>
-                <span dir="ltr" className="inline-block">{site.email}</span>
+                <span dir="ltr" className="inline-block normal-case lowercase">
+                  {site.email.toLowerCase()}
+                </span>
               </FooterLinkItem>
               <FooterLinkItem href={`tel:${site.phone}`}>
                 <span className="font-bold uppercase">{t(translations.phoneLabel)} </span>
-                <span dir="ltr" className="inline-block">{site.phoneDisplay}</span>
+                <bdi dir="ltr" className="inline-block normal-case">
+                  {site.phoneDisplay}
+                </bdi>
               </FooterLinkItem>
               <FooterLinkItem>
                 <span className="font-bold uppercase">{t(translations.locationLabel)}</span>
