@@ -32,6 +32,7 @@ import { isLexicalDoc, lexicalToPlain, resolveLexical } from '@/lib/lexical'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 import ProjectNav, { type ProjectNavNeighbor } from '@/components/portfolio/ProjectNav'
+import BidiText from '@/components/BidiText'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -452,7 +453,7 @@ function OrderCheckout({
                       >
                         <p className={`m-0 ${titleClass}`}>
                           {row.label ? <span className="font-semibold">{row.label} </span> : null}
-                          {row.value ? <span>{row.value}</span> : null}
+                          {row.value ? <BidiText>{row.value}</BidiText> : null}
                         </p>
                         <span className="h-8 w-8 shrink-0" aria-hidden />
                       </div>

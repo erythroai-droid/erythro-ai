@@ -7,6 +7,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { tLocale, type ServicePage } from '@/lib/servicePages'
 import { currencySymbol } from '@/lib/orderPlans'
+import BidiText from '@/components/BidiText'
 import { isLexicalDoc, lexicalFromParagraphs, lexicalFromText, type LexicalDoc } from '@/lib/lexical'
 import { useSiteContent } from '@/components/SiteContentProvider'
 
@@ -138,22 +139,26 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
                       </p>
                     ) : null}
                   </div>
-                  <p
-                    className="shrink-0 font-sans text-base tracking-[0.04em] md:text-lg"
-                    dir={locale === 'he' ? 'ltr' : undefined}
-                  >
+                  <p className="shrink-0 font-sans text-base tracking-[0.04em] md:text-lg">
                     {prefix ? <span className="opacity-60">{prefix} </span> : null}
-                    {locale === 'he' ? (
-                      <>
-                        <span className="opacity-60">{currencySymbol(service.currency || 'USD')}</span>
-                        <span className="font-medium">{offering.price}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="font-medium">{offering.price}</span>
-                        <span className="opacity-60"> {currencySymbol(service.currency || 'USD')}</span>
-                      </>
-                    )}
+                    <BidiText forceLtr>
+                      {locale === 'he' ? (
+                        <>
+                          <span className="opacity-60">
+                            {currencySymbol(service.currency || 'USD')}
+                          </span>
+                          <span className="font-medium">{offering.price}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-medium">{offering.price}</span>
+                          <span className="opacity-60">
+                            {' '}
+                            {currencySymbol(service.currency || 'USD')}
+                          </span>
+                        </>
+                      )}
+                    </BidiText>
                   </p>
                 </li>
               )

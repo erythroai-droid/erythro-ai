@@ -27,10 +27,17 @@ export default function StylizedSectionTitle({
 
   return (
     <span
+      aria-label={text}
       className={`inline-block max-w-full ps-[0.22em] pe-[0.42em] ${className}`.trim()}
     >
-      <span className="text-erythro-500">{firstChar}</span>
-      {rest ? <span className={restClassName}>{rest}</span> : null}
+      <span aria-hidden="true" className="text-erythro-500">
+        {firstChar}
+      </span>
+      {rest ? (
+        <span aria-hidden="true" className={restClassName}>
+          {rest}
+        </span>
+      ) : null}
     </span>
   )
 }

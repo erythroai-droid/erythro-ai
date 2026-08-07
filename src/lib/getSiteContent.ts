@@ -407,6 +407,12 @@ export async function getSiteContent(): Promise<SiteContent> {
 
     // --- FAQ section ---
     content.faq.sectionTitle = L(faqG?.sectionTitle, content.faq.sectionTitle)
+    // Older CMS seeds stored English "FAQ" for every locale — swap stubs for localized titles.
+    for (const loc of ['ru', 'he'] as const) {
+      if (content.faq.sectionTitle[loc] === 'FAQ') {
+        content.faq.sectionTitle[loc] = defaultSiteContent.faq.sectionTitle[loc]
+      }
+    }
     content.faq.sectionSubtitle = L(faqG?.sectionSubtitle, content.faq.sectionSubtitle)
     if (Array.isArray(faqG?.items) && faqG.items.length) {
       content.faq.items = faqG.items.map((item: any, i: number) => {

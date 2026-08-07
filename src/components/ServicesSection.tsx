@@ -8,6 +8,7 @@ import { navigateCtaHref } from '@/lib/ctaNav'
 import Button from './Button'
 import { useCursorGlow } from '@/hooks/useCursorGlow'
 import StylizedSectionTitle from './StylizedSectionTitle'
+import BidiText from './BidiText'
 import { getServiceSlugById } from '@/lib/servicePages'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -516,7 +517,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                               className="flex items-center gap-3 font-sans text-base lg:text-[14px] font-normal tracking-[1.2px] lg:tracking-[3.2px] text-[var(--service-card-list,#1E1E1E)] leading-normal lg:leading-[24px]"
                             >
                               <span className="w-1 h-1 bg-erythro-500 shrink-0 rotate-45" />
-                              <span>{feature}</span>
+                              <BidiText>{feature}</BidiText>
                             </li>
                           ))}
                         </ul>

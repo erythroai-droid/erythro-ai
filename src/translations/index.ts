@@ -620,8 +620,8 @@ export interface FAQItem {
 export const faq = {
   sectionTitle: {
     en: 'FAQ',
-    ru: 'FAQ',
-    he: 'FAQ',
+    ru: 'ВОПРОСЫ И ОТВЕТЫ',
+    he: 'שאלות נפוצות',
   },
   sectionSubtitle: {
     en: 'Quick answers to the questions we get most often before a project starts.',
@@ -660,7 +660,7 @@ export const faq = {
         he: 'אפשר לערוך את התוכן לבד אחר כך?',
       },
       answer: {
-        en: 'Yes. We build editor-friendly structure and admin tooling so your team can update copy, imagery, case studies, services, and SEO fields without a developer.',
+        en: 'Yes. We build editor-friendly structure and admin tooling, so your team can update copy, imagery, case studies, services, and SEO fields without a developer.',
         ru: 'Да. Мы закладываем editor-friendly структуру и админку, чтобы вы могли менять тексты, изображения, кейсы, услуги и SEO-поля без разработчика.',
         he: 'כן. אנחנו בונים מבנה אדיטורי נוח וממשק ניהול שמאפשר לעדכן טקסטים, תמונות, עבודות, שירותים ושדות SEO בלי לפנות למפתח.',
       },

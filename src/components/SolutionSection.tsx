@@ -9,6 +9,7 @@ import { useCursorGlow } from '@/hooks/useCursorGlow'
 import { useContactModal } from './ContactModal'
 import { isContactModalHref, navigateCtaHref } from '@/lib/ctaNav'
 import StylizedSectionTitle from './StylizedSectionTitle'
+import BidiText from './BidiText'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -176,7 +177,7 @@ function SolutionCard({
                     {capitalizeFeatureLabel(labelText)}{' '}
                   </span>
                 ) : null}
-                {valueText ? <span className="font-normal">{valueText}</span> : null}
+                {valueText ? <BidiText className="font-normal">{valueText}</BidiText> : null}
               </p>
             </li>
           )
