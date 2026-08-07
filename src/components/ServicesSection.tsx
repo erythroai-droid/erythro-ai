@@ -230,8 +230,9 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           return cardsRowRef.current.scrollWidth - window.innerWidth
         }
         tl.to(cardsRowRef.current, {
-          // Track is forced LTR so translateX is stable in HE and LTR locales.
-          x: () => -maxScroll(),
+          // LTR track: EN/RU move left (−x). HE is right-aligned with reversed
+          // card order, so scrub uses +x to advance 01→02→03 in RTL reading order.
+          x: () => (locale === 'he' ? 1 : -1) * maxScroll(),
           ease: 'none',
           duration: 2.0,
         })
@@ -444,20 +445,22 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           </div>
 
           {/* Service Cards Horizontal Scroll Track.
-              Keep the track LTR even on Hebrew pages: RTL packs the first card
-              to the far physical right of a w-max row, so the viewport can show
-              empty space until the scrub moves. */}
+              Force LTR on the track so w-max layout is predictable. Hebrew keeps
+              RTL reading order by reversing items + right-aligning + +x scrub. */}
           <div className="w-full overflow-hidden lg:overflow-x-clip lg:overflow-y-visible py-6 lg:py-8">
             <div
               ref={cardsRowRef}
               dir="ltr"
-              className="flex flex-col lg:flex-row gap-6 lg:gap-10 w-full lg:w-max px-[30px] lg:px-0 lg:ms-0 lg:me-auto"
+              className={`flex flex-col lg:flex-row gap-6 lg:gap-10 w-full lg:w-max px-[30px] lg:px-0 ${
+                locale === 'he' ? 'lg:ms-auto lg:me-0' : 'lg:ms-0 lg:me-auto'
+              }`}
               style={{
                 paddingLeft: 'max(30px, calc((100% - 1170px) / 2 + 30px))',
                 paddingRight: 'max(30px, calc((100% - 1170px) / 2 + 30px))',
               }}
             >
-              {translations.items.map((item) => {
+              {(locale === 'he' ? [...translations.items].reverse() : translations.items).map(
+                (item) => {
                 const itemTitle = t(item.title)
                 const itemFeatures = item.features[locale] || item.features['en']
                 const isRtl = locale === 'he'

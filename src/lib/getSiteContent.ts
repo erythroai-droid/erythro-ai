@@ -426,6 +426,21 @@ export async function getSiteContent(): Promise<SiteContent> {
       })
     }
 
+    // CMS still has the EN FAQ stub without the comma before "so".
+    const faqCommaStub =
+      'Yes. We build editor-friendly structure and admin tooling so your team can update copy, imagery, case studies, services, and SEO fields without a developer.'
+    const faqCommaFixed =
+      'Yes. We build editor-friendly structure and admin tooling, so your team can update copy, imagery, case studies, services, and SEO fields without a developer.'
+    for (const item of content.faq.items) {
+      if (item.answer?.en === faqCommaStub) {
+        item.answer = { ...item.answer, en: faqCommaFixed }
+        item.answerRich = {
+          ...(item.answerRich ?? {}),
+          en: lexicalFromText(faqCommaFixed),
+        }
+      }
+    }
+
     // --- Footer global ---
     content.footer.ctaHeadingLine1 = L(footer?.ctaHeadingLine1, content.footer.ctaHeadingLine1)
     content.footer.ctaHeadingLine2 = L(footer?.ctaHeadingLine2, content.footer.ctaHeadingLine2)
