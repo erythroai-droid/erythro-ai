@@ -5,6 +5,12 @@ import Button from './Button'
 import { useSiteContent } from './SiteContentProvider'
 import { navigateHomeWithFullSplash } from '@/lib/splash'
 import { getSectionElement } from '@/lib/domSection'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger)
+}
 
 interface NavbarProps {
   currentLocale: string
@@ -270,11 +276,29 @@ export default function Navbar({
         return
       }
       const targetId = href.substring(1)
+
+      // Prefer ScrollTrigger pin start so pinned sections land with content visible
+      // (scrollIntoView alone can miss the scrub/reveal window, esp. in RTL).
+      const pinIdMap: Record<string, string> = {
+        cases: 'cases-pin',
+        services: 'services-pin',
+        solutions: 'solutions-pin',
+      }
+      const pinId = pinIdMap[targetId]
+      if (pinId) {
+        const st = ScrollTrigger.getById(pinId)
+        if (st) {
+          window.scrollTo({ top: st.start, behavior: 'smooth' })
+          setMobileOpen(false)
+          return
+        }
+      }
+
       const targetElement =
         targetId === 'contacts'
           ? getSectionElement('contacts') || document.querySelector('footer')
           : getSectionElement(targetId) || document.getElementById(targetId)
-      
+
       if (targetElement) {
         targetElement.scrollIntoView({ behavior: 'smooth' })
       }
