@@ -471,7 +471,7 @@ export default function Navbar({
                             : 'mt-0 grid-rows-[0fr] opacity-0'
                         }`}
                       >
-                        <ul className="min-h-0 overflow-hidden flex flex-col gap-2 border-s border-white/15 ps-5">
+                        <ul className="min-h-0 overflow-hidden flex flex-col gap-3.5 border-s border-white/15 ps-5">
                           {children.map((child) => (
                             <li key={`${item.href}-${child.href}`}>
                               <a
@@ -480,7 +480,7 @@ export default function Navbar({
                                   handleNavClick(e, child.href)
                                   setMobileOpen(false)
                                 }}
-                                className="block font-sans text-[11px] font-medium uppercase leading-snug tracking-[0.08em] text-white/70 transition-colors duration-300 hover:text-erythro-500 md:text-xs"
+                                className="block font-sans text-[11px] font-medium uppercase leading-relaxed tracking-[0.08em] text-white/70 transition-colors duration-300 hover:text-erythro-500 md:text-xs"
                               >
                                 {t(child.label)}
                               </a>
@@ -527,7 +527,7 @@ export default function Navbar({
                 className="flex items-center gap-2 font-mono text-base font-bold text-white hover:text-erythro-500 transition-colors duration-300"
               >
                 <PhoneIcon className="w-4 h-4" />
-                <span dir="ltr">{site.phoneDisplay}</span>
+                <bdi dir="ltr">{site.phoneDisplay}</bdi>
               </a>
 
               <div className="flex items-center gap-3">

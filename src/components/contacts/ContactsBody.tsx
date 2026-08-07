@@ -140,15 +140,14 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                         <a
                           href={row.href}
                           className={`font-sans text-base font-medium leading-7 md:text-lg ${linkClass}`}
-                          dir={row.ltr ? 'ltr' : undefined}
                         >
-                          {row.value}
+                          {row.ltr ? <bdi dir="ltr">{row.value}</bdi> : row.value}
                         </a>
                       ) : (
                         <span
                           className={`font-sans text-base font-medium leading-7 md:text-lg ${headingTone}`}
                         >
-                          {row.value}
+                          {row.ltr ? <bdi dir="ltr">{row.value}</bdi> : row.value}
                         </span>
                       )}
                     </div>

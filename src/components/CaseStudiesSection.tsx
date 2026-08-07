@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSiteContent } from './SiteContentProvider'
+import StylizedSectionTitle from './StylizedSectionTitle'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -259,23 +260,10 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
     return () => ctx.revert()
   }, [])
 
-  // Utility to render heading with a stylized red first letter
-  const renderStylizedTitle = (text: string) => {
-    if (!text) return null
-    const firstChar = text.charAt(0)
-    const rest = text.slice(1)
-    return (
-      <>
-        <span className="text-[var(--erythro-500,#E52421)]">{firstChar}</span>
-        <span className="text-[#0D0D0D]">{rest}</span>
-      </>
-    )
-  }
-
   return (
     <div ref={wrapperRef} className="relative w-full">
-      <section 
-        id="cases" 
+      <section
+        id="cases"
         ref={sectionRef}
         data-menu-contrast="light"
         className="pt-20 pb-20 lg:py-0 lg:pt-16 lg:pb-0 lg:h-screen lg:flex lg:flex-col lg:overflow-hidden w-full transition-colors duration-500 bg-white border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 select-none"
@@ -284,7 +272,10 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
         {/* Headings */}
         <div ref={headingRef} className="mb-[50px] shrink-0 text-center max-w-2xl mx-auto flex flex-col items-center gap-3">
           <h2 className="font-sans text-[32px] lg:text-[40px] font-extralight leading-tight lg:leading-[50px] tracking-[9.6px] uppercase text-[#0D0D0D]">
-            {renderStylizedTitle(t(translations.preTitle))}
+            <StylizedSectionTitle
+              text={t(translations.preTitle)}
+              restClassName="text-[#0D0D0D]"
+            />
           </h2>
           <p className="font-sans text-sm lg:text-base font-light leading-relaxed lg:leading-[28px] tracking-[3.2px] text-center text-[var(--gold-800,#8C806D)]">
             {t(translations.subtitle)}
@@ -341,11 +332,14 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
                   </span>
                 ))}
             </span>
-            <span className="inline-flex rtl:flex-row-reverse" aria-hidden="true">
-              <span className="inline-block transition-transform duration-300 ease-out group-hover:translate-x-[3px] rtl:group-hover:-translate-x-[3px]">
+            <span
+              className="inline-flex rtl:-scale-x-100"
+              aria-hidden="true"
+            >
+              <span className="inline-block transition-transform duration-300 ease-out group-hover:translate-x-[3px]">
                 &gt;
               </span>
-              <span className="inline-block transition-transform duration-300 ease-out delay-75 group-hover:translate-x-[3px] rtl:group-hover:-translate-x-[3px]">
+              <span className="inline-block transition-transform duration-300 ease-out delay-75 group-hover:translate-x-[3px]">
                 &gt;
               </span>
             </span>

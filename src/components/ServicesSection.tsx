@@ -7,6 +7,7 @@ import { useContactModal } from './ContactModal'
 import { navigateCtaHref } from '@/lib/ctaNav'
 import Button from './Button'
 import { useCursorGlow } from '@/hooks/useCursorGlow'
+import StylizedSectionTitle from './StylizedSectionTitle'
 import { getServiceSlugById } from '@/lib/servicePages'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -385,19 +386,6 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
     return () => ctx.revert()
   }, [locale])
 
-  // Utility to render heading with a stylized red first letter
-  const renderStylizedTitle = (text: string) => {
-    if (!text) return null
-    const firstChar = text.charAt(0)
-    const rest = text.slice(1)
-    return (
-      <>
-        <span className="text-erythro-500">{firstChar}</span>
-        <span className={theme === 'light' ? 'text-coal-900' : 'text-white'}>{rest}</span>
-      </>
-    )
-  }
-
   const isLight = theme === 'light'
 
   useCursorGlow(sectionRef)
@@ -432,7 +420,10 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             className="text-center max-w-3xl mx-auto flex flex-col items-center gap-3 px-[30px] mb-8 lg:mb-12"
           >
             <h2 className="font-sans text-[32px] lg:text-[48px] font-extralight leading-tight lg:leading-[60px] tracking-[9.6px] uppercase">
-              {renderStylizedTitle(t(translations.sectionTitle))}
+              <StylizedSectionTitle
+                text={t(translations.sectionTitle)}
+                restClassName={theme === 'light' ? 'text-coal-900' : 'text-white'}
+              />
             </h2>
             <p
               className={`font-sans text-sm lg:text-base font-light leading-relaxed lg:leading-[32px] tracking-[3.2px] text-center ${

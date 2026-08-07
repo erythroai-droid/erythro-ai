@@ -6,6 +6,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useSiteContent } from './SiteContentProvider'
 import { resolveLexical } from '@/lib/lexical'
+import StylizedSectionTitle from './StylizedSectionTitle'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -84,17 +85,6 @@ export default function FAQSection({ locale, theme = 'light' }: FAQSectionProps)
 
   if (!translations) return null
 
-  const renderStylizedTitle = (text: string) => {
-    const firstChar = text.charAt(0)
-    const rest = text.slice(1)
-    return (
-      <>
-        <span className="text-erythro-500">{firstChar}</span>
-        <span className={isLight ? 'text-coal-900' : 'text-white'}>{rest}</span>
-      </>
-    )
-  }
-
   return (
     <div className="relative z-[35] w-full pointer-events-none">
       {/* Short hold while Solutions stays fully visible before FAQ rides up */}
@@ -127,7 +117,10 @@ export default function FAQSection({ locale, theme = 'light' }: FAQSectionProps)
             className="flex flex-col items-center gap-[5px] text-center"
           >
             <h2 className="font-sans text-[32px] font-extralight uppercase leading-tight tracking-[9.6px] lg:text-[48px] lg:leading-[60px]">
-              {renderStylizedTitle(t(translations.sectionTitle))}
+              <StylizedSectionTitle
+                text={t(translations.sectionTitle)}
+                restClassName={isLight ? 'text-coal-900' : 'text-white'}
+              />
             </h2>
             <p
               className={`font-sans text-base font-light leading-8 tracking-[3.2px] ${

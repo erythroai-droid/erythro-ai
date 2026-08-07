@@ -11,6 +11,7 @@ import {
   type PortfolioFilter,
   type PortfolioProject,
 } from '@/lib/portfolioProjects'
+import StylizedSectionTitle from '@/components/StylizedSectionTitle'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -170,8 +171,10 @@ export default function PortfolioSection({
       <div className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col items-center px-[30px] pb-16 pt-10 lg:pb-24 lg:pt-12">
         <div className="mb-10 flex flex-col items-center gap-[5px] text-center lg:mb-12">
           <h1 className="font-sans text-[32px] font-extralight uppercase leading-tight tracking-[9.6px] lg:text-[48px] lg:leading-[60px]">
-            <span className="text-erythro-500">P</span>
-            <span className={isLight ? 'text-coal-900' : 'text-white'}>ortfolio</span>
+            <StylizedSectionTitle
+              text="PORTFOLIO"
+              restClassName={isLight ? 'text-coal-900' : 'text-white'}
+            />
           </h1>
           <p
             className={`font-sans text-base font-light leading-8 tracking-[3.2px] ${

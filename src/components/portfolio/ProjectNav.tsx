@@ -47,6 +47,11 @@ function tNav(locale: string, kind: ListingNavKind) {
 }
 
 function ArrowIcon({ direction }: { direction: 'prev' | 'next' }) {
+  // SVG points toward the inline end (→). Mirror with rotate so:
+  // LTR: next →, prev ←; RTL: next ←, prev →.
+  const mirrorClass =
+    direction === 'prev' ? 'rotate-180 rtl:rotate-0' : 'rtl:rotate-180'
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -54,7 +59,7 @@ function ArrowIcon({ direction }: { direction: 'prev' | 'next' }) {
       height="11"
       viewBox="0 0 10 11"
       fill="none"
-      className={`h-2.5 w-2.5 shrink-0 rtl:-scale-x-100 ${direction === 'prev' ? 'rotate-180' : ''}`}
+      className={`h-2.5 w-2.5 shrink-0 ${mirrorClass}`}
       aria-hidden
     >
       <path
