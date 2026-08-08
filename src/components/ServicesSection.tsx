@@ -29,11 +29,13 @@ interface ServicesSectionProps {
 function CardVideo({
   src,
   poster,
+  posterAlt,
   label,
   className,
 }: {
   src: string
   poster?: string
+  posterAlt?: string
   label: string
   className?: string
 }) {
@@ -93,8 +95,7 @@ function CardVideo({
       {poster ? (
         <img
           src={poster}
-          alt=""
-          aria-hidden
+          alt={posterAlt || label}
           className="absolute inset-0 h-full w-full object-cover"
           loading="eager"
           decoding="async"
@@ -491,13 +492,14 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                         <CardVideo
                           src={item.video}
                           poster={item.videoPoster || item.image || undefined}
+                          posterAlt={item.videoPosterAlt || itemTitle}
                           label={itemTitle}
                           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                         />
                       ) : (
                         <img
                           src={item.image}
-                          alt={itemTitle}
+                          alt={item.videoPosterAlt || itemTitle}
                           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                           loading="lazy"
                         />

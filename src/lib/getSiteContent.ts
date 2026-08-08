@@ -273,6 +273,7 @@ export async function getSiteContent(): Promise<SiteContent> {
           features,
           // For videos keep the static poster/image as fallback under the player.
           image: isVideo ? fb?.image || '' : url || fb?.image || '',
+          ...(fb?.videoPosterAlt ? { videoPosterAlt: fb.videoPosterAlt } : {}),
           ...(isVideo && url
             ? { video: url, videoPoster: fb?.videoPoster || fb?.image || '' }
             : {}),

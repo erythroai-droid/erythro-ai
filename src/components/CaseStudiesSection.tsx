@@ -291,11 +291,10 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
         >
           <img
             src={CASE_STUDY_POSTER}
-            alt=""
+            alt="Dynamic Urban Showcase project preview"
             className={`absolute inset-0 h-full w-full object-cover ${
               isDesktop === false ? '' : 'lg:scale-[1.14]'
             }`}
-            aria-hidden
           />
           {videoSrc ? (
             <CaseStudyVideo
