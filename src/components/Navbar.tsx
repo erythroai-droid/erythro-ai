@@ -5,6 +5,7 @@ import Button from './Button'
 import { useSiteContent } from './SiteContentProvider'
 import { navigateHomeWithFullSplash } from '@/lib/splash'
 import { getSectionElement } from '@/lib/domSection'
+import { scrollToLetsTalk } from '@/lib/letsTalkScroll'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -310,10 +311,14 @@ export default function Navbar({
         }
       }
 
+      if (targetId === 'contacts') {
+        scrollToLetsTalk({ behavior: 'smooth' })
+        setMobileOpen(false)
+        return
+      }
+
       const targetElement =
-        targetId === 'contacts'
-          ? getSectionElement('contacts') || document.querySelector('footer')
-          : getSectionElement(targetId) || document.getElementById(targetId)
+        getSectionElement(targetId) || document.getElementById(targetId)
 
       if (targetElement) {
         targetElement.scrollIntoView({ behavior: 'smooth' })

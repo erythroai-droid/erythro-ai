@@ -2,19 +2,14 @@
 
 import React, { useEffect, useMemo, useRef } from 'react'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Button from './Button'
 import HeroAnimation from './HeroAnimation'
 import HeroMotionText from './HeroMotionText'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import { isContactModalHref, navigateCtaHref } from '@/lib/ctaNav'
-import { getSectionElement } from '@/lib/domSection'
+import { scrollToLetsTalk } from '@/lib/letsTalkScroll'
 import { waitForSplashDone } from '@/lib/splash'
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
-}
 
 interface HeroSectionProps {
   locale: string
@@ -60,20 +55,9 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
       return
     }
 
-    // Preserve legacy dual scroll when pointing at contacts
+    // Preserve legacy dual scroll when pointing at contacts / Let’s Talk
     if (href === '#contacts' || href === '') {
-      const isMobile = window.innerWidth < 1024
-      if (isMobile) {
-        getSectionElement('contacts')?.scrollIntoView({ behavior: 'smooth' })
-      } else {
-        const st = ScrollTrigger.getById('services-pin')
-        if (st) {
-          const scrollPosition = st.start + 0.8 * (st.end - st.start)
-          window.scrollTo({ top: scrollPosition, behavior: 'smooth' })
-        } else {
-          document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' })
-        }
-      }
+      scrollToLetsTalk({ behavior: 'smooth' })
       return
     }
 
