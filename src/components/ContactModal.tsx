@@ -129,7 +129,7 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
         className="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
       />
 
-      <div className="relative max-h-[90vh] w-full max-w-[460px] overflow-y-auto rounded-[10px] border border-white/10 bg-coal-900 p-6 sm:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
+      <div className="faq-accordion-scroll relative max-h-[90vh] w-full max-w-[600px] overflow-y-auto rounded-[10px] border border-white/10 bg-coal-900 p-6 sm:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
         <button
           type="button"
           onClick={onClose}
