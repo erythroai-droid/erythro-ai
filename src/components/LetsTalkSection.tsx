@@ -128,8 +128,10 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
         })
 
         // Gate forward scroll until Lets Talk copy (heading → CTA) has fully settled.
+        // Progress-based (not tl.call) so scrub lag can't flicker reverse/restart settle.
         let settleGateProgress: number | null = null
         let settleComplete = false
+        let settleStartTime = 0
 
         const blockForwardWhileSettling = (event: WheelEvent) => {
           if (settleGateProgress == null || settleComplete) return
@@ -137,50 +139,6 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
         }
         window.addEventListener('wheel', blockForwardWhileSettling, { passive: false })
 
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: wrapperRef.current,
-            start: 'top top',
-            end: '+=200%', // Scroll distance for animation
-            pin: true,
-            pinSpacing: true,
-            scrub: 1,
-            invalidateOnRefresh: true,
-            onUpdate(self) {
-              if (settleGateProgress == null || settleComplete) return
-              if (self.progress > settleGateProgress) {
-                self.scroll(self.start + settleGateProgress * (self.end - self.start))
-              }
-            },
-          },
-        })
-
-        // Step 1: Background opens from middle up and down
-        tl.fromTo(
-          wrapperRef.current,
-          {
-            clipPath: 'inset(50% 0% 50% 0%)',
-          },
-          {
-            clipPath: 'inset(0% 0% 0% 0%)',
-            duration: 1.0,
-            ease: 'power2.inOut',
-          },
-        )
-
-        // Fade in the logo quickly at the start of block reveal
-        tl.to(
-          logoRef.current,
-          {
-            opacity: 1,
-            duration: 0.3,
-            ease: 'power1.out',
-          },
-          '-=0.9',
-        )
-
-        // Time-based copy settle: heading appear → scale → subheading → CTA.
-        // Scrub is locked at this point until the sequence completes.
         const settleTl = gsap.timeline({
           paused: true,
           onComplete: () => {
@@ -222,24 +180,72 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
             1.25,
           )
 
-        tl.call(() => {
-          const st = tl.scrollTrigger
-          if (!st) return
-          if (st.direction >= 0) {
-            if (settleTl.progress() < 1) {
-              settleComplete = false
-              settleGateProgress = st.progress
-              settleTl.play()
-            }
-          } else {
-            settleComplete = false
-            settleGateProgress = null
-            settleTl.reverse()
-          }
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: wrapperRef.current,
+            start: 'top top',
+            end: '+=200%', // Scroll distance for animation
+            pin: true,
+            pinSpacing: true,
+            scrub: 1,
+            invalidateOnRefresh: true,
+            onUpdate(self) {
+              const total = tl.duration()
+              if (!settleStartTime || total <= 0) return
+              const settleAtProgress = Math.min(0.999, settleStartTime / total)
+
+              if (self.progress >= settleAtProgress - 0.0005) {
+                if (!settleComplete && settleTl.progress() < 1) {
+                  if (settleGateProgress == null) {
+                    settleGateProgress = settleAtProgress
+                  }
+                  if (!settleTl.isActive()) {
+                    settleTl.play()
+                  }
+                }
+                if (!settleComplete && self.progress > settleAtProgress) {
+                  self.scroll(self.start + settleAtProgress * (self.end - self.start))
+                }
+              } else if (self.progress < settleAtProgress - 0.02) {
+                if (settleTl.progress() > 0 || settleComplete || settleGateProgress != null) {
+                  settleTl.pause(0)
+                  settleComplete = false
+                  settleGateProgress = null
+                }
+              }
+            },
+          },
         })
 
+        // Step 1: Background opens from middle up and down
+        tl.fromTo(
+          wrapperRef.current,
+          {
+            clipPath: 'inset(50% 0% 50% 0%)',
+          },
+          {
+            clipPath: 'inset(0% 0% 0% 0%)',
+            duration: 1.0,
+            ease: 'power2.inOut',
+          },
+        )
+
+        // Fade in the logo quickly at the start of block reveal
+        tl.to(
+          logoRef.current,
+          {
+            opacity: 1,
+            duration: 0.3,
+            ease: 'power1.out',
+          },
+          '-=0.9',
+        )
+
+        // Scrub progress where time-based settle should start (after logo fade).
+        settleStartTime = tl.duration()
+
         // Hold phase to keep Let's Talk fully visible and interactive at the end of timeline
-        tl.to({}, { duration: 1.7 })
+        tl.to({}, { duration: 1.2 })
 
         return () => {
           window.removeEventListener('wheel', blockForwardWhileSettling)
