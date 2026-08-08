@@ -295,7 +295,7 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
         />
 
         {/* Headings container (max-w-[1170px]) */}
-        <div className="relative z-10 mx-auto flex w-full max-w-[1170px] shrink-0 flex-col items-center px-[30px] mb-8 lg:mb-10">
+        <div className="relative z-10 mx-auto flex w-full max-w-[1170px] shrink-0 flex-col items-center px-[30px] mb-4 lg:mb-5">
           <div
             ref={headingRef}
             className="flex flex-col items-center gap-[5px] text-center"
@@ -319,7 +319,7 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
         {/* Cards container (full screen width, max-w-none) */}
         <div
           ref={cardsRef}
-          className="solution-cards-track relative z-10 flex min-h-0 w-full flex-1 flex-col items-center gap-[30px] px-[30px] py-8 pb-16 lg:flex-row lg:flex-nowrap lg:items-center lg:justify-start lg:gap-[30px] lg:overflow-x-auto lg:overscroll-x-contain lg:snap-x lg:snap-mandatory lg:scroll-px-[30px] lg:py-6 lg:pb-10 xl:justify-center xl:overflow-x-clip xl:snap-none"
+          className="solution-cards-track relative z-10 flex min-h-0 w-full flex-1 flex-col items-center gap-[30px] px-[30px] pt-2 pb-16 lg:flex-row lg:flex-nowrap lg:items-center lg:justify-start lg:gap-[30px] lg:overflow-x-auto lg:overscroll-x-contain lg:snap-x lg:snap-mandatory lg:scroll-px-[30px] lg:pt-2 lg:pb-10 xl:justify-center xl:overflow-x-clip xl:snap-none"
         >
           {translations.cards.map((card) => (
             <SolutionCard

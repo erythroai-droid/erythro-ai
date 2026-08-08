@@ -207,14 +207,58 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         })
 
         // Gate forward scroll until Lets Talk copy (heading → CTA) has fully settled.
+        // Progress-based (not tl.call) so scrub lag can't flicker reverse/restart settle —
+        // that restart loop felt like a long post-CTA delay, especially with HE line wraps.
         let settleGateProgress: number | null = null
         let settleComplete = false
+        let settleStartTime = 0
 
         const blockForwardWhileSettling = (event: WheelEvent) => {
           if (settleGateProgress == null || settleComplete) return
           if (event.deltaY > 0) event.preventDefault()
         }
         window.addEventListener('wheel', blockForwardWhileSettling, { passive: false })
+
+        const settleTl = gsap.timeline({
+          paused: true,
+          onComplete: () => {
+            settleComplete = true
+            settleGateProgress = null
+          },
+          onReverseComplete: () => {
+            settleComplete = false
+            settleGateProgress = null
+          },
+        })
+        settleTl
+          // 1) Heading rises/fades in under the large logo
+          .to(
+            headingContactRef.current,
+            { opacity: 1, y: 260, duration: 0.75, ease: 'power2.out' },
+            0,
+          )
+          // 2) Scale logo + heading to final layout
+          .to(
+            logoRef.current,
+            { scale: 1, y: 0, duration: 0.85, ease: 'power2.inOut' },
+            0.45,
+          )
+          .to(
+            headingContactRef.current,
+            { scale: 1, y: 0, duration: 0.85, ease: 'power2.inOut' },
+            0.45,
+          )
+          // 3) Remaining copy + CTA, with a short cascade
+          .to(
+            subtextRef.current,
+            { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
+            1.05,
+          )
+          .to(
+            buttonRef.current,
+            { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
+            1.25,
+          )
 
         const tl = gsap.timeline({
           scrollTrigger: {
@@ -229,9 +273,28 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             scrub: 1, // Smooth scrub
             invalidateOnRefresh: true,
             onUpdate(self) {
-              if (settleGateProgress == null || settleComplete) return
-              if (self.progress > settleGateProgress) {
-                self.scroll(self.start + settleGateProgress * (self.end - self.start))
+              const total = tl.duration()
+              if (!settleStartTime || total <= 0) return
+              const settleAtProgress = Math.min(0.999, settleStartTime / total)
+
+              if (self.progress >= settleAtProgress - 0.0005) {
+                if (!settleComplete && settleTl.progress() < 1) {
+                  if (settleGateProgress == null) {
+                    settleGateProgress = settleAtProgress
+                  }
+                  if (!settleTl.isActive()) {
+                    settleTl.play()
+                  }
+                }
+                if (!settleComplete && self.progress > settleAtProgress) {
+                  self.scroll(self.start + settleAtProgress * (self.end - self.start))
+                }
+              } else if (self.progress < settleAtProgress - 0.02) {
+                if (settleTl.progress() > 0 || settleComplete || settleGateProgress != null) {
+                  settleTl.pause(0)
+                  settleComplete = false
+                  settleGateProgress = null
+                }
               }
             },
           },
@@ -282,67 +345,11 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           '-=0.9',
         )
 
-        // Time-based copy settle: heading appear → scale → subheading → CTA.
-        // Scrub is locked at this point until the sequence completes.
-        const settleTl = gsap.timeline({
-          paused: true,
-          onComplete: () => {
-            settleComplete = true
-            settleGateProgress = null
-          },
-          onReverseComplete: () => {
-            settleComplete = false
-            settleGateProgress = null
-          },
-        })
-        settleTl
-          // 1) Heading rises/fades in under the large logo
-          .to(
-            headingContactRef.current,
-            { opacity: 1, y: 260, duration: 0.75, ease: 'power2.out' },
-            0,
-          )
-          // 2) Scale logo + heading to final layout
-          .to(
-            logoRef.current,
-            { scale: 1, y: 0, duration: 0.85, ease: 'power2.inOut' },
-            0.45,
-          )
-          .to(
-            headingContactRef.current,
-            { scale: 1, y: 0, duration: 0.85, ease: 'power2.inOut' },
-            0.45,
-          )
-          // 3) Remaining copy + CTA, with a short cascade
-          .to(
-            subtextRef.current,
-            { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
-            1.05,
-          )
-          .to(
-            buttonRef.current,
-            { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
-            1.25,
-          )
-
-        tl.call(() => {
-          const st = tl.scrollTrigger
-          if (!st) return
-          if (st.direction >= 0) {
-            if (settleTl.progress() < 1) {
-              settleComplete = false
-              settleGateProgress = st.progress
-              settleTl.play()
-            }
-          } else {
-            settleComplete = false
-            settleGateProgress = null
-            settleTl.reverse()
-          }
-        })
+        // Scrub progress where time-based settle should start (after logo fade).
+        settleStartTime = tl.duration()
 
         // Hold phase to keep Let's Talk fully visible and interactive before Solutions slides over
-        tl.to({}, { duration: 3.0 })
+        tl.to({}, { duration: 2.0 })
 
         return () => {
           window.removeEventListener('wheel', blockForwardWhileSettling)
