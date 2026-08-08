@@ -232,6 +232,19 @@
     display: none; /* Chrome/Safari/WebKit */
   }
 
+  /* Burger overlay: keep scroll, hide the bar so accordion open/close
+     does not insert a gutter and jerk the centered menu. */
+  .burger-menu-panel {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .burger-menu-panel::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
   body {
     background-color: var(--bg-primary);
     color: var(--text-main);
