@@ -158,6 +158,15 @@ export default function Navbar({
   }, [])
 
   useEffect(() => {
+    if (!mobileOpen) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevOverflow
+    }
+  }, [mobileOpen])
+
+  useEffect(() => {
     // Sample backdrop under Menu on desktop (home + inner pages).
     const parseRgb = (color: string) => {
       const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
@@ -427,7 +436,7 @@ export default function Navbar({
         Features a deep coal background, glass blur, and smooth layout mirror.
       */}
       <div
-        className={`fixed inset-y-0 start-0 end-0 z-[60] overflow-y-auto overscroll-contain bg-coal-900/90 backdrop-blur-lg transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`burger-menu-panel fixed inset-y-0 start-0 end-0 z-[60] overflow-y-auto overscroll-contain bg-coal-900/90 backdrop-blur-lg transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
           mobileOpen
             ? 'translate-x-0'
             : currentLocale === 'he'
