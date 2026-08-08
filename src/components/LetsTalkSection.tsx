@@ -163,7 +163,7 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
           '-=0.9',
         )
 
-        // Step 2: Heading text fades in under logo. Logo and heading stay centered (y: 130 for logo, y: 190 for heading) without drifting.
+        // Step 2: Heading text fades in under logo.
         tl.to(
           headingRef.current,
           {
@@ -174,49 +174,39 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
           '+=0.1',
         )
 
-        // Step 3: Scale down to 1.0 (normal size) and move to normal Y positions
-        tl.to(
-          logoRef.current,
-          {
-            scale: 1,
-            y: 0,
-            duration: 1.0,
-            ease: 'power2.inOut',
-          },
-          'scalePhase',
-        )
-        tl.to(
-          headingRef.current,
-          {
-            scale: 1,
-            y: 0,
-            duration: 1.0,
-            ease: 'power2.inOut',
-          },
-          'scalePhase',
-        )
+        // After the heading appears, finish scale + remaining copy on a time-based
+        // timeline so subheading/CTA don't require more scrolling to discover.
+        const settleTl = gsap.timeline({ paused: true })
+        settleTl
+          .to(
+            logoRef.current,
+            { scale: 1, y: 0, duration: 0.85, ease: 'power2.inOut' },
+            0.12,
+          )
+          .to(
+            headingRef.current,
+            { scale: 1, y: 0, duration: 0.85, ease: 'power2.inOut' },
+            0.12,
+          )
+          .to(
+            subtextRef.current,
+            { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
+            0.55,
+          )
+          .to(
+            buttonRef.current,
+            { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
+            0.72,
+          )
 
-        // Step 4: Subheading and Button fade / slide in
-        tl.to(
-          subtextRef.current,
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            ease: 'power2.out',
-          },
-          '+=0.1',
-        )
-        tl.to(
-          buttonRef.current,
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            ease: 'power2.out',
-          },
-          '-=0.4',
-        )
+        tl.call(() => {
+          const direction = tl.scrollTrigger?.direction ?? 1
+          if (direction >= 0) {
+            settleTl.play()
+          } else {
+            settleTl.reverse()
+          }
+        })
 
         // Hold phase to keep Let's Talk fully visible and interactive at the end of timeline
         tl.to({}, { duration: 1.7 })
