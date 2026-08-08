@@ -5,6 +5,13 @@ import { useSiteContent } from '@/components/SiteContentProvider'
 import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
 import { contactForm } from '@/translations'
 import { contactsPage, tContacts } from '@/lib/contactsPage'
+import {
+  hasContactFieldErrors,
+  validateContactForm,
+  type ContactField,
+  type ContactFieldErrors,
+  type ContactFormValues,
+} from '@/lib/contactFormValidation'
 
 interface ContactsBodyProps {
   locale: string
@@ -27,41 +34,72 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
   const formHeading = tContacts(contactsPage.formHeading, locale)
   const socialHeading = tContacts(contactsPage.socialHeading, locale)
 
+  const [status, setStatus] = useState<Status>('idle')
+  const [values, setValues] = useState<ContactFormValues>({ name: '', email: '', phone: '', message: '' })
+  const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({})
+  const [privacyConsent, setPrivacyConsent] = useState(false)
+  const [consentError, setConsentError] = useState(false)
+  const firstFieldRef = useRef<HTMLInputElement | null>(null)
+
   const bodyTone = isLight ? 'text-coal-900/85' : 'text-white/80'
   const headingTone = isLight ? 'text-coal-900' : 'text-white'
   const accentTone = isLight ? 'text-gold-900' : 'text-gold-500'
   const cardClass = isLight
     ? 'border-coal-900/10 bg-white/70'
     : 'border-white/10 bg-white/[0.04]'
-  const inputClass = isLight
-    ? 'w-full rounded-[10px] border border-coal-900/15 bg-white px-4 py-3 text-coal-900 placeholder:text-coal-900/40 outline-none transition-colors focus:border-erythro-500 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
-    : 'w-full rounded-[10px] border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 outline-none transition-colors focus:border-gold-500 focus:bg-white/[0.06] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
+  const baseInputClass = isLight
+    ? 'w-full rounded-[10px] border bg-white px-4 py-3 text-coal-900 placeholder:text-coal-900/40 outline-none transition-colors focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
+    : 'w-full rounded-[10px] border bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 outline-none transition-colors focus:bg-white/[0.06] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
+  const inputClass = (field: ContactField) => {
+    if (fieldErrors[field]) {
+      return `${baseInputClass} border-erythro-500 focus:border-erythro-500`
+    }
+    return isLight
+      ? `${baseInputClass} border-coal-900/15 focus:border-erythro-500`
+      : `${baseInputClass} border-white/15 focus:border-gold-500`
+  }
   const labelClass = isLight
     ? 'mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-coal-900/70'
     : 'mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-white/70'
   const linkClass = isLight
     ? 'text-coal-900 transition-colors hover:text-erythro-500'
     : 'text-white transition-colors hover:text-gold-500'
+  const requiredMark = (
+    <span className="ms-0.5 text-erythro-500" aria-hidden="true">
+      *
+    </span>
+  )
 
-  const [status, setStatus] = useState<Status>('idle')
-  const [values, setValues] = useState({ name: '', email: '', phone: '', message: '' })
-  const [privacyConsent, setPrivacyConsent] = useState(false)
-  const [consentError, setConsentError] = useState(false)
-  const firstFieldRef = useRef<HTMLInputElement | null>(null)
+  const fieldErrorMessage = (field: ContactField) => {
+    const err = fieldErrors[field]
+    if (!err) return undefined
+    return err === 'invalid' ? t(form.emailInvalid) : t(form.fieldRequired)
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setValues((v) => ({ ...v, [e.target.name]: e.target.value }))
+    const name = e.target.name as ContactField
+    setValues((v) => ({ ...v, [name]: e.target.value }))
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev }
+        delete next[name]
+        return next
+      })
+    }
     if (status === 'error') setStatus('idle')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (status === 'sending') return
-    if (!privacyConsent) {
-      setConsentError(true)
-      return
-    }
-    setConsentError(false)
+
+    const nextFieldErrors = validateContactForm(values)
+    setFieldErrors(nextFieldErrors)
+    if (!privacyConsent) setConsentError(true)
+    else setConsentError(false)
+
+    if (hasContactFieldErrors(nextFieldErrors) || !privacyConsent) return
+
     setStatus('sending')
     try {
       const res = await fetch('/api/contact', {
@@ -72,6 +110,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
       if (!res.ok) throw new Error('Request failed')
       setStatus('success')
       setValues({ name: '', email: '', phone: '', message: '' })
+      setFieldErrors({})
       setPrivacyConsent(false)
     } catch {
       setStatus('error')
@@ -242,6 +281,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                     <div>
                       <label htmlFor="contacts-page-name" className={labelClass}>
                         {t(form.name)}
+                        {requiredMark}
                       </label>
                       <input
                         ref={firstFieldRef}
@@ -252,28 +292,50 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                         value={values.name}
                         onChange={handleChange}
                         placeholder={t(form.name)}
-                        className={inputClass}
+                        className={inputClass('name')}
                         autoComplete="name"
+                        autoCapitalize="words"
+                        enterKeyHint="next"
                         aria-required="true"
+                        aria-invalid={Boolean(fieldErrors.name) || undefined}
+                        aria-describedby={fieldErrors.name ? 'contacts-page-name-error' : undefined}
                       />
+                      {fieldErrors.name ? (
+                        <p id="contacts-page-name-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                          {fieldErrorMessage('name')}
+                        </p>
+                      ) : null}
                     </div>
                     <div>
                       <label htmlFor="contacts-page-email" className={labelClass}>
                         {t(form.email)}
+                        {requiredMark}
                       </label>
                       <input
                         id="contacts-page-email"
                         name="email"
                         type="email"
+                        inputMode="email"
                         required
                         value={values.email}
                         onChange={handleChange}
                         placeholder={t(form.email)}
-                        className={inputClass}
+                        className={inputClass('email')}
                         autoComplete="email"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        enterKeyHint="next"
                         dir="ltr"
                         aria-required="true"
+                        aria-invalid={Boolean(fieldErrors.email) || undefined}
+                        aria-describedby={fieldErrors.email ? 'contacts-page-email-error' : undefined}
                       />
+                      {fieldErrors.email ? (
+                        <p id="contacts-page-email-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                          {fieldErrorMessage('email')}
+                        </p>
+                      ) : null}
                     </div>
                     <div>
                       <label htmlFor="contacts-page-phone" className={labelClass}>
@@ -283,17 +345,23 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                         id="contacts-page-phone"
                         name="phone"
                         type="tel"
+                        inputMode="tel"
                         value={values.phone}
                         onChange={handleChange}
                         placeholder={t(form.phone)}
-                        className={inputClass}
+                        className={inputClass('phone')}
                         autoComplete="tel"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        enterKeyHint="next"
                         dir="ltr"
                       />
                     </div>
                     <div>
                       <label htmlFor="contacts-page-message" className={labelClass}>
                         {t(form.message)}
+                        {requiredMark}
                       </label>
                       <textarea
                         id="contacts-page-message"
@@ -303,11 +371,23 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                         onChange={handleChange}
                         placeholder={t(form.message)}
                         rows={5}
-                        className={`${inputClass} resize-none`}
+                        className={`${inputClass('message')} resize-none`}
+                        enterKeyHint="send"
                         aria-required="true"
-                        aria-invalid={status === 'error' || undefined}
-                        aria-describedby={status === 'error' ? 'contacts-page-error' : undefined}
+                        aria-invalid={Boolean(fieldErrors.message) || status === 'error' || undefined}
+                        aria-describedby={
+                          fieldErrors.message
+                            ? 'contacts-page-message-error'
+                            : status === 'error'
+                              ? 'contacts-page-error'
+                              : undefined
+                        }
                       />
+                      {fieldErrors.message ? (
+                        <p id="contacts-page-message-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                          {fieldErrorMessage('message')}
+                        </p>
+                      ) : null}
                     </div>
 
                     {status === 'error' && (
@@ -330,7 +410,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
 
                     <button
                       type="submit"
-                      disabled={status === 'sending' || !privacyConsent}
+                      disabled={status === 'sending'}
                       className="mt-2 w-full cursor-pointer rounded-[40px] bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase tracking-widest text-white shadow-none transition-[box-shadow,transform,opacity] duration-300 ease-out hover:shadow-[0_3px_20px_0_rgba(229,36,33,0.45)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-none"
                     >
                       {status === 'sending' ? t(form.sending) : t(form.submit)}
