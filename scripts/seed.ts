@@ -29,6 +29,12 @@ const SITE = {
   tiktok: 'https://tiktok.com/@erythro.ai',
 }
 
+const SEO_TITLES: Record<Locale, string> = {
+  en: 'Erythro.ai - digital agency',
+  ru: 'Erythro.ai — цифровое агентство',
+  he: 'Erythro.ai - סוכנות דיגיטל',
+}
+
 const SEO_DESCRIPTIONS: Record<Locale, string> = {
   en: 'Erythro.ai is a digital agency building high-performance websites, brand identity, and AI automation — from strategy to launch.',
   ru: 'Erythro.ai — цифровое агентство: высокопроизводительные сайты, брендинг и AI-автоматизация бизнес-процессов. От стратегии до запуска.',
@@ -206,7 +212,7 @@ async function run() {
       cookieMessage: cookieConsent.message[loc],
       cookieAccept: cookieConsent.accept[loc],
       cookieDecline: cookieConsent.decline[loc],
-      seoTitle: 'Erythro.ai - digital agency',
+      seoTitle: SEO_TITLES[loc],
       seoDescription: SEO_DESCRIPTIONS[loc],
     })),
   )

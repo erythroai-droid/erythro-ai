@@ -541,7 +541,7 @@ export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-conten
 })
 
 export interface SeoSettings {
-  title?: string
+  title?: Partial<Record<(typeof LOCALES)[number], string>>
   description?: Partial<Record<(typeof LOCALES)[number], string>>
   ogImage?: string
 }
@@ -561,8 +561,13 @@ export async function getSeoSettings(): Promise<SeoSettings> {
     })) as any
 
     const out: SeoSettings = {}
-    if (typeof settings?.seoTitle === 'string' && settings.seoTitle.trim()) {
-      out.title = settings.seoTitle.trim()
+    if (hasContent(settings?.seoTitle)) {
+      out.title = {}
+      for (const l of LOCALES) {
+        if (typeof settings.seoTitle?.[l] === 'string' && settings.seoTitle[l].trim()) {
+          out.title[l] = settings.seoTitle[l]
+        }
+      }
     }
     if (hasContent(settings?.seoDescription)) {
       out.description = {}
