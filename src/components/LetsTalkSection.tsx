@@ -244,8 +244,8 @@ export default function LetsTalkSection({ locale, variant = 'default' }: LetsTal
         // Scrub progress where time-based settle should start (after logo fade).
         settleStartTime = tl.duration()
 
-        // Hold phase to keep Let's Talk fully visible and interactive at the end of timeline
-        tl.to({}, { duration: 1.2 })
+        // Brief post-CTA hold — gate already ensures the button is visible first.
+        tl.to({}, { duration: 0.5 })
 
         return () => {
           window.removeEventListener('wheel', blockForwardWhileSettling)
