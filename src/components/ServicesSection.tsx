@@ -10,6 +10,7 @@ import { useCursorGlow } from '@/hooks/useCursorGlow'
 import StylizedSectionTitle from './StylizedSectionTitle'
 import BidiText from './BidiText'
 import { getServiceSlugById } from '@/lib/servicePages'
+import { LETS_TALK_SCROLL_EVENT } from '@/lib/letsTalkScroll'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -212,9 +213,12 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         let settleGateProgress: number | null = null
         let settleComplete = false
         let settleStartTime = 0
+        // Hero / nav jump: skip the gate and snap settle once the overlay is open.
+        let jumpToLetsTalk = false
+        let jumpTargetTop: number | null = null
 
         const blockForwardWhileSettling = (event: WheelEvent) => {
-          if (settleGateProgress == null || settleComplete) return
+          if (jumpToLetsTalk || settleGateProgress == null || settleComplete) return
           if (event.deltaY > 0) event.preventDefault()
         }
         window.addEventListener('wheel', blockForwardWhileSettling, { passive: false })
@@ -260,7 +264,43 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             1.25,
           )
 
-        const tl = gsap.timeline({
+        const revealLetsTalkFully = () => {
+          settleTl.progress(1)
+          settleComplete = true
+          settleGateProgress = null
+          jumpToLetsTalk = false
+          jumpTargetTop = null
+        }
+
+        let tl: gsap.core.Timeline
+
+        const onScrollToLetsTalk = (event: Event) => {
+          const st = tl?.scrollTrigger
+          if (!st || !settleStartTime) return
+          const total = tl.duration()
+          if (total <= 0) return
+
+          const detail = (event as CustomEvent<{ behavior?: ScrollBehavior }>).detail
+          const behavior = detail?.behavior ?? 'smooth'
+          // Land in the brief post-CTA hold so overlay + copy are fully open.
+          const targetProgress = Math.min(0.99, (settleStartTime + 0.4) / total)
+          const top = st.start + targetProgress * (st.end - st.start)
+
+          jumpToLetsTalk = true
+          jumpTargetTop = top
+          settleGateProgress = null
+
+          window.scrollTo({ top, behavior })
+
+          if (behavior === 'auto') {
+            st.scroll(top)
+            revealLetsTalkFully()
+            ScrollTrigger.update()
+          }
+        }
+        window.addEventListener(LETS_TALK_SCROLL_EVENT, onScrollToLetsTalk)
+
+        tl = gsap.timeline({
           scrollTrigger: {
             id: 'services-pin',
             trigger: sectionRef.current,
@@ -276,6 +316,17 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
               const total = tl.duration()
               if (!settleStartTime || total <= 0) return
               const settleAtProgress = Math.min(0.999, settleStartTime / total)
+
+              if (jumpToLetsTalk) {
+                const nearTarget =
+                  jumpTargetTop != null && Math.abs(self.scroll() - jumpTargetTop) < 140
+                if (self.progress >= settleAtProgress - 0.001 || nearTarget) {
+                  if (jumpTargetTop != null) self.scroll(jumpTargetTop)
+                  revealLetsTalkFully()
+                  ScrollTrigger.update()
+                }
+                return
+              }
 
               if (self.progress >= settleAtProgress - 0.0005) {
                 if (!settleComplete && settleTl.progress() < 1) {
@@ -354,6 +405,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
 
         return () => {
           window.removeEventListener('wheel', blockForwardWhileSettling)
+          window.removeEventListener(LETS_TALK_SCROLL_EVENT, onScrollToLetsTalk)
         }
       })
 
