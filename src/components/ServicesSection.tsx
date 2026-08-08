@@ -211,8 +211,8 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             id: 'services-pin',
             trigger: sectionRef.current,
             start: 'top top',
-            // Pin must outlast Solutions lead-in (ride-up), but lead-in must reach
-            // ~button-complete progress (~80% of this timeline) so CTA isn’t covered early.
+            // Pin must outlast Solutions lead-in (ride-up). CTA settles on a time-based
+            // timeline after the heading reveal, so hold below keeps it interactive.
             end: '+=950%',
             pin: true,
             pinSpacing: false, // SolutionSection will slide over it
@@ -266,7 +266,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           '-=0.9',
         )
 
-        // Step 2: Heading text fades in under logo. Logo and heading stay centered at y: 130 without drifting.
+        // Step 2: Heading text fades in under logo.
         tl.to(
           headingContactRef.current,
           {
@@ -277,51 +277,41 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           '+=0.1',
         )
 
-        // 5. LetsTalk Scale down to 1.0 (normal size) and move to normal Y positions
-        tl.to(
-          logoRef.current,
-          {
-            scale: 1,
-            y: 0,
-            duration: 1.0,
-            ease: 'power2.inOut',
-          },
-          'scalePhase',
-        )
-        tl.to(
-          headingContactRef.current,
-          {
-            scale: 1,
-            y: 0,
-            duration: 1.0,
-            ease: 'power2.inOut',
-          },
-          'scalePhase',
-        )
+        // After the heading appears, finish scale + remaining copy on a time-based
+        // timeline so subheading/CTA don't require more scrolling to discover.
+        const settleTl = gsap.timeline({ paused: true })
+        settleTl
+          .to(
+            logoRef.current,
+            { scale: 1, y: 0, duration: 0.85, ease: 'power2.inOut' },
+            0.12,
+          )
+          .to(
+            headingContactRef.current,
+            { scale: 1, y: 0, duration: 0.85, ease: 'power2.inOut' },
+            0.12,
+          )
+          .to(
+            subtextRef.current,
+            { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
+            0.55,
+          )
+          .to(
+            buttonRef.current,
+            { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
+            0.72,
+          )
 
-        // 6. LetsTalk Subheading and Button fade / slide in
-        tl.to(
-          subtextRef.current,
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            ease: 'power2.out',
-          },
-          '+=0.1',
-        )
-        tl.to(
-          buttonRef.current,
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            ease: 'power2.out',
-          },
-          '-=0.4',
-        )
+        tl.call(() => {
+          const direction = tl.scrollTrigger?.direction ?? 1
+          if (direction >= 0) {
+            settleTl.play()
+          } else {
+            settleTl.reverse()
+          }
+        })
 
-        // 7. Hold phase to keep Let's Talk fully visible and interactive before Solutions slides over
+        // Hold phase to keep Let's Talk fully visible and interactive before Solutions slides over
         tl.to({}, { duration: 3.0 })
       })
 
