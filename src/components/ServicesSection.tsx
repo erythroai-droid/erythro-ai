@@ -177,7 +177,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         })
         gsap.set(headingContactRef.current, {
           scale: 1.3,
-          y: 260, // Lowered slightly so letter 'y' from logo doesn't overlap/collide
+          y: 280, // Start slightly below final large pose for the appear rise
           opacity: 0,
           transformOrigin: 'center center',
         })
@@ -206,18 +206,34 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           },
         })
 
+        // Gate forward scroll until Lets Talk copy (heading → CTA) has fully settled.
+        let settleGateProgress: number | null = null
+        let settleComplete = false
+
+        const blockForwardWhileSettling = (event: WheelEvent) => {
+          if (settleGateProgress == null || settleComplete) return
+          if (event.deltaY > 0) event.preventDefault()
+        }
+        window.addEventListener('wheel', blockForwardWhileSettling, { passive: false })
+
         const tl = gsap.timeline({
           scrollTrigger: {
             id: 'services-pin',
             trigger: sectionRef.current,
             start: 'top top',
-            // Pin must outlast Solutions lead-in (ride-up). CTA settles on a time-based
-            // timeline after the heading reveal, so hold below keeps it interactive.
+            // Pin must outlast Solutions lead-in (ride-up). Forward scroll is gated
+            // until the time-based Lets Talk copy settle finishes.
             end: '+=950%',
             pin: true,
             pinSpacing: false, // SolutionSection will slide over it
             scrub: 1, // Smooth scrub
             invalidateOnRefresh: true,
+            onUpdate(self) {
+              if (settleGateProgress == null || settleComplete) return
+              if (self.progress > settleGateProgress) {
+                self.scroll(self.start + settleGateProgress * (self.end - self.start))
+              }
+            },
           },
         })
         ScrollTrigger.sort()
@@ -266,53 +282,71 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           '-=0.9',
         )
 
-        // Step 2: Heading text fades in under logo.
-        tl.to(
-          headingContactRef.current,
-          {
-            opacity: 1,
-            duration: 0.6,
-            ease: 'power2.out',
+        // Time-based copy settle: heading appear → scale → subheading → CTA.
+        // Scrub is locked at this point until the sequence completes.
+        const settleTl = gsap.timeline({
+          paused: true,
+          onComplete: () => {
+            settleComplete = true
+            settleGateProgress = null
           },
-          '+=0.1',
-        )
-
-        // After the heading appears, finish scale + remaining copy on a time-based
-        // timeline so subheading/CTA don't require more scrolling to discover.
-        const settleTl = gsap.timeline({ paused: true })
+          onReverseComplete: () => {
+            settleComplete = false
+            settleGateProgress = null
+          },
+        })
         settleTl
+          // 1) Heading rises/fades in under the large logo
+          .to(
+            headingContactRef.current,
+            { opacity: 1, y: 260, duration: 0.75, ease: 'power2.out' },
+            0,
+          )
+          // 2) Scale logo + heading to final layout
           .to(
             logoRef.current,
             { scale: 1, y: 0, duration: 0.85, ease: 'power2.inOut' },
-            0.12,
+            0.45,
           )
           .to(
             headingContactRef.current,
             { scale: 1, y: 0, duration: 0.85, ease: 'power2.inOut' },
-            0.12,
+            0.45,
           )
+          // 3) Remaining copy + CTA, with a short cascade
           .to(
             subtextRef.current,
             { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
-            0.55,
+            1.05,
           )
           .to(
             buttonRef.current,
             { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
-            0.72,
+            1.25,
           )
 
         tl.call(() => {
-          const direction = tl.scrollTrigger?.direction ?? 1
-          if (direction >= 0) {
-            settleTl.play()
+          const st = tl.scrollTrigger
+          if (!st) return
+          if (st.direction >= 0) {
+            if (settleTl.progress() < 1) {
+              settleComplete = false
+              settleGateProgress = st.progress
+              settleTl.play()
+            }
           } else {
+            settleComplete = false
+            settleGateProgress = null
             settleTl.reverse()
           }
         })
 
         // Hold phase to keep Let's Talk fully visible and interactive before Solutions slides over
         tl.to({}, { duration: 3.0 })
+
+        return () => {
+          window.removeEventListener('wheel', blockForwardWhileSettling)
+        }
       })
 
       // Mobile/tablet animation: Simple scroll trigger (no pinning/snapping)
