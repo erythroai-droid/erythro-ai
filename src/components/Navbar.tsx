@@ -256,6 +256,13 @@ export default function Navbar({
 
   const t = (field: Record<string, string>) => field[currentLocale] || field['en']
 
+  const logoAlt =
+    currentLocale === 'ru'
+      ? 'Erythro.ai — цифровое агентство'
+      : currentLocale === 'he'
+        ? 'Erythro.ai - סוכנות דיגיטל'
+        : 'Erythro.ai digital agency'
+
   const toggleSubmenu = (key: string) => {
     setOpenSubmenuKey((prev) => (prev === key ? null : key))
   }
@@ -331,7 +338,7 @@ export default function Navbar({
       >
           <a
             href="/"
-            aria-label="Erythro.ai"
+            aria-label={logoAlt}
             onClick={(e) => {
               e.preventDefault()
               setMobileOpen(false)
@@ -355,11 +362,10 @@ export default function Navbar({
                   ? '/images/logo/Logo_digital.svg'
                   : '/images/logo/Logo_digital-on-light.svg'
               }
-              alt=""
+              alt={logoAlt}
               width={235}
               height={74}
               className="hidden h-[64px] w-auto transition-opacity duration-300 lg:block"
-              aria-hidden
             />
           </a>
           <button
