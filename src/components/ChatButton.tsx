@@ -6,14 +6,20 @@ import { useContactModal } from './ContactModal'
  * Desktop-only pulsing contact CTA (coal-800 plate, Mail icon in gold-100, soft gold ping).
  * Opens the contact modal. Mobile keeps WhatsAppButton instead.
  */
-export default function ChatButton() {
+export default function ChatButton({ locale = 'en' }: { locale?: string }) {
   const { open } = useContactModal()
+  const ariaLabel =
+    locale === 'ru'
+      ? 'Открыть контактную форму'
+      : locale === 'he'
+        ? 'פתיחת טופס יצירת קשר'
+        : 'Open contact form'
 
   return (
     <button
       type="button"
       onClick={open}
-      aria-label="Open contact form"
+      aria-label={ariaLabel}
       className="pointer-events-auto fixed bottom-[18px] end-[18px] z-50 hidden h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full border border-white/10 bg-coal-800 text-gold-100 shadow-lg transition-all duration-300 hover:border-gold-500 hover:bg-gold-500 hover:text-coal-900 hover:shadow-gold-500/30 lg:flex"
     >
       <span className="absolute inset-0 rounded-full bg-gold-500/20 animate-ping pointer-events-none" />
