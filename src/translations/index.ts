@@ -816,6 +816,16 @@ export const contactForm = {
     ru: 'Сообщение',
     he: 'הודעה',
   },
+  fieldRequired: {
+    en: 'This field is required',
+    ru: 'Обязательное поле',
+    he: 'שדה חובה',
+  },
+  emailInvalid: {
+    en: 'Enter a valid email address',
+    ru: 'Введите корректный email',
+    he: 'נא להזין כתובת אימייל תקינה',
+  },
   submit: {
     en: 'Send',
     ru: 'Отправить',

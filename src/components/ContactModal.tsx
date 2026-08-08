@@ -2,6 +2,13 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from 'react'
 import { contactForm } from '@/translations'
+import {
+  hasContactFieldErrors,
+  validateContactForm,
+  type ContactField,
+  type ContactFieldErrors,
+  type ContactFormValues,
+} from '@/lib/contactFormValidation'
 import ContactPrivacyConsent from './ContactPrivacyConsent'
 
 interface ContactModalContextValue {
@@ -49,7 +56,8 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
   const errorId = useId()
 
   const [status, setStatus] = useState<Status>('idle')
-  const [values, setValues] = useState({ name: '', email: '', phone: '', message: '' })
+  const [values, setValues] = useState<ContactFormValues>({ name: '', email: '', phone: '', message: '' })
+  const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({})
   const [privacyConsent, setPrivacyConsent] = useState(false)
   const [consentError, setConsentError] = useState(false)
   const firstFieldRef = useRef<HTMLInputElement | null>(null)
@@ -81,19 +89,36 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
     }
   }, [onClose])
 
+  const fieldErrorMessage = (field: ContactField) => {
+    const err = fieldErrors[field]
+    if (!err) return undefined
+    return err === 'invalid' ? t(form.emailInvalid) : t(form.fieldRequired)
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setValues((v) => ({ ...v, [e.target.name]: e.target.value }))
+    const name = e.target.name as ContactField
+    setValues((v) => ({ ...v, [name]: e.target.value }))
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev }
+        delete next[name]
+        return next
+      })
+    }
     if (status === 'error') setStatus('idle')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (status === 'sending') return
-    if (!privacyConsent) {
-      setConsentError(true)
-      return
-    }
-    setConsentError(false)
+
+    const nextFieldErrors = validateContactForm(values)
+    setFieldErrors(nextFieldErrors)
+    if (!privacyConsent) setConsentError(true)
+    else setConsentError(false)
+
+    if (hasContactFieldErrors(nextFieldErrors) || !privacyConsent) return
+
     setStatus('sending')
     try {
       const res = await fetch('/api/contact', {
@@ -104,15 +129,26 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
       if (!res.ok) throw new Error('Request failed')
       setStatus('success')
       setValues({ name: '', email: '', phone: '', message: '' })
+      setFieldErrors({})
       setPrivacyConsent(false)
     } catch {
       setStatus('error')
     }
   }
 
-  const inputClass =
-    'w-full rounded-[10px] border border-white/15 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 outline-none transition-colors focus:border-gold-500 focus:bg-white/[0.06] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
+  const baseInputClass =
+    'w-full rounded-[10px] border bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/40 outline-none transition-colors focus:bg-white/[0.06] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
+  const inputClass = (field: ContactField) =>
+    fieldErrors[field]
+      ? `${baseInputClass} border-erythro-500 focus:border-erythro-500`
+      : `${baseInputClass} border-white/15 focus:border-gold-500`
   const labelClass = 'mb-1.5 block text-xs font-medium uppercase tracking-[0.12em] text-white/70'
+
+  const requiredMark = (
+    <span className="ms-0.5 text-erythro-500" aria-hidden="true">
+      *
+    </span>
+  )
 
   return (
     <div
@@ -168,6 +204,7 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
             <div>
               <label htmlFor="contact-modal-name" className={labelClass}>
                 {t(form.name)}
+                {requiredMark}
               </label>
               <input
                 ref={firstFieldRef}
@@ -178,28 +215,50 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
                 value={values.name}
                 onChange={handleChange}
                 placeholder={t(form.name)}
-                className={inputClass}
+                className={inputClass('name')}
                 autoComplete="name"
+                autoCapitalize="words"
+                enterKeyHint="next"
                 aria-required="true"
+                aria-invalid={Boolean(fieldErrors.name) || undefined}
+                aria-describedby={fieldErrors.name ? 'contact-modal-name-error' : undefined}
               />
+              {fieldErrors.name ? (
+                <p id="contact-modal-name-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                  {fieldErrorMessage('name')}
+                </p>
+              ) : null}
             </div>
             <div>
               <label htmlFor="contact-modal-email" className={labelClass}>
                 {t(form.email)}
+                {requiredMark}
               </label>
               <input
                 id="contact-modal-email"
                 name="email"
                 type="email"
+                inputMode="email"
                 required
                 value={values.email}
                 onChange={handleChange}
                 placeholder={t(form.email)}
-                className={inputClass}
+                className={inputClass('email')}
                 autoComplete="email"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                enterKeyHint="next"
                 dir="ltr"
                 aria-required="true"
+                aria-invalid={Boolean(fieldErrors.email) || undefined}
+                aria-describedby={fieldErrors.email ? 'contact-modal-email-error' : undefined}
               />
+              {fieldErrors.email ? (
+                <p id="contact-modal-email-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                  {fieldErrorMessage('email')}
+                </p>
+              ) : null}
             </div>
             <div>
               <label htmlFor="contact-modal-phone" className={labelClass}>
@@ -209,17 +268,23 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
                 id="contact-modal-phone"
                 name="phone"
                 type="tel"
+                inputMode="tel"
                 value={values.phone}
                 onChange={handleChange}
                 placeholder={t(form.phone)}
-                className={inputClass}
+                className={inputClass('phone')}
                 autoComplete="tel"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                enterKeyHint="next"
                 dir="ltr"
               />
             </div>
             <div>
               <label htmlFor="contact-modal-message" className={labelClass}>
                 {t(form.message)}
+                {requiredMark}
               </label>
               <textarea
                 id="contact-modal-message"
@@ -229,11 +294,23 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
                 onChange={handleChange}
                 placeholder={t(form.message)}
                 rows={4}
-                className={`${inputClass} resize-none`}
+                className={`${inputClass('message')} resize-none`}
+                enterKeyHint="send"
                 aria-required="true"
-                aria-invalid={status === 'error' || undefined}
-                aria-describedby={status === 'error' ? errorId : undefined}
+                aria-invalid={Boolean(fieldErrors.message) || status === 'error' || undefined}
+                aria-describedby={
+                  fieldErrors.message
+                    ? 'contact-modal-message-error'
+                    : status === 'error'
+                      ? errorId
+                      : undefined
+                }
               />
+              {fieldErrors.message ? (
+                <p id="contact-modal-message-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                  {fieldErrorMessage('message')}
+                </p>
+              ) : null}
             </div>
 
             {status === 'error' && (
@@ -256,7 +333,7 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
 
             <button
               type="submit"
-              disabled={status === 'sending' || !privacyConsent}
+              disabled={status === 'sending'}
               className="mt-2 w-full rounded-[40px] bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase tracking-widest text-white transition-all hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {status === 'sending' ? t(form.sending) : t(form.submit)}
