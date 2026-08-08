@@ -98,7 +98,8 @@ export async function fetchLegalPage(id: LegalPageId): Promise<LegalPage> {
           heading: pickAll(s.heading, fb?.heading ?? { en: '', ru: '', he: '' }),
           paragraphs: pickAllLines(s.paragraphs, fb?.paragraphs ?? { en: [], ru: [], he: [] }),
         }
-        if (s.bullets) {
+        // Prefer CMS bullets when present; otherwise keep static defaults (e.g. processor lists).
+        if (s.bullets || fb?.bullets) {
           const bullets = pickAllLines(s.bullets, fb?.bullets ?? { en: [], ru: [], he: [] })
           const hasBullets = LOCALES.some((l) => bullets[l].length > 0)
           if (hasBullets) section.bullets = bullets
