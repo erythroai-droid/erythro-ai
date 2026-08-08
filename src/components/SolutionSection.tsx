@@ -276,9 +276,10 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
 
   return (
     <div className="relative z-30 w-full pointer-events-none">
-      {/* Lead-in while LetsTalk finishes (incl. CTA). Must be < Services pin end
-          and only slightly past the post-CTA unlock so Solutions rides up promptly. */}
-      <div className="hidden lg:block h-[760vh] w-full pointer-events-none" />
+      {/* Lead-in while LetsTalk finishes (incl. CTA). Must be < Services pin end.
+          Keep a clear full-screen Let’s Talk beat after settle (~settleAt×pin)
+          so Hero/nav jumps don’t land with Solutions already overlapping. */}
+      <div className="hidden lg:block h-[785vh] w-full pointer-events-none" />
 
       <section
         id="solutions"

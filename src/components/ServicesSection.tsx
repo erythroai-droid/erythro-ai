@@ -282,8 +282,9 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
 
           const detail = (event as CustomEvent<{ behavior?: ScrollBehavior }>).detail
           const behavior = detail?.behavior ?? 'smooth'
-          // Land in the brief post-CTA hold so overlay + copy are fully open.
-          const targetProgress = Math.min(0.99, (settleStartTime + 0.4) / total)
+          // Land exactly when Let’s Talk settle begins (overlay open). Going further
+          // into the hold is where Solutions already overlaps from below.
+          const targetProgress = Math.min(0.999, settleStartTime / total)
           const top = st.start + targetProgress * (st.end - st.start)
 
           jumpToLetsTalk = true
