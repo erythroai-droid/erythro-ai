@@ -136,7 +136,7 @@ function CaseStudyVideo({
       ref={ref}
       src={src}
       poster={CASE_STUDY_POSTER}
-      className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+      className={`absolute inset-0 z-[1] h-full w-full object-cover transition-opacity duration-500 ${
         portrait ? '' : 'scale-[1.14]'
       } ${showVideo ? 'opacity-100' : 'opacity-0'}`}
       muted
@@ -188,29 +188,29 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
 
       // Desktop animation: Pinning, scrubbing & snapping
       mm.add('(min-width: 1024px)', () => {
-        gsap.set(
-          [headingRef.current, cardRef.current, linkRef.current, marqueeRef.current],
-          {
-            opacity: 0,
-            y: 60,
-          },
-        )
+        // Keep the case card (poster) visible so the media slot never reads as empty
+        // while the video buffers. Only chrome around it fades/slides in.
+        gsap.set([headingRef.current, linkRef.current, marqueeRef.current], {
+          opacity: 0,
+          y: 60,
+        })
+        gsap.set(cardRef.current, {
+          opacity: 1,
+          y: 40,
+        })
 
-        gsap.to(
-          [headingRef.current, cardRef.current, linkRef.current, marqueeRef.current],
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            stagger: 0.25,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: wrapperRef.current,
-              start: 'top 80%',
-              toggleActions: 'play none none reverse',
-            },
+        gsap.to([headingRef.current, cardRef.current, linkRef.current, marqueeRef.current], {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.25,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: wrapperRef.current,
+            start: 'top 80%',
+            toggleActions: 'play none none reverse',
           },
-        )
+        })
 
         ScrollTrigger.create({
           id: 'cases-pin',
@@ -231,29 +231,27 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
 
       // Mobile/tablet animation: Simple scroll trigger (no pinning/snapping)
       mm.add('(max-width: 1023px)', () => {
-        gsap.set(
-          [headingRef.current, cardRef.current, linkRef.current, marqueeRef.current],
-          {
-            opacity: 0,
-            y: 40,
-          },
-        )
+        gsap.set([headingRef.current, linkRef.current, marqueeRef.current], {
+          opacity: 0,
+          y: 40,
+        })
+        gsap.set(cardRef.current, {
+          opacity: 1,
+          y: 24,
+        })
 
-        gsap.to(
-          [headingRef.current, cardRef.current, linkRef.current, marqueeRef.current],
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            stagger: 0.25,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: wrapperRef.current,
-              start: 'top 92%',
-              toggleActions: 'play none none reverse',
-            },
+        gsap.to([headingRef.current, cardRef.current, linkRef.current, marqueeRef.current], {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.25,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: wrapperRef.current,
+            start: 'top 92%',
+            toggleActions: 'play none none reverse',
           },
-        )
+        })
       })
     }, wrapperRef)
 
@@ -292,9 +290,11 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           <img
             src={CASE_STUDY_POSTER}
             alt="Dynamic Urban Showcase project preview"
-            className={`absolute inset-0 h-full w-full object-cover ${
+            className={`absolute inset-0 z-0 h-full w-full object-cover ${
               isDesktop === false ? '' : 'lg:scale-[1.14]'
             }`}
+            loading="eager"
+            decoding="async"
           />
           {videoSrc ? (
             <CaseStudyVideo
