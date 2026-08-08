@@ -259,8 +259,8 @@
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  /* Solid muted on panel bg (~7.5:1). Do not use opacity — it drops below WCAG AA. */
   color: var(--a11y-text-muted);
-  opacity: 0.6;
 }
 
 /* Visually hidden live region for screen-reader announcements. */

@@ -172,6 +172,8 @@ export interface ServiceItem {
   image: string
   /** First-frame poster shown under video while it loads or if playback fails. */
   videoPoster?: string
+  /** Accessible description for `videoPoster` / card image. */
+  videoPosterAlt?: string
   /** Optional video URL. When set, the card plays this video instead of `image`. */
   video?: string
 }
@@ -232,6 +234,7 @@ export const services = {
       },
       image: '/images/service_design_branding.webp',
       videoPoster: '/images/service_design_branding_poster.webp',
+      videoPosterAlt: 'Design & Branding service poster',
     },
     {
       id: '2',
@@ -266,6 +269,7 @@ export const services = {
       },
       image: '/images/service_development.webp',
       videoPoster: '/images/service_development_poster.webp',
+      videoPosterAlt: 'Development service poster',
     },
     {
       id: '3',
@@ -303,6 +307,7 @@ export const services = {
       },
       image: '/images/service_management.webp',
       videoPoster: '/images/service_management_poster.webp',
+      videoPosterAlt: 'Enterprise Engineering service poster',
     },
     {
       id: '4',
@@ -319,6 +324,7 @@ export const services = {
       },
       image: '/images/service_ai_automation.webp',
       videoPoster: '/images/service_ai_automation_poster.webp',
+      videoPosterAlt: 'AI & Automation service poster',
     },
   ] as ServiceItem[],
 }
