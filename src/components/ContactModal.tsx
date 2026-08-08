@@ -2,6 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from 'react'
 import { contactForm } from '@/translations'
+import ContactPrivacyConsent from './ContactPrivacyConsent'
 
 interface ContactModalContextValue {
   open: () => void
@@ -49,6 +50,8 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
 
   const [status, setStatus] = useState<Status>('idle')
   const [values, setValues] = useState({ name: '', email: '', phone: '', message: '' })
+  const [privacyConsent, setPrivacyConsent] = useState(false)
+  const [consentError, setConsentError] = useState(false)
   const firstFieldRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -86,16 +89,22 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (status === 'sending') return
+    if (!privacyConsent) {
+      setConsentError(true)
+      return
+    }
+    setConsentError(false)
     setStatus('sending')
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, locale }),
+        body: JSON.stringify({ ...values, locale, privacyConsent: true }),
       })
       if (!res.ok) throw new Error('Request failed')
       setStatus('success')
       setValues({ name: '', email: '', phone: '', message: '' })
+      setPrivacyConsent(false)
     } catch {
       setStatus('error')
     }
@@ -233,9 +242,21 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
               </p>
             )}
 
+            <ContactPrivacyConsent
+              locale={locale}
+              theme="dark"
+              idPrefix="contact-modal"
+              checked={privacyConsent}
+              showRequiredError={consentError}
+              onCheckedChange={(next) => {
+                setPrivacyConsent(next)
+                if (next) setConsentError(false)
+              }}
+            />
+
             <button
               type="submit"
-              disabled={status === 'sending'}
+              disabled={status === 'sending' || !privacyConsent}
               className="mt-2 w-full rounded-[40px] bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase tracking-widest text-white transition-all hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {status === 'sending' ? t(form.sending) : t(form.submit)}

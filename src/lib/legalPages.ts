@@ -55,11 +55,11 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
       ru: 'Последнее обновление',
       he: 'עודכן לאחרונה',
     },
-    updatedAt: '2026-07-29',
+    updatedAt: '2026-08-09',
     intro: {
-      en: 'This Privacy Policy explains how Erythro.ai (“we”, “us”) processes personal information when you visit erythro.ai, contact us, or use our services. We process data in accordance with the Israeli Privacy Protection Law, 5741-1981 (including Amendment 13), and applicable regulations.',
-      ru: 'Настоящая Политика конфиденциальности объясняет, как Erythro.ai («мы») обрабатывает персональные данные при посещении сайта erythro.ai, обращении к нам или использовании наших услуг. Мы обрабатываем данные в соответствии с Законом Израиля о защите конфиденциальности 5741-1981 (включая Поправку 13) и применимыми нормами.',
-      he: 'מדיניות פרטיות זו מסבירה כיצד Erythro.ai (“אנחנו”) מעבדים מידע אישי כאשר אתם מבקרים באתר erythro.ai, יוצרים עמנו קשר או משתמשים בשירותינו. אנו מעבדים מידע בהתאם לחוק הגנת הפרטיות, התשמ״א-1981 (לרבות תיקון 13) ולהוראות הדין החלות.',
+      en: 'This Privacy Policy explains how Erythro.ai (“we”, “us”) processes personal information when you visit erythro.ai, contact us, or use our services. We process data in accordance with the Israeli Privacy Protection Law, 5741-1981 (including Amendment 13), the Privacy Protection Regulations (Data Security), 5777-2017, and other applicable rules.',
+      ru: 'Настоящая Политика конфиденциальности объясняет, как Erythro.ai («мы») обрабатывает персональные данные при посещении сайта erythro.ai, обращении к нам или использовании наших услуг. Мы обрабатываем данные в соответствии с Законом Израиля о защите частной жизни 5741-1981 (включая Поправку 13), Правилами защиты частной жизни (информационная безопасность) 5777-2017 и иными применимыми нормами.',
+      he: 'מדיניות פרטיות זו מסבירה כיצד Erythro.ai (“אנחנו”) מעבדים מידע אישי כאשר אתם מבקרים באתר erythro.ai, יוצרים עמנו קשר או משתמשים בשירותינו. אנו מעבדים מידע בהתאם לחוק הגנת הפרטיות, התשמ״א-1981 (לרבות תיקון 13), תקנות הגנת הפרטיות (אבטחת מידע), התשע״ז-2017, ולהוראות הדין החלות.',
     },
     sections: [
       {
@@ -70,13 +70,13 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         },
         paragraphs: {
           en: [
-            'The data controller is Erythro.ai, based in Eilat, Israel. For privacy requests, email erythro.ai@gmail.com or call +972 50 931 27 46.',
+            'The data controller (database owner) is Erythro.ai, based in Eilat, Israel. The contact person for privacy matters is reachable at erythro.ai@gmail.com or +972 50 931 27 46.',
           ],
           ru: [
-            'Оператор персональных данных — Erythro.ai, Эйлат, Израиль. По вопросам конфиденциальности пишите на erythro.ai@gmail.com или звоните +972 50 931 27 46.',
+            'Владелец базы данных / оператор — Erythro.ai, Эйлат, Израиль. Ответственный контакт по вопросам конфиденциальности: erythro.ai@gmail.com или +972 50 931 27 46.',
           ],
           he: [
-            'בעל השליטה במידע הוא Erythro.ai, אילת, ישראל. לפניות בנושא פרטיות ניתן לפנות ל־erythro.ai@gmail.com או לטלפון +972 50 931 27 46.',
+            'בעל מאגר המידע / בעל השליטה הוא Erythro.ai, אילת, ישראל. איש הקשר לנושאי פרטיות: erythro.ai@gmail.com או +972 50 931 27 46.',
           ],
         },
       },
@@ -126,13 +126,13 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         },
         paragraphs: {
           en: [
-            'We use personal data to respond to inquiries, provide and improve our services, operate and secure the website, measure traffic (with consent where required), comply with Israeli law, and establish or defend legal claims. Where consent is required (for example, non-essential cookies), you may withdraw it at any time without affecting processing based on other lawful grounds.',
+            'Contact-form data is provided voluntarily and is used to handle your inquiry, prepare a commercial proposal, and communicate about a potential or ongoing project. We also use personal data to operate and secure the website, measure traffic (with consent where required), comply with Israeli law, and establish or defend legal claims. Where consent is required (for example, non-essential cookies or marketing analytics), you may withdraw it at any time without affecting processing based on other lawful grounds.',
           ],
           ru: [
-            'Мы используем персональные данные для ответа на обращения, оказания и улучшения услуг, работы и защиты сайта, измерения трафика (при согласии, где требуется), соблюдения израильского законодательства и защиты законных интересов. Если требуется согласие (например, на необязательные cookie), вы можете отозвать его в любой момент, не затрагивая обработку на иных законных основаниях.',
+            'Данные из контактной формы предоставляются добровольно и используются для обработки обращения, подготовки коммерческого предложения и связи по потенциальному или текущему проекту. Мы также используем персональные данные для работы и защиты сайта, измерения трафика (при согласии, где требуется), соблюдения израильского законодательства и защиты законных интересов. Если требуется согласие (например, на необязательные cookie или маркетинговую аналитику), вы можете отозвать его в любой момент, не затрагивая обработку на иных законных основаниях.',
           ],
           he: [
-            'אנו משתמשים במידע אישי כדי להשיב לפניות, לספק ולשפר שירותים, להפעיל ולאבטח את האתר, למדוד תנועה (בהסכמה כנדרש), לעמוד בדין הישראלי ולקיים או להגן על תביעות משפטיות. כאשר נדרשת הסכמה (למשל ל־Cookie שאינם חיוניים), ניתן לבטלה בכל עת מבלי לפגוע בעיבוד המבוסס על עילות חוקיות אחרות.',
+            'מידע מטופס יצירת הקשר נמסר באופן וולונטרי ומשמש לטיפול בפנייה, להכנת הצעה מסחרית וליצירת קשר בנוגע לפרויקט פוטנציאלי או קיים. אנו משתמשים גם במידע אישי להפעלה ואבטחה של האתר, למדידת תנועה (בהסכמה כנדרש), לעמידה בדין הישראלי ולקיום או הגנה על תביעות משפטיות. כאשר נדרשת הסכמה (למשל ל־Cookie שאינם חיוניים או אנליטיקה שיווקית), ניתן לבטלה בכל עת מבלי לפגוע בעיבוד המבוסס על עילות חוקיות אחרות.',
           ],
         },
       },
@@ -144,67 +144,102 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         },
         paragraphs: {
           en: [
-            'We use essential cookies needed for basic site functions (for example, language preference, site theme, and your cookie consent choice). Google Analytics is loaded only after you accept analytics cookies via the cookie banner. If you decline, non-essential analytics should not be loaded; essential cookies may still be set. You can revisit your choice through the cookie settings control in the site footer. Browser settings can also block cookies, which may affect some features.',
+            'Necessary cookies support basic site functions such as language preference (en/ru/he), accessibility settings, theme, and storing your cookie consent choice. Analytics cookies (Google Analytics) load only after you press Accept on the cookie banner. If you Decline, non-essential analytics scripts should not load; necessary cookies may still be set. You can reopen cookie settings from the site footer at any time.',
           ],
           ru: [
-            'Мы используем необходимые cookie для базовой работы сайта (например, язык, тему сайта и выбор согласия на cookie). Google Analytics загружается только после вашего согласия через баннер cookie. Если вы отклоните необязательные cookie, аналитика загружаться не должна; необходимые cookie могут сохраняться. Вы можете пересмотреть свой выбор через настройки cookie в футере сайта. Настройки браузера также позволяют блокировать cookie, что может ограничить функции сайта.',
+            'Обязательные cookie обеспечивают базовую работу сайта: язык (en/ru/he), настройки доступности, тему и сохранение выбора согласия на cookie. Аналитические cookie (Google Analytics) загружаются только после нажатия «Accept» в баннере. При отказе необязательные скрипты аналитики не должны загружаться; обязательные cookie могут сохраняться. Настройки cookie можно снова открыть из футера сайта.',
           ],
           he: [
-            'אנו משתמשים ב־Cookie חיוניים לתפקוד בסיסי של האתר (למשל העדפת שפה, ערכת נושא ובחירת הסכמה ל־Cookie). Google Analytics נטען רק לאחר אישורכם באמצעות באנר ה־Cookie. אם תדחו Cookie שאינם חיוניים, אנליטיקה לא אמורה להיטען; Cookie חיוניים עשויים להישמר. ניתן לשנות את הבחירה גם דרך בקרת הגדרות ה־Cookie שבכותרת התחתונה של האתר. ניתן גם לחסום Cookie בהגדרות הדפדפן, מה שעשוי להשפיע על חלק מהפונקציות.',
+            'Cookie חיוניים תומכים בתפקוד בסיסי של האתר: העדפת שפה (en/ru/he), הגדרות נגישות, ערכת נושא ושמירת בחירת ההסכמה ל־Cookie. Cookie אנליטיים (Google Analytics) נטענים רק לאחר לחיצה על Accept בבאנר. אם תבחרו Decline, סקריפטי אנליטיקה שאינם חיוניים לא אמורים להיטען; Cookie חיוניים עשויים להישמר. ניתן לפתוח מחדש את הגדרות ה־Cookie מכותרת התחתונה של האתר בכל עת.',
           ],
         },
       },
       {
         heading: {
-          en: '5. Sharing and transfers',
-          ru: '5. Передача данных',
-          he: '5. העברת מידע',
+          en: '5. Sharing and subprocessors',
+          ru: '5. Передача данных и субпроцессоры',
+          he: '5. העברת מידע וספקי משנה',
         },
         paragraphs: {
           en: [
-            'We do not sell personal data. We may share data with service providers who help us host, analyse, communicate, or deliver projects, including providers such as Google LLC (analytics), hosting/deployment providers, and managed database providers used for site operations and contact submissions, under appropriate confidentiality and security obligations. Some providers may process data outside Israel; where required, we take steps consistent with Israeli law to protect the information. We may also disclose data if required by law or to protect rights and safety.',
+            'We do not sell personal data and do not share it with unrelated third parties for their own marketing. We use technical service providers (subprocessors) solely to operate the site and handle inquiries, under confidentiality and security obligations:',
           ],
           ru: [
-            'Мы не продаём персональные данные. Мы можем передавать их подрядчикам, которые помогают с хостингом, аналитикой, коммуникацией или реализацией проектов, включая таких поставщиков, как Google LLC (аналитика), провайдеры хостинга/деплоя и управляемые провайдеры баз данных, используемые для работы сайта и хранения заявок из контактной формы, при обязательствах конфиденциальности и безопасности. Часть обработчиков может находиться за пределами Израиля; где требуется, мы принимаем меры, соответствующие израильскому праву. Данные также могут быть раскрыты по закону или для защиты прав и безопасности.',
+            'Мы не продаём персональные данные и не передаём их сторонним третьим лицам для их собственного маркетинга. Мы привлекаем технических провайдеров (субпроцессоров) только для работы сайта и обработки обращений, при обязательствах конфиденциальности и безопасности:',
           ],
           he: [
-            'איננו מוכרים מידע אישי. אנו עשויים לשתף מידע עם ספקי שירות המסייעים באחסון, אנליטיקה, תקשורת או ביצוע פרויקטים, לרבות ספקים כגון Google LLC (אנליטיקה), ספקי אחסון/פריסה וספקי מסדי נתונים מנוהלים המשמשים לתפעול האתר ושמירת פניות מטופס יצירת הקשר, בכפוף להתחייבויות סודיות ואבטחה. חלק מהספקים עשויים לעבד מידע מחוץ לישראל; כנדרש בדין ננקוט צעדים להגנה על המידע. ייתכן גם גילוי מידע אם נדרש על פי דין או להגנה על זכויות ובטיחות.',
+            'איננו מוכרים מידע אישי ואיננו משתפים אותו עם צדדים שלישיים שאינם קשורים לצורכי שיווק שלהם. אנו נעזרים בספקי שירות טכניים (מעבדי משנה) אך ורק לתפעול האתר וטיפול בפניות, בכפוף להתחייבויות סודיות ואבטחה:',
+          ],
+        },
+        bullets: {
+          en: [
+            'Vercel Inc. — website hosting, CDN, and serverless functions.',
+            'Hostinger — hosting / infrastructure services where used for deployment or related systems.',
+            'Supabase / managed PostgreSQL — database storage for CMS content and contact submissions.',
+            'Payload CMS — content management and storage of form submissions.',
+            'n8n — workflow automation that may receive inquiry data to notify our team.',
+            'Google LLC — Google Analytics, only after you accept analytics cookies.',
+          ],
+          ru: [
+            'Vercel Inc. — хостинг сайта, CDN и serverless-функции.',
+            'Hostinger — хостинг / инфраструктура, если используется для деплоя или связанных систем.',
+            'Supabase / управляемый PostgreSQL — хранение данных CMS и заявок из форм.',
+            'Payload CMS — управление контентом и хранение заявок.',
+            'n8n — автоматизация процессов, которая может получать данные обращений для уведомления команды.',
+            'Google LLC — Google Analytics только после согласия на аналитические cookie.',
+          ],
+          he: [
+            'Vercel Inc. — אחסון האתר, CDN ופונקציות serverless.',
+            'Hostinger — שירותי אחסון / תשתית כאשר נעשה בהם שימוש לפריסה או מערכות קשורות.',
+            'Supabase / PostgreSQL מנוהל — אחסון מסד נתונים לתוכן ה־CMS ולפניות מטפסים.',
+            'Payload CMS — ניהול תוכן ושמירת פניות.',
+            'n8n — אוטומציה של תהליכים שעשויה לקבל נתוני פנייה כדי לעדכן את הצוות.',
+            'Google LLC — Google Analytics, רק לאחר אישור Cookie אנליטיים.',
           ],
         },
       },
       {
         heading: {
-          en: '6. Retention and security',
-          ru: '6. Срок хранения и безопасность',
-          he: '6. שמירה ואבטחה',
+          en: '6. Retention and security level',
+          ru: '6. Срок хранения и уровень безопасности',
+          he: '6. תקופת שמירה ורמת אבטחה',
         },
         paragraphs: {
           en: [
-            'We retain personal data only as long as needed for the purposes above, including legal, accounting, or dispute-resolution needs, then delete or anonymise it where feasible. We apply technical and organisational measures appropriate to the risk; no method of transmission or storage is completely secure.',
+            'Processing and storage of contact and related operational data are carried out in line with the Basic security level (רמה בסיסית) under the Privacy Protection Regulations (Data Security), 5777-2017, for a database of ordinary contact details with a limited number of authorised accessors.',
+            'Contact-form submissions are retained for up to 24 months from receipt, or until you request deletion / withdraw consent where applicable, unless a longer period is required for legal, accounting, or dispute-resolution purposes. Analytics data follows the retention configured in Google Analytics. Necessary cookies expire according to their functional purpose (for example, language and consent preferences).',
+            'We apply technical and organisational measures appropriate to the risk, including HTTPS in transit and provider-side encryption at rest where available. No method of transmission or storage is completely secure.',
           ],
           ru: [
-            'Мы храним персональные данные столько, сколько нужно для указанных целей, включая юридические, бухгалтерские требования и разрешение споров, затем удаляем или обезличиваем их, где это возможно. Мы применяем технические и организационные меры, соразмерные риску; ни один способ передачи или хранения не является полностью безопасным.',
+            'Обработка и хранение контактных и связанных операционных данных осуществляются в соответствии с Базовым уровнем безопасности (רמה בסיסית / Basic Level) Правил защиты частной жизни (информационная безопасность) 5777-2017 — для базы обычных контактных данных с ограниченным кругом лиц, имеющих доступ.',
+            'Заявки из контактных форм хранятся до 24 месяцев с момента получения либо до вашего запроса на удаление / отзыва согласия (где применимо), если более длительный срок не требуется для юридических, бухгалтерских целей или разрешения споров. Данные аналитики хранятся согласно настройкам Google Analytics. Срок жизни обязательных cookie определяется их функцией (например, язык и выбор согласия).',
+            'Мы применяем технические и организационные меры, соразмерные риску, включая HTTPS при передаче и шифрование хранилища на стороне провайдера, где оно доступно. Ни один способ передачи или хранения не является полностью безопасным.',
           ],
           he: [
-            'אנו שומרים מידע אישי רק למשך הזמן הנדרש למטרות לעיל, לרבות צרכים משפטיים, חשבונאיים או ליישוב מחלוקות, ולאחר מכן מוחקים או הופכים אותו לאנונימי ככל הניתן. אנו מיישמים אמצעים טכניים וארגוניים התואמים את הסיכון; אין שיטת העברה או אחסון בטוחה לחלוטין.',
+            'עיבוד ושמירה של מידע ליצירת קשר ומידע תפעולי קשור מתבצעים בהתאם לרמה הבסיסית (Basic Level) שבתקנות הגנת הפרטיות (אבטחת מידע), התשע״ז-2017, למאגר של פרטי קשר רגילים עם מספר מוגבל של בעלי הרשאה.',
+            'פניות מטפסי יצירת קשר נשמרות עד 24 חודשים ממועד הקבלה, או עד לבקשת מחיקה / ביטול הסכמה ככל שרלוונטי, אלא אם נדרשת תקופה ארוכה יותר לצרכים משפטיים, חשבונאיים או ליישוב מחלוקות. נתוני אנליטיקה נשמרים לפי הגדרות Google Analytics. Cookie חיוניים פוקעים בהתאם לייעודם (למשל שפה והעדפת הסכמה).',
+            'אנו מיישמים אמצעים טכניים וארגוניים התואמים את הסיכון, לרבות HTTPS בתעבורה והצפנה במנוחה אצל הספק ככל שזמינה. אין שיטת העברה או אחסון בטוחה לחלוטין.',
           ],
         },
       },
       {
         heading: {
-          en: '7. Your rights',
-          ru: '7. Ваши права',
-          he: '7. זכויותיכם',
+          en: '7. Your rights (access and correction)',
+          ru: '7. Ваши права (ознакомление и исправление)',
+          he: '7. זכויותיכם (עיון ותיקון)',
         },
         paragraphs: {
           en: [
-            'Subject to Israeli law, you may have the right to access, correct, delete, or restrict processing of your personal data, to object to certain processing, and to withdraw consent where processing is consent-based. To exercise these rights, contact us using the details below. You may also contact the Israeli Privacy Protection Authority regarding complaints.',
+            'Under sections 13–14 of the Israeli Privacy Protection Law, you may request access to personal data we hold about you, and request correction or deletion where appropriate. You may also object to certain processing and withdraw consent where processing is consent-based.',
+            'How to submit a request: email erythro.ai@gmail.com with the subject “Privacy request”, state whether you seek access, correction, or deletion, and include the email/phone you used when contacting us so we can locate your record. We may ask for reasonable identity verification. We aim to respond within 30 days. You may also lodge a complaint with the Israeli Privacy Protection Authority (PPA).',
           ],
           ru: [
-            'В соответствии с израильским правом вы можете иметь право на доступ, исправление, удаление или ограничение обработки ваших данных, возражение против определённой обработки и отзыв согласия, если обработка основана на согласии. Для реализации прав свяжитесь с нами. Также можно обратиться в Управление по защите конфиденциальности Израиля (PPA) с жалобой.',
+            'Согласно ст. 13–14 Закона о защите частной жизни вы можете запросить ознакомление с персональными данными, которые мы о вас храним, а также исправление или удаление, где это уместно. Также можно возразить против определённой обработки и отозвать согласие, если обработка основана на согласии.',
+            'Как подать запрос: напишите на erythro.ai@gmail.com с темой «Privacy request», укажите, нужен ли доступ, исправление или удаление, и приложите email/телефон, которые вы использовали при обращении, чтобы мы могли найти запись. Мы можем запросить разумное подтверждение личности. Стремимся ответить в течение 30 дней. Также можно подать жалобу в Управление по защите конфиденциальности Израиля (PPA).',
           ],
           he: [
-            'בכפוף לדין הישראלי, ייתכן שתהיה לכם זכות לעיין, לתקן, למחוק או להגביל עיבוד של מידע אישי, להתנגד לעיבוד מסוים ולבטל הסכמה כאשר העיבוד מבוסס על הסכמה. למימוש הזכויות פנו אלינו. ניתן גם לפנות לרשות להגנת הפרטיות בישראל בנוגע לתלונות.',
+            'לפי סעיפים 13–14 לחוק הגנת הפרטיות ניתן לבקש עיון במידע האישי השמור אצלנו, וכן תיקון או מחיקה ככל שמתאים. ניתן גם להתנגד לעיבוד מסוים ולבטל הסכמה כאשר העיבוד מבוסס על הסכמה.',
+            'אופן הגשת בקשה: שלחו דוא״ל אל erythro.ai@gmail.com עם נושא “Privacy request”, ציינו אם מדובר בבקשת עיון, תיקון או מחיקה, וצרפו את כתובת הדוא״ל/הטלפון שבהם השתמשתם בפנייה אלינו כדי שנוכל לאתר את הרשומה. ייתכן שנבקש אימות זהות סביר. אנו שואפים להשיב תוך 30 יום. ניתן גם להגיש תלונה לרשות להגנת הפרטיות.',
           ],
         },
       },

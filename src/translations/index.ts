@@ -841,6 +841,32 @@ export const contactForm = {
     ru: 'Закрыть',
     he: 'סגירה',
   },
+  /** Art. 11 notice — short disclaimer under contact forms */
+  notice: {
+    en: 'Providing your details is voluntary. We use them to handle your inquiry, prepare a commercial proposal, and contact you about the project. Data may be processed by our technical providers (Vercel, Hostinger, Supabase/PostgreSQL, n8n) and is not sold to unrelated third parties. You may request access to or deletion of your data under sections 13–14 of the Israeli Privacy Protection Law by emailing erythro.ai@gmail.com.',
+    ru: 'Предоставление данных является добровольным. Мы используем их для обработки обращения, подготовки коммерческого предложения и связи по проекту. Данные могут обрабатываться нашими техническими провайдерами (Vercel, Hostinger, Supabase/PostgreSQL, n8n) и не передаются сторонним третьим лицам для их собственных целей. Вы вправе запросить ознакомление или удаление данных согласно ст. 13–14 Закона о защите частной жизни, написав на erythro.ai@gmail.com.',
+    he: 'מסירת הפרטים היא וולונטרית. אנו משתמשים בהם לטיפול בפנייה, להכנת הצעה מסחרית וליצירת קשר בנוגע לפרויקט. המידע עשוי להיות מעובד על ידי ספקי השירות הטכניים שלנו (Vercel, Hostinger, Supabase/PostgreSQL, n8n) ואינו נמכר לצדדים שלישיים שאינם קשורים. ניתן לבקש עיון או מחיקה של המידע לפי סעיפים 13–14 לחוק הגנת הפרטיות בפנייה ל־erythro.ai@gmail.com.',
+  },
+  consentPrefix: {
+    en: 'I agree to the',
+    ru: 'Я выражаю согласие с',
+    he: 'אני מסכים/ה ל',
+  },
+  privacyLink: {
+    en: 'Privacy Policy',
+    ru: 'Политикой конфиденциальности',
+    he: 'מדיניות הפרטיות',
+  },
+  consentSuffix: {
+    en: 'and to the processing of my personal data.',
+    ru: 'и обработкой моих персональных данных.',
+    he: 'ולעיבוד המידע האישי שלי.',
+  },
+  consentRequired: {
+    en: 'Please confirm your consent to continue.',
+    ru: 'Подтвердите согласие, чтобы продолжить.',
+    he: 'יש לאשר הסכמה כדי להמשיך.',
+  },
 }
 
 export const accessibility = {

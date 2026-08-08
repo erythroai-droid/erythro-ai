@@ -17,7 +17,11 @@ export async function POST(request: NextRequest) {
   const phone = typeof body.phone === 'string' ? body.phone.trim() : ''
   const message = typeof body.message === 'string' ? body.message.trim() : ''
   const locale = typeof body.locale === 'string' ? body.locale : undefined
+  const privacyConsent = body.privacyConsent === true
 
+  if (!privacyConsent) {
+    return NextResponse.json({ message: 'Privacy consent is required' }, { status: 400 })
+  }
   if (!name || !email || !message) {
     return NextResponse.json({ message: 'Missing required fields' }, { status: 400 })
   }
