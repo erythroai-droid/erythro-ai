@@ -14,7 +14,12 @@ const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
 type Locale = (typeof SUPPORTED_LOCALES)[number]
 
 const SITE_NAME = 'Erythro.ai'
-const SITE_TITLE = 'Erythro.ai - digital agency'
+
+const SITE_TITLES: Record<Locale, string> = {
+  en: 'Erythro.ai - digital agency',
+  ru: 'Erythro.ai — цифровое агентство',
+  he: 'Erythro.ai - סוכנות דיגיטל',
+}
 
 // Used to resolve absolute URLs for Open Graph / canonical. Override in prod
 // via NEXT_PUBLIC_SITE_URL (e.g. https://erythro.ai).
@@ -61,7 +66,7 @@ export async function generateMetadata(): Promise<Metadata> {
   // SEO is editable from the Payload "Site Settings" global; fall back to
   // the static values below when a field is left empty (or DB is unavailable).
   const seo = await getCachedSeoSettings()
-  const title = seo.title || SITE_TITLE
+  const title = seo.title?.[locale] || SITE_TITLES[locale]
   const description = seo.description?.[locale] || DESCRIPTIONS[locale]
   const ogImage = seo.ogImage || '/images/og-image.png'
 

@@ -1503,7 +1503,6 @@ export const site_settings = pgTable(
     phoneDisplay: varchar('phone_display'),
     facebook: varchar('facebook'),
     tiktok: varchar('tiktok'),
-    seoTitle: varchar('seo_title'),
     ogImage: integer('og_image_id').references(() => media.id, {
       onDelete: 'set null',
     }),
@@ -1537,6 +1536,7 @@ export const site_settings_locales = pgTable(
     cookieMessage: varchar('cookie_message'),
     cookieAccept: varchar('cookie_accept'),
     cookieDecline: varchar('cookie_decline'),
+    seoTitle: varchar('seo_title'),
     seoDescription: varchar('seo_description'),
     id: serial('id').primaryKey(),
     _locale: enum__locales('_locale').notNull(),

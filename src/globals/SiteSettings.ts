@@ -36,7 +36,9 @@ export const SiteSettings: GlobalConfig = {
         {
           label: 'SEO',
           fields: [
-            { name: 'seoTitle', type: 'text' },
+            locText('seoTitle', {
+              admin: { description: 'Document / Open Graph title (per locale)' },
+            }),
             locTextarea('seoDescription'),
             {
               name: 'ogImage',
