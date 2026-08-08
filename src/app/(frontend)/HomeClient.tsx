@@ -150,7 +150,7 @@ export default function HomeClient({ initialLocale, initialTheme, content }: Hom
       <ScrollSideButton locale={locale} theme={theme} sectionIds={scrollSectionIds} />
 
       {/* Desktop chat CTA → contact modal; mobile keeps WhatsApp */}
-      <ChatButton />
+      <ChatButton locale={locale} />
       <WhatsAppButton />
 
       {/* Accessibility Control Panel */}
