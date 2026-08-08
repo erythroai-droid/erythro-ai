@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -21,6 +21,8 @@ function isProbablyImageUrl(url: string): boolean {
 
 interface HeroAnimationProps {
   videoUrl?: string
+  /** Still image for viewports <1024px — avoids downloading the desktop hero video. */
+  mobileImageUrl?: string
   imagesCount?: number
   basePath?: string
   children?: React.ReactNode
@@ -29,12 +31,28 @@ interface HeroAnimationProps {
 
 export default function HeroAnimation({
   videoUrl,
+  mobileImageUrl,
   children,
   navbar,
 }: HeroAnimationProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const contentRef = useRef<HTMLDivElement | null>(null)
   const wrapperRef = useRef<HTMLDivElement | null>(null)
+  // null = unknown (SSR / first paint). When a mobile still is set, assume mobile until proven lg+.
+  const [isLg, setIsLg] = useState<boolean | null>(null)
+
+  const desktopIsImage = Boolean(videoUrl && isProbablyImageUrl(videoUrl))
+  const hasMobileImage = Boolean(mobileImageUrl)
+  const showMobileImage = hasMobileImage && isLg !== true
+  const showDesktopMedia = Boolean(videoUrl) && (isLg === true || !hasMobileImage)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const apply = () => setIsLg(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
 
   // GSAP ScrollTrigger for content fade out
   useEffect(() => {
@@ -100,24 +118,38 @@ export default function HeroAnimation({
         {/* Pinned Navbar */}
         {navbar}
 
-        {/* Background Media (Video or Image) */}
+        {/* Background Media — mount desktop video only on lg+ so mobile never downloads it. */}
         <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0" aria-hidden="true">
-          {videoUrl && isProbablyImageUrl(videoUrl) ? (
+          {showMobileImage ? (
             <img
-              src={videoUrl}
+              src={mobileImageUrl}
               alt=""
-              className="w-full h-full object-cover opacity-85"
+              decoding="async"
+              fetchPriority="high"
+              className="h-full w-full object-cover opacity-85"
             />
-          ) : (
-            <video
-              src={videoUrl || undefined}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover opacity-85"
-            />
-          )}
+          ) : null}
+
+          {showDesktopMedia ? (
+            desktopIsImage ? (
+              <img
+                src={videoUrl}
+                alt=""
+                decoding="async"
+                className="h-full w-full object-cover opacity-85"
+              />
+            ) : (
+              <video
+                src={videoUrl}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                className="h-full w-full object-cover opacity-85"
+              />
+            )
+          ) : null}
         </div>
 
         {/* Dark overlay to dim the background media */}

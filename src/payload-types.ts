@@ -1153,9 +1153,13 @@ export interface Hero {
    */
   ctaHref?: string | null;
   /**
-   * Optional hero background image
+   * Desktop hero background (video or image, ≥1024px). Kept as-is on large screens.
    */
   backgroundImage?: (number | null) | Media;
+  /**
+   * Mobile hero background image (<1024px). Prefer a still frame / photo so mobile does not download the desktop video. Recommended 1080×1920 (9:16), WebP/JPG ~200–400 KB. Falls back to desktop media if empty.
+   */
+  backgroundImageMobile?: (number | null) | Media;
   /**
    * Rotating hero headlines on the home page. Each phrase has a solid main line and an optional large background outline. Edit per locale (en / ru / he). Need at least 2 phrases.
    */
@@ -1568,6 +1572,7 @@ export interface HeroSelect<T extends boolean = true> {
   ctaFind?: T;
   ctaHref?: T;
   backgroundImage?: T;
+  backgroundImageMobile?: T;
   words?:
     | T
     | {
