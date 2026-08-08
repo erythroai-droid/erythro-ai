@@ -277,8 +277,8 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
   return (
     <div className="relative z-30 w-full pointer-events-none">
       {/* Lead-in while LetsTalk finishes (incl. CTA). Must be < Services pin end
-          so Solutions still rides up over the pinned section (no empty gap after). */}
-      <div className="hidden lg:block h-[780vh] w-full pointer-events-none" />
+          and only slightly past the post-CTA unlock so Solutions rides up promptly. */}
+      <div className="hidden lg:block h-[760vh] w-full pointer-events-none" />
 
       <section
         id="solutions"

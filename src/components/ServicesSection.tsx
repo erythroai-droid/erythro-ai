@@ -265,9 +265,9 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
             id: 'services-pin',
             trigger: sectionRef.current,
             start: 'top top',
-            // Pin must outlast Solutions lead-in (ride-up). Forward scroll is gated
-            // until the time-based Lets Talk copy settle finishes.
-            end: '+=950%',
+            // Pin must outlast Solutions lead-in (ride-up). Keep end only slightly
+            // past lead-in so CTA→Solutions doesn't feel like a long dead scroll.
+            end: '+=800%',
             pin: true,
             pinSpacing: false, // SolutionSection will slide over it
             scrub: 1, // Smooth scrub
@@ -348,8 +348,9 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         // Scrub progress where time-based settle should start (after logo fade).
         settleStartTime = tl.duration()
 
-        // Hold phase to keep Let's Talk fully visible and interactive before Solutions slides over
-        tl.to({}, { duration: 2.0 })
+        // Brief post-CTA hold — gate already ensures the button is visible before
+        // scroll continues; a long hold here feels like dead delay at block end.
+        tl.to({}, { duration: 0.5 })
 
         return () => {
           window.removeEventListener('wheel', blockForwardWhileSettling)
