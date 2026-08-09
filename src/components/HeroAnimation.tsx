@@ -43,6 +43,8 @@ export default function HeroAnimation({
 
   const desktopIsImage = Boolean(videoUrl && isProbablyImageUrl(videoUrl))
   const hasMobileImage = Boolean(mobileImageUrl)
+  // Until MQ resolves, prefer the mobile still (SSR + first paint) so LCP can use the
+  // head preload. Desktop swaps to video once `isLg` is known.
   const showMobileImage = hasMobileImage && isLg !== true
   const showDesktopMedia = Boolean(videoUrl) && (isLg === true || !hasMobileImage)
 
@@ -125,7 +127,6 @@ export default function HeroAnimation({
               src={mobileImageUrl}
               alt=""
               decoding="async"
-              fetchPriority="high"
               className="h-full w-full object-cover opacity-85"
             />
           ) : null}
