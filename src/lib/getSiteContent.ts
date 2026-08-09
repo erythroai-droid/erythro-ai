@@ -238,6 +238,11 @@ export async function getSiteContent(): Promise<SiteContent> {
     if (heroBg) {
       content.hero.backgroundImage = heroBg
     }
+    const heroMediaMobile = await resolveMediaDoc(payload, hero?.backgroundImageMobile)
+    const heroBgMobile = mediaUrl(heroMediaMobile)
+    if (heroBgMobile) {
+      content.hero.backgroundImageMobile = heroBgMobile
+    }
 
     // --- Services section intro + items ---
     content.services.sectionTitle = L(servicesIntro?.sectionTitle, content.services.sectionTitle)

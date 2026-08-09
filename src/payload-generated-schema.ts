@@ -1175,10 +1175,16 @@ export const hero = pgTable(
     backgroundImage: integer('background_image_id').references(() => media.id, {
       onDelete: 'set null',
     }),
+    backgroundImageMobile: integer('background_image_mobile_id').references(() => media.id, {
+      onDelete: 'set null',
+    }),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 }),
     createdAt: timestamp('created_at', { mode: 'string', withTimezone: true, precision: 3 }),
   },
-  (columns) => [index('hero_background_image_idx').on(columns.backgroundImage)],
+  (columns) => [
+    index('hero_background_image_idx').on(columns.backgroundImage),
+    index('hero_background_image_mobile_idx').on(columns.backgroundImageMobile),
+  ],
 )
 
 export const hero_locales = pgTable(
@@ -2322,6 +2328,11 @@ export const relations_hero = relations(hero, ({ one, many }) => ({
     fields: [hero.backgroundImage],
     references: [media.id],
     relationName: 'backgroundImage',
+  }),
+  backgroundImageMobile: one(media, {
+    fields: [hero.backgroundImageMobile],
+    references: [media.id],
+    relationName: 'backgroundImageMobile',
   }),
   words: many(hero_words, {
     relationName: 'words',

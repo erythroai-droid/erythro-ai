@@ -23,7 +23,19 @@ export const Hero: GlobalConfig = {
       name: 'backgroundImage',
       type: 'upload',
       relationTo: 'media',
-      admin: { description: 'Optional hero background image' },
+      admin: {
+        description:
+          'Desktop hero background (video or image, ≥1024px). Kept as-is on large screens.',
+      },
+    },
+    {
+      name: 'backgroundImageMobile',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description:
+          'Mobile hero background image (<1024px). Prefer a still frame / photo so mobile does not download the desktop video. Recommended 1080×1920 (9:16), WebP/JPG ~200–400 KB. Falls back to desktop media if empty.',
+      },
     },
     {
       name: 'words',

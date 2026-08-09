@@ -127,7 +127,11 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
   }, [])
 
   return (
-    <HeroAnimation videoUrl={translations.backgroundImage} navbar={navbar}>
+    <HeroAnimation
+      videoUrl={translations.backgroundImage}
+      mobileImageUrl={translations.backgroundImageMobile}
+      navbar={navbar}
+    >
       <div
         ref={containerRef}
         className="relative mx-auto mt-12 flex w-full max-lg:-translate-y-10 flex-col items-center gap-3 text-center select-none md:mt-16 lg:gap-6"
