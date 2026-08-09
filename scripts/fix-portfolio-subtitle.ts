@@ -45,9 +45,9 @@ async function main() {
     await client.query(
       `
       INSERT INTO "payload_migrations" ("name", "batch", "updated_at", "created_at")
-      SELECT $1, 1, NOW(), NOW()
+      SELECT $1::varchar, 1, NOW(), NOW()
       WHERE NOT EXISTS (
-        SELECT 1 FROM "payload_migrations" WHERE "name" = $1
+        SELECT 1 FROM "payload_migrations" WHERE "name" = $1::varchar
       )
     `,
       [MIGRATION_NAME],
