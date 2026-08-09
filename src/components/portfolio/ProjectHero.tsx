@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { PortfolioProject } from '@/lib/portfolioProjects'
+import { tLocale } from '@/lib/portfolioProjects'
 import BidiText from '@/components/BidiText'
 
 if (typeof window !== 'undefined') {
@@ -14,6 +15,7 @@ if (typeof window !== 'undefined') {
 
 interface ProjectHeroProps {
   project: PortfolioProject
+  locale?: string
 }
 
 function HeroMedia({
@@ -102,11 +104,13 @@ function HeroMedia({
   )
 }
 
-export default function ProjectHero({ project }: ProjectHeroProps) {
+export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps) {
   const sectionRef = useRef<HTMLElement | null>(null)
+  const categoryLabel = tLocale(project.categoryLabel, locale)
+  const summary = tLocale(project.summary, locale)
 
   const meta = [
-    { label: 'Category', value: project.categoryLabel },
+    { label: 'Category', value: categoryLabel },
     { label: 'Date', value: project.date },
     { label: 'Stack', value: project.stack.join(' · ') },
     { label: 'Client', value: project.client },
@@ -156,10 +160,10 @@ export default function ProjectHero({ project }: ProjectHeroProps) {
 
       <div className="relative z-10 mx-auto w-full max-w-[1170px] px-[30px] pb-12 pt-8 md:pb-16 lg:pb-24 lg:pt-[140px]">
         <p className="mb-4 font-sans text-xs uppercase tracking-[0.24em] text-white/55">
-          {project.categoryLabel}
+          {categoryLabel}
         </p>
         <p className="max-w-[640px] font-sans text-base font-light leading-7 text-white/80 md:text-lg md:leading-8">
-          {project.summary}
+          {summary}
         </p>
 
         <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-white/15 pt-8 md:grid-cols-4 lg:mt-12 lg:gap-x-10">

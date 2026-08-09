@@ -31,8 +31,8 @@ export default async function PortfolioPage() {
 
   const [content, projects, categoryFilters] = await Promise.all([
     getCachedSiteContent(),
-    getCachedPortfolioProjects(initialLocale),
-    getCachedPortfolioCategories(initialLocale),
+    getCachedPortfolioProjects(),
+    getCachedPortfolioCategories(),
   ])
 
   const filters = buildPortfolioFilters(categoryFilters)

@@ -2,10 +2,11 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { tLocale, type LocaleMap } from '@/lib/portfolioProjects'
 
 export interface ProjectNavNeighbor {
   slug: string
-  title: string
+  title: string | LocaleMap
 }
 
 export type ListingNavKind = 'portfolio' | 'solutions'
@@ -89,6 +90,8 @@ export default function ProjectNav({
   const basePath = itemBasePath ?? (kind === 'solutions' ? '/order' : '/portfolio')
   const indexHref =
     listHref ?? portfolioHref ?? (kind === 'solutions' ? '/#solutions' : '/portfolio')
+  const neighborTitle = (title: string | LocaleMap) =>
+    typeof title === 'string' ? title : tLocale(title, locale)
   const ariaLabel =
     kind === 'solutions'
       ? locale === 'ru'
@@ -125,7 +128,7 @@ export default function ProjectNav({
           <Link
             href={`${basePath}/${prev.slug}`}
             className={`${sideBtn} ${outlineClass}`}
-            title={prev.title}
+            title={neighborTitle(prev.title)}
           >
             <ArrowIcon direction="prev" />
             <span>{labels.prev}</span>
@@ -141,7 +144,7 @@ export default function ProjectNav({
           <Link
             href={`${basePath}/${next.slug}`}
             className={`${sideBtn} sm:order-last ${outlineClass}`}
-            title={next.title}
+            title={neighborTitle(next.title)}
           >
             <span>{labels.next}</span>
             <ArrowIcon direction="next" />
