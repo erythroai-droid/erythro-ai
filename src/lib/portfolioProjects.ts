@@ -1,17 +1,49 @@
+import type { LocaleMap, LocaleListMap } from './servicePages'
+
+export type { LocaleMap, LocaleListMap }
+export { tLocale, tLocaleList } from './servicePages'
+
 export type PortfolioCategory = string
 
 export interface PortfolioFilter {
   id: PortfolioCategory
-  label: string
+  label: LocaleMap
 }
 
 export interface PortfolioBodySection {
+  heading?: LocaleMap
+  paragraphs: LocaleListMap
+  images: string[]
+}
+
+export interface PortfolioProject {
+  id: string
+  slug: string
+  title: LocaleMap
+  category: Exclude<PortfolioCategory, 'all'>
+  categoryLabel: LocaleMap
+  description: LocaleMap
+  tags: string[]
+  image: string
+  date: string
+  stack: string[]
+  client: string
+  link?: string
+  hero: { type: 'image' | 'video'; src: string; srcMobile?: string }
+  summary: LocaleMap
+  body: PortfolioBodySection[]
+  seoTitle?: LocaleMap
+  seoDescription?: LocaleMap
+}
+
+/** Seed-only flat shape (English). Converted to LocaleMap at module load. */
+interface FlatBodySection {
   heading?: string
   paragraphs: string[]
   images: string[]
 }
 
-export interface PortfolioProject {
+interface FlatPortfolioProject {
   id: string
   slug: string
   title: string
@@ -26,13 +58,43 @@ export interface PortfolioProject {
   link?: string
   hero: { type: 'image' | 'video'; src: string; srcMobile?: string }
   summary: string
-  body: PortfolioBodySection[]
+  body: FlatBodySection[]
   seoTitle?: string
   seoDescription?: string
 }
 
+function L(en: string): LocaleMap {
+  return { en }
+}
+
+function localizeProject(p: FlatPortfolioProject): PortfolioProject {
+  return {
+    id: p.id,
+    slug: p.slug,
+    title: L(p.title),
+    category: p.category,
+    categoryLabel: L(p.categoryLabel),
+    description: L(p.description),
+    tags: p.tags,
+    image: p.image,
+    date: p.date,
+    stack: p.stack,
+    client: p.client,
+    ...(p.link ? { link: p.link } : {}),
+    hero: p.hero,
+    summary: L(p.summary),
+    body: p.body.map((section) => ({
+      ...(section.heading ? { heading: L(section.heading) } : {}),
+      paragraphs: { en: section.paragraphs },
+      images: section.images,
+    })),
+    ...(p.seoTitle ? { seoTitle: L(p.seoTitle) } : {}),
+    ...(p.seoDescription ? { seoDescription: L(p.seoDescription) } : {}),
+  }
+}
+
 /** Fallback filters when CMS categories are empty. */
-export const PORTFOLIO_FILTERS: PortfolioFilter[] = [
+const FLAT_PORTFOLIO_FILTERS: { id: PortfolioCategory; label: string }[] = [
   { id: 'all', label: 'All Projects' },
   { id: 'ai', label: 'AI Agents' },
   { id: 'crm', label: 'CRM Systems' },
@@ -42,9 +104,20 @@ export const PORTFOLIO_FILTERS: PortfolioFilter[] = [
   { id: 'other', label: 'Other' },
 ]
 
+export const PORTFOLIO_FILTERS: PortfolioFilter[] = FLAT_PORTFOLIO_FILTERS.map((f) => ({
+  id: f.id,
+  label: L(f.label),
+}))
+
+const ALL_PROJECTS_LABEL: LocaleMap = {
+  en: 'All Projects',
+  ru: 'Все проекты',
+  he: 'כל הפרויקטים',
+}
+
 export function buildPortfolioFilters(
   categories: PortfolioFilter[],
-  allLabel = 'All Projects',
+  allLabel: LocaleMap = ALL_PROJECTS_LABEL,
 ): PortfolioFilter[] {
   const chips = categories.length
     ? categories
@@ -52,7 +125,7 @@ export function buildPortfolioFilters(
   return [{ id: 'all', label: allLabel }, ...chips]
 }
 
-export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
+const FLAT_PORTFOLIO_PROJECTS: FlatPortfolioProject[] = [
   {
     id: '1',
     slug: 'ai-lead-qualifier',
@@ -232,6 +305,9 @@ export const PORTFOLIO_PROJECTS: PortfolioProject[] = [
     ],
   },
 ]
+
+export const PORTFOLIO_PROJECTS: PortfolioProject[] =
+  FLAT_PORTFOLIO_PROJECTS.map(localizeProject)
 
 export const matchesPortfolioFilter = (
   category: Exclude<PortfolioCategory, 'all'>,

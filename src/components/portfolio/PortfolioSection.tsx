@@ -7,6 +7,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
   matchesPortfolioFilter,
+  tLocale,
   type PortfolioCategory,
   type PortfolioFilter,
   type PortfolioProject,
@@ -198,6 +199,7 @@ export default function PortfolioSection({
         >
           {filters.map((filter) => {
             const active = activeFilter === filter.id
+            const label = tLocale(filter.label, locale)
             return (
               <button
                 key={filter.id}
@@ -212,7 +214,7 @@ export default function PortfolioSection({
                       : 'border-white/80 bg-white/5 text-white/80 hover:border-gold-500 hover:bg-gold-500 hover:text-coal-900 hover:shadow-[0_3px_16px_0_rgba(255,233,199,0.35)] active:border-gold-500 active:bg-gold-500 active:text-coal-900'
                 }`}
               >
-                {filter.label}
+                {label}
               </button>
             )
           })}
@@ -223,7 +225,11 @@ export default function PortfolioSection({
           id="portfolio-grid"
           className="grid w-full grid-cols-1 gap-[30px] md:grid-cols-2 xl:grid-cols-3"
         >
-          {projects.map((project) => (
+          {projects.map((project) => {
+            const title = tLocale(project.title, locale)
+            const description = tLocale(project.description, locale)
+            const categoryLabel = tLocale(project.categoryLabel, locale)
+            return (
             <Link
               key={project.id}
               href={`/portfolio/${project.slug}`}
@@ -235,7 +241,7 @@ export default function PortfolioSection({
               <div className="relative aspect-[370/310] w-full overflow-hidden bg-coal-800">
                 <Image
                   src={project.image}
-                  alt={project.title}
+                  alt={title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 370px"
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
@@ -243,14 +249,14 @@ export default function PortfolioSection({
               </div>
               <div className="flex flex-col gap-2">
                 <h2 className="font-sans text-base font-bold uppercase leading-6 tracking-wide">
-                  {project.title}
+                  {title}
                 </h2>
                 <p
                   className={`font-sans text-sm font-normal leading-6 ${
                     isLight ? 'text-gold-900' : 'text-gold-800'
                   }`}
                 >
-                  {project.description}
+                  {description}
                 </p>
                 <div className="mt-1 flex flex-wrap gap-2">
                   <span
@@ -260,7 +266,7 @@ export default function PortfolioSection({
                         : 'bg-erythro-500/15 text-[#f7bbba]'
                     }`}
                   >
-                    {project.categoryLabel}
+                    {categoryLabel}
                   </span>
                   {project.tags.map((tag) => (
                     <span
@@ -277,7 +283,8 @@ export default function PortfolioSection({
                 </div>
               </div>
             </Link>
-          ))}
+            )
+          })}
         </div>
 
         {projects.length === 0 && (

@@ -324,14 +324,14 @@ async function run() {
   await seedCollection(
     payload,
     'portfolio-projects',
-    byLocale((_loc) =>
+    byLocale((loc) =>
       PORTFOLIO_PROJECTS.map((project, i) => ({
         slug: project.slug,
-        title: project.title,
+        title: project.title[loc] || project.title.en,
         category: project.category,
-        categoryLabel: project.categoryLabel,
-        description: project.description,
-        summary: project.summary,
+        categoryLabel: project.categoryLabel[loc] || project.categoryLabel.en,
+        description: project.description[loc] || project.description.en,
+        summary: project.summary[loc] || project.summary.en,
         date: project.date,
         client: project.client,
         ...(project.link ? { link: project.link } : {}),
@@ -339,8 +339,12 @@ async function run() {
         stack: project.stack.map((item) => ({ item })),
         tags: project.tags.map((tag) => ({ tag })),
         body: project.body.map((section) => ({
-          ...(section.heading ? { heading: section.heading } : {}),
-          paragraphs: section.paragraphs.map((text) => ({ text })),
+          ...(section.heading
+            ? { heading: section.heading[loc] || section.heading.en }
+            : {}),
+          paragraphs: (section.paragraphs[loc] || section.paragraphs.en || []).map(
+            (text) => ({ text }),
+          ),
           // Skip image uploads in seed — editors add media in admin; fallback uses static paths
         })),
       })),

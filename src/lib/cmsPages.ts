@@ -34,6 +34,10 @@ import { solutions, type SolutionCardItem } from '@/translations'
 
 const LOCALES = ['en', 'ru', 'he'] as const
 
+function emptyLocaleList(): LocaleListMap {
+  return { en: [], ru: [], he: [] }
+}
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 function mediaUrl(v: any): string | undefined {
@@ -91,30 +95,49 @@ function locList(rows: any[] | undefined, key: string, fallback: LocaleListMap):
   return out.en.length ? out : fallback
 }
 
-function pickStr(v: any, locale: string, fallback = ''): string {
-  if (typeof v === 'string') return v || fallback
-  if (v && typeof v === 'object') return v[locale] || v.en || fallback
-  return fallback
+function mapPortfolioBodySection(section: any): PortfolioBodySection {
+  const paragraphs = emptyLocaleList()
+  if (Array.isArray(section.paragraphs) && section.paragraphs.length) {
+    for (const p of section.paragraphs) {
+      const text = locMapCms(p?.text)
+      for (const l of LOCALES) {
+        paragraphs[l].push(text[l] || text.en || '')
+      }
+    }
+  }
+
+  const heading = locMapCms(section.heading)
+  const hasHeading = LOCALES.some((l) => Boolean(heading[l]?.trim()))
+  const images =
+    Array.isArray(section.images) && section.images.length
+      ? (section.images.map((img: any) => mediaUrl(img.image)).filter(Boolean) as string[])
+      : []
+
+  return {
+    ...(hasHeading ? { heading } : {}),
+    paragraphs,
+    images,
+  }
 }
 
-function mapPortfolioDoc(d: any, locale: string): PortfolioProject {
+function mapPortfolioDoc(d: any): PortfolioProject {
   // Prefer slug match so CMS docs never inherit unrelated seed project fields by index.
   const fb: PortfolioProject =
     PORTFOLIO_PROJECTS.find((p) => p.slug === d.slug) ||
     {
       id: String(d.id ?? ''),
       slug: d.slug || 'project',
-      title: 'Project',
+      title: { en: 'Project' },
       category: 'other',
-      categoryLabel: 'Other',
-      description: '',
+      categoryLabel: { en: 'Other' },
+      description: { en: '' },
       tags: [],
       image: '/images/portfolio/case-1.png',
       date: '',
       stack: [],
       client: '',
       hero: { type: 'image', src: '/images/portfolio/case-1.png' },
-      summary: '',
+      summary: { en: '' },
       body: [],
     }
 
@@ -127,23 +150,7 @@ function mapPortfolioDoc(d: any, locale: string): PortfolioProject {
 
   const body: PortfolioBodySection[] =
     Array.isArray(d.body) && d.body.length
-      ? d.body.map((section: any) => {
-          const paragraphs =
-            Array.isArray(section.paragraphs) && section.paragraphs.length
-              ? section.paragraphs.map((p: any) => pickStr(p.text, locale)).filter(Boolean)
-              : []
-          const images =
-            Array.isArray(section.images) && section.images.length
-              ? section.images.map((img: any) => mediaUrl(img.image)).filter(Boolean)
-              : []
-          return {
-            ...(pickStr(section.heading, locale)
-              ? { heading: pickStr(section.heading, locale) }
-              : {}),
-            paragraphs,
-            images: images as string[],
-          }
-        })
+      ? d.body.map((section: any) => mapPortfolioBodySection(section))
       : fb.body
 
   const stack =
@@ -163,18 +170,28 @@ function mapPortfolioDoc(d: any, locale: string): PortfolioProject {
     (typeof catDoc?.value === 'string' && catDoc.value) ||
     (typeof d.category === 'string' && d.category) ||
     fb.category
-  const categoryLabel =
-    pickStr(d.categoryLabel, locale) ||
-    pickStr(catDoc?.label, locale) ||
-    fb.categoryLabel
+
+  const categoryLabelFromDoc = locMapCms(d.categoryLabel)
+  const categoryLabelFromCat = locMapCms(catDoc?.label)
+  const hasCategoryLabel = LOCALES.some(
+    (l) => Boolean(categoryLabelFromDoc[l]?.trim() || categoryLabelFromCat[l]?.trim()),
+  )
+  const categoryLabel = hasCategoryLabel
+    ? locMap(d.categoryLabel || catDoc?.label, fb.categoryLabel)
+    : fb.categoryLabel
+
+  const seoTitle = locMapCms(d.seo?.title)
+  const seoDescription = locMapCms(d.seo?.description)
+  const hasSeoTitle = LOCALES.some((l) => Boolean(seoTitle[l]?.trim()))
+  const hasSeoDescription = LOCALES.some((l) => Boolean(seoDescription[l]?.trim()))
 
   return {
     id: String(d.id ?? fb.id),
     slug: d.slug || fb.slug,
-    title: pickStr(d.title, locale, fb.title),
+    title: locMap(d.title, fb.title),
     category: categoryValue as Exclude<PortfolioCategory, 'all'>,
     categoryLabel,
-    description: pickStr(d.description, locale, fb.description),
+    description: locMap(d.description, fb.description),
     tags,
     image: cardUrl,
     date: d.date || fb.date,
@@ -186,18 +203,14 @@ function mapPortfolioDoc(d: any, locale: string): PortfolioProject {
       src: heroUrl,
       ...(heroMobileUrl && heroMobileUrl !== heroUrl ? { srcMobile: heroMobileUrl } : {}),
     },
-    summary: pickStr(d.summary, locale, fb.summary),
+    summary: locMap(d.summary, fb.summary),
     body,
-    ...(pickStr(d.seo?.title, locale)
-      ? { seoTitle: pickStr(d.seo.title, locale) }
-      : {}),
-    ...(pickStr(d.seo?.description, locale)
-      ? { seoDescription: pickStr(d.seo.description, locale) }
-      : {}),
+    ...(hasSeoTitle ? { seoTitle } : {}),
+    ...(hasSeoDescription ? { seoDescription } : {}),
   }
 }
 
-async function fetchPortfolioProjects(locale: string): Promise<PortfolioProject[]> {
+async function fetchPortfolioProjects(): Promise<PortfolioProject[]> {
   try {
     const payload = await getPayload({ config })
     const res = await payload.find({
@@ -208,14 +221,14 @@ async function fetchPortfolioProjects(locale: string): Promise<PortfolioProject[
       sort: 'order',
     })
     if (!res.docs?.length) return PORTFOLIO_PROJECTS
-    return res.docs.map((d: any) => mapPortfolioDoc(d, locale))
+    return res.docs.map((d: any) => mapPortfolioDoc(d))
   } catch (err) {
     console.error('[cmsPages] portfolio fallback:', err)
     return PORTFOLIO_PROJECTS
   }
 }
 
-async function fetchPortfolioCategories(locale: string): Promise<PortfolioFilter[]> {
+async function fetchPortfolioCategories(): Promise<PortfolioFilter[]> {
   try {
     const payload = await getPayload({ config })
     const res = await payload.find({
@@ -232,8 +245,9 @@ async function fetchPortfolioCategories(locale: string): Promise<PortfolioFilter
     return res.docs
       .map((d: any) => {
         const id = typeof d.value === 'string' ? d.value.trim() : ''
-        const label = pickStr(d.label, locale, id)
-        if (!id || !label) return null
+        if (!id) return null
+        const label = locMap(d.label, { en: id })
+        if (!LOCALES.some((l) => Boolean(label[l]?.trim()))) return null
         return { id, label } satisfies PortfolioFilter
       })
       .filter(Boolean) as PortfolioFilter[]
@@ -560,29 +574,28 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
   }
 }
 
-export const getCachedPortfolioProjects = (locale: string) =>
-  // v3: categories are CMS-managed; bust older category-select cache entries
-  unstable_cache(() => fetchPortfolioProjects(locale), [`portfolio-projects-v3-${locale}`], {
+export const getCachedPortfolioProjects = () =>
+  // v4: keep all locales for client-side language switching (like services)
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v4'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
 
-export const getCachedPortfolioCategories = (locale: string) =>
-  unstable_cache(() => fetchPortfolioCategories(locale), [`portfolio-categories-v1-${locale}`], {
+export const getCachedPortfolioCategories = () =>
+  unstable_cache(() => fetchPortfolioCategories(), ['portfolio-categories-v2'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
 
 export async function getPortfolioProjectBySlug(
   slug: string,
-  locale = 'en',
 ): Promise<PortfolioProject | undefined> {
-  const all = await getCachedPortfolioProjects(locale)
+  const all = await getCachedPortfolioProjects()
   return all.find((p) => p.slug === slug)
 }
 
 export async function getAllPortfolioSlugsCms(): Promise<string[]> {
-  const all = await getCachedPortfolioProjects('en')
+  const all = await getCachedPortfolioProjects()
   return all.map((p) => p.slug)
 }
 

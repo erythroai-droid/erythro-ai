@@ -14,6 +14,7 @@ import LetsTalkSection from '@/components/LetsTalkSection'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import type { SiteContent } from '@/lib/defaultContent'
 import type { PortfolioProject } from '@/lib/portfolioProjects'
+import { tLocale } from '@/lib/portfolioProjects'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface ProjectClientProps {
@@ -21,8 +22,8 @@ interface ProjectClientProps {
   initialTheme?: 'light' | 'dark'
   content: SiteContent
   project: PortfolioProject
-  prev: { slug: string; title: string } | null
-  next: { slug: string; title: string } | null
+  prev: { slug: string; title: PortfolioProject['title'] } | null
+  next: { slug: string; title: PortfolioProject['title'] } | null
 }
 
 export default function ProjectClient({
@@ -36,6 +37,7 @@ export default function ProjectClient({
   const a11yTranslations = content.accessibility
   const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
+  const projectTitle = tLocale(project.title, locale)
 
   const pickA11y = (field?: Record<string, string> | null) =>
     (field && (field[locale] || field.en)) || ''
@@ -64,12 +66,12 @@ export default function ProjectClient({
 
   const a11yTargets = useMemo(
     () => [
-      { id: 'project-hero', label: project.title },
+      { id: 'project-hero', label: projectTitle },
       { id: 'project-body', label: pickA11y(a11yTranslations.screenReaderDescription) },
       { id: 'contacts', label: pickA11y(a11yTranslations.screenReaderContacts) },
       { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
     ],
-    [locale, project.title],
+    [locale, projectTitle],
   )
 
   const scrollSectionIds = useMemo(
@@ -96,7 +98,7 @@ export default function ProjectClient({
           />
 
           <div className="relative z-10 lg:contents">
-            <ProjectHero project={project} />
+            <ProjectHero project={project} locale={locale} />
           </div>
 
           <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">

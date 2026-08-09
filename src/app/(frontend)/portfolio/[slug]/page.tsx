@@ -9,7 +9,7 @@ import {
   getCachedPortfolioProjects,
   getPortfolioProjectBySlug,
 } from '@/lib/cmsPages'
-import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
+import { getAllPortfolioSlugs, tLocale } from '@/lib/portfolioProjects'
 import { getRequestPrefs } from '@/lib/requestPrefs'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
   const locale =
     cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
 
-  const project = await getPortfolioProjectBySlug(slug, locale)
+  const project = await getPortfolioProjectBySlug(slug)
 
   if (!project) {
     return {
@@ -45,9 +45,11 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
     }
   }
 
+  const title = tLocale(project.title, locale)
+  const summary = tLocale(project.summary, locale)
   const url = `${SITE_URL}/portfolio/${project.slug}`
-  const metaTitle = project.seoTitle || `${project.title} | Portfolio | Erythro.ai`
-  const metaDescription = project.seoDescription || project.summary
+  const metaTitle = tLocale(project.seoTitle, locale) || `${title} | Portfolio | Erythro.ai`
+  const metaDescription = tLocale(project.seoDescription, locale) || summary
 
   return {
     title: metaTitle,
@@ -56,7 +58,7 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
       canonical: `/portfolio/${project.slug}`,
     },
     openGraph: {
-      title: project.seoTitle || `${project.title} | Erythro.ai`,
+      title: tLocale(project.seoTitle, locale) || `${title} | Erythro.ai`,
       description: metaDescription,
       url,
       siteName: 'Erythro.ai',
@@ -64,7 +66,7 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
       images: [
         {
           url: project.hero.src,
-          alt: project.title,
+          alt: title,
         },
       ],
     },
@@ -76,12 +78,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   const { initialLocale, initialTheme } = await getRequestPrefs()
 
-  const project = await getPortfolioProjectBySlug(slug, initialLocale)
+  const project = await getPortfolioProjectBySlug(slug)
   if (!project) notFound()
 
   const [content, projects] = await Promise.all([
     getCachedSiteContent(),
-    getCachedPortfolioProjects(initialLocale),
+    getCachedPortfolioProjects(),
   ])
 
   const index = projects.findIndex((p) => p.slug === project.slug)
