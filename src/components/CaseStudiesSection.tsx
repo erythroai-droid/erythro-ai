@@ -31,7 +31,7 @@ function useIsDesktop() {
 
 const CASE_STUDY_POSTER = '/images/Dynamic-Urban-Slideshow.jpg'
 
-/** Prefetches near the section; plays and fades in only while the block is in view. */
+/** Loads src only near the section; plays while the block is in view. */
 function CaseStudyVideo({
   src,
   label,
@@ -49,12 +49,18 @@ function CaseStudyVideo({
   const [inView, setInView] = useState(false)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
-  const prefetchedRef = useRef(false)
+  const attachedSrcRef = useRef<string | null>(null)
 
   useEffect(() => {
     setReady(false)
     setFailed(false)
-    prefetchedRef.current = false
+    setInView(false)
+    attachedSrcRef.current = null
+    const el = ref.current
+    if (el) {
+      el.removeAttribute('src')
+      el.load()
+    }
   }, [src])
 
   useEffect(() => {
@@ -63,11 +69,12 @@ function CaseStudyVideo({
     const container = containerRef.current
     if (!el || failed) return
 
-    const prefetch = () => {
-      if (prefetchedRef.current) return
-      prefetchedRef.current = true
-      // metadata only — full `auto` fights Hero for bandwidth on mobile/CDN.
-      el.preload = 'metadata'
+    const attachSrc = (mode: 'metadata' | 'auto') => {
+      if (attachedSrcRef.current !== src) {
+        attachedSrcRef.current = src
+        el.src = src
+      }
+      el.preload = mode
       el.load()
     }
 
@@ -85,15 +92,15 @@ function CaseStudyVideo({
     el.addEventListener('ended', onEnded)
     el.addEventListener('canplay', onCanPlay)
     el.addEventListener('error', onError)
-    if (el.readyState >= 3) setReady(true)
+    if (el.readyState >= 3 && attachedSrcRef.current === src) setReady(true)
 
-    // Start buffering ~1 viewport before the user reaches Case Studies.
+    // Light prefetch only when the section is ~half a viewport away — not on first paint.
     const prefetchObserver = section
       ? new IntersectionObserver(
           ([entry]) => {
-            if (entry.isIntersecting) prefetch()
+            if (entry.isIntersecting) attachSrc('metadata')
           },
-          { rootMargin: '0px 0px 100% 0px', threshold: 0 },
+          { rootMargin: '0px 0px 50% 0px', threshold: 0 },
         )
       : null
 
@@ -102,16 +109,15 @@ function CaseStudyVideo({
     const playObserver = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          prefetch()
+          attachSrc('auto')
           setInView(true)
-          if (el.readyState < 2) el.preload = 'auto'
           void el.play().catch(() => {})
         } else {
           setInView(false)
           el.pause()
         }
       },
-      { threshold: 0.05 },
+      { rootMargin: '120px 0px', threshold: 0.05 },
     )
 
     if (prefetchObserver && section) prefetchObserver.observe(section)
@@ -134,7 +140,6 @@ function CaseStudyVideo({
     <video
       key={src}
       ref={ref}
-      src={src}
       poster={CASE_STUDY_POSTER}
       className={`absolute inset-0 z-[1] h-full w-full object-cover transition-opacity duration-500 ${
         portrait ? '' : 'scale-[1.14]'
@@ -293,8 +298,9 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
             className={`absolute inset-0 z-0 h-full w-full object-cover ${
               isDesktop === false ? '' : 'lg:scale-[1.14]'
             }`}
-            loading="eager"
+            loading="lazy"
             decoding="async"
+            fetchPriority="low"
           />
           {videoSrc ? (
             <CaseStudyVideo
