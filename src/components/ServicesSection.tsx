@@ -43,9 +43,16 @@ function CardVideo({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [videoReady, setVideoReady] = useState(false)
+  const attachedSrcRef = useRef<string | null>(null)
 
   useEffect(() => {
     setVideoReady(false)
+    attachedSrcRef.current = null
+    const video = videoRef.current
+    if (video) {
+      video.removeAttribute('src')
+      video.load()
+    }
   }, [src])
 
   useEffect(() => {
@@ -56,7 +63,6 @@ function CardVideo({
     // Cached/fast Blob responses can fire canplay before React attaches JSX
     // handlers — then videoReady stays false and the card stays invisible.
     const markReady = () => setVideoReady(true)
-    if (video.readyState >= 2) markReady()
     video.addEventListener('loadeddata', markReady)
     video.addEventListener('canplay', markReady)
     video.addEventListener('playing', markReady)
@@ -65,17 +71,20 @@ function CardVideo({
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            if (video.preload !== 'auto') {
+            if (attachedSrcRef.current !== src) {
+              attachedSrcRef.current = src
+              video.src = src
               video.preload = 'auto'
               video.load()
             }
+            if (video.readyState >= 2) markReady()
             void video.play().catch(() => {})
           } else {
             video.pause()
           }
         }
       },
-      { threshold: 0.15 },
+      { rootMargin: '160px 0px', threshold: 0.1 },
     )
 
     observer.observe(container)
@@ -98,13 +107,13 @@ function CardVideo({
           src={poster}
           alt={posterAlt || label}
           className="absolute inset-0 h-full w-full object-cover"
-          loading="eager"
+          loading="lazy"
           decoding="async"
+          fetchPriority="low"
         />
       ) : null}
       <video
         ref={videoRef}
-        src={src}
         poster={poster}
         className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
           videoReady ? 'opacity-100' : 'opacity-0'
