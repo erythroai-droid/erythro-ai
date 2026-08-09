@@ -32,7 +32,7 @@ export default function ProjectBody({
   const isLight = theme === 'light'
   const sectionRef = useRef<HTMLElement | null>(null)
   const title = tLocale(project.title, locale)
-  const summary = tLocale(project.summary, locale) || tLocale(project.description, locale)
+  const subtitle = tLocale(project.subtitle, locale).trim()
 
   useEffect(() => {
     if (!sectionRef.current) return
@@ -71,13 +71,13 @@ export default function ProjectBody({
             <span className="text-erythro-500">{title.charAt(0)}</span>
             <span>{title.slice(1)}</span>
           </h1>
-          {summary ? (
+          {subtitle ? (
             <p
               className={`m-0 max-w-[720px] font-sans text-lg font-light leading-8 md:text-xl md:leading-9 ${
                 isLight ? 'text-coal-900/70' : 'text-gold-500'
               }`}
             >
-              {summary}
+              {subtitle}
             </p>
           ) : null}
         </header>

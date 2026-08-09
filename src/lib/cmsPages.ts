@@ -185,6 +185,13 @@ function mapPortfolioDoc(d: any): PortfolioProject {
   const hasSeoTitle = LOCALES.some((l) => Boolean(seoTitle[l]?.trim()))
   const hasSeoDescription = LOCALES.some((l) => Boolean(seoDescription[l]?.trim()))
 
+  const subtitle = locMapCms(d.subtitle)
+  const hasSubtitle = LOCALES.some((l) => Boolean(subtitle[l]?.trim()))
+  const fbSubtitle = fb.subtitle
+  const resolvedSubtitle = hasSubtitle
+    ? locMap(d.subtitle, fbSubtitle || { en: '' })
+    : fbSubtitle
+
   return {
     id: String(d.id ?? fb.id),
     slug: d.slug || fb.slug,
@@ -204,6 +211,7 @@ function mapPortfolioDoc(d: any): PortfolioProject {
       ...(heroMobileUrl && heroMobileUrl !== heroUrl ? { srcMobile: heroMobileUrl } : {}),
     },
     summary: locMap(d.summary, fb.summary),
+    ...(resolvedSubtitle ? { subtitle: resolvedSubtitle } : {}),
     body,
     ...(hasSeoTitle ? { seoTitle } : {}),
     ...(hasSeoDescription ? { seoDescription } : {}),

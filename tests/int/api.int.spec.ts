@@ -41,6 +41,7 @@ const REQUIRED_COLUMNS: Record<string, string[]> = {
   solution_plans: ['slug', 'price', 'currency', 'featured'],
   solution_plans_features: ['home_only'],
   solution_plans_locales: ['title', 'includes'],
+  portfolio_projects_locales: ['title', 'description', 'summary', 'subtitle'],
 }
 
 describe.skipIf(!hasDatabase)('API', () => {

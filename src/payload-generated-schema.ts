@@ -770,6 +770,7 @@ export const portfolio_projects_locales = pgTable(
     categoryLabel: varchar('category_label'),
     description: varchar('description').notNull(),
     summary: varchar('summary').notNull(),
+    subtitle: varchar('subtitle'),
     seo_title: varchar('seo_title'),
     seo_description: varchar('seo_description'),
     id: serial('id').primaryKey(),

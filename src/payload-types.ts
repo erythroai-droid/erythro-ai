@@ -567,9 +567,13 @@ export interface PortfolioProject {
    */
   description: string;
   /**
-   * Hero summary on the project page
+   * Hero summary on the project page (shown only in the hero)
    */
   summary: string;
+  /**
+   * Optional text under the project title in the body section. Leave empty to hide.
+   */
+  subtitle?: string | null;
   /**
    * e.g. "2025" or "2024 — 2025"
    */
@@ -977,6 +981,7 @@ export interface PortfolioProjectsSelect<T extends boolean = true> {
   categoryLabel?: T;
   description?: T;
   summary?: T;
+  subtitle?: T;
   date?: T;
   client?: T;
   link?: T;

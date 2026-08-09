@@ -18,6 +18,7 @@ import * as migration_20260807_010000_header_nav_children from './20260807_01000
 import * as migration_20260808_010000_header_nav_description from './20260808_010000_header_nav_description'
 import * as migration_20260808_020000_site_settings_seo_title_localized from './20260808_020000_site_settings_seo_title_localized'
 import * as migration_20260809_010000_hero_background_image_mobile from './20260809_010000_hero_background_image_mobile'
+import * as migration_20260810_010000_portfolio_project_subtitle from './20260810_010000_portfolio_project_subtitle'
 
 export const migrations = [
   {
@@ -119,5 +120,10 @@ export const migrations = [
     up: migration_20260809_010000_hero_background_image_mobile.up,
     down: migration_20260809_010000_hero_background_image_mobile.down,
     name: '20260809_010000_hero_background_image_mobile',
+  },
+  {
+    up: migration_20260810_010000_portfolio_project_subtitle.up,
+    down: migration_20260810_010000_portfolio_project_subtitle.down,
+    name: '20260810_010000_portfolio_project_subtitle',
   },
 ]

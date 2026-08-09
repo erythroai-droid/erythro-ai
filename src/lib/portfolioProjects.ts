@@ -31,6 +31,8 @@ export interface PortfolioProject {
   link?: string
   hero: { type: 'image' | 'video'; src: string; srcMobile?: string }
   summary: LocaleMap
+  /** Optional lead under the body title. */
+  subtitle?: LocaleMap
   body: PortfolioBodySection[]
   seoTitle?: LocaleMap
   seoDescription?: LocaleMap
@@ -58,6 +60,7 @@ interface FlatPortfolioProject {
   link?: string
   hero: { type: 'image' | 'video'; src: string; srcMobile?: string }
   summary: string
+  subtitle?: string
   body: FlatBodySection[]
   seoTitle?: string
   seoDescription?: string
@@ -83,6 +86,7 @@ function localizeProject(p: FlatPortfolioProject): PortfolioProject {
     ...(p.link ? { link: p.link } : {}),
     hero: p.hero,
     summary: L(p.summary),
+    ...(p.subtitle ? { subtitle: L(p.subtitle) } : {}),
     body: p.body.map((section) => ({
       ...(section.heading ? { heading: L(section.heading) } : {}),
       paragraphs: { en: section.paragraphs },
