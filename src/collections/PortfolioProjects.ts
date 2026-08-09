@@ -49,7 +49,13 @@ export const PortfolioProjects: CollectionConfig = {
     }),
     locTextarea('summary', {
       required: true,
-      admin: { description: 'Hero summary on the project page' },
+      admin: { description: 'Hero summary on the project page (shown only in the hero)' },
+    }),
+    locTextarea('subtitle', {
+      admin: {
+        description:
+          'Optional text under the project title in the body section. Leave empty to hide.',
+      },
     }),
     {
       name: 'date',
