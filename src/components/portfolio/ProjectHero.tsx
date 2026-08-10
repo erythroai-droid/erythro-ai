@@ -22,18 +22,21 @@ function HeroMediaSlot({
   type,
   src,
   visibilityClass,
+  objectPositionClass = 'object-center',
   priority = false,
 }: {
   type: 'image' | 'video'
   src: string
   /** Breakpoint visibility, e.g. `lg:hidden` / `hidden lg:block`. */
   visibilityClass?: string
+  /** Framing for cover crops — mobile stills usually need object-top. */
+  objectPositionClass?: string
   priority?: boolean
 }) {
   if (type === 'video') {
     return (
       <video
-        className={`absolute inset-0 h-full w-full object-cover object-center ${visibilityClass || ''}`}
+        className={`absolute inset-0 h-full w-full object-cover ${objectPositionClass} ${visibilityClass || ''}`}
         src={src}
         autoPlay
         muted
@@ -51,7 +54,7 @@ function HeroMediaSlot({
       fill
       priority={priority}
       sizes="100vw"
-      className={`object-cover object-center ${visibilityClass || ''}`}
+      className={`object-cover ${objectPositionClass} ${visibilityClass || ''}`}
     />
   )
 }
@@ -82,9 +85,15 @@ function HeroMedia({
         type={mobileType}
         src={mobileSrc}
         visibilityClass="lg:hidden"
+        objectPositionClass="object-top"
         priority
       />
-      <HeroMediaSlot type={type} src={src} visibilityClass="hidden lg:block" />
+      <HeroMediaSlot
+        type={type}
+        src={src}
+        visibilityClass="hidden lg:block"
+        objectPositionClass="object-center"
+      />
     </>
   )
 }
@@ -124,6 +133,10 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
     return () => ctx.revert()
   }, [])
 
+  const hasSeparateMobile = Boolean(
+    project.hero.srcMobile && project.hero.srcMobile !== project.hero.src,
+  )
+
   return (
     <section
       ref={sectionRef}
@@ -131,7 +144,14 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
       data-menu-contrast="dark"
       className="relative z-10 flex w-full flex-col overflow-hidden bg-coal-900 lg:min-h-screen lg:justify-end"
     >
-      <div className="relative aspect-[16/10] w-full shrink-0 sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full lg:w-full">
+      <div
+        className={
+          hasSeparateMobile
+            ? // Match CMS mobile stills (typically 1080×1920 / 9:16); 16/10 was cropping them in half.
+              'relative aspect-[9/16] max-h-[85dvh] w-full shrink-0 sm:aspect-[3/4] sm:max-h-none md:aspect-[16/10] lg:absolute lg:inset-0 lg:aspect-auto lg:max-h-none lg:h-full lg:w-full'
+            : 'relative aspect-[16/10] w-full shrink-0 sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full lg:w-full'
+        }
+      >
         <HeroMedia
           type={project.hero.type}
           src={project.hero.src}
