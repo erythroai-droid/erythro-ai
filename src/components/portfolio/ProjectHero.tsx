@@ -149,7 +149,7 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
           typeMobile={project.hero.typeMobile}
         />
         <div
-          className="absolute inset-0 bg-gradient-to-t from-coal-900 via-coal-900/40 to-transparent lg:via-coal-900/55 lg:to-coal-900/20"
+          className="absolute inset-0 bg-gradient-to-t from-coal-900/15 via-coal-900/[0.08] to-transparent lg:from-coal-900 lg:via-coal-900/55 lg:to-coal-900/20"
           aria-hidden
         />
       </div>
