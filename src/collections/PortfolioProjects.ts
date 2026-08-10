@@ -101,7 +101,7 @@ export const PortfolioProjects: CollectionConfig = {
       relationTo: 'media',
       admin: {
         description:
-          'Hero image or video for mobile (<1024px). Falls back to desktop hero if empty.',
+          'Hero image or video for mobile (<1024px). Prefer 1080×1920 (9:16). Falls back to desktop hero if empty.',
       },
     },
     {
