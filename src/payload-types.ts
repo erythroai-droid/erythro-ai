@@ -567,13 +567,23 @@ export interface PortfolioProject {
    */
   description: string;
   /**
-   * Hero summary on the project page (shown only in the hero)
+   * Hero summary on the project page (shown only in the hero). Rich text editor.
    */
-  summary: string;
+  summary: {
+    [k: string]: unknown;
+  } | unknown[] | string | number | boolean | null;
   /**
-   * Optional text under the project title in the body section. Leave empty to hide.
+   * Optional text under the project title in the body section. Leave empty to hide. Rich text editor.
    */
-  subtitle?: string | null;
+  subtitle?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
    * e.g. "2025" or "2024 — 2025"
    */
@@ -612,7 +622,12 @@ export interface PortfolioProject {
         heading?: string | null;
         paragraphs?:
           | {
-              text: string;
+              /**
+               * Body paragraph (rich text)
+               */
+              text: {
+                [k: string]: unknown;
+              } | unknown[] | string | number | boolean | null;
               id?: string | null;
             }[]
           | null;

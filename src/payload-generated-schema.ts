@@ -641,7 +641,7 @@ export const portfolio_projects_body_paragraphs = pgTable(
 export const portfolio_projects_body_paragraphs_locales = pgTable(
   'portfolio_projects_body_paragraphs_locales',
   {
-    text: varchar('text').notNull(),
+    text: jsonb('text'),
     id: serial('id').primaryKey(),
     _locale: enum__locales('_locale').notNull(),
     _parentID: varchar('_parent_id').notNull(),
@@ -769,8 +769,8 @@ export const portfolio_projects_locales = pgTable(
     title: varchar('title').notNull(),
     categoryLabel: varchar('category_label'),
     description: varchar('description').notNull(),
-    summary: varchar('summary').notNull(),
-    subtitle: varchar('subtitle'),
+    summary: jsonb('summary'),
+    subtitle: jsonb('subtitle'),
     seo_title: varchar('seo_title'),
     seo_description: varchar('seo_description'),
     id: serial('id').primaryKey(),

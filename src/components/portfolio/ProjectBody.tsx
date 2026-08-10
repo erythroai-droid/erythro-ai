@@ -2,10 +2,12 @@
 
 import React, { useEffect, useRef } from 'react'
 import Image from 'next/image'
+import { RichText } from '@payloadcms/richtext-lexical/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { PortfolioProject } from '@/lib/portfolioProjects'
 import { tLocale, tLocaleList } from '@/lib/portfolioProjects'
+import { isLexicalDoc, lexicalFromText, lexicalToPlain, type LexicalDoc } from '@/lib/lexical'
 import ProjectNav, { type ProjectNavNeighbor } from './ProjectNav'
 
 if (typeof window !== 'undefined') {
@@ -21,6 +23,16 @@ interface ProjectBodyProps {
   portfolioHref?: string
 }
 
+function pickRichDoc(
+  rich: Record<string, unknown> | null | undefined,
+  locale: string,
+  fallbackPlain: string,
+): LexicalDoc {
+  const candidate = rich?.[locale] ?? rich?.en
+  if (isLexicalDoc(candidate)) return candidate
+  return lexicalFromText(fallbackPlain)
+}
+
 export default function ProjectBody({
   project,
   theme = 'dark',
@@ -32,7 +44,13 @@ export default function ProjectBody({
   const isLight = theme === 'light'
   const sectionRef = useRef<HTMLElement | null>(null)
   const title = tLocale(project.title, locale)
-  const subtitle = tLocale(project.subtitle, locale).trim()
+  const subtitlePlain = tLocale(project.subtitle, locale).trim()
+  const subtitleDoc = pickRichDoc(
+    project.subtitleRich as Record<string, unknown> | undefined,
+    locale,
+    subtitlePlain,
+  )
+  const hasSubtitle = Boolean(lexicalToPlain(subtitleDoc).trim() || subtitlePlain)
 
   useEffect(() => {
     if (!sectionRef.current) return
@@ -71,19 +89,35 @@ export default function ProjectBody({
             <span className="text-erythro-500">{title.charAt(0)}</span>
             <span>{title.slice(1)}</span>
           </h1>
-          {subtitle ? (
-            <p
-              className={`m-0 max-w-[720px] font-sans text-lg font-light leading-8 md:text-xl md:leading-9 ${
+          {hasSubtitle ? (
+            <div
+              className={`m-0 max-w-[720px] font-sans text-lg font-light leading-8 md:text-xl md:leading-9 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
                 isLight ? 'text-coal-900/70' : 'text-gold-500'
               }`}
             >
-              {subtitle}
-            </p>
+              <RichText data={subtitleDoc as never} />
+            </div>
           ) : null}
         </header>
         {project.body.map((section, index) => {
           const heading = section.heading ? tLocale(section.heading, locale) : ''
-          const paragraphs = tLocaleList(section.paragraphs, locale).filter(Boolean)
+          const plainParagraphs = tLocaleList(section.paragraphs, locale).filter(Boolean)
+          const richList = Array.isArray(section.paragraphsRich?.[locale])
+            ? (section.paragraphsRich?.[locale] as unknown[])
+            : Array.isArray(section.paragraphsRich?.en)
+              ? (section.paragraphsRich?.en as unknown[])
+              : []
+          const paragraphDocs =
+            richList.length > 0
+              ? richList
+                  .map((doc, i) =>
+                    isLexicalDoc(doc)
+                      ? doc
+                      : lexicalFromText(plainParagraphs[i] || ''),
+                  )
+                  .filter((doc) => lexicalToPlain(doc).trim())
+              : plainParagraphs.map((text) => lexicalFromText(text))
+
           return (
             <div key={heading || `section-${index}`} className="flex flex-col gap-8 md:gap-10">
               {heading ? (
@@ -97,15 +131,15 @@ export default function ProjectBody({
               ) : null}
 
               <div className="flex w-full flex-col gap-5">
-                {paragraphs.map((paragraph) => (
-                  <p
-                    key={paragraph.slice(0, 48)}
-                    className={`font-sans text-base font-light leading-7 md:text-lg md:leading-8 ${
+                {paragraphDocs.map((doc, i) => (
+                  <div
+                    key={`${heading || index}-p-${i}-${lexicalToPlain(doc).slice(0, 32)}`}
+                    className={`font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
                       isLight ? 'text-coal-900/85' : 'text-white/80'
                     }`}
                   >
-                    {paragraph}
-                  </p>
+                    <RichText data={doc as never} />
+                  </div>
                 ))}
               </div>
 
