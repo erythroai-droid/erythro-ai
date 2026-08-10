@@ -18,88 +18,73 @@ interface ProjectHeroProps {
   locale?: string
 }
 
-function HeroMedia({
+function HeroMediaSlot({
   type,
   src,
-  srcMobile,
+  visibilityClass,
+  priority = false,
 }: {
   type: 'image' | 'video'
   src: string
-  srcMobile?: string
+  /** Breakpoint visibility, e.g. `lg:hidden` / `hidden lg:block`. */
+  visibilityClass?: string
+  priority?: boolean
 }) {
-  const mobileSrc = srcMobile || src
-  const hasSeparateMobile = Boolean(srcMobile && srcMobile !== src)
-
   if (type === 'video') {
-    if (!hasSeparateMobile) {
-      return (
-        <video
-          className="absolute inset-0 h-full w-full object-cover object-center"
-          src={src}
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-hidden
-        />
-      )
-    }
-
     return (
-      <>
-        <video
-          className="absolute inset-0 h-full w-full object-cover object-center lg:hidden"
-          src={mobileSrc}
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-hidden
-        />
-        <video
-          className="absolute inset-0 hidden h-full w-full object-cover object-center lg:block"
-          src={src}
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-hidden
-        />
-      </>
-    )
-  }
-
-  if (!hasSeparateMobile) {
-    return (
-      <Image
+      <video
+        className={`absolute inset-0 h-full w-full object-cover object-center ${visibilityClass || ''}`}
         src={src}
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-center"
+        autoPlay
+        muted
+        loop
+        playsInline
+        aria-hidden
       />
     )
   }
 
   return (
+    <Image
+      src={src}
+      alt=""
+      fill
+      priority={priority}
+      sizes="100vw"
+      className={`object-cover object-center ${visibilityClass || ''}`}
+    />
+  )
+}
+
+function HeroMedia({
+  type,
+  src,
+  srcMobile,
+  typeMobile,
+}: {
+  type: 'image' | 'video'
+  src: string
+  srcMobile?: string
+  typeMobile?: 'image' | 'video'
+}) {
+  const hasSeparateMobile = Boolean(srcMobile && srcMobile !== src)
+  const mobileSrc = srcMobile || src
+  // Mobile may be a still while desktop is video (CMS pattern) — never share one kind.
+  const mobileType = hasSeparateMobile ? typeMobile || 'image' : type
+
+  if (!hasSeparateMobile) {
+    return <HeroMediaSlot type={type} src={src} priority />
+  }
+
+  return (
     <>
-      <Image
+      <HeroMediaSlot
+        type={mobileType}
         src={mobileSrc}
-        alt=""
-        fill
+        visibilityClass="lg:hidden"
         priority
-        sizes="100vw"
-        className="object-cover object-center lg:hidden"
       />
-      <Image
-        src={src}
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="hidden object-cover object-center lg:block"
-      />
+      <HeroMediaSlot type={type} src={src} visibilityClass="hidden lg:block" />
     </>
   )
 }
@@ -151,6 +136,7 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
           type={project.hero.type}
           src={project.hero.src}
           srcMobile={project.hero.srcMobile}
+          typeMobile={project.hero.typeMobile}
         />
         <div
           className="absolute inset-0 bg-gradient-to-t from-coal-900 via-coal-900/40 to-transparent lg:via-coal-900/55 lg:to-coal-900/20"

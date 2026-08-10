@@ -38,6 +38,17 @@ function emptyLocaleList(): LocaleListMap {
   return { en: [], ru: [], he: [] }
 }
 
+/** Prefer MIME; fall back to URL extension when CMS mime is missing. */
+function mediaKind(mime: unknown, url?: string): 'image' | 'video' {
+  if (typeof mime === 'string') {
+    if (mime.startsWith('video/')) return 'video'
+    if (mime.startsWith('image/')) return 'image'
+  }
+  if (url && /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(url)) return 'video'
+  if (url && /\.(png|jpe?g|gif|webp|svg|avif)(\?|$)/i.test(url)) return 'image'
+  return 'image'
+}
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 function mediaUrl(v: any): string | undefined {
@@ -145,8 +156,10 @@ function mapPortfolioDoc(d: any): PortfolioProject {
   const heroUrl = mediaUrl(d.heroMedia) || mediaUrl(d.cardImage) || fb.hero.src
   const heroMobileUrl =
     mediaUrl(d.heroMediaMobile) || fb.hero.srcMobile || undefined
-  const mime = d.heroMedia?.mimeType || ''
-  const heroType: 'image' | 'video' = String(mime).startsWith('video/') ? 'video' : 'image'
+  const heroType = mediaKind(d.heroMedia?.mimeType, heroUrl)
+  const heroTypeMobile = heroMobileUrl
+    ? mediaKind(d.heroMediaMobile?.mimeType, heroMobileUrl)
+    : heroType
 
   const body: PortfolioBodySection[] =
     Array.isArray(d.body) && d.body.length
@@ -208,7 +221,12 @@ function mapPortfolioDoc(d: any): PortfolioProject {
     hero: {
       type: heroType,
       src: heroUrl,
-      ...(heroMobileUrl && heroMobileUrl !== heroUrl ? { srcMobile: heroMobileUrl } : {}),
+      ...(heroMobileUrl && heroMobileUrl !== heroUrl
+        ? {
+            srcMobile: heroMobileUrl,
+            typeMobile: heroTypeMobile,
+          }
+        : {}),
     },
     summary: locMap(d.summary, fb.summary),
     ...(resolvedSubtitle ? { subtitle: resolvedSubtitle } : {}),
@@ -584,7 +602,7 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v4'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v5'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
