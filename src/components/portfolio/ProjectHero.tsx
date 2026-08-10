@@ -133,25 +133,15 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
     return () => ctx.revert()
   }, [])
 
-  const hasSeparateMobile = Boolean(
-    project.hero.srcMobile && project.hero.srcMobile !== project.hero.src,
-  )
-
   return (
     <section
       ref={sectionRef}
       id="project-hero"
       data-menu-contrast="dark"
-      className="relative z-10 flex w-full flex-col overflow-hidden bg-coal-900 lg:min-h-screen lg:justify-end"
+      className="relative z-10 flex w-full flex-col overflow-hidden bg-coal-900 max-lg:h-[100dvh] max-lg:max-h-[100dvh] lg:min-h-screen lg:justify-end"
     >
-      <div
-        className={
-          hasSeparateMobile
-            ? // Match CMS mobile stills (typically 1080×1920 / 9:16); 16/10 was cropping them in half.
-              'relative aspect-[9/16] max-h-[85dvh] w-full shrink-0 sm:aspect-[3/4] sm:max-h-none md:aspect-[16/10] lg:absolute lg:inset-0 lg:aspect-auto lg:max-h-none lg:h-full lg:w-full'
-            : 'relative aspect-[16/10] w-full shrink-0 sm:aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto lg:h-full lg:w-full'
-        }
-      >
+      {/* Mobile: image fills leftover viewport above the copy. Desktop: full-bleed behind content. */}
+      <div className="relative min-h-0 w-full flex-1 lg:absolute lg:inset-0 lg:h-full lg:w-full lg:flex-none">
         <HeroMedia
           type={project.hero.type}
           src={project.hero.src}
@@ -164,15 +154,15 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
         />
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-[1170px] px-[30px] pb-12 pt-8 md:pb-16 lg:pb-24 lg:pt-[140px]">
-        <p className="mb-4 font-sans text-xs uppercase tracking-[0.24em] text-white/55">
+      <div className="relative z-10 mx-auto w-full max-w-[1170px] shrink-0 px-[30px] pb-8 pt-5 md:pb-16 md:pt-8 lg:pb-24 lg:pt-[140px]">
+        <p className="mb-3 font-sans text-xs uppercase tracking-[0.24em] text-white/55 md:mb-4">
           {categoryLabel}
         </p>
-        <p className="max-w-[640px] font-sans text-base font-light leading-7 text-white/80 md:text-lg md:leading-8">
+        <p className="max-w-[640px] font-sans text-base font-light leading-7 text-white/80 max-lg:line-clamp-4 md:text-lg md:leading-8">
           {summary}
         </p>
 
-        <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-6 border-t border-white/15 pt-8 md:grid-cols-4 lg:mt-12 lg:gap-x-10">
+        <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-4 border-t border-white/15 pt-6 md:mt-10 md:gap-y-6 md:pt-8 md:grid-cols-4 lg:mt-12 lg:gap-x-10">
           {meta.map((item) => (
             <div key={item.label} className="flex flex-col gap-1.5">
               <dt className="font-sans text-[10px] uppercase tracking-[0.2em] text-white/45">
