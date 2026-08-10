@@ -154,7 +154,7 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
         />
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-[1170px] shrink-0 px-[30px] pb-8 pt-5 md:pb-16 md:pt-8 lg:pb-24 lg:pt-[140px]">
+      <div className="relative z-10 mx-auto w-full max-w-[1170px] shrink-0 px-[30px] pb-16 pt-5 max-lg:pb-20 md:pt-8 lg:pb-28 lg:pt-[140px]">
         <p className="mb-3 font-sans text-xs uppercase tracking-[0.24em] text-white/55 md:mb-4">
           {categoryLabel}
         </p>
