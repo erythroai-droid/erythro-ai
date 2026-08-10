@@ -140,8 +140,8 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
       data-menu-contrast="dark"
       className="relative z-10 flex w-full flex-col overflow-hidden bg-coal-900 max-lg:h-[100dvh] max-lg:max-h-[100dvh] lg:min-h-screen lg:justify-end"
     >
-      {/* Mobile: image fills leftover viewport above the copy. Desktop: full-bleed behind content. */}
-      <div className="relative min-h-0 w-full flex-1 lg:absolute lg:inset-0 lg:h-full lg:w-full lg:flex-none">
+      {/* Full-bleed media — sits behind the mobile copy plate on all breakpoints. */}
+      <div className="absolute inset-0">
         <HeroMedia
           type={project.hero.type}
           src={project.hero.src}
@@ -149,48 +149,51 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
           typeMobile={project.hero.typeMobile}
         />
         <div
-          className="absolute inset-0 bg-gradient-to-t from-coal-900/15 via-coal-900/[0.08] to-transparent lg:from-coal-900 lg:via-coal-900/55 lg:to-coal-900/20"
+          className="absolute inset-0 hidden bg-gradient-to-t from-coal-900 via-coal-900/55 to-coal-900/20 lg:block"
           aria-hidden
         />
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-[1170px] shrink-0 px-[30px] pb-16 pt-5 max-lg:pb-20 md:pt-8 lg:pb-28 lg:pt-[140px]">
-        <p className="mb-3 font-sans text-xs uppercase tracking-[0.24em] text-white/55 md:mb-4">
-          {categoryLabel}
-        </p>
-        <p className="max-w-[640px] font-sans text-base font-light leading-7 text-white/80 max-lg:line-clamp-4 md:text-lg md:leading-8">
-          {summary}
-        </p>
+      {/* Mobile: black plate fades 0→100% so the photo shows through under the copy. */}
+      <div className="relative z-10 mt-auto w-full max-lg:bg-gradient-to-t max-lg:from-coal-900 max-lg:via-coal-900/55 max-lg:to-transparent">
+        <div className="mx-auto w-full max-w-[1170px] px-[30px] pb-16 pt-12 max-lg:pb-20 md:pt-8 lg:pb-28 lg:pt-[140px]">
+          <p className="mb-3 font-sans text-xs uppercase tracking-[0.24em] text-white/55 md:mb-4">
+            {categoryLabel}
+          </p>
+          <p className="max-w-[640px] font-sans text-base font-light leading-7 text-white/80 max-lg:line-clamp-4 md:text-lg md:leading-8">
+            {summary}
+          </p>
 
-        <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-4 border-t border-white/15 pt-6 md:mt-10 md:gap-y-6 md:pt-8 md:grid-cols-4 lg:mt-12 lg:gap-x-10">
-          {meta.map((item) => (
-            <div key={item.label} className="flex flex-col gap-1.5">
-              <dt className="font-sans text-[10px] uppercase tracking-[0.2em] text-white/45">
-                {item.label}
-              </dt>
-              <dd className="font-sans text-sm font-normal leading-snug text-white md:text-[15px]">
-                <BidiText forceLtr={item.label === 'Stack'}>{item.value}</BidiText>
-              </dd>
-            </div>
-          ))}
-          {project.link ? (
-            <div className="col-span-2 flex flex-col gap-1.5 md:col-span-4 lg:col-span-1">
-              <dt className="font-sans text-[10px] uppercase tracking-[0.2em] text-white/45">
-                Link
-              </dt>
-              <dd>
-                <Link
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-sans text-sm text-gold-500 underline-offset-4 transition-colors duration-300 hover:text-white hover:underline md:text-[15px]"
-                >
-                  Visit project
-                </Link>
-              </dd>
-            </div>
-          ) : null}
-        </dl>
+          <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-4 border-t border-white/15 pt-6 md:mt-10 md:gap-y-6 md:pt-8 md:grid-cols-4 lg:mt-12 lg:gap-x-10">
+            {meta.map((item) => (
+              <div key={item.label} className="flex flex-col gap-1.5">
+                <dt className="font-sans text-[10px] uppercase tracking-[0.2em] text-white/45">
+                  {item.label}
+                </dt>
+                <dd className="font-sans text-sm font-normal leading-snug text-white md:text-[15px]">
+                  <BidiText forceLtr={item.label === 'Stack'}>{item.value}</BidiText>
+                </dd>
+              </div>
+            ))}
+            {project.link ? (
+              <div className="col-span-2 flex flex-col gap-1.5 md:col-span-4 lg:col-span-1">
+                <dt className="font-sans text-[10px] uppercase tracking-[0.2em] text-white/45">
+                  Link
+                </dt>
+                <dd>
+                  <Link
+                    href={project.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-sans text-sm text-gold-500 underline-offset-4 transition-colors duration-300 hover:text-white hover:underline md:text-[15px]"
+                  >
+                    Visit project
+                  </Link>
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+        </div>
       </div>
     </section>
   )
