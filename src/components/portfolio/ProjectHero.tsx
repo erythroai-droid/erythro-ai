@@ -8,6 +8,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { PortfolioProject } from '@/lib/portfolioProjects'
 import { tLocale } from '@/lib/portfolioProjects'
 import BidiText from '@/components/BidiText'
+import { RichText } from '@payloadcms/richtext-lexical/react'
+import { isLexicalDoc, lexicalFromText, lexicalToPlain } from '@/lib/lexical'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -101,7 +103,16 @@ function HeroMedia({
 export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps) {
   const sectionRef = useRef<HTMLElement | null>(null)
   const categoryLabel = tLocale(project.categoryLabel, locale)
-  const summary = tLocale(project.summary, locale)
+  const summaryPlain = tLocale(project.summary, locale)
+  const summaryCandidate =
+    project.summaryRich && typeof project.summaryRich === 'object'
+      ? (project.summaryRich as Record<string, unknown>)[locale] ??
+        (project.summaryRich as Record<string, unknown>).en
+      : null
+  const summaryDoc = isLexicalDoc(summaryCandidate)
+    ? summaryCandidate
+    : lexicalFromText(summaryPlain)
+  const hasSummary = Boolean(lexicalToPlain(summaryDoc).trim() || summaryPlain.trim())
 
   const meta = [
     { label: 'Category', value: categoryLabel },
@@ -160,9 +171,11 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
           <p className="mb-3 font-sans text-xs uppercase tracking-[0.24em] text-white/55 md:mb-4">
             {categoryLabel}
           </p>
-          <p className="max-w-[640px] font-sans text-base font-light leading-7 text-white/80 max-lg:line-clamp-4 md:text-lg md:leading-8">
-            {summary}
-          </p>
+          {hasSummary ? (
+            <div className="max-w-[640px] font-sans text-base font-light leading-7 text-white/80 max-lg:line-clamp-4 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
+              <RichText data={summaryDoc as never} />
+            </div>
+          ) : null}
 
           <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-4 border-t border-white/15 pt-6 md:mt-10 md:gap-y-6 md:pt-8 md:grid-cols-4 lg:mt-12 lg:gap-x-10">
             {meta.map((item) => (

@@ -1,4 +1,5 @@
 import type { LocaleMap, LocaleListMap } from './servicePages'
+import type { LocaleLexicalMap } from './lexical'
 
 export type { LocaleMap, LocaleListMap }
 export { tLocale, tLocaleList } from './servicePages'
@@ -12,7 +13,10 @@ export interface PortfolioFilter {
 
 export interface PortfolioBodySection {
   heading?: LocaleMap
+  /** Plain-text fallback / seed; prefer paragraphsRich when present. */
   paragraphs: LocaleListMap
+  /** Lexical docs per locale from CMS (one doc per paragraph row). */
+  paragraphsRich?: Record<string, unknown[]>
   images: string[]
 }
 
@@ -30,9 +34,12 @@ export interface PortfolioProject {
   client: string
   link?: string
   hero: { type: 'image' | 'video'; src: string; srcMobile?: string; typeMobile?: 'image' | 'video' }
+  /** Plain-text fallback / seed; prefer summaryRich when present. */
   summary: LocaleMap
+  summaryRich?: LocaleLexicalMap | Record<string, unknown>
   /** Optional lead under the body title. */
   subtitle?: LocaleMap
+  subtitleRich?: LocaleLexicalMap | Record<string, unknown>
   body: PortfolioBodySection[]
   seoTitle?: LocaleMap
   seoDescription?: LocaleMap

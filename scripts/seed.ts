@@ -331,7 +331,10 @@ async function run() {
         category: project.category,
         categoryLabel: project.categoryLabel[loc] || project.categoryLabel.en,
         description: project.description[loc] || project.description.en,
-        summary: project.summary[loc] || project.summary.en,
+        summary: lexicalFromText(project.summary[loc] || project.summary.en),
+        ...(project.subtitle
+          ? { subtitle: lexicalFromText(project.subtitle[loc] || project.subtitle.en) }
+          : {}),
         date: project.date,
         client: project.client,
         ...(project.link ? { link: project.link } : {}),
@@ -343,7 +346,7 @@ async function run() {
             ? { heading: section.heading[loc] || section.heading.en }
             : {}),
           paragraphs: (section.paragraphs[loc] || section.paragraphs.en || []).map(
-            (text) => ({ text }),
+            (text) => ({ text: lexicalFromText(text) }),
           ),
           // Skip image uploads in seed — editors add media in admin; fallback uses static paths
         })),

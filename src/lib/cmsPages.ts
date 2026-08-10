@@ -106,15 +106,37 @@ function locList(rows: any[] | undefined, key: string, fallback: LocaleListMap):
   return out.en.length ? out : fallback
 }
 
-function mapPortfolioBodySection(section: any): PortfolioBodySection {
+/** Pick a localized field value when Payload returns locale:'all' maps or a single value. */
+function pickLocalizedValue(field: unknown, locale: string): unknown {
+  if (field && typeof field === 'object' && !Array.isArray(field) && !isLexicalDoc(field)) {
+    const map = field as Record<string, unknown>
+    return map[locale] ?? map.en
+  }
+  return field
+}
+
+function mapPortfolioBodySection(section: any, fbSection?: PortfolioBodySection): PortfolioBodySection {
   const paragraphs = emptyLocaleList()
+  const paragraphsRich: Record<string, unknown[]> = { en: [], ru: [], he: [] }
+
   if (Array.isArray(section.paragraphs) && section.paragraphs.length) {
     for (const p of section.paragraphs) {
-      const text = locMapCms(p?.text)
       for (const l of LOCALES) {
-        paragraphs[l].push(text[l] || text.en || '')
+        const raw = pickLocalizedValue(p?.text, l)
+        if (isLexicalDoc(raw)) {
+          paragraphsRich[l].push(raw)
+          paragraphs[l].push(lexicalToPlain(raw))
+        } else if (typeof raw === 'string' && raw.trim()) {
+          paragraphsRich[l].push(lexicalFromText(raw))
+          paragraphs[l].push(raw.trim())
+        } else {
+          paragraphsRich[l].push(lexicalFromText(''))
+          paragraphs[l].push('')
+        }
       }
     }
+  } else if (fbSection) {
+    return { ...fbSection }
   }
 
   const heading = locMapCms(section.heading)
@@ -124,11 +146,41 @@ function mapPortfolioBodySection(section: any): PortfolioBodySection {
       ? (section.images.map((img: any) => mediaUrl(img.image)).filter(Boolean) as string[])
       : []
 
+  const hasRich = LOCALES.some((l) =>
+    paragraphsRich[l].some((doc) => isLexicalDoc(doc) && lexicalToPlain(doc).trim()),
+  )
+
   return {
     ...(hasHeading ? { heading } : {}),
     paragraphs,
+    ...(hasRich ? { paragraphsRich } : {}),
     images,
   }
+}
+
+function mapPortfolioRichField(
+  field: unknown,
+  fallbackPlain: LocaleMap,
+): { plain: LocaleMap; rich: Record<string, unknown> } {
+  const plain: LocaleMap = { en: '', ru: '', he: '' }
+  const rich: Record<string, unknown> = {}
+
+  for (const loc of LOCALES) {
+    const raw = pickLocalizedValue(field, loc)
+    if (isLexicalDoc(raw)) {
+      rich[loc] = raw
+      plain[loc] = lexicalToPlain(raw)
+    } else if (typeof raw === 'string' && raw.trim()) {
+      rich[loc] = lexicalFromText(raw)
+      plain[loc] = raw.trim()
+    } else {
+      const fb = fallbackPlain[loc] || fallbackPlain.en || ''
+      rich[loc] = lexicalFromText(fb)
+      plain[loc] = fb
+    }
+  }
+
+  return { plain, rich }
 }
 
 function mapPortfolioDoc(d: any): PortfolioProject {
@@ -163,7 +215,7 @@ function mapPortfolioDoc(d: any): PortfolioProject {
 
   const body: PortfolioBodySection[] =
     Array.isArray(d.body) && d.body.length
-      ? d.body.map((section: any) => mapPortfolioBodySection(section))
+      ? d.body.map((section: any, i: number) => mapPortfolioBodySection(section, fb.body[i]))
       : fb.body
 
   const stack =
@@ -198,12 +250,12 @@ function mapPortfolioDoc(d: any): PortfolioProject {
   const hasSeoTitle = LOCALES.some((l) => Boolean(seoTitle[l]?.trim()))
   const hasSeoDescription = LOCALES.some((l) => Boolean(seoDescription[l]?.trim()))
 
-  const subtitle = locMapCms(d.subtitle)
-  const hasSubtitle = LOCALES.some((l) => Boolean(subtitle[l]?.trim()))
-  const fbSubtitle = fb.subtitle
-  const resolvedSubtitle = hasSubtitle
-    ? locMap(d.subtitle, fbSubtitle || { en: '' })
-    : fbSubtitle
+  const { plain: summaryPlain, rich: summaryRich } = mapPortfolioRichField(d.summary, fb.summary)
+  const { plain: subtitlePlain, rich: subtitleRich } = mapPortfolioRichField(
+    d.subtitle,
+    fb.subtitle || { en: '', ru: '', he: '' },
+  )
+  const hasSubtitle = LOCALES.some((l) => Boolean(subtitlePlain[l]?.trim()))
 
   return {
     id: String(d.id ?? fb.id),
@@ -228,8 +280,14 @@ function mapPortfolioDoc(d: any): PortfolioProject {
           }
         : {}),
     },
-    summary: locMap(d.summary, fb.summary),
-    ...(resolvedSubtitle ? { subtitle: resolvedSubtitle } : {}),
+    summary: summaryPlain,
+    summaryRich,
+    ...(hasSubtitle
+      ? {
+          subtitle: subtitlePlain,
+          subtitleRich,
+        }
+      : {}),
     body,
     ...(hasSeoTitle ? { seoTitle } : {}),
     ...(hasSeoDescription ? { seoDescription } : {}),
@@ -602,7 +660,7 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v5'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v6'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

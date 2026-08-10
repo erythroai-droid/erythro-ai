@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { locText, locTextarea } from '../fields/localized'
+import { locText, locTextarea, locRichText } from '../fields/localized'
 import { seoFields } from '../fields/seo'
 import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
 
@@ -47,14 +47,16 @@ export const PortfolioProjects: CollectionConfig = {
       required: true,
       admin: { description: 'Short card description on /portfolio' },
     }),
-    locTextarea('summary', {
+    locRichText('summary', {
       required: true,
-      admin: { description: 'Hero summary on the project page (shown only in the hero)' },
+      admin: {
+        description: 'Hero summary on the project page (shown only in the hero). Rich text editor.',
+      },
     }),
-    locTextarea('subtitle', {
+    locRichText('subtitle', {
       admin: {
         description:
-          'Optional text under the project title in the body section. Leave empty to hide.',
+          'Optional text under the project title in the body section. Leave empty to hide. Rich text editor.',
       },
     }),
     {
@@ -113,7 +115,12 @@ export const PortfolioProjects: CollectionConfig = {
         {
           name: 'paragraphs',
           type: 'array',
-          fields: [locTextarea('text', { required: true })],
+          fields: [
+            locRichText('text', {
+              required: true,
+              admin: { description: 'Body paragraph (rich text)' },
+            }),
+          ],
         },
         {
           name: 'images',
