@@ -155,8 +155,8 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
       </div>
 
       {/* Mobile: black plate fades 0→100% so the photo shows through under the copy. */}
-      <div className="relative z-10 mt-auto w-full max-lg:bg-gradient-to-t max-lg:from-coal-900 max-lg:via-coal-900/55 max-lg:to-transparent">
-        <div className="mx-auto w-full max-w-[1170px] px-[30px] pb-16 pt-12 max-lg:pb-20 md:pt-8 lg:pb-28 lg:pt-[140px]">
+      <div className="relative z-10 mt-auto w-full max-lg:bg-gradient-to-t max-lg:from-coal-900 max-lg:via-coal-900/80 max-lg:to-transparent">
+        <div className="mx-auto w-full max-w-[1170px] px-[30px] pb-16 pt-14 max-lg:pb-20 md:pt-8 lg:pb-28 lg:pt-[140px]">
           <p className="mb-3 font-sans text-xs uppercase tracking-[0.24em] text-white/55 md:mb-4">
             {categoryLabel}
           </p>
