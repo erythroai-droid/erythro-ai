@@ -29,7 +29,7 @@ export interface PortfolioProject {
   stack: string[]
   client: string
   link?: string
-  hero: { type: 'image' | 'video'; src: string; srcMobile?: string }
+  hero: { type: 'image' | 'video'; src: string; srcMobile?: string; typeMobile?: 'image' | 'video' }
   summary: LocaleMap
   /** Optional lead under the body title. */
   subtitle?: LocaleMap
@@ -58,7 +58,7 @@ interface FlatPortfolioProject {
   stack: string[]
   client: string
   link?: string
-  hero: { type: 'image' | 'video'; src: string; srcMobile?: string }
+  hero: { type: 'image' | 'video'; src: string; srcMobile?: string; typeMobile?: 'image' | 'video' }
   summary: string
   subtitle?: string
   body: FlatBodySection[]
