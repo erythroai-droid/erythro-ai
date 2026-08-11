@@ -720,6 +720,49 @@
     }
   }
 
+  /*
+   * Lexical rich-text tables (Payload Upload/Table feature).
+   * On mobile, wide tables must scroll horizontally instead of shrinking
+   * cells (RU copy was clipped by parent overflow-x: clip / overflow-hidden).
+   */
+  .lexical-table-container {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin-block: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    /* Body/html hide scrollbars globally; show a thin bar so scroll is discoverable. */
+    scrollbar-width: thin;
+    -ms-overflow-style: auto;
+  }
+
+  .lexical-table-container::-webkit-scrollbar {
+    display: block;
+    width: 0;
+    height: 6px;
+  }
+
+  .lexical-table-container::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.45);
+    border-radius: 999px;
+  }
+
+  .lexical-table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+  }
+
+  .lexical-table th,
+  .lexical-table td {
+    white-space: nowrap;
+    vertical-align: top;
+  }
+
   /* Portfolio filter chips: fast hover in, slow ease-out leave */
   .portfolio-filter-btn {
     transform: scale(1);

@@ -89,7 +89,7 @@ export default function ProjectBody({
         isLight ? 'bg-gold-100 text-coal-900' : 'dark-gradient-bg text-white'
       }`}
     >
-      <div className="mx-auto flex w-full max-w-[1170px] flex-col gap-16 px-[30px] py-16 md:gap-20 md:py-24 lg:gap-24 lg:py-[120px]">
+      <div className="mx-auto flex w-full min-w-0 max-w-[1170px] flex-col gap-16 px-[30px] py-16 md:gap-20 md:py-24 lg:gap-24 lg:py-[120px]">
         <header className="flex flex-col gap-4 md:gap-5">
           <h1 className="m-0 font-sans text-[36px] font-extralight uppercase leading-tight tracking-[0.06em] md:text-[52px] md:tracking-[0.08em] lg:text-[56px]">
             <span className="text-erythro-500">{title.charAt(0)}</span>
@@ -125,7 +125,7 @@ export default function ProjectBody({
               : plainParagraphs.map((text) => lexicalFromText(text))
 
           return (
-            <div key={heading || `section-${index}`} className="flex flex-col gap-8 md:gap-10">
+            <div key={heading || `section-${index}`} className="flex min-w-0 flex-col gap-8 md:gap-10">
               {heading ? (
                 <h2
                   className={`m-0 font-sans text-[28px] font-extralight uppercase tracking-[0.08em] md:text-[40px] md:tracking-[0.1em] ${
@@ -136,11 +136,11 @@ export default function ProjectBody({
                 </h2>
               ) : null}
 
-              <div className="flex w-full flex-col gap-5">
+              <div className="flex w-full min-w-0 flex-col gap-5">
                 {paragraphDocs.map((doc, i) => (
                   <div
                     key={`${heading || index}-p-${i}-${lexicalToPlain(doc).slice(0, 32)}`}
-                    className={`font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-[10px] [&_img]:shadow-[0_6px_20px_rgba(0,0,0,0.18)] [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
+                    className={`min-w-0 font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-[10px] [&_img]:shadow-[0_6px_20px_rgba(0,0,0,0.18)] [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
                       isLight ? 'text-coal-900/85' : 'text-white/80'
                     }`}
                   >
