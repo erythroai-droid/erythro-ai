@@ -152,7 +152,7 @@ export default function ProjectBody({
                   {section.images.map((src) => (
                     <div
                       key={src}
-                      className={`relative w-full overflow-hidden bg-coal-800 ${
+                      className={`relative w-full overflow-hidden ${
                         section.images.length === 1 ? 'aspect-[16/10]' : 'aspect-[4/3]'
                       }`}
                     >

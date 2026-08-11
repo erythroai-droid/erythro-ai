@@ -238,7 +238,7 @@ export default function PortfolioSection({
                 isLight ? 'text-coal-900' : 'text-white'
               }`}
             >
-              <div className="relative aspect-[370/310] w-full overflow-hidden bg-coal-800">
+              <div className="relative aspect-[370/310] w-full overflow-hidden">
                 <Image
                   src={project.image}
                   alt={title}
