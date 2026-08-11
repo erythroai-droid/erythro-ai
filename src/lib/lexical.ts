@@ -122,3 +122,21 @@ export function lexicalToPlain(value: unknown): string {
   }
   return walk(value.root.children).join(' ').replace(/\s+/g, ' ').trim()
 }
+
+/** True when a Lexical doc has text and/or media (e.g. inline uploads). */
+export function lexicalHasContent(value: unknown): boolean {
+  if (!value) return false
+  if (typeof value === 'string') return Boolean(value.trim())
+  if (!isLexicalDoc(value)) return false
+  if (lexicalToPlain(value)) return true
+  const walk = (nodes: unknown[]): boolean => {
+    for (const node of nodes) {
+      if (!node || typeof node !== 'object') continue
+      const n = node as { type?: string; children?: unknown[] }
+      if (n.type === 'upload' || n.type === 'block' || n.type === 'relationship') return true
+      if (Array.isArray(n.children) && walk(n.children)) return true
+    }
+    return false
+  }
+  return walk(value.root.children)
+}
