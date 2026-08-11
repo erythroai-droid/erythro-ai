@@ -7,7 +7,13 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { PortfolioProject } from '@/lib/portfolioProjects'
 import { tLocale, tLocaleList } from '@/lib/portfolioProjects'
-import { isLexicalDoc, lexicalFromText, lexicalToPlain, type LexicalDoc } from '@/lib/lexical'
+import {
+  isLexicalDoc,
+  lexicalFromText,
+  lexicalHasContent,
+  lexicalToPlain,
+  type LexicalDoc,
+} from '@/lib/lexical'
 import ProjectNav, { type ProjectNavNeighbor } from './ProjectNav'
 
 if (typeof window !== 'undefined') {
@@ -91,7 +97,7 @@ export default function ProjectBody({
           </h1>
           {hasSubtitle ? (
             <div
-              className={`m-0 max-w-[720px] font-sans text-lg font-light leading-8 md:text-xl md:leading-9 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
+              className={`m-0 max-w-[720px] font-sans text-lg font-light leading-8 md:text-xl md:leading-9 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
                 isLight ? 'text-coal-900/70' : 'text-gold-500'
               }`}
             >
@@ -115,7 +121,7 @@ export default function ProjectBody({
                       ? doc
                       : lexicalFromText(plainParagraphs[i] || ''),
                   )
-                  .filter((doc) => lexicalToPlain(doc).trim())
+                  .filter((doc) => lexicalHasContent(doc))
               : plainParagraphs.map((text) => lexicalFromText(text))
 
           return (
@@ -134,7 +140,7 @@ export default function ProjectBody({
                 {paragraphDocs.map((doc, i) => (
                   <div
                     key={`${heading || index}-p-${i}-${lexicalToPlain(doc).slice(0, 32)}`}
-                    className={`font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${
+                    className={`font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
                       isLight ? 'text-coal-900/85' : 'text-white/80'
                     }`}
                   >
@@ -150,22 +156,18 @@ export default function ProjectBody({
                   }`}
                 >
                   {section.images.map((src) => (
-                    <div
-                      key={src}
-                      className={`relative w-full overflow-hidden ${
-                        section.images.length === 1 ? 'aspect-[16/10]' : 'aspect-[4/3]'
-                      }`}
-                    >
+                    <div key={src} className="w-full">
                       <Image
                         src={src}
                         alt=""
-                        fill
+                        width={1920}
+                        height={1080}
                         sizes={
                           section.images.length === 1
                             ? '100vw'
                             : '(max-width: 768px) 100vw, 50vw'
                         }
-                        className="object-cover"
+                        className="h-auto w-full"
                       />
                     </div>
                   ))}

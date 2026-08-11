@@ -18,7 +18,13 @@ import {
   type LocaleMap,
   type LocaleListMap,
 } from './servicePages'
-import { lexicalFromParagraphs, lexicalFromText, isLexicalDoc, lexicalToPlain } from './lexical'
+import {
+  lexicalFromParagraphs,
+  lexicalFromText,
+  isLexicalDoc,
+  lexicalHasContent,
+  lexicalToPlain,
+} from './lexical'
 import { mediaDocUrl } from './publicMediaUrl'
 import {
   ORDER_PLANS,
@@ -147,7 +153,7 @@ function mapPortfolioBodySection(section: any, fbSection?: PortfolioBodySection)
       : []
 
   const hasRich = LOCALES.some((l) =>
-    paragraphsRich[l].some((doc) => isLexicalDoc(doc) && lexicalToPlain(doc).trim()),
+    paragraphsRich[l].some((doc) => isLexicalDoc(doc) && lexicalHasContent(doc)),
   )
 
   return {
