@@ -97,7 +97,7 @@ export default function ProjectBody({
           </h1>
           {hasSubtitle ? (
             <div
-              className={`m-0 max-w-[720px] font-sans text-lg font-light leading-8 md:text-xl md:leading-9 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
+              className={`m-0 max-w-[720px] font-sans text-lg font-light leading-8 md:text-xl md:leading-9 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-[10px] [&_img]:shadow-[0_6px_20px_rgba(0,0,0,0.18)] [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
                 isLight ? 'text-coal-900/70' : 'text-gold-500'
               }`}
             >
@@ -140,7 +140,7 @@ export default function ProjectBody({
                 {paragraphDocs.map((doc, i) => (
                   <div
                     key={`${heading || index}-p-${i}-${lexicalToPlain(doc).slice(0, 32)}`}
-                    className={`font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
+                    className={`font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-[10px] [&_img]:shadow-[0_6px_20px_rgba(0,0,0,0.18)] [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
                       isLight ? 'text-coal-900/85' : 'text-white/80'
                     }`}
                   >
@@ -167,7 +167,7 @@ export default function ProjectBody({
                             ? '100vw'
                             : '(max-width: 768px) 100vw, 50vw'
                         }
-                        className="h-auto w-full"
+                        className="h-auto w-full rounded-[10px] shadow-[0_6px_20px_rgba(0,0,0,0.18)]"
                       />
                     </div>
                   ))}
