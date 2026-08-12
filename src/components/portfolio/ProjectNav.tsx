@@ -119,22 +119,22 @@ export default function ProjectNav({
   const sideBtn = `${baseBtn} flex-1 sm:flex-none`
 
   return (
-    <nav
-      aria-label={ariaLabel}
-      className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
-    >
-      <div className="flex w-full items-center gap-2 sm:contents">
+    <nav aria-label={ariaLabel} className="w-full">
+      <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-3">
         {prev ? (
           <Link
             href={`${basePath}/${prev.slug}`}
-            className={`${sideBtn} ${outlineClass}`}
+            className={`${sideBtn} sm:col-start-1 sm:justify-self-start ${outlineClass}`}
             title={neighborTitle(prev.title)}
           >
             <ArrowIcon direction="prev" />
             <span>{labels.prev}</span>
           </Link>
         ) : (
-          <span className={`${sideBtn} cursor-not-allowed opacity-35 ${outlineClass}`} aria-hidden>
+          <span
+            className={`${sideBtn} cursor-not-allowed opacity-35 sm:col-start-1 sm:justify-self-start ${outlineClass}`}
+            aria-hidden
+          >
             <ArrowIcon direction="prev" />
             <span>{labels.prev}</span>
           </span>
@@ -143,7 +143,7 @@ export default function ProjectNav({
         {next ? (
           <Link
             href={`${basePath}/${next.slug}`}
-            className={`${sideBtn} sm:order-last ${outlineClass}`}
+            className={`${sideBtn} sm:col-start-3 sm:justify-self-end ${outlineClass}`}
             title={neighborTitle(next.title)}
           >
             <span>{labels.next}</span>
@@ -151,20 +151,23 @@ export default function ProjectNav({
           </Link>
         ) : (
           <span
-            className={`${sideBtn} cursor-not-allowed opacity-35 sm:order-last ${outlineClass}`}
+            className={`${sideBtn} cursor-not-allowed opacity-35 sm:col-start-3 sm:justify-self-end ${outlineClass}`}
             aria-hidden
           >
             <span>{labels.next}</span>
             <ArrowIcon direction="next" />
           </span>
         )}
-      </div>
 
-      {showListLink ? (
-        <Link href={indexHref} className={`${baseBtn} w-full sm:w-auto ${accentClass}`}>
-          {labels.list}
-        </Link>
-      ) : null}
+        {showListLink ? (
+          <Link
+            href={indexHref}
+            className={`${baseBtn} col-span-2 w-full sm:col-span-1 sm:col-start-2 sm:w-auto sm:justify-self-center ${accentClass}`}
+          >
+            {labels.list}
+          </Link>
+        ) : null}
+      </div>
     </nav>
   )
 }
