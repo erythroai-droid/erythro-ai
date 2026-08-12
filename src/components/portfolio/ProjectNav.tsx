@@ -116,15 +116,15 @@ export default function ProjectNav({
   const baseBtn =
     'inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-[var(--xl,40px)] border px-4 py-0 font-sans text-[11px] font-medium uppercase tracking-[1.8px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] active:scale-[0.97] active:duration-100 sm:h-11 sm:px-5 sm:text-[12px] sm:tracking-[2px]'
 
-  const sideBtn = `${baseBtn} flex-1 sm:flex-none`
+  const sideBtn = `${baseBtn} min-w-0 px-3 sm:px-5`
 
   return (
     <nav aria-label={ariaLabel} className="w-full">
-      <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-3">
+      <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-3">
         {prev ? (
           <Link
             href={`${basePath}/${prev.slug}`}
-            className={`${sideBtn} sm:col-start-1 sm:justify-self-start ${outlineClass}`}
+            className={`${sideBtn} justify-self-start ${outlineClass}`}
             title={neighborTitle(prev.title)}
           >
             <ArrowIcon direction="prev" />
@@ -132,7 +132,7 @@ export default function ProjectNav({
           </Link>
         ) : (
           <span
-            className={`${sideBtn} cursor-not-allowed opacity-35 sm:col-start-1 sm:justify-self-start ${outlineClass}`}
+            className={`${sideBtn} cursor-not-allowed opacity-35 justify-self-start ${outlineClass}`}
             aria-hidden
           >
             <ArrowIcon direction="prev" />
@@ -143,7 +143,7 @@ export default function ProjectNav({
         {next ? (
           <Link
             href={`${basePath}/${next.slug}`}
-            className={`${sideBtn} sm:col-start-3 sm:justify-self-end ${outlineClass}`}
+            className={`${sideBtn} justify-self-end ${outlineClass}`}
             title={neighborTitle(next.title)}
           >
             <span>{labels.next}</span>
@@ -151,7 +151,7 @@ export default function ProjectNav({
           </Link>
         ) : (
           <span
-            className={`${sideBtn} cursor-not-allowed opacity-35 sm:col-start-3 sm:justify-self-end ${outlineClass}`}
+            className={`${sideBtn} cursor-not-allowed opacity-35 justify-self-end ${outlineClass}`}
             aria-hidden
           >
             <span>{labels.next}</span>
@@ -162,7 +162,7 @@ export default function ProjectNav({
         {showListLink ? (
           <Link
             href={indexHref}
-            className={`${baseBtn} col-span-2 w-full sm:col-span-1 sm:col-start-2 sm:w-auto sm:justify-self-center ${accentClass}`}
+            className={`${baseBtn} col-start-2 w-auto justify-self-center ${accentClass}`}
           >
             {labels.list}
           </Link>
