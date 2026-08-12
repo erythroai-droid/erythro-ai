@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -27,6 +28,12 @@ interface ProjectBodyProps {
   prev?: ProjectNavNeighbor | null
   next?: ProjectNavNeighbor | null
   portfolioHref?: string
+}
+
+function visitProjectLabel(locale: string): string {
+  if (locale === 'ru') return 'Открыть проект'
+  if (locale === 'he') return 'לצפייה בפרויקט'
+  return 'Visit project'
 }
 
 function pickRichDoc(
@@ -176,6 +183,23 @@ export default function ProjectBody({
             </div>
           )
         })}
+
+        {project.link ? (
+          <div className="flex w-full justify-start">
+            <Link
+              href={project.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex h-10 items-center justify-center rounded-[var(--xl,40px)] border px-8 font-sans text-[11px] font-medium uppercase tracking-[1.8px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] active:scale-[0.97] active:duration-100 sm:h-11 sm:px-10 sm:text-[12px] sm:tracking-[2px] ${
+                isLight
+                  ? 'border-transparent bg-erythro-500 text-white hover:bg-erythro-600 active:bg-erythro-700'
+                  : 'border-gold-500 bg-transparent text-gold-500 hover:bg-gold-500 hover:text-coal-900 active:bg-gold-500 active:text-coal-900'
+              }`}
+            >
+              {visitProjectLabel(locale)}
+            </Link>
+          </div>
+        ) : null}
 
         <ProjectNav
           locale={locale}
