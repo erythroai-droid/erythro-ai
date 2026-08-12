@@ -185,7 +185,7 @@ export default function ProjectBody({
         })}
 
         {project.link ? (
-          <div className="flex w-full justify-start">
+          <div className="flex w-full justify-center">
             <Link
               href={project.link}
               target="_blank"
