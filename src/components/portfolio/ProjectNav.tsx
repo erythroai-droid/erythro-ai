@@ -119,20 +119,20 @@ export default function ProjectNav({
     : 'border-gold-500 bg-transparent text-gold-500 hover:bg-gold-500 hover:text-coal-900 active:bg-gold-500 active:text-coal-900'
 
   const baseBtn =
-    'inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-[var(--xl,40px)] border px-4 py-0 font-sans text-[11px] font-medium uppercase tracking-[1.8px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] active:scale-[0.97] active:duration-100 sm:h-11 sm:px-5 sm:text-[12px] sm:tracking-[2px]'
+    'inline-flex h-10 max-w-full min-w-0 items-center justify-center gap-1.5 rounded-[var(--xl,40px)] border px-3 py-0 font-sans text-[10px] font-medium uppercase tracking-[1.2px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] active:scale-[0.97] active:duration-100 sm:h-11 sm:px-5 sm:text-[12px] sm:tracking-[2px]'
 
-  const sideBtn = `${baseBtn} min-w-0 px-3 sm:px-5`
+  const sideBtn = `${baseBtn} px-2.5 sm:px-5`
   const navRow = visitHref ? 'row-start-2' : 'row-start-1'
 
   return (
     <nav aria-label={ariaLabel} className="w-full">
-      <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2 gap-y-4 sm:gap-x-3">
+      <div className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-10 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-x-3 sm:gap-y-12">
         {visitHref ? (
           <Link
             href={visitHref}
             target="_blank"
             rel="noopener noreferrer"
-            className={`${baseBtn} col-start-2 row-start-1 w-auto justify-self-center ${accentClass}`}
+            className={`${baseBtn} col-start-2 row-start-1 w-auto max-w-full justify-self-center px-4 sm:px-5 ${accentClass}`}
           >
             {visitLabel || 'Visit project'}
           </Link>
@@ -143,9 +143,10 @@ export default function ProjectNav({
             href={`${basePath}/${prev.slug}`}
             className={`${sideBtn} col-start-1 ${navRow} justify-self-start ${outlineClass}`}
             title={neighborTitle(prev.title)}
+            aria-label={labels.prev}
           >
             <ArrowIcon direction="prev" />
-            <span>{labels.prev}</span>
+            <span className="hidden sm:inline">{labels.prev}</span>
           </Link>
         ) : (
           <span
@@ -153,14 +154,14 @@ export default function ProjectNav({
             aria-hidden
           >
             <ArrowIcon direction="prev" />
-            <span>{labels.prev}</span>
+            <span className="hidden sm:inline">{labels.prev}</span>
           </span>
         )}
 
         {showListLink ? (
           <Link
             href={indexHref}
-            className={`${baseBtn} col-start-2 ${navRow} w-auto justify-self-center ${accentClass}`}
+            className={`${baseBtn} col-start-2 ${navRow} w-auto max-w-full justify-self-center px-3 text-center sm:px-5 ${accentClass}`}
           >
             {labels.list}
           </Link>
@@ -171,8 +172,9 @@ export default function ProjectNav({
             href={`${basePath}/${next.slug}`}
             className={`${sideBtn} col-start-3 ${navRow} justify-self-end ${outlineClass}`}
             title={neighborTitle(next.title)}
+            aria-label={labels.next}
           >
-            <span>{labels.next}</span>
+            <span className="hidden sm:inline">{labels.next}</span>
             <ArrowIcon direction="next" />
           </Link>
         ) : (
@@ -180,7 +182,7 @@ export default function ProjectNav({
             className={`${sideBtn} col-start-3 ${navRow} cursor-not-allowed justify-self-end opacity-35 ${outlineClass}`}
             aria-hidden
           >
-            <span>{labels.next}</span>
+            <span className="hidden sm:inline">{labels.next}</span>
             <ArrowIcon direction="next" />
           </span>
         )}
