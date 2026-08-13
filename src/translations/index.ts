@@ -58,9 +58,9 @@ export const navbar = {
 // 1b. Cookie consent banner translations
 export const cookieConsent = {
   message: {
-    en: 'We use essential cookies for language and site preferences. If you accept, we also load Google Analytics to measure site usage.',
-    ru: 'Мы используем необходимые cookie для языка и настроек сайта. Если вы согласитесь, мы также подключим Google Analytics для измерения использования сайта.',
-    he: 'אנו משתמשים ב־Cookie חיוניים לשפה ולהעדפות האתר. אם תאשרו, נטען גם את Google Analytics כדי למדוד את השימוש באתר.',
+    en: 'We use essential cookies for language and site preferences. If you accept, we also load Google Analytics and Vercel Web Analytics to measure site usage.',
+    ru: 'Мы используем необходимые cookie для языка и настроек сайта. Если вы согласитесь, мы также подключим Google Analytics и Vercel Web Analytics для измерения использования сайта.',
+    he: 'אנו משתמשים ב־Cookie חיוניים לשפה ולהעדפות האתר. אם תאשרו, נטען גם את Google Analytics ואת Vercel Web Analytics כדי למדוד את השימוש באתר.',
   },
   privacyLink: {
     en: 'Privacy Policy',
