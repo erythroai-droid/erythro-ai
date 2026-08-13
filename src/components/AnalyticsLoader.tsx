@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Script from 'next/script'
+import { Analytics } from '@vercel/analytics/next'
 import {
   clearAnalyticsCookies,
   CONSENT_ACCEPTED,
@@ -57,6 +58,7 @@ export default function AnalyticsLoader() {
 
   return (
     <>
+      <Analytics />
       <Script
         id="google-analytics-src"
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}

@@ -55,7 +55,7 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
       ru: 'Последнее обновление',
       he: 'עודכן לאחרונה',
     },
-    updatedAt: '2026-08-09',
+    updatedAt: '2026-08-14',
     intro: {
       en: 'This Privacy Policy explains how Erythro.ai (“we”, “us”) processes personal information when you visit erythro.ai, contact us, or use our services. We process data in accordance with the Israeli Privacy Protection Law, 5741-1981 (including Amendment 13), the Privacy Protection Regulations (Data Security), 5777-2017, and other applicable rules.',
       ru: 'Настоящая Политика конфиденциальности объясняет, как Erythro.ai («мы») обрабатывает персональные данные при посещении сайта erythro.ai, обращении к нам или использовании наших услуг. Мы обрабатываем данные в соответствии с Законом Израиля о защите частной жизни 5741-1981 (включая Поправку 13), Правилами защиты частной жизни (информационная безопасность) 5777-2017 и иными применимыми нормами.',
@@ -144,13 +144,13 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         },
         paragraphs: {
           en: [
-            'Necessary cookies support basic site functions such as language preference (en/ru/he), accessibility settings, theme, and storing your cookie consent choice. Analytics cookies (Google Analytics) load only after you press Accept on the cookie banner. If you Decline, non-essential analytics scripts should not load; necessary cookies may still be set. You can reopen cookie settings from the site footer at any time.',
+            'Necessary cookies support basic site functions such as language preference (en/ru/he), accessibility settings, theme, and storing your cookie consent choice. Analytics tools (Google Analytics and Vercel Web Analytics) load only after you press Accept on the cookie banner. If you Decline, non-essential analytics scripts should not load; necessary cookies may still be set. You can reopen cookie settings from the site footer at any time.',
           ],
           ru: [
-            'Обязательные cookie обеспечивают базовую работу сайта: язык (en/ru/he), настройки доступности, тему и сохранение выбора согласия на cookie. Аналитические cookie (Google Analytics) загружаются только после нажатия «Accept» в баннере. При отказе необязательные скрипты аналитики не должны загружаться; обязательные cookie могут сохраняться. Настройки cookie можно снова открыть из футера сайта.',
+            'Обязательные cookie обеспечивают базовую работу сайта: язык (en/ru/he), настройки доступности, тему и сохранение выбора согласия на cookie. Аналитические инструменты (Google Analytics и Vercel Web Analytics) загружаются только после нажатия «Accept» в баннере. При отказе необязательные скрипты аналитики не должны загружаться; обязательные cookie могут сохраняться. Настройки cookie можно снова открыть из футера сайта.',
           ],
           he: [
-            'Cookie חיוניים תומכים בתפקוד בסיסי של האתר: העדפת שפה (en/ru/he), הגדרות נגישות, ערכת נושא ושמירת בחירת ההסכמה ל־Cookie. Cookie אנליטיים (Google Analytics) נטענים רק לאחר לחיצה על Accept בבאנר. אם תבחרו Decline, סקריפטי אנליטיקה שאינם חיוניים לא אמורים להיטען; Cookie חיוניים עשויים להישמר. ניתן לפתוח מחדש את הגדרות ה־Cookie מכותרת התחתונה של האתר בכל עת.',
+            'Cookie חיוניים תומכים בתפקוד בסיסי של האתר: העדפת שפה (en/ru/he), הגדרות נגישות, ערכת נושא ושמירת בחירת ההסכמה ל־Cookie. כלי אנליטיקה (Google Analytics ו־Vercel Web Analytics) נטענים רק לאחר לחיצה על Accept בבאנר. אם תבחרו Decline, סקריפטי אנליטיקה שאינם חיוניים לא אמורים להיטען; Cookie חיוניים עשויים להישמר. ניתן לפתוח מחדש את הגדרות ה־Cookie מכותרת התחתונה של האתר בכל עת.',
           ],
         },
       },
@@ -173,7 +173,7 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         },
         bullets: {
           en: [
-            'Vercel Inc. — website hosting, CDN, and serverless functions.',
+            'Vercel Inc. — website hosting, CDN, serverless functions, and Vercel Web Analytics (only after you accept analytics cookies).',
             'Hostinger — hosting / infrastructure services where used for deployment or related systems.',
             'Supabase / managed PostgreSQL — database storage for CMS content and contact submissions.',
             'Payload CMS — content management and storage of form submissions.',
@@ -181,7 +181,7 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
             'Google LLC — Google Analytics, only after you accept analytics cookies.',
           ],
           ru: [
-            'Vercel Inc. — хостинг сайта, CDN и serverless-функции.',
+            'Vercel Inc. — хостинг сайта, CDN, serverless-функции и Vercel Web Analytics (только после согласия на аналитические cookie).',
             'Hostinger — хостинг / инфраструктура, если используется для деплоя или связанных систем.',
             'Supabase / управляемый PostgreSQL — хранение данных CMS и заявок из форм.',
             'Payload CMS — управление контентом и хранение заявок.',
@@ -189,7 +189,7 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
             'Google LLC — Google Analytics только после согласия на аналитические cookie.',
           ],
           he: [
-            'Vercel Inc. — אחסון האתר, CDN ופונקציות serverless.',
+            'Vercel Inc. — אחסון האתר, CDN, פונקציות serverless ו־Vercel Web Analytics (רק לאחר אישור Cookie אנליטיים).',
             'Hostinger — שירותי אחסון / תשתית כאשר נעשה בהם שימוש לפריסה או מערכות קשורות.',
             'Supabase / PostgreSQL מנוהל — אחסון מסד נתונים לתוכן ה־CMS ולפניות מטפסים.',
             'Payload CMS — ניהול תוכן ושמירת פניות.',
@@ -207,17 +207,17 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         paragraphs: {
           en: [
             'Processing and storage of contact and related operational data are carried out in line with the Basic security level (רמה בסיסית) under the Privacy Protection Regulations (Data Security), 5777-2017, for a database of ordinary contact details with a limited number of authorised accessors.',
-            'Contact-form submissions are retained for up to 24 months from receipt, or until you request deletion / withdraw consent where applicable, unless a longer period is required for legal, accounting, or dispute-resolution purposes. Analytics data follows the retention configured in Google Analytics. Necessary cookies expire according to their functional purpose (for example, language and consent preferences).',
+            'Contact-form submissions are retained for up to 24 months from receipt, or until you request deletion / withdraw consent where applicable, unless a longer period is required for legal, accounting, or dispute-resolution purposes. Analytics data follows the retention configured in Google Analytics and Vercel Web Analytics. Necessary cookies expire according to their functional purpose (for example, language and consent preferences).',
             'We apply technical and organisational measures appropriate to the risk, including HTTPS in transit and provider-side encryption at rest where available. No method of transmission or storage is completely secure.',
           ],
           ru: [
             'Обработка и хранение контактных и связанных операционных данных осуществляются в соответствии с Базовым уровнем безопасности (רמה בסיסית / Basic Level) Правил защиты частной жизни (информационная безопасность) 5777-2017 — для базы обычных контактных данных с ограниченным кругом лиц, имеющих доступ.',
-            'Заявки из контактных форм хранятся до 24 месяцев с момента получения либо до вашего запроса на удаление / отзыва согласия (где применимо), если более длительный срок не требуется для юридических, бухгалтерских целей или разрешения споров. Данные аналитики хранятся согласно настройкам Google Analytics. Срок жизни обязательных cookie определяется их функцией (например, язык и выбор согласия).',
+            'Заявки из контактных форм хранятся до 24 месяцев с момента получения либо до вашего запроса на удаление / отзыва согласия (где применимо), если более длительный срок не требуется для юридических, бухгалтерских целей или разрешения споров. Данные аналитики хранятся согласно настройкам Google Analytics и Vercel Web Analytics. Срок жизни обязательных cookie определяется их функцией (например, язык и выбор согласия).',
             'Мы применяем технические и организационные меры, соразмерные риску, включая HTTPS при передаче и шифрование хранилища на стороне провайдера, где оно доступно. Ни один способ передачи или хранения не является полностью безопасным.',
           ],
           he: [
             'עיבוד ושמירה של מידע ליצירת קשר ומידע תפעולי קשור מתבצעים בהתאם לרמה הבסיסית (Basic Level) שבתקנות הגנת הפרטיות (אבטחת מידע), התשע״ז-2017, למאגר של פרטי קשר רגילים עם מספר מוגבל של בעלי הרשאה.',
-            'פניות מטפסי יצירת קשר נשמרות עד 24 חודשים ממועד הקבלה, או עד לבקשת מחיקה / ביטול הסכמה ככל שרלוונטי, אלא אם נדרשת תקופה ארוכה יותר לצרכים משפטיים, חשבונאיים או ליישוב מחלוקות. נתוני אנליטיקה נשמרים לפי הגדרות Google Analytics. Cookie חיוניים פוקעים בהתאם לייעודם (למשל שפה והעדפת הסכמה).',
+            'פניות מטפסי יצירת קשר נשמרות עד 24 חודשים ממועד הקבלה, או עד לבקשת מחיקה / ביטול הסכמה ככל שרלוונטי, אלא אם נדרשת תקופה ארוכה יותר לצרכים משפטיים, חשבונאיים או ליישוב מחלוקות. נתוני אנליטיקה נשמרים לפי הגדרות Google Analytics ו־Vercel Web Analytics. Cookie חיוניים פוקעים בהתאם לייעודם (למשל שפה והעדפת הסכמה).',
             'אנו מיישמים אמצעים טכניים וארגוניים התואמים את הסיכון, לרבות HTTPS בתעבורה והצפנה במנוחה אצל הספק ככל שזמינה. אין שיטת העברה או אחסון בטוחה לחלוטין.',
           ],
         },
