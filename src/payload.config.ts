@@ -69,7 +69,12 @@ export default buildConfig({
   db: postgresAdapter({
     // Never auto-push / introspect against remote DB in CI or vitest —
     // that hangs on interactive prompts / pooler. Migrations run on Vercel build.
-    push: process.env.CI === 'true' || process.env.NODE_ENV === 'test' ? false : undefined,
+    push:
+      process.env.CI === 'true' ||
+      process.env.NODE_ENV === 'test' ||
+      process.env.PAYLOAD_DISABLE_PUSH === '1'
+        ? false
+        : undefined,
     pool: {
       connectionString: process.env.DATABASE_URL || '',
       // Supabase pooler presents a cert chain that fails default Node verify on GHA.

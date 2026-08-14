@@ -67,3 +67,7 @@ node_modules/
 
 .vercel
 .env*
+
+# Portfolio import working copies (tool + example live in scripts/import-project/)
+/content/imports/*
+!/content/imports/README.md

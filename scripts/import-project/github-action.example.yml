@@ -1,0 +1,56 @@
+# Example only — copy to .github/workflows/import-project.yml when enabling automation.
+# Do not commit this file into .github/workflows until secrets and a review step exist.
+
+name: Import portfolio project
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: Folder name under content/imports (must match CMS slug)
+        required: true
+        type: string
+      skip_media:
+        description: Skip media uploads
+        required: false
+        type: boolean
+        default: false
+      create:
+        description: Create CMS row if slug is missing (needs category in brief)
+        required: false
+        type: boolean
+        default: false
+  repository_dispatch:
+    types: [import-project]
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: true
+      PAYLOAD_DISABLE_PUSH: "1"
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+      REVALIDATION_TOKEN: ${{ secrets.REVALIDATION_TOKEN }}
+      NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Import project
+        run: |
+          SLUG="${{ github.event.inputs.slug || github.event.client_payload.slug }}"
+          FLAGS=()
+          if [ "${{ github.event.inputs.skip_media || github.event.client_payload.skip_media }}" = "true" ]; then
+            FLAGS+=(--skip-media)
+          fi
+          if [ "${{ github.event.inputs.create || github.event.client_payload.create }}" = "true" ]; then
+            FLAGS+=(--create)
+          fi
+          pnpm import:project -- "content/imports/${SLUG}" "${FLAGS[@]}"
