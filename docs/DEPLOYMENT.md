@@ -60,6 +60,7 @@ DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-1-...pooler.supabase.com
 | `PAYLOAD_SECRET` | случайный 64-символьный hex (`openssl`/`crypto.randomBytes(32)`) | шифрование сессий Payload — **не менять после первого деплоя** |
 | `NEXT_PUBLIC_SITE_URL` | `https://erythro.ai` | canonical / OG |
 | `REVALIDATION_TOKEN` | (опционально) | для On-Demand Revalidation из n8n — добавить позже |
+| `SMTP_PASS` | пароль ящика Hostinger `order@erythro.ai` | форма шлёт с `order@erythro.ai` на email из Site Settings → Contacts |
 
 Локально те же значения лежат в `.env` (он в `.gitignore`, в репозиторий не попадает).
 
@@ -114,6 +115,7 @@ pnpm install --lockfile-only
 2. `https://<домен>/admin` открывается, можно войти / создать админа.
 3. Главная страница рендерится, контент тянется из Supabase (en/ru/he, тема, cookie-баннер).
 4. **Runtime Logs** без ошибок 500 / подключения к БД.
+5. Контактная форма: заявка в `/admin` **и** письмо на `order@erythro.ai` (см. §13, PIT-020).
 
 ---
 
@@ -137,6 +139,8 @@ pnpm install --lockfile-only
       больше не нагружается на каждый запрос. Куки `NEXT_LOCALE` по-прежнему читаются вне кэша,
       поэтому запоминание языка не затронуто. `REVALIDATION_TOKEN` + ручной POST `/api/revalidate`
       оставлены как резервный способ сброса (например, из n8n).
+- [x] **Почта контактной формы.** Hostinger `order@erythro.ai`; MX/SPF/DKIM в Vercel DNS;
+      `SMTP_PASS` + `src/lib/contactNotification.ts`. Проверено 2026-08-14 (см. §13, PIT-020).
 
 ---
 
@@ -310,5 +314,49 @@ URL вычисляется в afterRead-хуке, так что ссылка ч�
 Последующие продуктовые изменения (splash/contact modal, Hero/Services/Cases video из CMS,
 mobile stacking на главной, страница `/portfolio` и её GSAP/бургер) зафиксированы в
 **`PLAYBOOK.md` §9 — «Хроника после базового деплоя»**.
+
+---
+
+## 13. Почта контактной формы (Hostinger + Vercel DNS)
+
+Проверено **2026-08-14**: входящие с Gmail и заказы с `https://erythro.ai` доходят на
+`order@erythro.ai`. Заявка по-прежнему сохраняется в Payload (`contact-submissions`).
+
+### 13.1. Куда писать DNS
+
+Nameservers домена — **Vercel**, не Hostinger. Записи почты добавляются в
+**Vercel → Domains → `erythro.ai` → DNS**. Автоподключение в hPanel не сработает
+(Hostinger: [manual domain setup](https://www.hostinger.com/support/8650765-set-up-a-domain-for-hostinger-email/)).
+ALIAS/CAA сайта не трогать.
+
+| Type | Name | Priority | Value |
+|---|---|---|---|
+| MX | *(пусто)* | 5 | `mx1.hostinger.com` |
+| MX | *(пусто)* | 10 | `mx2.hostinger.com` |
+| TXT | *(пусто)* | — | `v=spf1 include:_spf.mail.hostinger.com ~all` |
+| CNAME | `hostingermail-a._domainkey` | — | `hostingermail-a.dkim.mail.hostinger.com` |
+| CNAME | `hostingermail-b._domainkey` | — | `hostingermail-b.dkim.mail.hostinger.com` |
+| CNAME | `hostingermail-c._domainkey` | — | `hostingermail-c.dkim.mail.hostinger.com` |
+| TXT | `_dmarc` | — | `v=DMARC1; p=none; rua=mailto:order@erythro.ai` |
+
+В Name для DKIM только `hostingermail-a._domainkey`, без `.erythro.ai`. После сохранения —
+Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24 ч на пропагацию).
+
+### 13.2. Как сайт шлёт письмо
+
+`POST /api/contact` (`src/app/api/contact/route.ts`):
+
+1. Пишет документ в коллекцию `contact-submissions` (админка).
+2. Читает Site Settings → Contacts → Email.
+3. Шлёт SMTP через `src/lib/contactNotification.ts`: **from** `order@erythro.ai`,
+   **to** = email из Site Settings **и** `order@erythro.ai` (без дублей), Reply-To = email посетителя.
+
+Транспорт: `smtp.hostinger.com:465` (fallback 587 STARTTLS). Пароль ящика — Vercel env
+**`SMTP_PASS`** (Production + Preview). Опционально: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
+`CONTACT_FROM_EMAIL`, `CONTACT_NOTIFY_EMAIL`. Значение пароля в git не класть.
+
+Если заявка есть в админке, а письма нет — смотреть Runtime Logs `[api/contact]` /
+`[contactNotification]` (PIT-020). Payload warning «No email adapter provided» сам по себе
+не отправляет почту: нужен наш SMTP-код на `main`, не адаптер Payload.
 
 ---
