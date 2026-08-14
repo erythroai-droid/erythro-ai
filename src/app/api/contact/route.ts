@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { resolveNotifyRecipients, sendContactNotification } from '@/lib/contactNotification'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -38,6 +39,26 @@ export async function POST(request: NextRequest) {
       collection: 'contact-submissions',
       data: { name, email, phone, message, locale },
     })
+
+    const settings = await payload.findGlobal({
+      slug: 'site-settings',
+      depth: 0,
+      overrideAccess: true,
+    })
+    const notifyTo = resolveNotifyRecipients(
+      typeof settings?.email === 'string' ? settings.email : null,
+    )
+    const mailed = await sendContactNotification(notifyTo, {
+      name,
+      email,
+      phone,
+      message,
+      locale,
+    })
+    if (!mailed.sent) {
+      console.error('[api/contact] saved submission but email was not sent:', mailed.reason)
+    }
+
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[api/contact] Failed to save submission:', err)

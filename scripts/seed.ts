@@ -22,7 +22,7 @@ const LOCALES = ['en', 'ru', 'he'] as const
 type Locale = (typeof LOCALES)[number]
 
 const SITE = {
-  email: 'erythro.ai@gmail.com',
+  email: 'order@erythro.ai',
   phone: '+972509312746',
   phoneDisplay: '+972 50 931 27 46',
   facebook: 'https://facebook.com/erythro.ai',

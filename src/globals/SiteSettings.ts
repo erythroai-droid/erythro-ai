@@ -14,7 +14,14 @@ export const SiteSettings: GlobalConfig = {
         {
           label: 'Contacts',
           fields: [
-            { name: 'email', type: 'text', admin: { description: 'e.g. erythro.ai@gmail.com' } },
+            {
+              name: 'email',
+              type: 'text',
+              admin: {
+                description:
+                  'Shown on the site. Contact form notifications are sent here. Sending mailbox is Hostinger order@erythro.ai.',
+              },
+            },
             {
               name: 'phone',
               type: 'text',
