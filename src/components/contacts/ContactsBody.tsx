@@ -3,6 +3,7 @@
 import React, { useRef, useState } from 'react'
 import { useSiteContent } from '@/components/SiteContentProvider'
 import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
+import { ContactSendingPanel } from '@/components/ContactSendingPanel'
 import { contactForm } from '@/translations'
 import { contactsPage, tContacts } from '@/lib/contactsPage'
 import {
@@ -270,6 +271,8 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                     {t(form.close)}
                   </button>
                 </div>
+              ) : status === 'sending' ? (
+                <ContactSendingPanel label={t(form.sending)} tone={isLight ? 'light' : 'dark'} />
               ) : (
                 <>
                   <h2
@@ -410,10 +413,9 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
 
                     <button
                       type="submit"
-                      disabled={status === 'sending'}
-                      className="mt-2 w-full cursor-pointer rounded-[40px] bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase tracking-widest text-white shadow-none transition-[box-shadow,transform,opacity] duration-300 ease-out hover:shadow-[0_3px_20px_0_rgba(229,36,33,0.45)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-none"
+                      className="mt-2 w-full cursor-pointer rounded-[40px] bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase tracking-widest text-white shadow-none transition-[box-shadow,transform,opacity] duration-300 ease-out hover:shadow-[0_3px_20px_0_rgba(229,36,33,0.45)]"
                     >
-                      {status === 'sending' ? t(form.sending) : t(form.submit)}
+                      {t(form.submit)}
                     </button>
                   </form>
                 </>
