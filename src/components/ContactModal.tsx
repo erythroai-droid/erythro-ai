@@ -10,6 +10,7 @@ import {
   type ContactFormValues,
 } from '@/lib/contactFormValidation'
 import ContactPrivacyConsent from './ContactPrivacyConsent'
+import { ContactSendingPanel } from './ContactSendingPanel'
 
 interface ContactModalContextValue {
   open: () => void
@@ -177,7 +178,7 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
           </svg>
         </button>
 
-        {status !== 'success' && (
+        {status !== 'success' && status !== 'sending' && (
           <h2 id={titleId} className="mb-6 max-w-[85%] font-semibold normal-case tracking-normal text-[22px] leading-snug text-gold-100 sm:text-[24px]">
             {t(form.title)}
           </h2>
@@ -199,6 +200,8 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
               {t(form.close)}
             </button>
           </div>
+        ) : status === 'sending' ? (
+          <ContactSendingPanel label={t(form.sending)} tone="dark" />
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <div>
@@ -333,10 +336,9 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
 
             <button
               type="submit"
-              disabled={status === 'sending'}
-              className="mt-2 w-full rounded-[40px] bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase tracking-widest text-white transition-all hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-2 w-full rounded-[40px] bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase tracking-widest text-white transition-all hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)]"
             >
-              {status === 'sending' ? t(form.sending) : t(form.submit)}
+              {t(form.submit)}
             </button>
           </form>
         )}
