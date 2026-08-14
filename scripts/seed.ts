@@ -321,6 +321,29 @@ async function run() {
 
   // Portfolio projects (/portfolio + /portfolio/[slug])
   // Media URLs stay as public paths via frontend fallback until uploaded in admin.
+  // `category` is a relationship — resolve stable `value` → document id (seeded by migration).
+  const categoryDocs = await payload.find({
+    collection: 'portfolio-categories',
+    limit: 100,
+    depth: 0,
+    overrideAccess: true,
+  })
+  const categoryIdByValue = new Map<string, number>()
+  for (const doc of categoryDocs.docs as { id?: unknown; value?: unknown }[]) {
+    if (typeof doc.value === 'string' && typeof doc.id === 'number') {
+      categoryIdByValue.set(doc.value, doc.id)
+    }
+  }
+  const resolveCategoryId = (value: string) => {
+    const id = categoryIdByValue.get(value)
+    if (typeof id !== 'number') {
+      throw new Error(
+        `portfolio-categories missing value="${value}". Ensure migrations have run before seeding.`,
+      )
+    }
+    return id
+  }
+
   await seedCollection(
     payload,
     'portfolio-projects',
@@ -328,7 +351,7 @@ async function run() {
       PORTFOLIO_PROJECTS.map((project, i) => ({
         slug: project.slug,
         title: project.title[loc] || project.title.en,
-        category: project.category,
+        category: resolveCategoryId(project.category),
         categoryLabel: project.categoryLabel[loc] || project.categoryLabel.en,
         description: project.description[loc] || project.description.en,
         summary: lexicalFromText(project.summary[loc] || project.summary.en),

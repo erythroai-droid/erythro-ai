@@ -244,12 +244,17 @@ function mapPortfolioDoc(d: any): PortfolioProject {
 
   const categoryLabelFromDoc = locMapCms(d.categoryLabel)
   const categoryLabelFromCat = locMapCms(catDoc?.label)
-  const hasCategoryLabel = LOCALES.some(
-    (l) => Boolean(categoryLabelFromDoc[l]?.trim() || categoryLabelFromCat[l]?.trim()),
-  )
-  const categoryLabel = hasCategoryLabel
-    ? locMap(d.categoryLabel || catDoc?.label, fb.categoryLabel)
-    : fb.categoryLabel
+  // locale:'all' returns an object even when every locale is empty — do not use `||`
+  // on that object or we skip the related category label and keep the "Other" fallback.
+  const hasDocCategoryLabel = LOCALES.some((l) => Boolean(categoryLabelFromDoc[l]?.trim()))
+  const hasCatCategoryLabel = LOCALES.some((l) => Boolean(categoryLabelFromCat[l]?.trim()))
+  const categoryLabel =
+    hasDocCategoryLabel || hasCatCategoryLabel
+      ? locMap(
+          hasDocCategoryLabel ? d.categoryLabel : catDoc?.label,
+          hasCatCategoryLabel ? categoryLabelFromCat : fb.categoryLabel,
+        )
+      : fb.categoryLabel
 
   const seoTitle = locMapCms(d.seo?.title)
   const seoDescription = locMapCms(d.seo?.description)
@@ -666,7 +671,7 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v6'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v7'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
