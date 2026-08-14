@@ -350,9 +350,22 @@ export default [
 3. **Кнопка поверх full-screen меню** должна жить в stacking context с `z-index` выше
    оверлея (родитель с `z-[70]`), иначе `z-index` на ребёнке не выигрывает у sibling-оверлея.
 4. **PowerShell**: коммит-сообщения через файл + `git commit -F` (без bash heredoc).
+5. **Письма с формы ≠ запись в админке.** CMS save и SMTP — разные шаги. DNS почты при NS Vercel
+   живёт в Vercel DNS, не в Hostinger (PIT-020, `DEPLOYMENT.md` §13).
 
 ### 9.10. Hero Motion (кинематографические заголовки)
 Утверждены 4 кадра вращающихся headline в Hero (`HeroMotionText`). Полное описание кадров,
 outline SVG, адаптива, z-index меню и правил выхода из красных плашек:
 
 → **[docs/HERO_MOTION.md](./HERO_MOTION.md)**
+
+### 9.11. Почта заказов с сайта (Hostinger)
+
+Контактная форма всегда писала в коллекцию `contact-submissions` (видно в `/admin`). Письмо на
+`order@erythro.ai` появилось после двух шагов (2026-08-14):
+
+1. MX/SPF/DKIM/DMARC в **Vercel DNS** (nameservers не Hostinger — автоконнект в hPanel бесполезен).
+2. SMTP из `POST /api/contact` через `src/lib/contactNotification.ts` + `SMTP_PASS` на Vercel.
+   From: `order@erythro.ai`. To: Site Settings Contacts email и `order@erythro.ai`.
+
+Проверено на проде: письма с сайта доходят. Журнал и таблица DNS: `DEPLOYMENT.md` §13. Грабли: PIT-020.
