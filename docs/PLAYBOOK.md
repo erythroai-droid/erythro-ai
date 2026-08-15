@@ -366,6 +366,7 @@ outline SVG, адаптива, z-index меню и правил выхода и�
 
 1. MX/SPF/DKIM/DMARC в **Vercel DNS** (nameservers не Hostinger — автоконнект в hPanel бесполезен).
 2. SMTP из `POST /api/contact` через `src/lib/contactNotification.ts` + `SMTP_PASS` на Vercel.
-   From: `order@erythro.ai`. To: Site Settings Contacts email и `order@erythro.ai`.
+   From: `"Erythro.ai" <order@erythro.ai>`. To: Site Settings notify (contact / order).
+3. Если Hostinger → Spam, а forward на Gmail ок — PIT-021.
 
-Проверено на проде: письма с сайта доходят. Журнал и таблица DNS: `DEPLOYMENT.md` §13. Грабли: PIT-020.
+Проверено на проде: письма с сайта доходят. Журнал и таблица DNS: `DEPLOYMENT.md` §13. Грабли: PIT-020, PIT-021.

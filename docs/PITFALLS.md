@@ -320,6 +320,26 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 
 ---
 
+## PIT-021 — Contact form mail lands in Hostinger Spam (Gmail forward still works)
+
+**Tags:** `contact`, `email`, `smtp`, `hostinger`, `spam`  
+**Seen:** 2026-08-16. Mailbox `order@erythro.ai`; forward to Gmail OK.
+
+**Symptom:** Form succeeds; row in Contact Submissions; message in Hostinger **Spam**, not Inbox. Forwarding to Gmail still delivers.
+
+**Cause:** Not broken DNS (MX/SPF/DKIM/DMARC green). Hostinger’s local filter often scores **self-SMTP** poorly: From `order@erythro.ai` → To same mailbox with Reply-To = visitor’s external address. Gmail via forward uses different scoring.
+
+**Fix (ops — do this first):**
+1. Hostinger webmail: open spam → **Not spam** / whitelist.
+2. Filter: From contains `order@erythro.ai` or Subject contains `Erythro.ai contact` / `Erythro.ai order` → Inbox / never spam.
+3. Optional: Site Settings notify → Gmail; keep `order@erythro.ai` as SMTP From only.
+
+**Fix (code):** From header is `"Erythro.ai" <order@…>` (display name + mailbox), named Reply-To, aligned envelope, `Auto-Submitted` headers.
+
+**Prevent:** Prefer reading form alerts in Gmail (or a dedicated notify address), not the same Hostinger mailbox used as SMTP From.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
