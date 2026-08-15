@@ -570,20 +570,38 @@ export interface PortfolioProject {
    * Hero summary on the project page (shown only in the hero). Rich text editor.
    */
   summary: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
     [k: string]: unknown;
-  } | unknown[] | string | number | boolean | null;
+  };
   /**
    * Optional text under the project title in the body section. Leave empty to hide. Rich text editor.
    */
-  subtitle?:
-    | {
+  subtitle?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
         [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   /**
    * e.g. "2025" or "2024 — 2025"
    */
@@ -614,7 +632,7 @@ export interface PortfolioProject {
    */
   heroMedia?: (number | null) | Media;
   /**
-   * Hero image or video for mobile (<1024px). Falls back to desktop hero if empty.
+   * Hero image or video for mobile (<1024px). Prefer 1080×1920 (9:16). Falls back to desktop hero if empty.
    */
   heroMediaMobile?: (number | null) | Media;
   body?:
@@ -626,8 +644,20 @@ export interface PortfolioProject {
                * Body paragraph (rich text)
                */
               text: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
                 [k: string]: unknown;
-              } | unknown[] | string | number | boolean | null;
+              };
               id?: string | null;
             }[]
           | null;
@@ -689,6 +719,10 @@ export interface ContactSubmission {
   email: string;
   phone?: string | null;
   message: string;
+  /**
+   * Which site form created this submission
+   */
+  source?: ('contact' | 'order') | null;
   /**
    * Site language the visitor used
    */
@@ -1361,9 +1395,42 @@ export interface Footer {
 export interface SiteSetting {
   id: number;
   /**
-   * e.g. erythro.ai@gmail.com
+   * Address book for the site. Use the dropdowns below to choose display and form notification targets. Outgoing mail still sends from Hostinger order@erythro.ai.
+   */
+  emails?:
+    | {
+        /**
+         * e.g. Orders, Privacy, General
+         */
+        label?: string | null;
+        address: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Legacy single email — synced from Display email (footer).
    */
   email?: string | null;
+  /**
+   * Shown in the site footer.
+   */
+  displayEmailFooter?: string | null;
+  /**
+   * Shown on /contacts.
+   */
+  displayEmailContacts?: string | null;
+  /**
+   * Used on legal pages and in the contact-form privacy notice (replaces the hardcoded address in copy).
+   */
+  displayEmailLegal?: string | null;
+  /**
+   * Contacts page form and general “Leave a message” modal.
+   */
+  notifyEmailContact?: string | null;
+  /**
+   * CTAs from Solutions section and /order/[slug].
+   */
+  notifyEmailOrder?: string | null;
   /**
    * Raw phone for tel: link, e.g. +972509312746
    */
@@ -1383,6 +1450,9 @@ export interface SiteSetting {
   cookieMessage?: string | null;
   cookieAccept?: string | null;
   cookieDecline?: string | null;
+  /**
+   * Document / Open Graph title (per locale)
+   */
   seoTitle?: string | null;
   seoDescription?: string | null;
   /**

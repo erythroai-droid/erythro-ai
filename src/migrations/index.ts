@@ -20,6 +20,7 @@ import * as migration_20260808_020000_site_settings_seo_title_localized from './
 import * as migration_20260809_010000_hero_background_image_mobile from './20260809_010000_hero_background_image_mobile'
 import * as migration_20260810_010000_portfolio_project_subtitle from './20260810_010000_portfolio_project_subtitle'
 import * as migration_20260811_010000_portfolio_project_richtext from './20260811_010000_portfolio_project_richtext'
+import * as migration_20260815_010000_site_settings_emails from './20260815_010000_site_settings_emails'
 
 export const migrations = [
   {
@@ -131,5 +132,10 @@ export const migrations = [
     up: migration_20260811_010000_portfolio_project_richtext.up,
     down: migration_20260811_010000_portfolio_project_richtext.down,
     name: '20260811_010000_portfolio_project_richtext',
+  },
+  {
+    up: migration_20260815_010000_site_settings_emails.up,
+    down: migration_20260815_010000_site_settings_emails.down,
+    name: '20260815_010000_site_settings_emails',
   },
 ]

@@ -1,9 +1,11 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-/** Hostinger mailbox used to send contact-form notifications. */
+/** Hostinger mailbox used as SMTP From for contact-form notifications. */
 export const CONTACT_MAILBOX = 'order@erythro.ai'
 const HOSTINGER_SMTP_HOST = 'smtp.hostinger.com'
 const HOSTINGER_SMTP_PORT = 465
+
+export type ContactFormSource = 'contact' | 'order'
 
 export type ContactNotificationInput = {
   name: string
@@ -11,14 +13,62 @@ export type ContactNotificationInput = {
   phone?: string
   message: string
   locale?: string
+  source?: ContactFormSource
+}
+
+export type SiteEmailSettings = {
+  email?: string | null
+  emails?: Array<{ label?: string | null; address?: string | null } | null> | null
+  displayEmailFooter?: string | null
+  displayEmailContacts?: string | null
+  displayEmailLegal?: string | null
+  notifyEmailContact?: string | null
+  notifyEmailOrder?: string | null
 }
 
 export function isUsableEmail(value: string | null | undefined): value is string {
   return Boolean(value && EMAIL_RE.test(value.trim()))
 }
 
-/** Inbox list: Site Settings email plus Hostinger mailbox, de-duplicated. */
-export function resolveNotifyRecipients(settingsEmail?: string | null): string[] {
+export function listSiteEmailAddresses(settings?: SiteEmailSettings | null): string[] {
+  const out: string[] = []
+  const add = (value: string | null | undefined) => {
+    const email = value?.trim()
+    if (!isUsableEmail(email)) return
+    const key = email.toLowerCase()
+    if (!out.some((item) => item.toLowerCase() === key)) out.push(email)
+  }
+  if (Array.isArray(settings?.emails)) {
+    for (const row of settings.emails) add(row?.address)
+  }
+  add(settings?.email)
+  return out
+}
+
+function firstSiteEmail(settings?: SiteEmailSettings | null): string {
+  return listSiteEmailAddresses(settings)[0] || CONTACT_MAILBOX
+}
+
+export function resolveDisplayEmail(
+  settings: SiteEmailSettings | null | undefined,
+  surface: 'footer' | 'contacts' | 'legal',
+): string {
+  const pick =
+    surface === 'footer'
+      ? settings?.displayEmailFooter
+      : surface === 'contacts'
+        ? settings?.displayEmailContacts
+        : settings?.displayEmailLegal
+  if (isUsableEmail(pick)) return pick.trim()
+  if (isUsableEmail(settings?.email)) return settings!.email!.trim()
+  return firstSiteEmail(settings)
+}
+
+/** Inbox for a form source. CMS notify field wins; env is fallback only when CMS is empty. */
+export function resolveNotifyRecipients(
+  settings?: SiteEmailSettings | string | null,
+  source: ContactFormSource = 'contact',
+): string[] {
   const recipients: string[] = []
   const add = (value: string | null | undefined) => {
     const email = value?.trim()
@@ -26,15 +76,33 @@ export function resolveNotifyRecipients(settingsEmail?: string | null): string[]
     const key = email.toLowerCase()
     if (!recipients.some((item) => item.toLowerCase() === key)) recipients.push(email)
   }
-  add(settingsEmail)
-  add(process.env.CONTACT_NOTIFY_EMAIL)
-  add(CONTACT_MAILBOX)
+
+  if (typeof settings === 'string' || settings == null) {
+    add(typeof settings === 'string' ? settings : null)
+    add(process.env.CONTACT_NOTIFY_EMAIL)
+    if (!recipients.length) add(CONTACT_MAILBOX)
+    return recipients
+  }
+
+  const primary =
+    source === 'order' ? settings.notifyEmailOrder : settings.notifyEmailContact
+  add(primary)
+  if (!recipients.length) {
+    add(settings.displayEmailFooter)
+    add(settings.email)
+    add(firstSiteEmail(settings))
+  }
+  if (!recipients.length) add(process.env.CONTACT_NOTIFY_EMAIL)
+  if (!recipients.length) add(CONTACT_MAILBOX)
   return recipients
 }
 
 /** @deprecated use resolveNotifyRecipients */
-export function resolveNotifyEmail(settingsEmail?: string | null): string {
-  return resolveNotifyRecipients(settingsEmail)[0] || CONTACT_MAILBOX
+export function resolveNotifyEmail(
+  settingsEmail?: string | null,
+  source: ContactFormSource = 'contact',
+): string {
+  return resolveNotifyRecipients(settingsEmail, source)[0] || CONTACT_MAILBOX
 }
 
 function escapeHtml(value: string): string {
@@ -46,8 +114,13 @@ function escapeHtml(value: string): string {
 }
 
 export function buildContactEmail(input: ContactNotificationInput): { subject: string; text: string; html: string } {
-  const subject = `Erythro.ai contact: ${input.name}`
+  const source = input.source === 'order' ? 'order' : 'contact'
+  const subject =
+    source === 'order'
+      ? `Erythro.ai order inquiry: ${input.name}`
+      : `Erythro.ai contact: ${input.name}`
   const lines = [
+    `Source: ${source}`,
     `Name: ${input.name}`,
     `Email: ${input.email}`,
     `Phone: ${input.phone?.trim() || '—'}`,
@@ -57,6 +130,7 @@ export function buildContactEmail(input: ContactNotificationInput): { subject: s
   ]
   const text = lines.join('\n')
   const html = `
+    <p><strong>Source:</strong> ${escapeHtml(source)}</p>
     <p><strong>Name:</strong> ${escapeHtml(input.name)}</p>
     <p><strong>Email:</strong> ${escapeHtml(input.email)}</p>
     <p><strong>Phone:</strong> ${escapeHtml(input.phone?.trim() || '—')}</p>

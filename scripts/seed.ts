@@ -23,6 +23,15 @@ type Locale = (typeof LOCALES)[number]
 
 const SITE = {
   email: 'order@erythro.ai',
+  emails: [
+    { label: 'Orders', address: 'order@erythro.ai' },
+    { label: 'Privacy', address: 'erythro.ai@gmail.com' },
+  ],
+  displayEmailFooter: 'order@erythro.ai',
+  displayEmailContacts: 'order@erythro.ai',
+  displayEmailLegal: 'erythro.ai@gmail.com',
+  notifyEmailContact: 'order@erythro.ai',
+  notifyEmailOrder: 'order@erythro.ai',
   phone: '+972509312746',
   phoneDisplay: '+972 50 931 27 46',
   facebook: 'https://facebook.com/erythro.ai',

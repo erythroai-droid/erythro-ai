@@ -1,9 +1,11 @@
 'use client'
 
 import React from 'react'
+import { useSiteContent } from '@/components/SiteContentProvider'
 import {
   tLegal,
   tLegalList,
+  withLegalDisplayEmail,
   type LegalPage,
 } from '@/lib/legalPages'
 
@@ -33,6 +35,9 @@ function formatUpdatedAt(value: string, locale: string): string {
 }
 
 export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyProps) {
+  const content = useSiteContent()
+  const legalEmail = content.siteSettings.emailLegal || content.siteSettings.email
+  const tx = (value: string) => withLegalDisplayEmail(value, legalEmail)
   const isLight = theme === 'light'
   const title = tLegal(page.title, locale)
   const bodyTone = isLight ? 'text-coal-900/85' : 'text-white/80'
@@ -64,15 +69,15 @@ export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyPro
             {tLegal(page.updatedLabel, locale)}: {formatUpdatedAt(page.updatedAt, locale)}
           </p>
           <p className={`m-0 w-full font-sans text-lg font-light leading-8 whitespace-normal md:text-xl md:leading-9 ${bodyTone}`}>
-            {tLegal(page.intro, locale)}
+            {tx(tLegal(page.intro, locale))}
           </p>
         </header>
 
         <div className="flex flex-col gap-10 md:gap-12">
           {page.sections.map((section) => {
             const heading = tLegal(section.heading, locale)
-            const paragraphs = tLegalList(section.paragraphs, locale)
-            const bullets = section.bullets ? tLegalList(section.bullets, locale) : []
+            const paragraphs = tLegalList(section.paragraphs, locale).map(tx)
+            const bullets = section.bullets ? tLegalList(section.bullets, locale).map(tx) : []
 
             return (
               <section key={heading} className="flex flex-col gap-4">
@@ -109,7 +114,7 @@ export default function LegalBody({ page, locale, theme = 'dark' }: LegalBodyPro
               isLight ? 'border-coal-900/10' : 'border-white/10'
             } ${accentTone}`}
           >
-            {tLegal(page.closing, locale)}
+            {tx(tLegal(page.closing, locale))}
           </p>
         )}
       </article>

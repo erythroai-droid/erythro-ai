@@ -20,7 +20,7 @@ function signalNavStart() {
 export function navigateCtaHref(
   href: string,
   opts?: {
-    openContact?: () => void
+    openContact?: (source?: 'contact' | 'order') => void
     /** Scroll/pin helpers for in-page anchors (navbar-style). */
     onHash?: (hash: string) => void
   },

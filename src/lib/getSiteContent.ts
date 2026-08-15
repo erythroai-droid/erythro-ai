@@ -488,7 +488,37 @@ export async function getSiteContent(): Promise<SiteContent> {
     }
 
     // --- Site settings (contacts + cookie + page heroes) ---
-    if (settings?.email) content.siteSettings.email = settings.email
+    const emailRows = Array.isArray(settings?.emails)
+      ? settings.emails
+          .map((row: { label?: unknown; address?: unknown }) => ({
+            label: typeof row?.label === 'string' ? row.label.trim() : '',
+            address: typeof row?.address === 'string' ? row.address.trim() : '',
+          }))
+          .filter((row: { address: string }) => Boolean(row.address))
+      : []
+    if (emailRows.length) content.siteSettings.emails = emailRows
+
+    const pickEmail = (...candidates: unknown[]) => {
+      for (const value of candidates) {
+        if (typeof value === 'string' && value.trim()) return value.trim()
+      }
+      return ''
+    }
+    const fallbackEmail =
+      pickEmail(settings?.email, emailRows[0]?.address) || content.siteSettings.email
+    const emailFooter = pickEmail(settings?.displayEmailFooter, fallbackEmail)
+    const emailContacts = pickEmail(settings?.displayEmailContacts, emailFooter, fallbackEmail)
+    const emailLegal = pickEmail(settings?.displayEmailLegal, fallbackEmail, emailFooter)
+    const notifyContact = pickEmail(settings?.notifyEmailContact, emailFooter, fallbackEmail)
+    const notifyOrder = pickEmail(settings?.notifyEmailOrder, emailFooter, fallbackEmail)
+
+    content.siteSettings.email = emailFooter
+    content.siteSettings.emailFooter = emailFooter
+    content.siteSettings.emailContacts = emailContacts
+    content.siteSettings.emailLegal = emailLegal
+    content.siteSettings.notifyEmailContact = notifyContact
+    content.siteSettings.notifyEmailOrder = notifyOrder
+
     if (settings?.phone) content.siteSettings.phone = settings.phone
     if (settings?.phoneDisplay) content.siteSettings.phoneDisplay = settings.phoneDisplay
     if (settings?.facebook) content.siteSettings.facebook = settings.facebook

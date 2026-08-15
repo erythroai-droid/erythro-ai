@@ -79,14 +79,14 @@ function SolutionCard({
       return
     }
     if (isContactModalHref(href)) {
-      openContact()
+      openContact('order')
       return
     }
     if (href.startsWith('/') && !href.startsWith('//')) {
       router.push(href)
       return
     }
-    navigateCtaHref(href, { openContact })
+    navigateCtaHref(href, { openContact: () => openContact('order') })
   }
 
   const cardWidthClass = isFeatured ? 'w-[300px] flex-none' : 'w-[270px] flex-none'

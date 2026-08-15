@@ -106,7 +106,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, locale, privacyConsent: true }),
+        body: JSON.stringify({ ...values, locale, privacyConsent: true, source: 'contact' }),
       })
       if (!res.ok) throw new Error('Request failed')
       setStatus('success')
@@ -122,8 +122,8 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
     {
       id: 'email',
       label: t(footer.emailLabel),
-      value: site.email,
-      href: `mailto:${site.email}`,
+      value: site.emailContacts || site.email,
+      href: `mailto:${(site.emailContacts || site.email).toLowerCase()}`,
       ltr: true,
     },
     {

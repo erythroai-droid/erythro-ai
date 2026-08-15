@@ -11,9 +11,10 @@ import {
 } from '@/lib/contactFormValidation'
 import ContactPrivacyConsent from './ContactPrivacyConsent'
 import { ContactSendingPanel } from './ContactSendingPanel'
+import type { ContactFormSource } from '@/lib/contactNotification'
 
 interface ContactModalContextValue {
-  open: () => void
+  open: (source?: ContactFormSource) => void
   close: () => void
 }
 
@@ -37,19 +38,31 @@ export function ContactModalProvider({
   children: React.ReactNode
 }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [source, setSource] = useState<ContactFormSource>('contact')
 
-  const open = useCallback(() => setIsOpen(true), [])
+  const open = useCallback((nextSource: ContactFormSource = 'contact') => {
+    setSource(nextSource === 'order' ? 'order' : 'contact')
+    setIsOpen(true)
+  }, [])
   const close = useCallback(() => setIsOpen(false), [])
 
   return (
     <ContactModalContext.Provider value={{ open, close }}>
       {children}
-      {isOpen && <ContactModal locale={locale} onClose={close} />}
+      {isOpen && <ContactModal locale={locale} source={source} onClose={close} />}
     </ContactModalContext.Provider>
   )
 }
 
-function ContactModal({ locale, onClose }: { locale: string; onClose: () => void }) {
+function ContactModal({
+  locale,
+  source,
+  onClose,
+}: {
+  locale: string
+  source: ContactFormSource
+  onClose: () => void
+}) {
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const form = contactForm
   const isRtl = locale === 'he'
@@ -125,7 +138,7 @@ function ContactModal({ locale, onClose }: { locale: string; onClose: () => void
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, locale, privacyConsent: true }),
+        body: JSON.stringify({ ...values, locale, privacyConsent: true, source }),
       })
       if (!res.ok) throw new Error('Request failed')
       setStatus('success')

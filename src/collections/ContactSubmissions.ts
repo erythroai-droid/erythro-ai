@@ -3,9 +3,9 @@ import type { CollectionConfig } from 'payload'
 export const ContactSubmissions: CollectionConfig = {
   slug: 'contact-submissions',
   labels: { singular: 'Contact Submission', plural: 'Contact Submissions' },
-  admin: {
+    admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'email', 'phone', 'createdAt'],
+    defaultColumns: ['name', 'email', 'source', 'phone', 'createdAt'],
     group: 'Content',
   },
   // Submissions are created server-side via the local API in /api/contact
@@ -21,6 +21,16 @@ export const ContactSubmissions: CollectionConfig = {
     { name: 'email', type: 'email', required: true },
     { name: 'phone', type: 'text' },
     { name: 'message', type: 'textarea', required: true },
+    {
+      name: 'source',
+      type: 'select',
+      defaultValue: 'contact',
+      options: [
+        { label: 'Contact / feedback', value: 'contact' },
+        { label: 'Solutions / Order', value: 'order' },
+      ],
+      admin: { description: 'Which site form created this submission', readOnly: true },
+    },
     {
       name: 'locale',
       type: 'text',
