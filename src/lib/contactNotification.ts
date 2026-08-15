@@ -163,9 +163,26 @@ function fromAddress(): string {
   )
 }
 
-async function sendViaResend(to: string | string[], replyTo: string, content: ReturnType<typeof buildContactEmail>): Promise<void> {
+/** Hostinger often spam-folders bare From; a clear display name helps. */
+function formatFromHeader(): string {
+  const addr = fromAddress()
+  if (addr.includes('<')) return addr
+  return `"Erythro.ai" <${addr}>`
+}
+
+function formatReplyTo(name: string, email: string): string {
+  const safeName = name.replace(/[\r\n"<>]/g, '').trim().slice(0, 80)
+  if (!safeName) return email
+  return `"${safeName}" <${email}>`
+}
+
+async function sendViaResend(
+  to: string | string[],
+  replyTo: string,
+  content: ReturnType<typeof buildContactEmail>,
+): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY?.trim()
-  const from = fromAddress()
+  const from = formatFromHeader()
   if (!apiKey) {
     throw new Error('RESEND_API_KEY is required for Resend')
   }
@@ -182,6 +199,10 @@ async function sendViaResend(to: string | string[], replyTo: string, content: Re
       subject: content.subject,
       text: content.text,
       html: content.html,
+      headers: {
+        'Auto-Submitted': 'auto-generated',
+        'X-Auto-Response-Suppress': 'All',
+      },
     }),
   })
   if (!res.ok) {
@@ -190,17 +211,25 @@ async function sendViaResend(to: string | string[], replyTo: string, content: Re
   }
 }
 
-async function sendViaSmtp(to: string | string[], replyTo: string, content: ReturnType<typeof buildContactEmail>): Promise<void> {
+async function sendViaSmtp(
+  to: string | string[],
+  replyTo: string,
+  content: ReturnType<typeof buildContactEmail>,
+): Promise<void> {
   const host = smtpHost()
   const user = smtpUser()
   const pass = process.env.SMTP_PASS?.trim()
-  const from = fromAddress()
+  const from = formatFromHeader()
+  const envelopeFrom = fromAddress().includes('<')
+    ? fromAddress().replace(/^.*<([^>]+)>.*$/, '$1').trim()
+    : fromAddress()
   if (!pass) {
     throw new Error('SMTP_PASS is required (Hostinger mailbox password for order@erythro.ai)')
   }
   const port = smtpPort()
   const nodemailer = await import('nodemailer')
   const createTransport = nodemailer.createTransport ?? nodemailer.default.createTransport
+  const recipients = Array.isArray(to) ? to : [to]
 
   const sendWith = async (usePort: number, secure: boolean) => {
     const transporter = createTransport({
@@ -211,11 +240,18 @@ async function sendViaSmtp(to: string | string[], replyTo: string, content: Retu
     })
     await transporter.sendMail({
       from,
-      to,
+      to: recipients,
       replyTo,
       subject: content.subject,
       text: content.text,
       html: content.html,
+      // Align envelope with authenticated mailbox (avoids SPF weirdness).
+      envelope: { from: envelopeFrom, to: recipients },
+      headers: {
+        'Auto-Submitted': 'auto-generated',
+        'X-Auto-Response-Suppress': 'All',
+        'X-Mailer': 'Erythro.ai contact form',
+      },
     })
   }
 
@@ -249,9 +285,11 @@ export async function sendContactNotification(
     }
   }
 
+  const replyTo = formatReplyTo(input.name, input.email)
+
   try {
-    if (hasSmtp) await sendViaSmtp(recipients, input.email, content)
-    else await sendViaResend(recipients, input.email, content)
+    if (hasSmtp) await sendViaSmtp(recipients, replyTo, content)
+    else await sendViaResend(recipients, replyTo, content)
     return { sent: true }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
