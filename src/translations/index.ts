@@ -851,15 +851,15 @@ export const contactForm = {
     ru: 'Закрыть',
     he: 'סגירה',
   },
-  /** Art. 11 notice — short disclaimer under contact forms */
+  /** Short Art. 11 purpose line — full details in Privacy Policy */
   notice: {
-    en: 'Providing your details is voluntary. We use them to handle your inquiry, prepare a commercial proposal, and contact you about the project. Data may be processed by our technical providers (Vercel, Hostinger, Supabase/PostgreSQL, n8n) and is not sold to unrelated third parties. You may request access to or deletion of your data under sections 13–14 of the Israeli Privacy Protection Law by emailing {{email}}.',
-    ru: 'Предоставление данных является добровольным. Мы используем их для обработки обращения, подготовки коммерческого предложения и связи по проекту. Данные могут обрабатываться нашими техническими провайдерами (Vercel, Hostinger, Supabase/PostgreSQL, n8n) и не передаются сторонним третьим лицам для их собственных целей. Вы вправе запросить ознакомление или удаление данных согласно ст. 13–14 Закона о защите частной жизни, написав на {{email}}.',
-    he: 'מסירת הפרטים היא וולונטרית. אנו משתמשים בהם לטיפול בפנייה, להכנת הצעה מסחרית וליצירת קשר בנוגע לפרויקט. המידע עשוי להיות מעובד על ידי ספקי השירות הטכניים שלנו (Vercel, Hostinger, Supabase/PostgreSQL, n8n) ואינו נמכר לצדדים שלישיים שאינם קשורים. ניתן לבקש עיון או מחיקה של המידע לפי סעיפים 13–14 לחוק הגנת הפרטיות בפנייה ל־{{email}}.',
+    en: 'Providing details is voluntary. We use them only to handle your inquiry and reply about the project.',
+    ru: 'Данные указываются добровольно. Мы используем их только для обработки обращения и ответа по проекту.',
+    he: 'מסירת הפרטים היא וולונטרית. אנו משתמשים בהם רק לטיפול בפנייה ולמענה בנוגע לפרויקט.',
   },
   consentPrefix: {
     en: 'I agree to the',
-    ru: 'Я выражаю согласие с',
+    ru: 'Согласен(на) с',
     he: 'אני מסכים/ה ל',
   },
   privacyLink: {
@@ -867,15 +867,32 @@ export const contactForm = {
     ru: 'Политикой конфиденциальности',
     he: 'מדיניות הפרטיות',
   },
+  /** Nominative title for trust line under submit */
+  privacyPolicy: {
+    en: 'Privacy Policy',
+    ru: 'Политика конфиденциальности',
+    he: 'מדיניות הפרטיות',
+  },
   consentSuffix: {
-    en: 'and to the processing of my personal data.',
-    ru: 'и обработкой моих персональных данных.',
+    en: 'and to processing my personal data.',
+    ru: 'и обработкой персональных данных.',
     he: 'ולעיבוד המידע האישי שלי.',
   },
   consentRequired: {
     en: 'Please confirm your consent to continue.',
     ru: 'Подтвердите согласие, чтобы продолжить.',
     he: 'יש לאשר הסכמה כדי להמשיך.',
+  },
+  /** Trust line under submit (lock icon) */
+  secureNote: {
+    en: 'Your data is protected. We do not share contacts with third parties —',
+    ru: 'Ваши данные защищены. Мы не передаём контакты третьим лицам —',
+    he: 'המידע שלכם מוגן. איננו מעבירים פרטי קשר לצדדים שלישיים —',
+  },
+  secureNoteEnd: {
+    en: '.',
+    ru: '.',
+    he: '.',
   },
 }
 
