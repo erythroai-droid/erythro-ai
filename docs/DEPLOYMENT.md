@@ -348,12 +348,15 @@ Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24
 
 1. Пишет документ в коллекцию `contact-submissions` (админка).
 2. Читает Site Settings → Contacts → Email.
-3. Шлёт SMTP через `src/lib/contactNotification.ts`: **from** `order@erythro.ai`,
-   **to** = email из Site Settings **и** `order@erythro.ai` (без дублей), Reply-To = email посетителя.
+3. Шлёт SMTP через `src/lib/contactNotification.ts`: **from** `"Erythro.ai" <order@erythro.ai>`
+   (display name + mailbox), **to** = Site Settings notify target(s), Reply-To = имя + email посетителя.
 
 Транспорт: `smtp.hostinger.com:465` (fallback 587 STARTTLS). Пароль ящика — Vercel env
 **`SMTP_PASS`** (Production + Preview). Опционально: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
 `CONTACT_FROM_EMAIL`, `CONTACT_NOTIFY_EMAIL`. Значение пароля в git не класть.
+
+Если письмо есть, но в **Spam** Hostinger (а пересылка на Gmail работает) — локальный фильтр
+ящика, не DNS. См. PIT-021: «не спам» / фильтр, либо notify → Gmail в Site Settings.
 
 Если заявка есть в админке, а письма нет — смотреть Runtime Logs `[api/contact]` /
 `[contactNotification]` (PIT-020). Payload warning «No email adapter provided» сам по себе
