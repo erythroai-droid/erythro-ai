@@ -10,7 +10,7 @@ import {
   type ContactFormValues,
 } from '@/lib/contactFormValidation'
 import ContactPrivacyConsent from './ContactPrivacyConsent'
-import { ContactSendingPanel } from './ContactSendingPanel'
+import { ContactSendSpinner } from './ContactSendingPanel'
 import type { ContactFormSource } from '@/lib/contactNotification'
 
 interface ContactModalContextValue {
@@ -191,7 +191,7 @@ function ContactModal({
           </svg>
         </button>
 
-        {status !== 'success' && status !== 'sending' && (
+        {status !== 'success' && (
           <h2 id={titleId} className="mb-6 max-w-[85%] font-semibold normal-case tracking-normal text-[22px] leading-snug text-gold-100 sm:text-[24px]">
             {t(form.title)}
           </h2>
@@ -213,146 +213,170 @@ function ContactModal({
               {t(form.close)}
             </button>
           </div>
-        ) : status === 'sending' ? (
-          <ContactSendingPanel label={t(form.sending)} tone="dark" />
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-            <div>
-              <label htmlFor="contact-modal-name" className={labelClass}>
-                {t(form.name)}
-                {requiredMark}
-              </label>
-              <input
-                ref={firstFieldRef}
-                id="contact-modal-name"
-                name="name"
-                type="text"
-                required
-                value={values.name}
-                onChange={handleChange}
-                placeholder={t(form.name)}
-                className={inputClass('name')}
-                autoComplete="name"
-                autoCapitalize="words"
-                enterKeyHint="next"
-                aria-required="true"
-                aria-invalid={Boolean(fieldErrors.name) || undefined}
-                aria-describedby={fieldErrors.name ? 'contact-modal-name-error' : undefined}
-              />
-              {fieldErrors.name ? (
-                <p id="contact-modal-name-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
-                  {fieldErrorMessage('name')}
-                </p>
-              ) : null}
-            </div>
-            <div>
-              <label htmlFor="contact-modal-email" className={labelClass}>
-                {t(form.email)}
-                {requiredMark}
-              </label>
-              <input
-                id="contact-modal-email"
-                name="email"
-                type="email"
-                inputMode="email"
-                required
-                value={values.email}
-                onChange={handleChange}
-                placeholder={t(form.email)}
-                className={inputClass('email')}
-                autoComplete="email"
-                autoCapitalize="off"
-                autoCorrect="off"
-                spellCheck={false}
-                enterKeyHint="next"
-                dir="ltr"
-                aria-required="true"
-                aria-invalid={Boolean(fieldErrors.email) || undefined}
-                aria-describedby={fieldErrors.email ? 'contact-modal-email-error' : undefined}
-              />
-              {fieldErrors.email ? (
-                <p id="contact-modal-email-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
-                  {fieldErrorMessage('email')}
-                </p>
-              ) : null}
-            </div>
-            <div>
-              <label htmlFor="contact-modal-phone" className={labelClass}>
-                {t(form.phone)}
-              </label>
-              <input
-                id="contact-modal-phone"
-                name="phone"
-                type="tel"
-                inputMode="tel"
-                value={values.phone}
-                onChange={handleChange}
-                placeholder={t(form.phone)}
-                className={inputClass('phone')}
-                autoComplete="tel"
-                autoCapitalize="off"
-                autoCorrect="off"
-                spellCheck={false}
-                enterKeyHint="next"
-                dir="ltr"
-              />
-            </div>
-            <div>
-              <label htmlFor="contact-modal-message" className={labelClass}>
-                {t(form.message)}
-                {requiredMark}
-              </label>
-              <textarea
-                id="contact-modal-message"
-                name="message"
-                required
-                value={values.message}
-                onChange={handleChange}
-                placeholder={t(form.message)}
-                rows={4}
-                className={`${inputClass('message')} resize-none`}
-                enterKeyHint="send"
-                aria-required="true"
-                aria-invalid={Boolean(fieldErrors.message) || status === 'error' || undefined}
-                aria-describedby={
-                  fieldErrors.message
-                    ? 'contact-modal-message-error'
-                    : status === 'error'
-                      ? errorId
-                      : undefined
-                }
-              />
-              {fieldErrors.message ? (
-                <p id="contact-modal-message-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
-                  {fieldErrorMessage('message')}
-                </p>
-              ) : null}
-            </div>
-
-            {status === 'error' && (
-              <p id={errorId} role="alert" className="text-sm text-erythro-500">
-                {t(form.error)}
-              </p>
-            )}
-
-            <ContactPrivacyConsent
-              locale={locale}
-              theme="dark"
-              idPrefix="contact-modal"
-              checked={privacyConsent}
-              showRequiredError={consentError}
-              onCheckedChange={(next) => {
-                setPrivacyConsent(next)
-                if (next) setConsentError(false)
-              }}
-            />
-
-            <button
-              type="submit"
-              className="mt-2 w-full rounded-[40px] bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase tracking-widest text-white transition-all hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)]"
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-4"
+            noValidate
+            aria-busy={status === 'sending' || undefined}
+          >
+            <fieldset
+              disabled={status === 'sending'}
+              className={`m-0 flex min-w-0 flex-col gap-4 border-0 p-0 ${
+                status === 'sending' ? 'opacity-70' : ''
+              }`}
             >
-              {t(form.submit)}
-            </button>
+              <legend className="sr-only">{t(form.title)}</legend>
+              <div>
+                <label htmlFor="contact-modal-name" className={labelClass}>
+                  {t(form.name)}
+                  {requiredMark}
+                </label>
+                <input
+                  ref={firstFieldRef}
+                  id="contact-modal-name"
+                  name="name"
+                  type="text"
+                  required
+                  value={values.name}
+                  onChange={handleChange}
+                  placeholder={t(form.name)}
+                  className={inputClass('name')}
+                  autoComplete="name"
+                  autoCapitalize="words"
+                  enterKeyHint="next"
+                  aria-required="true"
+                  aria-invalid={Boolean(fieldErrors.name) || undefined}
+                  aria-describedby={fieldErrors.name ? 'contact-modal-name-error' : undefined}
+                />
+                {fieldErrors.name ? (
+                  <p id="contact-modal-name-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                    {fieldErrorMessage('name')}
+                  </p>
+                ) : null}
+              </div>
+              <div>
+                <label htmlFor="contact-modal-email" className={labelClass}>
+                  {t(form.email)}
+                  {requiredMark}
+                </label>
+                <input
+                  id="contact-modal-email"
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  required
+                  value={values.email}
+                  onChange={handleChange}
+                  placeholder={t(form.email)}
+                  className={inputClass('email')}
+                  autoComplete="email"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="next"
+                  dir="ltr"
+                  aria-required="true"
+                  aria-invalid={Boolean(fieldErrors.email) || undefined}
+                  aria-describedby={fieldErrors.email ? 'contact-modal-email-error' : undefined}
+                />
+                {fieldErrors.email ? (
+                  <p id="contact-modal-email-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                    {fieldErrorMessage('email')}
+                  </p>
+                ) : null}
+              </div>
+              <div>
+                <label htmlFor="contact-modal-phone" className={labelClass}>
+                  {t(form.phone)}
+                </label>
+                <input
+                  id="contact-modal-phone"
+                  name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  value={values.phone}
+                  onChange={handleChange}
+                  placeholder={t(form.phone)}
+                  className={inputClass('phone')}
+                  autoComplete="tel"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="next"
+                  dir="ltr"
+                />
+              </div>
+              <div>
+                <label htmlFor="contact-modal-message" className={labelClass}>
+                  {t(form.message)}
+                  {requiredMark}
+                </label>
+                <textarea
+                  id="contact-modal-message"
+                  name="message"
+                  required
+                  value={values.message}
+                  onChange={handleChange}
+                  placeholder={t(form.message)}
+                  rows={4}
+                  className={`${inputClass('message')} resize-none`}
+                  enterKeyHint="send"
+                  aria-required="true"
+                  aria-invalid={Boolean(fieldErrors.message) || status === 'error' || undefined}
+                  aria-describedby={
+                    fieldErrors.message
+                      ? 'contact-modal-message-error'
+                      : status === 'error'
+                        ? errorId
+                        : undefined
+                  }
+                />
+                {fieldErrors.message ? (
+                  <p id="contact-modal-message-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                    {fieldErrorMessage('message')}
+                  </p>
+                ) : null}
+              </div>
+
+              {status === 'error' && (
+                <p id={errorId} role="alert" className="text-sm text-erythro-500">
+                  {t(form.error)}
+                </p>
+              )}
+
+              <ContactPrivacyConsent
+                locale={locale}
+                theme="dark"
+                idPrefix="contact-modal"
+                checked={privacyConsent}
+                showRequiredError={consentError}
+                disabled={status === 'sending'}
+                onCheckedChange={(next) => {
+                  setPrivacyConsent(next)
+                  if (next) setConsentError(false)
+                }}
+              />
+
+              <button
+                type="submit"
+                className="mt-2 flex w-full items-center justify-center gap-2.5 rounded-[40px] bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase tracking-widest text-white transition-all hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)] disabled:cursor-wait disabled:hover:shadow-none"
+              >
+                {status === 'sending' ? (
+                  <>
+                    <ContactSendSpinner className="h-[18px] w-[18px] shrink-0" />
+                    <span>{t(form.sending)}</span>
+                  </>
+                ) : (
+                  t(form.submit)
+                )}
+              </button>
+            </fieldset>
+            {status === 'sending' ? (
+              <p className="sr-only" role="status" aria-live="polite">
+                {t(form.sending)}
+              </p>
+            ) : null}
           </form>
         )}
       </div>
