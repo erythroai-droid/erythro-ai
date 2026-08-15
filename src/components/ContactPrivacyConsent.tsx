@@ -2,7 +2,6 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { useSiteContent } from '@/components/SiteContentProvider'
 import { contactForm } from '@/translations'
 
 interface ContactPrivacyConsentProps {
@@ -16,7 +15,7 @@ interface ContactPrivacyConsentProps {
 }
 
 /**
- * Art. 11 notice + unchecked opt-in consent for contact forms (PPL 5741-1981).
+ * Short Art. 11 purpose line + opt-in consent (details live in Privacy Policy).
  */
 export default function ContactPrivacyConsent({
   locale,
@@ -27,15 +26,12 @@ export default function ContactPrivacyConsent({
   showRequiredError = false,
   disabled = false,
 }: ContactPrivacyConsentProps) {
-  const content = useSiteContent()
-  const legalEmail = content.siteSettings.emailLegal || content.siteSettings.email
   const t = (field: Record<string, string>) => field[locale] || field.en
   const form = contactForm
   const isLight = theme === 'light'
   const checkboxId = `${idPrefix}-privacy-consent`
   const noticeId = `${idPrefix}-privacy-notice`
   const errorId = `${idPrefix}-privacy-consent-error`
-  const notice = t(form.notice).replaceAll('{{email}}', legalEmail)
 
   const noticeClass = isLight ? 'text-coal-900/45' : 'text-white/40'
   const labelClass = isLight ? 'text-coal-900/70' : 'text-white/65'
@@ -47,17 +43,17 @@ export default function ContactPrivacyConsent({
     : 'border-white/40 bg-white/[0.04] accent-gold-500'
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-2">
       <p
         id={noticeId}
-        className={`m-0 text-[10px] font-extralight leading-[1.45] tracking-[0.01em] ${noticeClass}`}
+        className={`m-0 text-[10px] font-extralight leading-snug tracking-[0.01em] ${noticeClass}`}
       >
-        {notice}
+        {t(form.notice)}
       </p>
 
       <label
         htmlFor={checkboxId}
-        className={`flex items-start gap-2.5 text-[11px] font-light leading-snug ${labelClass} ${
+        className={`flex items-start gap-2 text-[11px] font-light leading-snug ${labelClass} ${
           disabled ? 'cursor-default opacity-70' : 'cursor-pointer'
         }`}
       >
@@ -72,7 +68,7 @@ export default function ContactPrivacyConsent({
           aria-invalid={showRequiredError || undefined}
           aria-describedby={`${noticeId}${showRequiredError ? ` ${errorId}` : ''}`}
           onChange={(e) => onCheckedChange(e.target.checked)}
-          className={`mt-0.5 h-4 w-4 shrink-0 rounded border ${boxClass} ${
+          className={`mt-0.5 h-3.5 w-3.5 shrink-0 rounded border ${boxClass} ${
             disabled ? 'cursor-default' : 'cursor-pointer'
           }`}
         />
