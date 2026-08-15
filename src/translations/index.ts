@@ -851,7 +851,13 @@ export const contactForm = {
     ru: 'Закрыть',
     he: 'סגירה',
   },
-  /** Short Art. 11 purpose line — full details in Privacy Policy */
+  /** Combined trust + Art. 11 purpose (one block above consent) */
+  privacyBlock: {
+    en: 'Your data is protected. We do not share contacts with third parties. Providing details is voluntary. We use them only to handle your inquiry and reply about the project.',
+    ru: 'Ваши данные защищены. Мы не передаём контакты третьим лицам. Данные указываются добровольно. Мы используем их только для обработки обращения и ответа по проекту.',
+    he: 'המידע שלכם מוגן. איננו מעבירים פרטי קשר לצדדים שלישיים. מסירת הפרטים היא וולונטרית. אנו משתמשים בהם רק לטיפול בפנייה ולמענה בנוגע לפרויקט.',
+  },
+  /** @deprecated use privacyBlock */
   notice: {
     en: 'Providing details is voluntary. We use them only to handle your inquiry and reply about the project.',
     ru: 'Данные указываются добровольно. Мы используем их только для обработки обращения и ответа по проекту.',
@@ -867,7 +873,7 @@ export const contactForm = {
     ru: 'Политикой конфиденциальности',
     he: 'מדיניות הפרטיות',
   },
-  /** Nominative title for trust line under submit */
+  /** Nominative title if needed outside consent */
   privacyPolicy: {
     en: 'Privacy Policy',
     ru: 'Политика конфиденциальности',
@@ -882,17 +888,6 @@ export const contactForm = {
     en: 'Please confirm your consent to continue.',
     ru: 'Подтвердите согласие, чтобы продолжить.',
     he: 'יש לאשר הסכמה כדי להמשיך.',
-  },
-  /** Trust line under submit (lock icon) */
-  secureNote: {
-    en: 'Your data is protected. We do not share contacts with third parties —',
-    ru: 'Ваши данные защищены. Мы не передаём контакты третьим лицам —',
-    he: 'המידע שלכם מוגן. איננו מעבירים פרטי קשר לצדדים שלישיים —',
-  },
-  secureNoteEnd: {
-    en: '.',
-    ru: '.',
-    he: '.',
   },
 }
 

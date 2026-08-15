@@ -14,8 +14,31 @@ interface ContactPrivacyConsentProps {
   disabled?: boolean
 }
 
+function LockIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.75" />
+      <path
+        d="M8 11V8a4 4 0 0 1 8 0v3"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+      <circle cx="12" cy="16" r="1.25" fill="currentColor" />
+    </svg>
+  )
+}
+
 /**
- * Short Art. 11 purpose line + opt-in consent (details live in Privacy Policy).
+ * One privacy block: lock + trust/purpose copy + opt-in consent (Art. 11 short form).
  */
 export default function ContactPrivacyConsent({
   locale,
@@ -33,7 +56,7 @@ export default function ContactPrivacyConsent({
   const noticeId = `${idPrefix}-privacy-notice`
   const errorId = `${idPrefix}-privacy-consent-error`
 
-  const noticeClass = isLight ? 'text-coal-900/45' : 'text-white/40'
+  const noticeClass = isLight ? 'text-coal-900/50' : 'text-white/45'
   const labelClass = isLight ? 'text-coal-900/70' : 'text-white/65'
   const linkClass = isLight
     ? 'font-normal text-coal-900/80 underline underline-offset-2 decoration-coal-900/25 transition-colors hover:text-erythro-500 hover:decoration-erythro-500'
@@ -41,15 +64,16 @@ export default function ContactPrivacyConsent({
   const boxClass = isLight
     ? 'border-coal-900/40 bg-white accent-erythro-500'
     : 'border-white/40 bg-white/[0.04] accent-gold-500'
+  const lockClass = isLight ? 'text-coal-900/45' : 'text-gold-500/70'
 
   return (
     <div className="flex flex-col gap-2">
-      <p
-        id={noticeId}
-        className={`m-0 text-[10px] font-extralight leading-snug tracking-[0.01em] ${noticeClass}`}
-      >
-        {t(form.notice)}
-      </p>
+      <div className={`flex items-start gap-2 text-[11px] font-light leading-snug ${noticeClass}`}>
+        <LockIcon className={`mt-0.5 shrink-0 ${lockClass}`} />
+        <p id={noticeId} className="m-0">
+          {t(form.privacyBlock)}
+        </p>
+      </div>
 
       <label
         htmlFor={checkboxId}
