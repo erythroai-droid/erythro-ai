@@ -42,7 +42,9 @@ Stage portal всегда `dir="ltr"` (математика transform). RTL-ск
 
 Фолбэки: `src/translations/index.ts` → `hero.motionHeadings` (`en` / `ru` / `he`).
 
-Порядок кадров = порядок фраз в массиве (сейчас 4 утверждённых кадра).
+Порядок кадров = порядок фраз в массиве. Кадры 1–4 — утверждённые shot-by-shot;
+фразы с 5-й и дальше на десктопе идут через `playExtraFrame` (FG slam + случайная
+анимация outline). На мобиле все фразы — inline kinetic slam без outline.
 
 ---
 
@@ -175,7 +177,9 @@ FG / ряды с ивритом: `direction: rtl` + Heebo (`resolveHeeboStack`).
 ## 7. Как менять
 
 1. **Новая фраза / текст** — CMS Hero или `translations` → `motionHeadings`.
-2. **Новый кадр** — `playFrameN` + ветка `index === N` в цикле; пока нет дизайна — `playPlaceholderFrame`.
+2. **Новый утверждённый кадр** — `playFrameN` + ветка `index === N` в цикле.
+   Доп. фразы без дизайна — автоматически `playExtraFrame` (случайный outline:
+   sides frame1/3, halves, fade, rise, drop). Мобиле — `playPlaceholderFrame`.
 3. **Цвет обводки** — `getOutlineStrokeColor()` (`gold-900`); FG — `getGold500Color()`.
 4. **RTL-поведение** — проверять зеркала кадров 2–3 и outline entrances; не делать финальный recenter на LTR.
 5. **Не утверждать кадр в проде**, пока выход внутри красных блоков не проверен: blur/skew + `overflow: hidden` дают вертикальные рывки.
@@ -188,4 +192,5 @@ FG / ряды с ивритом: `direction: rtl` + Heebo (`resolveHeeboStack`).
 - Мобильный fit кегля включён.
 - FG: `gold-500` во всех темах; outline: `gold-900`.
 - Heebo для Hebrew; смена локали без съезда layout.
-- Дальнейшие фразы (если появятся в массиве) идут через placeholder kinetic slam, пока не спроектированы shot-by-shot.
+- Фразы 5+ на десктопе: `playExtraFrame` (outline со случайной анимацией);
+  на мобиле — inline placeholder slam.
