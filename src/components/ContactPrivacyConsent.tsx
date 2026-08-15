@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { useSiteContent } from '@/components/SiteContentProvider'
 import { contactForm } from '@/translations'
 
 interface ContactPrivacyConsentProps {
@@ -24,12 +25,15 @@ export default function ContactPrivacyConsent({
   onCheckedChange,
   showRequiredError = false,
 }: ContactPrivacyConsentProps) {
+  const content = useSiteContent()
+  const legalEmail = content.siteSettings.emailLegal || content.siteSettings.email
   const t = (field: Record<string, string>) => field[locale] || field.en
   const form = contactForm
   const isLight = theme === 'light'
   const checkboxId = `${idPrefix}-privacy-consent`
   const noticeId = `${idPrefix}-privacy-notice`
   const errorId = `${idPrefix}-privacy-consent-error`
+  const notice = t(form.notice).replaceAll('{{email}}', legalEmail)
 
   const noticeClass = isLight ? 'text-coal-900/45' : 'text-white/40'
   const labelClass = isLight ? 'text-coal-900/70' : 'text-white/65'
@@ -46,7 +50,7 @@ export default function ContactPrivacyConsent({
         id={noticeId}
         className={`m-0 text-[10px] font-extralight leading-[1.45] tracking-[0.01em] ${noticeClass}`}
       >
-        {t(form.notice)}
+        {notice}
       </p>
 
       <label

@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { resolveNotifyRecipients, sendContactNotification } from '@/lib/contactNotification'
+import {
+  resolveNotifyRecipients,
+  sendContactNotification,
+  type ContactFormSource,
+  type SiteEmailSettings,
+} from '@/lib/contactNotification'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function parseSource(value: unknown): ContactFormSource {
+  return value === 'order' ? 'order' : 'contact'
+}
 
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>
@@ -18,6 +27,7 @@ export async function POST(request: NextRequest) {
   const phone = typeof body.phone === 'string' ? body.phone.trim() : ''
   const message = typeof body.message === 'string' ? body.message.trim() : ''
   const locale = typeof body.locale === 'string' ? body.locale : undefined
+  const source = parseSource(body.source)
   const privacyConsent = body.privacyConsent === true
 
   if (!privacyConsent) {
@@ -37,23 +47,23 @@ export async function POST(request: NextRequest) {
     const payload = await getPayload({ config })
     await payload.create({
       collection: 'contact-submissions',
-      data: { name, email, phone, message, locale },
+      data: { name, email, phone, message, locale, source },
     })
 
-    const settings = await payload.findGlobal({
+    const settings = (await payload.findGlobal({
       slug: 'site-settings',
       depth: 0,
       overrideAccess: true,
-    })
-    const notifyTo = resolveNotifyRecipients(
-      typeof settings?.email === 'string' ? settings.email : null,
-    )
+    })) as SiteEmailSettings
+
+    const notifyTo = resolveNotifyRecipients(settings, source)
     const mailed = await sendContactNotification(notifyTo, {
       name,
       email,
       phone,
       message,
       locale,
+      source,
     })
     if (!mailed.sent) {
       console.error('[api/contact] saved submission but email was not sent:', mailed.reason)

@@ -308,7 +308,7 @@ function OrderCheckout({
     } catch {
       /* ignore */
     }
-    openContact()
+    openContact('order')
   }
 
   const cardCls = isLight
