@@ -3,7 +3,7 @@
 import React, { useRef, useState } from 'react'
 import { useSiteContent } from '@/components/SiteContentProvider'
 import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
-import { ContactSendingPanel } from '@/components/ContactSendingPanel'
+import { ContactSendSpinner } from '@/components/ContactSendingPanel'
 import { contactForm } from '@/translations'
 import { contactsPage, tContacts } from '@/lib/contactsPage'
 import {
@@ -271,8 +271,6 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                     {t(form.close)}
                   </button>
                 </div>
-              ) : status === 'sending' ? (
-                <ContactSendingPanel label={t(form.sending)} tone={isLight ? 'light' : 'dark'} />
               ) : (
                 <>
                   <h2
@@ -280,143 +278,169 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                   >
                     {formHeading}
                   </h2>
-                  <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-                    <div>
-                      <label htmlFor="contacts-page-name" className={labelClass}>
-                        {t(form.name)}
-                        {requiredMark}
-                      </label>
-                      <input
-                        ref={firstFieldRef}
-                        id="contacts-page-name"
-                        name="name"
-                        type="text"
-                        required
-                        value={values.name}
-                        onChange={handleChange}
-                        placeholder={t(form.name)}
-                        className={inputClass('name')}
-                        autoComplete="name"
-                        autoCapitalize="words"
-                        enterKeyHint="next"
-                        aria-required="true"
-                        aria-invalid={Boolean(fieldErrors.name) || undefined}
-                        aria-describedby={fieldErrors.name ? 'contacts-page-name-error' : undefined}
-                      />
-                      {fieldErrors.name ? (
-                        <p id="contacts-page-name-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
-                          {fieldErrorMessage('name')}
-                        </p>
-                      ) : null}
-                    </div>
-                    <div>
-                      <label htmlFor="contacts-page-email" className={labelClass}>
-                        {t(form.email)}
-                        {requiredMark}
-                      </label>
-                      <input
-                        id="contacts-page-email"
-                        name="email"
-                        type="email"
-                        inputMode="email"
-                        required
-                        value={values.email}
-                        onChange={handleChange}
-                        placeholder={t(form.email)}
-                        className={inputClass('email')}
-                        autoComplete="email"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        spellCheck={false}
-                        enterKeyHint="next"
-                        dir="ltr"
-                        aria-required="true"
-                        aria-invalid={Boolean(fieldErrors.email) || undefined}
-                        aria-describedby={fieldErrors.email ? 'contacts-page-email-error' : undefined}
-                      />
-                      {fieldErrors.email ? (
-                        <p id="contacts-page-email-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
-                          {fieldErrorMessage('email')}
-                        </p>
-                      ) : null}
-                    </div>
-                    <div>
-                      <label htmlFor="contacts-page-phone" className={labelClass}>
-                        {t(form.phone)}
-                      </label>
-                      <input
-                        id="contacts-page-phone"
-                        name="phone"
-                        type="tel"
-                        inputMode="tel"
-                        value={values.phone}
-                        onChange={handleChange}
-                        placeholder={t(form.phone)}
-                        className={inputClass('phone')}
-                        autoComplete="tel"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        spellCheck={false}
-                        enterKeyHint="next"
-                        dir="ltr"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="contacts-page-message" className={labelClass}>
-                        {t(form.message)}
-                        {requiredMark}
-                      </label>
-                      <textarea
-                        id="contacts-page-message"
-                        name="message"
-                        required
-                        value={values.message}
-                        onChange={handleChange}
-                        placeholder={t(form.message)}
-                        rows={5}
-                        className={`${inputClass('message')} resize-none`}
-                        enterKeyHint="send"
-                        aria-required="true"
-                        aria-invalid={Boolean(fieldErrors.message) || status === 'error' || undefined}
-                        aria-describedby={
-                          fieldErrors.message
-                            ? 'contacts-page-message-error'
-                            : status === 'error'
-                              ? 'contacts-page-error'
-                              : undefined
-                        }
-                      />
-                      {fieldErrors.message ? (
-                        <p id="contacts-page-message-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
-                          {fieldErrorMessage('message')}
-                        </p>
-                      ) : null}
-                    </div>
-
-                    {status === 'error' && (
-                      <p id="contacts-page-error" role="alert" className="m-0 text-sm text-erythro-500">
-                        {t(form.error)}
-                      </p>
-                    )}
-
-                    <ContactPrivacyConsent
-                      locale={locale}
-                      theme={theme}
-                      idPrefix="contacts-page"
-                      checked={privacyConsent}
-                      showRequiredError={consentError}
-                      onCheckedChange={(next) => {
-                        setPrivacyConsent(next)
-                        if (next) setConsentError(false)
-                      }}
-                    />
-
-                    <button
-                      type="submit"
-                      className="mt-2 w-full cursor-pointer rounded-[40px] bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase tracking-widest text-white shadow-none transition-[box-shadow,transform,opacity] duration-300 ease-out hover:shadow-[0_3px_20px_0_rgba(229,36,33,0.45)]"
+                  <form
+                    onSubmit={handleSubmit}
+                    className="flex flex-col gap-4"
+                    noValidate
+                    aria-busy={status === 'sending' || undefined}
+                  >
+                    <fieldset
+                      disabled={status === 'sending'}
+                      className={`m-0 flex min-w-0 flex-col gap-4 border-0 p-0 ${
+                        status === 'sending' ? 'opacity-70' : ''
+                      }`}
                     >
-                      {t(form.submit)}
-                    </button>
+                      <legend className="sr-only">{formHeading}</legend>
+                      <div>
+                        <label htmlFor="contacts-page-name" className={labelClass}>
+                          {t(form.name)}
+                          {requiredMark}
+                        </label>
+                        <input
+                          ref={firstFieldRef}
+                          id="contacts-page-name"
+                          name="name"
+                          type="text"
+                          required
+                          value={values.name}
+                          onChange={handleChange}
+                          placeholder={t(form.name)}
+                          className={inputClass('name')}
+                          autoComplete="name"
+                          autoCapitalize="words"
+                          enterKeyHint="next"
+                          aria-required="true"
+                          aria-invalid={Boolean(fieldErrors.name) || undefined}
+                          aria-describedby={fieldErrors.name ? 'contacts-page-name-error' : undefined}
+                        />
+                        {fieldErrors.name ? (
+                          <p id="contacts-page-name-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                            {fieldErrorMessage('name')}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div>
+                        <label htmlFor="contacts-page-email" className={labelClass}>
+                          {t(form.email)}
+                          {requiredMark}
+                        </label>
+                        <input
+                          id="contacts-page-email"
+                          name="email"
+                          type="email"
+                          inputMode="email"
+                          required
+                          value={values.email}
+                          onChange={handleChange}
+                          placeholder={t(form.email)}
+                          className={inputClass('email')}
+                          autoComplete="email"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          enterKeyHint="next"
+                          dir="ltr"
+                          aria-required="true"
+                          aria-invalid={Boolean(fieldErrors.email) || undefined}
+                          aria-describedby={fieldErrors.email ? 'contacts-page-email-error' : undefined}
+                        />
+                        {fieldErrors.email ? (
+                          <p id="contacts-page-email-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                            {fieldErrorMessage('email')}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div>
+                        <label htmlFor="contacts-page-phone" className={labelClass}>
+                          {t(form.phone)}
+                        </label>
+                        <input
+                          id="contacts-page-phone"
+                          name="phone"
+                          type="tel"
+                          inputMode="tel"
+                          value={values.phone}
+                          onChange={handleChange}
+                          placeholder={t(form.phone)}
+                          className={inputClass('phone')}
+                          autoComplete="tel"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          enterKeyHint="next"
+                          dir="ltr"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="contacts-page-message" className={labelClass}>
+                          {t(form.message)}
+                          {requiredMark}
+                        </label>
+                        <textarea
+                          id="contacts-page-message"
+                          name="message"
+                          required
+                          value={values.message}
+                          onChange={handleChange}
+                          placeholder={t(form.message)}
+                          rows={5}
+                          className={`${inputClass('message')} resize-none`}
+                          enterKeyHint="send"
+                          aria-required="true"
+                          aria-invalid={Boolean(fieldErrors.message) || status === 'error' || undefined}
+                          aria-describedby={
+                            fieldErrors.message
+                              ? 'contacts-page-message-error'
+                              : status === 'error'
+                                ? 'contacts-page-error'
+                                : undefined
+                          }
+                        />
+                        {fieldErrors.message ? (
+                          <p id="contacts-page-message-error" role="alert" className="mt-1.5 m-0 text-sm text-erythro-500">
+                            {fieldErrorMessage('message')}
+                          </p>
+                        ) : null}
+                      </div>
+
+                      {status === 'error' && (
+                        <p id="contacts-page-error" role="alert" className="m-0 text-sm text-erythro-500">
+                          {t(form.error)}
+                        </p>
+                      )}
+
+                      <ContactPrivacyConsent
+                        locale={locale}
+                        theme={theme}
+                        idPrefix="contacts-page"
+                        checked={privacyConsent}
+                        showRequiredError={consentError}
+                        disabled={status === 'sending'}
+                        onCheckedChange={(next) => {
+                          setPrivacyConsent(next)
+                          if (next) setConsentError(false)
+                        }}
+                      />
+
+                      <button
+                        type="submit"
+                        className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-[40px] bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase tracking-widest text-white shadow-none transition-[box-shadow,transform,opacity] duration-300 ease-out hover:shadow-[0_3px_20px_0_rgba(229,36,33,0.45)] disabled:cursor-wait disabled:hover:shadow-none"
+                      >
+                        {status === 'sending' ? (
+                          <>
+                            <ContactSendSpinner className="h-[18px] w-[18px] shrink-0" />
+                            <span>{t(form.sending)}</span>
+                          </>
+                        ) : (
+                          t(form.submit)
+                        )}
+                      </button>
+                    </fieldset>
+                    {status === 'sending' ? (
+                      <p className="sr-only" role="status" aria-live="polite">
+                        {t(form.sending)}
+                      </p>
+                    ) : null}
                   </form>
                 </>
               )}

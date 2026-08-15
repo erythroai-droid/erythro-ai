@@ -12,6 +12,7 @@ interface ContactPrivacyConsentProps {
   checked: boolean
   onCheckedChange: (checked: boolean) => void
   showRequiredError?: boolean
+  disabled?: boolean
 }
 
 /**
@@ -24,6 +25,7 @@ export default function ContactPrivacyConsent({
   checked,
   onCheckedChange,
   showRequiredError = false,
+  disabled = false,
 }: ContactPrivacyConsentProps) {
   const content = useSiteContent()
   const legalEmail = content.siteSettings.emailLegal || content.siteSettings.email
@@ -55,7 +57,9 @@ export default function ContactPrivacyConsent({
 
       <label
         htmlFor={checkboxId}
-        className={`flex cursor-pointer items-start gap-2.5 text-[11px] font-light leading-snug ${labelClass}`}
+        className={`flex items-start gap-2.5 text-[11px] font-light leading-snug ${labelClass} ${
+          disabled ? 'cursor-default opacity-70' : 'cursor-pointer'
+        }`}
       >
         <input
           id={checkboxId}
@@ -63,11 +67,14 @@ export default function ContactPrivacyConsent({
           type="checkbox"
           checked={checked}
           required
+          disabled={disabled}
           aria-required="true"
           aria-invalid={showRequiredError || undefined}
           aria-describedby={`${noticeId}${showRequiredError ? ` ${errorId}` : ''}`}
           onChange={(e) => onCheckedChange(e.target.checked)}
-          className={`mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border ${boxClass}`}
+          className={`mt-0.5 h-4 w-4 shrink-0 rounded border ${boxClass} ${
+            disabled ? 'cursor-default' : 'cursor-pointer'
+          }`}
         />
         <span>
           {t(form.consentPrefix)}{' '}
