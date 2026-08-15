@@ -10,19 +10,56 @@ type EmailRow = {
 }
 
 /**
+ * Payload stores array rows as flattened paths (`emails.0.address`), not as
+ * `fields.emails.value`. Rebuild the address book from row metadata + paths.
+ */
+function emailsFromFormState(
+  fields: Record<string, { value?: unknown; rows?: unknown } | undefined>,
+): EmailRow[] {
+  const list: EmailRow[] = []
+  const rows = fields?.emails?.rows
+  const count = Array.isArray(rows) ? rows.length : 0
+
+  if (count > 0) {
+    for (let i = 0; i < count; i++) {
+      const address = fields[`emails.${i}.address`]?.value
+      const label = fields[`emails.${i}.label`]?.value
+      if (typeof address === 'string' && address.trim()) {
+        list.push({
+          address: address.trim(),
+          label: typeof label === 'string' ? label : '',
+        })
+      }
+    }
+    return list
+  }
+
+  for (const key of Object.keys(fields || {})) {
+    const match = /^emails\.(\d+)\.address$/.exec(key)
+    if (!match) continue
+    const address = fields[key]?.value
+    if (typeof address !== 'string' || !address.trim()) continue
+    const label = fields[`emails.${match[1]}.label`]?.value
+    list.push({
+      address: address.trim(),
+      label: typeof label === 'string' ? label : '',
+    })
+  }
+  return list
+}
+
+/**
  * Admin select whose options come from Site Settings → Contacts → Emails.
  * Stores the chosen address string.
  */
 export const SiteEmailSelect: TextFieldClientComponent = ({ field, path }) => {
   const { value, setValue, showError, errorMessage } = useField<string>({ path })
-  const emailsValue = useFormFields(([fields]) => fields?.emails?.value)
 
-  const emails = useMemo(() => {
-    if (!Array.isArray(emailsValue)) return [] as EmailRow[]
-    return (emailsValue as EmailRow[]).filter((row) =>
-      Boolean(row?.address && String(row.address).trim()),
-    )
-  }, [emailsValue])
+  // Primitive return keeps use-context-selector from thrashing on new array refs.
+  const emailsJson = useFormFields(([fields]) =>
+    JSON.stringify(emailsFromFormState(fields as Record<string, { value?: unknown; rows?: unknown }>)),
+  )
+  const emails = useMemo(() => JSON.parse(emailsJson) as EmailRow[], [emailsJson])
 
   const options = useMemo(() => {
     const seen = new Set<string>()
@@ -84,7 +121,7 @@ export const SiteEmailSelect: TextFieldClientComponent = ({ field, path }) => {
           {errorMessage}
         </div>
       ) : null}
-      {!options.length ? (
+      {!options.length || (options.length === 1 && options[0]?.label?.includes('(not in list)')) ? (
         <div className="field-description" style={{ marginTop: 6 }}>
           Add at least one address in Emails to enable this dropdown.
         </div>
