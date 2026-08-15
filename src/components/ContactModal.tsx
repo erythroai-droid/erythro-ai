@@ -10,7 +10,6 @@ import {
   type ContactFormValues,
 } from '@/lib/contactFormValidation'
 import ContactPrivacyConsent from './ContactPrivacyConsent'
-import ContactSecureNote from './ContactSecureNote'
 import { ContactSendSpinner } from './ContactSendingPanel'
 import type { ContactFormSource } from '@/lib/contactNotification'
 
@@ -374,8 +373,6 @@ function ContactModal({
                   t(form.submit)
                 )}
               </button>
-
-              <ContactSecureNote locale={locale} theme="dark" />
             </fieldset>
             {status === 'sending' ? (
               <p className="sr-only" role="status" aria-live="polite">

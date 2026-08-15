@@ -3,7 +3,6 @@
 import React, { useRef, useState } from 'react'
 import { useSiteContent } from '@/components/SiteContentProvider'
 import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
-import ContactSecureNote from '@/components/ContactSecureNote'
 import { ContactSendSpinner } from '@/components/ContactSendingPanel'
 import { contactForm } from '@/translations'
 import { contactsPage, tContacts } from '@/lib/contactsPage'
@@ -168,15 +167,24 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
           </p>
         </header>
 
-        <div className="grid w-full grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+        <div className="flex w-full flex-col gap-4 md:gap-5">
+          <div className="grid w-full grid-cols-1 gap-2 lg:grid-cols-12 lg:gap-12">
+            <h2
+              className={`m-0 font-sans text-xl font-normal tracking-[0.04em] md:text-2xl lg:col-span-5 ${headingTone}`}
+            >
+              {detailsHeading}
+            </h2>
+            <h2
+              className={`m-0 font-sans text-xl font-normal tracking-[0.04em] md:text-2xl lg:col-span-7 ${headingTone}`}
+            >
+              {formHeading}
+            </h2>
+          </div>
+
+          <div className="grid w-full grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
           {/* Details */}
           <div className="flex flex-col gap-8 lg:col-span-5">
             <div className="flex flex-col gap-4">
-              <h2
-                className={`m-0 font-sans text-xl font-normal tracking-[0.04em] md:text-2xl ${headingTone}`}
-              >
-                {detailsHeading}
-              </h2>
               <ul className="m-0 flex list-none flex-col gap-3 p-0">
                 {detailRows.map((row) => (
                   <li key={row.id}>
@@ -273,25 +281,19 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                   </button>
                 </div>
               ) : (
-                <>
-                  <h2
-                    className={`m-0 mb-4 font-sans text-xl font-normal tracking-[0.04em] md:text-2xl ${headingTone}`}
+                <form
+                  onSubmit={handleSubmit}
+                  className="flex flex-col gap-3"
+                  noValidate
+                  aria-busy={status === 'sending' || undefined}
+                >
+                  <fieldset
+                    disabled={status === 'sending'}
+                    className={`m-0 flex min-w-0 flex-col gap-3 border-0 p-0 ${
+                      status === 'sending' ? 'opacity-70' : ''
+                    }`}
                   >
-                    {formHeading}
-                  </h2>
-                  <form
-                    onSubmit={handleSubmit}
-                    className="flex flex-col gap-3"
-                    noValidate
-                    aria-busy={status === 'sending' || undefined}
-                  >
-                    <fieldset
-                      disabled={status === 'sending'}
-                      className={`m-0 flex min-w-0 flex-col gap-3 border-0 p-0 ${
-                        status === 'sending' ? 'opacity-70' : ''
-                      }`}
-                    >
-                      <legend className="sr-only">{formHeading}</legend>
+                    <legend className="sr-only">{formHeading}</legend>
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
                           <label htmlFor="contacts-page-name" className={labelClass}>
@@ -438,8 +440,6 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                           t(form.submit)
                         )}
                       </button>
-
-                      <ContactSecureNote locale={locale} theme={theme} />
                     </fieldset>
                     {status === 'sending' ? (
                       <p className="sr-only" role="status" aria-live="polite">
@@ -447,10 +447,10 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                       </p>
                     ) : null}
                   </form>
-                </>
               )}
             </div>
           </div>
+        </div>
         </div>
       </div>
 
