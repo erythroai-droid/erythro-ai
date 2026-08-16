@@ -362,6 +362,54 @@ Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24
 `[contactNotification]` (PIT-020). Payload warning «No email adapter provided» сам по себе
 не отправляет почту: нужен наш SMTP-код на `main`, не адаптер Payload.
 
+### 13.3. Защита `POST /api/contact`
+
+Единственная точка приёма форм (модалка /contacts / order) — изолированный route:
+
+1. **App rate limit** по IP (`cf-connecting-ip` → `x-forwarded-for`), default **5 / 60s**
+   (`CONTACT_RATE_LIMIT_MAX`, `CONTACT_RATE_LIMIT_WINDOW_MS`). Ответ `429` + `Retry-After`.
+   In-memory per Vercel isolate — **не** общий счётчик по всем инстансам.
+2. **Cloudflare Rate Limiting** (edge, до Vercel) — обязательное дополнение, см. ниже.
+3. **Sanitize + validate** (`contactSubmissionGuard`) до записи в Payload и SMTP:
+   срез HTML/control chars, лимиты длины, строгий email/locale.
+4. Затем CMS `contact-submissions` и SMTP notify.
+
+#### Cloudflare Rate Limiting на `/api/contact`
+
+**Статус (2026-08-16):** правило **Active**, слот Free **1/1**:
+`Rate limit /api/contact (5/10s per IP)`.
+
+| Слой | Лимит | Зачем |
+|---|---|---|
+| Cloudflare edge (Free) | **5 / 10s / IP**, Block **10s** | общий счётчик до Vercel; Free: period/mitigation только 10s; в expression — Path (не Method) |
+| App (`contactRateLimit`) | **5 / 60s / IP** | sliding window в isolate; `429` + `Retry-After` |
+
+**Dashboard** (если пересоздавать)
+
+1. [Security rules](https://dash.cloudflare.com/?to=/:account/:zone/security/security-rules)
+   → `erythro.ai` → **Create rule** → **Rate limiting rules**.
+2. Name: `Rate limit /api/contact (5/10s per IP)`.
+3. Expression: `(http.request.uri.path eq "/api/contact")`.
+4. Characteristics → **IP**.
+5. When rate exceeds → **5** / **10 seconds**.
+6. Action → **Block**, Duration → **10 seconds**, Status → **Active**.
+7. **Deploy**.
+
+На Pro+ можно поднять period до 60s и добавить `http.request.method eq "POST"`.
+
+**API / скрипт**
+
+```bash
+# Token: Zone WAF Write + Zone Read; Zone ID — Overview зоны
+export CLOUDFLARE_API_TOKEN=...
+export CLOUDFLARE_ZONE_ID=...
+pnpm cf:contact-rate-limit
+# pnpm cf:contact-rate-limit -- --dry-run
+```
+
+Проверка: >5 быстрых запросов на `https://erythro.ai/api/contact` с одного IP → edge block
+(до приложения). Security → Events.
+
 ---
 
 ## 14. Sitemap + Google Search Console (после Cloudflare DNS)

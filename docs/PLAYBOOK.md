@@ -371,9 +371,12 @@ outline SVG, адаптива, z-index меню и правил выхода и�
 Контактная форма всегда писала в коллекцию `contact-submissions` (видно в `/admin`). Письмо на
 `order@erythro.ai` появилось после двух шагов (2026-08-14):
 
-1. MX/SPF/DKIM/DMARC в **Vercel DNS** (nameservers не Hostinger — автоконнект в hPanel бесполезен).
+1. MX/SPF/DKIM/DMARC в **Cloudflare DNS** (ранее Vercel; nameservers не Hostinger —
+   автоконнект в hPanel бесполезен).
 2. SMTP из `POST /api/contact` через `src/lib/contactNotification.ts` + `SMTP_PASS` на Vercel.
    From: `"Erythro.ai" <order@erythro.ai>`. To: Site Settings notify (contact / order).
-3. Если Hostinger → Spam, а forward на Gmail ок — PIT-021.
+3. Защита: app rate limit 5/60s + Cloudflare Rate Limiting на `/api/contact`
+   (Free: **5/10s** edge Block; `DEPLOYMENT.md` §13.3, `pnpm cf:contact-rate-limit`).
+4. Если Hostinger → Spam, а forward на Gmail ок — PIT-021.
 
 Проверено на проде: письма с сайта доходят. Журнал и таблица DNS: `DEPLOYMENT.md` §13. Грабли: PIT-020, PIT-021.
