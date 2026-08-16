@@ -7,6 +7,12 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
+  // Tailwind CSS is small (~27 KiB). Inlining removes render-blocking <link>
+  // round-trips that PSI estimates at ~1 s on Slow 4G (FCP/LCP).
+  // Trade-off: CSS rides with HTML (no separate cache) — fine for atomic CSS.
+  experimental: {
+    inlineCss: true,
+  },
   images: {
     localPatterns: [
       {

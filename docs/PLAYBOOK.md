@@ -241,6 +241,7 @@ export default [
   клик по лого. Desktop: full **один раз за session** на cold home (~3s, без `body` fixed lock),
   дальше / mid-page / inner — quick. `markSplashDone` на старте fade (LCP).
 - Hero desktop: poster (mobile still) + video после splash; footer chip-frames — после splash + IO.
+- CWV: `experimental.inlineCss` — Tailwind/a11y CSS в `<style>` вместо render-blocking `<link>` (~1 s на Slow 4G).
 - Мелкие UI-фиксы: скрытие скроллбара, центрирование glyph splash, RTL close у модалки.
 
 ### 9.2. Админка Media
