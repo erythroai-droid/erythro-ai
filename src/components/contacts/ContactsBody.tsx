@@ -36,6 +36,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
   const socialHeading = tContacts(contactsPage.socialHeading, locale)
 
   const [status, setStatus] = useState<Status>('idle')
+  const [submitError, setSubmitError] = useState('')
   const [values, setValues] = useState<ContactFormValues>({ name: '', email: '', phone: '', message: '' })
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({})
   const [privacyConsent, setPrivacyConsent] = useState(false)
@@ -87,7 +88,10 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
         return next
       })
     }
-    if (status === 'error') setStatus('idle')
+    if (status === 'error') {
+      setStatus('idle')
+      setSubmitError('')
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,18 +106,25 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
     if (hasContactFieldErrors(nextFieldErrors) || !privacyConsent) return
 
     setStatus('sending')
+    setSubmitError('')
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, locale, privacyConsent: true, source: 'contact' }),
       })
+      if (res.status === 429) {
+        setSubmitError(t(form.rateLimited))
+        setStatus('error')
+        return
+      }
       if (!res.ok) throw new Error('Request failed')
       setStatus('success')
       setValues({ name: '', email: '', phone: '', message: '' })
       setFieldErrors({})
       setPrivacyConsent(false)
     } catch {
+      setSubmitError(t(form.error))
       setStatus('error')
     }
   }
@@ -410,7 +421,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
 
                       {status === 'error' && (
                         <p id="contacts-page-error" role="alert" className="m-0 text-sm text-erythro-500">
-                          {t(form.error)}
+                          {submitError || t(form.error)}
                         </p>
                       )}
 

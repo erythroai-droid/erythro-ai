@@ -846,6 +846,11 @@ export const contactForm = {
     ru: 'Не удалось отправить. Попробуйте ещё раз.',
     he: 'אירעה שגיאה. אנא נסו שוב.',
   },
+  rateLimited: {
+    en: 'Too many requests. Please wait a minute and try again.',
+    ru: 'Слишком много попыток. Подождите минуту и попробуйте снова.',
+    he: 'יותר מדי בקשות. המתינו דקה ונסו שוב.',
+  },
   close: {
     en: 'Close',
     ru: 'Закрыть',

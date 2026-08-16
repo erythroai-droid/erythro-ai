@@ -70,6 +70,7 @@ function ContactModal({
   const errorId = useId()
 
   const [status, setStatus] = useState<Status>('idle')
+  const [submitError, setSubmitError] = useState('')
   const [values, setValues] = useState<ContactFormValues>({ name: '', email: '', phone: '', message: '' })
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({})
   const [privacyConsent, setPrivacyConsent] = useState(false)
@@ -119,7 +120,10 @@ function ContactModal({
         return next
       })
     }
-    if (status === 'error') setStatus('idle')
+    if (status === 'error') {
+      setStatus('idle')
+      setSubmitError('')
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -134,18 +138,25 @@ function ContactModal({
     if (hasContactFieldErrors(nextFieldErrors) || !privacyConsent) return
 
     setStatus('sending')
+    setSubmitError('')
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...values, locale, privacyConsent: true, source }),
       })
+      if (res.status === 429) {
+        setSubmitError(t(form.rateLimited))
+        setStatus('error')
+        return
+      }
       if (!res.ok) throw new Error('Request failed')
       setStatus('success')
       setValues({ name: '', email: '', phone: '', message: '' })
       setFieldErrors({})
       setPrivacyConsent(false)
     } catch {
+      setSubmitError(t(form.error))
       setStatus('error')
     }
   }
@@ -343,7 +354,7 @@ function ContactModal({
 
               {status === 'error' && (
                 <p id={errorId} role="alert" className="text-sm text-erythro-500">
-                  {t(form.error)}
+                  {submitError || t(form.error)}
                 </p>
               )}
 
