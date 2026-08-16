@@ -4,6 +4,8 @@ export type SplashMode = 'full' | 'quick'
 
 export const HOME_SCROLL_KEY = 'erythro:home-scroll'
 export const SPLASH_MODE_KEY = 'erythro:splash-mode'
+/** After the first full intro this session, cold home loads use quick splash. */
+export const FULL_SPLASH_SEEN_KEY = 'erythro:full-splash-seen'
 
 /** Above this, a home reload is treated as mid-page. */
 export const MID_PAGE_SCROLL_PX = 80
@@ -49,10 +51,26 @@ export function navigateHomeWithFullSplash() {
   window.location.assign('/')
 }
 
+function markFullSplashSeen() {
+  try {
+    sessionStorage.setItem(FULL_SPLASH_SEEN_KEY, '1')
+  } catch {
+    // ignore
+  }
+}
+
+function hasSeenFullSplash(): boolean {
+  try {
+    return sessionStorage.getItem(FULL_SPLASH_SEEN_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 /**
  * Resolve splash style + restored scroll for this navigation:
- * - `full` — animated draw (home at top, or forced by logo click)
- * - `quick` — red plate + finished logo (mid-page reload, inner pages)
+ * - `full` — animated draw (first home visit this session, or forced by logo click)
+ * - `quick` — red plate + finished logo (repeat home, mid-page reload, inner pages)
  */
 export function resolveSplashNavigation(pathname: string): {
   mode: SplashMode
@@ -72,11 +90,18 @@ export function resolveSplashNavigation(pathname: string): {
   const scrollY = readSavedScrollY()
   const path = pathname.split('?')[0] || '/'
 
-  if (forced === 'full') return { mode: 'full', scrollY: 0 }
+  if (forced === 'full') {
+    markFullSplashSeen()
+    return { mode: 'full', scrollY: 0 }
+  }
   // Client route changes set this flag — never carry the previous page's scrollY.
   if (forced === 'quick') return { mode: 'quick', scrollY: 0 }
   if (path !== '/') return { mode: 'quick', scrollY: 0 }
   if (scrollY > MID_PAGE_SCROLL_PX) return { mode: 'quick', scrollY }
+
+  // Cold home at top: full once per session, then quick (better LCP on reloads).
+  if (hasSeenFullSplash()) return { mode: 'quick', scrollY: 0 }
+  markFullSplashSeen()
   return { mode: 'full', scrollY: 0 }
 }
 

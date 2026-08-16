@@ -130,6 +130,7 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
     <HeroAnimation
       videoUrl={translations.backgroundImage}
       mobileImageUrl={translations.backgroundImageMobile}
+      posterUrl={translations.backgroundImageMobile}
       navbar={navbar}
     >
       <div
