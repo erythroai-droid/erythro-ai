@@ -16,15 +16,24 @@ if (typeof window !== 'undefined') {
 
 function refreshScrollLayout(scrollY: number) {
   window.scrollTo(0, scrollY)
-  ScrollTrigger.refresh(true)
-  window.scrollTo(0, scrollY)
+  // Defer ST refresh so unlock does not reflow under the fading overlay (CLS).
+  const run = () => {
+    window.scrollTo(0, scrollY)
+    ScrollTrigger.refresh(true)
+    window.scrollTo(0, scrollY)
+  }
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(() => run(), { timeout: 400 })
+  } else {
+    window.setTimeout(run, 0)
+  }
 }
 
 /**
  * Brand intro overlay.
  *
- * - `full` — stroke-draw animation (home at top / logo click).
- * - `quick` — red plate + finished logo fading in over 1.5s (mid-page / inner pages).
+ * - `full` — stroke-draw (first home visit this session / logo click); shortened ~3s.
+ * - `quick` — red plate + finished logo (repeat home, mid-page, inner pages).
  */
 export default function SplashScreen() {
   const pathname = usePathname() || '/'
@@ -93,9 +102,9 @@ export default function SplashScreen() {
         typeof window !== 'undefined' &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-      const appear = reduceMotion ? 0.4 : 1.5
-      const hold = reduceMotion ? 0.2 : 0.35
-      const fade = reduceMotion ? 0.25 : 0.45
+      const appear = reduceMotion ? 0.35 : 0.85
+      const hold = reduceMotion ? 0.15 : 0.25
+      const fade = reduceMotion ? 0.2 : 0.4
       const tl = gsap.timeline()
       tl.to(wrap, { opacity: 1, duration: appear, ease: 'power2.out' })
         .to({}, { duration: hold })
@@ -103,6 +112,7 @@ export default function SplashScreen() {
           opacity: 0,
           duration: fade,
           ease: 'power2.inOut',
+          onStart: () => markSplashDone(),
           onComplete: () => finish(),
         })
 
@@ -111,27 +121,14 @@ export default function SplashScreen() {
       }
     }
 
-    // ---- Full: animated draw + body lock (home at top) ----
-    // Lock scroll with position:fixed — NOT overflow:hidden on html/body.
-    const prevBody = {
-      position: document.body.style.position,
-      top: document.body.style.top,
-      left: document.body.style.left,
-      right: document.body.style.right,
-      width: document.body.style.width,
-    }
-    document.body.style.position = 'fixed'
-    document.body.style.top = `-${scrollY}px`
-    document.body.style.left = '0'
-    document.body.style.right = '0'
-    document.body.style.width = '100%'
+    // ---- Full: animated draw + overflow lock (home at top) ----
+    // Prefer overflow:hidden on <html> — position:fixed on body causes large CLS on unlock.
+    const html = document.documentElement
+    const prevHtmlOverflow = html.style.overflow
+    html.style.overflow = 'hidden'
 
     const restoreScroll = () => {
-      document.body.style.position = prevBody.position
-      document.body.style.top = prevBody.top
-      document.body.style.left = prevBody.left
-      document.body.style.right = prevBody.right
-      document.body.style.width = prevBody.width
+      html.style.overflow = prevHtmlOverflow
       refreshScrollLayout(scrollY)
     }
 
@@ -196,9 +193,12 @@ export default function SplashScreen() {
       gsap.set(svg, { x: 0, y: 0, scale: 1 })
       gsap.to(overlay, {
         opacity: 0,
-        duration: 0.4,
-        delay: 1.1,
-        onStart: restoreScroll,
+        duration: 0.35,
+        delay: 0.55,
+        onStart: () => {
+          restoreScroll()
+          markSplashDone()
+        },
         onComplete: () => finish(restoreScroll),
       })
       return () => restoreScroll()
@@ -207,69 +207,70 @@ export default function SplashScreen() {
     const proxy = { p: 0 }
     const tl = gsap.timeline()
 
-    tl.to(ePath, { strokeDashoffset: 0, duration: 1.4, ease: 'power1.inOut' })
-      .to({}, { duration: 0.15 })
-      .to(ePath, { fillOpacity: 1, duration: 0.45, ease: 'power1.out' })
-      .to({}, { duration: 0.25 })
+    // Shortened full intro (~3s) so hero LCP is not gated for ~5s+.
+    tl.to(ePath, { strokeDashoffset: 0, duration: 0.9, ease: 'power1.inOut' })
+      .to({}, { duration: 0.1 })
+      .to(ePath, { fillOpacity: 1, duration: 0.35, ease: 'power1.out' })
+      .to({}, { duration: 0.12 })
 
     tl.add('recede')
       .to(
         proxy,
         {
           p: 1,
-          duration: 1.3,
+          duration: 0.95,
           ease: 'power3.inOut',
           onUpdate: () => applyRecede(proxy.p),
         },
         'recede',
       )
-      .set(letters, { opacity: 1 }, 'recede+=0.25')
+      .set(letters, { opacity: 1 }, 'recede+=0.18')
       .to(
         letters,
-        {
-          strokeDashoffset: 0,
-          duration: 0.9,
-          stagger: 0.07,
-          ease: 'power2.out',
-        },
-        'recede+=0.25',
-      )
-      .to(
-        letters,
-        {
-          fillOpacity: 1,
-          duration: 0.5,
-          stagger: 0.07,
-          ease: 'power1.out',
-        },
-        'recede+=0.6',
-      )
-      .set(restFills, { opacity: 1 }, 'recede+=0.65')
-      .to(
-        restFills,
         {
           strokeDashoffset: 0,
           duration: 0.7,
+          stagger: 0.05,
           ease: 'power2.out',
         },
-        'recede+=0.65',
+        'recede+=0.18',
+      )
+      .to(
+        letters,
+        {
+          fillOpacity: 1,
+          duration: 0.4,
+          stagger: 0.05,
+          ease: 'power1.out',
+        },
+        'recede+=0.45',
+      )
+      .set(restFills, { opacity: 1 }, 'recede+=0.5')
+      .to(
+        restFills,
+        {
+          strokeDashoffset: 0,
+          duration: 0.55,
+          ease: 'power2.out',
+        },
+        'recede+=0.5',
       )
       .to(
         restFills,
         {
           fillOpacity: 1,
-          duration: 0.45,
+          duration: 0.35,
           ease: 'power1.out',
         },
-        'recede+=1.0',
+        'recede+=0.8',
       )
-      .set(allMarks, { strokeWidth: 0 }, 'recede+=1.45')
+      .set(allMarks, { strokeWidth: 0 }, 'recede+=1.1')
 
     if (taglineRef.current) {
       tl.to(
         taglineRef.current,
-        { opacity: 1, y: 0, duration: 0.5, ease: 'power1.out' },
-        'recede+=1.3',
+        { opacity: 1, y: 0, duration: 0.4, ease: 'power1.out' },
+        'recede+=0.95',
       )
     }
 
@@ -277,12 +278,16 @@ export default function SplashScreen() {
       overlay,
       {
         opacity: 0,
-        duration: 0.6,
+        duration: 0.45,
         ease: 'power2.inOut',
-        onStart: restoreScroll,
+        onStart: () => {
+          restoreScroll()
+          // Let hero media/text count toward LCP while the plate is still fading.
+          markSplashDone()
+        },
         onComplete: () => finish(restoreScroll),
       },
-      '+=1',
+      '+=0.2',
     )
 
     return () => {

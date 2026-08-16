@@ -237,8 +237,9 @@ export default [
 
 ### 9.1. Контактный UX и splash
 - Модалка обратной связи (contact feedback): успех без заголовка, зелёная галочка.
-- Brand splash screen: теглайн «digital agency», удлинённый hold intro; на mobile (&lt;1024px)
-  intro отключён / показывается раз за сессию для производительности.
+- Brand splash: full draw **один раз за session** на cold home (~3s, без `body` fixed lock);
+  дальше / mid-page / inner — quick. Logo click → full. `markSplashDone` на старте fade (LCP).
+- Hero desktop: poster (mobile still) + video после splash; footer chip-frames — после splash + IO.
 - Мелкие UI-фиксы: скрытие скроллбара, центрирование glyph splash, RTL close у модалки.
 
 ### 9.2. Админка Media
