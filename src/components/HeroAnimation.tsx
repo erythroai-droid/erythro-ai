@@ -47,6 +47,7 @@ export default function HeroAnimation({
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const [isLg, setIsLg] = useState(false)
   const [splashDone, setSplashDone] = useState(false)
+  const [desktopVideoPlaying, setDesktopVideoPlaying] = useState(false)
 
   const desktopIsImage = Boolean(videoUrl && isProbablyImageUrl(videoUrl))
   const hasMobileImage = Boolean(mobileImageUrl)
@@ -55,6 +56,9 @@ export default function HeroAnimation({
   const showDesktopVideo =
     Boolean(videoUrl) && !desktopIsImage && isLg && splashDone
   const showDesktopImage = Boolean(videoUrl) && desktopIsImage && isLg
+  // Poster only until the video is actually playing — otherwise mobile still sits under/over the banner.
+  const showDesktopPoster =
+    Boolean(desktopPoster) && !desktopIsImage && isLg && !desktopVideoPlaying
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)')
@@ -73,6 +77,10 @@ export default function HeroAnimation({
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    if (!showDesktopVideo) setDesktopVideoPlaying(false)
+  }, [showDesktopVideo, videoUrl])
 
   // GSAP ScrollTrigger for content fade out
   useEffect(() => {
@@ -135,18 +143,18 @@ export default function HeroAnimation({
               alt=""
               decoding="async"
               fetchPriority="high"
-              className="h-full w-full object-cover opacity-85 lg:hidden"
+              className="absolute inset-0 h-full w-full object-cover opacity-85 lg:hidden"
             />
           ) : null}
 
-          {/* Desktop video poster / LCP still (before video mounts). */}
-          {desktopPoster && !desktopIsImage ? (
+          {/* Desktop video poster / LCP still — removed once video is playing. */}
+          {showDesktopPoster ? (
             <img
               src={desktopPoster}
               alt=""
               decoding="async"
               fetchPriority="high"
-              className="hidden h-full w-full object-cover opacity-85 lg:block"
+              className="absolute inset-0 hidden h-full w-full object-cover opacity-85 lg:block"
             />
           ) : null}
 
@@ -156,7 +164,7 @@ export default function HeroAnimation({
               alt=""
               decoding="async"
               fetchPriority="high"
-              className="hidden h-full w-full object-cover opacity-85 lg:block"
+              className="absolute inset-0 hidden h-full w-full object-cover opacity-85 lg:block"
             />
           ) : null}
 
@@ -169,7 +177,13 @@ export default function HeroAnimation({
               loop
               muted
               playsInline
-              preload="none"
+              preload="metadata"
+              onPlaying={() => setDesktopVideoPlaying(true)}
+              onLoadedData={(e) => {
+                // Fallback if autoplay already advanced past the first frame.
+                const v = e.currentTarget
+                if (!v.paused && v.readyState >= 2) setDesktopVideoPlaying(true)
+              }}
               className="absolute inset-0 hidden h-full w-full object-cover opacity-85 lg:block"
             />
           ) : null}
