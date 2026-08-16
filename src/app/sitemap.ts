@@ -1,73 +1,75 @@
 import type { MetadataRoute } from 'next'
 import {
-  getAllOrderSlugsCms,
-  getAllPortfolioSlugsCms,
-  getAllServiceSlugsCms,
-} from '@/lib/cmsPages'
-import { getAllOrderSlugs } from '@/lib/orderPlans'
-import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
-import { getAllServiceSlugs } from '@/lib/servicePages'
+  getLegalSitemapEntries,
+  getOrderSitemapEntries,
+  getPortfolioSitemapEntries,
+  getServiceSitemapEntries,
+  maxLastModified,
+} from '@/lib/sitemapEntries'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
 /**
- * Dynamic sitemap — rebuilt from CMS slugs whenever `payload-content` is
- * revalidated (afterChange/afterDelete hooks). Falls back to static catalogs
- * if Payload is unreachable.
+ * Dynamic sitemap with CMS `updatedAt` as lastmod.
+ * Rebuilt when `payload-content` is revalidated (see revalidate hooks).
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date()
+  const [services, portfolio, orders, legal] = await Promise.all([
+    getServiceSitemapEntries(),
+    getPortfolioSitemapEntries(),
+    getOrderSitemapEntries(),
+    getLegalSitemapEntries(),
+  ])
 
-  let serviceSlugs: string[] = []
-  let portfolioSlugs: string[] = []
-  let orderSlugs: string[] = []
-
-  try {
-    ;[serviceSlugs, portfolioSlugs, orderSlugs] = await Promise.all([
-      getAllServiceSlugsCms(),
-      getAllPortfolioSlugsCms(),
-      getAllOrderSlugsCms(),
-    ])
-  } catch {
-    serviceSlugs = getAllServiceSlugs()
-    portfolioSlugs = getAllPortfolioSlugs()
-    orderSlugs = getAllOrderSlugs()
-  }
-
-  if (!serviceSlugs.length) serviceSlugs = getAllServiceSlugs()
-  if (!portfolioSlugs.length) portfolioSlugs = getAllPortfolioSlugs()
-  if (!orderSlugs.length) orderSlugs = getAllOrderSlugs()
+  const contentStamp = maxLastModified([
+    ...services.map((r) => r.lastModified),
+    ...portfolio.map((r) => r.lastModified),
+    ...orders.map((r) => r.lastModified),
+    ...legal.map((r) => r.lastModified),
+  ])
 
   const entries: MetadataRoute.Sitemap = [
     {
       url: SITE_URL,
-      lastModified: now,
+      lastModified: contentStamp,
       changeFrequency: 'weekly',
       priority: 1,
     },
     {
       url: `${SITE_URL}/portfolio`,
-      lastModified: now,
+      lastModified: maxLastModified(portfolio.map((r) => r.lastModified)) || contentStamp,
       changeFrequency: 'weekly',
       priority: 0.9,
     },
-    ...serviceSlugs.map((slug) => ({
-      url: `${SITE_URL}/services/${slug}`,
-      lastModified: now,
+    {
+      url: `${SITE_URL}/contacts`,
+      lastModified: contentStamp,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    ...services.map((row) => ({
+      url: `${SITE_URL}/services/${row.slug}`,
+      lastModified: row.lastModified,
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     })),
-    ...portfolioSlugs.map((slug) => ({
-      url: `${SITE_URL}/portfolio/${slug}`,
-      lastModified: now,
+    ...portfolio.map((row) => ({
+      url: `${SITE_URL}/portfolio/${row.slug}`,
+      lastModified: row.lastModified,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),
-    ...orderSlugs.map((slug) => ({
-      url: `${SITE_URL}/order/${slug}`,
-      lastModified: now,
+    ...orders.map((row) => ({
+      url: `${SITE_URL}/order/${row.slug}`,
+      lastModified: row.lastModified,
       changeFrequency: 'monthly' as const,
       priority: 0.6,
+    })),
+    ...legal.map((row) => ({
+      url: `${SITE_URL}${row.path}`,
+      lastModified: row.lastModified,
+      changeFrequency: 'yearly' as const,
+      priority: 0.3,
     })),
   ]
 
