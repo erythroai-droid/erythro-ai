@@ -245,7 +245,14 @@ export default [
 - Превью изображений и видео в list view и edit view Media (не только иконка файла).
 
 ### 9.3. SEO и a11y
-- Google Search Console: meta-тег в `head` + verification file.
+- Google Search Console: meta-тег в `head` (`layout.tsx` → `verification.google`) +
+  файл `public/googlea9b1e6ba6a1fc012.html`.
+- Sitemap: `src/app/sitemap.ts` + `src/lib/sitemapEntries.ts` — URL из CMS,
+  **lastmod** = Payload `updatedAt` (services / portfolio / order plans) и
+  legal `statementDate`/`updatedAt`; также `/contacts` и legal pages.
+  Revalidate на смене контента (`payload-content` → `/sitemap.xml`).
+- После смены NS на Cloudflare: в GSC проверить ownership, sitemap
+  `https://erythro.ai/sitemap.xml`, при необходимости запросить индексирование.
 - Self-host шрифтов; `aria-label` на лого-ссылках для скринридеров.
 
 ### 9.4. Картинки и перф
