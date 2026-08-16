@@ -4,8 +4,11 @@ export type SplashMode = 'full' | 'quick'
 
 export const HOME_SCROLL_KEY = 'erythro:home-scroll'
 export const SPLASH_MODE_KEY = 'erythro:splash-mode'
-/** After the first full intro this session, cold home loads use quick splash. */
+/** After the first full intro this session, cold desktop home loads use quick splash. */
 export const FULL_SPLASH_SEEN_KEY = 'erythro:full-splash-seen'
+
+/** Mobile / tablet portrait: match hero `lg` breakpoint — auto splash stays quick. */
+export const MOBILE_QUICK_SPLASH_MQ = '(max-width: 1023px)'
 
 /** Above this, a home reload is treated as mid-page. */
 export const MID_PAGE_SCROLL_PX = 80
@@ -67,10 +70,21 @@ function hasSeenFullSplash(): boolean {
   }
 }
 
+/** True below the `lg` breakpoint — cold loads skip the full draw (LCP). */
+export function prefersMobileQuickSplash(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    return window.matchMedia(MOBILE_QUICK_SPLASH_MQ).matches
+  } catch {
+    return false
+  }
+}
+
 /**
  * Resolve splash style + restored scroll for this navigation:
- * - `full` — animated draw (first home visit this session, or forced by logo click)
- * - `quick` — red plate + finished logo (repeat home, mid-page reload, inner pages)
+ * - `full` — animated draw (desktop first home this session, or forced by logo click)
+ * - `quick` — red plate + finished logo (mobile always unless logo click; repeat desktop;
+ *   mid-page reload; inner pages)
  */
 export function resolveSplashNavigation(pathname: string): {
   mode: SplashMode
@@ -90,6 +104,7 @@ export function resolveSplashNavigation(pathname: string): {
   const scrollY = readSavedScrollY()
   const path = pathname.split('?')[0] || '/'
 
+  // Logo click (and any forced full) — works on mobile and desktop.
   if (forced === 'full') {
     markFullSplashSeen()
     return { mode: 'full', scrollY: 0 }
@@ -99,7 +114,10 @@ export function resolveSplashNavigation(pathname: string): {
   if (path !== '/') return { mode: 'quick', scrollY: 0 }
   if (scrollY > MID_PAGE_SCROLL_PX) return { mode: 'quick', scrollY }
 
-  // Cold home at top: full once per session, then quick (better LCP on reloads).
+  // Mobile: never auto-play the long draw — keeps first-visit LCP on the hero still.
+  if (prefersMobileQuickSplash()) return { mode: 'quick', scrollY: 0 }
+
+  // Desktop cold home at top: full once per session, then quick.
   if (hasSeenFullSplash()) return { mode: 'quick', scrollY: 0 }
   markFullSplashSeen()
   return { mode: 'full', scrollY: 0 }
