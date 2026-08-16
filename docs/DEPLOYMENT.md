@@ -363,3 +363,27 @@ Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24
 не отправляет почту: нужен наш SMTP-код на `main`, не адаптер Payload.
 
 ---
+
+## 14. Sitemap + Google Search Console (после Cloudflare DNS)
+
+### 14.1. Sitemap
+
+- URL: `https://erythro.ai/sitemap.xml` (`src/app/sitemap.ts`).
+- lastmod для `/services/*`, `/portfolio/*`, `/order/*` — Payload `updatedAt`.
+- Legal (`/privacy`, `/terms`, `/accessibility`) — `statementDate` / `updatedAt` из globals.
+- `/` и `/portfolio` берут max lastmod по связанному контенту; `/contacts` включён.
+- Инвалидация: hooks `revalidate` → tag `payload-content` + `revalidatePath('/sitemap.xml')`.
+
+### 14.2. Search Console после смены NS на Cloudflare
+
+1. [Google Search Console](https://search.google.com/search-console) → свойство `erythro.ai`.
+2. Ownership: meta в `layout.tsx`; файл —
+   `https://erythro.ai/googlea9b1e6ba6a1fc012.html` (`public/…`). Если была DNS TXT на старых NS —
+   подтвердить заново или опереться на meta/file.
+3. Sitemaps → `https://erythro.ai/sitemap.xml`.
+4. Проверка URL главной → «Запросить индексирование» при необходимости.
+5. Следить за `www` vs apex (оба на Vercel через Cloudflare).
+
+Почтовые MX/SPF/DKIM на индексацию не влияют.
+
+---
