@@ -138,7 +138,7 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
         className="relative mx-auto mt-12 flex w-full max-lg:-translate-y-10 flex-col items-center gap-3 text-center select-none md:mt-16 lg:gap-6"
       >
         {/* Pre-Heading tag */}
-        <span className="hero-pre-heading opacity-0 font-mono text-xs md:text-sm font-bold tracking-[0.25em] text-gold-500 uppercase select-none animate-pulse px-[30px] mb-[18px] lg:relative lg:-top-6 lg:mb-2">
+        <span className="hero-pre-heading opacity-0 font-sans text-xs md:text-sm font-bold tracking-[0.25em] text-gold-500 uppercase select-none animate-pulse px-[30px] mb-[18px] lg:relative lg:-top-6 lg:mb-2">
           {t(translations.preHeading)}
         </span>
 
