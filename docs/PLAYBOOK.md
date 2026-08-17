@@ -242,6 +242,7 @@ export default [
   дальше / mid-page / inner — quick. `markSplashDone` на старте fade (LCP).
 - Hero desktop: poster (mobile still) + video после splash; footer chip-frames — после splash + IO.
 - CWV: `experimental.inlineCss` — Tailwind/a11y CSS в `<style>` вместо render-blocking `<link>` (~1 s на Slow 4G).
+- CWV images: hero mobile/desktop stills через `next/image` + preload `/_next/image?w=…`; service posters — Image + tighter WebP.
 - Мелкие UI-фиксы: скрытие скроллбара, центрирование glyph splash, RTL close у модалки.
 
 ### 9.2. Админка Media
