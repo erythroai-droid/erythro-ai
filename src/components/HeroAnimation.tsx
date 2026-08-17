@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { waitForSplashDone } from '@/lib/splash'
@@ -136,35 +137,41 @@ export default function HeroAnimation({
         {navbar}
 
         <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0" aria-hidden="true">
-          {/* Mobile LCP still — CSS-gated so desktop never paints it. */}
-          {hasMobileImage ? (
-            <img
+          {/* Mobile LCP still — next/image serves ~viewport width (not full 984px blob). */}
+          {hasMobileImage && mobileImageUrl ? (
+            <Image
               src={mobileImageUrl}
               alt=""
-              decoding="async"
-              fetchPriority="high"
-              className="absolute inset-0 h-full w-full object-cover opacity-85 lg:hidden"
+              fill
+              priority
+              sizes="(max-width: 1023px) 100vw, 1px"
+              quality={70}
+              className="object-cover opacity-85 lg:hidden"
             />
           ) : null}
 
           {/* Desktop video poster / LCP still — removed once video is playing. */}
-          {showDesktopPoster ? (
-            <img
+          {showDesktopPoster && desktopPoster ? (
+            <Image
               src={desktopPoster}
               alt=""
-              decoding="async"
-              fetchPriority="high"
-              className="absolute inset-0 hidden h-full w-full object-cover opacity-85 lg:block"
+              fill
+              priority
+              sizes="100vw"
+              quality={70}
+              className="hidden object-cover opacity-85 lg:block"
             />
           ) : null}
 
           {showDesktopImage ? (
-            <img
-              src={videoUrl}
+            <Image
+              src={videoUrl!}
               alt=""
-              decoding="async"
-              fetchPriority="high"
-              className="absolute inset-0 hidden h-full w-full object-cover opacity-85 lg:block"
+              fill
+              priority
+              sizes="100vw"
+              quality={70}
+              className="hidden object-cover opacity-85 lg:block"
             />
           ) : null}
 

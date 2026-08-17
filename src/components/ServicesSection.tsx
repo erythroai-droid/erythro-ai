@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'nextjs-toploader/app'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
@@ -103,13 +104,14 @@ function CardVideo({
       className={`relative h-full w-full overflow-hidden ${className ?? ''}`}
     >
       {poster ? (
-        <img
+        <Image
           src={poster}
           alt={posterAlt || label}
-          className="absolute inset-0 h-full w-full object-cover"
+          fill
+          sizes="(max-width: 1023px) 100vw, 50vw"
+          quality={65}
+          className="object-cover"
           loading="lazy"
-          decoding="async"
-          fetchPriority="low"
         />
       ) : null}
       <video
