@@ -244,6 +244,8 @@ export default [
 - CWV: `experimental.inlineCss` — Tailwind/a11y CSS в `<style>` вместо render-blocking `<link>` (~1 s на Slow 4G).
 - CWV images: hero stills через `next/image` без `priority`; LCP preload в HTML с
   `fetchpriority=high` + `imageSrcSet` (тот же набор `w=` что у оптимизатора).
+- CWV fonts: Inter latin only on the critical path; cyrillic / Heebo подключаются
+  по locale; hero pre-heading больше не тянет Roboto Mono.
 - Мелкие UI-фиксы: скрытие скроллбара, центрирование glyph splash, RTL close у модалки.
 
 ### 9.2. Админка Media
