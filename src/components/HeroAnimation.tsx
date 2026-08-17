@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { waitForSplashDone } from '@/lib/splash'
+import { DESKTOP_HERO_SIZES, HERO_IMAGE_QUALITY, MOBILE_HERO_SIZES } from '@/lib/heroImage'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -143,9 +144,11 @@ export default function HeroAnimation({
               src={mobileImageUrl}
               alt=""
               fill
-              priority
-              sizes="(max-width: 1023px) 100vw, 1px"
-              quality={70}
+              sizes={MOBILE_HERO_SIZES}
+              quality={HERO_IMAGE_QUALITY}
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
               className="object-cover opacity-85 lg:hidden"
             />
           ) : null}
@@ -156,9 +159,11 @@ export default function HeroAnimation({
               src={desktopPoster}
               alt=""
               fill
-              priority
-              sizes="100vw"
-              quality={70}
+              sizes={DESKTOP_HERO_SIZES}
+              quality={HERO_IMAGE_QUALITY}
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
               className="hidden object-cover opacity-85 lg:block"
             />
           ) : null}
@@ -168,9 +173,11 @@ export default function HeroAnimation({
               src={videoUrl!}
               alt=""
               fill
-              priority
-              sizes="100vw"
-              quality={70}
+              sizes={DESKTOP_HERO_SIZES}
+              quality={HERO_IMAGE_QUALITY}
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
               className="hidden object-cover opacity-85 lg:block"
             />
           ) : null}

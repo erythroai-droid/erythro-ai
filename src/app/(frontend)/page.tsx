@@ -2,16 +2,12 @@ import React from 'react'
 import HomeClient from './HomeClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getRequestPrefs } from '@/lib/requestPrefs'
-
-/** Match next/image optimizer URL so preload hits the same bytes as LCP. */
-function optimizedImageHref(src: string, width: number, quality = 70): string {
-  const params = new URLSearchParams({
-    url: src,
-    w: String(width),
-    q: String(quality),
-  })
-  return `/_next/image?${params.toString()}`
-}
+import {
+  DESKTOP_HERO_SIZES,
+  HERO_IMAGE_QUALITY,
+  MOBILE_HERO_SIZES,
+  heroImageSrcSet,
+} from '@/lib/heroImage'
 
 export default async function HomePage() {
   const { initialLocale, initialTheme } = await getRequestPrefs()
@@ -20,20 +16,26 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* LCP stills: presize for mobile (~828) and desktop poster (~1920), not full blob. */}
+      {/*
+        LCP preload in the document with fetchpriority=high + imageSrcSet.
+        Do not use next/image `priority` (it injects a preload *without*
+        fetchpriority and fights this hint).
+      */}
       {mobileHero ? (
         <>
           <link
             rel="preload"
             as="image"
-            href={optimizedImageHref(mobileHero, 828)}
+            imageSrcSet={heroImageSrcSet(mobileHero, HERO_IMAGE_QUALITY)}
+            imageSizes={MOBILE_HERO_SIZES}
             fetchPriority="high"
             media="(max-width: 1023px)"
           />
           <link
             rel="preload"
             as="image"
-            href={optimizedImageHref(mobileHero, 1920)}
+            imageSrcSet={heroImageSrcSet(mobileHero, HERO_IMAGE_QUALITY)}
+            imageSizes={DESKTOP_HERO_SIZES}
             fetchPriority="high"
             media="(min-width: 1024px)"
           />

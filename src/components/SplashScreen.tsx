@@ -16,11 +16,19 @@ if (typeof window !== 'undefined') {
 
 function refreshScrollLayout(scrollY: number) {
   window.scrollTo(0, scrollY)
-  // Defer ST refresh so unlock does not reflow under the fading overlay (CLS).
   const run = () => {
     window.scrollTo(0, scrollY)
-    ScrollTrigger.refresh(true)
+    ScrollTrigger.refresh()
     window.scrollTo(0, scrollY)
+  }
+  // Mobile has no pinned hero — don't force a sync ST recalc on splash end (PSI reflow).
+  const delay =
+    typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 1023px)').matches
+      ? 800
+      : 0
+  if (delay > 0) {
+    window.setTimeout(run, delay)
+    return
   }
   if (typeof window.requestIdleCallback === 'function') {
     window.requestIdleCallback(() => run(), { timeout: 400 })
@@ -70,15 +78,7 @@ export default function SplashScreen() {
 
     const finish = (restore?: () => void) => {
       restore?.()
-      if (scrollY > 0) {
-        refreshScrollLayout(scrollY)
-        requestAnimationFrame(() => refreshScrollLayout(scrollY))
-      } else {
-        // Client navigations must start at the top — do not keep the previous route's Y.
-        window.scrollTo(0, 0)
-        ScrollTrigger.refresh(true)
-        window.scrollTo(0, 0)
-      }
+      refreshScrollLayout(scrollY > 0 ? scrollY : 0)
       setDone(true)
       markSplashDone()
     }

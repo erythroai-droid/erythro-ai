@@ -144,25 +144,25 @@ function measurePhraseWidth(
   fontWeight: string,
   letterSpacing: string,
 ): number {
-  const el = document.createElement('span')
-  el.style.cssText = [
-    'position:absolute',
-    'left:-99999px',
-    'top:0',
-    'visibility:hidden',
-    'white-space:nowrap',
-    'text-transform:uppercase',
-    'line-height:1',
-    `font-family:${fontFamily}`,
-    `font-weight:${fontWeight}`,
-    `font-size:${fontPx}px`,
-    `letter-spacing:${letterSpacing}`,
-  ].join(';')
-  el.textContent = text
-  document.body.appendChild(el)
-  const w = el.getBoundingClientRect().width
-  el.remove()
-  return w
+  const ctx = getMeasure2d()
+  if (!ctx) return text.length * fontPx * 0.6
+  ctx.font = `${fontWeight} ${fontPx}px ${fontFamily}`
+  const sample = text.toUpperCase()
+  const base = ctx.measureText(sample).width
+  const ls = Number.parseFloat(letterSpacing)
+  const extra = Number.isFinite(ls) && sample.length > 1 ? ls * (sample.length - 1) : 0
+  return base + extra
+}
+
+let measure2d: CanvasRenderingContext2D | null | undefined
+function getMeasure2d(): CanvasRenderingContext2D | null {
+  if (measure2d !== undefined) return measure2d
+  try {
+    measure2d = document.createElement('canvas').getContext('2d')
+  } catch {
+    measure2d = null
+  }
+  return measure2d
 }
 
 /** Shrink headline font so the phrase fits the viewport on small screens. */
@@ -2430,6 +2430,7 @@ function resolveSharedMobileFontPx(
 }
 
 /** Approximate wrapped phrase height at a given size (plain text ≈ char-word layout). */
+let wrapProbe: HTMLDivElement | null = null
 function measureWrappedPhraseHeight(
   text: string,
   fontPx: number,
@@ -2438,27 +2439,29 @@ function measureWrappedPhraseHeight(
   fontWeight: string,
   letterSpacing: string,
 ): number {
-  const el = document.createElement('div')
-  el.style.cssText = [
-    'position:absolute',
-    'left:-99999px',
-    'top:0',
-    'visibility:hidden',
-    `width:${maxWidth}px`,
-    'text-align:center',
-    'text-transform:uppercase',
-    'line-height:1.12',
-    'white-space:normal',
-    `font-family:${fontFamily}`,
-    `font-weight:${fontWeight}`,
-    `font-size:${fontPx}px`,
-    `letter-spacing:${letterSpacing}`,
-  ].join(';')
-  el.textContent = text
-  document.body.appendChild(el)
-  const h = el.getBoundingClientRect().height
-  el.remove()
-  return h
+  if (!wrapProbe) {
+    wrapProbe = document.createElement('div')
+    wrapProbe.setAttribute('aria-hidden', 'true')
+    wrapProbe.style.cssText = [
+      'position:absolute',
+      'left:-99999px',
+      'top:0',
+      'visibility:hidden',
+      'text-align:center',
+      'text-transform:uppercase',
+      'line-height:1.12',
+      'white-space:normal',
+      'pointer-events:none',
+    ].join(';')
+    document.body.appendChild(wrapProbe)
+  }
+  wrapProbe.style.width = `${maxWidth}px`
+  wrapProbe.style.fontFamily = fontFamily
+  wrapProbe.style.fontWeight = fontWeight
+  wrapProbe.style.fontSize = `${fontPx}px`
+  wrapProbe.style.letterSpacing = letterSpacing
+  wrapProbe.textContent = text
+  return wrapProbe.getBoundingClientRect().height
 }
 
 /** Mobile / reduced: inline slam only (no portal outline). */
@@ -3287,14 +3290,6 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
     )
     if (heroSection) {
       io.observe(heroSection)
-      // Mid-page reload skips splash and must NOT start the fixed cinematic
-      // portal (outline flash over Lets Talk / FAQ). Only run while the hero
-      // scroll root actually intersects the viewport.
-      const rect = heroSection.getBoundingClientRect()
-      const vh = window.innerHeight
-      const visiblyInHero = rect.bottom > vh * 0.35 && rect.top < vh * 0.65
-      if (visiblyInHero) startMotion()
-      else hideStage()
     } else {
       startMotion()
     }
