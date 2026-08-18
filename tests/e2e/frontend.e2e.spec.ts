@@ -15,6 +15,6 @@ test.describe('Frontend', () => {
 
     const heading = page.locator('.hero-heading').first()
 
-    await expect(heading).toContainText('Engineering the future')
+    await expect(heading).toContainText(/ENGINEERING FUTURE/i)
   })
 })

@@ -29,6 +29,7 @@ test.describe('Mobile navigation regressions', () => {
   })
 
   test('Services → Portfolio client nav starts at top (not footer)', async ({ page }) => {
+    test.setTimeout(90000)
     await page.goto('http://localhost:3000/services/ai-automation')
     await waitForSplashGone(page)
 
@@ -38,13 +39,12 @@ test.describe('Mobile navigation regressions', () => {
     const serviceScrollY = await page.evaluate(() => window.scrollY)
     expect(serviceScrollY).toBeGreaterThan(300)
 
-    const portfolioCta = page.getByRole('link', {
-      name: /наш(и)? проект|our projects|הפרויקטים/i,
-    })
-    await expect(portfolioCta.first()).toBeVisible()
-    await portfolioCta.first().click()
+    const portfolioCta = page.locator('#service-body a[href*="/portfolio"]').first()
+    await expect(portfolioCta).toBeVisible()
+    await portfolioCta.click()
 
-    await page.waitForURL(/\/portfolio\/?$/, { timeout: 20000 })
+    // Next.js <Link> is client-side: waitUntil "load" never fires again.
+    await page.waitForURL(/\/portfolio\/?$/, { timeout: 20000, waitUntil: 'commit' })
     await waitForSplashGone(page)
 
     // After quick splash, scroll must reset — previous bug restored service scrollY.

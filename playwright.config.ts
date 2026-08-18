@@ -6,6 +6,9 @@ import { defineConfig, devices } from '@playwright/test'
  */
 import 'dotenv/config'
 
+// Dev Drizzle push prompts hang e2e (schema warnings). Seed + Next inherit this.
+process.env.PAYLOAD_DISABLE_PUSH ??= '1'
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -37,5 +40,10 @@ export default defineConfig({
     command: 'pnpm dev',
     reuseExistingServer: true,
     url: 'http://localhost:3000',
+    timeout: 180 * 1000,
+    env: {
+      ...process.env,
+      PAYLOAD_DISABLE_PUSH: '1',
+    },
   },
 })

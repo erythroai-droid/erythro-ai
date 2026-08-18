@@ -6,6 +6,9 @@
 
 Статус: **сайт задеплоен и работает** (Production, Vercel, Node.js 24.x, БД — Supabase).
 
+**Связанные документы:** [`RAG_INDEX.md`](./RAG_INDEX.md) · [`PITFALLS.md`](./PITFALLS.md) ·
+[`PORTFOLIO_CMS.md`](./PORTFOLIO_CMS.md) · [`PLAYBOOK.md`](./PLAYBOOK.md)
+
 ---
 
 ## 1. Архитектура прода
@@ -19,7 +22,8 @@
 | Пакетный менеджер | pnpm 10.x |
 
 Репозиторий: `github.com/erythroai-droid/erythro-ai`, ветка `main`.
-Деплой триггерится автоматически при каждом push в `main`.
+Деплой триггерится автоматически при каждом push/merge в `main`, **после** прохождения
+GitHub Actions (см. §11).
 
 ---
 
@@ -60,6 +64,7 @@ DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-1-...pooler.supabase.com
 | `PAYLOAD_SECRET` | случайный 64-символьный hex (`openssl`/`crypto.randomBytes(32)`) | шифрование сессий Payload — **не менять после первого деплоя** |
 | `NEXT_PUBLIC_SITE_URL` | `https://erythro.ai` | canonical / OG |
 | `REVALIDATION_TOKEN` | (опционально) | для On-Demand Revalidation из n8n — добавить позже |
+| `SMTP_PASS` | пароль ящика Hostinger `order@erythro.ai` | форма шлёт с `order@erythro.ai` на email из Site Settings → Contacts |
 
 Локально те же значения лежат в `.env` (он в `.gitignore`, в репозиторий не попадает).
 
@@ -114,6 +119,7 @@ pnpm install --lockfile-only
 2. `https://<домен>/admin` открывается, можно войти / создать админа.
 3. Главная страница рендерится, контент тянется из Supabase (en/ru/he, тема, cookie-баннер).
 4. **Runtime Logs** без ошибок 500 / подключения к БД.
+5. Контактная форма: заявка в `/admin` **и** письмо на `order@erythro.ai` (см. §13, PIT-020).
 
 ---
 
@@ -122,8 +128,10 @@ pnpm install --lockfile-only
 - [x] **Медиа-хранилище — Vercel Blob.** Подключён адаптер `@payloadcms/storage-vercel-blob`
       для коллекции `media` (см. §8). Загрузки из админки теперь переживают редеплой.
 - [x] **Домен `erythro.ai`.** Привязан, сайт открывается по основному домену.
-- [ ] **Миграции схемы Payload.** Сейчас схема в Supabase появилась через dev `push`. Для прод-эволюции
-      схемы настроить нормальные миграции (`payload migrate:create` / `payload migrate`), а не push.
+- [x] **Миграции схемы Payload (частично).** Formal migrations лежат в `src/migrations/` и
+      подключаются как `prodMigrations`. Для отстающих колонок на проде/CI добавлены
+      idempotent fix-скрипты (`pnpm db:fix-*`) — см. §12. Полностью уйти от исторического
+      `push`-наследия на Supabase ещё предстоит аудитом.
 - [ ] **Безопасность Next.js.** Держать Next запатченным (выходят новые CVE: 55183/55184/67779 и т.д.).
       Обновлять в пределах окна Payload или поднимать Payload.
 - [ ] **Transaction pooler и prepared statements.** Если в Runtime Logs появится
@@ -137,6 +145,12 @@ pnpm install --lockfile-only
       больше не нагружается на каждый запрос. Куки `NEXT_LOCALE` по-прежнему читаются вне кэша,
       поэтому запоминание языка не затронуто. `REVALIDATION_TOKEN` + ручной POST `/api/revalidate`
       оставлены как резервный способ сброса (например, из n8n).
+- [x] **Import project script** (`scripts/import-project/`) — автонаполнение portfolio из папки;
+      гайд `scripts/import-project/README.md`.
+- [x] **Почта контактной формы.** Hostinger `order@erythro.ai`; MX/SPF/DKIM в **Cloudflare DNS**
+      (после смены NS с Vercel); `SMTP_PASS` + `src/lib/contactNotification.ts`.
+      Проверено 2026-08-14 (см. §13, PIT-020). Edge rate limit — §13.3.
+- [ ] **RAG corpus ingest** — карта в `RAG_INDEX.md`; источник инцидентов `PITFALLS.md`.
 
 ---
 
@@ -157,6 +171,24 @@ pnpm run build
 
 # Сидинг Supabase
 pnpm exec tsx scripts/seed.ts
+
+# Импорт портфолио-кейса из content/imports/<slug> (сначала --dry-run)
+pnpm import:project -- content/imports/<slug> --dry-run
+pnpm import:project -- content/imports/<slug>
+
+# Idempotent schema fixes (prod/CI lag)
+pnpm db:fix-portfolio-hero-mobile
+pnpm db:fix-portfolio-subtitle
+pnpm db:fix-portfolio-richtext
+pnpm db:fix-site-settings-page-heroes
+
+# После смены Payload plugins / Lexical client features
+pnpm generate:importmap
+
+# Локальный e2e: не давать drizzle push зависнуть на y/N (PIT-022)
+# (playwright.config.ts выставляет PAYLOAD_DISABLE_PUSH=1 сам)
+pnpm test:int
+pnpm test:e2e
 ```
 
 ---
@@ -306,9 +338,240 @@ URL вычисляется в afterRead-хуке, так что ссылка ч�
 
 ## 10. Что дальше по продукту (после этого журнала)
 
-Инфраструктурный журнал выше закрывает боевой деплой + Blob + видео Range.
-Последующие продуктовые изменения (splash/contact modal, Hero/Services/Cases video из CMS,
-mobile stacking на главной, страница `/portfolio` и её GSAP/бургер) зафиксированы в
-**`PLAYBOOK.md` §9 — «Хроника после базового деплоя»**.
+**v1 (2026-08-18) закрыта:** прод, CMS, формы+SMTP, CI-гейт. Журнал выше — инфра.
+Продуктовый план повторения: **`PLAYBOOK.md` §3**. Хроника: **`PLAYBOOK.md` §9**.
+Грабли: **`PITFALLS.md`**. RAG: **`RAG_INDEX.md`**.
+
+Следующий трек — **масштабируемость**, не доделки v1.
+
+---
+
+## 11. CI: GitHub Actions → Vercel (тесты до прода)
+
+Статус: **настроено и проверено** (smoke PR `ci/smoke-check`, оба job’а зелёные).
+
+### Зачем
+Автотесты должны проходить **до** продвижения деплоя на production-домен. Цепочка:
+
+1. Push в feature-ветку / PR в `main`
+2. GitHub Actions workflow **Tests** (`.github/workflows/test.yml`)
+3. Merge в `main` — только если status checks зелёные (GitHub Ruleset)
+4. Vercel собирает деплой и ждёт **Deployment Checks** перед alias на прод
+
+> Прямой `git push origin main` **заблокирован** ruleset’ом, пока на коммите нет зелёных
+> `Unit Tests` / `API Tests`. Рабочий путь — PR → merge.
+
+### Workflow
+
+| Job | Имя check (важно для Vercel) | Что гоняет |
+|---|---|---|
+| `unit` | **Unit Tests** | Vitest: `ctaNav`, `splash`, `sectionAutoSnap` (без БД) |
+| `api` | **API Tests** | Vitest: `tests/int/api.int.spec.ts` (нужен `DATABASE_URL`) |
+
+Скрипты: `pnpm test:int` / `pnpm test:ci`. E2E (Playwright) в CI пока не включены.
+
+### GitHub Secrets
+
+`Settings → Secrets and variables → Actions`:
+
+| Secret | Назначение |
+|---|---|
+| `DATABASE_URL` | Postgres URI. Достаточно **Direct** (`db.<ref>.supabase.co`) — CI сам перепишет на Session pooler |
+| `PAYLOAD_SECRET` | Любой длинный секрет для CI (может отличаться от Vercel) |
+
+### Грабли Supabase + GitHub Actions (уже учтены в workflow)
+
+| Симптом | Причина | Фикс в репо |
+|---|---|---|
+| `ENETUNREACH` IPv6 | Direct host IPv6-only, GHA — IPv4 | `scripts/ci-resolve-supabase-url.mjs` → session pooler |
+| `tenant/user … not found` | Неверный pooler-кластер (`aws-0` vs `aws-1`/`aws-2`) | Скрипт пробует `aws-0`…`aws-2` |
+| `self-signed certificate in certificate chain` | Node verify + Supabase cert | `DATABASE_SSL_INSECURE=1` → `ssl: { rejectUnauthorized: false }` только в CI |
+| Hook timeout 90s на `getPayload` | `pushDevSchema` висит на pooler | `push: false` при `CI=true`, `NODE_ENV=test` |
+
+Регион проекта: `ap-southeast-1` (зашит в workflow как `SUPABASE_REGION`).
+
+### Vercel Deployment Checks
+
+`Project → Settings → Build and Deployment → Deployment Checks`:
+
+1. **Add Checks → GitHub**
+2. Если список пуст — вставь SHA успешного прогона и включи **Show All Checks**
+3. Добавь **Unit Tests** и **API Tests**
+4. Бейдж **Production** = обязательны для продвижения в production
+
+Ручной блок «Send workflow updates…» / `vercel/repository-dispatch` **не нужен** — job `name:` уже публикует GitHub checks с этими именами.
+
+### GitHub Branch Ruleset
+
+`Settings → Rules → Rulesets` (пример: `main protection`):
+
+- Target: default branch / `main`
+- Enforcement: **Active**
+- Rule: **Require status checks to pass** → `Unit Tests`, `API Tests`
+
+### Чеклист для нового проекта
+
+- [ ] `.github/workflows/test.yml` с job names, совпадающими с Deployment Checks
+- [ ] Secrets `DATABASE_URL` (+ опционально `PAYLOAD_SECRET`)
+- [ ] Для Supabase: resolver pooler / `sslmode` / `push: false` в CI
+- [ ] Vercel Deployment Checks → Unit + API → Production
+- [ ] Branch ruleset на `main` с теми же status checks
+- [ ] Smoke: PR → зелёные checks → merge (не прямой push в `main`)
+
+---
+
+## 12. Эволюция схемы на проде (миграции + fix-скрипты)
+
+Исторически схема на Supabase выросла из dev `push`. Дальше изменения идут через
+`src/migrations/*` + `prodMigrations` в `payload.config.ts`. Когда прод или CI отстают,
+срабатывают **idempotent** скрипты (безопасны при повторном запуске):
+
+| Скрипт | Зачем |
+|---|---|
+| `pnpm db:fix-portfolio-hero-mobile` | Колонка `hero_media_mobile_id` |
+| `pnpm db:fix-portfolio-subtitle` | Колонка subtitle (+ `$1::varchar` — PIT-005) |
+| `pnpm db:fix-portfolio-richtext` | varchar → jsonb для Lexical полей |
+| `pnpm db:fix-site-settings-page-heroes` | Page hero media FK в Site Settings |
+
+Также без отдельного `db:fix-*` (только migration): `20260815_010000_site_settings_emails`
+(адресная книга + notify/display selects).
+
+**Правила (не повторять грабли):**
+
+1. Новое поле CMS → migration **в том же PR**, что и код маппера/UI.
+2. Если API tests или prod могут увидеть старую схему — добавить `db:fix-*` и вызов в CI
+   **до** `api.int.spec`.
+3. `push: false` при `CI=true` / `NODE_ENV=test` — иначе hang на pooler (PIT-006, PIT-012).
+4. После Lexical/storage client features → `pnpm generate:importmap` и коммит
+   `importMap.js` (PIT-001). Пример: TableFeature без import map = «таблиц в админке нет».
+5. Смена формы закэшированных документов → bump cache key (PIT-015).
+6. Сериализовать опасные миграции (portfolio categories) — параллельный migrate на Vercel
+   давал race (см. коммит `8319779`).
+7. Production deploy после merge обычно ~3–5 мин до `READY` — «не деплоится» часто = ещё
+   `BUILDING`, не fail. Смотреть Deployments + inspector URL.
+
+Каталог симптомов: **`PITFALLS.md`**. Продуктовый контракт portfolio: **`PORTFOLIO_CMS.md`**.
+
+---
+
+## 13. Почта контактной формы (Hostinger + Cloudflare DNS)
+
+Проверено **2026-08-14**: входящие с Gmail и заказы с `https://erythro.ai` доходят на
+`order@erythro.ai`. Заявка по-прежнему сохраняется в Payload (`contact-submissions`).
+NS домена с тех пор на **Cloudflare** (записи перенесены; см. §14).
+
+### 13.1. Куда писать DNS
+
+Почтовые записи живут **у текущего DNS-хоста NS**, не в hPanel Hostinger.
+Сейчас nameservers — **Cloudflare** → DNS → Records. Раньше (первый запуск почты) —
+Vercel Domains → DNS. Автоподключение в hPanel не сработает, пока NS не Hostinger
+(Hostinger: [manual domain setup](https://www.hostinger.com/support/8650765-set-up-a-domain-for-hostinger-email/)).
+Записи сайта (CNAME/A на Vercel) не ломать.
+
+| Type | Name | Priority | Value |
+|---|---|---|---|
+| MX | *(пусто)* | 5 | `mx1.hostinger.com` |
+| MX | *(пусто)* | 10 | `mx2.hostinger.com` |
+| TXT | *(пусто)* | — | `v=spf1 include:_spf.mail.hostinger.com ~all` |
+| CNAME | `hostingermail-a._domainkey` | — | `hostingermail-a.dkim.mail.hostinger.com` |
+| CNAME | `hostingermail-b._domainkey` | — | `hostingermail-b.dkim.mail.hostinger.com` |
+| CNAME | `hostingermail-c._domainkey` | — | `hostingermail-c.dkim.mail.hostinger.com` |
+| TXT | `_dmarc` | — | `v=DMARC1; p=none; rua=mailto:order@erythro.ai` |
+
+В Name для DKIM только `hostingermail-a._domainkey`, без `.erythro.ai`. После сохранения —
+Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24 ч на пропагацию).
+
+### 13.2. Как сайт шлёт письмо
+
+`POST /api/contact` (`src/app/api/contact/route.ts`):
+
+1. Пишет документ в коллекцию `contact-submissions` (админка).
+2. Читает Site Settings → Contacts → Email.
+3. Шлёт SMTP через `src/lib/contactNotification.ts`: **from** `"Erythro.ai" <order@erythro.ai>`,
+   **to** = Site Settings notify target(s), Reply-To = имя + email посетителя.
+
+Транспорт: `smtp.hostinger.com:465` (fallback 587 STARTTLS). Пароль ящика — Vercel env
+**`SMTP_PASS`** (Production + Preview). Опционально: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
+`CONTACT_FROM_EMAIL`, `CONTACT_NOTIFY_EMAIL`. Значение пароля в git не класть.
+
+Если письмо есть, но в **Spam** Hostinger (а пересылка на Gmail работает) — это локальный
+фильтр ящика, не DNS. См. PIT-021: пометить «не спам» / фильтр по From/Subject, либо
+ставить notify на Gmail в Site Settings.
+
+Если заявка есть в админке, а письма нет — смотреть Runtime Logs `[api/contact]` /
+`[contactNotification]` (PIT-020). Payload warning «No email adapter provided» сам по себе
+не отправляет почту: нужен наш SMTP-код на `main`, не адаптер Payload.
+
+### 13.3. Защита `POST /api/contact`
+
+Единственная точка приёма форм (модалка /contacts / order) — изолированный route:
+
+1. **App rate limit** по IP (`cf-connecting-ip` → `x-forwarded-for`), default **5 / 60s**
+   (`CONTACT_RATE_LIMIT_MAX`, `CONTACT_RATE_LIMIT_WINDOW_MS`). Ответ `429` + `Retry-After`.
+   In-memory per Vercel isolate — **не** общий счётчик по всем инстансам.
+2. **Cloudflare Rate Limiting** (edge, до Vercel) — обязательное дополнение, см. ниже.
+3. **Sanitize + validate** (`contactSubmissionGuard`) до записи в Payload и SMTP:
+   срез HTML/control chars, лимиты длины, строгий email/locale.
+4. Затем CMS `contact-submissions` и SMTP notify.
+
+#### Cloudflare Rate Limiting на `/api/contact`
+
+**Статус (2026-08-16):** правило **Active**, слот Free **1/1**:
+`Rate limit /api/contact (5/10s per IP)`.
+
+| Слой | Лимит | Зачем |
+|---|---|---|
+| Cloudflare edge (Free) | **5 / 10s / IP**, Block **10s** | общий счётчик до Vercel; Free: period/mitigation только 10s; в expression — Path (не Method) |
+| App (`contactRateLimit`) | **5 / 60s / IP** | sliding window в isolate; `429` + `Retry-After` |
+
+**Dashboard** (если пересоздавать)
+
+1. [Security rules](https://dash.cloudflare.com/?to=/:account/:zone/security/security-rules)
+   → `erythro.ai` → **Create rule** → **Rate limiting rules**.
+2. Name: `Rate limit /api/contact (5/10s per IP)`.
+3. Expression: `(http.request.uri.path eq "/api/contact")`.
+4. Characteristics → **IP**.
+5. When rate exceeds → **5** / **10 seconds**.
+6. Action → **Block**, Duration → **10 seconds**, Status → **Active**.
+7. **Deploy**.
+
+На Pro+ можно поднять period до 60s и добавить `http.request.method eq "POST"`.
+
+**API / скрипт**
+
+```bash
+# Token: Zone WAF Write + Zone Read; Zone ID — Overview зоны
+export CLOUDFLARE_API_TOKEN=...
+export CLOUDFLARE_ZONE_ID=...
+pnpm cf:contact-rate-limit
+# pnpm cf:contact-rate-limit -- --dry-run
+```
+
+Проверка: >5 быстрых запросов на `https://erythro.ai/api/contact` с одного IP → edge block
+(до приложения). Security → Events.
+
+---
+
+## 14. Sitemap + Google Search Console (после Cloudflare DNS)
+
+### 14.1. Sitemap
+
+- URL: `https://erythro.ai/sitemap.xml` (`src/app/sitemap.ts`).
+- lastmod для `/services/*`, `/portfolio/*`, `/order/*` — Payload `updatedAt`.
+- Legal (`/privacy`, `/terms`, `/accessibility`) — `statementDate` / `updatedAt` из globals.
+- `/` и `/portfolio` берут max lastmod по связанному контенту; `/contacts` включён.
+- Инвалидация: hooks `revalidate` → tag `payload-content` + `revalidatePath('/sitemap.xml')`.
+
+### 14.2. Search Console после смены NS на Cloudflare
+
+1. Открыть [Google Search Console](https://search.google.com/search-console) → свойство `erythro.ai`.
+2. Ownership: meta уже в `layout.tsx`; файл верификации —
+   `https://erythro.ai/googlea9b1e6ba6a1fc012.html` (`public/…`). Если была DNS TXT-проверка
+   на старых NS — подтвердить заново или опереться на meta/file.
+3. Sitemaps → добавить / проверить `https://erythro.ai/sitemap.xml`.
+4. Проверка URL главной → «Запросить индексирование» при необходимости.
+5. Настройки → предпочтительный домен / следить за `www` vs apex (сейчас apex + www → Vercel).
+
+Почтовые MX/SPF/DKIM в Cloudflare на индексацию не влияют.
 
 ---
