@@ -552,6 +552,37 @@ pnpm cf:contact-rate-limit
 
 ---
 
+## 15. AI visibility & Cloudflare robots (AI crawlers)
+
+Сканеры AI-видимости проверяют `llms.txt`, Organization schema, MCP manifest и доступ AI-ботов.
+
+**В коде (Next.js):**
+
+- `public/llms.txt` — канонические факты о бренде для LLM
+- `/.well-known/mcp` — MCP discovery manifest
+- `/about` — Brand Facts page
+- Organization / FAQ JSON-LD в `layout.tsx`
+- GA4 Consent Mode stub в `<head>` (`AnalyticsBootstrap.tsx`)
+
+**Cloudflare Managed robots (важно):**
+
+На проде Cloudflare может **добавлять** в `robots.txt` блокировку AI-ботов
+(`GPTBot`, `ClaudeBot`, `CCBot`, `Google-Extended` и др.) поверх правил из
+`src/app/robots.ts`. Это даёт `severe_block=True` в AI-аудитах.
+
+Чтобы разрешить индексацию AI-краулерами:
+
+1. [Cloudflare Dashboard](https://dash.cloudflare.com) → зона `erythro.ai`
+2. **Security** → **Bots** (или **Scrape Shield** / **AI Crawl Control** — зависит от плана)
+3. Отключить managed block для нужных AI-ботов **или** убрать «Cloudflare Managed content»
+   из robots, если политика компании допускает AI-индексацию
+4. Проверить: `curl https://erythro.ai/robots.txt` — не должно быть `Disallow: /` для
+   `GPTBot` / `ClaudeBot`, если хотите AI-видимость
+
+`src/app/robots.ts` явно разрешает AI user-agents; финальный `robots.txt` = Cloudflare + Next.
+
+---
+
 ## 14. Sitemap + Google Search Console (после Cloudflare DNS)
 
 ### 14.1. Sitemap
@@ -559,7 +590,7 @@ pnpm cf:contact-rate-limit
 - URL: `https://erythro.ai/sitemap.xml` (`src/app/sitemap.ts`).
 - lastmod для `/services/*`, `/portfolio/*`, `/order/*` — Payload `updatedAt`.
 - Legal (`/privacy`, `/terms`, `/accessibility`) — `statementDate` / `updatedAt` из globals.
-- `/` и `/portfolio` берут max lastmod по связанному контенту; `/contacts` включён.
+- `/` и `/portfolio` берут max lastmod по связанному контенту; `/contacts` и `/about` включены.
 - Инвалидация: hooks `revalidate` → tag `payload-content` + `revalidatePath('/sitemap.xml')`.
 
 ### 14.2. Search Console после смены NS на Cloudflare
