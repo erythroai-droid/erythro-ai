@@ -10,6 +10,7 @@ import {
   consumeContactRateLimit,
   getRequestIp,
 } from '@/lib/contactRateLimit'
+import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
 
 export const runtime = 'nodejs'
@@ -41,6 +42,11 @@ export async function POST(request: NextRequest) {
     body = await request.json()
   } catch {
     return NextResponse.json({ message: 'Invalid JSON' }, { status: 400 })
+  }
+
+  if (isContactHoneypotTriggered(body)) {
+    // Silent accept — do not persist, notify, or reveal the trap to bots.
+    return NextResponse.json({ ok: true })
   }
 
   const guarded = guardContactSubmission(body)

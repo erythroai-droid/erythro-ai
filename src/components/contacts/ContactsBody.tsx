@@ -3,7 +3,9 @@
 import React, { useRef, useState } from 'react'
 import { useSiteContent } from '@/components/SiteContentProvider'
 import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
+import { ContactHoneypotField } from '@/components/ContactHoneypotField'
 import { ContactSendSpinner } from '@/components/ContactSendingPanel'
+import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import { contactForm } from '@/translations'
 import { contactsPage, tContacts } from '@/lib/contactsPage'
 import {
@@ -94,7 +96,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (status === 'sending') return
 
@@ -105,13 +107,22 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
 
     if (hasContactFieldErrors(nextFieldErrors) || !privacyConsent) return
 
+    const honeypot =
+      (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ?? ''
+
     setStatus('sending')
     setSubmitError('')
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, locale, privacyConsent: true, source: 'contact' }),
+        body: JSON.stringify({
+          ...values,
+          [CONTACT_HONEYPOT_FIELD]: honeypot,
+          locale,
+          privacyConsent: true,
+          source: 'contact',
+        }),
       })
       if (res.status === 429) {
         setSubmitError(t(form.rateLimited))
@@ -305,6 +316,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                     }`}
                   >
                     <legend className="sr-only">{formHeading}</legend>
+                    <ContactHoneypotField idPrefix="contacts-page" />
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div>
                           <label htmlFor="contacts-page-name" className={labelClass}>
