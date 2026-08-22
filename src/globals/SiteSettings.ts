@@ -138,7 +138,7 @@ export const SiteSettings: GlobalConfig = {
             },
             { name: 'phoneDisplay', type: 'text', admin: { description: 'Formatted phone shown to users' } },
             { name: 'facebook', type: 'text', admin: { description: 'Facebook URL' } },
-            { name: 'tiktok', type: 'text', admin: { description: 'TikTok URL' } },
+            { name: 'telegram', type: 'text', admin: { description: 'Telegram URL (e.g. https://t.me/your_channel)' } },
           ],
         },
         {

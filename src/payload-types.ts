@@ -1444,9 +1444,9 @@ export interface SiteSetting {
    */
   facebook?: string | null;
   /**
-   * TikTok URL
+   * Telegram URL
    */
-  tiktok?: string | null;
+  telegram?: string | null;
   cookieMessage?: string | null;
   cookieAccept?: string | null;
   cookieDecline?: string | null;
@@ -1783,7 +1783,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   phone?: T;
   phoneDisplay?: T;
   facebook?: T;
-  tiktok?: T;
+  telegram?: T;
   cookieMessage?: T;
   cookieAccept?: T;
   cookieDecline?: T;

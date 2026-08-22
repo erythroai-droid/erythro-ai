@@ -264,12 +264,15 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
   }, [])
 
   return (
-    <div ref={wrapperRef} className="relative w-full">
+    <div
+      ref={wrapperRef}
+      className="relative w-full bg-white max-lg:rounded-t-[28px] lg:flex lg:h-screen lg:flex-col lg:overflow-hidden"
+    >
       <section
         id="cases"
         ref={sectionRef}
         data-menu-contrast="light"
-        className="pt-20 pb-20 lg:py-0 lg:pt-16 lg:pb-0 lg:h-screen lg:flex lg:flex-col lg:overflow-hidden w-full transition-colors duration-500 bg-white border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 select-none"
+        className="pt-20 pb-0 lg:py-0 lg:pt-16 lg:pb-0 lg:flex lg:flex-1 lg:min-h-0 lg:flex-col w-full transition-colors duration-500 bg-white border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 select-none"
       >
       <div className="max-w-[1170px] mx-auto px-[30px] w-full lg:flex lg:flex-1 lg:min-h-0 lg:flex-col">
         {/* Headings */}
@@ -338,22 +341,72 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
                 ))}
             </span>
             <span
-              className="inline-flex rtl:-scale-x-100"
+              className={`inline-flex ${locale === 'he' ? '-scale-x-100' : ''}`}
               aria-hidden="true"
             >
-              <span className="inline-block transition-transform duration-300 ease-out group-hover:translate-x-[3px]">
+              <span
+                className={`inline-block transition-transform duration-300 ease-out ${
+                  locale === 'he' ? 'group-hover:-translate-x-[3px]' : 'group-hover:translate-x-[3px]'
+                }`}
+              >
                 &gt;
               </span>
-              <span className="inline-block transition-transform duration-300 ease-out delay-75 group-hover:translate-x-[3px]">
+              <span
+                className={`inline-block transition-transform duration-300 ease-out delay-75 ${
+                  locale === 'he' ? 'group-hover:-translate-x-[3px]' : 'group-hover:translate-x-[3px]'
+                }`}
+              >
                 &gt;
               </span>
             </span>
           </a>
         </div>
-      </div> {/* Close the max-width container here to make the marquee span the full screen width */}
+      </div>
 
-      {/* Partners Marquee Running Belt */}
-      <div ref={marqueeRef} className="relative w-full shrink-0 overflow-hidden py-4 border-t border-b border-coal-400/10 dark:border-white/5 select-none marquee-wrapper">
+      <style jsx global>{`
+        /* Infinite scrolling keyframe animation */
+        @keyframes marquee {
+          0% {
+            transform: translateX(0%);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
+        }
+        .animate-marquee {
+          animation: marquee 28s linear infinite;
+        }
+        .marquee-wrapper:hover .animate-marquee {
+          animation-play-state: paused;
+        }
+
+        @keyframes view-all-letter-bounce {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          35% {
+            transform: translateY(-3px);
+          }
+          55% {
+            transform: translateY(-0.5px);
+          }
+          70% {
+            transform: translateY(-1.5px);
+          }
+        }
+        .group:hover .view-all-letter {
+          animation: view-all-letter-bounce 0.5s ease-out both;
+        }
+      `}</style>
+      </section>
+
+      {/* Partners Marquee — outside section so mobile stacking wrappers don't clip horizontal scroll */}
+      <div
+        ref={marqueeRef}
+        dir="ltr"
+        className="relative w-full shrink-0 overflow-hidden py-4 border-t border-b border-coal-400/10 dark:border-white/5 select-none marquee-wrapper bg-white"
+      >
         {/* Faded edges overlay for premium depth */}
         <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
@@ -396,44 +449,6 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        /* Infinite scrolling keyframe animation */
-        @keyframes marquee {
-          0% {
-            transform: translateX(0%);
-          }
-          100% {
-            transform: translateX(-100%);
-          }
-        }
-        .animate-marquee {
-          animation: marquee 28s linear infinite;
-        }
-        .marquee-wrapper:hover .animate-marquee {
-          animation-play-state: paused;
-        }
-
-        @keyframes view-all-letter-bounce {
-          0%,
-          100% {
-            transform: translateY(0);
-          }
-          35% {
-            transform: translateY(-3px);
-          }
-          55% {
-            transform: translateY(-0.5px);
-          }
-          70% {
-            transform: translateY(-1.5px);
-          }
-        }
-        .group:hover .view-all-letter {
-          animation: view-all-letter-bounce 0.5s ease-out both;
-        }
-      `}</style>
-      </section>
     </div>
   )
 }

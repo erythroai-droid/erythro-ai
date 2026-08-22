@@ -522,7 +522,7 @@ export async function getSiteContent(): Promise<SiteContent> {
     if (settings?.phone) content.siteSettings.phone = settings.phone
     if (settings?.phoneDisplay) content.siteSettings.phoneDisplay = settings.phoneDisplay
     if (settings?.facebook) content.siteSettings.facebook = settings.facebook
-    if (settings?.tiktok) content.siteSettings.tiktok = settings.tiktok
+    if (settings?.telegram) content.siteSettings.telegram = settings.telegram
 
     content.siteSettings.pageHeroes = content.siteSettings.pageHeroes ?? {}
     const pageHeroFields: Array<{ key: 'contacts' | 'portfolio' | 'legal' | 'order'; field: string }> = [

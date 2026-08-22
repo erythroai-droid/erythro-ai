@@ -21,6 +21,7 @@ import * as migration_20260809_010000_hero_background_image_mobile from './20260
 import * as migration_20260810_010000_portfolio_project_subtitle from './20260810_010000_portfolio_project_subtitle'
 import * as migration_20260811_010000_portfolio_project_richtext from './20260811_010000_portfolio_project_richtext'
 import * as migration_20260815_010000_site_settings_emails from './20260815_010000_site_settings_emails'
+import * as migration_20260822_010000_site_settings_telegram_rename from './20260822_010000_site_settings_telegram_rename'
 
 export const migrations = [
   {
@@ -137,5 +138,10 @@ export const migrations = [
     up: migration_20260815_010000_site_settings_emails.up,
     down: migration_20260815_010000_site_settings_emails.down,
     name: '20260815_010000_site_settings_emails',
+  },
+  {
+    up: migration_20260822_010000_site_settings_telegram_rename.up,
+    down: migration_20260822_010000_site_settings_telegram_rename.down,
+    name: '20260822_010000_site_settings_telegram_rename',
   },
 ]
