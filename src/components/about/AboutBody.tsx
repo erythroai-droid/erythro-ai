@@ -65,7 +65,7 @@ export default function AboutBody({ locale, theme }: Props) {
         <div className="solution-section-noise absolute inset-0 z-[1] pointer-events-none" aria-hidden />
       )}
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[900px] flex-col gap-10 px-[30px] py-12 md:gap-12 md:py-16 lg:py-20">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col gap-10 px-[30px] py-12 md:gap-12 md:py-16 lg:py-20">
         <header className="flex w-full flex-col gap-4">
           <h1 className="m-0 font-sans text-[28px] font-extralight uppercase tracking-[0.08em] md:text-[40px] md:tracking-[0.1em]">
             <span className="text-erythro-500">{title.charAt(0)}</span>
