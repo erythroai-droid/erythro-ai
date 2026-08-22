@@ -153,7 +153,7 @@ function CaseStudyVideo({
   )
 }
 
-const TRAILING_VIEW_ALL_CHEVRONS = /(?:[\s\u00A0\u202F])*+(?:<<|>>|‹‹|››|«|»|＞＞|≫)+$/u
+const TRAILING_VIEW_ALL_CHEVRONS = /(?:[\s\u00A0\u202F])*(?:<<|>>|‹‹|››|«|»|＞＞|≫)+$/u
 const STRAY_RIGHT_ARROWS = /[>›»＞≫]+/g
 
 function stripViewAllChevrons(label: string) {
