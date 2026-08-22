@@ -79,7 +79,7 @@ curl -s https://erythro.ai/robots.txt
 | GTM container | Не внедрён | GA4 напрямую; GTM опционален |
 | GA4 full load без cookies | Частично | Полный `gtag.js` только после Accept; stub в HTML есть |
 | AI channel grouping в GA4 UI | Не настроено | Нужна ручная настройка в GA4 admin |
-| Honeypot на формах | В разработке | Серверный rate limit есть; клиентский honeypot — отдельный коммит |
+| Honeypot на формах | Готово | `ContactHoneypotField` + `contactHoneypot.ts`; silent drop в `/api/contact` |
 | MCP tools/resources server | Только discovery + `/api/mcp` JSON | Полноценный MCP-сервер не требуется для маркетингового сайта |
 
 ---

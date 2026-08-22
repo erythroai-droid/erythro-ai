@@ -10,8 +10,10 @@ import {
   type ContactFormValues,
 } from '@/lib/contactFormValidation'
 import ContactPrivacyConsent from './ContactPrivacyConsent'
+import { ContactHoneypotField } from './ContactHoneypotField'
 import { ContactSendSpinner } from './ContactSendingPanel'
 import type { ContactFormSource } from '@/lib/contactNotification'
+import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 
 interface ContactModalContextValue {
   open: (source?: ContactFormSource) => void
@@ -126,7 +128,7 @@ function ContactModal({
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (status === 'sending') return
 
@@ -137,13 +139,22 @@ function ContactModal({
 
     if (hasContactFieldErrors(nextFieldErrors) || !privacyConsent) return
 
+    const honeypot =
+      (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ?? ''
+
     setStatus('sending')
     setSubmitError('')
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, locale, privacyConsent: true, source }),
+        body: JSON.stringify({
+          ...values,
+          [CONTACT_HONEYPOT_FIELD]: honeypot,
+          locale,
+          privacyConsent: true,
+          source,
+        }),
       })
       if (res.status === 429) {
         setSubmitError(t(form.rateLimited))
@@ -238,6 +249,7 @@ function ContactModal({
               }`}
             >
               <legend className="sr-only">{t(form.title)}</legend>
+              <ContactHoneypotField idPrefix="contact-modal" />
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label htmlFor="contact-modal-name" className={labelClass}>

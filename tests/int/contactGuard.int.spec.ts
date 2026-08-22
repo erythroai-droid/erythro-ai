@@ -11,6 +11,7 @@ import {
   resetContactRateLimitStoreForTests,
 } from '@/lib/contactRateLimit'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
+import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 
 describe('contactSanitize', () => {
   it('strips html and scripts from plain text', () => {
@@ -78,6 +79,19 @@ describe('guardContactSubmission', () => {
         privacyConsent: true,
       }).ok,
     ).toBe(false)
+  })
+})
+
+describe('contactHoneypot', () => {
+  it('ignores empty trap field', () => {
+    expect(isContactHoneypotTriggered({ company_website: '' })).toBe(false)
+    expect(isContactHoneypotTriggered({ company_website: '   ' })).toBe(false)
+    expect(isContactHoneypotTriggered({ name: 'Ada' })).toBe(false)
+  })
+
+  it('detects filled trap field', () => {
+    expect(isContactHoneypotTriggered({ company_website: 'https://spam.example' })).toBe(true)
+    expect(isContactHoneypotTriggered({ company_website: 1 })).toBe(true)
   })
 })
 
