@@ -248,6 +248,16 @@
     display: none;
   }
 
+  /* Phone icon in burger menu: keep handset orientation in Hebrew RTL */
+  .burger-phone-link {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  .burger-phone-link svg {
+    transform: none !important;
+  }
+
   body {
     background-color: var(--bg-primary);
     color: var(--text-main);
