@@ -554,15 +554,31 @@ pnpm cf:contact-rate-limit
 
 ## 15. AI visibility & Cloudflare robots (AI crawlers)
 
+Полная документация: **[`docs/AI_VISIBILITY.md`](./AI_VISIBILITY.md)**.
+
 Сканеры AI-видимости проверяют `llms.txt`, Organization schema, MCP manifest и доступ AI-ботов.
 
 **В коде (Next.js):**
 
 - `public/llms.txt` — канонические факты о бренде для LLM
-- `/.well-known/mcp` — MCP discovery manifest
+- `/.well-known/mcp` — MCP discovery manifest (`src/app/.well-known/mcp/route.ts`)
+- `/api/mcp` — read-only JSON с фактами о бренде
 - `/about` — Brand Facts page
-- Organization / FAQ JSON-LD в `layout.tsx`
-- GA4 Consent Mode stub в `<head>` (`AnalyticsBootstrap.tsx`)
+- Organization / FAQ JSON-LD — `src/components/StructuredData.tsx` + `src/lib/brandSchema.ts`
+- Security headers — `next.config.ts` (`headers()`)
+- GA4 Consent Mode stub в `<head>` — `src/components/AnalyticsBootstrap.tsx`
+- AI referral dataLayer — `src/lib/aiReferral.ts` (после Accept cookies)
+- `src/app/robots.ts` — явный `Allow: /` для GPTBot, ClaudeBot, CCBot и др.
+
+**Проверка после деплоя:**
+
+```bash
+curl -sI https://erythro.ai
+curl -s https://erythro.ai/llms.txt
+curl -s https://erythro.ai/.well-known/mcp
+curl -s https://erythro.ai/about
+curl -s https://erythro.ai/robots.txt
+```
 
 **Cloudflare Managed robots (важно):**
 
