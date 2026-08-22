@@ -35,7 +35,7 @@ export interface SiteSettingsContent {
   phone: string
   phoneDisplay: string
   facebook: string
-  tiktok: string
+  telegram: string
   /** Per-page header strip heroes from Site Settings → Page Heroes. */
   pageHeroes: Partial<Record<PageHeroKey, PageHeroMedia>>
 }
@@ -88,7 +88,7 @@ export const defaultSiteContent: SiteContent = {
     phone: '+972509312746',
     phoneDisplay: '+972 50 931 27 46',
     facebook: 'https://facebook.com/erythro.ai',
-    tiktok: 'https://tiktok.com/@erythro.ai',
+    telegram: 'https://t.me/erythroai',
     pageHeroes: {},
   },
 }

@@ -18,7 +18,7 @@ describe('brandSchema', () => {
     expect(schema.name).toBe('Erythro.ai')
     expect(schema.sameAs).toEqual([
       'https://facebook.com/erythro.ai',
-      'https://tiktok.com/@erythro.ai',
+      'https://t.me/erythroai',
     ])
     expect(Array.isArray(schema.contactPoint)).toBe(true)
   })

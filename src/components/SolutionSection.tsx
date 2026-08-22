@@ -46,6 +46,15 @@ function capitalizeFeatureLabel(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
+const STACK_LABEL = /^(stack|стек|סטאק)\s*:?\s*$/i
+const HEBREW = /[\u0590-\u05FF]/
+const LATIN = /[A-Za-z]/
+
+function shouldForceLtrValue(labelText: string, valueText: string): boolean {
+  if (STACK_LABEL.test(labelText.trim())) return true
+  return LATIN.test(valueText) && !HEBREW.test(valueText)
+}
+
 function SolutionCard({
   card,
   locale,
@@ -177,7 +186,11 @@ function SolutionCard({
                     {capitalizeFeatureLabel(labelText)}{' '}
                   </span>
                 ) : null}
-                {valueText ? <BidiText className="font-normal">{valueText}</BidiText> : null}
+                {valueText ? (
+                  <BidiText className="font-normal" forceLtr={shouldForceLtrValue(labelText, valueText)}>
+                    {valueText}
+                  </BidiText>
+                ) : null}
               </p>
             </li>
           )

@@ -119,7 +119,7 @@ export default function AboutBody({ locale, theme }: Props) {
             Facebook
           </a>
           <a
-            href={site.tiktok}
+            href={site.telegram}
             target="_blank"
             rel="noopener noreferrer me"
             className={`rounded-[40px] border px-5 py-2.5 text-xs uppercase tracking-[0.18em] transition-colors ${
@@ -128,7 +128,7 @@ export default function AboutBody({ locale, theme }: Props) {
                 : 'border-white/20 text-white hover:border-gold-500 hover:text-gold-500'
             }`}
           >
-            TikTok
+            Telegram
           </a>
         </div>
 

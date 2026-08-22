@@ -1509,7 +1509,7 @@ export const site_settings = pgTable(
     phone: varchar('phone'),
     phoneDisplay: varchar('phone_display'),
     facebook: varchar('facebook'),
-    tiktok: varchar('tiktok'),
+    telegram: varchar('telegram'),
     ogImage: integer('og_image_id').references(() => media.id, {
       onDelete: 'set null',
     }),

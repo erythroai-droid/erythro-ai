@@ -35,7 +35,7 @@ const SITE = {
   phone: '+972509312746',
   phoneDisplay: '+972 50 931 27 46',
   facebook: 'https://facebook.com/erythro.ai',
-  tiktok: 'https://tiktok.com/@erythro.ai',
+  telegram: 'https://t.me/erythroai',
 }
 
 const SEO_TITLES: Record<Locale, string> = {

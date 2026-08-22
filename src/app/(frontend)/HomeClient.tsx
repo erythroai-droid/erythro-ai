@@ -124,7 +124,7 @@ export default function HomeClient({ initialLocale, initialTheme, content }: Hom
         leaving the original GSAP-pinned layout untouched.
       */}
       {/* Case Studies showcase with partner logos */}
-      <div className="relative z-10 -mt-8 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+      <div className="relative z-10 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
         <CaseStudiesSection locale={locale} />
       </div>
 

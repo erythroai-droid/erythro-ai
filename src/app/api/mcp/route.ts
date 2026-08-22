@@ -8,7 +8,7 @@ export async function GET() {
   const content = await getCachedSiteContent()
   const site = content.siteSettings
 
-  const sameAs = [site.facebook, site.tiktok].filter(
+  const sameAs = [site.facebook, site.telegram].filter(
     (url): url is string => typeof url === 'string' && url.trim().length > 0,
   )
 
