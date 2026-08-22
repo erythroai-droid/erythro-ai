@@ -153,6 +153,41 @@ function CaseStudyVideo({
   )
 }
 
+const TRAILING_VIEW_ALL_CHEVRONS = /(?:[\s\u00A0\u202F])*(?:<<|>>|‹‹|››|«|»|＞＞|≫)+$/u
+const STRAY_RIGHT_ARROWS = /[>›»＞≫]+/g
+
+function stripViewAllChevrons(label: string) {
+  return label.replace(TRAILING_VIEW_ALL_CHEVRONS, '').trim()
+}
+
+function viewAllLabelText(raw: string, isRtl: boolean) {
+  let text = stripViewAllChevrons(raw)
+  if (isRtl) {
+    // CMS may store ">>" glued to the Hebrew label — drop right arrows from the label run.
+    text = text.replace(STRAY_RIGHT_ARROWS, '').trim()
+  }
+  return text
+}
+
+function ViewAllChevrons({ isRtl }: { isRtl: boolean }) {
+  const chevrons = isRtl ? (['<', '<'] as const) : (['>', '>'] as const)
+  const hoverNudge = isRtl ? 'group-hover:-translate-x-[3px]' : 'group-hover:translate-x-[3px]'
+
+  return (
+    <span className="inline-flex" dir="ltr" aria-hidden="true">
+      {chevrons.map((char, i) => (
+        <span
+          key={`${char}-${i}`}
+          className={`view-all-chevron inline-block transition-transform duration-300 ease-out ${
+            i === 1 ? `delay-75 ${hoverNudge}` : hoverNudge
+          }`}
+        >
+          {char}
+        </span>
+      ))}
+    </span>
+  )
+}
 // Brand logos path mappings
 const brandLogos = [
   { name: 'Adobe', src: '/images/brands/Adobe_Corporate_logo 1.svg' },
@@ -172,6 +207,7 @@ const brandLogos = [
 export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) {
   const translations = useSiteContent().caseStudies
   const t = (field: Record<string, string>) => field[locale] || field['en']
+  const isRtl = locale === 'he'
   const isDesktop = useIsDesktop()
   const portfolioHref = translations.viewAllHref || '/portfolio'
   const videoSrc =
@@ -292,7 +328,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
         <Link
           ref={cardRef}
           href={portfolioHref}
-          aria-label={t(translations.viewAllProjects).replace(/\s*>>\s*$/, '')}
+          aria-label={viewAllLabelText(t(translations.viewAllProjects), isRtl)}
           className="relative mx-auto block w-full max-w-[420px] aspect-[9/16] overflow-hidden bg-[#0D0D0D] transition-opacity duration-300 hover:opacity-95 lg:max-w-none lg:aspect-auto lg:flex-1 lg:min-h-0"
         >
           <img
@@ -323,12 +359,11 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
         >
           <a
             href={portfolioHref}
-            aria-label={t(translations.viewAllProjects).replace(/\s*>>\s*$/, '')}
+            aria-label={viewAllLabelText(t(translations.viewAllProjects), isRtl)}
             className="group inline-flex items-center gap-1.5 font-sans text-[11px] font-medium uppercase tracking-[0.12em] text-gold-900 transition-colors duration-300 hover:text-erythro-500"
           >
             <span aria-hidden="true">
-              {t(translations.viewAllProjects)
-                .replace(/\s*>>\s*$/, '')
+              {viewAllLabelText(t(translations.viewAllProjects), isRtl)
                 .split('')
                 .map((char, i) => (
                   <span
@@ -340,25 +375,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
                   </span>
                 ))}
             </span>
-            <span
-              className={`inline-flex ${locale === 'he' ? '-scale-x-100' : ''}`}
-              aria-hidden="true"
-            >
-              <span
-                className={`inline-block transition-transform duration-300 ease-out ${
-                  locale === 'he' ? 'group-hover:-translate-x-[3px]' : 'group-hover:translate-x-[3px]'
-                }`}
-              >
-                &gt;
-              </span>
-              <span
-                className={`inline-block transition-transform duration-300 ease-out delay-75 ${
-                  locale === 'he' ? 'group-hover:-translate-x-[3px]' : 'group-hover:translate-x-[3px]'
-                }`}
-              >
-                &gt;
-              </span>
-            </span>
+            <ViewAllChevrons isRtl={isRtl} />
           </a>
         </div>
       </div>

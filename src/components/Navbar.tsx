@@ -566,12 +566,11 @@ export default function Navbar({
             <div className="flex flex-col items-center gap-4">
               <a
                 href={`tel:${site.phone}`}
-                className="inline-flex flex-row items-center gap-2 font-mono text-base font-bold text-white transition-colors duration-300 hover:text-erythro-500"
+                dir="ltr"
+                className="burger-phone-link inline-flex items-center gap-2 font-mono text-base font-bold text-white transition-colors duration-300 hover:text-erythro-500"
               >
-                <span className="inline-flex shrink-0" dir="ltr" aria-hidden>
-                  <PhoneIcon className="w-4 h-4" />
-                </span>
-                <bdi dir="ltr">{site.phoneDisplay}</bdi>
+                <PhoneIcon className="w-4 h-4 shrink-0" />
+                <span>{site.phoneDisplay}</span>
               </a>
 
               <div className="flex items-center gap-3">
