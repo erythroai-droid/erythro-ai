@@ -20,6 +20,19 @@ interface HeroMotionTextProps {
   className?: string
 }
 
+/** Off-screen sizing node that must not expand document scroll width. */
+const OFFSCREEN_MEASURE_CSS = [
+  'position:fixed',
+  'left:0',
+  'top:0',
+  'visibility:hidden',
+  'pointer-events:none',
+  'overflow:hidden',
+  'clip-path:inset(50%)',
+  'contain:layout size style',
+  'z-index:-1',
+].join(';')
+
 function tweenTo(
   targets: gsap.TweenTarget,
   vars: gsap.TweenVars,
@@ -222,7 +235,7 @@ function getOutlineStrokeColor(): string {
 
   const probe = document.createElement('span')
   probe.className = 'text-gold-900'
-  probe.style.cssText = 'position:absolute;left:-99999px;top:0;visibility:hidden'
+  probe.style.cssText = OFFSCREEN_MEASURE_CSS
   document.body.appendChild(probe)
   const computed = getComputedStyle(probe).color
   probe.remove()
@@ -239,7 +252,7 @@ function getGold500Color(): string {
 
   const probe = document.createElement('span')
   probe.className = 'text-gold-500'
-  probe.style.cssText = 'position:absolute;left:-99999px;top:0;visibility:hidden'
+  probe.style.cssText = OFFSCREEN_MEASURE_CSS
   document.body.appendChild(probe)
   const computed = getComputedStyle(probe).color
   probe.remove()
@@ -802,8 +815,7 @@ function resolveHeeboStack(baseFamily: string): string {
   probe.lang = 'he'
   probe.dir = 'rtl'
   probe.textContent = 'אבגדהו'
-  probe.style.cssText =
-    'position:absolute;left:-99999px;top:0;visibility:hidden;font-family:var(--font-heebo),var(--font-sans),sans-serif;font-size:48px;font-weight:700;'
+  probe.style.cssText = `${OFFSCREEN_MEASURE_CSS};font-family:var(--font-heebo),var(--font-sans),sans-serif;font-size:48px;font-weight:700;`
   document.body.appendChild(probe)
   const computed = getComputedStyle(probe).fontFamily
   probe.remove()
@@ -1567,10 +1579,7 @@ async function playFrame3(opts: {
   // Measure final phrase width so we can park the first letter on the left of a centred line
   const measure = document.createElement('div')
   measure.style.cssText = [
-    'position:absolute',
-    'left:-99999px',
-    'top:0',
-    'visibility:hidden',
+    OFFSCREEN_MEASURE_CSS,
     'display:inline-flex',
     'white-space:nowrap',
     'line-height:1',
@@ -2246,7 +2255,7 @@ async function playFrame4(opts: {
       2 * Math.max(40, Math.min(slotCenterY - padY, window.innerHeight - slotCenterY - padY))
 
     const probe = document.createElement('div')
-    probe.style.cssText = 'position:absolute;left:-99999px;top:0;visibility:hidden;'
+    probe.style.cssText = OFFSCREEN_MEASURE_CSS
     document.body.appendChild(probe)
     const { fontPx: sharedOutlineFontPx } = buildMaskedOutline({
       host: probe,
@@ -2443,15 +2452,11 @@ function measureWrappedPhraseHeight(
     wrapProbe = document.createElement('div')
     wrapProbe.setAttribute('aria-hidden', 'true')
     wrapProbe.style.cssText = [
-      'position:absolute',
-      'left:-99999px',
-      'top:0',
-      'visibility:hidden',
+      OFFSCREEN_MEASURE_CSS,
       'text-align:center',
       'text-transform:uppercase',
       'line-height:1.12',
       'white-space:normal',
-      'pointer-events:none',
     ].join(';')
     document.body.appendChild(wrapProbe)
   }

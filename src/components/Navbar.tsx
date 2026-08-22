@@ -330,7 +330,7 @@ export default function Navbar({
   }
 
   return (
-    <header className="fixed top-0 start-0 end-0 z-[110] w-full max-w-none select-none pointer-events-none overflow-visible px-0 lg:z-[110]">
+    <header className="fixed top-0 start-0 end-0 z-[110] w-full max-w-none select-none pointer-events-none overflow-x-clip overflow-y-visible px-0 lg:z-[110]">
       {/* ===== Burger header: logo + Menu on all breakpoints (home + inner) ===== */}
       <div
         className={`relative z-[70] flex w-full pointer-events-auto items-center justify-between overflow-visible px-[30px] py-5 lg:border-transparent lg:bg-transparent lg:px-[50px] lg:py-8 lg:backdrop-blur-none transition-colors duration-300 ${
@@ -447,12 +447,10 @@ export default function Navbar({
         Features a deep coal background, glass blur, and smooth layout mirror.
       */}
       <div
-        className={`burger-menu-panel fixed inset-y-0 start-0 end-0 z-[60] overflow-y-auto overscroll-contain bg-coal-900/90 backdrop-blur-lg transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`burger-menu-panel fixed inset-y-0 inset-inline-0 z-[60] w-full max-w-[100vw] overflow-y-auto overflow-x-clip overscroll-contain bg-coal-900/90 backdrop-blur-lg transition-transform duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
           mobileOpen
             ? 'translate-x-0'
-            : currentLocale === 'he'
-              ? '-translate-x-full'
-              : 'translate-x-full'
+            : 'ltr:translate-x-full rtl:-translate-x-full'
         }`}
         style={{ pointerEvents: mobileOpen ? 'auto' : 'none' }}
       >
