@@ -144,25 +144,25 @@ function measurePhraseWidth(
   fontWeight: string,
   letterSpacing: string,
 ): number {
-  const el = document.createElement('span')
-  el.style.cssText = [
-    'position:absolute',
-    'left:-99999px',
-    'top:0',
-    'visibility:hidden',
-    'white-space:nowrap',
-    'text-transform:uppercase',
-    'line-height:1',
-    `font-family:${fontFamily}`,
-    `font-weight:${fontWeight}`,
-    `font-size:${fontPx}px`,
-    `letter-spacing:${letterSpacing}`,
-  ].join(';')
-  el.textContent = text
-  document.body.appendChild(el)
-  const w = el.getBoundingClientRect().width
-  el.remove()
-  return w
+  const ctx = getMeasure2d()
+  if (!ctx) return text.length * fontPx * 0.6
+  ctx.font = `${fontWeight} ${fontPx}px ${fontFamily}`
+  const sample = text.toUpperCase()
+  const base = ctx.measureText(sample).width
+  const ls = Number.parseFloat(letterSpacing)
+  const extra = Number.isFinite(ls) && sample.length > 1 ? ls * (sample.length - 1) : 0
+  return base + extra
+}
+
+let measure2d: CanvasRenderingContext2D | null | undefined
+function getMeasure2d(): CanvasRenderingContext2D | null {
+  if (measure2d !== undefined) return measure2d
+  try {
+    measure2d = document.createElement('canvas').getContext('2d')
+  } catch {
+    measure2d = null
+  }
+  return measure2d
 }
 
 /** Shrink headline font so the phrase fits the viewport on small screens. */
@@ -2430,6 +2430,7 @@ function resolveSharedMobileFontPx(
 }
 
 /** Approximate wrapped phrase height at a given size (plain text ≈ char-word layout). */
+let wrapProbe: HTMLDivElement | null = null
 function measureWrappedPhraseHeight(
   text: string,
   fontPx: number,
@@ -2438,30 +2439,32 @@ function measureWrappedPhraseHeight(
   fontWeight: string,
   letterSpacing: string,
 ): number {
-  const el = document.createElement('div')
-  el.style.cssText = [
-    'position:absolute',
-    'left:-99999px',
-    'top:0',
-    'visibility:hidden',
-    `width:${maxWidth}px`,
-    'text-align:center',
-    'text-transform:uppercase',
-    'line-height:1.12',
-    'white-space:normal',
-    `font-family:${fontFamily}`,
-    `font-weight:${fontWeight}`,
-    `font-size:${fontPx}px`,
-    `letter-spacing:${letterSpacing}`,
-  ].join(';')
-  el.textContent = text
-  document.body.appendChild(el)
-  const h = el.getBoundingClientRect().height
-  el.remove()
-  return h
+  if (!wrapProbe) {
+    wrapProbe = document.createElement('div')
+    wrapProbe.setAttribute('aria-hidden', 'true')
+    wrapProbe.style.cssText = [
+      'position:absolute',
+      'left:-99999px',
+      'top:0',
+      'visibility:hidden',
+      'text-align:center',
+      'text-transform:uppercase',
+      'line-height:1.12',
+      'white-space:normal',
+      'pointer-events:none',
+    ].join(';')
+    document.body.appendChild(wrapProbe)
+  }
+  wrapProbe.style.width = `${maxWidth}px`
+  wrapProbe.style.fontFamily = fontFamily
+  wrapProbe.style.fontWeight = fontWeight
+  wrapProbe.style.fontSize = `${fontPx}px`
+  wrapProbe.style.letterSpacing = letterSpacing
+  wrapProbe.textContent = text
+  return wrapProbe.getBoundingClientRect().height
 }
 
-/** Placeholder frames 5+ until designed shot-by-shot. */
+/** Mobile / reduced: inline slam only (no portal outline). */
 async function playPlaceholderFrame(opts: {
   phrase: MotionPhrase
   inlineEl: HTMLElement
@@ -2487,9 +2490,436 @@ async function playPlaceholderFrame(opts: {
   gsap.set(inlineEl, { opacity: 0 })
 }
 
+type ExtraOutlineVariant = 'sides-frame1' | 'sides-frame3' | 'halves' | 'fade' | 'rise' | 'drop'
+
+function pickExtraOutlineVariant(): ExtraOutlineVariant {
+  const variants: ExtraOutlineVariant[] = [
+    'sides-frame1',
+    'sides-frame3',
+    'halves',
+    'fade',
+    'rise',
+    'drop',
+  ]
+  return variants[Math.floor(Math.random() * variants.length)]!
+}
+
+/**
+ * Desktop frames 5+: FG kinetic slam into the slot + random outline entrance
+ * (reuses patterns from frames 1 / 3 / 4 so CMS phrases beyond the four
+ * designed shots still get background stroke text).
+ */
+async function playExtraFrame(opts: {
+  phrase: MotionPhrase
+  stageEl: HTMLElement
+  fgEl: HTMLElement
+  outlineEl: HTMLElement
+  slotEl: HTMLElement
+  inlineEl: HTMLElement
+  delayed: gsap.core.Tween[]
+  cancelled: () => boolean
+  getScrollFade: () => number
+}): Promise<void> {
+  const {
+    phrase,
+    stageEl,
+    fgEl,
+    outlineEl,
+    slotEl,
+    inlineEl,
+    delayed,
+    cancelled,
+    getScrollFade,
+  } = opts
+  const mainText = phrase.text
+  const outlineText = (phrase.outline || phrase.text).trim() || mainText
+  const variant = pickExtraOutlineVariant()
+  const slotRect = slotEl.getBoundingClientRect()
+  const slotStyles = getComputedStyle(slotEl)
+  const headingEl = (slotEl.closest('.hero-heading') as HTMLElement | null) ?? slotEl
+  const headingStyles = getComputedStyle(headingEl)
+  const baseFontPx =
+    Number.parseFloat(headingStyles.fontSize) ||
+    Number.parseFloat(slotStyles.fontSize) ||
+    48
+  const fontFamily = headingStyles.fontFamily || slotStyles.fontFamily
+  const fontWeight = headingStyles.fontWeight || slotStyles.fontWeight
+  const letterSpacing = headingStyles.letterSpacing || slotStyles.letterSpacing
+  const fontPx = motionHeadlineFontPx({
+    text: mainText,
+    basePx: baseFontPx,
+    maxWidth: motionMaxTextWidth(),
+    fontFamily,
+    fontWeight,
+    letterSpacing,
+  })
+  const textColor = getGold500Color()
+  const outlineStroke = getOutlineStrokeColor()
+  const showOutline = isMotionDesktop()
+  const targetX = slotRect.left + slotRect.width / 2 - window.innerWidth / 2
+  const targetY = slotRect.top + slotRect.height / 2 - window.innerHeight / 2
+  const rtlText = containsRtlScript(mainText)
+  const fgFont = rtlText ? resolveHeeboStack(fontFamily) : fontFamily
+  const padX = window.innerWidth * 0.04
+  const padY = window.innerHeight * 0.06
+  const slotCenterY = slotRect.top + slotRect.height / 2
+  const maxOutlineW = window.innerWidth - padX * 2
+  const maxOutlineH =
+    2 * Math.max(40, Math.min(slotCenterY - padY, window.innerHeight - slotCenterY - padY))
+
+  const applyStageFade = () => {
+    const fade = getScrollFade()
+    if (fade >= 0.995) {
+      gsap.set(stageEl, { opacity: 1, clearProps: 'transform', color: textColor })
+      return
+    }
+    gsap.set(stageEl, { opacity: fade, y: 0, scale: 1, color: textColor })
+  }
+
+  stageEl.style.display = 'block'
+  gsap.set(stageEl, { opacity: 0 })
+  gsap.set(inlineEl, { opacity: 0 })
+  outlineEl.replaceChildren()
+  outlineEl.textContent = ''
+  outlineEl.style.width = ''
+  outlineEl.style.height = ''
+  outlineEl.style.overflow = ''
+
+  gsap.set(fgEl, {
+    fontSize: fontPx,
+    fontFamily: fgFont,
+    fontWeight,
+    letterSpacing,
+    color: textColor,
+    left: '50%',
+    top: '50%',
+    xPercent: -50,
+    yPercent: -50,
+    x: targetX,
+    y: targetY,
+    scale: 1,
+    rotation: 0,
+    skewX: 0,
+    skewY: 0,
+    transformOrigin: '50% 50%',
+    opacity: 1,
+    zIndex: 2,
+    force3D: false,
+    whiteSpace: 'nowrap',
+    textAlign: 'center',
+    maxWidth: 'none',
+    direction: rtlText ? 'rtl' : 'ltr',
+    filter: 'none',
+  })
+  fgEl.style.unicodeBidi = 'isolate'
+  fgEl.replaceChildren()
+  const fgChars = renderChars(fgEl, mainText)
+  applyStageFade()
+
+  await kineticSlamIn(fgChars)
+  if (cancelled()) return
+
+  // --- Outline (random variant) ---
+  type ExitFn = () => Promise<void>
+  let exitOutline: ExitFn = async () => {}
+
+  if (showOutline && outlineText) {
+    const rtl = isMotionRtl()
+    gsap.set(outlineEl, {
+      left: '50%',
+      top: '50%',
+      xPercent: -50,
+      yPercent: -50,
+      x: targetX,
+      y: targetY,
+      scale: 1,
+      autoAlpha: 0,
+      zIndex: 1,
+      overflow: 'visible',
+      lineHeight: 'normal',
+      color: 'transparent',
+      WebkitTextStroke: '0 transparent',
+      textShadow: 'none',
+      width: '',
+      height: '',
+    })
+
+    const fitOutlineScale = () => {
+      const rect = outlineEl.getBoundingClientRect()
+      if (rect.width <= 0 || rect.height <= 0) return 1
+      const fitW = (window.innerWidth - padX * 2) / rect.width
+      const fitH = (window.innerHeight - padY * 2) / rect.height
+      const outlineScale = Math.min(1, fitW, fitH)
+      gsap.set(outlineEl, { scale: outlineScale })
+      return outlineScale
+    }
+
+    if (variant === 'sides-frame1' || variant === 'sides-frame3') {
+      const { left: outlineLeft, right: outlineRight } = splitTwoPartPhrase(outlineText)
+      const outlineRow = document.createElement('div')
+      outlineRow.style.cssText = `display:inline-flex;align-items:baseline;justify-content:center;gap:0.28em;white-space:nowrap;line-height:normal;direction:${rtl ? 'rtl' : 'ltr'};`
+      const leftHost = document.createElement('div')
+      leftHost.style.cssText = 'flex:0 0 auto;overflow:visible;'
+      outlineRow.appendChild(leftHost)
+      const rightHost = document.createElement('div')
+      rightHost.style.cssText = 'flex:0 0 auto;overflow:visible;'
+      if (outlineRight) outlineRow.appendChild(rightHost)
+      outlineEl.appendChild(outlineRow)
+
+      const probeHost = document.createElement('div')
+      probeHost.style.cssText =
+        'position:absolute;left:0;top:0;opacity:0;pointer-events:none;z-index:-1;'
+      outlineEl.appendChild(probeHost)
+      const { fontPx: sharedOutlineFontPx } = buildMaskedOutline({
+        host: probeHost,
+        text: outlineText,
+        fontFamily,
+        fontWeight,
+        letterSpacing,
+        outlineStroke,
+        maxW: maxOutlineW,
+        maxH: maxOutlineH,
+      })
+      probeHost.remove()
+
+      buildMaskedOutline({
+        host: leftHost,
+        text: outlineLeft || outlineText,
+        fontFamily,
+        fontWeight,
+        letterSpacing,
+        outlineStroke,
+        maxW: maxOutlineW,
+        maxH: maxOutlineH,
+        fontPx: sharedOutlineFontPx,
+      })
+      if (outlineRight) {
+        buildMaskedOutline({
+          host: rightHost,
+          text: outlineRight,
+          fontFamily,
+          fontWeight,
+          letterSpacing,
+          outlineStroke,
+          maxW: maxOutlineW,
+          maxH: maxOutlineH,
+          fontPx: sharedOutlineFontPx,
+        })
+      }
+
+      const outlineScale = fitOutlineScale()
+      const fromX = Math.max(
+        outlineClearanceX(leftHost, outlineScale),
+        outlineRight ? outlineClearanceX(rightHost, outlineScale) : 0,
+      )
+      const fly = outlineEntranceX(
+        fromX,
+        variant === 'sides-frame1' ? 'frame1' : 'frame3',
+        rtl,
+      )
+      gsap.set(leftHost, { x: fly.first, y: 0, autoAlpha: 1 })
+      if (outlineRight) gsap.set(rightHost, { x: fly.second, y: 0, autoAlpha: 1 })
+      gsap.set(outlineEl, { autoAlpha: 1 })
+
+      await Promise.all([
+        tweenTo(leftHost, { x: 0, duration: 0.85, ease: 'power3.out' }),
+        outlineRight
+          ? tweenTo(rightHost, { x: 0, duration: 0.85, ease: 'power3.out' })
+          : Promise.resolve(),
+      ])
+      if (cancelled()) return
+
+      exitOutline = async () => {
+        await Promise.all([
+          tweenTo(leftHost, { x: fly.first, duration: 0.55, ease: 'power3.in' }),
+          outlineRight
+            ? tweenTo(rightHost, { x: fly.second, duration: 0.55, ease: 'power3.in' })
+            : Promise.resolve(),
+        ])
+      }
+    } else if (variant === 'halves') {
+      const probe = document.createElement('div')
+      probe.style.cssText =
+        'position:absolute;left:0;top:0;opacity:0;pointer-events:none;z-index:-1;'
+      outlineEl.appendChild(probe)
+      const { fontPx: sharedOutlineFontPx } = buildMaskedOutline({
+        host: probe,
+        text: outlineText,
+        fontFamily,
+        fontWeight,
+        letterSpacing,
+        outlineStroke,
+        maxW: maxOutlineW,
+        maxH: maxOutlineH,
+      })
+      probe.remove()
+      outlineEl.replaceChildren()
+
+      const makeHalf = (clip: string) => {
+        const host = document.createElement('div')
+        host.style.cssText = 'position:absolute;left:0;top:0;overflow:visible;'
+        buildMaskedOutline({
+          host,
+          text: outlineText,
+          fontFamily,
+          fontWeight,
+          letterSpacing,
+          outlineStroke,
+          maxW: maxOutlineW,
+          maxH: maxOutlineH,
+          fontPx: sharedOutlineFontPx,
+        })
+        const svg = host.querySelector('svg')
+        const w = Math.max(8, Number(svg?.getAttribute('width') || 1))
+        const h = Math.max(8, Number(svg?.getAttribute('height') || 1))
+        host.style.width = `${w}px`
+        host.style.height = `${h}px`
+        host.style.clipPath = clip
+        host.style.setProperty('-webkit-clip-path', clip)
+        return { host, w, h }
+      }
+
+      const top = makeHalf('inset(0px 0px 50% 0px)')
+      const bot = makeHalf('inset(50% 0px 0px 0px)')
+      const outlineW = Math.max(top.w, bot.w)
+      const outlineH = Math.max(top.h, bot.h)
+      outlineEl.style.width = `${outlineW}px`
+      outlineEl.style.height = `${outlineH}px`
+      outlineEl.appendChild(top.host)
+      outlineEl.appendChild(bot.host)
+
+      const outlineScale = Math.min(
+        1,
+        (window.innerWidth - padX * 2) / Math.max(outlineW, 1),
+        (window.innerHeight - padY * 2) / Math.max(outlineH, 1),
+      )
+      const fromX = Math.max(
+        outlineClearanceX(top.host, outlineScale),
+        outlineClearanceX(bot.host, outlineScale),
+      )
+      const topFromX = (rtl ? -fromX : fromX) / Math.max(outlineScale, 0.01)
+      const botFromX = (rtl ? fromX : -fromX) / Math.max(outlineScale, 0.01)
+
+      gsap.set(outlineEl, {
+        scale: outlineScale,
+        autoAlpha: 1,
+        overflow: 'visible',
+      })
+      gsap.set(top.host, { x: topFromX, y: 0, opacity: 1 })
+      gsap.set(bot.host, { x: botFromX, y: 0, opacity: 1 })
+
+      await Promise.all([
+        tweenTo(top.host, { x: 0, duration: 0.9, ease: 'power3.out' }),
+        tweenTo(bot.host, { x: 0, duration: 0.9, ease: 'power3.out' }),
+      ])
+      if (cancelled()) return
+
+      exitOutline = async () => {
+        await Promise.all([
+          tweenTo(top.host, { x: topFromX, duration: 0.5, ease: 'power2.in' }),
+          tweenTo(bot.host, { x: botFromX, duration: 0.5, ease: 'power2.in' }),
+        ])
+      }
+    } else {
+      // fade | rise | drop — single full-phrase outline host
+      const host = document.createElement('div')
+      host.style.cssText = 'overflow:visible;'
+      outlineEl.appendChild(host)
+      buildMaskedOutline({
+        host,
+        text: outlineText,
+        fontFamily,
+        fontWeight,
+        letterSpacing,
+        outlineStroke,
+        maxW: maxOutlineW,
+        maxH: maxOutlineH,
+      })
+      const outlineScale = fitOutlineScale()
+      const travelY = Math.round(window.innerHeight * 0.35)
+
+      if (variant === 'fade') {
+        gsap.set(outlineEl, { autoAlpha: 0, scale: outlineScale * 1.06 })
+        await tweenTo(outlineEl, {
+          autoAlpha: 1,
+          scale: outlineScale,
+          duration: 0.7,
+          ease: 'power2.out',
+        })
+        exitOutline = async () => {
+          await tweenTo(outlineEl, {
+            autoAlpha: 0,
+            scale: outlineScale * 1.04,
+            duration: 0.45,
+            ease: 'power2.in',
+          })
+        }
+      } else if (variant === 'rise') {
+        gsap.set(outlineEl, { autoAlpha: 1, y: targetY + travelY })
+        await tweenTo(outlineEl, {
+          y: targetY,
+          duration: 0.85,
+          ease: 'power3.out',
+        })
+        exitOutline = async () => {
+          await tweenTo(outlineEl, {
+            y: targetY - travelY * 0.55,
+            autoAlpha: 0,
+            duration: 0.5,
+            ease: 'power2.in',
+          })
+        }
+      } else {
+        gsap.set(outlineEl, { autoAlpha: 1, y: targetY - travelY })
+        await tweenTo(outlineEl, {
+          y: targetY,
+          duration: 0.85,
+          ease: 'power3.out',
+        })
+        exitOutline = async () => {
+          await tweenTo(outlineEl, {
+            y: targetY + travelY * 0.55,
+            autoAlpha: 0,
+            duration: 0.5,
+            ease: 'power2.in',
+          })
+        }
+      }
+      if (cancelled()) return
+    }
+  }
+
+  inlineEl.replaceChildren()
+  const inlineChars = renderChars(inlineEl, mainText)
+  gsap.set(inlineChars, { opacity: 1, x: 0, y: 0, scale: 1, skewX: 0, filter: 'none' })
+
+  await wait(1.7, delayed)
+  if (cancelled()) return
+
+  const liveFgChars = Array.from(fgEl.querySelectorAll<HTMLElement>('.hero-motion-char'))
+  await Promise.all([exitOutline(), kineticSlamOut(liveFgChars.length ? liveFgChars : inlineChars)])
+  if (cancelled()) return
+
+  gsap.set(inlineEl, { opacity: 0 })
+  stageEl.style.display = 'none'
+  gsap.set(fgEl, { fontSize: '', scale: 1, x: 0, y: 0, opacity: 1, filter: 'none' })
+  gsap.set(outlineEl, {
+    scale: 1,
+    x: 0,
+    y: 0,
+    opacity: 1,
+    autoAlpha: 1,
+    width: '',
+    height: '',
+  })
+  fgEl.replaceChildren()
+  outlineEl.replaceChildren()
+  outlineEl.textContent = ''
+}
+
 /**
  * Hero motion headlines — frame-by-frame cinematic cycle.
- * Frames 1–4 fully specified; later frames are temporary placeholders.
+ * Frames 1–4 fully specified; frames 5+ use playExtraFrame (random outline).
  */
 export default function HeroMotionText({ phrases, className = '' }: HeroMotionTextProps) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -2783,12 +3213,16 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
               getScrollFade,
             })
           } else {
-            await playPlaceholderFrame({
+            await playExtraFrame({
               phrase,
-              inlineEl,
+              stageEl,
+              fgEl,
+              outlineEl,
               slotEl,
+              inlineEl,
               delayed,
               cancelled: isCancelled,
+              getScrollFade,
             })
           }
           if (isCancelled()) break
@@ -2856,14 +3290,6 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
     )
     if (heroSection) {
       io.observe(heroSection)
-      // Mid-page reload skips splash and must NOT start the fixed cinematic
-      // portal (outline flash over Lets Talk / FAQ). Only run while the hero
-      // scroll root actually intersects the viewport.
-      const rect = heroSection.getBoundingClientRect()
-      const vh = window.innerHeight
-      const visiblyInHero = rect.bottom > vh * 0.35 && rect.top < vh * 0.65
-      if (visiblyInHero) startMotion()
-      else hideStage()
     } else {
       startMotion()
     }

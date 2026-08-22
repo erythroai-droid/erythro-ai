@@ -1,8 +1,8 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: var(--font-inter), var(--font-heebo), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
+  --font-sans: var(--font-inter), var(--font-heebo, ui-sans-serif), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-roboto-mono, ui-monospace), ui-monospace, monospace;
 
   --color-coal-100: var(--coal-100);
   --color-coal-200: var(--coal-200);
@@ -334,6 +334,10 @@
       font-size: 18px;
       line-height: 32px;
     }
+  }
+
+  html[lang='ru'] {
+    --font-sans: var(--font-inter), var(--font-inter-cyrillic), ui-sans-serif, system-ui, sans-serif;
   }
 
   html[dir='rtl'] {

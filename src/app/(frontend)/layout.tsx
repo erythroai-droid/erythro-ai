@@ -2,7 +2,7 @@ import React from 'react'
 import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
 import { getCachedSeoSettings } from '@/lib/getSiteContent'
-import { heebo, inter, robotoMono } from '@/lib/fonts'
+import { heebo, inter, interCyrillic, robotoMono } from '@/lib/fonts'
 import AnalyticsBootstrap from '@/components/AnalyticsBootstrap'
 import AnalyticsLoader from '@/components/AnalyticsLoader'
 import StructuredData from '@/components/StructuredData'
@@ -141,11 +141,21 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const themeCookie = cookieStore.get(THEME_COOKIE)?.value
   const themeClass = isSiteTheme(themeCookie) && themeCookie === 'dark' ? 'dark' : ''
 
+  const fontVars = [
+    inter.variable,
+    locale === 'ru' ? interCyrillic.variable : '',
+    locale === 'he' ? heebo.variable : '',
+    robotoMono.variable,
+    themeClass,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <html
       lang={locale}
       dir={locale === 'he' ? 'rtl' : 'ltr'}
-      className={`${inter.variable} ${heebo.variable} ${robotoMono.variable} ${themeClass}`.trim()}
+      className={fontVars}
       suppressHydrationWarning
     >
       <head>

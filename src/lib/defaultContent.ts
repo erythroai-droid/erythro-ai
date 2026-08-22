@@ -24,7 +24,14 @@ export interface PageHeroMedia {
 export type PageHeroKey = 'contacts' | 'portfolio' | 'legal' | 'order'
 
 export interface SiteSettingsContent {
+  /** Primary public email (footer). Kept for backwards compatibility. */
   email: string
+  emailFooter: string
+  emailContacts: string
+  emailLegal: string
+  emails: Array<{ label: string; address: string }>
+  notifyEmailContact: string
+  notifyEmailOrder: string
   phone: string
   phoneDisplay: string
   facebook: string
@@ -68,7 +75,16 @@ export const defaultSiteContent: SiteContent = {
   accessibility,
   page,
   siteSettings: {
-    email: 'erythro.ai@gmail.com',
+    email: 'order@erythro.ai',
+    emailFooter: 'order@erythro.ai',
+    emailContacts: 'order@erythro.ai',
+    emailLegal: 'erythro.ai@gmail.com',
+    emails: [
+      { label: 'Orders', address: 'order@erythro.ai' },
+      { label: 'Privacy', address: 'erythro.ai@gmail.com' },
+    ],
+    notifyEmailContact: 'order@erythro.ai',
+    notifyEmailOrder: 'order@erythro.ai',
     phone: '+972509312746',
     phoneDisplay: '+972 50 931 27 46',
     facebook: 'https://facebook.com/erythro.ai',

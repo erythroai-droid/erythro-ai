@@ -1,44 +1,90 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import {
+  resolveNotifyRecipients,
+  sendContactNotification,
+  type SiteEmailSettings,
+} from '@/lib/contactNotification'
+import {
+  consumeContactRateLimit,
+  getRequestIp,
+} from '@/lib/contactRateLimit'
+import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+export const runtime = 'nodejs'
 
+/**
+ * Isolated contact intake:
+ * rate-limit → sanitize/validate → Payload CMS → SMTP notify.
+ * Frontend must POST JSON here only (no direct CMS writes from the browser).
+ */
 export async function POST(request: NextRequest) {
-  let body: Record<string, unknown>
+  const ip = getRequestIp(request)
+  const limited = consumeContactRateLimit(`contact:${ip}`)
+  if (!limited.ok) {
+    return NextResponse.json(
+      { message: 'Too many requests. Please try again later.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(limited.retryAfterSec),
+          'X-RateLimit-Limit': String(limited.limit),
+          'X-RateLimit-Remaining': '0',
+        },
+      },
+    )
+  }
+
+  let body: unknown
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ message: 'Invalid JSON' }, { status: 400 })
   }
 
-  const name = typeof body.name === 'string' ? body.name.trim() : ''
-  const email = typeof body.email === 'string' ? body.email.trim() : ''
-  const phone = typeof body.phone === 'string' ? body.phone.trim() : ''
-  const message = typeof body.message === 'string' ? body.message.trim() : ''
-  const locale = typeof body.locale === 'string' ? body.locale : undefined
-  const privacyConsent = body.privacyConsent === true
+  const guarded = guardContactSubmission(body)
+  if (!guarded.ok) {
+    return NextResponse.json({ message: guarded.message }, { status: guarded.status })
+  }
 
-  if (!privacyConsent) {
-    return NextResponse.json({ message: 'Privacy consent is required' }, { status: 400 })
-  }
-  if (!name || !email || !message) {
-    return NextResponse.json({ message: 'Missing required fields' }, { status: 400 })
-  }
-  if (!EMAIL_RE.test(email)) {
-    return NextResponse.json({ message: 'Invalid email' }, { status: 400 })
-  }
-  if (message.length > 5000) {
-    return NextResponse.json({ message: 'Message too long' }, { status: 400 })
-  }
+  const { name, email, phone, message, locale, source } = guarded.data
 
   try {
     const payload = await getPayload({ config })
     await payload.create({
       collection: 'contact-submissions',
-      data: { name, email, phone, message, locale },
+      data: { name, email, phone, message, locale, source },
     })
-    return NextResponse.json({ ok: true })
+
+    const settings = (await payload.findGlobal({
+      slug: 'site-settings',
+      depth: 0,
+      overrideAccess: true,
+    })) as SiteEmailSettings
+
+    const notifyTo = resolveNotifyRecipients(settings, source)
+    const mailed = await sendContactNotification(notifyTo, {
+      name,
+      email,
+      phone,
+      message,
+      locale,
+      source,
+    })
+    if (!mailed.sent) {
+      console.error('[api/contact] saved submission but email was not sent:', mailed.reason)
+    }
+
+    return NextResponse.json(
+      { ok: true },
+      {
+        headers: {
+          'X-RateLimit-Limit': String(limited.limit),
+          'X-RateLimit-Remaining': String(limited.remaining),
+        },
+      },
+    )
   } catch (err) {
     console.error('[api/contact] Failed to save submission:', err)
     return NextResponse.json({ message: 'Server error' }, { status: 500 })

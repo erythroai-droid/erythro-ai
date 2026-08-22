@@ -147,35 +147,73 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
   const [images, setImages] = useState<HTMLImageElement[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Preloading image sequence (desktop only, runs after mount)
+  // Preload chip frames only after splash + when footer is near viewport (desktop).
   useEffect(() => {
     if (typeof window === 'undefined' || window.matchMedia('(max-width: 1023px)').matches) {
       return
     }
 
+    let cancelled = false
+    let io: IntersectionObserver | null = null
     const loadedImages: HTMLImageElement[] = []
     const imagesCount = 110
     const basePath = '/images/hero-sequence/'
-    let completed = 0
 
-    for (let i = 1; i <= imagesCount; i++) {
-      const img = new window.Image()
-      img.src = `${basePath}chip (${i}).webp`
-
-      const handleLoad = () => {
-        completed++
-        if (completed === imagesCount) {
-          setIsLoaded(true)
+    const startPreload = () => {
+      if (cancelled) return
+      let completed = 0
+      for (let i = 1; i <= imagesCount; i++) {
+        const img = new window.Image()
+        img.src = `${basePath}chip (${i}).webp`
+        const handleLoad = () => {
+          completed++
+          if (completed === imagesCount && !cancelled) {
+            setIsLoaded(true)
+          }
         }
+        img.onload = handleLoad
+        img.onerror = handleLoad
+        loadedImages.push(img)
       }
-
-      img.onload = handleLoad
-      img.onerror = handleLoad
-
-      loadedImages.push(img)
+      setImages(loadedImages)
     }
 
-    setImages(loadedImages)
+    const arm = () => {
+      const el = footerRef.current
+      if (!el) {
+        startPreload()
+        return
+      }
+      io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            io?.disconnect()
+            io = null
+            startPreload()
+          }
+        },
+        { rootMargin: '200px 0px' },
+      )
+      io.observe(el)
+    }
+
+    const onSplash = () => {
+      window.removeEventListener('erythro:splash-done', onSplash)
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(() => arm(), { timeout: 1200 })
+      } else {
+        window.setTimeout(arm, 200)
+      }
+    }
+
+    if (window.__erythroSplashDone) onSplash()
+    else window.addEventListener('erythro:splash-done', onSplash)
+
+    return () => {
+      cancelled = true
+      window.removeEventListener('erythro:splash-done', onSplash)
+      io?.disconnect()
+    }
   }, [])
 
   // Helper to find the nearest loaded image

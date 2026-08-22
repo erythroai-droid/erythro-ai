@@ -684,3 +684,10 @@ export function tLegalList(field: LocalizedParagraphs, locale: string): string[]
   const key = (locale === 'ru' || locale === 'he' ? locale : 'en') as LegalLocale
   return field[key] || field.en
 }
+
+/** Swap hardcoded / placeholder legal contact emails for the CMS display address. */
+export function withLegalDisplayEmail(text: string, email: string): string {
+  const next = email.trim()
+  if (!next) return text
+  return text.replaceAll('{{email}}', next).replaceAll('erythro.ai@gmail.com', next)
+}

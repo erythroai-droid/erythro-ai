@@ -606,3 +606,122 @@ pnpm cf:contact-rate-limit
 Почтовые MX/SPF/DKIM в Cloudflare на индексацию не влияют.
 
 ---
+
+## 13. Почта контактной формы (Hostinger + Vercel DNS)
+
+Проверено **2026-08-14**: входящие с Gmail и заказы с `https://erythro.ai` доходят на
+`order@erythro.ai`. Заявка по-прежнему сохраняется в Payload (`contact-submissions`).
+
+### 13.1. Куда писать DNS
+
+Nameservers домена — **Vercel**, не Hostinger. Записи почты добавляются в
+**Vercel → Domains → `erythro.ai` → DNS**. Автоподключение в hPanel не сработает
+(Hostinger: [manual domain setup](https://www.hostinger.com/support/8650765-set-up-a-domain-for-hostinger-email/)).
+ALIAS/CAA сайта не трогать.
+
+| Type | Name | Priority | Value |
+|---|---|---|---|
+| MX | *(пусто)* | 5 | `mx1.hostinger.com` |
+| MX | *(пусто)* | 10 | `mx2.hostinger.com` |
+| TXT | *(пусто)* | — | `v=spf1 include:_spf.mail.hostinger.com ~all` |
+| CNAME | `hostingermail-a._domainkey` | — | `hostingermail-a.dkim.mail.hostinger.com` |
+| CNAME | `hostingermail-b._domainkey` | — | `hostingermail-b.dkim.mail.hostinger.com` |
+| CNAME | `hostingermail-c._domainkey` | — | `hostingermail-c.dkim.mail.hostinger.com` |
+| TXT | `_dmarc` | — | `v=DMARC1; p=none; rua=mailto:order@erythro.ai` |
+
+В Name для DKIM только `hostingermail-a._domainkey`, без `.erythro.ai`. После сохранения —
+Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24 ч на пропагацию).
+
+### 13.2. Как сайт шлёт письмо
+
+`POST /api/contact` (`src/app/api/contact/route.ts`):
+
+1. Пишет документ в коллекцию `contact-submissions` (админка).
+2. Читает Site Settings → Contacts → Email.
+3. Шлёт SMTP через `src/lib/contactNotification.ts`: **from** `"Erythro.ai" <order@erythro.ai>`
+   (display name + mailbox), **to** = Site Settings notify target(s), Reply-To = имя + email посетителя.
+
+Транспорт: `smtp.hostinger.com:465` (fallback 587 STARTTLS). Пароль ящика — Vercel env
+**`SMTP_PASS`** (Production + Preview). Опционально: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
+`CONTACT_FROM_EMAIL`, `CONTACT_NOTIFY_EMAIL`. Значение пароля в git не класть.
+
+Если письмо есть, но в **Spam** Hostinger (а пересылка на Gmail работает) — локальный фильтр
+ящика, не DNS. См. PIT-021: «не спам» / фильтр, либо notify → Gmail в Site Settings.
+
+Если заявка есть в админке, а письма нет — смотреть Runtime Logs `[api/contact]` /
+`[contactNotification]` (PIT-020). Payload warning «No email adapter provided» сам по себе
+не отправляет почту: нужен наш SMTP-код на `main`, не адаптер Payload.
+
+### 13.3. Защита `POST /api/contact`
+
+Единственная точка приёма форм (модалка /contacts / order) — изолированный route:
+
+1. **App rate limit** по IP (`cf-connecting-ip` → `x-forwarded-for`), default **5 / 60s**
+   (`CONTACT_RATE_LIMIT_MAX`, `CONTACT_RATE_LIMIT_WINDOW_MS`). Ответ `429` + `Retry-After`.
+   In-memory per Vercel isolate — **не** общий счётчик по всем инстансам.
+2. **Cloudflare Rate Limiting** (edge, до Vercel) — обязательное дополнение, см. ниже.
+3. **Sanitize + validate** (`contactSubmissionGuard`) до записи в Payload и SMTP:
+   срез HTML/control chars, лимиты длины, строгий email/locale.
+4. Затем CMS `contact-submissions` и SMTP notify.
+
+#### Cloudflare Rate Limiting на `/api/contact`
+
+**Статус (2026-08-16):** правило **Active**, слот Free **1/1**:
+`Rate limit /api/contact (5/10s per IP)`.
+
+| Слой | Лимит | Зачем |
+|---|---|---|
+| Cloudflare edge (Free) | **5 / 10s / IP**, Block **10s** | общий счётчик до Vercel; Free: period/mitigation только 10s; в expression — Path (не Method) |
+| App (`contactRateLimit`) | **5 / 60s / IP** | sliding window в isolate; `429` + `Retry-After` |
+
+**Dashboard** (если пересоздавать)
+
+1. [Security rules](https://dash.cloudflare.com/?to=/:account/:zone/security/security-rules)
+   → `erythro.ai` → **Create rule** → **Rate limiting rules**.
+2. Name: `Rate limit /api/contact (5/10s per IP)`.
+3. Expression: `(http.request.uri.path eq "/api/contact")`.
+4. Characteristics → **IP**.
+5. When rate exceeds → **5** / **10 seconds**.
+6. Action → **Block**, Duration → **10 seconds**, Status → **Active**.
+7. **Deploy**.
+
+На Pro+ можно поднять period до 60s и добавить `http.request.method eq "POST"`.
+
+**API / скрипт**
+
+```bash
+# Token: Zone WAF Write + Zone Read; Zone ID — Overview зоны
+export CLOUDFLARE_API_TOKEN=...
+export CLOUDFLARE_ZONE_ID=...
+pnpm cf:contact-rate-limit
+# pnpm cf:contact-rate-limit -- --dry-run
+```
+
+Проверка: >5 быстрых запросов на `https://erythro.ai/api/contact` с одного IP → edge block
+(до приложения). Security → Events.
+
+---
+
+## 14. Sitemap + Google Search Console (после Cloudflare DNS)
+
+### 14.1. Sitemap
+
+- URL: `https://erythro.ai/sitemap.xml` (`src/app/sitemap.ts`).
+- lastmod для `/services/*`, `/portfolio/*`, `/order/*` — Payload `updatedAt`.
+- Legal (`/privacy`, `/terms`, `/accessibility`) — `statementDate` / `updatedAt` из globals.
+- `/` и `/portfolio` берут max lastmod по связанному контенту; `/contacts` включён.
+- Инвалидация: hooks `revalidate` → tag `payload-content` + `revalidatePath('/sitemap.xml')`.
+
+### 14.2. Search Console после смены NS на Cloudflare
+
+1. [Google Search Console](https://search.google.com/search-console) → свойство `erythro.ai`.
+2. Ownership: meta в `layout.tsx`; файл —
+   `https://erythro.ai/googlea9b1e6ba6a1fc012.html` (`public/…`). Если была DNS TXT на старых NS —
+   подтвердить заново или опереться на meta/file.
+3. Sitemaps → `https://erythro.ai/sitemap.xml`.
+4. Проверка URL главной → «Запросить индексирование» при необходимости.
+5. Следить за `www` vs apex (оба на Vercel через Cloudflare).
+
+Почтовые MX/SPF/DKIM на индексацию не влияют.
+
+---
