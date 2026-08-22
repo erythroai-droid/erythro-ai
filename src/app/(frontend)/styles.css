@@ -354,8 +354,11 @@
     --font-sans: var(--font-inter), var(--font-inter-cyrillic), ui-sans-serif, system-ui, sans-serif;
   }
 
+  /* Inter (latin family only, no Arial fallback) then Heebo: digits/English
+     stay Inter; Hebrew codepoints skip Inter and use Heebo. */
   html[dir='rtl'] {
-    --font-sans: var(--font-heebo), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    --font-sans: var(--font-inter-latin, var(--font-inter)), var(--font-heebo), ui-sans-serif,
+      system-ui, sans-serif;
     font-family: var(--font-sans) !important;
   }
 

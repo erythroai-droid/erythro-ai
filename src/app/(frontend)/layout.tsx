@@ -2,7 +2,7 @@ import React from 'react'
 import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
 import { getCachedSeoSettings } from '@/lib/getSiteContent'
-import { heebo, inter, interCyrillic, robotoMono } from '@/lib/fonts'
+import { heebo, inter, interCyrillic, interLatinFamily, robotoMono } from '@/lib/fonts'
 import AnalyticsBootstrap from '@/components/AnalyticsBootstrap'
 import AnalyticsLoader from '@/components/AnalyticsLoader'
 import StructuredData from '@/components/StructuredData'
@@ -156,6 +156,11 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       lang={locale}
       dir={locale === 'he' ? 'rtl' : 'ltr'}
       className={fontVars}
+      style={
+        locale === 'he'
+          ? ({ '--font-inter-latin': interLatinFamily } as React.CSSProperties)
+          : undefined
+      }
       suppressHydrationWarning
     >
       <head>

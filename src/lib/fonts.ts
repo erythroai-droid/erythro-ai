@@ -13,6 +13,9 @@ export const inter = Inter({
   display: 'swap',
 })
 
+/** Hashed Inter family only — strips next/font's Arial metric fallback. */
+export const interLatinFamily = inter.style.fontFamily.split(',')[0]!.trim()
+
 /** Russian body copy — unicode-range keeps this off en/he. */
 export const interCyrillic = Inter({
   subsets: ['cyrillic'],
@@ -24,6 +27,9 @@ export const interCyrillic = Inter({
 /**
  * Inter has no Hebrew subset in next/font — Heebo covers `he` headlines.
  * Applied on `<html>` only when locale is `he`.
+ *
+ * No metric fallback: Arial has no unicode-range and would paint Latin/digits
+ * when Heebo is first in a stack (hero SVG probes).
  */
 export const heebo = Heebo({
   subsets: ['hebrew'],
@@ -31,6 +37,7 @@ export const heebo = Heebo({
   variable: '--font-heebo',
   display: 'swap',
   preload: false,
+  adjustFontFallback: false,
 })
 
 /** Sparse UI (open menu, partners). One weight so we don't fetch 400+700. */
