@@ -562,3 +562,26 @@ Legal / contacts / page heroes — **§9.15**. Формы и адресная к
 Считаем продуктовую v1 **закрытой**: прод работает, контент из CMS, формы с письмом, CI-гейт.
 План повторения зафиксирован в **§3**. Каталог ошибок — `PITFALLS.md` (включая PIT-022/023
 с локального полного прогона тестов). Дальше — масштабируемость, не доделки v1.
+
+### 9.18. AI visibility (август 2026)
+
+Внешний AI visibility audit выявил пробелы: нет `llms.txt`, schema, MCP, security headers,
+блокировка AI-ботов в Cloudflare robots.
+
+**Сделано (коммит `10d0d80`, деплой 2026-08-22):**
+
+| Компонент | Путь |
+|---|---|
+| llms.txt | `public/llms.txt` |
+| MCP manifest | `src/app/.well-known/mcp/route.ts` |
+| Brand API | `src/app/api/mcp/route.ts` |
+| About / Brand Facts | `/about` |
+| JSON-LD | `StructuredData.tsx`, `brandSchema.ts` |
+| GA bootstrap | `AnalyticsBootstrap.tsx`, `aiReferral.ts` |
+| Security headers | `next.config.ts` |
+| robots Allow AI | `src/app/robots.ts` |
+
+**Ops:** Cloudflare → AI Crawl Control → **Managed robots.txt: OFF**.
+
+Документация: [`docs/AI_VISIBILITY.md`](./AI_VISIBILITY.md).  
+Промпт для QA_Auditor: `C:\agents\website-auditor\erythro-ai\QA_Auditor\PROMPT_ADD_AI_VISIBILITY_TESTS.md`.

@@ -3,7 +3,7 @@
 Manifest for building a retrieval corpus from `docs/`. Use this file as the **ingest map**:
 what to chunk, how to tag, and which questions each source answers.
 
-Last updated: 2026-08-18.
+Last updated: 2026-08-22.
 
 ---
 
@@ -26,6 +26,7 @@ Last updated: 2026-08-18.
 | `docs/DEPLOYMENT.md` | Infra journal | One chunk per numbered `##` section | `deploy`, `vercel`, `supabase`, `ci` |
 | `docs/PLAYBOOK.md` | Product playbook + chronology | `##` / `###` under §9+ as separate chunks | `playbook`, `i18n`, `gsap`, `cms` |
 | `docs/HERO_MOTION.md` | Hero motion specifics | Per frame / rule heading | `hero`, `motion`, `gsap` |
+| `docs/AI_VISIBILITY.md` | AI visibility pack (llms.txt, MCP, schema) | One chunk per `##` heading | `ai`, `seo`, `schema`, `robots` |
 | `docs/RAG_INDEX.md` | This map | Single small chunk or skip | `meta`, `rag` |
 | `docs/IMPORT_PROJECT.md` | Pointer to import tool | Skip or one chunk | `portfolio`, `cms`, `import` |
 | `scripts/import-project/README.md` | Portfolio folder → CMS import | One chunk per `##` | `portfolio`, `cms`, `import` |
@@ -77,6 +78,7 @@ Rules:
 | “Contact form / Hostinger / no email / MX / spam” | `PIT-020`, `PIT-021`; `DEPLOYMENT.md` §13; `PLAYBOOK.md` §9.14–9.16 |
 | “E2E hang / Playwright / drizzle y/N” | `PIT-022`, `PIT-023`; `PLAYBOOK.md` §5 |
 | “Legal / contacts / page heroes” | `PLAYBOOK.md` §9.15 |
+| “AI visibility / llms.txt / MCP / Organization schema” | `AI_VISIBILITY.md`; `DEPLOYMENT.md` §15; `PLAYBOOK.md` §9.18 |
 
 ---
 
@@ -101,8 +103,9 @@ Rules:
 ## Suggested future additions
 
 - [x] `scripts/import-project/` (README + example brief + GHA template).
-- [x] Playbook §3 as full v1 implementation plan (2026-08-18); chronology through §9.17.
+- [x] Playbook §3 as full v1 implementation plan (2026-08-18); chronology through §9.18.
 - [x] Contact hardening + Cloudflare DNS + e2e pitfalls (PIT-020 update, PIT-022, PIT-023).
+- [x] `docs/AI_VISIBILITY.md` — llms.txt, MCP, schema, security headers (2026-08-22).
 - [ ] `docs/ORDER_CMS.md` mirroring portfolio for Solution Plans / order page.
 - [ ] `docs/I18N_RTL.md` consolidating BiDi / HE scrub / phone LTR fixes from commits.
 - [ ] Scalability track (new playbook section when that work starts — not v1).
