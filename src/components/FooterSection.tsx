@@ -19,6 +19,8 @@ interface FooterSectionProps {
   theme?: 'light' | 'dark'
   /** Home page: spacer lets Footer ride over pinned Solutions. Portfolio skips it to avoid a black void. */
   pinSpacer?: boolean
+  /** Skip pin, fade-in, and chip-sequence scrub. */
+  animate?: boolean
 }
 
 function FooterBrandLogo() {
@@ -89,7 +91,7 @@ function FooterLinkItem({
   return <div className="flex items-center gap-2 px-2">{content}</div>
 }
 
-export default function FooterSection({ locale, pinSpacer = true }: FooterSectionProps) {
+export default function FooterSection({ locale, pinSpacer = true, animate = true }: FooterSectionProps) {
   const content = useSiteContent()
   const translations = content.footer
   const cookieConsent = content.cookieConsent
@@ -149,7 +151,7 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
 
   // Preload chip frames only after splash + when footer is near viewport (desktop).
   useEffect(() => {
-    if (typeof window === 'undefined' || window.matchMedia('(max-width: 1023px)').matches) {
+    if (!animate || typeof window === 'undefined' || window.matchMedia('(max-width: 1023px)').matches) {
       return
     }
 
@@ -214,7 +216,7 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
       window.removeEventListener('erythro:splash-done', onSplash)
       io?.disconnect()
     }
-  }, [])
+  }, [animate])
 
   // Helper to find the nearest loaded image
   const getNearestLoadedImage = (index: number): HTMLImageElement | null => {
@@ -276,6 +278,8 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
   }, [isLoaded])
 
   useEffect(() => {
+    if (!animate) return
+
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia()
 
@@ -358,7 +362,7 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
     }, footerRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [animate])
 
   return (
     <div className="relative z-40 w-full pointer-events-none">
@@ -377,15 +381,21 @@ export default function FooterSection({ locale, pinSpacer = true }: FooterSectio
         <div className="absolute inset-0 bg-noise opacity-5 pointer-events-none z-[1]" />
 
         {/* 1. Desktop Mode: HTML5 Canvas rendering */}
-        <div className="hidden lg:flex absolute inset-0 w-full h-full items-center justify-center pointer-events-none select-none z-0">
-          <canvas
-            ref={canvasRef}
-            className="w-full h-full object-cover opacity-85"
-          />
-        </div>
+        {animate ? (
+          <div className="hidden lg:flex absolute inset-0 w-full h-full items-center justify-center pointer-events-none select-none z-0">
+            <canvas
+              ref={canvasRef}
+              className="w-full h-full object-cover opacity-85"
+            />
+          </div>
+        ) : null}
 
-        {/* 2. Mobile/Tablet Fallback: Optimized next/image displaying first frame */}
-        <div className="block lg:hidden absolute inset-0 z-0 select-none pointer-events-none">
+        {/* 2. Static chip still — mobile always; desktop when the sequence is off */}
+        <div
+          className={`absolute inset-0 z-0 select-none pointer-events-none ${
+            animate ? 'block lg:hidden' : 'block'
+          }`}
+        >
           <Image
             src="/images/hero-sequence/chip (1).webp"
             alt="Erythro Neural Chip"

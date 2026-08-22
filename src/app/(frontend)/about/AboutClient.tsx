@@ -72,24 +72,40 @@ export default function AboutClient({ initialLocale, initialTheme, content }: Ab
             <HeaderChipStrip page="legal" />
           </div>
           <Navbar
-            locale={locale}
+            currentLocale={locale}
             setLocale={setLocale}
             theme={theme}
             setTheme={setTheme}
-            onAccessibilityClick={() => setIsAccessibilityOpen(true)}
+            onOpenAccessibility={() => setIsAccessibilityOpen(true)}
+            forceBurger
+            headerContrast="auto"
           />
-          <AboutBody locale={locale} theme={theme} />
-          <LetsTalkSection locale={locale} theme={theme} />
-          <FooterSection locale={locale} theme={theme} />
-          <WhatsAppButton locale={locale} />
-          <CookieConsent locale={locale} theme={theme} />
+
+          <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
+            <div>
+              <AboutBody locale={locale} theme={theme} />
+            </div>
+          </div>
+
+          <div className="relative z-30 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
+            <LetsTalkSection locale={locale} variant="static" />
+          </div>
+
+          <div className="relative z-40 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
+            <FooterSection locale={locale} theme={theme} pinSpacer={false} animate={false} />
+          </div>
+
           <AccessibilityPanel
             isOpen={isAccessibilityOpen}
             onClose={() => setIsAccessibilityOpen(false)}
-            locale={locale}
             labels={a11yLabels}
-            targets={a11yTargets}
+            screenReaderTargets={a11yTargets}
+            rtl={locale === 'he'}
+            showPoweredBy
           />
+
+          <CookieConsent locale={locale} theme={theme} />
+          <WhatsAppButton />
         </div>
       </ContactModalProvider>
     </SiteContentProvider>
