@@ -27,6 +27,7 @@ export const interCyrillic = Inter({
  */
 export const heebo = Heebo({
   subsets: ['hebrew'],
+  weight: ['200', '300', '400', '500', '600', '700', '800', '900'],
   variable: '--font-heebo',
   display: 'swap',
   preload: false,
