@@ -3,7 +3,9 @@ import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
 import { getCachedSeoSettings } from '@/lib/getSiteContent'
 import { heebo, inter, interCyrillic, robotoMono } from '@/lib/fonts'
+import AnalyticsBootstrap from '@/components/AnalyticsBootstrap'
 import AnalyticsLoader from '@/components/AnalyticsLoader'
+import StructuredData from '@/components/StructuredData'
 import SplashHost from '@/components/SplashHost'
 import NavigationTopLoader from '@/components/NavigationTopLoader'
 import SkipToContent from '@/components/SkipToContent'
@@ -156,11 +158,16 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       className={fontVars}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="describedby" href="/llms.txt" type="text/plain" />
+      </head>
       <body>
+        <StructuredData />
         <script
           id="theme-bootstrap"
           dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }}
         />
+        <AnalyticsBootstrap />
         <AnalyticsLoader />
         <SkipToContent locale={locale} />
         <SplashHost />

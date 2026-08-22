@@ -4,6 +4,22 @@
 **как повторить** тот же путь в новых проектах. Подходит для маркетинговых сайтов / лендингов,
 где весь контент редактируется из админки и есть несколько языков, а деплой идёт на Vercel.
 
+**Статус (2026-08-18):** v1 сайта **готов и задеплоен** (`https://erythro.ai`). Закрыты вёрстка,
+CMS, внутренние страницы, почта форм, CI/деплой-гейт. Следующий трек — **масштабируемость**
+(не описан здесь как закрытый этап). План повторения: **§3**. Каталог ошибок: **`PITFALLS.md`**.
+
+**Связанные документы (RAG):**
+
+| Документ | Зачем |
+|---|---|
+| [`RAG_INDEX.md`](./RAG_INDEX.md) | Карта корпуса: что индексировать и как роутить вопросы |
+| [`PITFALLS.md`](./PITFALLS.md) | Каталог граблей (симптом → причина → фикс → профилактика) |
+| [`PORTFOLIO_CMS.md`](./PORTFOLIO_CMS.md) | Контракт CMS/UI для `/portfolio` |
+| [`DEPLOYMENT.md`](./DEPLOYMENT.md) | Инфра, Blob, CI, миграции |
+| [`HERO_MOTION.md`](./HERO_MOTION.md) | Кинематографический Hero |
+| [`IMPORT_PROJECT.md`](./IMPORT_PROJECT.md) | Указатель на `scripts/import-project/` |
+| [`scripts/import-project/README.md`](../scripts/import-project/README.md) | Импорт кейса в Portfolio CMS |
+
 ---
 
 ## 1. Стек
@@ -70,30 +86,77 @@
 
 ---
 
-## 3. Переиспользуемый сценарий (пошагово)
+## 3. Переиспользуемый сценарий (план подобного проекта)
 
-> Цель: «весь текст и изображения редактируются из админки + несколько языков + деплой на Vercel».
+> Цель v1: многоязычный маркетинговый сайт, весь контент из админки, формы с почтой,
+> деплой на Vercel + Postgres, тесты до прода. Ниже — порядок, который сработал у Erythro;
+> после каждого блока — типичные грабли (`PIT-NNN`).
 
-1. **Инициализация**: проект Payload + Next (postgres-шаблон). Поднять Postgres (`docker compose up -d postgres`).
-2. **Локализация в `payload.config.ts`**: задать `localization.locales` и `defaultLocale`, `fallback: true`.
-3. **Аудит контента**: выписать все секции и поля сайта; решить, что — Global (одиночка), что — Collection (список).
-4. **Схема Payload**:
-   - Хелпер локализованных полей (`src/fields/localized.ts`).
-   - Globals: Header, Hero, *-Section (intro), Footer, SiteSettings.
-   - Collections: списки (услуги, тарифы, партнёры, **portfolio-projects**) + Media + Users.
-   - Страницы `/portfolio`, `/portfolio/[slug]`, `/services/[slug]`, `/order/[slug]` читают CMS
-     через `src/lib/cmsPages.ts` (фолбэк на статику в `portfolioProjects` / `servicePages` / `orderPlans`).
-   - Зарегистрировать в `payload.config.ts`.
-5. **Типы**: `pnpm run generate:types`.
-6. **Загрузчик** (`src/lib/getSiteContent.ts`): тянет globals/collections с `locale: 'all'`, мёрджит
-   поверх статических дефолтов, в `try/catch` фолбэк на дефолты.
-7. **Контекст** (`src/components/SiteContentProvider.tsx`): клиентский провайдер, дефолт = статика.
-8. **Проводка**: `page.tsx` (server) → `getSiteContent()` → `HomeClient` оборачивает в провайдер →
-   компоненты читают через `useSiteContent()` (рендер не меняется, т.к. форма данных совпадает).
-9. **Сид** (`scripts/seed.ts`): залить начальный контент на все локали.
-10. **SEO**: подключить поля SiteSettings (title/description/OG) в `generateMetadata` с фолбэком.
-11. **Тесты**: lint → build → `test:int` → `test:e2e`.
-12. **Деплой**: см. §7 (env-переменные + storage для Media).
+### Фаза A. Каркас
+
+1. **Инициализация**: Payload 3 + Next App Router (postgres-шаблон). Postgres локально
+   (`docker compose`) или сразу Supabase Direct. `pnpm`, один lockfile, `engines.node: "24.x"`
+   (не `>=24.15.0` — PIT-013).
+2. **Локализация в `payload.config.ts`**: `locales` + `defaultLocale` + `fallback: true`.
+3. **Аудит контента**: секции главной и внутренние URL. Global = одна сущность на сайт;
+   Collection = список (услуги, тарифы, кейсы, медиа).
+
+### Фаза B. UI → i18n → CMS (не наоборот)
+
+4. **Вёрстка и адаптив** без CMS (секции, тема, navbar). Иначе схема плодится под черновик.
+5. **Статические переводы** `{ en, ru, he }` + cookie локали + RTL. Потом CMS копирует эту форму.
+6. **Cookie consent + a11y-модуль** (самодостаточный, CSS-переменные, не вшивать в секции).
+7. **SEO-ассеты**: favicon/OG-скрипты, `generateMetadata`, позже sitemap + GSC.
+8. **Схема Payload** (`locText` / `locRichText`):
+   - Globals: Header, Hero, intro-секции, Footer, SiteSettings, legal.
+   - Collections: services, solution-plans, portfolio-projects, partners, media, users,
+     contact-submissions.
+   - Внутренние страницы читают `cmsPages.ts` / `legalPages` с фолбэком на статику.
+9. **Типы**: `pnpm generate:types` после каждого изменения полей.
+10. **Загрузчик** `getSiteContent` (`locale: 'all'`) + `SiteContentProvider`. Фолбэк на статику
+    при любой ошибке БД (PIT-007: не сплющивать локаль на сервере).
+11. **Сид** `scripts/seed.ts` с `applyIds` для локализованных массивов (PIT-014).
+    Админов сид **не** создаёт — первый пользователь через `/admin`.
+
+### Фаза C. Внутренние страницы и motion
+
+12. **Portfolio / services / order / contacts / legal** — вёрстка, затем поля CMS, затем seed.
+    Контракт кейсов: `PORTFOLIO_CMS.md`. Order/plans — те же правила i18n + Lexical.
+13. **GSAP scroll-стек**: pin предыдущей секции с `pinSpacing: false`; на desktop не оборачивать
+    pinned-секции в `overflow-hidden` (PIT-017). Каждая light-секция — `data-menu-contrast` (PIT-018).
+14. **Hero motion** — отдельный контракт (`HERO_MOTION.md`); e2e-ассерт героя держать в синхроне
+    с копирайтом (PIT-023).
+
+### Фаза D. Медиа, формы, инфра
+
+15. **Прод-storage до первого редеплоя**: Vercel Blob; после плагина — `generate:importmap` (PIT-001,
+    PIT-002). Видео: `disablePayloadAccessControl` (PIT-003).
+16. **Формы**: один `POST /api/contact`. Слои отдельно: sanitize/validate → CMS save → SMTP.
+    Privacy consent обязателен. Rate limit: app (isolate) **и** edge (Cloudflare) — in-memory
+    на Vercel не общий. Notify-адреса — Site Settings, From — SMTP-ящик (PIT-020, PIT-021).
+17. **DNS почты там, где NS.** Смена NS (Vercel → Cloudflare) требует переноса MX/SPF/DKIM.
+    Hostinger autodiscover бесполезен, если NS не Hostinger.
+
+### Фаза E. Качество и выкладка
+
+18. **Миграции, не push, на проде/CI.** Новое поле = migration в том же PR + при отставании
+    `db:fix-*` до API tests (PIT-004…006, PIT-012). Локальный e2e: `PAYLOAD_DISABLE_PUSH=1`
+    иначе drizzle спросит `y/N` и зависнет (PIT-022).
+19. **Тесты**: lint → `test:int` → `test:e2e` (локально) → CI Unit+API → merge в `main` → Vercel.
+    E2E в CI у Erythro пока выключены; локальный прогон обязателен перед релизом UI.
+20. **Деплой-гейт**: GitHub checks + Vercel Deployment Checks + ruleset на `main`
+    (`DEPLOYMENT.md` §11). Env: `DATABASE_URL` (pooler + `sslmode=no-verify`), `PAYLOAD_SECRET`,
+    `NEXT_PUBLIC_SITE_URL`, Blob token, `SMTP_PASS`.
+21. **После деплоя**: `/admin`, главная en/ru/he, форма → строка в CMS **и** письмо, Range `206`
+    у видео, sitemap в GSC.
+
+### Фаза F. Контент-операции (после v1)
+
+22. Наполнение кейсов: админка или `pnpm import:project` (`IMPORT_PROJECT.md`).
+23. Смена формы закэшированных документов → bump cache key (PIT-015).
+
+**Не смешивать с v1:** масштабирование (отдельный CMS/фронт, мульти-тенант, очередь писем,
+общий rate-limit store) — следующий трек, после стабильного контракта выше.
 
 ---
 
@@ -162,14 +225,24 @@ function applyIds(target, source) {
 |---|---|---|---|
 | Линт/стиль | ESLint | `pnpm run lint` | flat config, см. §6 |
 | Типы | TS (в редакторе) | — | `tsc` напрямую ругается на CSS-импорты — это норм |
-| Integration | Vitest | `pnpm run test:int` | нужен запущенный Postgres |
+| Integration | Vitest | `pnpm run test:int` / `pnpm test:ci` | unit без БД; `api.int.spec` нужен `DATABASE_URL` |
 | E2E | Playwright | `pnpm run test:e2e` | нужен свободный порт 3000 |
+| CI | GitHub Actions | `.github/workflows/test.yml` | **Unit Tests** + **API Tests** до прода на Vercel |
 
-Грабли тестов (Windows):
+**CI / деплой-гейт (erythro-ai):** полный журнал — **`DEPLOYMENT.md` §11**. Кратко:
+- PR → Actions (оба job’а) → merge в `main` (branch ruleset) → Vercel Deployment Checks на production.
+- Прямой push в `main` без зелёных checks запрещён.
+- Supabase на GHA: session pooler (IPv4), `sslmode`/insecure SSL только в CI, `push: false` у Payload.
+
+Грабли тестов (Windows + Playwright) — подробно PIT-022, PIT-023:
 - Перед `build` остановить dev-сервер (Windows блокирует `.next`).
-- Playwright ищет браузеры — задать `PLAYWRIGHT_BROWSERS_PATH` = `%USERPROFILE%\AppData\Local\ms-playwright`.
-- `webServer` Playwright ждёт `http://localhost:3000` — порт должен быть свободен (зависшие dev-серверы убивают порт).
-- Шаблонные e2e-тесты проверяют дефолтный title — обновить под свой.
+- `pnpm exec playwright install chromium` (в sandbox путь браузеров может быть пуст).
+- `webServer` ждёт `http://localhost:3000` (timeout 180s); порт должен быть свободен.
+- Для e2e/seed: `PAYLOAD_DISABLE_PUSH=1` (playwright.config выставляет сам) — иначе hang на
+  «Accept warnings and push schema?».
+- Next.js `<Link>`: `waitForURL(..., { waitUntil: 'commit' })`, не `'load'`.
+- Admin `beforeAll` (seed + `/admin/login`) — timeout ≥ 120s (первая компиляция Payload).
+- Ассерты копирайта (hero title) синхронизировать с CMS/переводами, не с шаблоном Payload.
 
 ---
 
@@ -215,17 +288,29 @@ export default [
 
 ## 8. Главные уроки / грабли
 
+Полный каталог с ID для RAG: **[`PITFALLS.md`](./PITFALLS.md)**. Кратко:
+
 1. **`locale: 'all'`** — главный приём: форма данных Payload совпадает со статическими переводами,
-   миграция фронтенда сводится к замене импорта на чтение из контекста.
+   миграция фронтенда сводится к замене импорта на чтение из контекста. **Клиентское**
+   переключение языка требует сохранения LocaleMap на клиенте (PIT-007).
 2. **Всегда делать фолбэк** на статику в загрузчике — сайт не ломается при пустой/недоступной БД.
-3. **Сид локализованных массивов** требует переноса `id` строк между локалями (`applyIds`).
-4. **Реструктуризация коллекции** в dev (`push`) вызывает интерактивный вопрос drizzle о
-   rename/create колонок — для чистой миграции проще удалить старую таблицу с тестовыми данными.
-5. **Windows-специфика**: дев-сервер держит `.next`; порты 3000/3001 занимают зависшие процессы;
-   PowerShell не поддерживает bash-heredoc (коммит-сообщение писать через файл + `git commit -F`).
+3. **Сид локализованных массивов** требует переноса `id` строк между локалями (`applyIds`) (PIT-014).
+4. **Реструктуризация коллекции** в dev (`push`) вызывает интерактивный вопрос drizzle —
+   в CI/prod только миграции + idempotent fix-скрипты (PIT-004, PIT-006).
+5. **Windows-специфика**: дев-сервер держит `.next`; порты 3000/3001; PowerShell без bash-heredoc
+   (PIT-016).
 6. **ESLint 9**: только нативный flat config, без `FlatCompat`.
-7. **Разделять клиентский и серверный код**: дефолты контента в client-safe модуле
-   (`defaultContent.ts`), загрузчик с `getPayload` — отдельно (`getSiteContent.ts`).
+7. **Разделять клиентский и серверный код**: дефолты в client-safe модуле, `getPayload` отдельно.
+8. **После плагинов/Lexical features → `pnpm generate:importmap`** (PIT-001).
+9. **Медиа на Vercel:** Blob + `disablePayloadAccessControl` для видео Range/`206` (PIT-003).
+10. **Картинки кейсов:** не `object-cover` в жёстком aspect и не opaque bg под PNG (PIT-008, PIT-009).
+11. **Смена формы CMS-документа → bump cache key** в том же PR (PIT-015).
+12. **Письма с формы ≠ запись в админке.** CMS save и SMTP — разные шаги. DNS почты живёт
+    **там, где NS** (сейчас Cloudflare, раньше Vercel; не Hostinger) — PIT-020, `DEPLOYMENT.md` §13.
+13. **Локальный drizzle push интерактивен.** E2e/`getPayload` без `PAYLOAD_DISABLE_PUSH=1`
+    зависают на предупреждении о потере данных (PIT-022).
+14. **Playwright + App Router:** не ждать `load` после клиентского `<Link>`; ставить таймауты
+    admin/splash; не копировать ассерты из Payload blank (PIT-023).
 
 ---
 
@@ -237,15 +322,8 @@ export default [
 
 ### 9.1. Контактный UX и splash
 - Модалка обратной связи (contact feedback): успех без заголовка, зелёная галочка.
-- Brand splash: на mobile (`max-width: 1023px`) cold load всегда **quick**; full draw — только
-  клик по лого. Desktop: full **один раз за session** на cold home (~3s, без `body` fixed lock),
-  дальше / mid-page / inner — quick. `markSplashDone` на старте fade (LCP).
-- Hero desktop: poster (mobile still) + video после splash; footer chip-frames — после splash + IO.
-- CWV: `experimental.inlineCss` — Tailwind/a11y CSS в `<style>` вместо render-blocking `<link>` (~1 s на Slow 4G).
-- CWV images: hero stills через `next/image` без `priority`; LCP preload в HTML с
-  `fetchpriority=high` + `imageSrcSet` (тот же набор `w=` что у оптимизатора).
-- CWV fonts: Inter latin only on the critical path; cyrillic / Heebo подключаются
-  по locale; hero pre-heading больше не тянет Roboto Mono.
+- Brand splash screen: теглайн «digital agency», удлинённый hold intro; на mobile (&lt;1024px)
+  intro отключён / показывается раз за сессию для производительности.
 - Мелкие UI-фиксы: скрытие скроллбара, центрирование glyph splash, RTL close у модалки.
 
 ### 9.2. Админка Media
@@ -256,10 +334,12 @@ export default [
   файл `public/googlea9b1e6ba6a1fc012.html`.
 - Sitemap: `src/app/sitemap.ts` + `src/lib/sitemapEntries.ts` — URL из CMS,
   **lastmod** = Payload `updatedAt` (services / portfolio / order plans) и
-  legal `statementDate`/`updatedAt`; также `/contacts` и legal pages.
-  Revalidate на смене контента (`payload-content` → `/sitemap.xml`).
+  `statementDate`/`updatedAt` у legal globals; статичные `/contacts` + legal pages
+  тоже в карте. Revalidate на смене контента (`payload-content` → `/sitemap.xml`).
 - После смены NS на Cloudflare: в GSC проверить ownership, sitemap
-  `https://erythro.ai/sitemap.xml`, при необходимости запросить индексирование.
+  `https://erythro.ai/sitemap.xml`, при необходимости «Проверить URL» главной
+  и отправить индексацию. DNS mail (MX/SPF/DKIM) не влияет на GSC, но смена NS
+  может временно затронуть DNS-проверку свойства.
 - Self-host шрифтов; `aria-label` на лого-ссылках для скринридеров.
 
 ### 9.4. Картинки и перф
@@ -364,8 +444,6 @@ export default [
 3. **Кнопка поверх full-screen меню** должна жить в stacking context с `z-index` выше
    оверлея (родитель с `z-[70]`), иначе `z-index` на ребёнке не выигрывает у sibling-оверлея.
 4. **PowerShell**: коммит-сообщения через файл + `git commit -F` (без bash heredoc).
-5. **Письма с формы ≠ запись в админке.** CMS save и SMTP — разные шаги. DNS почты при NS Vercel
-   живёт в Vercel DNS, не в Hostinger (PIT-020, `DEPLOYMENT.md` §13).
 
 ### 9.10. Hero Motion (кинематографические заголовки)
 Утверждены 4 кадра вращающихся headline в Hero (`HeroMotionText`). Полное описание кадров,
@@ -373,7 +451,70 @@ outline SVG, адаптива, z-index меню и правил выхода и�
 
 → **[docs/HERO_MOTION.md](./HERO_MOTION.md)**
 
-### 9.11. Почта заказов с сайта (Hostinger)
+### 9.11. Portfolio project page — i18n, hero, rich text, images (июль–август 2026)
+
+Полный контракт полей и UI: **[`PORTFOLIO_CMS.md`](./PORTFOLIO_CMS.md)**. Грабли: **[`PITFALLS.md`](./PITFALLS.md)** PIT-007…011, 015.
+
+**Язык без reload (`a8b0305`)**  
+Раньше сервер сплющивал portfolio copy в одну локаль (`pickStr`) → на клиенте переключение
+языка не работало до F5. Исправление: держать `LocaleMap` / Lexical maps и резолвить через
+`tLocale` / `RichText` (как у Services).
+
+**Summary vs subtitle (`172164f` + миграции)**  
+- `summary` — только в Hero.  
+- `subtitle` — опционально под заголовком Body.  
+Колонка `subtitle` + CI fix: `pnpm db:fix-portfolio-subtitle` (cast `$1::varchar` — PIT-005).
+
+**Mobile hero**  
+- Отдельный `heroMediaMobile`; рендер по **своему** типу слота (`18cebcb`).  
+- Кадр ~`100dvh`, still с `object-top` (`4ec17c4`).  
+- Градиентная плашка текста вместо глухого чёрного (`8f56927`, `af960d1`).  
+- Отступ под «Visit project», чтобы body-наезд не прижимал ссылку (`694ebb2`).
+
+**Lexical rich text (`f908fc6`)**  
+`summary` / `subtitle` / body `paragraphs.text` → `locRichText`; миграция varchar→jsonb;
+`pnpm db:fix-portfolio-richtext`; фронт `<RichText>`; cache key `portfolio-projects-v6`.
+
+**Таблицы в админке (`2a2a511`, `2066a04`)**  
+`EXPERIMENTAL_TableFeature` в `payload.config.ts` **и** `pnpm generate:importmap`
+(`TableFeatureClient` в import map) — иначе в UI таблиц нет (PIT-001).
+
+**Изображения в body**  
+- Убран `bg-coal-800` под PNG с прозрачностью (`9b6a7ed`).  
+- Убран crop `aspect-*` + `object-cover`; `max-w-full` для inline Upload (`f111eb3`).  
+- `rounded-[10px]` + лёгкая тень (`0fba78e`).  
+- Параграфы только с картинкой не отфильтровывать (`lexicalHasContent`).
+
+**Схема / прод**  
+Любое новое поле portfolio → migration + при необходимости `db:fix-*` + шаг в CI до API tests
+(см. `DEPLOYMENT.md` §12). Не полагаться на interactive `push` в CI/Vercel (PIT-004, PIT-006).
+
+### 9.12. Наполнение контента и автоматизация
+
+**Админка / seed:** правка в `/admin` или `scripts/seed.ts` (медиа в seed часто пропускаются).
+
+**Папка → CMS:** создать проект и Slug в админке → `content/imports/<slug>/brief.yaml` + images →
+`pnpm import:project -- content/imports/<slug>`. Код и инструкция: `scripts/import-project/`.
+
+**n8n / GitHub Action (план):** n8n пишет brief (без кликов по `/admin`) → dispatch workflow → тот же CLI.
+Шаблон: `scripts/import-project/github-action.example.yml`. После записи при необходимости Save в админке (кэш).
+
+### 9.13. Прочие продуктовые треки на той же ветке (кратко)
+
+На `fix/order-page-solutions` параллельно шли (см. `git log` / merge PR #20…#77):
+
+- Order / Solution Plans: addons, mandatory subscription, localized prices, rich `full`, layout totals
+  (отдельный `ORDER_CMS.md` ещё не заведён — схема в коллекциях + миграции `20260801*`…`20260805*`).
+- Header: CMS nav children/subtitles; burger accordion; SEO title localized.
+- i18n/RTL QA: BiDi isolate, HE services scrub, phones LTR, mirrored arrows.
+- Home scroll: Let's Talk holds, Solutions overlap timing, Case Studies poster while buffering.
+- DB backups workflow (`pnpm db:backup`).
+
+Legal / contacts / page heroes — **§9.15**. Формы и адресная книга — **§9.16**.
+
+Детали инцидентов деплоя/CI — в `DEPLOYMENT.md`; повторяемые ошибки — в `PITFALLS.md`.
+
+### 9.14. Почта заказов с сайта (Hostinger)
 
 Контактная форма всегда писала в коллекцию `contact-submissions` (видно в `/admin`). Письмо на
 `order@erythro.ai` появилось после двух шагов (2026-08-14):
@@ -384,6 +525,40 @@ outline SVG, адаптива, z-index меню и правил выхода и�
    From: `"Erythro.ai" <order@erythro.ai>`. To: Site Settings notify (contact / order).
 3. Защита: app rate limit 5/60s + Cloudflare Rate Limiting на `/api/contact`
    (Free: **5/10s** edge Block; `DEPLOYMENT.md` §13.3, `pnpm cf:contact-rate-limit`).
-4. Если Hostinger → Spam, а forward на Gmail ок — PIT-021.
+4. Если Hostinger → Spam, а forward на Gmail ок — PIT-021 (фильтр ящика или notify → Gmail).
 
 Проверено на проде: письма с сайта доходят. Журнал и таблица DNS: `DEPLOYMENT.md` §13. Грабли: PIT-020, PIT-021.
+
+### 9.15. Legal, Contacts, page heroes (июль 2026)
+
+Вынесены из «прочих треков» 9.13 в отдельный этап — без них v1 неполный.
+
+| URL | Источник | Заметки |
+|---|---|---|
+| `/privacy`, `/terms`, `/accessibility` | Globals Legal* | Израильское право; `statementDate`; фолбэк `legalPages.ts` |
+| `/contacts` | страница + Site Settings | форма → тот же `POST /api/contact` |
+| Header strip heroes | Site Settings → Page Heroes | contacts / portfolio / legal / order |
+
+Миграции: `20260729_120000_legal_pages_globals`, `20260731_120000_legal_statement_date`,
+`20260727_103500_add_site_settings_page_heroes` (+ `pnpm db:fix-site-settings-page-heroes`).
+
+### 9.16. Защита форм и адресная книга (август 2026)
+
+После того как SMTP заработал:
+
+- **Sanitize/validate** до CMS и почты: `contactSanitize` + `guardContactSubmission`
+  (HTML/control chars, лимиты, обязательный `privacyConsent`). Тесты:
+  `tests/int/contactGuard.int.spec.ts`.
+- **Site Settings emails** (`20260815_010000_site_settings_emails`): массив адресов + селекты
+  display (footer / contacts / legal) и notify (contact / order). SMTP From по-прежнему
+  `order@erythro.ai`.
+- **UX отправки:** `ContactSendingPanel`, согласие `ContactPrivacyConsent`.
+- **Rate limit:** app 5/60s + Cloudflare edge 5/10s (`pnpm cf:contact-rate-limit`).
+- **NS → Cloudflare:** MX/SPF/DKIM перенесены с Vercel DNS; GSC ownership/sitemap — §14
+  `DEPLOYMENT.md`. PIT-020 обновлён: писать почтовые записи **в текущие NS**.
+
+### 9.17. Закрытие v1 (2026-08-18)
+
+Считаем продуктовую v1 **закрытой**: прод работает, контент из CMS, формы с письмом, CI-гейт.
+План повторения зафиксирован в **§3**. Каталог ошибок — `PITFALLS.md` (включая PIT-022/023
+с локального полного прогона тестов). Дальше — масштабируемость, не доделки v1.

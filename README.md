@@ -1,4 +1,25 @@
-# Payload Blank Template
+# Erythro.ai
+
+Production site: [erythro.ai](https://erythro.ai). Stack: Next.js 15 App Router + Payload CMS 3 +
+Postgres (Supabase) + Vercel. **v1 is shipped** (2026-08-18). Next track: scalability.
+
+| Doc | Use |
+|---|---|
+| [`docs/PLAYBOOK.md`](docs/PLAYBOOK.md) **§3** | Plan to implement a similar project |
+| [`docs/PLAYBOOK.md`](docs/PLAYBOOK.md) **§2 / §9** | What was built (chronology) |
+| [`docs/PITFALLS.md`](docs/PITFALLS.md) | Errors to avoid (symptom → fix) |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Prod infra, CI, mail, Blob |
+| [`docs/RAG_INDEX.md`](docs/RAG_INDEX.md) | Map of the knowledge base |
+
+Local: copy `.env.example` → `.env`, `pnpm install`, `pnpm dev` → `http://localhost:3000`.
+Admin: `/admin`. Tests: `pnpm test:int` then `pnpm test:e2e` (see PIT-022 / PIT-023).
+
+Started from the Payload 3 blank template; project-specific docs above replace the template
+README as the source of truth.
+
+---
+
+# Payload Blank Template (upstream notes)
 
 This template comes configured with the bare minimum to get started on anything you need.
 

@@ -3,7 +3,7 @@
 Manifest for building a retrieval corpus from `docs/`. Use this file as the **ingest map**:
 what to chunk, how to tag, and which questions each source answers.
 
-Last updated: 2026-08-14.
+Last updated: 2026-08-18.
 
 ---
 
@@ -12,7 +12,8 @@ Last updated: 2026-08-14.
 1. Answer ops questions: deploy, CI, Blob, migrations, SSL, Vercel hangs.
 2. Answer product/CMS questions: portfolio fields, i18n, Lexical, heroes, images.
 3. Answer “don’t repeat this bug” via `PITFALLS.md` (preferred for incident retrieval).
-4. Support future agents (Cursor / n8n / import scripts) with stable, self-contained chunks.
+4. Answer “how to build a similar site” via `PLAYBOOK.md` §3 (phases A–F) + chronology §2/§9.
+5. Support future agents (Cursor / n8n / import scripts) with stable, self-contained chunks.
 
 ---
 
@@ -62,6 +63,7 @@ Rules:
 
 | User intent | Prefer chunks from |
 |---|---|
+| “How do we build a site like this / implementation plan” | `PLAYBOOK.md` §3 (phases A–F); then §4 patterns |
 | “Build failed / not deploying / hang” | `DEPLOYMENT.md` §4, §8–§11; `PIT-002`, `PIT-006`, `PIT-012`, `PIT-013` |
 | “Admin empty / tables missing” | `PIT-001`, `DEPLOYMENT.md` §8.1 |
 | “Video won’t play” | `PIT-003`, `DEPLOYMENT.md` §8.2 |
@@ -69,10 +71,12 @@ Rules:
 | “Language doesn’t switch” | `PIT-007`, `PORTFOLIO_CMS.md` i18n |
 | “Image cropped / PNG background / radius” | `PIT-008`, `PIT-009`, `PORTFOLIO_CMS.md` body images |
 | “Mobile hero wrong” | `PIT-010`, `PIT-011`, `PORTFOLIO_CMS.md` hero |
-| “How to add a CMS field” | `PORTFOLIO_CMS.md` schema playbook; `PLAYBOOK.md` §3 |
-| “How we built X historically” | `PLAYBOOK.md` §9.* chronology |
+| “How to add a CMS field” | `PORTFOLIO_CMS.md` schema playbook; `PLAYBOOK.md` §3 фаза B |
+| “How we built X historically” | `PLAYBOOK.md` §2 + §9.* chronology; v1 close = §9.17 |
 | “Automate filling projects” | `scripts/import-project/README.md`; `PLAYBOOK.md` §9.12 |
-| “Contact form / Hostinger / no email / MX” | `PIT-020`; `DEPLOYMENT.md` §13; `PLAYBOOK.md` §9.11 |
+| “Contact form / Hostinger / no email / MX / spam” | `PIT-020`, `PIT-021`; `DEPLOYMENT.md` §13; `PLAYBOOK.md` §9.14–9.16 |
+| “E2E hang / Playwright / drizzle y/N” | `PIT-022`, `PIT-023`; `PLAYBOOK.md` §5 |
+| “Legal / contacts / page heroes” | `PLAYBOOK.md` §9.15 |
 
 ---
 
@@ -97,6 +101,8 @@ Rules:
 ## Suggested future additions
 
 - [x] `scripts/import-project/` (README + example brief + GHA template).
+- [x] Playbook §3 as full v1 implementation plan (2026-08-18); chronology through §9.17.
+- [x] Contact hardening + Cloudflare DNS + e2e pitfalls (PIT-020 update, PIT-022, PIT-023).
 - [ ] `docs/ORDER_CMS.md` mirroring portfolio for Solution Plans / order page.
 - [ ] `docs/I18N_RTL.md` consolidating BiDi / HE scrub / phone LTR fixes from commits.
-- [ ] Embed `PITFALLS` + `PORTFOLIO_CMS` first (highest ROI); add full PLAYBOOK chronology second.
+- [ ] Scalability track (new playbook section when that work starts — not v1).

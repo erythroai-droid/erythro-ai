@@ -304,19 +304,22 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 **Symptom:** Form on `erythro.ai` returns success. Row appears in `/admin` → Contact Submissions. No message in Hostinger. Gmail → `order@erythro.ai` may already work (inbound OK) while site orders still do not.
 
 **Cause (two independent layers):**
-1. **Inbound DNS.** Nameservers are Vercel (`ns1.vercel-dns.com` / `ns2.vercel-dns.com`). Hostinger Email “connect automatically” does nothing. Without MX/SPF/DKIM in **Vercel DNS**, Hostinger shows “mailbox cannot receive / MX missing”.
+1. **Inbound DNS.** Mail records must live on **whatever nameservers the domain uses**.
+   Erythro: NS were Vercel, then moved to **Cloudflare**. Hostinger Email “connect automatically”
+   does nothing unless NS are Hostinger. Without MX/SPF/DKIM at the **current** DNS host,
+   Hostinger shows “mailbox cannot receive / MX missing”.
 2. **Outbound from the site.** Production `POST /api/contact` used to only `payload.create({ collection: 'contact-submissions' })`. Payload then logs `No email adapter provided. Email will be written to console.` Saving in CMS is not sending mail. Send path is nodemailer SMTP (`smtp.hostinger.com:465`, user/from `order@erythro.ai`), env `SMTP_PASS` on Vercel Production/Preview.
 
 **Fix:**
-1. Vercel → Domains → `erythro.ai` → DNS (leave Name empty for apex; do not add records in Hostinger’s DNS zone):
+1. DNS host of the domain (now **Cloudflare** → DNS → Records; previously Vercel Domains → DNS). Leave Name empty for apex; do not add records in Hostinger’s DNS zone:
    - MX `mx1.hostinger.com` priority 5; MX `mx2.hostinger.com` priority 10
    - TXT `v=spf1 include:_spf.mail.hostinger.com ~all`
    - CNAME `hostingermail-a._domainkey` → `hostingermail-a.dkim.mail.hostinger.com` (and `-b`, `-c`)
    - TXT `_dmarc` → `v=DMARC1; p=none; rua=mailto:order@erythro.ai`
-2. Code: `src/lib/contactNotification.ts` + `src/app/api/contact/route.ts`. Recipients = Site Settings → Contacts → Email **and** `order@erythro.ai`. Set `SMTP_PASS` (mailbox password, never commit). Merge to `main`.
+2. Code: `src/lib/contactNotification.ts` + `src/app/api/contact/route.ts`. Recipients = Site Settings notify (contact / order). Set `SMTP_PASS` (mailbox password, never commit). Merge to `main`.
 3. Confirm Hostinger Domain settings green, then submit the live form. Logs: `[api/contact]`, `[contactNotification]`.
 
-**Prevent:** After moving NS to Vercel, re-add mail records there. Treat CMS save and SMTP as separate steps. Do not assume Payload’s email adapter is configured.
+**Prevent:** After **any** NS move, re-add mail records at the new DNS. Treat CMS save and SMTP as separate steps. Do not assume Payload’s email adapter is configured.
 
 ---
 
@@ -325,18 +328,54 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 **Tags:** `contact`, `email`, `smtp`, `hostinger`, `spam`  
 **Seen:** 2026-08-16. Mailbox `order@erythro.ai`; forward to Gmail OK.
 
-**Symptom:** Form succeeds; row in Contact Submissions; message in Hostinger **Spam**, not Inbox. Forwarding to Gmail still delivers.
+**Symptom:** Form succeeds; row in Contact Submissions; message appears in Hostinger **Spam**, not Inbox. Forwarding rule to Gmail still delivers.
 
-**Cause:** Not broken DNS (MX/SPF/DKIM/DMARC green). Hostinger’s local filter often scores **self-SMTP** poorly: From `order@erythro.ai` → To same mailbox with Reply-To = visitor’s external address. Gmail via forward uses different scoring.
+**Cause:** Not broken DNS (MX/SPF/DKIM/DMARC already green). Hostinger’s local filter often scores **self-SMTP** poorly: From `order@erythro.ai` → To `order@erythro.ai` with Reply-To = visitor’s external address (classic contact-form pattern). Gmail receive via forward uses different scoring.
 
 **Fix (ops — do this first):**
-1. Hostinger webmail: open spam → **Not spam** / whitelist.
-2. Filter: From contains `order@erythro.ai` or Subject contains `Erythro.ai contact` / `Erythro.ai order` → Inbox / never spam.
-3. Optional: Site Settings notify → Gmail; keep `order@erythro.ai` as SMTP From only.
+1. In Hostinger webmail: open one spam message → **Not spam** / whitelist.
+2. Emails → Filters (or webmail Settings → Filters): if From contains `order@erythro.ai` **or** Subject contains `Erythro.ai contact` / `Erythro.ai order` → move to Inbox / never spam.
+3. Optional: Site Settings → Form notifications → set inbox to Gmail (`erythro.ai@gmail.com`); keep `order@erythro.ai` only as SMTP From. Then Hostinger is not the primary read target.
 
-**Fix (code):** From header is `"Erythro.ai" <order@…>` (display name + mailbox), named Reply-To, aligned envelope, `Auto-Submitted` headers.
+**Fix (code):** `contactNotification` sends From as `"Erythro.ai" <order@…>`, named Reply-To, aligned envelope, `Auto-Submitted` headers (reduces some false positives; does not replace the filter).
 
-**Prevent:** Prefer reading form alerts in Gmail (or a dedicated notify address), not the same Hostinger mailbox used as SMTP From.
+**Prevent:** Prefer reading form alerts in Gmail (or a dedicated notify address) rather than the same Hostinger mailbox used as SMTP From.
+
+---
+
+## PIT-022 — Local e2e / `getPayload` hangs on Drizzle «Accept warnings and push schema?»
+
+**Tags:** `e2e`, `payload`, `push`, `windows`, `playwright`  
+**Seen:** 2026-08-18 full `pnpm test`. Warning mentioned deleting `full` / `home_only` columns.
+
+**Symptom:** Playwright `webServer` times out 60s waiting for `:3000`, or tests hang with no output. Dev terminal stuck on `Pulling schema from database...` then interactive `y/N`.
+
+**Cause:** Payload postgres adapter `push` is on in `next dev`. Schema drift vs DB → Drizzle prompts. `getPayload` in e2e `seedTestUser` hits the same prompt. CI already sets `push: false`; local `pnpm dev` does not.
+
+**Fix:**
+- `PAYLOAD_DISABLE_PUSH=1` for `pnpm dev` and `pnpm test:e2e` (`playwright.config.ts` sets it).
+- Never answer `y` to a DATA LOSS push during tests. Formal migration if the column change is real.
+
+**Prevent:** Keep `push: false` when `CI=true` / `NODE_ENV=test` / `PAYLOAD_DISABLE_PUSH=1`. Do not run e2e against a `next dev` that is already blocked on a prompt. Kill leftover processes on port 3000.
+
+---
+
+## PIT-023 — Playwright e2e false failures (Next.js Link, browsers, timeouts, stale copy)
+
+**Tags:** `e2e`, `playwright`, `next`, `windows`  
+**Seen:** 2026-08-18 full local suite.
+
+**Symptoms / fixes:**
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `Executable doesn't exist` … `chromium-####/chrome.exe` | Browsers not installed in this env | `pnpm exec playwright install chromium` |
+| `waitForURL` timeout after CTA click; URL may already be `/portfolio` | Default `waitUntil: 'load'` does not fire again on App Router client navigation | `{ waitUntil: 'commit' }`; click `#service-body a[href*="/portfolio"]` |
+| Admin `beforeAll` timeout 30s; later admin tests skipped | First compile of `/admin` + `seedTestUser` | `test.describe.configure({ timeout: 120000 })` + `testInfo.setTimeout(120000)` |
+| Homepage expects `Engineering the future`, page has `ENGINEERING FUTURE` | Template/e2e copy not updated after Hero Motion / CMS | Assert current copy (`HERO_MOTION.md` кадр 1) |
+| `webServer` 60s timeout | Cold `next dev` + Payload | `timeout: 180 * 1000`; `reuseExistingServer: true`; free port 3000 |
+
+**Prevent:** After copy or CTA changes, update e2e in the same PR. Local full run: `pnpm test` (int) then `pnpm test:e2e` with Chromium installed. E2E still **not** on GHA — do not assume CI covers UI.
 
 ---
 
@@ -349,3 +388,6 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 - [ ] Cache key bump if content shape changed
 - [ ] Client locale maps preserved for non-reload i18n pages
 - [ ] Local `pnpm build` green; smoke `/admin` after plugin changes
+- [ ] Contact/API changes: guard tests + do not skip SMTP vs CMS split (PIT-020)
+- [ ] UI copy/CTA: update Playwright asserts; Next `<Link>` waits use `commit` (PIT-023)
+- [ ] Local e2e with `PAYLOAD_DISABLE_PUSH=1` (PIT-022)

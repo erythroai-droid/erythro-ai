@@ -1,0 +1,118 @@
+# Copy this file to content/imports/<slug>/brief.yaml
+# Fill facts from docs/cases/case-study-template.md. Do not invent metrics.
+# Create the project in Payload admin first and set the same Slug.
+# Then: pnpm import:project -- content/imports/<slug> --dry-run
+
+slug: example-import
+category: websites # portfolio-categories.value (must already exist)
+date: 2024 — 2025
+client: Demo
+link: https://example.com
+stack:
+  - Figma
+  - React
+  - Spring Boot
+tags:
+  - website
+  - react
+
+# Optional — otherwise the script picks card.*, hero.*, hero-mobile.* in this folder
+# media:
+#   card: card.jpg
+#   hero: hero.jpg
+#   heroMobile: hero-mobile.jpg
+
+# Optional body screenshots (paths relative to this folder)
+# bodyImages:
+#   frontend:
+#     - shots/catalog.png
+#   results:
+#     - shots/lighthouse.png
+
+facts:
+  en:
+    PROJECT_NAME: Example Import
+    SHORT_TAGLINE: Short card blurb for /portfolio
+    HIGH_LEVEL_SUMMARY: |
+      One or two sentences for the project hero. Facts only — this becomes summary rich text.
+    SUBTITLE: Optional line under the body title
+    CLIENT_NAME: Demo
+    TECH_STACK_LIST: Figma, React, Spring Boot
+    DEMO_URL_FULL: https://example.com
+    PROJECT_CONTEXT_AND_PAIN_POINTS: |
+      What the client needed and why the previous setup failed. No invented numbers.
+    ARCHITECTURE_GOAL: Fast, cacheable storefront with a single origin
+    DESIGN_GOAL: Clear catalog → product → checkout path
+    BUSINESS_GOAL: Fewer drop-offs between cart and order email
+    AUTOMATION_GOAL: Secure social login and transactional mail
+    FRONTEND_STACK: Figma → React SPA
+    FRONTEND_DETAILS: Catalog, filters, cart, and checkout on a modular grid
+    ANIMATION_DETAILS: Subtle status highlights on CTA and cart
+    I18N_DETAILS: Not used
+    BACKEND_DETAILS: Spring Boot 3.4 (Java 17), client served from static resources
+    CMS_DETAILS: Spring Data JPA + MariaDB
+    INTEGRATIONS_LIST: Google and X OAuth, HTML order emails
+    CICD_DETAILS: Standard review pipeline
+    AI_SECURITY_DETAILS: Spring Security with PKCE; no hotlinked email images
+    SPEED_METRIC_RESULT: Same-origin static client, fewer network hops
+    RELIABILITY_RESULT: Second-level cache reduces repeated catalog reads
+    CONVERSION_RESULT: End-to-end checkout plus HTML order emails
+    SEO_RESULT: Server-injected meta/OG for catalog pages
+    SEO_TITLE: Example Import — case study | Erythro.ai
+    SEO_DESC: Example brief for the portfolio import script. Replace with real project facts.
+
+  ru:
+    PROJECT_NAME: Example Import
+    SHORT_TAGLINE: Короткое описание карточки на /portfolio
+    HIGH_LEVEL_SUMMARY: |
+      Одно-два предложения для hero. Только факты — это поле summary.
+    SUBTITLE: Опциональная строка под заголовком body
+    PROJECT_CONTEXT_AND_PAIN_POINTS: |
+      Что было нужно клиенту и почему текущее решение не подходило. Без выдуманных метрик.
+    ARCHITECTURE_GOAL: Быстрая витрина с одним origin
+    DESIGN_GOAL: Понятный путь каталог → карточка → checkout
+    BUSINESS_GOAL: Меньше обрывов между корзиной и письмом заказа
+    AUTOMATION_GOAL: Безопасный social login и transactional email
+    FRONTEND_STACK: Figma → React SPA
+    FRONTEND_DETAILS: Каталог, фильтры, корзина и checkout в модульной сетке
+    ANIMATION_DETAILS: Подсветка CTA и корзины
+    I18N_DETAILS: Не использовалось
+    BACKEND_DETAILS: Spring Boot 3.4 (Java 17), клиент из static resources
+    CMS_DETAILS: Spring Data JPA + MariaDB
+    INTEGRATIONS_LIST: OAuth Google и X, HTML-письма заказов
+    CICD_DETAILS: Обычный review pipeline
+    AI_SECURITY_DETAILS: Spring Security с PKCE; без hotlink-картинок в письмах
+    SPEED_METRIC_RESULT: Клиент с того же origin — меньше hops
+    RELIABILITY_RESULT: Кэш второго уровня снижает повторные чтения каталога
+    CONVERSION_RESULT: Сквозной checkout и HTML-письма заказов
+    SEO_RESULT: Серверная подстановка meta/OG для каталога
+    SEO_TITLE: Example Import — кейс | Erythro.ai
+    SEO_DESC: Пример брифа для скрипта импорта портфолио. Замените на факты проекта.
+
+  he:
+    PROJECT_NAME: Example Import
+    SHORT_TAGLINE: תיאור קצר לכרטיס ב־/portfolio
+    HIGH_LEVEL_SUMMARY: |
+      משפט או שניים להירו. עובדות בלבד — זה השדה summary.
+    SUBTITLE: שורה אופציונלית מתחת לכותרת ה־body
+    PROJECT_CONTEXT_AND_PAIN_POINTS: |
+      מה הלקוח צריך ולמה הפתרון הקודם לא התאים. בלי מדדים מומצאים.
+    ARCHITECTURE_GOAL: ויטרינה מהירה עם origin אחד
+    DESIGN_GOAL: מסלול ברור קטלוג → מוצר → checkout
+    BUSINESS_GOAL: פחות נטישה בין עגלה למייל הזמנה
+    AUTOMATION_GOAL: התחברות חברתית מאובטחת ומייל טרנזקציות
+    FRONTEND_STACK: Figma → React SPA
+    FRONTEND_DETAILS: קטלוג, סינון, עגלה ו־checkout על גריד מודולרי
+    ANIMATION_DETAILS: הדגשת CTA ועגלה
+    I18N_DETAILS: לא בשימוש
+    BACKEND_DETAILS: Spring Boot 3.4 (Java 17), הלקוח מוגש מ־static resources
+    CMS_DETAILS: Spring Data JPA + MariaDB
+    INTEGRATIONS_LIST: OAuth של Google ו־X, מיילי HTML
+    CICD_DETAILS: pipeline רגיל לסקירה
+    AI_SECURITY_DETAILS: Spring Security עם PKCE; בלי תמונות hotlink במייל
+    SPEED_METRIC_RESULT: לקוח מאותו origin — פחות hops
+    RELIABILITY_RESULT: מטמון רמה שנייה מפחית קריאות קטלוג חוזרות
+    CONVERSION_RESULT: checkout מקצה לקצה ומיילי HTML
+    SEO_RESULT: הזרקת meta/OG בשרת לדפי קטלוג
+    SEO_TITLE: Example Import — קייס | Erythro.ai
+    SEO_DESC: בריף לדוגמה לסקריפט ייבוא הפורטפוליו. החליפו בעובדות אמיתיות.
