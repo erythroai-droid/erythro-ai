@@ -543,13 +543,17 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
 
           {/* Service Cards Horizontal Scroll Track.
               Force LTR on the track so w-max layout is predictable. Hebrew keeps
-              RTL reading order by reversing items + right-aligning + +x scrub. */}
+              RTL reading order on desktop by reversing items + right-aligning + +x scrub.
+              On mobile, flex-col-reverse restores 01→04 top-to-bottom while the reversed
+              array still feeds the desktop horizontal scrub. */}
           <div className="w-full overflow-hidden lg:overflow-x-clip lg:overflow-y-visible py-6 lg:py-8">
             <div
               ref={cardsRowRef}
               dir="ltr"
-              className={`flex flex-col lg:flex-row gap-6 lg:gap-10 w-full lg:w-max px-[30px] lg:px-0 ${
-                locale === 'he' ? 'lg:ms-auto lg:me-0' : 'lg:ms-0 lg:me-auto'
+              className={`flex gap-6 lg:gap-10 w-full lg:w-max px-[30px] lg:px-0 ${
+                locale === 'he'
+                  ? 'flex-col-reverse lg:flex-row lg:ms-auto lg:me-0'
+                  : 'flex-col lg:flex-row lg:ms-0 lg:me-auto'
               }`}
               style={{
                 paddingLeft: 'max(30px, calc((100% - 1170px) / 2 + 30px))',

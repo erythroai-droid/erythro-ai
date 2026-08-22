@@ -29,7 +29,6 @@ const OFFSCREEN_MEASURE_CSS = [
   'pointer-events:none',
   'overflow:hidden',
   'clip-path:inset(50%)',
-  'contain:layout size style',
   'z-index:-1',
 ].join(';')
 
