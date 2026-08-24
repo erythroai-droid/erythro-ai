@@ -272,10 +272,13 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
 
       // Mobile/tablet animation: Simple scroll trigger (no pinning/snapping)
       mm.add('(max-width: 1023px)', () => {
-        gsap.set([headingRef.current, linkRef.current, marqueeRef.current], {
+        gsap.set([headingRef.current, linkRef.current], {
           opacity: 0,
           y: 40,
         })
+        // Keep the marquee at y:0 — a downward tween would push logos under the
+        // overlapping Services panel (HomeClient -mt-8 stacking).
+        gsap.set(marqueeRef.current, { opacity: 0, y: 0 })
         gsap.set(cardRef.current, {
           opacity: 1,
           y: 24,
@@ -302,7 +305,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
   return (
     <div
       ref={wrapperRef}
-      className="relative w-full bg-white max-lg:rounded-t-[28px] lg:flex lg:h-screen lg:flex-col lg:overflow-hidden"
+      className="relative w-full bg-white max-lg:rounded-t-[28px] max-lg:pb-16 lg:flex lg:h-screen lg:flex-col lg:overflow-hidden"
     >
       <section
         id="cases"
@@ -355,7 +358,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
 
         <div
           ref={linkRef}
-          className="relative z-20 mt-[34px] mb-[50px] shrink-0 flex justify-center pointer-events-auto"
+          className="relative z-20 mt-[34px] mb-8 shrink-0 flex justify-center pointer-events-auto lg:mb-[50px]"
         >
           <a
             href={portfolioHref}
