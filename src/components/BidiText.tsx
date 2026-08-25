@@ -39,7 +39,7 @@ export default function BidiText({ children, className, forceLtr = false }: Bidi
 
   if (useBdo) {
     return (
-      <bdo dir="ltr" className={['inline-block text-left align-top', className].filter(Boolean).join(' ')}>
+      <bdo dir="ltr" className={className}>
         {children}
       </bdo>
     )
