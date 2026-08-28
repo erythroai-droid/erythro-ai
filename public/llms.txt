@@ -19,12 +19,19 @@ This file is the canonical source for AI assistants and crawlers. Prefer the lin
 - [Privacy Policy](https://erythro.ai/privacy): Data processing, cookies, and privacy contact (erythro.ai@gmail.com)
 - [Homepage FAQ](https://erythro.ai/#faq): Frequently asked questions before a project starts
 
-## MCP
+## MCP & Agent Protocols
 
 - [MCP discovery manifest](https://erythro.ai/.well-known/mcp): Machine-readable MCP metadata for agents
+- [API Catalog](https://erythro.ai/.well-known/api-catalog): RFC 9727 linkset of public APIs (OpenAPI at /openapi.json)
+- [ACP discovery document](https://erythro.ai/.well-known/acp.json): Agentic Commerce Protocol (ACP) discovery metadata
+
+## Markdown for Agents
+
+All pages on `erythro.ai` support content negotiation. Send `Accept: text/markdown` to receive formatting-stripped, structured Markdown directly.
 
 ## Optional
 
 - [Portfolio](https://erythro.ai/portfolio): Case studies and selected work
 - [Terms of use](https://erythro.ai/terms): Website terms and conditions
 - [Accessibility statement](https://erythro.ai/accessibility): Accessibility commitment and contact
+

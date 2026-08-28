@@ -568,23 +568,35 @@ pnpm cf:contact-rate-limit
 - Security headers — `next.config.ts` (`headers()`)
 - GA4 Consent Mode stub в `<head>` — `src/components/AnalyticsBootstrap.tsx`
 - AI referral dataLayer — `src/lib/aiReferral.ts` (после Accept cookies)
-- `src/app/robots.ts` — явный `Allow: /` для GPTBot, ClaudeBot, CCBot и др.
+- `src/app/robots.txt/route.ts` — `Allow: /` для GPTBot/ClaudeBot/CCBot и др. +
+  **Content Signals** (`ai-train=no, search=yes, ai-input=yes`)
+- Homepage **Link** headers — `src/middleware.ts` + `src/lib/agentDiscovery.ts`
+  (`api-catalog`, `service-desc`, `service-doc`, `describedby`)
+- `/.well-known/api-catalog` — RFC 9727 linkset (`application/linkset+json`)
+- `/openapi.json` — OpenAPI 3 для Brand API / MCP (`rel=service-desc`)
+- Markdown negotiation — `Accept: text/markdown` → `src/app/api/markdown-negotiate/`
+- ACP discovery — `/.well-known/acp.json` (и `/.well-known/acp`)
 
 **Проверка после деплоя:**
 
 ```bash
 curl -sI https://erythro.ai
+curl -sI https://erythro.ai/ | findstr /i "^link:"
 curl -s https://erythro.ai/llms.txt
 curl -s https://erythro.ai/.well-known/mcp
+curl -s https://erythro.ai/.well-known/api-catalog
+curl -s https://erythro.ai/openapi.json
 curl -s https://erythro.ai/about
 curl -s https://erythro.ai/robots.txt
+curl -s -H "Accept: text/markdown" https://erythro.ai/
 ```
 
 **Cloudflare Managed robots (важно):**
 
 На проде Cloudflare может **добавлять** в `robots.txt` блокировку AI-ботов
 (`GPTBot`, `ClaudeBot`, `CCBot`, `Google-Extended` и др.) поверх правил из
-`src/app/robots.ts`. Это даёт `severe_block=True` в AI-аудитах.
+`src/app/robots.txt/route.ts` (и затирать Content Signals). Это даёт
+`severe_block=True` в AI-аудитах.
 
 Чтобы разрешить индексацию AI-краулерами:
 
@@ -593,9 +605,10 @@ curl -s https://erythro.ai/robots.txt
 3. Отключить managed block для нужных AI-ботов **или** убрать «Cloudflare Managed content»
    из robots, если политика компании допускает AI-индексацию
 4. Проверить: `curl https://erythro.ai/robots.txt` — не должно быть `Disallow: /` для
-   `GPTBot` / `ClaudeBot`, если хотите AI-видимость
+   `GPTBot` / `ClaudeBot`, если хотите AI-видимость; должны быть строки `Content-Signal:`
 
-`src/app/robots.ts` явно разрешает AI user-agents; финальный `robots.txt` = Cloudflare + Next.
+`src/app/robots.txt/route.ts` явно разрешает AI user-agents и объявляет Content Signals;
+финальный `robots.txt` = Cloudflare + Next.
 
 ---
 

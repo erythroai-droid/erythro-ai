@@ -579,9 +579,27 @@ Legal / contacts / page heroes — **§9.15**. Формы и адресная к
 | JSON-LD | `StructuredData.tsx`, `brandSchema.ts` |
 | GA bootstrap | `AnalyticsBootstrap.tsx`, `aiReferral.ts` |
 | Security headers | `next.config.ts` |
-| robots Allow AI | `src/app/robots.ts` |
+| robots Allow AI | `src/app/robots.txt/route.ts` (ранее `robots.ts`) |
 
 **Ops:** Cloudflare → AI Crawl Control → **Managed robots.txt: OFF**.
 
 Документация: [`docs/AI_VISIBILITY.md`](./AI_VISIBILITY.md).  
 Промпт для QA_Auditor: `C:\agents\website-auditor\erythro-ai\QA_Auditor\PROMPT_ADD_AI_VISIBILITY_TESTS.md`.
+
+### 9.19. Agent readiness — Content Signals, Link headers, API Catalog (2026-08-28)
+
+Доработки под [isitagentready.com](https://isitagentready.com/) / Cloudflare agent skills:
+
+| Компонент | Путь | Зачем |
+|---|---|---|
+| Content Signals | `src/app/robots.txt/route.ts` | `ai-train=no, search=yes, ai-input=yes` |
+| Homepage Link headers | `src/middleware.ts`, `src/lib/agentDiscovery.ts` | RFC 8288: `api-catalog`, `service-desc`, `service-doc`, `describedby` |
+| API Catalog | `src/app/.well-known/api-catalog/route.ts` | RFC 9727 linkset |
+| OpenAPI | `src/app/openapi.json/route.ts` | machine-readable `service-desc` |
+| Markdown negotiation | `src/lib/markdownNegotiation.ts`, `src/app/api/markdown-negotiate/` | `Accept: text/markdown` |
+| ACP discovery | `src/app/.well-known/acp.json/`, `acp/` | Agentic Commerce Protocol |
+
+**Почему не `robots.ts`:** Next 15 не умеет эмитить `Content-Signal` через Metadata Route
+(поле `other` — с Next 16.3). Кастомный `robots.txt/route.ts` отдаёт полный текст.
+
+**Проверка:** см. curl-чеклист в [`AI_VISIBILITY.md`](./AI_VISIBILITY.md).
