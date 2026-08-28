@@ -12,7 +12,8 @@ import {
   getOrderPlanBySlug,
 } from './cmsPages'
 import { tLocale, tLocaleList } from './servicePages'
-import { auditPage, tAudit } from './auditPage'
+
+export { shouldServeMarkdown } from './markdownAccept'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
@@ -24,52 +25,6 @@ export function resolveLocale(loc?: string | null): SupportedLocale {
     return loc.toLowerCase() as SupportedLocale
   }
   return 'en'
-}
-
-/**
- * Parses HTTP Accept header with RFC quality values to decide if
- * Markdown should be served instead of HTML.
- */
-export function shouldServeMarkdown(acceptHeader: string | null): boolean {
-  if (!acceptHeader || !acceptHeader.trim()) return false
-
-  const parts = acceptHeader.split(',').map((part) => part.trim().toLowerCase())
-
-  let markdownQ = 0
-  let htmlQ = 0
-
-  for (const part of parts) {
-    const [rawMime, ...params] = part.split(';').map((s) => s.trim())
-    const mime = rawMime.toLowerCase()
-
-    let q = 1.0
-    for (const param of params) {
-      if (param.startsWith('q=')) {
-        const parsed = parseFloat(param.slice(2))
-        if (!isNaN(parsed)) q = Math.max(0, Math.min(1, parsed))
-      }
-    }
-
-    if (
-      mime === 'text/markdown' ||
-      mime === 'text/x-markdown' ||
-      mime === 'text/vnd.markdown'
-    ) {
-      if (q > markdownQ) markdownQ = q
-    } else if (
-      mime === 'text/html' ||
-      mime === 'application/xhtml+xml'
-    ) {
-      if (q > htmlQ) htmlQ = q
-    }
-  }
-
-  // If text/markdown is explicitly requested and not outweighed by higher-quality HTML
-  if (markdownQ > 0) {
-    return markdownQ >= htmlQ
-  }
-
-  return false
 }
 
 /**
@@ -154,11 +109,11 @@ export async function generateMarkdownForRoute(
     return { status: 404, markdown: generateNotFoundMarkdown(pathname, locale) }
   }
 
-  // 9. Audit page
+  // 9. Audit page — stub until /audit ships; avoid importing uncommitted auditPage.
   if (pathname === '/audit') {
     return {
       status: 200,
-      markdown: generateAuditMarkdown(locale),
+      markdown: generateAuditMarkdownStub(),
     }
   }
 
@@ -633,67 +588,16 @@ async function generateLegalMarkdown(
   return lines.join('\n').trim() + '\n'
 }
 
-function generateAuditMarkdown(locale: SupportedLocale): string {
-  const title = tAudit(auditPage.title, locale)
-  const metaDesc = tAudit(auditPage.metaDescription, locale)
-  const intro = tAudit(auditPage.form.intro, locale)
-  const heroIntro = tAudit(auditPage.how.heroIntro, locale)
-
-  const lines: string[] = [
-    `# ${title} — Erythro.ai`,
+function generateAuditMarkdownStub(): string {
+  return [
+    `# AI & Website Audit — Erythro.ai`,
     '',
-    `> ${metaDesc}`,
+    `> Commercial QA audit for speed, forms, SEO, security, and AI readiness.`,
     '',
     `- **Canonical URL:** ${SITE_URL}/audit`,
-    `- **Deliverable:** Commercial QA audit score (0–100), top issues, and fix recommendations.`,
-    `- **Audit Scope:** Speed & mobile UX, lead generation forms, SEO basics, security headers, and AI readiness.`,
+    `- **Contact:** [order@erythro.ai](mailto:order@erythro.ai) · [Contacts](${SITE_URL}/contacts)`,
     '',
-    `## Overview`,
-    `${intro}`,
-    '',
-    `## How the audit works`,
-    `${heroIntro}`,
-    '',
-    `### Steps:`,
-  ]
-
-  for (const step of auditPage.how.steps) {
-    const label = tAudit(step.label, locale)
-    const stitle = tAudit(step.title, locale)
-    const sbody = tAudit(step.body, locale)
-    lines.push(`1. **${label}: ${stitle}** — ${sbody}`)
-  }
-
-  lines.push('')
-  lines.push(`## The 5 Audit Pillars`)
-  for (const pillar of auditPage.how.pillars) {
-    const ptitle = tAudit(pillar.title, locale)
-    const pbody = tAudit(pillar.body, locale)
-    lines.push(`- **${ptitle}:** ${pbody}`)
-  }
-
-  lines.push('')
-  lines.push(`## Audit Plans & Pricing`)
-  for (const plan of auditPage.pricing.plans) {
-    const pname = tAudit(plan.name, locale)
-    const price = tAudit(plan.price, locale)
-    const pnote = plan.priceNote ? ` (${tAudit(plan.priceNote, locale)})` : ''
-    const pdesc = plan.description ? ` — ${tAudit(plan.description, locale)}` : ''
-
-    lines.push(`### ${pname}: ${price}${pnote}${pdesc}`)
-    for (const feat of plan.features) {
-      lines.push(`- ${tAudit(feat, locale)}`)
-    }
-    if (plan.ctaHref) {
-      lines.push(`- [Order this plan](${SITE_URL}${plan.ctaHref})`)
-    }
-    lines.push('')
-  }
-
-  lines.push(`## Request an Audit`)
-  lines.push(`To request an audit, email [order@erythro.ai](mailto:order@erythro.ai) or visit the [Contacts Page](${SITE_URL}/contacts).`)
-
-  return lines.join('\n').trim() + '\n'
+  ].join('\n')
 }
 
 async function generateOrderPlanMarkdown(

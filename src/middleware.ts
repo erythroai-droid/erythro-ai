@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { HOMEPAGE_LINK_HEADER } from '@/lib/agentDiscovery'
-import { shouldServeMarkdown } from '@/lib/markdownNegotiation'
+import { shouldServeMarkdown } from '@/lib/markdownAccept'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
 const DEFAULT_LOCALE = 'en'

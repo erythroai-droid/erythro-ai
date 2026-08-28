@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
+import { shouldServeMarkdown } from '@/lib/markdownAccept'
 import {
-  shouldServeMarkdown,
   estimateMarkdownTokens,
   generateMarkdownForRoute,
   resolveLocale,
@@ -146,10 +146,8 @@ describe('generateMarkdownForRoute', () => {
   it('generates markdown for /audit', async () => {
     const { markdown, status } = await generateMarkdownForRoute('/audit', 'en')
     expect(status).toBe(200)
-    expect(markdown).toContain('# AI Audit — Erythro.ai')
-    expect(markdown).toContain('## How the audit works')
-    expect(markdown).toContain('## The 5 Audit Pillars')
-    expect(markdown).toContain('## Audit Plans & Pricing')
+    expect(markdown).toContain('# AI & Website Audit — Erythro.ai')
+    expect(markdown).toContain(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'}/audit`)
   }, 30_000)
 
   it('generates markdown for /order/:slug', async () => {
