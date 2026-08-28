@@ -50,6 +50,16 @@ API Catalog, OpenAPI, Markdown negotiation, ACP discovery.
 Внешний скан: [isitagentready.com](https://isitagentready.com/) — ожидать pass для
 `contentSignals`, `linkHeaders`, `apiCatalog` (после деплоя + Cloudflare).
 
+### CI / деплой грабли (закрыты 2026-08-28)
+
+| Проблема | Фикс | PIT |
+|---|---|---|
+| Vercel: middleware тянул Payload → `node:*` | Edge-only `markdownAccept.ts` | PIT-024 |
+| Unit: 404 на `/order/audit-diagnostic` | статический slug из `ORDER_PLANS` | PIT-025 |
+| Unit: 68 pass + unhandled rejections | mock Payload без `DATABASE_URL` | PIT-026 |
+
+См. `PLAYBOOK.md` §9.20, `PITFALLS.md`.
+
 ---
 
 ## Проверка на проде
@@ -134,11 +144,13 @@ src/lib/aboutPage.ts
 src/lib/agentDiscovery.ts
 src/lib/brandSchema.ts
 src/lib/aiReferral.ts
+src/lib/markdownAccept.ts
 src/lib/markdownNegotiation.ts
 src/components/StructuredData.tsx
 src/components/AnalyticsBootstrap.tsx
 src/components/AnalyticsLoader.tsx
 src/middleware.ts
+vitest.setup.ts
 next.config.ts
 ```
 

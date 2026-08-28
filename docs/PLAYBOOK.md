@@ -603,3 +603,18 @@ Legal / contacts / page heroes — **§9.15**. Формы и адресная к
 (поле `other` — с Next 16.3). Кастомный `robots.txt/route.ts` отдаёт полный текст.
 
 **Проверка:** см. curl-чеклист в [`AI_VISIBILITY.md`](./AI_VISIBILITY.md).
+
+### 9.20. Agent readiness — CI / Vercel баги (2026-08-28)
+
+После пуша Content Signals + Link headers + markdown negotiation упали Vercel и Unit Tests.
+Исправления на ветке `fix/order-page-solutions` (деплой preview ок после фиксов).
+
+| Баг | Симптом | Исправление | PIT |
+|---|---|---|---|
+| Middleware → Payload | Vercel webpack `node:console` / UnhandledSchemeError | `markdownAccept.ts` для Edge; negotiation только в API route | PIT-024 |
+| Тест `/order/:slug` | 404 на `audit-diagnostic` в Unit CI | slug из `getAllOrderSlugs()[0]` (static) | PIT-025 |
+| Unhandled rejections | 68 pass, Vitest exit 1, 14× Unhandled Rejection | mock `getPayload` без `DATABASE_URL` в `vitest.setup.ts` | PIT-026 |
+
+**Не делать:** поднимать пустой Postgres в Unit job «ради 5432» — без сида планов это не лечит PIT-025 и не убирает PIT-026 без мока Payload.
+
+Подробности: [`PITFALLS.md`](./PITFALLS.md) PIT-024…026.
