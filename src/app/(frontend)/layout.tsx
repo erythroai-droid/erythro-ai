@@ -165,6 +165,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
     >
       <head>
         <link rel="describedby" href="/llms.txt" type="text/plain" />
+        <link rel="alternate" type="text/markdown" href="/" />
       </head>
       <body>
         <StructuredData />

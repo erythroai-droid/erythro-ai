@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { HOMEPAGE_LINK_HEADER } from '@/lib/agentDiscovery'
+import { shouldServeMarkdown } from '@/lib/markdownNegotiation'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
 const DEFAULT_LOCALE = 'en'
@@ -29,7 +31,21 @@ function detectLocaleFromHeader(acceptLanguage: string | null): string {
 }
 
 export function middleware(request: NextRequest) {
-  const response = NextResponse.next()
+  const pathname = request.nextUrl.pathname
+  const wantsMarkdown =
+    !pathname.startsWith('/api') &&
+    !pathname.startsWith('/admin') &&
+    shouldServeMarkdown(request.headers.get('accept'))
+
+  let response: NextResponse
+  if (wantsMarkdown) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/api/markdown-negotiate'
+    url.searchParams.set('path', pathname)
+    response = NextResponse.rewrite(url)
+  } else {
+    response = NextResponse.next()
+  }
 
   const existing = request.cookies.get(LOCALE_COOKIE)?.value
 
@@ -42,6 +58,11 @@ export function middleware(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 365, // 1 year
       sameSite: 'lax',
     })
+  }
+
+  // RFC 8288 / RFC 9727 — advertise machine-readable discovery on the homepage.
+  if (pathname === '/') {
+    response.headers.set('Link', HOMEPAGE_LINK_HEADER)
   }
 
   return response
