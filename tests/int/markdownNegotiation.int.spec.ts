@@ -151,7 +151,13 @@ describe('generateMarkdownForRoute', () => {
   }, 30_000)
 
   it('generates markdown for /order/:slug', async () => {
-    const { markdown, status } = await generateMarkdownForRoute('/order/audit-diagnostic', 'en')
+    // Use a static ORDER_PLANS slug — Unit CI has no DB; CMS fetch falls back to static data.
+    // Do not hardcode audit-* slugs until those plans are committed.
+    const { getAllOrderSlugs } = await import('@/lib/orderPlans')
+    const slug = getAllOrderSlugs()[0]
+    expect(slug).toBeTruthy()
+
+    const { markdown, status } = await generateMarkdownForRoute(`/order/${slug}`, 'en')
     expect(status).toBe(200)
     expect(markdown).toContain('# Order Plan:')
     expect(markdown).toContain('Base Price')
