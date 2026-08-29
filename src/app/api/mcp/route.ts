@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
+import { CANONICAL_SAME_AS } from '@/lib/brandSchema'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
@@ -8,9 +9,14 @@ export async function GET() {
   const content = await getCachedSiteContent()
   const site = content.siteSettings
 
-  const sameAs = [site.facebook, site.telegram].filter(
+  const sameAs = [
+    ...CANONICAL_SAME_AS,
+    site.facebook,
+    site.telegram,
+  ].filter(
     (url): url is string => typeof url === 'string' && url.trim().length > 0,
   )
+  const uniqueSameAs = Array.from(new Set(sameAs))
 
   return NextResponse.json(
     {
@@ -22,7 +28,7 @@ export async function GET() {
       email: site.emailContacts || site.email,
       phone: site.phoneDisplay || site.phone,
       services: ['Web development', 'Design & branding', 'AI automation', 'CMS', 'Motion & launch'],
-      sameAs,
+      sameAs: uniqueSameAs,
       canonicalPages: {
         about: `${SITE_URL}/about`,
         contacts: `${SITE_URL}/contacts`,

@@ -8,7 +8,7 @@ import {
 import { defaultSiteContent } from '@/lib/defaultContent'
 
 describe('brandSchema', () => {
-  it('builds Organization schema with contact and sameAs', () => {
+  it('builds Organization schema with contact, founder, and sameAs', () => {
     const schema = buildOrganizationSchema(
       defaultSiteContent,
       'Digital agency in Eilat, Israel.',
@@ -17,9 +17,20 @@ describe('brandSchema', () => {
     expect(schema['@type']).toBe('Organization')
     expect(schema.name).toBe('Erythro.ai')
     expect(schema.sameAs).toEqual([
+      'https://github.com/erythroai-droid',
+      'https://www.linkedin.com/in/erythro-ai',
       'https://facebook.com/erythro.ai',
       'https://t.me/erythroai',
     ])
+    expect(schema.founder).toEqual({
+      '@type': 'Person',
+      name: 'Founder',
+      url: 'https://www.linkedin.com/in/erythro-ai',
+      sameAs: [
+        'https://www.linkedin.com/in/erythro-ai',
+        'https://github.com/erythroai-droid',
+      ],
+    })
     expect(Array.isArray(schema.contactPoint)).toBe(true)
   })
 

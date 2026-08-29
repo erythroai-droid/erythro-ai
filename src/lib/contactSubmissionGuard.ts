@@ -40,7 +40,9 @@ export type ContactGuardSuccess = {
 export type ContactGuardResult = ContactGuardFailure | ContactGuardSuccess
 
 function parseSource(value: unknown): ContactFormSource {
-  return value === 'order' ? 'order' : 'contact'
+  if (value === 'order') return 'order'
+  if (value === 'audit') return 'audit'
+  return 'contact'
 }
 
 /**

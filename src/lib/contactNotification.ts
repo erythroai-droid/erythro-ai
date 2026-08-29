@@ -5,7 +5,7 @@ export const CONTACT_MAILBOX = 'order@erythro.ai'
 const HOSTINGER_SMTP_HOST = 'smtp.hostinger.com'
 const HOSTINGER_SMTP_PORT = 465
 
-export type ContactFormSource = 'contact' | 'order'
+export type ContactFormSource = 'contact' | 'order' | 'audit'
 
 export type ContactNotificationInput = {
   name: string
@@ -114,11 +114,13 @@ function escapeHtml(value: string): string {
 }
 
 export function buildContactEmail(input: ContactNotificationInput): { subject: string; text: string; html: string } {
-  const source = input.source === 'order' ? 'order' : 'contact'
+  const source = input.source === 'order' ? 'order' : input.source === 'audit' ? 'audit' : 'contact'
   const subject =
     source === 'order'
       ? `Erythro.ai order inquiry: ${input.name}`
-      : `Erythro.ai contact: ${input.name}`
+      : source === 'audit'
+        ? `Erythro.ai AI audit: ${input.name}`
+        : `Erythro.ai contact: ${input.name}`
   const lines = [
     `Source: ${source}`,
     `Name: ${input.name}`,

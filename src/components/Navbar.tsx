@@ -333,7 +333,7 @@ export default function Navbar({
     <header className="fixed top-0 start-0 end-0 z-[110] w-full max-w-none select-none pointer-events-none overflow-x-clip overflow-y-visible px-0 lg:z-[110]">
       {/* ===== Burger header: logo + Menu on all breakpoints (home + inner) ===== */}
       <div
-        className={`relative z-[70] flex w-full pointer-events-auto items-center justify-between overflow-visible px-[30px] py-5 lg:border-transparent lg:bg-transparent lg:px-[50px] lg:py-8 lg:backdrop-blur-none transition-colors duration-300 ${
+        className={`relative z-[70] flex w-full pointer-events-none items-center justify-between overflow-visible px-[30px] py-5 lg:border-transparent lg:bg-transparent lg:px-[50px] lg:py-8 lg:backdrop-blur-none transition-colors duration-300 ${
           mobileOpen
             ? 'max-lg:border-transparent max-lg:bg-transparent max-lg:backdrop-blur-none'
             : plateIsLight
@@ -352,7 +352,7 @@ export default function Navbar({
             className={`relative z-10 flex items-center select-none cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
               logoHidden
                 ? '-translate-y-[140%] opacity-0 pointer-events-none'
-                : 'translate-y-0 opacity-100'
+                : 'pointer-events-auto translate-y-0 opacity-100'
             }`}
           >
             <BrandLogo
@@ -376,7 +376,7 @@ export default function Navbar({
           <button
             ref={menuBtnRef}
             onClick={() => setMobileOpen(!mobileOpen)}
-            className={`group relative z-[70] flex items-center gap-3 overflow-visible cursor-pointer transition-colors duration-300 ${
+            className={`group relative z-[70] flex pointer-events-auto items-center gap-3 overflow-visible cursor-pointer transition-colors duration-300 ${
               menuOnDark
                 ? 'text-white hover:text-gold-500'
                 : 'text-coal-900 hover:text-erythro-500'

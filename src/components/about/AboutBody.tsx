@@ -107,6 +107,30 @@ export default function AboutBody({ locale, theme }: Props) {
 
         <div className="flex flex-wrap gap-3">
           <a
+            href="https://github.com/erythroai-droid"
+            target="_blank"
+            rel="noopener noreferrer me"
+            className={`rounded-[40px] border px-5 py-2.5 text-xs uppercase tracking-[0.18em] transition-colors ${
+              isLight
+                ? 'border-coal-900/20 text-coal-900 hover:border-erythro-500 hover:text-erythro-500'
+                : 'border-white/20 text-white hover:border-gold-500 hover:text-gold-500'
+            }`}
+          >
+            GitHub
+          </a>
+          <a
+            href="https://www.linkedin.com/in/erythro-ai"
+            target="_blank"
+            rel="noopener noreferrer me"
+            className={`rounded-[40px] border px-5 py-2.5 text-xs uppercase tracking-[0.18em] transition-colors ${
+              isLight
+                ? 'border-coal-900/20 text-coal-900 hover:border-erythro-500 hover:text-erythro-500'
+                : 'border-white/20 text-white hover:border-gold-500 hover:text-gold-500'
+            }`}
+          >
+            LinkedIn
+          </a>
+          <a
             href={site.facebook}
             target="_blank"
             rel="noopener noreferrer me"
