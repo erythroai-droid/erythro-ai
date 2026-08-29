@@ -28,8 +28,17 @@ export function buildOrganizationSchema(
 
   return {
     '@type': 'Organization',
+    additionalType: 'https://schema.org/ProfessionalService',
     '@id': `${SITE_URL}/#organization`,
     name: 'Erythro.ai',
+    alternateName: [
+      'Erythro AI',
+      'Erythro Digital Agency',
+      'Эритро.ай',
+      'Эритро AI',
+      'איריתרו',
+      'איריתרו איי איי',
+    ],
     url: `${SITE_URL}/`,
     logo: `${SITE_URL}/logo.png`,
     image: `${SITE_URL}/images/og-image.png`,
@@ -41,6 +50,14 @@ export function buildOrganizationSchema(
       addressLocality: 'Eilat',
       addressCountry: 'IL',
     },
+    areaServed: [
+      { '@type': 'Country', name: 'Israel' },
+      { '@type': 'AdministrativeArea', name: 'Global' },
+      { '@type': 'AdministrativeArea', name: 'CIS' },
+      { '@type': 'Country', name: 'United States' },
+    ],
+    knowsLanguage: ['en', 'ru', 'he'],
+    inLanguage: ['en', 'ru', 'he'],
     sameAs: uniqueSameAs,
     founder: {
       '@type': 'Person',
@@ -61,6 +78,39 @@ export function buildOrganizationSchema(
         availableLanguage: ['English', 'Russian', 'Hebrew'],
       },
     ],
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Erythro.ai Services',
+      itemListElement: [
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Web Development / Разработка сайтов / פיתוח אתרים',
+            description:
+              'High-performance Next.js 15 websites, modern CMS, and full responsiveness.',
+          },
+        },
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Design & Branding / Дизайн и брендинг / עיצוב ומיתוג',
+            description:
+              'Distinctive visual identity, UI/UX design systems, and art direction.',
+          },
+        },
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'AI Automation / AI-автоматизация / אוטומציית בינה מלאכותית',
+            description:
+              'Autonomous AI agents, RAG workflows, and business process automation.',
+          },
+        },
+      ],
+    },
   }
 }
 
@@ -70,6 +120,7 @@ export function buildWebSiteSchema(description: string = DEFAULT_ORGANIZATION_DE
     '@id': `${SITE_URL}/#website`,
     url: `${SITE_URL}/`,
     name: 'Erythro.ai',
+    alternateName: ['Erythro AI', 'Эритро.ай', 'איריתרו'],
     description,
     publisher: { '@id': `${SITE_URL}/#organization` },
     inLanguage: ['en', 'ru', 'he'],
