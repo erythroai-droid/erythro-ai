@@ -71,14 +71,21 @@ export default async function OrderPage({ params }: OrderPageProps) {
   ])
 
   const list = plans.length ? plans : ORDER_PLANS
-  const index = list.findIndex((p) => p.slug === plan.slug)
+  const isAuditPlan = plan.kind === 'audit' || plan.slug.startsWith('audit-')
+  const navList = list.filter((p) =>
+    isAuditPlan
+      ? p.kind === 'audit' || p.slug.startsWith('audit-')
+      : !p.kind || p.kind === 'solution' || !p.slug.startsWith('audit-'),
+  )
+  const effectiveList = navList.length ? navList : list
+  const index = effectiveList.findIndex((p) => p.slug === plan.slug)
   const prevPlan =
-    index > 0 ? list[index - 1] : list.length > 1 ? list[list.length - 1] : null
+    index > 0 ? effectiveList[index - 1] : effectiveList.length > 1 ? effectiveList[effectiveList.length - 1] : null
   const nextPlan =
-    index >= 0 && index < list.length - 1
-      ? list[index + 1]
-      : list.length > 1
-        ? list[0]
+    index >= 0 && index < effectiveList.length - 1
+      ? effectiveList[index + 1]
+      : effectiveList.length > 1
+        ? effectiveList[0]
         : null
 
   const toNeighbor = (p: (typeof list)[number] | null) =>

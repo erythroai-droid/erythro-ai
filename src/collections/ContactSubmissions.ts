@@ -28,6 +28,7 @@ export const ContactSubmissions: CollectionConfig = {
       options: [
         { label: 'Contact / feedback', value: 'contact' },
         { label: 'Solutions / Order', value: 'order' },
+        { label: 'AI Audit', value: 'audit' },
       ],
       admin: { description: 'Which site form created this submission', readOnly: true },
     },

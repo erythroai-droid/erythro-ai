@@ -9,16 +9,16 @@ export interface ProjectNavNeighbor {
   title: string | LocaleMap
 }
 
-export type ListingNavKind = 'portfolio' | 'solutions'
+export type ListingNavKind = 'portfolio' | 'solutions' | 'audit'
 
 interface ProjectNavProps {
   locale: string
   theme?: 'light' | 'dark'
   prev: ProjectNavNeighbor | null
   next: ProjectNavNeighbor | null
-  /** portfolio (default) or solutions — labels + default paths */
+  /** portfolio (default), solutions, or audit — labels + default paths */
   kind?: ListingNavKind
-  /** Override list/index link (default: /portfolio or /#solutions) */
+  /** Override list/index link (default: /portfolio, /#solutions, or /audit) */
   listHref?: string
   /** Override prev/next base path (default: /portfolio or /order) */
   itemBasePath?: string
@@ -32,6 +32,15 @@ interface ProjectNavProps {
 }
 
 function tNav(locale: string, kind: ListingNavKind) {
+  if (kind === 'audit') {
+    if (locale === 'ru') {
+      return { prev: 'Предыдущий', next: 'Следующий', list: 'Все тарифы аудита' }
+    }
+    if (locale === 'he') {
+      return { prev: 'הקודם', next: 'הבא', list: 'כל מחירי הביקורת' }
+    }
+    return { prev: 'Previous', next: 'Next', list: 'All audit plans' }
+  }
   if (kind === 'solutions') {
     if (locale === 'ru') {
       return { prev: 'Предыдущий', next: 'Следующий', list: 'Все решения' }
@@ -92,23 +101,29 @@ export default function ProjectNav({
 }: ProjectNavProps) {
   const labels = tNav(locale, kind)
   const isLight = theme === 'light'
-  const basePath = itemBasePath ?? (kind === 'solutions' ? '/order' : '/portfolio')
+  const basePath = itemBasePath ?? (kind === 'solutions' || kind === 'audit' ? '/order' : '/portfolio')
   const indexHref =
-    listHref ?? portfolioHref ?? (kind === 'solutions' ? '/#solutions' : '/portfolio')
+    listHref ?? portfolioHref ?? (kind === 'audit' ? '/audit' : kind === 'solutions' ? '/#solutions' : '/portfolio')
   const neighborTitle = (title: string | LocaleMap) =>
     typeof title === 'string' ? title : tLocale(title, locale)
   const ariaLabel =
-    kind === 'solutions'
+    kind === 'audit'
       ? locale === 'ru'
-        ? 'Навигация по решениям'
+        ? 'Навигация по тарифам аудита'
         : locale === 'he'
-          ? 'ניווט בין פתרונות'
-          : 'Solutions navigation'
-      : locale === 'ru'
-        ? 'Навигация по проектам'
-        : locale === 'he'
-          ? 'ניווט בין פרויקטים'
-          : 'Project navigation'
+          ? 'ניווט בין תעריפי ביקורת'
+          : 'Audit plans navigation'
+      : kind === 'solutions'
+        ? locale === 'ru'
+          ? 'Навигация по решениям'
+          : locale === 'he'
+            ? 'ניווט בין פתרונות'
+            : 'Solutions navigation'
+        : locale === 'ru'
+          ? 'Навигация по проектам'
+          : locale === 'he'
+            ? 'ניווט בין פרויקטים'
+            : 'Project navigation'
 
   const outlineClass = isLight
     ? 'border-coal-900 text-coal-900 hover:bg-coal-900 hover:text-white active:bg-coal-900 active:text-white'

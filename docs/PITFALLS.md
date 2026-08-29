@@ -379,6 +379,54 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 
 ---
 
+## PIT-024 — Vercel build fails: middleware → Payload → `node:console` UnhandledSchemeError
+
+**Tags:** `vercel`, `middleware`, `edge`, `payload`, `markdown`, `agent-readiness`  
+**Seen:** 2026-08-28 PR `fix/order-page-solutions` (agent readiness / markdown negotiation).
+
+**Symptom:** Vercel `pnpm run build` fails with webpack `UnhandledSchemeError: Reading from "node:console"` (also `node:crypto`, `node:diagnostics_channel`). Import trace ends at `./src/middleware.ts`.
+
+**Cause:** Middleware (Edge bundle) imported `@/lib/markdownNegotiation`, which pulls `legalPages.server` → `payload` → `undici` Node builtins. Edge/webpack cannot resolve `node:` schemes the same way as the Node server bundle. Related to PIT-002 (admin client), but here the leak is via **middleware**, not the admin import map.
+
+**Fix:**
+- Edge-safe Accept parser only: `src/lib/markdownAccept.ts` (`shouldServeMarkdown`).
+- Middleware imports `markdownAccept` + `agentDiscovery` — never `markdownNegotiation` / Payload / CMS.
+- Server route `src/app/api/markdown-negotiate/` keeps the heavy `generateMarkdownForRoute`.
+
+**Prevent:** Treat middleware as Edge-only. Any new helper used from `middleware.ts` must be free of Payload, `pg`, `undici`, and other Node-only deps. If in doubt, split “parse headers” from “fetch CMS”.
+
+---
+
+## PIT-025 — Unit CI: markdown `/order/:slug` returns 404 (wrong static slug)
+
+**Tags:** `ci`, `vitest`, `order-plans`, `markdown`  
+**Seen:** 2026-08-28 Unit Tests job after agent-readiness merge.
+
+**Symptom:** `generates markdown for /order/:slug` expects 200, gets 404. Logs may show `ECONNREFUSED …:5432` — easy to misread as “need Postgres in Unit job”.
+
+**Cause:** Test hard-coded slug `audit-diagnostic`, which existed only in **uncommitted** local `orderPlans` WIP. On CI, Unit job has no `DATABASE_URL`; CMS fetch fails and falls back to committed `ORDER_PLANS` (`free-start`, `ai-business-card`, …) — no `audit-diagnostic` → 404. Empty Postgres service would not help without seed data.
+
+**Fix:** Resolve slug from `getAllOrderSlugs()[0]` (static committed plans). Keep Unit job DB-free.
+
+**Prevent:** Int tests that assert CMS-backed routes must use slugs present in static fallbacks, or `describe.skipIf(!DATABASE_URL)` and run under API Tests. Do not add Postgres to Unit solely for one slug.
+
+---
+
+## PIT-026 — Unit CI: all tests pass, Vitest exits 1 with 14 unhandled rejections
+
+**Tags:** `ci`, `vitest`, `payload`, `database`  
+**Seen:** 2026-08-28 Unit Tests (`68 passed`, `14 errors`, exit code 1).
+
+**Symptom:** Suite green, then `Vitest caught N unhandled errors` / `Unhandled Rejection` with empty `{ message: undefined, stacks: [] }`.
+
+**Cause:** Without `DATABASE_URL`, helpers still call `getPayload()`. Payload/pg opens a pool to `localhost:5432`; connection failures surface as **unhandled** rejected promises after the test’s try/catch already returned static fallbacks. Vitest treats unhandled rejections as run failure.
+
+**Fix:** In `vitest.setup.ts`, when `DATABASE_URL` is missing, mock `payload.getPayload` to throw immediately (no dial). CMS helpers catch and use static data. When `DATABASE_URL` is set (API job / local), use real Payload.
+
+**Prevent:** Unit job stays “no DB”. Don’t “fix” by adding a blank Postgres service. Reproduce locally: unset `DATABASE_URL` and run `pnpm exec vitest run --exclude tests/int/api.int.spec.ts`.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -391,3 +439,6 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 - [ ] Contact/API changes: guard tests + do not skip SMTP vs CMS split (PIT-020)
 - [ ] UI copy/CTA: update Playwright asserts; Next `<Link>` waits use `commit` (PIT-023)
 - [ ] Local e2e with `PAYLOAD_DISABLE_PUSH=1` (PIT-022)
+- [ ] Middleware imports: Edge-safe only — no Payload/CMS (PIT-024)
+- [ ] Markdown/order int tests: static slug or skipIf no DB (PIT-025)
+- [ ] Unit CI without DATABASE_URL must not dial Payload (PIT-026, `vitest.setup.ts`)

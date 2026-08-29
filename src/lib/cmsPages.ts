@@ -28,6 +28,7 @@ import {
 import { mediaDocUrl } from './publicMediaUrl'
 import {
   ORDER_PLANS,
+  getAllOrderSlugs,
   getOrderPlan as getStaticOrderPlan,
   isSubscriptionFeatureLabel,
   subscriptionAddonFromFeature,
@@ -244,8 +245,6 @@ function mapPortfolioDoc(d: any): PortfolioProject {
 
   const categoryLabelFromDoc = locMapCms(d.categoryLabel)
   const categoryLabelFromCat = locMapCms(catDoc?.label)
-  // locale:'all' returns an object even when every locale is empty — do not use `||`
-  // on that object or we skip the related category label and keep the "Other" fallback.
   const hasDocCategoryLabel = LOCALES.some((l) => Boolean(categoryLabelFromDoc[l]?.trim()))
   const hasCatCategoryLabel = LOCALES.some((l) => Boolean(categoryLabelFromCat[l]?.trim()))
   const categoryLabel =
@@ -363,7 +362,6 @@ function mapServiceDoc(d: any, i: number): ServicePage {
 
   const features = locList(d.features, 'feature', fb.features)
 
-  // Summary / description may be Lexical (new), plain string, or legacy paragraph array.
   const summaryRich: Record<string, unknown> = {}
   const descriptionRich: Record<string, unknown> = {}
   const summaryPlain: LocaleMap = { en: '', ru: '', he: '' }
@@ -459,7 +457,6 @@ async function fetchServicePages(): Promise<ServicePage[]> {
       sort: 'order',
     })
     if (!res.docs?.length) return SERVICE_PAGES
-    // Prefer docs that have detail fields / slug; still return all mapped
     return res.docs.map((d: any, i: number) => mapServiceDoc(d, i))
   } catch (err) {
     console.error('[cmsPages] services fallback:', err)
@@ -502,7 +499,6 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
           value: locMapCms(f.value) as any,
         }
 
-        // Legacy CMS rows that only had Full — surface as Value so they still show
         const hasLabel = LOCALES.some((loc) => Boolean(row.label?.[loc]?.trim()))
         const hasValue = LOCALES.some((loc) => Boolean(row.value?.[loc]?.trim()))
         if (!hasLabel && !hasValue) {
@@ -662,7 +658,10 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
       sort: 'order',
     })
     if (!res.docs?.length) return ORDER_PLANS
-    return res.docs.map((d: any, i: number) => mapOrderFromPlanDoc(d, i))
+    const cmsPlans = res.docs.map((d: any, i: number) => mapOrderFromPlanDoc(d, i))
+    const cmsSlugs = new Set(cmsPlans.map((p) => p.slug))
+    const extraStatic = ORDER_PLANS.filter((p) => !cmsSlugs.has(p.slug))
+    return [...cmsPlans, ...extraStatic]
   } catch (err) {
     console.error('[cmsPages] order plans fallback:', err)
     return ORDER_PLANS
@@ -725,5 +724,5 @@ export async function getOrderPlanBySlug(slug: string): Promise<OrderPlan | unde
 export async function getAllOrderSlugsCms(): Promise<string[]> {
   const all = await getCachedOrderPlans()
   const slugs = all.map((p) => p.slug).filter(Boolean)
-  return slugs.length ? slugs : solutions.cards.map((c) => c.id)
+  return slugs.length ? slugs : getAllOrderSlugs()
 }

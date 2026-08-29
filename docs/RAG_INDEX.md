@@ -3,7 +3,7 @@
 Manifest for building a retrieval corpus from `docs/`. Use this file as the **ingest map**:
 what to chunk, how to tag, and which questions each source answers.
 
-Last updated: 2026-08-22.
+Last updated: 2026-08-28.
 
 ---
 
@@ -78,7 +78,9 @@ Rules:
 | “Contact form / Hostinger / no email / MX / spam” | `PIT-020`, `PIT-021`; `DEPLOYMENT.md` §13; `PLAYBOOK.md` §9.14–9.16 |
 | “E2E hang / Playwright / drizzle y/N” | `PIT-022`, `PIT-023`; `PLAYBOOK.md` §5 |
 | “Legal / contacts / page heroes” | `PLAYBOOK.md` §9.15 |
-| “AI visibility / llms.txt / MCP / Organization schema” | `AI_VISIBILITY.md`; `DEPLOYMENT.md` §15; `PLAYBOOK.md` §9.18 |
+| “AI visibility / llms.txt / MCP / Organization schema” | `AI_VISIBILITY.md`; `DEPLOYMENT.md` §15; `PLAYBOOK.md` §9.18–9.20 |
+| “Middleware Edge / node:console / markdown negotiation build” | `PIT-024`; `PLAYBOOK.md` §9.20 |
+| “Unit CI green tests but exit 1 / unhandled rejection / order slug 404” | `PIT-025`, `PIT-026`; `vitest.setup.ts` |
 
 ---
 

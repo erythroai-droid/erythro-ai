@@ -722,7 +722,7 @@ export interface ContactSubmission {
   /**
    * Which site form created this submission
    */
-  source?: ('contact' | 'order') | null;
+  source?: ('contact' | 'order' | 'audit') | null;
   /**
    * Site language the visitor used
    */
@@ -1098,6 +1098,7 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   email?: T;
   phone?: T;
   message?: T;
+  source?: T;
   locale?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1444,7 +1445,7 @@ export interface SiteSetting {
    */
   facebook?: string | null;
   /**
-   * Telegram URL
+   * Telegram URL (e.g. https://t.me/your_channel)
    */
   telegram?: string | null;
   cookieMessage?: string | null;
@@ -1779,7 +1780,19 @@ export interface FooterSelect<T extends boolean = true> {
  * via the `definition` "site-settings_select".
  */
 export interface SiteSettingsSelect<T extends boolean = true> {
+  emails?:
+    | T
+    | {
+        label?: T;
+        address?: T;
+        id?: T;
+      };
   email?: T;
+  displayEmailFooter?: T;
+  displayEmailContacts?: T;
+  displayEmailLegal?: T;
+  notifyEmailContact?: T;
+  notifyEmailOrder?: T;
   phone?: T;
   phoneDisplay?: T;
   facebook?: T;

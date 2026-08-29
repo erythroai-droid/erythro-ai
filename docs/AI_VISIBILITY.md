@@ -31,7 +31,7 @@ API Catalog, OpenAPI, Markdown negotiation, ACP discovery.
 | MCP manifest | `src/app/.well-known/mcp/route.ts` | Discovery endpoint `/.well-known/mcp` (SEP-1960 style) |
 | Brand API | `src/app/api/mcp/route.ts` | Read-only JSON с фактами о бренде |
 | About / Brand Facts | `src/app/(frontend)/about/` | Каноническая страница `/about` |
-| Organization schema | `src/lib/brandSchema.ts` + `src/components/StructuredData.tsx` | JSON-LD: Organization, WebSite, FAQPage |
+| Organization schema | `src/lib/brandSchema.ts` + `src/components/StructuredData.tsx` | JSON-LD: Organization (`sameAs`: GitHub, LinkedIn, FB, TG; `founder`: Person), WebSite, FAQPage |
 | GA bootstrap | `src/components/AnalyticsBootstrap.tsx` | `dataLayer` + Consent Mode default в `<head>` |
 | AI referral | `src/lib/aiReferral.ts` | Детект referrer ChatGPT/Perplexity и push в dataLayer |
 | Security headers | `next.config.ts` → `headers()` | CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy |
@@ -49,6 +49,16 @@ API Catalog, OpenAPI, Markdown negotiation, ACP discovery.
 
 Внешний скан: [isitagentready.com](https://isitagentready.com/) — ожидать pass для
 `contentSignals`, `linkHeaders`, `apiCatalog` (после деплоя + Cloudflare).
+
+### CI / деплой грабли (закрыты 2026-08-28)
+
+| Проблема | Фикс | PIT |
+|---|---|---|
+| Vercel: middleware тянул Payload → `node:*` | Edge-only `markdownAccept.ts` | PIT-024 |
+| Unit: 404 на `/order/audit-diagnostic` | статический slug из `ORDER_PLANS` | PIT-025 |
+| Unit: 68 pass + unhandled rejections | mock Payload без `DATABASE_URL` | PIT-026 |
+
+См. `PLAYBOOK.md` §9.20, `PITFALLS.md`.
 
 ---
 
@@ -134,11 +144,13 @@ src/lib/aboutPage.ts
 src/lib/agentDiscovery.ts
 src/lib/brandSchema.ts
 src/lib/aiReferral.ts
+src/lib/markdownAccept.ts
 src/lib/markdownNegotiation.ts
 src/components/StructuredData.tsx
 src/components/AnalyticsBootstrap.tsx
 src/components/AnalyticsLoader.tsx
 src/middleware.ts
+vitest.setup.ts
 next.config.ts
 ```
 
@@ -148,6 +160,6 @@ next.config.ts
 
 - [ ] Обновить факты в `public/llms.txt` (телефон, email, услуги)
 - [ ] Проверить `/about` (контент из CMS через `getCachedSiteContent`)
-- [ ] Organization schema подтянет `SiteSettings` автоматически — проверить `sameAs` (Facebook, TikTok)
+- [ ] Organization schema подтянет `SiteSettings` и канонические профили — проверить `sameAs` (GitHub, LinkedIn, Facebook, Telegram)
 - [ ] При смене публичных API — обновить `src/lib/agentDiscovery.ts` (Link header, catalog, OpenAPI)
 - [ ] Перезапустить внешний AI visibility / isitagentready scan
