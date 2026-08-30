@@ -453,6 +453,33 @@ Wait for hung Fluid isolates to die (up to 300s) or redeploy so new instances sk
 
 ---
 
+## PIT-028 — CI API test: missing `solution_plans_features.home_only` (and `features_locales.full`)
+
+**Tags:** `ci`, `postgres`, `migrations`, `drizzle-push`, `solution-plans`  
+**Seen:** 2026-08-30 API Tests after local `next:dev` against prod Supabase (same incident as PIT-027).
+
+**Symptom:** `has required Postgres columns for critical tables` fails:
+`missing column "solution_plans_features.home_only"` (and/or `solution_plans_features_locales.full`).
+
+**Cause:** Migration rows still exist in `payload_migrations`, but a local Drizzle **push** dropped the real columns. `payload migrate` then skips them as "already applied".
+
+**Fix:**
+```bash
+pnpm db:fix-solution-feature-columns
+```
+Or SQL:
+```sql
+ALTER TABLE "solution_plans_features"
+  ADD COLUMN IF NOT EXISTS "home_only" boolean DEFAULT false;
+ALTER TABLE "solution_plans_features_locales"
+  ADD COLUMN IF NOT EXISTS "full" jsonb;
+```
+CI runs the fix script before API tests.
+
+**Prevent:** Same as PIT-027 — never push schema against prod. Prefer `PAYLOAD_DISABLE_PUSH=1` / localhost DB for local work.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -469,3 +496,4 @@ Wait for hung Fluid isolates to die (up to 300s) or redeploy so new instances sk
 - [ ] Markdown/order int tests: static slug or skipIf no DB (PIT-025)
 - [ ] Unit CI without DATABASE_URL must not dial Payload (PIT-026, `vitest.setup.ts`)
 - [ ] Do not run local `next dev` against prod DATABASE_URL without `PAYLOAD_DISABLE_PUSH=1` (PIT-027)
+- [ ] If CI reports missing CMS columns that migrations already list — restore with `pnpm db:fix-*` (PIT-028)
