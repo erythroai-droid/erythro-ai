@@ -67,11 +67,14 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
-    // Never auto-push / introspect against remote DB in CI or vitest —
-    // that hangs on interactive prompts / pooler. Migrations run on Vercel build.
+    // Never auto-push / introspect against remote DB in CI, tests, or production.
+    // Local `next dev` against prod DATABASE_URL writes payload_migrations
+    // name=dev / batch=-1, and serverless then hangs on an interactive prompt (PIT-027).
     push:
       process.env.CI === 'true' ||
       process.env.NODE_ENV === 'test' ||
+      process.env.NODE_ENV === 'production' ||
+      process.env.VERCEL === '1' ||
       process.env.PAYLOAD_DISABLE_PUSH === '1'
         ? false
         : undefined,
@@ -83,7 +86,11 @@ export default buildConfig({
         ? { ssl: { rejectUnauthorized: false } }
         : {}),
     },
-    prodMigrations: migrations,
+    // prodMigrations runs on every serverless getPayload() init. If batch=-1 exists,
+    // Payload prompts on stdin and the function hangs until Cloudflare 524 / Vercel 300s.
+    // Migrations already run at build (`payload migrate`). Keep them there only.
+    prodMigrations:
+      process.env.PAYLOAD_MIGRATING === 'true' ? migrations : undefined,
   }),
   localization: {
     locales: [

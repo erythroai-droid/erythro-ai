@@ -427,6 +427,32 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 
 ---
 
+## PIT-027 — Production `/admin` Cloudflare 524 / Vercel 300s timeout
+
+**Tags:** `admin`, `cloudflare`, `524`, `payload`, `prodMigrations`, `batch=-1`, `vercel`  
+**Seen:** 2026-08-30 `https://erythro.ai/admin` — Cloudflare “A timeout occurred Error code 524” at 00:46:33 UTC.
+
+**Symptom:** Public pages work (cached). `/admin` hangs, then Cloudflare 524. Vercel runtime: `Task timed out after 300 seconds`. Logs show the interactive prompt:
+
+```
+It looks like you've run Payload in dev mode, meaning you've dynamically pushed
+changes to your database. Would you like to proceed? (y/N)
+```
+
+**Cause:** Local `next dev` against the **production** `DATABASE_URL` (same Supabase as Vercel) writes `payload_migrations` (`name=dev`, `batch=-1`). Serverless `getPayload()` then runs `prodMigrations`, hits that row, and `prompts()` waits on stdin that does not exist. Public routes often miss this because `getSiteContent` is cached.
+
+**Fix (ops, immediate):**
+```sql
+DELETE FROM payload_migrations WHERE batch = -1;
+```
+Wait for hung Fluid isolates to die (up to 300s) or redeploy so new instances skip the prompt. `pnpm db:clear-dev-push` does the same SQL.
+
+**Fix (code):** Do not pass `prodMigrations` at Vercel request runtime — migrations already run in `pnpm build` via `payload migrate`. Keep `push: false` in production / `VERCEL=1`. Local `pnpm dev` sets `PAYLOAD_DISABLE_PUSH=1` so it cannot rewrite `batch=-1` on prod.
+
+**Prevent:** Never point local `next dev` at prod without `PAYLOAD_DISABLE_PUSH=1`. Schema changes go through `src/migrations/` + build `payload migrate`, not Drizzle push against Supabase.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -442,3 +468,4 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 - [ ] Middleware imports: Edge-safe only — no Payload/CMS (PIT-024)
 - [ ] Markdown/order int tests: static slug or skipIf no DB (PIT-025)
 - [ ] Unit CI without DATABASE_URL must not dial Payload (PIT-026, `vitest.setup.ts`)
+- [ ] Do not run local `next dev` against prod DATABASE_URL without `PAYLOAD_DISABLE_PUSH=1` (PIT-027)
