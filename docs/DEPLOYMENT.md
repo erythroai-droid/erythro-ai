@@ -129,7 +129,7 @@ pnpm install --lockfile-only
       для коллекции `media` (см. §8). Загрузки из админки теперь переживают редеплой.
 - [x] **Домен `erythro.ai`.** Привязан, сайт открывается по основному домену.
 - [x] **Миграции схемы Payload (частично).** Formal migrations лежат в `src/migrations/` и
-      подключаются как `prodMigrations`. Для отстающих колонок на проде/CI добавлены
+      гоняются через `payload migrate` на билде (не `prodMigrations` на каждый serverless init — PIT-027). Для отстающих колонок на проде/CI добавлены
       idempotent fix-скрипты (`pnpm db:fix-*`) — см. §12. Полностью уйти от исторического
       `push`-наследия на Supabase ещё предстоит аудитом.
 - [ ] **Безопасность Next.js.** Держать Next запатченным (выходят новые CVE: 55183/55184/67779 и т.д.).
@@ -423,8 +423,10 @@ URL вычисляется в afterRead-хуке, так что ссылка ч�
 ## 12. Эволюция схемы на проде (миграции + fix-скрипты)
 
 Исторически схема на Supabase выросла из dev `push`. Дальше изменения идут через
-`src/migrations/*` + `prodMigrations` в `payload.config.ts`. Когда прод или CI отстают,
-срабатывают **idempotent** скрипты (безопасны при повторном запуске):
+`src/migrations/*` и **`payload migrate` в `pnpm build`**. `prodMigrations` **не**
+передаётся в serverless runtime: иначе `batch=-1` вешает `/admin` на интерактивном
+промпте (Cloudflare 524, PIT-027). Когда прод или CI отстают, срабатывают
+**idempotent** скрипты (безопасны при повторном запуске):
 
 | Скрипт | Зачем |
 |---|---|
@@ -432,6 +434,7 @@ URL вычисляется в afterRead-хуке, так что ссылка ч�
 | `pnpm db:fix-portfolio-subtitle` | Колонка subtitle (+ `$1::varchar` — PIT-005) |
 | `pnpm db:fix-portfolio-richtext` | varchar → jsonb для Lexical полей |
 | `pnpm db:fix-site-settings-page-heroes` | Page hero media FK в Site Settings |
+| `pnpm db:fix-solution-feature-columns` | `home_only` + features `full` jsonb (PIT-028) |
 
 Также без отдельного `db:fix-*` (только migration): `20260815_010000_site_settings_emails`
 (адресная книга + notify/display selects).
@@ -441,7 +444,8 @@ URL вычисляется в afterRead-хуке, так что ссылка ч�
 1. Новое поле CMS → migration **в том же PR**, что и код маппера/UI.
 2. Если API tests или prod могут увидеть старую схему — добавить `db:fix-*` и вызов в CI
    **до** `api.int.spec`.
-3. `push: false` при `CI=true` / `NODE_ENV=test` — иначе hang на pooler (PIT-006, PIT-012).
+3. `push: false` при `CI=true` / `NODE_ENV=test` / `NODE_ENV=production` / `VERCEL=1` —
+   иначе hang на pooler (PIT-006, PIT-012) или runtime 524 на `/admin` (PIT-027).
 4. После Lexical/storage client features → `pnpm generate:importmap` и коммит
    `importMap.js` (PIT-001). Пример: TableFeature без import map = «таблиц в админке нет».
 5. Смена формы закэшированных документов → bump cache key (PIT-015).

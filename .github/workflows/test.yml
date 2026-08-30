@@ -101,6 +101,7 @@ jobs:
         run: |
           pnpm db:fix-portfolio-subtitle
           pnpm db:fix-portfolio-richtext
+          pnpm db:fix-solution-feature-columns
 
       - name: Run API integration test
         if: steps.db.outputs.skip != 'true'

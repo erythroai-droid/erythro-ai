@@ -40,6 +40,8 @@ const REQUIRED_COLUMNS: Record<string, string[]> = {
   solution_plans_addons_locales: ['name', 'price_display', 'full'],
   solution_plans: ['slug', 'price', 'currency', 'featured'],
   solution_plans_features: ['home_only'],
+  // Lexical richtext for order-page feature descriptions (dropped by local push — PIT-028)
+  solution_plans_features_locales: ['full'],
   solution_plans_locales: ['title', 'includes'],
   portfolio_projects_locales: ['title', 'description', 'summary', 'subtitle'],
 }
