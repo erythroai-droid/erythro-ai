@@ -33,9 +33,15 @@ Docker network: `proxy_network` — containers `caddy_proxy`, `n8n`, `audit_agen
 | `/home/audit-agent/` | Worker image + `.env` |
 | Volume `n8n_data` | n8n persistence |
 
-Deploy from repo: `py -3 scripts/deploy_vps_audit_stack.py` (needs `VPS_PASSWORD` + local `R2_*`).
+Deploy from repo: `py -3 scripts/deploy_vps_audit_stack.py` (needs `VPS_PASSWORD` + local `R2_*`; preferably `SMTP_PASS` + stable `AGENT_SECRET_TOKEN`).
 
-See also: [`caddy-dns-audit-worker.md`](./caddy-dns-audit-worker.md).
+See also: [`caddy-dns-audit-worker.md`](./caddy-dns-audit-worker.md), [`n8n-audit-reconcile.md`](./n8n-audit-reconcile.md).
+
+### n8n workflow (audit reconcile)
+
+Авто: `py -3 scripts/deploy_n8n_audit_reconcile.py`  
+Или вручную: import `infra/n8n/workflows/audit-reconcile.json` → Header Auth с `AGENT_SECRET_TOKEN` → Active.  
+Details: [`n8n-audit-reconcile.md`](./n8n-audit-reconcile.md).
 
 ---
 

@@ -119,6 +119,8 @@ export async function POST(request: NextRequest) {
         targetUrl: website,
         locale: auditLanguage || locale || undefined,
         planSlug: planSlug || undefined,
+        clientEmail: email || undefined,
+        clientName: name || undefined,
       })
       auditQueued = triggered.ok
       if (!triggered.ok) {

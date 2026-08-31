@@ -1,8 +1,17 @@
 import { uploadReportObject } from './r2Upload.js'
-import { updateContactSubmission } from './payload.js'
+import { getContactSubmission, updateContactSubmission } from './payload.js'
+import { sendClientAuditEmail } from './mail.js'
+
+function siteBase() {
+  return (
+    process.env.PAYLOAD_API_URL?.trim()?.replace(/\/+$/, '') ||
+    process.env.NEXT_PUBLIC_SITE_URL?.trim()?.replace(/\/+$/, '') ||
+    'https://erythro.ai'
+  )
+}
 
 /**
- * Skeleton audit job: stub HTML → R2 → optional CMS status update.
+ * Skeleton audit job: stub HTML → R2 → CMS → client email.
  * Real Playwright / LLM will replace the stub body later.
  *
  * @param {{
@@ -10,6 +19,8 @@ import { updateContactSubmission } from './payload.js'
  *   targetUrl: string,
  *   locale?: string,
  *   planSlug?: string,
+ *   clientEmail?: string,
+ *   clientName?: string,
  * }} job
  */
 export async function runAuditJob(job) {
@@ -18,8 +29,16 @@ export async function runAuditJob(job) {
   const targetUrl = job.targetUrl
   const locale = job.locale || 'en'
   const planSlug = job.planSlug || 'audit-free'
+  let clientEmail = job.clientEmail?.trim() || ''
+  let clientName = job.clientName?.trim() || ''
 
   try {
+    if (!clientEmail) {
+      const doc = await getContactSubmission(submissionId)
+      if (doc?.email) clientEmail = String(doc.email).trim()
+      if (!clientName && doc?.name) clientName = String(doc.name).trim()
+    }
+
     await updateContactSubmission(submissionId, {
       auditStatus: 'in_progress',
     })
@@ -51,6 +70,9 @@ export async function runAuditJob(job) {
       contentType: 'text/html; charset=utf-8',
     })
 
+    const statusPageUrl = `${siteBase()}/audit/report/${submissionId}`
+
+    // Atomic delivery order: storage + DB first, then email
     await updateContactSubmission(submissionId, {
       auditStatus: 'report_sent',
       reportUrl: url,
@@ -65,6 +87,24 @@ export async function runAuditJob(job) {
       htmlResult: html.slice(0, 100_000),
       errorLast: null,
     })
+
+    if (clientEmail) {
+      const mailed = await sendClientAuditEmail({
+        to: clientEmail,
+        clientName,
+        targetUrl,
+        reportUrl: url,
+        statusPageUrl,
+        locale,
+      })
+      if (!mailed.sent) {
+        console.warn(`[audit] submission=${submissionId} email skipped: ${mailed.reason}`)
+      } else {
+        console.log(`[audit] submission=${submissionId} email sent to client`)
+      }
+    } else {
+      console.warn(`[audit] submission=${submissionId} no clientEmail — skip mail`)
+    }
 
     console.log(`[audit] submission=${submissionId} ok reportUrl=${url}`)
     return { ok: true, reportUrl: url }

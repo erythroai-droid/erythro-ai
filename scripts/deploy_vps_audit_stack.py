@@ -82,7 +82,20 @@ def main() -> None:
         if path.is_file():
             sftp_put(sftp, path, f"/home/audit-agent/src/{path.name}")
 
-    agent_secret = (os.environ.get("AGENT_SECRET_TOKEN") or "").strip() or secrets.token_hex(32)
+    secret_path = agent / ".env.deployed.secret"
+    agent_secret = (os.environ.get("AGENT_SECRET_TOKEN") or "").strip()
+    if not agent_secret and secret_path.is_file():
+        for line in secret_path.read_text(encoding="utf-8").splitlines():
+            if line.startswith("AGENT_SECRET_TOKEN="):
+                agent_secret = line.split("=", 1)[1].strip()
+                break
+            if line and not line.startswith("#") and "=" not in line:
+                # legacy file: raw token only
+                agent_secret = line.strip()
+                break
+    if not agent_secret:
+        agent_secret = secrets.token_hex(32)
+    smtp_pass = (os.environ.get("SMTP_PASS") or "").strip()
     env_lines = [
         "PORT=8080",
         f"AGENT_SECRET_TOKEN={agent_secret}",
@@ -91,7 +104,14 @@ def main() -> None:
         f"R2_SECRET_ACCESS_KEY={must_env('R2_SECRET_ACCESS_KEY')}",
         f"R2_BUCKET={(os.environ.get('R2_BUCKET') or 'erythro-audit-reports').strip()}",
         "PAYLOAD_API_URL=https://erythro.ai",
+        "SMTP_HOST=smtp.hostinger.com",
+        "SMTP_PORT=465",
+        "SMTP_USER=order@erythro.ai",
     ]
+    if smtp_pass:
+        env_lines.append(f"SMTP_PASS={smtp_pass}")
+    else:
+        print("[deploy] WARN: SMTP_PASS missing locally — client audit emails will be skipped until set on VPS")
     public_base = (os.environ.get("R2_PUBLIC_BASE_URL") or "").strip()
     if public_base:
         env_lines.append(f"R2_PUBLIC_BASE_URL={public_base}")
@@ -102,10 +122,21 @@ def main() -> None:
         env_lines.append("# PAYLOAD_API_KEY=")
 
     sftp_write(sftp, "/home/audit-agent/.env", "\n".join(env_lines) + "\n")
-    secret_path = agent / ".env.deployed.secret"
-    secret_path.write_text(agent_secret, encoding="utf-8")
+    secret_path.write_text(
+        "\n".join(
+            [
+                f"AGENT_SECRET_TOKEN={agent_secret}",
+                f"AUDIT_AGENT_URL=https://agent-api.erythro.ai",
+                "# Copy AGENT_SECRET_TOKEN to Vercel Production/Preview",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"[deploy] wrote worker .env; AGENT_SECRET_TOKEN length={len(agent_secret)}")
     print(f"[deploy] secret also saved locally to {secret_path.name} (gitignored)")
+    if smtp_pass:
+        print("[deploy] SMTP_PASS included for client report emails")
 
     print("[deploy] start Caddy")
     exec_checked(client, "cd /home/caddy && docker compose up -d")

@@ -8,6 +8,8 @@ export type AuditAgentTriggerInput = {
   targetUrl: string
   locale?: string
   planSlug?: string
+  clientEmail?: string
+  clientName?: string
 }
 
 export type AuditAgentTriggerResult =
@@ -54,6 +56,8 @@ export async function triggerAuditAgent(
         targetUrl,
         locale: input.locale || undefined,
         planSlug: input.planSlug || undefined,
+        clientEmail: input.clientEmail || undefined,
+        clientName: input.clientName || undefined,
       }),
       signal: controller.signal,
     })
