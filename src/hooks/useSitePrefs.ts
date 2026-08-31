@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { heebo, interCyrillic, interLatinFamily } from '@/lib/fonts'
 import {
   isSiteLocale,
   persistLocale,
@@ -8,6 +9,24 @@ import {
   readStoredTheme,
   type SiteTheme,
 } from '@/lib/sitePrefs'
+
+/**
+ * Mirror layout.tsx font wiring on client locale switches.
+ * SSR only adds `heebo` / `interCyrillic` CSS variables for the cookie locale;
+ * without this, `html[dir=rtl]` references unset `--font-heebo` until reload.
+ */
+function applyDocumentLocale(locale: string) {
+  const root = document.documentElement
+  root.lang = locale
+  root.dir = locale === 'he' ? 'rtl' : 'ltr'
+  root.classList.toggle(heebo.variable, locale === 'he')
+  root.classList.toggle(interCyrillic.variable, locale === 'ru')
+  if (locale === 'he') {
+    root.style.setProperty('--font-inter-latin', interLatinFamily)
+  } else {
+    root.style.removeProperty('--font-inter-latin')
+  }
+}
 
 /**
  * Shared locale + theme state with cookie/localStorage persistence.
@@ -41,17 +60,13 @@ export function useSitePrefs(
   }, [theme])
 
   useEffect(() => {
-    const root = document.documentElement
-    root.lang = locale
-    root.dir = locale === 'he' ? 'rtl' : 'ltr'
+    applyDocumentLocale(locale)
   }, [locale])
 
   const setLocale = (next: string) => {
     if (!isSiteLocale(next)) return
-    // Apply dir/lang before React re-renders motion/layout-sensitive UI.
-    const root = document.documentElement
-    root.lang = next
-    root.dir = next === 'he' ? 'rtl' : 'ltr'
+    // Apply dir/lang/fonts before React re-renders motion/layout-sensitive UI.
+    applyDocumentLocale(next)
     setLocaleState(next)
     persistLocale(next)
   }

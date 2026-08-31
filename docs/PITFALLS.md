@@ -570,6 +570,20 @@ CI runs the fix script before API tests.
 
 ---
 
+## PIT-036 — Hebrew font wrong until full reload after language switch
+
+**Tags:** `i18n`, `fonts`, `heebo`, `rtl`, `client-locale`
+
+**Symptom:** Switching to Hebrew without reload shows system/fallback glyphs; after refresh Heebo looks correct. Russian Cyrillic Inter can lag the same way.
+
+**Cause:** `layout.tsx` adds `heebo.variable` / `interCyrillic.variable` and `--font-inter-latin` only for the SSR cookie locale. `useSitePrefs` updated `lang`/`dir` on switch (so `html[dir=rtl]` CSS ran) but left `--font-heebo` unset until navigation remounted the layout.
+
+**Fix:** `applyDocumentLocale` in `useSitePrefs` toggles the next/font variable classes and `--font-inter-latin` together with `lang`/`dir`.
+
+**Prevent:** Any client-only locale switch must mirror layout font wiring, not only `lang`/`dir`. Keep checklist item “Client locale maps…” plus font CSS variables in mind for non-reload i18n.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -577,7 +591,7 @@ CI runs the fix script before API tests.
 - [ ] CI runs fix script before API tests when needed
 - [ ] `pnpm generate:importmap` if admin client features changed
 - [ ] Cache key bump if content shape changed
-- [ ] Client locale maps preserved for non-reload i18n pages
+- [ ] Client locale maps preserved for non-reload i18n pages; font CSS vars (`heebo` / cyrillic / `--font-inter-latin`) synced with `lang`/`dir` (PIT-036)
 - [ ] Local `pnpm build` green; smoke `/admin` after plugin changes
 - [ ] Contact/API changes: guard tests + do not skip SMTP vs CMS split (PIT-020)
 - [ ] UI copy/CTA: update Playwright asserts; Next `<Link>` waits use `commit` (PIT-023)
