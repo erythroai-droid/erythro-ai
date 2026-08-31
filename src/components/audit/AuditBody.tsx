@@ -16,9 +16,9 @@ import {
   tAudit,
   type AuditTabId,
 } from '@/lib/auditPage'
-import { useCursorGlow } from '@/hooks/useCursorGlow'
 import {
   AUDIT_REPORT_LANGUAGES,
+  buildAuditContactPayload,
   buildAuditSubmissionMessage,
   hasAuditFieldErrors,
   validateAuditForm,
@@ -50,7 +50,7 @@ const AUDIT_BEAM_PROPS = {
   size: 'pulse-outside' as const,
   colorVariant: 'colorful' as const,
   strength: 0.7,
-  duration: 2.3,
+  duration: 2.2,
   className: 'w-full overflow-visible',
   style: AUDIT_BEAM_STYLE,
 }
@@ -58,10 +58,8 @@ const AUDIT_BEAM_PROPS = {
 export default function AuditBody({ locale, theme = 'dark' }: AuditBodyProps) {
   const [activeTab, setActiveTab] = useState<AuditTabId>('audit')
   const formRef = useRef<HTMLDivElement | null>(null)
-  const sectionRef = useRef<HTMLElement | null>(null)
 
   const isLight = theme === 'light'
-  useCursorGlow(sectionRef)
   const tForm = (field: Record<string, string>) => field[locale] || field.en
   const title = tAudit(auditPage.title, locale)
 
@@ -71,9 +69,6 @@ export default function AuditBody({ locale, theme = 'dark' }: AuditBodyProps) {
   const cardClass = isLight
     ? 'border-coal-900/10 bg-white/70'
     : 'border-white/10 bg-white/[0.04]'
-  const mutedCardClass = isLight
-    ? 'border-coal-900/10 bg-white/50'
-    : 'border-white/10 bg-white/[0.03]'
 
   const goToForm = () => {
     setActiveTab('audit')
@@ -93,10 +88,7 @@ export default function AuditBody({ locale, theme = 'dark' }: AuditBodyProps) {
   return (
     <section
       id="audit-page"
-      ref={sectionRef}
       data-menu-contrast={isLight ? 'light' : 'dark'}
-      data-glow-x={isLight ? '50' : '82'}
-      data-glow-y={isLight ? '32' : '14'}
       className={`relative z-20 w-full shadow-[0_-12px_30px_rgba(0,0,0,0.28)] ${
         isLight ? 'solution-light-bg text-coal-900' : 'dark-gradient-bg text-white'
       }`}
@@ -154,12 +146,10 @@ export default function AuditBody({ locale, theme = 'dark' }: AuditBodyProps) {
           {activeTab === 'how' ? (
             <AuditHowPanel
               locale={locale}
+              isLight={isLight}
               bodyTone={bodyTone}
               headingTone={headingTone}
               accentTone={accentTone}
-              cardClass={cardClass}
-              mutedCardClass={mutedCardClass}
-              onRequestAudit={goToForm}
             />
           ) : null}
 
@@ -438,16 +428,15 @@ function AuditFormPanel({
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: values.name.trim(),
-          email: values.email.trim(),
-          phone: values.phone.trim(),
-          message: buildAuditSubmissionMessage(values.website, values.auditLanguage),
-          [CONTACT_HONEYPOT_FIELD]: honeypot,
-          locale,
-          privacyConsent: true,
-          source: 'audit',
-        }),
+        body: JSON.stringify(
+          buildAuditContactPayload({
+            values,
+            locale,
+            honeypot,
+            message: buildAuditSubmissionMessage(values.website, values.auditLanguage),
+            planSlug: 'audit-free',
+          }),
+        ),
       })
       if (res.status === 429) {
         setSubmitError(tForm(contactForm.rateLimited))
@@ -478,7 +467,7 @@ function AuditFormPanel({
       aria-labelledby="audit-tab-audit"
       className="w-full"
     >
-      <div className="overflow-visible p-4 -m-4">
+      <div className="audit-beam-hue overflow-visible p-4 -m-4">
         <BorderBeam {...AUDIT_BEAM_PROPS} theme={isLight ? 'light' : 'dark'}>
           <div
             className={`relative z-[1] rounded-[20px] border p-5 sm:p-8 lg:p-10 ${beamSurfaceClass}`}
@@ -742,22 +731,52 @@ function AuditFormPanel({
   )
 }
 
+function howSurfaceClass(isLight: boolean, featured = false) {
+  if (featured) {
+    return 'bg-erythro-600 shadow-[0_5px_50px_0_rgba(13,13,13,0.3)] hover:shadow-[0_10px_44px_0_rgba(13,13,13,0.38)]'
+  }
+  return isLight
+    ? 'border border-white bg-white shadow-card-services hover:shadow-[0_8px_26px_0_rgba(13,13,13,0.22)]'
+    : 'border border-gold-500 bg-[#1E1E1E] hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)]'
+}
+
+function howNameBarClass(isLight: boolean, featured = false) {
+  if (featured) return 'bg-white text-erythro-500'
+  return isLight ? 'bg-coal-900 text-white' : 'bg-gold-500 text-coal-900'
+}
+
+function HowStepsTrack({ count }: { count: number }) {
+  return (
+    <div className="relative w-full py-1" aria-hidden>
+      <div className="pointer-events-none absolute start-[16.666%] end-[16.666%] top-1/2 h-px -translate-y-1/2 bg-gold-500" />
+      <ol className="relative m-0 grid list-none grid-cols-3 justify-items-center p-0">
+        {Array.from({ length: count }, (_, index) => (
+          <li key={index} className="flex justify-center">
+            <span
+              dir="ltr"
+              className="relative z-[1] flex size-11 items-center justify-center rounded-full border border-gold-500 bg-erythro-500 text-sm font-bold tracking-[0.06em] text-white shadow-[0_3px_16px_0_rgba(229,36,33,0.35)]"
+            >
+              {String(index + 1).padStart(2, '0')}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
 function AuditHowPanel({
   locale,
+  isLight,
   bodyTone,
   headingTone,
   accentTone,
-  cardClass,
-  mutedCardClass,
-  onRequestAudit,
 }: {
   locale: string
+  isLight: boolean
   bodyTone: string
   headingTone: string
   accentTone: string
-  cardClass: string
-  mutedCardClass: string
-  onRequestAudit: () => void
 }) {
   const { how } = auditPage
 
@@ -768,97 +787,166 @@ function AuditHowPanel({
       aria-labelledby="audit-tab-how"
       className="flex flex-col gap-10 md:gap-12"
     >
-      <div className="flex max-w-3xl flex-col gap-4">
-        <h2 className={`m-0 font-sans text-2xl font-normal tracking-[0.04em] md:text-3xl ${headingTone}`}>
-          {tAudit(how.heroTitle, locale)}
-        </h2>
-        <p className={`m-0 font-sans text-base font-light leading-7 md:text-lg ${bodyTone}`}>
-          {tAudit(how.heroIntro, locale)}
-        </p>
+      <div className="flex w-full flex-col gap-5">
+        <div className="flex w-full flex-col gap-3">
+          <p className={`m-0 text-[11px] font-bold uppercase tracking-[0.18em] ${accentTone}`}>
+            {tAudit(how.kicker, locale)}
+          </p>
+          <h2 className={`m-0 w-full font-sans text-2xl font-normal leading-[1.5] tracking-[0.04em] md:text-3xl ${headingTone}`}>
+            {tAudit(how.heroTitle, locale)}
+          </h2>
+          <p className={`m-0 w-full font-sans text-base font-light leading-7 md:text-lg ${bodyTone}`}>
+            {tAudit(how.heroIntro, locale)}
+          </p>
+        </div>
+        <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
+          {how.stats.map((stat) => (
+            <li
+              key={stat.en}
+              className={`rounded-[40px] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] ${
+                isLight ? 'bg-coal-900 text-white' : 'bg-gold-500 text-coal-900'
+              }`}
+            >
+              {tAudit(stat, locale)}
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <div className="flex flex-col gap-5">
-        <h3 className={`m-0 font-sans text-lg font-normal tracking-[0.04em] md:text-xl ${headingTone}`}>
+      <div className="flex flex-col gap-6">
+        <h3 className={`m-0 font-sans text-xl font-normal leading-[1.5] tracking-[0.04em] md:text-2xl ${headingTone}`}>
           {tAudit(how.stepsHeading, locale)}
         </h3>
+        <HowStepsTrack count={how.steps.length} />
         <ol className="m-0 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-3">
-          {how.steps.map((step, index) => (
-            <li key={step.label.en} className={`rounded-[10px] border p-5 ${cardClass}`}>
-              <p className={`m-0 mb-2 text-[11px] font-bold uppercase tracking-[0.16em] ${accentTone}`}>
-                {tAudit(step.label, locale)}
-              </p>
-              <h4 className={`m-0 mb-2 font-sans text-lg font-medium ${headingTone}`}>
+          {how.steps.map((step) => (
+            <li
+              key={step.label.en}
+              className="rounded-[10px] border border-gold-500 bg-coal-900 p-6 pb-11 md:p-8 md:pb-[52px]"
+            >
+              <h4 className="m-0 mb-3 font-sans text-[24px] font-semibold leading-[1.5] tracking-normal text-gold-500">
                 {tAudit(step.title, locale)}
               </h4>
-              <p className={`m-0 text-sm font-light leading-6 ${bodyTone}`}>{tAudit(step.body, locale)}</p>
-              <span className="sr-only">{index + 1}</span>
+              <p className="m-0 text-base font-light leading-7 text-white/80">
+                {tAudit(step.body, locale)}
+              </p>
+              <span className="sr-only">{tAudit(step.label, locale)}</span>
             </li>
           ))}
         </ol>
       </div>
 
       <div className="flex flex-col gap-5">
-        <h3 className={`m-0 font-sans text-lg font-normal tracking-[0.04em] md:text-xl ${headingTone}`}>
-          {tAudit(how.methodologyTitle, locale)}
-        </h3>
-        <p className={`m-0 max-w-3xl text-sm font-light leading-7 md:text-base ${bodyTone}`}>
-          {tAudit(how.methodologyIntro, locale)}
-        </p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {how.pillars.map((pillar) => (
-            <div key={pillar.title.en} className={`rounded-[10px] border p-5 ${mutedCardClass}`}>
-              <h4 className={`m-0 mb-2 font-sans text-base font-medium uppercase tracking-[0.12em] ${accentTone}`}>
-                {tAudit(pillar.title, locale)}
-              </h4>
-              <p className={`m-0 text-sm font-light leading-6 ${bodyTone}`}>{tAudit(pillar.body, locale)}</p>
-            </div>
-          ))}
+        <div className="flex max-w-3xl flex-col gap-3">
+          <h3 className={`m-0 font-sans text-xl font-normal leading-[1.5] tracking-[0.04em] md:text-2xl ${headingTone}`}>
+            {tAudit(how.methodologyTitle, locale)}
+          </h3>
+          <p className={`m-0 text-base font-light leading-7 ${bodyTone}`}>
+            {tAudit(how.methodologyIntro, locale)}
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-[30px] md:grid-cols-2 lg:grid-cols-6">
+          {how.pillars.map((pillar, index) => {
+            const wide = index >= 3
+            return (
+              <article
+                key={pillar.title.en}
+                className={`flex h-full w-full flex-col items-center gap-2 rounded-[10px] px-4 pt-[30px] pb-[50px] transition-shadow duration-300 ease-out ${howSurfaceClass(isLight)} ${
+                  wide ? 'lg:col-span-3' : 'lg:col-span-2'
+                }`}
+              >
+                <div className="relative flex min-h-[70px] w-full flex-col items-center justify-center py-1 text-center">
+                  <p
+                    dir="ltr"
+                    className={`m-0 font-bold uppercase leading-tight ${
+                      isLight ? 'text-coal-900' : 'text-gold-500'
+                    }`}
+                  >
+                    <span className="text-[2.5rem] leading-tight">{pillar.weight}</span>
+                  </p>
+                  <p
+                    className={`m-0 text-[11px] font-bold uppercase tracking-[0.14em] ${
+                      isLight ? 'text-coal-900/50' : 'text-gold-500/70'
+                    }`}
+                  >
+                    {tAudit(how.weightNote, locale)}
+                  </p>
+                </div>
+                <div
+                  className={`flex min-h-[30px] w-full items-center justify-center rounded-[2px] px-2 py-1.5 ${howNameBarClass(isLight)}`}
+                >
+                  <span className="text-center font-bold text-sm uppercase leading-snug break-words hyphens-auto">
+                    {tAudit(pillar.title, locale)}
+                  </span>
+                </div>
+                <p className={`m-0 w-full pt-2 text-center text-base font-light leading-7 ${bodyTone}`}>
+                  {tAudit(pillar.body, locale)}
+                </p>
+              </article>
+            )
+          })}
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <h3 className={`m-0 font-sans text-lg font-normal tracking-[0.04em] md:text-xl ${headingTone}`}>
-          {tAudit(how.categoriesTitle, locale)}
-        </h3>
-        <p className={`m-0 max-w-3xl text-sm font-light leading-7 ${bodyTone}`}>
-          {tAudit(how.categoriesIntro, locale)}
-        </p>
-        <ul className={`m-0 grid list-none grid-cols-1 gap-2 p-0 md:grid-cols-2`}>
-          {how.categories.map((item) => (
+      <div className="flex flex-col gap-5">
+        <div className="flex max-w-3xl flex-col gap-3">
+          <h3 className={`m-0 font-sans text-xl font-normal leading-[1.5] tracking-[0.04em] md:text-2xl ${headingTone}`}>
+            {tAudit(how.categoriesTitle, locale)}
+          </h3>
+          <p className={`m-0 text-base font-light leading-7 ${bodyTone}`}>
+            {tAudit(how.categoriesIntro, locale)}
+          </p>
+        </div>
+        <ul
+          className={`m-0 flex list-none flex-col p-0 ${howSurfaceClass(isLight)} overflow-hidden rounded-[10px]`}
+        >
+          {how.categories.map((item, index) => (
             <li
-              key={item.en}
-              className={`rounded-[10px] border px-4 py-3 text-sm font-light leading-6 ${mutedCardClass} ${bodyTone}`}
+              key={item.title.en}
+              className={`relative flex flex-col gap-1.5 px-5 py-5 ps-9 ${
+                index > 0
+                  ? isLight
+                    ? 'border-t border-coal-900/10'
+                    : 'border-t border-gold-500/25'
+                  : ''
+              }`}
             >
-              {tAudit(item, locale)}
+              <span
+                className="absolute start-5 top-[1.55rem] size-1 shrink-0 rounded-[1px] bg-erythro-500"
+                aria-hidden
+              />
+              <h4 className={`m-0 font-sans text-sm font-bold uppercase leading-[1.5] tracking-[0.08em] ${headingTone}`}>
+                {tAudit(item.title, locale)}
+              </h4>
+              <p className={`m-0 text-base font-light leading-7 ${bodyTone}`}>{tAudit(item.body, locale)}</p>
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <h3 className={`m-0 font-sans text-lg font-normal tracking-[0.04em] md:text-xl ${headingTone}`}>
+      <div className="flex flex-col gap-5">
+        <h3 className={`m-0 font-sans text-xl font-normal leading-[1.5] tracking-[0.04em] md:text-2xl ${headingTone}`}>
           {tAudit(how.principlesTitle, locale)}
         </h3>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-[30px] md:grid-cols-3">
           {how.principles.map((item) => (
-            <div key={item.title.en} className={`rounded-[10px] border p-5 ${cardClass}`}>
-              <h4 className={`m-0 mb-2 font-sans text-base font-medium ${headingTone}`}>
-                {tAudit(item.title, locale)}
-              </h4>
-              <p className={`m-0 text-sm font-light leading-6 ${bodyTone}`}>{tAudit(item.body, locale)}</p>
-            </div>
+            <article
+              key={item.title.en}
+              className={`flex h-full w-full flex-col items-center gap-3 rounded-[10px] px-4 pt-[30px] pb-[50px] transition-shadow duration-300 ease-out ${howSurfaceClass(isLight)}`}
+            >
+              <div
+                className={`flex min-h-[30px] w-full items-center justify-center rounded-[2px] px-2 py-1.5 ${howNameBarClass(isLight)}`}
+              >
+                <span className="text-center font-bold text-sm uppercase leading-snug break-words hyphens-auto">
+                  {tAudit(item.title, locale)}
+                </span>
+              </div>
+              <p className={`m-0 w-full text-center text-base font-light leading-7 ${bodyTone}`}>
+                {tAudit(item.body, locale)}
+              </p>
+            </article>
           ))}
         </div>
-      </div>
-
-      <div className="flex justify-center pt-2">
-        <button
-          type="button"
-          onClick={onRequestAudit}
-          className="rounded-[40px] bg-erythro-500 px-8 py-3 text-sm font-medium uppercase tracking-widest text-white transition-[box-shadow,transform] duration-300 hover:shadow-[0_3px_20px_0_rgba(229,36,33,0.45)]"
-        >
-          {tAudit(how.cta, locale)}
-        </button>
       </div>
     </div>
   )
@@ -1007,7 +1095,7 @@ function AuditPricingPanel({
         <p className={`m-0 text-[11px] font-bold uppercase tracking-[0.18em] ${accentTone}`}>
           {tAudit(pricing.kicker, locale)}
         </p>
-        <h2 className={`m-0 font-sans text-2xl font-normal tracking-[0.04em] md:text-3xl ${headingTone}`}>
+        <h2 className={`m-0 font-sans text-2xl font-normal leading-tight tracking-[0.04em] md:text-3xl ${headingTone}`}>
           {tAudit(pricing.title, locale)}
         </h2>
         <p className={`m-0 font-sans text-base font-light leading-7 ${bodyTone}`}>

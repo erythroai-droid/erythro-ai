@@ -727,6 +727,58 @@ export interface ContactSubmission {
    * Site language the visitor used
    */
   locale?: string | null;
+  /**
+   * Audited site URL (AI Audit / order checkout)
+   */
+  website?: string | null;
+  /**
+   * Preferred report language
+   */
+  auditLanguage?: ('en' | 'ru' | 'he') | null;
+  /**
+   * Ordered plan slug (audit-free / audit-diagnostic / audit-pro)
+   */
+  planSlug?: string | null;
+  /**
+   * Displayed order total at checkout (optional)
+   */
+  planTotal?: string | null;
+  /**
+   * Pipeline: new → in_progress → report_sent; failed after max retries (manual review)
+   */
+  auditStatus?: ('new' | 'in_progress' | 'report_sent' | 'failed') | null;
+  /**
+   * Final audit score (0–100)
+   */
+  auditScore?: number | null;
+  /**
+   * Structured LLM findings (JSON)
+   */
+  auditSummary?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * PDF / HTML object URL in Cloudflare R2
+   */
+  reportUrl?: string | null;
+  /**
+   * Inline HTML report for typical sizes (≤ ~2MB); larger reports stay in R2 only
+   */
+  htmlResult?: string | null;
+  /**
+   * Auto-restart attempts (n8n reconciliation)
+   */
+  retryCount?: number | null;
+  /**
+   * Last worker error (no Telegram in MVP — inspect in admin)
+   */
+  errorLast?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1100,6 +1152,17 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   message?: T;
   source?: T;
   locale?: T;
+  website?: T;
+  auditLanguage?: T;
+  planSlug?: T;
+  planTotal?: T;
+  auditStatus?: T;
+  auditScore?: T;
+  auditSummary?: T;
+  reportUrl?: T;
+  htmlResult?: T;
+  retryCount?: T;
+  errorLast?: T;
   updatedAt?: T;
   createdAt?: T;
 }

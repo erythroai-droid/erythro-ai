@@ -12,12 +12,14 @@ import {
 } from '@/lib/contactRateLimit'
 import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
+import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
 
 export const runtime = 'nodejs'
 
 /**
  * Isolated contact intake:
- * rate-limit → sanitize/validate → Payload CMS → SMTP notify.
+ * rate-limit → sanitize/validate → Payload CMS → SMTP notify
+ * → (audit) trigger VPS worker /api/run-audit.
  * Frontend must POST JSON here only (no direct CMS writes from the browser).
  */
 export async function POST(request: NextRequest) {
@@ -54,13 +56,37 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: guarded.message }, { status: guarded.status })
   }
 
-  const { name, email, phone, message, locale, source } = guarded.data
+  const {
+    name,
+    email,
+    phone,
+    message,
+    locale,
+    source,
+    website,
+    auditLanguage,
+    planSlug,
+    planTotal,
+    auditStatus,
+  } = guarded.data
 
   try {
     const payload = await getPayload({ config })
-    await payload.create({
+    const created = await payload.create({
       collection: 'contact-submissions',
-      data: { name, email, phone, message, locale, source },
+      data: {
+        name,
+        email,
+        phone,
+        message,
+        locale,
+        source,
+        ...(website ? { website } : {}),
+        ...(auditLanguage ? { auditLanguage } : {}),
+        ...(planSlug ? { planSlug } : {}),
+        ...(planTotal ? { planTotal } : {}),
+        ...(source === 'audit' ? { auditStatus: auditStatus || 'new' } : {}),
+      },
     })
 
     const settings = (await payload.findGlobal({
@@ -77,13 +103,36 @@ export async function POST(request: NextRequest) {
       message,
       locale,
       source,
+      website,
+      auditLanguage,
+      planSlug,
+      planTotal,
     })
     if (!mailed.sent) {
       console.error('[api/contact] saved submission but email was not sent:', mailed.reason)
     }
 
+    let auditQueued: boolean | undefined
+    if (source === 'audit' && website) {
+      const triggered = await triggerAuditAgent({
+        submissionId: created.id,
+        targetUrl: website,
+        locale: auditLanguage || locale || undefined,
+        planSlug: planSlug || undefined,
+      })
+      auditQueued = triggered.ok
+      if (!triggered.ok) {
+        console.error('[api/contact] audit worker not queued:', triggered.reason)
+      }
+    }
+
     return NextResponse.json(
-      { ok: true },
+      {
+        ok: true,
+        ...(source === 'audit'
+          ? { submissionId: created.id, auditQueued: Boolean(auditQueued) }
+          : {}),
+      },
       {
         headers: {
           'X-RateLimit-Limit': String(limited.limit),

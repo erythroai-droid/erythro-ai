@@ -137,77 +137,90 @@ function buildOrderPlan(card: SolutionCardItem): OrderPlan {
   }
 }
 
+/** Lab protocol groups — mirror QA_Auditor `ReportScopeOfWork` itemsCore (PIT-029). */
 export const AUDIT_CHECK_CATEGORIES = [
   {
     title: {
-      en: 'Mobile layout & RTL',
-      ru: 'Мобильная вёрстка и RTL',
-      he: 'פריסת מובייל ו-RTL',
+      en: 'Network & security',
+      ru: 'Сеть и безопасность',
+      he: 'רשת ואבטחה',
     } satisfies LocaleMap,
     description: {
-      en: 'Horizontal overflow, dir=rtl, viewport scaling, touch targets, basic accessibility',
-      ru: 'Горизонтальный скролл, dir=rtl, адаптивный viewport, тач-таргеты, базовая доступность',
-      he: 'גלילה אופקית, dir=rtl, תצוגה מותאמת, נגישות בסיסית',
+      en: '13 parameters: HTTPS, HTTP status, TTFB, Server, six headers, 4xx/5xx, runtime JS',
+      ru: '13 параметров: HTTPS, HTTP-статус, TTFB, Server, шесть заголовков, 4xx/5xx, runtime JS',
+      he: '13 פרמטרים: HTTPS, סטטוס HTTP, TTFB, Server, שש כותרות, 4xx/5xx, JS בזמן ריצה',
     } satisfies LocaleMap,
   },
   {
     title: {
-      en: 'Forms & lead capture',
-      ru: 'Формы и захват лидов',
-      he: 'טפסים ולידים',
+      en: 'Indexing & AI crawlers',
+      ru: 'Индексация и AI-боты',
+      he: 'אינדוקס ובוטי AI',
     } satisfies LocaleMap,
     description: {
-      en: 'Field validation, submit handlers, honeypot/anti-spam, chat widgets & WhatsApp links',
-      ru: 'Валидация полей, отправка, honeypot/антиспам, чат-виджеты и ссылки на WhatsApp',
-      he: 'אימות שדות, שליחה, הגנה מספאם, ווידג׳טים וקישורי WhatsApp',
+      en: 'robots.txt, sitemap, Sitemap: directive; rules for 8 AI bots and severe_block',
+      ru: 'robots.txt, sitemap, директива Sitemap:; правила для 8 AI-ботов и severe_block',
+      he: 'robots.txt, sitemap, הנחיית Sitemap:; כללים ל-8 בוטי AI ו-severe_block',
     } satisfies LocaleMap,
   },
   {
     title: {
-      en: 'SEO basics & previews',
-      ru: 'SEO-база и превью',
-      he: 'בסיס SEO ותצוגות מקדימות',
+      en: 'PageSpeed Insights',
+      ru: 'PageSpeed Insights',
+      he: 'PageSpeed Insights',
     } satisfies LocaleMap,
     description: {
-      en: 'robots.txt, sitemap.xml, canonical URLs, Open Graph tags for messengers, favicon & manifest',
-      ru: 'robots.txt, sitemap.xml, canonical URL, Open Graph для мессенджеров, favicon и манифест',
-      he: 'robots.txt, sitemap.xml, כתובות canonical, תגי Open Graph למסרים, favicon ומניפסט',
+      en: '10 Lighthouse metrics × mobile and desktop, plus TTFB on origin',
+      ru: '10 метрик Lighthouse × mobile и desktop, плюс TTFB на origin',
+      he: '10 מדדי Lighthouse × מובייל ודסקטופ, וגם TTFB ב-origin',
     } satisfies LocaleMap,
   },
   {
     title: {
-      en: 'Speed & performance',
-      ru: 'Скорость и производительность',
-      he: 'מהירות וביצועים',
+      en: 'Per locale — UX, forms, SEO',
+      ru: 'На каждой локали — UX, формы, SEO',
+      he: 'לכל שפה — UX, טפסים, SEO',
     } satisfies LocaleMap,
     description: {
-      en: 'Google PageSpeed (mobile & desktop), TTFB, core web vitals, heavy asset detection',
-      ru: 'Google PageSpeed (mobile и desktop), TTFB, Core Web Vitals, обнаружение тяжёлых ресурсов',
-      he: 'Google PageSpeed (מובייל ודסקטופ), TTFB, מדדי ביצועים מרכזיים ומשאבים כבדים',
+      en: '~28 signals × EN/RU/HE: meta, OG, overflow at 375px, forms, axe-core; RTL + LanguageTool EN/RU',
+      ru: '~28 сигналов × EN/RU/HE: meta, OG, overflow на 375px, формы, axe-core; RTL + LanguageTool EN/RU',
+      he: '~28 אותות × EN/RU/HE: meta, OG, overflow ב-375px, טפסים, axe-core; RTL + LanguageTool EN/RU',
     } satisfies LocaleMap,
   },
   {
     title: {
-      en: 'Security & stability',
-      ru: 'Безопасность и стабильность',
-      he: 'אבטחה ויציבות',
+      en: 'AI Visibility',
+      ru: 'AI Visibility',
+      he: 'נראות AI',
     } satisfies LocaleMap,
     description: {
-      en: 'HTTPS, security headers (HSTS, CSP, X-Frame-Options), server response codes, runtime JS errors',
-      ru: 'HTTPS, security-заголовки (HSTS, CSP, XFO), HTTP-коды сервера, runtime-ошибки JS и сети',
-      he: 'HTTPS, כותרות אבטחה (HSTS, CSP, XFO), תגובות שרת ושגיאות JS בזמן ריצה',
+      en: 'llms.txt, MCP, /about, Organization schema, AI-bot rules, GA4 dataLayer + consent stub',
+      ru: 'llms.txt, MCP, /about, Organization schema, правила AI-ботов, GA4 dataLayer + consent stub',
+      he: 'llms.txt, MCP, /about, סכמת Organization, כללי בוטי AI, GA4 dataLayer + consent stub',
     } satisfies LocaleMap,
   },
   {
     title: {
-      en: 'AI readiness',
-      ru: 'Готовность к AI',
-      he: 'מוכנות ל-AI',
+      en: 'Agent Readiness Level 1',
+      ru: 'Agent Readiness Level 1',
+      he: 'Agent Readiness Level 1',
     } satisfies LocaleMap,
     description: {
-      en: 'llms.txt, schema.org/Organization, AI crawler bot permissions in robots, structured brand data',
-      ru: 'llms.txt, Schema.org / Organization, доступ AI-ботов в robots, структурированные данные о бренде',
-      he: 'llms.txt, Schema.org/Organization, הרשאות בוטי AI ב-robots ונתוני מותג מובנים',
+      en: '5 checks: robots, agent sitemap, crawler rules, Content-Signal, markdown negotiation (not in score)',
+      ru: '5 проверок: robots, sitemap для агентов, правила ботов, Content-Signal, markdown (не в оценке)',
+      he: '5 בדיקות: robots, sitemap לסוכנים, כללי בוטים, Content-Signal, markdown (לא בציון)',
+    } satisfies LocaleMap,
+  },
+  {
+    title: {
+      en: 'Funnel crawl',
+      ru: 'Обход воронки',
+      he: 'סריקת משפך',
+    } satisfies LocaleMap,
+    description: {
+      en: 'Lab up to 10 URLs; Free discloses 1, Diagnostic 5, Pro 10 — HTTP, title, h1, forms, CTA, soft-404',
+      ru: 'Лаборатория до 10 URL; Free раскрывает 1, Diagnostic 5, Pro 10 — HTTP, title, h1, формы, CTA, soft-404',
+      he: 'מעבדה עד 10 URL; Free חושף 1, Diagnostic 5, Pro 10 — HTTP, title, h1, טפסים, CTA, soft-404',
     } satisfies LocaleMap,
   },
 ]
@@ -228,46 +241,46 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       features: [
         {
           value: {
-            en: 'Homepage + key funnel pages (up to 5)',
-            ru: 'Главная и ключевые страницы воронки (до 5)',
-            he: 'דף הבית ועמודי משפך מרכזיים (עד 5)',
+            en: 'Score 0–100 across 5 scorecard scales (A+–F)',
+            ru: 'Оценка 0–100 по 5 шкалам scorecard (A+–F)',
+            he: 'ציון 0–100 ב-5 סקאלות scorecard (A+–F)',
           },
         },
         {
           value: {
-            en: 'Score 0–100 across 5 business scales',
-            ru: 'Оценка 0–100 по 5 бизнес-шкалам',
-            he: 'ציון 0–100 ב-5 סקאלות עסקיות',
+            en: 'Top-3 conversion / visibility risks',
+            ru: 'Топ-3 уязвимости конверсии и видимости',
+            he: '3 סיכוני המרה ונראות עיקריים',
           },
         },
         {
           value: {
-            en: 'Top 3 conversion / visibility risks',
-            ru: 'Топ-3 риска для заявок и видимости',
-            he: '3 סיכונים עיקריים ללידים ולנראות',
+            en: 'Lighthouse mobile + desktop preview',
+            ru: 'Превью Lighthouse mobile + desktop',
+            he: 'תצוגת Lighthouse למובייל ולדסקטופ',
           },
         },
         {
           value: {
-            en: 'Preview report (essentials unlocked)',
-            ru: 'Превью-отчёт (основные блоки открыты)',
-            he: 'דוח תצוגה מקדימה (הבלוקים העיקריים פתוחים)',
+            en: 'Homepage disclosed (funnel crawl stays locked)',
+            ru: 'Раскрыта главная (обход воронки закрыт)',
+            he: 'דף הבית גלוי (סריקת המשפך נעולה)',
           },
         },
       ],
     },
     subtitle: {
-      en: 'Preview of your site’s health, speed, and AI readiness.',
-      ru: 'Превью состояния сайта, скорости и готовности к AI.',
-      he: 'תצוגה מקדימה של מצב האתר, מהירות ומוכנות ל-AI.',
+      en: 'Preview: scorecard, top-3, and Lighthouse.',
+      ru: 'Превью: scorecard, топ-3 и Lighthouse.',
+      he: 'תצוגה מקדימה: scorecard, טופ-3 ו-Lighthouse.',
     },
     periods: [],
     defaultPeriodId: '',
     addons: [],
     includes: {
-      en: 'Includes preview analysis of speed, lead capture forms, essential SEO headers, security status, and AI readiness signals.',
-      ru: 'Включает экспресс-анализ скорости, форм заявок, базовых SEO-тегов, статуса безопасности и сигналов готовности к AI.',
-      he: 'כולל ניתוח תצוגה מקדימה של מהירות, טפסי לידים, תגי SEO בסיסיים, מצב אבטחה ואותות מוכנות ל-AI.',
+      en: 'Includes the five-scale scorecard, top-3 conversion risks, and Lighthouse mobile + desktop. The lab still crawls the funnel; Free discloses the homepage only.',
+      ru: 'Включает scorecard по пяти шкалам, топ-3 уязвимости конверсии и Lighthouse mobile + desktop. Лаборатория обходит воронку; в Free раскрыта только главная.',
+      he: 'כולל scorecard בחמש סקאלות, 3 סיכוני המרה ו-Lighthouse למובייל ולדסקטופ. המעבדה סורקת את המשפך; ב-Free נחשף רק דף הבית.',
     },
     seoTitle: {
       en: 'Free AI Website Audit | Erythro.ai',
@@ -275,9 +288,9 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       he: 'ביקורת אתר AI בחינם | Erythro.ai',
     },
     seoDescription: {
-      en: 'Order a free commercial website audit: speed, forms, SEO, security, and AI readiness.',
-      ru: 'Закажите бесплатный коммерческий аудит сайта: скорость, формы, SEO, безопасность и готовность к AI.',
-      he: 'הזמינו ביקורת אתר מסחרית חינמית: מהירות, טפסים, SEO, אבטחה ומוכנות ל-AI.',
+      en: 'Order a free commercial website audit: five-scale scorecard, top-3 risks, Lighthouse preview.',
+      ru: 'Закажите бесплатный коммерческий аудит сайта: scorecard по пяти шкалам, топ-3 риска, превью Lighthouse.',
+      he: 'הזמינו ביקורת אתר מסחרית חינמית: scorecard בחמש סקאלות, 3 סיכונים, תצוגת Lighthouse.',
     },
   },
   {
@@ -305,23 +318,23 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         },
         {
           value: {
-            en: 'Full checklist of ~60 checks unlocked',
-            ru: 'Полный чеклист из ~60 проверок',
-            he: 'צ׳ק-ליסט מלא של ~60 בדיקות',
+            en: 'Summary checklist cards (excellent → attention → critical)',
+            ru: 'Сводные карточки чеклиста (отлично → внимание → критично)',
+            he: 'כרטיסי סיכום צ׳ק-ליסט (מצוין → לתשומת לב → קריטי)',
           },
         },
         {
           value: {
-            en: 'Mobile + desktop PageSpeed details',
+            en: 'Funnel crawl disclosed — up to 5 URLs',
+            ru: 'Обход воронки раскрыт — до 5 URL',
+            he: 'סריקת המשפך גלויה — עד 5 כתובות',
+          },
+        },
+        {
+          value: {
+            en: 'PageSpeed mobile + desktop details',
             ru: 'PageSpeed mobile и desktop подробно',
             he: 'פרטי PageSpeed למובייל ולדסקטופ',
-          },
-        },
-        {
-          value: {
-            en: 'Priority fix plan with clear next steps',
-            ru: 'Приоритетный план правок с понятными шагами',
-            he: 'תוכנית תיקון לפי עדיפות עם צעדים ברורים',
           },
         },
         {
@@ -334,9 +347,9 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       ],
     },
     subtitle: {
-      en: 'Full PDF report, one-time.',
-      ru: 'Полный PDF-отчёт, разово.',
-      he: 'דוח PDF מלא, חד-פעמי.',
+      en: 'Summary cards and funnel URLs, one-time.',
+      ru: 'Сводные карточки и URL воронки, разово.',
+      he: 'כרטיסי סיכום וכתובות משפך, חד-פעמי.',
     },
     promo: {
       en: 'Special promo price · ₪191 discount',
@@ -347,19 +360,19 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
     defaultPeriodId: '',
     addons: [],
     includes: {
-      en: 'Full one-time commercial audit across ~60 technical parameters: mobile layout & RTL verification, contact forms & lead funnel testing, SEO indexing & Open Graph tags, detailed Google PageSpeed metrics, security headers & SSL inspection, and AI crawler readiness audit.',
-      ru: 'Полный разовый коммерческий аудит по всем ~60 техническим параметрам: проверка мобильной вёрстки и RTL, тест форм заявок и спам-защиты, SEO-индексация и Open Graph теги, детальная аналитика Google PageSpeed, проверка заголовков безопасности и отчёт готовности к AI-ассистентам.',
-      he: 'ביקורת מסחרית מלאה וחד-פעמית בכ-60 פרמטרים טכניים: פריסת מובייל ו-RTL, בדיקת טפסי לידים ומשפכים, אינדוקס SEO ותגי Open Graph, מדדי Google PageSpeed, כותרות אבטחה ומוכנות לזחלני AI.',
+      en: 'Diagnostic PDF: five-scale scorecard, top-3 risks, summary checklist cards, Lighthouse, and up to 5 disclosed funnel URLs. The row-by-row 60+ checklist and fix plan stay in Pro.',
+      ru: 'Diagnostic PDF: scorecard по пяти шкалам, топ-3 риска, сводные карточки чеклиста, Lighthouse и до 5 раскрытых URL воронки. Построчный чеклист 60+ и план правок остаются в Pro.',
+      he: 'PDF Diagnostic: scorecard בחמש סקאלות, 3 סיכונים, כרטיסי סיכום, Lighthouse ועד 5 כתובות משפך גלויות. צ׳ק-ליסט 60+ שורה-שורה ותוכנית תיקון נשארים ב-Pro.',
     },
     seoTitle: {
-      en: 'Diagnostic AI Audit | Full PDF Report | Erythro.ai',
-      ru: 'AI Аудит Диагностика | Полный PDF-отчёт | Erythro.ai',
-      he: 'ביקורת AI אבחון | דוח PDF מלא | Erythro.ai',
+      en: 'Diagnostic AI Audit | Summary PDF | Erythro.ai',
+      ru: 'AI Аудит Диагностика | Сводный PDF | Erythro.ai',
+      he: 'ביקורת AI אבחון | PDF סיכום | Erythro.ai',
     },
     seoDescription: {
-      en: 'Order a full diagnostic website audit: ~60 checks, priority fix roadmap, and detailed PDF report.',
-      ru: 'Закажите полный диагностический аудит сайта: ~60 проверок, приоритетный план правок и детальный PDF-отчёт.',
-      he: 'הזמינו ביקורת אתר מקיפה: כ-60 בדיקות, מפת תיקונים בעדיפות ודוח PDF מלא.',
+      en: 'Diagnostic website audit: scorecard, top-3 risks, summary checklist cards, and up to 5 funnel URLs in PDF.',
+      ru: 'Диагностический аудит сайта: scorecard, топ-3 риска, сводные карточки чеклиста и до 5 URL воронки в PDF.',
+      he: 'ביקורת אבחון לאתר: scorecard, 3 סיכונים, כרטיסי סיכום ועד 5 כתובות משפך ב-PDF.',
     },
   },
   {
@@ -381,6 +394,20 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
             en: 'Everything in Diagnostic, plus:',
             ru: 'Всё из Diagnostic, плюс:',
             he: 'הכל מ-Diagnostic, ובנוסף:',
+          },
+        },
+        {
+          value: {
+            en: 'Full 60+ checklist and fix plan unlocked',
+            ru: 'Полный чеклист 60+ и план правок открыты',
+            he: 'צ׳ק-ליסט 60+ מלא ותוכנית תיקון פתוחים',
+          },
+        },
+        {
+          value: {
+            en: 'Funnel crawl disclosed — up to 10 URLs',
+            ru: 'Обход воронки раскрыт — до 10 URL',
+            he: 'סריקת המשפך גלויה — עד 10 כתובות',
           },
         },
         {
@@ -422,9 +449,9 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
     defaultPeriodId: '',
     addons: [],
     includes: {
-      en: 'Continuous monthly website QA & health monitoring: regular automated and expert re-audits, score progression comparison, on-demand recheck after developer fixes, and priority technical guidance via messenger/email.',
-      ru: 'Непрерывный ежемесячный мониторинг качества и здоровья сайта: регулярные повторные аудиты, отслеживание динамики оценок, внеочередная перепроверка после правок разработчиков и приоритетные консультации.',
-      he: 'ניטור איכות ובריאות אתר חודשי מתמשך: ביקורות חוזרות קבועות, מעקב אחר מגמת הציון, בדיקה חוזרת נוספת לאחר תיקוני מפתחים ותמיכה בעדיפות.',
+      en: 'Pro unlocks the full 60+ checklist and recommendations, discloses up to 10 funnel URLs, then re-runs the lab monthly: score trend vs last month, extra recheck after your fixes, and priority support.',
+      ru: 'Pro открывает полный чеклист 60+ и рекомендации, раскрывает до 10 URL воронки, затем ежемесячно повторяет лабораторию: динамика оценки, внеочередная перепроверка после ваших правок и приоритетная поддержка.',
+      he: 'Pro פותח את צ׳ק-ליסט 60+ המלא ואת ההמלצות, חושף עד 10 כתובות משפך, ואז מריץ את המעבדה כל חודש: מגמת ציון, בדיקה חוזרת אחרי התיקונים ותמיכה בעדיפות.',
     },
     seoTitle: {
       en: 'Pro AI Audit | Monthly Website QA & Support | Erythro.ai',

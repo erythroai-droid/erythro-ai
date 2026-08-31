@@ -592,7 +592,7 @@ function generateAuditMarkdownStub(): string {
   return [
     `# AI & Website Audit — Erythro.ai`,
     '',
-    `> Commercial QA audit for speed, forms, SEO, security, and AI readiness.`,
+    `> Commercial QA audit on five scales: Speed & Mobile UX, Lead gen & Forms, SEO & Visibility, Security & Stability, AI Visibility & Brand Discovery.`,
     '',
     `- **Canonical URL:** ${SITE_URL}/audit`,
     `- **Contact:** [order@erythro.ai](mailto:order@erythro.ai) · [Contacts](${SITE_URL}/contacts)`,

@@ -1,0 +1,9 @@
+n8n.erythro.ai {
+	encode gzip
+	reverse_proxy n8n:5678
+}
+
+agent-api.erythro.ai {
+	encode gzip
+	reverse_proxy audit_agent_worker:8080
+}

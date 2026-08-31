@@ -40,8 +40,10 @@ import { ContactSendSpinner } from '@/components/ContactSendingPanel'
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import {
   AUDIT_REPORT_LANGUAGES,
-  normalizeAuditWebsite,
-  auditLanguageLabel,
+  buildAuditContactPayload,
+  buildAuditOrderMessage,
+  hasAuditFieldErrors,
+  validateAuditForm,
   type AuditField,
   type AuditFieldErrors,
   type AuditFormValues,
@@ -319,10 +321,10 @@ function OrderCheckout({
           : "What's included in development?",
     checksTitle:
       locale === 'ru'
-        ? 'Что проверяем (~60 проверок)'
+        ? 'Что проверяем (60+ сигналов)'
         : locale === 'he'
-          ? 'מה אנחנו בודקים (~60 בדיקות)'
-          : 'What we check (~60 checks)',
+          ? 'מה אנחנו בודקים (60+ אותות)'
+          : 'What we check (60+ signals)',
   }
 
   const toggleAddon = (id: string) => {
@@ -1036,10 +1038,6 @@ function OrderAccordionPlus({
 
 type ModalStatus = 'idle' | 'sending' | 'success' | 'error'
 
-const WEBSITE_RE =
-  /^(?:https?:\/\/)?(?:[\da-z](?:[\da-z-]{0,61}[\da-z])?\.)+[a-z]{2,}(?:\/[^\s]*)?$/i
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
 function AuditOrderModal({
   isOpen,
   onClose,
@@ -1141,20 +1139,7 @@ function AuditOrderModal({
     }
   }
 
-  const validateForm = (): AuditFieldErrors => {
-    const errors: AuditFieldErrors = {}
-    if (!values.name.trim()) errors.name = 'required'
-    if (!values.email.trim()) errors.email = 'required'
-    else if (!EMAIL_RE.test(values.email.trim())) errors.email = 'invalid'
-
-    const website = values.website.trim()
-    if (!website) errors.website = 'required'
-    else if (!WEBSITE_RE.test(website)) errors.website = 'invalid'
-
-    if (!values.phone.trim()) errors.phone = 'required'
-    if (!values.auditLanguage) errors.auditLanguage = 'required'
-    return errors
-  }
+  const validateForm = (): AuditFieldErrors => validateAuditForm(values)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -1165,19 +1150,18 @@ function AuditOrderModal({
     if (!privacyConsent) setConsentError(true)
     else setConsentError(false)
 
-    if (Object.keys(nextErrors).length > 0 || !privacyConsent) return
+    if (hasAuditFieldErrors(nextErrors) || !privacyConsent) return
 
     const honeypot =
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ?? ''
 
-    const normalizedWebsite = normalizeAuditWebsite(values.website)
-    const orderMessage = [
-      `AI Audit Order: ${planTitle}`,
-      `Plan: ${planTitle} (${plan.slug})`,
-      `Website: ${normalizedWebsite}`,
-      `Report language: ${auditLanguageLabel(values.auditLanguage)}`,
-      `Total: ${totalFormatted}`,
-    ].join('\n')
+    const orderMessage = buildAuditOrderMessage({
+      planTitle,
+      planSlug: plan.slug,
+      website: values.website,
+      auditLanguage: values.auditLanguage,
+      totalFormatted,
+    })
 
     setStatus('sending')
     setSubmitError('')
@@ -1185,16 +1169,16 @@ function AuditOrderModal({
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: values.name.trim(),
-          email: values.email.trim(),
-          phone: values.phone.trim(),
-          message: orderMessage,
-          [CONTACT_HONEYPOT_FIELD]: honeypot,
-          locale,
-          privacyConsent: true,
-          source: 'audit',
-        }),
+        body: JSON.stringify(
+          buildAuditContactPayload({
+            values,
+            locale,
+            honeypot,
+            message: orderMessage,
+            planSlug: plan.slug,
+            planTotal: totalFormatted,
+          }),
+        ),
       })
       if (res.status === 429) {
         setSubmitError(tForm(contactForm.rateLimited))

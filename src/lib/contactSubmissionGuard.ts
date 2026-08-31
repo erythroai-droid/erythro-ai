@@ -1,5 +1,10 @@
 import type { ContactFormSource } from '@/lib/contactNotification'
 import {
+  AUDIT_REPORT_LANGUAGES,
+  type AuditReportLanguage,
+  normalizeAuditWebsite,
+} from '@/lib/auditFormValidation'
+import {
   sanitizeEmail,
   sanitizeLocale,
   sanitizeMessage,
@@ -8,12 +13,18 @@ import {
 } from '@/lib/contactSanitize'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const WEBSITE_RE =
+  /^(?:https?:\/\/)?(?:[\da-z](?:[\da-z-]{0,61}[\da-z])?\.)+[a-z]{2,}(?:\/[^\s]*)?$/i
+const PLAN_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,63}$/i
 
 export const CONTACT_LIMITS = {
   name: 120,
   email: 254,
   phone: 40,
   message: 5000,
+  website: 500,
+  planSlug: 64,
+  planTotal: 80,
 } as const
 
 export type ContactSubmissionInput = {
@@ -24,6 +35,11 @@ export type ContactSubmissionInput = {
   locale?: string
   source: ContactFormSource
   privacyConsent: true
+  website?: string
+  auditLanguage?: AuditReportLanguage
+  planSlug?: string
+  planTotal?: string
+  auditStatus?: 'new' | 'in_progress' | 'report_sent'
 }
 
 export type ContactGuardFailure = {
@@ -43,6 +59,14 @@ function parseSource(value: unknown): ContactFormSource {
   if (value === 'order') return 'order'
   if (value === 'audit') return 'audit'
   return 'contact'
+}
+
+function parseAuditLanguage(value: unknown): AuditReportLanguage | undefined {
+  if (typeof value !== 'string') return undefined
+  const lang = value.trim().toLowerCase()
+  return (AUDIT_REPORT_LANGUAGES as readonly string[]).includes(lang)
+    ? (lang as AuditReportLanguage)
+    : undefined
 }
 
 /**
@@ -80,16 +104,38 @@ export function guardContactSubmission(body: unknown): ContactGuardResult {
     return { ok: false, status: 413, message: 'Message too long' }
   }
 
-  return {
-    ok: true,
-    data: {
-      name,
-      email,
-      phone,
-      message,
-      locale,
-      source,
-      privacyConsent: true,
-    },
+  const data: ContactSubmissionInput = {
+    name,
+    email,
+    phone,
+    message,
+    locale,
+    source,
+    privacyConsent: true,
   }
+
+  if (source === 'audit') {
+    const websiteRaw = sanitizePlainText(raw.website, CONTACT_LIMITS.website)
+    const auditLanguage = parseAuditLanguage(raw.auditLanguage)
+    const planSlug = sanitizePlainText(raw.planSlug, CONTACT_LIMITS.planSlug).toLowerCase()
+    const planTotal = sanitizePlainText(raw.planTotal, CONTACT_LIMITS.planTotal)
+
+    if (!websiteRaw || !WEBSITE_RE.test(websiteRaw)) {
+      return { ok: false, status: 400, message: 'Valid website is required for audit' }
+    }
+    if (!auditLanguage) {
+      return { ok: false, status: 400, message: 'Audit report language is required' }
+    }
+    if (planSlug && !PLAN_SLUG_RE.test(planSlug)) {
+      return { ok: false, status: 400, message: 'Invalid plan' }
+    }
+
+    data.website = normalizeAuditWebsite(websiteRaw)
+    data.auditLanguage = auditLanguage
+    data.auditStatus = 'new'
+    if (planSlug) data.planSlug = planSlug
+    if (planTotal) data.planTotal = planTotal
+  }
+
+  return { ok: true, data }
 }

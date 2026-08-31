@@ -1,3 +1,5 @@
+import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
+
 export const AUDIT_REPORT_LANGUAGES = ['en', 'ru', 'he'] as const
 export type AuditReportLanguage = (typeof AUDIT_REPORT_LANGUAGES)[number]
 
@@ -65,4 +67,47 @@ export function buildAuditSubmissionMessage(
 ): string {
   const normalized = normalizeAuditWebsite(website)
   return `AI Audit request\nWebsite: ${normalized}\nReport language: ${auditLanguageLabel(auditLanguage)}`
+}
+
+export function buildAuditOrderMessage(input: {
+  planTitle: string
+  planSlug: string
+  website: string
+  auditLanguage: AuditReportLanguage
+  totalFormatted: string
+}): string {
+  const normalized = normalizeAuditWebsite(input.website)
+  return [
+    `AI Audit Order: ${input.planTitle}`,
+    `Plan: ${input.planTitle} (${input.planSlug})`,
+    `Website: ${normalized}`,
+    `Report language: ${auditLanguageLabel(input.auditLanguage)}`,
+    `Total: ${input.totalFormatted}`,
+  ].join('\n')
+}
+
+/** JSON body fields shared by /audit and /order audit checkout → POST /api/contact */
+export function buildAuditContactPayload(input: {
+  values: AuditFormValues
+  locale: string
+  honeypot: string
+  message: string
+  planSlug?: string
+  planTotal?: string
+}) {
+  const website = normalizeAuditWebsite(input.values.website)
+  return {
+    name: input.values.name.trim(),
+    email: input.values.email.trim(),
+    phone: input.values.phone.trim(),
+    message: input.message,
+    website,
+    auditLanguage: input.values.auditLanguage,
+    ...(input.planSlug ? { planSlug: input.planSlug } : {}),
+    ...(input.planTotal ? { planTotal: input.planTotal } : {}),
+    [CONTACT_HONEYPOT_FIELD]: input.honeypot,
+    locale: input.locale,
+    privacyConsent: true as const,
+    source: 'audit' as const,
+  }
 }

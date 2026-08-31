@@ -1,0 +1,29 @@
+# Target n8n compose behind Caddy (HTTPS).
+# On VPS: merge with existing /root/n8n data volume; do not wipe n8n_data.
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    environment:
+      - N8N_HOST=n8n.erythro.ai
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://n8n.erythro.ai/
+      - GENERIC_TIMEZONE=Asia/Jerusalem
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+      - N8N_SECURE_COOKIE=true
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - proxy_network
+    # Port 5678 is NOT published to the host — only via Caddy on proxy_network
+
+volumes:
+  n8n_data:
+    name: n8n_data
+
+networks:
+  proxy_network:
+    external: true

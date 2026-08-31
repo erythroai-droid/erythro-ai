@@ -197,6 +197,8 @@ pnpm test:e2e
 
 Загрузки Payload (коллекция `media`) хранятся в Vercel Blob, а не на эфемерной ФС.
 
+**AI Audit reports:** целевое хранилище — Cloudflare R2 bucket `erythro-audit-reports` (см. [`architecture/r2-audit-storage.md`](./architecture/r2-audit-storage.md)). Media Payload пока на Blob; cutover на R2 — отдельный шаг.
+
 **Код:**
 - Пакет `@payloadcms/storage-vercel-blob` (версия синхронна с ядром Payload — все `@payloadcms/*`
   и `payload` держим на одной версии, иначе peer-конфликт).
@@ -435,6 +437,7 @@ URL вычисляется в afterRead-хуке, так что ссылка ч�
 | `pnpm db:fix-portfolio-richtext` | varchar → jsonb для Lexical полей |
 | `pnpm db:fix-site-settings-page-heroes` | Page hero media FK в Site Settings |
 | `pnpm db:fix-solution-feature-columns` | `home_only` + features `full` jsonb (PIT-028) |
+| `pnpm db:fix-contact-submissions-audit-fields` | audit website / language / plan / status (PIT-030) |
 
 Также без отдельного `db:fix-*` (только migration): `20260815_010000_site_settings_emails`
 (адресная книга + notify/display selects).

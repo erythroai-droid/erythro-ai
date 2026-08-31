@@ -824,7 +824,19 @@ export const contact_submissions = pgTable(
     email: varchar('email').notNull(),
     phone: varchar('phone'),
     message: varchar('message').notNull(),
+    source: varchar('source').default('contact'),
     locale: varchar('locale'),
+    website: varchar('website'),
+    auditLanguage: varchar('audit_language'),
+    planSlug: varchar('plan_slug'),
+    planTotal: varchar('plan_total'),
+    auditStatus: varchar('audit_status').default('new'),
+    auditScore: numeric('audit_score', { mode: 'number' }),
+    auditSummary: jsonb('audit_summary'),
+    reportUrl: varchar('report_url'),
+    htmlResult: varchar('html_result'),
+    retryCount: numeric('retry_count', { mode: 'number' }).default(0),
+    errorLast: varchar('error_last'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),
@@ -835,6 +847,9 @@ export const contact_submissions = pgTable(
   (columns) => [
     index('contact_submissions_updated_at_idx').on(columns.updatedAt),
     index('contact_submissions_created_at_idx').on(columns.createdAt),
+    index('contact_submissions_website_idx').on(columns.website),
+    index('contact_submissions_plan_slug_idx').on(columns.planSlug),
+    index('contact_submissions_audit_status_idx').on(columns.auditStatus),
   ],
 )
 

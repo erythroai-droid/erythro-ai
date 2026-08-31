@@ -480,6 +480,36 @@ CI runs the fix script before API tests.
 
 ---
 
+## PIT-029 — Audit landing copy vs QA_Auditor report tiers
+
+**Tags:** `audit`, `copy`, `qa-auditor`  
+**Seen:** 2026-08-30 `/audit` vs `C:\agents\website-auditor\erythro-ai`
+
+**Symptom:** Marketing claimed ~55–60 checks, “homepage + 5 funnel pages” on Free, and Diagnostic as a full 60+ checklist with a fix plan.
+
+**Cause:** Copy described the lab in the abstract, not `A44Tier` disclosure: Free 1 URL (scorecard, top-3, Lighthouse); Diagnostic 5 URLs + summary cards; Pro full 60+ checklist + recommendations **and up to 10 funnel URLs** (`A44Tier.pageCap`: Free=1, Diagnostic=5, Pro=10). Scale names in PDFs are Speed & Mobile UX, SEO & Visibility, Lead gen & Forms, Security & Stability, AI Visibility & Brand Discovery.
+
+**Fix:** Align `src/lib/auditPage.ts` (including `/audit` «How it works»), `src/lib/orderPlans.ts` (`AUDIT_ORDER_PLANS` + `AUDIT_CHECK_CATEGORIES`), and order UI with `QA_Auditor` `A44Copy` / `ReportScopeOfWork` / `AGENTS.md`. Client PDFs say “60+”, not “55–60”. Do not brand Agent Readiness as Vercel. Scorecard weights in `AuditCollector` are Speed 27% · Lead 22% · SEO 22% · Security 18% · AI Visibility 11%; L1 is reported, not weighted. The How-it-works categories **and** Order «What we check» cards must follow `ReportScopeOfWork` itemsCore (network, indexing, PSI, per-locale, AI Visibility, Agent Readiness L1, funnel crawl) — not scorecard-only marketing lists. Pro Order features must disclose `pageCap=10`, not only “everything in Diagnostic”.
+
+**Prevent:** When auditor checks or tier unlocks change, update landing + order copy in the same change. Diff against `QA_Auditor/AGENTS.md`, `ReportScopeOfWork.java`, and `A44Tier.pageCap`.
+
+---
+
+## PIT-030 — Audit order checkout must persist structured client fields
+
+**Tags:** `audit`, `order`, `contact-submissions`  
+**Seen:** 2026-08-31
+
+**Symptom:** Order audit checkout collected name/email/phone/website, but website, report language, and plan lived only inside freeform `message`. Staff could not query leads for post-audit report delivery.
+
+**Cause:** `/api/contact` + `contact-submissions` stored only name/email/phone/message/source/locale.
+
+**Fix:** Structured columns `website`, `audit_language`, `plan_slug`, `plan_total`, `audit_status`. Guard requires website + auditLanguage when `source=audit`. `/audit` and `/order/audit-*` POST via `buildAuditContactPayload`. Migration `20260831_010000_contact_submissions_audit_fields` + `pnpm db:fix-contact-submissions-audit-fields`.
+
+**Prevent:** Do not pack audit metadata only into `message`. Keep Order modal validation on `validateAuditForm`.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -497,3 +527,5 @@ CI runs the fix script before API tests.
 - [ ] Unit CI without DATABASE_URL must not dial Payload (PIT-026, `vitest.setup.ts`)
 - [ ] Do not run local `next dev` against prod DATABASE_URL without `PAYLOAD_DISABLE_PUSH=1` (PIT-027)
 - [ ] If CI reports missing CMS columns that migrations already list — restore with `pnpm db:fix-*` (PIT-028)
+- [ ] Audit landing/order copy must match QA_Auditor report tiers (PIT-029)
+- [ ] Audit order/form intake must POST structured website / auditLanguage / planSlug (PIT-030)

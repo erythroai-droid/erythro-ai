@@ -14,6 +14,10 @@ export type ContactNotificationInput = {
   message: string
   locale?: string
   source?: ContactFormSource
+  website?: string
+  auditLanguage?: string
+  planSlug?: string
+  planTotal?: string
 }
 
 export type SiteEmailSettings = {
@@ -85,7 +89,9 @@ export function resolveNotifyRecipients(
   }
 
   const primary =
-    source === 'order' ? settings.notifyEmailOrder : settings.notifyEmailContact
+    source === 'order' || source === 'audit'
+      ? settings.notifyEmailOrder || settings.notifyEmailContact
+      : settings.notifyEmailContact
   add(primary)
   if (!recipients.length) {
     add(settings.displayEmailFooter)
@@ -127,16 +133,31 @@ export function buildContactEmail(input: ContactNotificationInput): { subject: s
     `Email: ${input.email}`,
     `Phone: ${input.phone?.trim() || '—'}`,
     `Locale: ${input.locale || '—'}`,
-    '',
-    input.message,
   ]
+  if (source === 'audit') {
+    lines.push(`Website: ${input.website?.trim() || '—'}`)
+    lines.push(`Report language: ${input.auditLanguage || '—'}`)
+    lines.push(`Plan: ${input.planSlug?.trim() || '—'}`)
+    if (input.planTotal?.trim()) lines.push(`Total: ${input.planTotal.trim()}`)
+  }
+  lines.push('', input.message)
   const text = lines.join('\n')
+  const auditRows =
+    source === 'audit'
+      ? `
+    <p><strong>Website:</strong> ${escapeHtml(input.website?.trim() || '—')}</p>
+    <p><strong>Report language:</strong> ${escapeHtml(input.auditLanguage || '—')}</p>
+    <p><strong>Plan:</strong> ${escapeHtml(input.planSlug?.trim() || '—')}</p>
+    ${input.planTotal?.trim() ? `<p><strong>Total:</strong> ${escapeHtml(input.planTotal.trim())}</p>` : ''}
+      `
+      : ''
   const html = `
     <p><strong>Source:</strong> ${escapeHtml(source)}</p>
     <p><strong>Name:</strong> ${escapeHtml(input.name)}</p>
     <p><strong>Email:</strong> ${escapeHtml(input.email)}</p>
     <p><strong>Phone:</strong> ${escapeHtml(input.phone?.trim() || '—')}</p>
     <p><strong>Locale:</strong> ${escapeHtml(input.locale || '—')}</p>
+    ${auditRows}
     <p><strong>Message:</strong></p>
     <pre style="white-space:pre-wrap;font-family:inherit">${escapeHtml(input.message)}</pre>
   `.trim()

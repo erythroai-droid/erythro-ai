@@ -60,6 +60,29 @@
   --shadow-btn-tertiary: 0 3px 20px 0 rgba(255, 255, 255, 0.3);
 }
 
+/* Audit form BorderBeam: hue cycle matches the header AI-audit button duration. */
+@property --beam-hue-base {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@keyframes audit-beam-hue {
+  to {
+    --beam-hue-base: 360deg;
+  }
+}
+
+.audit-beam-hue {
+  animation: audit-beam-hue 2.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audit-beam-hue {
+    animation: none;
+  }
+}
+
 @layer base {
   :root {
     /* Primitives - Coal */
