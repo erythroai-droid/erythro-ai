@@ -46,6 +46,18 @@ export function buildR2ObjectUrl(key: string, config: R2Config): string {
 
 /** Read object body as UTF-8 text (for serving audit HTML when CMS htmlResult is empty). */
 export async function getR2ObjectText(key: string): Promise<string | null> {
+  const bin = await getR2Object(key)
+  if (!bin) return null
+  return bin.body.toString('utf8')
+}
+
+export type R2ObjectBinary = {
+  body: Buffer
+  contentType: string | null
+}
+
+/** Read object bytes + content-type (for audit report static assets). */
+export async function getR2Object(key: string): Promise<R2ObjectBinary | null> {
   const config = getR2Config()
   if (!config) return null
   const normalized = key.replace(/^\/+/, '')
@@ -64,7 +76,10 @@ export async function getR2ObjectText(key: string): Promise<string | null> {
     )
     const bytes = await res.Body?.transformToByteArray()
     if (!bytes) return null
-    return Buffer.from(bytes).toString('utf8')
+    return {
+      body: Buffer.from(bytes),
+      contentType: typeof res.ContentType === 'string' ? res.ContentType : null,
+    }
   } catch (err) {
     console.error('[r2] getObject failed:', err instanceof Error ? err.message : err)
     return null
