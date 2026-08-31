@@ -48,17 +48,31 @@ export async function findAuditSubmission(id: number): Promise<AuditReportDoc | 
   return doc as AuditReportDoc
 }
 
+/**
+ * A44 HTML uses filesystem-relative asset paths (`../../templates/figma-assets/...`).
+ * When served from `/api/audit/report/[id]/html` those resolve under `/api/audit/...`
+ * and 404. Map them to site-root static files in `public/templates/figma-assets/`.
+ */
+export function rewriteAuditReportAssetUrls(html: string): string {
+  return html
+    .replace(/(?:\.\.\/)+templates\/figma-assets\//g, '/templates/figma-assets/')
+    .replace(/\/api\/audit\/templates\/figma-assets\//g, '/templates/figma-assets/')
+}
+
 /** Full report HTML from CMS or R2. */
 export async function resolveAuditReportHtml(
   doc: AuditReportDoc,
   status: AuditReportStatus,
 ): Promise<string | null> {
+  let html: string | null = null
   if (typeof doc.htmlResult === 'string' && doc.htmlResult.length > 0) {
-    return doc.htmlResult.slice(0, AUDIT_REPORT_HTML_MAX)
+    html = doc.htmlResult.slice(0, AUDIT_REPORT_HTML_MAX)
+  } else if (status === 'report_sent') {
+    const key = storageKeyFromSummary(doc.auditSummary)
+    if (key) {
+      const fromR2 = await getR2ObjectText(key)
+      if (fromR2) html = fromR2.slice(0, AUDIT_REPORT_HTML_MAX)
+    }
   }
-  if (status !== 'report_sent') return null
-  const key = storageKeyFromSummary(doc.auditSummary)
-  if (!key) return null
-  const fromR2 = await getR2ObjectText(key)
-  return fromR2 ? fromR2.slice(0, AUDIT_REPORT_HTML_MAX) : null
+  return html ? rewriteAuditReportAssetUrls(html) : null
 }
