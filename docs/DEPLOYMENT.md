@@ -435,6 +435,7 @@ URL вычисляется в afterRead-хуке, так что ссылка ч�
 | `pnpm db:fix-portfolio-richtext` | varchar → jsonb для Lexical полей |
 | `pnpm db:fix-site-settings-page-heroes` | Page hero media FK в Site Settings |
 | `pnpm db:fix-solution-feature-columns` | `home_only` + features `full` jsonb (PIT-028) |
+| `pnpm db:fix-contact-submissions-audit-fields` | audit website / language / plan / status (PIT-030) |
 
 Также без отдельного `db:fix-*` (только migration): `20260815_010000_site_settings_emails`
 (адресная книга + notify/display selects).

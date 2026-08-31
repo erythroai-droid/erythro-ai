@@ -167,8 +167,10 @@ export async function getSiteContent(): Promise<SiteContent> {
     // --- Navbar (Header global) ---
     if (Array.isArray(header?.navItems) && header.navItems.length) {
       content.navbar.navItems = header.navItems.map((n: any, i: number) => {
-        const fallbackHref = defaultSiteContent.navbar.navItems[i]?.href ?? '#'
-        const rawHref = n.href ?? fallbackHref
+        const rawHref = n.href ?? defaultSiteContent.navbar.navItems[i]?.href ?? '#'
+        const matchingDefault = defaultSiteContent.navbar.navItems.find(
+          (item) => item.href === rawHref || (rawHref === '#contacts' && item.href === '/contacts'),
+        )
         const children = Array.isArray(n.children)
           ? n.children
               .map((c: any) => {
@@ -182,10 +184,10 @@ export async function getSiteContent(): Promise<SiteContent> {
               .filter(Boolean)
           : []
         return {
-          label: L(n.label, defaultSiteContent.navbar.navItems[i]?.label ?? {}),
+          label: L(n.label, matchingDefault?.label ?? {}),
           description: L(
             n.description,
-            defaultSiteContent.navbar.navItems[i]?.description ?? {
+            matchingDefault?.description ?? {
               en: '',
               ru: '',
               he: '',

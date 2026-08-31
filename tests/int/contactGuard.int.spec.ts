@@ -80,6 +80,40 @@ describe('guardContactSubmission', () => {
       }).ok,
     ).toBe(false)
   })
+
+  it('requires website and report language for audit source', () => {
+    expect(
+      guardContactSubmission({
+        name: 'Ada',
+        email: 'ada@example.com',
+        phone: '+972501234567',
+        message: 'AI Audit request',
+        privacyConsent: true,
+        source: 'audit',
+      }).ok,
+    ).toBe(false)
+
+    const result = guardContactSubmission({
+      name: 'Ada',
+      email: 'ada@example.com',
+      phone: '+972501234567',
+      message: 'AI Audit Order',
+      privacyConsent: true,
+      source: 'audit',
+      website: 'example.com',
+      auditLanguage: 'ru',
+      planSlug: 'audit-diagnostic',
+      planTotal: '99 ₪',
+    })
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.website).toBe('https://example.com')
+      expect(result.data.auditLanguage).toBe('ru')
+      expect(result.data.planSlug).toBe('audit-diagnostic')
+      expect(result.data.planTotal).toBe('99 ₪')
+      expect(result.data.auditStatus).toBe('new')
+    }
+  })
 })
 
 describe('contactHoneypot', () => {

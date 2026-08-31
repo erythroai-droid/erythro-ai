@@ -15,6 +15,7 @@
     "db:fix-portfolio-richtext": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-portfolio-richtext.ts",
     "db:fix-site-settings-page-heroes": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-site-settings-page-heroes.ts",
     "db:fix-solution-feature-columns": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-solution-feature-columns.ts",
+    "db:fix-contact-submissions-audit-fields": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-contact-submissions-audit-fields.ts",
     "import:project": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/import-project/import-project.ts",
     "revalidate:site": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/import-project/revalidate-site.ts",
     "cf:contact-rate-limit": "node scripts/cloudflare-contact-rate-limit.mjs",

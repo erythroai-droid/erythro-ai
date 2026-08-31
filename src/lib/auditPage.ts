@@ -14,9 +14,9 @@ export const auditPage = {
     he: 'ביקורת AI',
   } satisfies Localized,
   metaDescription: {
-    en: 'Free commercial website audit: speed, forms, SEO, security, and AI readiness. Clear score, top issues, and a full PDF report when you need it.',
-    ru: 'Бесплатный коммерческий аудит сайта: скорость, формы, SEO, безопасность и готовность к AI. Понятная оценка, главные проблемы и полный PDF-отчёт.',
-    he: 'ביקורת מסחרית חינמית לאתר: מהירות, טפסים, SEO, אבטחה ומוכנות ל-AI. ציון ברור, בעיות מרכזיות ודוח PDF מלא.',
+    en: 'Free commercial website audit: Speed & Mobile UX, lead forms, SEO & Visibility, security, and AI Visibility. Score 0–100, top-3 risks, PDF by plan.',
+    ru: 'Бесплатный коммерческий аудит сайта: скорость и мобильный UX, формы, SEO и видимость, безопасность и AI Visibility. Оценка 0–100, топ-3 риска, PDF по тарифу.',
+    he: 'ביקורת מסחרית חינמית לאתר: מהירות ו-UX למובייל, טפסים, SEO ונראות, אבטחה ונראות AI. ציון 0–100, 3 סיכונים עיקריים, PDF לפי חבילה.',
   } satisfies Localized,
   tabs: {
     audit: {
@@ -42,14 +42,14 @@ export const auditPage = {
       he: 'ביקורת אתר בחינם',
     } satisfies Localized,
     intro: {
-      en: 'Enter your site URL, contacts, and preferred report language. We run a commercial QA audit of speed, lead forms, SEO basics, security, and AI readiness — then send a clear report with the main growth opportunities and issues.',
-      ru: 'Укажите URL сайта, контакты и язык отчёта. Мы проведём коммерческий QA-аудит: скорость, формы заявок, SEO-база, безопасность и готовность к AI — и пришлём понятный отчёт с ключевыми точками роста и найденными проблемами.',
-      he: 'הזינו כתובת אתר, פרטי קשר ושפת דוח. נריץ ביקורת QA מסחרית: מהירות, טפסי לידים, בסיס SEO, אבטחה ומוכנות ל-AI — ונשלח דוח ברור עם נקודות צמיחה ובעיות שזוהו.',
+      en: 'Enter your site URL, contacts, and preferred report language. The lab scores five scales — Speed & Mobile UX, Lead gen & Forms, SEO & Visibility, Security & Stability, AI Visibility & Brand Discovery — then we send a report with the score, top-3 risks, and what your plan unlocks.',
+      ru: 'Укажите URL сайта, контакты и язык отчёта. Лаборатория считает пять шкал — скорость и мобильный UX, лиды и формы, SEO и видимость, безопасность и стабильность, AI Visibility & Brand Discovery — и мы пришлём отчёт с оценкой, топ-3 рисками и тем, что открывает ваш тариф.',
+      he: 'הזינו כתובת אתר, פרטי קשר ושפת דוח. המעבדה מחשבת חמש סקאלות — מהירות ו-UX למובייל, לידים וטפסים, SEO ונראות, אבטחה ויציבות, נראות AI וגילוי מותג — ונשלח דוח עם הציון, 3 הסיכונים העיקריים ומה שהחבילה שלכם פותחת.',
     } satisfies Localized,
     introNote: {
-      en: 'Free preview audit: one domain per user every 48 hours.',
-      ru: 'Бесплатный превью-аудит: один домен на пользователя раз в 48 часов.',
-      he: 'ביקורת תצוגה מקדימה חינמית: דומיין אחד למשתמש פעם ב-48 שעות.',
+      en: 'Free preview audit: one domain per user every 5 days.',
+      ru: 'Бесплатный превью-аудит: один домен на пользователя раз в 5 дней.',
+      he: 'ביקורת תצוגה מקדימה חינמית: דומיין אחד למשתמש פעם ב-5 ימים.',
     } satisfies Localized,
     requiredNote: {
       en: 'Required field',
@@ -93,16 +93,48 @@ export const auditPage = {
     } satisfies Localized,
   },
   how: {
+    kicker: {
+      en: 'Lab protocol',
+      ru: 'Протокол лаборатории',
+      he: 'פרוטוקול המעבדה',
+    } satisfies Localized,
     heroTitle: {
       en: 'How the audit works',
       ru: 'Как работает аудит',
       he: 'איך עובדת הביקורת',
     } satisfies Localized,
     heroIntro: {
-      en: 'We run a commercial QA audit of your website: speed and mobile UX, lead forms, SEO basics, security, and technical readiness for AI assistants. You get a clear score and the issues that cost you leads and visibility.',
-      ru: 'Мы проводим коммерческий QA-аудит сайта: скорость и мобильный UX, формы заявок, SEO-база, безопасность и техническая готовность к AI-ассистентам. Вы получаете понятную оценку и список проблем, которые мешают заявкам и видимости.',
-      he: 'אנחנו מבצעים ביקורת QA מסחרית לאתר: מהירות ו-UX למובייל, טפסי לידים, בסיס SEO, אבטחה ומוכנות טכנית לעוזרי AI. אתם מקבלים ציון ברור ואת הבעיות שפוגעות בלידים ובנראות.',
+      en: 'The lab runs a commercial QA audit on five scorecard scales: Speed & Mobile UX, Lead gen & Forms, SEO & Visibility, Security & Stability, and AI Visibility & Brand Discovery. You get a 0–100 score with a letter grade (A+–F) and the issues that cost you leads and visibility.',
+      ru: 'Лаборатория проводит коммерческий QA-аудит по пяти шкалам scorecard: скорость и мобильный UX, лиды и формы, SEO и видимость, безопасность и стабильность, AI Visibility & Brand Discovery. Вы получаете оценку 0–100 с грейдом (A+–F) и проблемы, которые мешают заявкам и видимости.',
+      he: 'המעבדה מבצעת ביקורת QA מסחרית בחמש סקאלות: מהירות ו-UX למובייל, לידים וטפסים, SEO ונראות, אבטחה ויציבות, נראות AI וגילוי מותג. אתם מקבלים ציון 0–100 עם דרגה (A+–F) ואת הבעיות שפוגעות בלידים ובנראות.',
     } satisfies Localized,
+    stats: [
+      {
+        en: '60+ signal types',
+        ru: '60+ типов сигналов',
+        he: '60+ סוגי אותות',
+      },
+      {
+        en: '5 scorecard scales',
+        ru: '5 шкал scorecard',
+        he: '5 סקאלות scorecard',
+      },
+      {
+        en: 'EN · RU · HE',
+        ru: 'EN · RU · HE',
+        he: 'EN · RU · HE',
+      },
+      {
+        en: 'Lighthouse × 2',
+        ru: 'Lighthouse × 2',
+        he: 'Lighthouse × 2',
+      },
+      {
+        en: 'Up to 10 funnel URLs',
+        ru: 'До 10 URL воронки',
+        he: 'עד 10 כתובות משפך',
+      },
+    ] satisfies Localized[],
     stepsHeading: {
       en: 'Three steps to a clear picture',
       ru: 'Три шага к понятной картине',
@@ -125,14 +157,14 @@ export const auditPage = {
       {
         label: { en: 'Step 2', ru: 'Шаг 2', he: 'שלב 2' } satisfies Localized,
         title: {
-          en: 'We check key pages and ~60 checks',
-          ru: 'Проверяем ключевые страницы и ~60 пунктов',
-          he: 'בודקים עמודים מרכזיים ו-~60 בדיקות',
+          en: 'The lab runs 60+ checks and the funnel',
+          ru: 'Лаборатория снимает 60+ проверок и воронку',
+          he: 'המעבדה מריצה 60+ בדיקות ואת המשפך',
         } satisfies Localized,
         body: {
-          en: 'We open the homepage and up to 5 sales-critical pages (contacts, services, pricing), measure mobile speed, forms, SEO basics, security headers, and AI-readiness signals like llms.txt and schema.',
-          ru: 'Открываем главную и до 5 коммерчески важных страниц (контакты, услуги, цены), замеряем мобильную скорость, формы, SEO-базу, security-заголовки и сигналы готовности к AI — llms.txt, schema и доступ для AI-ботов.',
-          he: 'פותחים את דף הבית ועד 5 עמודים מסחריים חשובים (יצירת קשר, שירותים, מחירים), מודדים מהירות במובייל, טפסים, בסיס SEO, כותרות אבטחה ואותות מוכנות ל-AI כמו llms.txt ו-schema.',
+          en: 'The lab crawls the homepage and commercially important pages from sitemap and nav (contacts, services, portfolio, pricing) — up to 10 URLs. Locales EN / RU / HE. Mobile at iPhone SE 375×667. PageSpeed (mobile + desktop), forms, SEO, security headers, AI Visibility, Agent Readiness, and LanguageTool spelling on EN/RU.',
+          ru: 'Лаборатория обходит главную и коммерчески важные страницы из sitemap и навигации (контакты, услуги, портфолио, цены) — до 10 URL. Локали EN / RU / HE. Мобильная вёрстка — iPhone SE 375×667. PageSpeed (mobile + desktop), формы, SEO, security-заголовки, AI Visibility, Agent Readiness и орфография LanguageTool на EN/RU.',
+          he: 'המעבדה סורקת את דף הבית ועמודים מסחריים מ-sitemap ומהניווט (יצירת קשר, שירותים, פורטפוליו, מחירים) — עד 10 כתובות. שפות EN / RU / HE. מובייל ב-iPhone SE 375×667. PageSpeed (מובייל + דסקטופ), טפסים, SEO, כותרות אבטחה, נראות AI, Agent Readiness ואיות LanguageTool ב-EN/RU.',
         } satisfies Localized,
       },
       {
@@ -143,9 +175,9 @@ export const auditPage = {
           he: 'מקבלים ציון וצעדים הבאים',
         } satisfies Localized,
         body: {
-          en: 'Score 0–100 with a letter grade, top conversion risks, and recommendations. The free preview shows the essentials; paid plans unlock the full PDF with every finding and fix plan.',
-          ru: 'Оценка 0–100 с буквенным грейдом, топ рисков для заявок и рекомендации. В бесплатном превью — главное; в платных тарифах — полный PDF со всеми находками и планом правок.',
-          he: 'ציון 0–100 עם דרגה, סיכוני המרה עיקריים והמלצות. בתצוגה מקדימה חינמית — העיקר; בחבילות בתשלום — PDF מלא עם כל הממצאים ותוכנית תיקון.',
+          en: 'Score 0–100 with a letter grade (A+–F) and the top-3 conversion risks. Free preview: scorecard, top-3, and Lighthouse. Diagnostic unlocks summary cards and up to 5 funnel URLs. Pro unlocks up to 10 URLs, the full 60+ checklist, and the fix plan.',
+          ru: 'Оценка 0–100 с грейдом (A+–F) и топ-3 уязвимости конверсии. Бесплатное превью: scorecard, топ-3 и Lighthouse. Diagnostic открывает сводные карточки и до 5 URL воронки. Pro — до 10 URL, полный чеклист 60+ и план правок.',
+          he: 'ציון 0–100 עם דרגה (A+–F) ו-3 סיכוני המרה עיקריים. תצוגה מקדימה חינם: scorecard, טופ-3 ו-Lighthouse. Diagnostic פותח כרטיסי סיכום ועד 5 כתובות משפך. Pro — עד 10 כתובות, צ׳ק-ליסט 60+ מלא ותוכנית תיקון.',
         } satisfies Localized,
       },
     ],
@@ -154,115 +186,179 @@ export const auditPage = {
       ru: 'Пять шкал вашей оценки',
       he: 'חמש סקאלות מאחורי הציון',
     } satisfies Localized,
+    weightNote: {
+      en: 'of the score',
+      ru: 'веса оценки',
+      he: 'מהציון',
+    } satisfies Localized,
     methodologyIntro: {
-      en: 'The overall score is weighted by business impact: what slows the site, blocks leads, hurts search, creates risk, or leaves the brand invisible to AI tools.',
-      ru: 'Итоговый балл взвешен по влиянию на бизнес: что тормозит сайт, ломает заявки, мешает поиску, создаёт риски и делает бренд «невидимым» для AI-инструментов.',
-      he: 'הציון הכולל משוקלל לפי השפעה עסקית: מה מאט את האתר, חוסם לידים, פוגע בחיפוש, יוצר סיכון או משאיר את המותג בלתי נראה לכלי AI.',
+      en: 'The overall score is weighted by business impact: what slows the site, blocks leads, hurts search, creates risk, or leaves the brand invisible to AI tools. The five scales summarise the lab — they are not the whole protocol.',
+      ru: 'Итоговый балл взвешен по влиянию на бизнес: что тормозит сайт, ломает заявки, мешает поиску, создаёт риски и делает бренд «невидимым» для AI-инструментов. Пять шкал — это свод лаборатории, а не весь протокол.',
+      he: 'הציון הכולל משוקלל לפי השפעה עסקית: מה מאט את האתר, חוסם לידים, פוגע בחיפוש, יוצר סיכון או משאיר את המותג בלתי נראה לכלי AI. חמש הסקאלות מסכמות את המעבדה — הן לא כל הפרוטוקול.',
     } satisfies Localized,
     pillars: [
       {
+        weight: '27%',
         title: {
-          en: 'Speed & mobile UX',
+          en: 'Speed & Mobile UX',
           ru: 'Скорость и мобильный UX',
           he: 'מהירות ו-UX למובייל',
         } satisfies Localized,
         body: {
-          en: 'PageSpeed (mobile/desktop), TTFB, horizontal overflow on phones, and mobile layout issues.',
-          ru: 'PageSpeed (mobile/desktop), TTFB, горизонтальный скролл на смартфоне и проблемы мобильной вёрстки.',
-          he: 'PageSpeed (מובייל/דסקטופ), TTFB, גלילה אופקית בטלפון ובעיות פריסה במובייל.',
+          en: 'Google PageSpeed (mobile + desktop), TTFB, horizontal overflow at iPhone SE 375×667, and mobile layout issues.',
+          ru: 'Google PageSpeed (mobile + desktop), TTFB, горизонтальный overflow на iPhone SE 375×667 и проблемы мобильной вёрстки.',
+          he: 'Google PageSpeed (מובייל + דסקטופ), TTFB, overflow אופקי ב-iPhone SE 375×667 ובעיות פריסה במובייל.',
         } satisfies Localized,
       },
       {
+        weight: '22%',
         title: {
-          en: 'Lead gen & forms',
-          ru: 'Лиды и формы',
+          en: 'Lead gen & Forms',
+          ru: 'Лидогенерация и формы',
           he: 'לידים וטפסים',
         } satisfies Localized,
         body: {
-          en: 'Contact forms, spam protection, chat/messengers, and JS errors that break the funnel.',
-          ru: 'Формы заявок, защита от спама, чат/мессенджеры и JS-ошибки, которые ломают воронку.',
-          he: 'טפסי יצירת קשר, הגנה מספאם, צ׳אט/מסרים ושגיאות JS ששוברות את המשפך.',
+          en: 'Contact forms (name, email, phone, submit), anti-spam (Turnstile, reCAPTCHA, hCaptcha, honeypot), chat/messengers (wa.me, t.me), and JS errors that break the funnel.',
+          ru: 'Формы заявок (имя, email, телефон, submit), антиспам (Turnstile, reCAPTCHA, hCaptcha, honeypot), чат/мессенджеры (wa.me, t.me) и JS-ошибки, которые ломают воронку.',
+          he: 'טפסי לידים (שם, אימייל, טלפון, שליחה), אנטי-ספאם (Turnstile, reCAPTCHA, hCaptcha, honeypot), צ׳אט/מסרים (wa.me, t.me) ושגיאות JS ששוברות את המשפך.',
         } satisfies Localized,
       },
       {
+        weight: '22%',
         title: {
-          en: 'SEO & previews',
-          ru: 'SEO и превью',
-          he: 'SEO ותצוגות מקדימות',
+          en: 'SEO & Visibility',
+          ru: 'SEO и видимость',
+          he: 'SEO ונראות',
         } satisfies Localized,
         body: {
-          en: 'robots.txt, sitemap, canonical, Open Graph for messengers, favicon, and broken key pages.',
-          ru: 'robots.txt, sitemap, canonical, Open Graph для мессенджеров, favicon и битые ключевые страницы.',
-          he: 'robots.txt, sitemap, canonical, Open Graph למסרים, favicon ועמודים מרכזיים שבורים.',
+          en: 'robots.txt, sitemap, canonical, hreflang, Open Graph for messengers, favicon, Lighthouse SEO, and broken funnel pages.',
+          ru: 'robots.txt, sitemap, canonical, hreflang, Open Graph для мессенджеров, favicon, Lighthouse SEO и битые страницы воронки.',
+          he: 'robots.txt, sitemap, canonical, hreflang, Open Graph למסרים, favicon, Lighthouse SEO ועמודי משפך שבורים.',
         } satisfies Localized,
       },
       {
+        weight: '18%',
         title: {
-          en: 'Security & stability',
+          en: 'Security & Stability',
           ru: 'Безопасность и стабильность',
           he: 'אבטחה ויציבות',
         } satisfies Localized,
         body: {
-          en: 'HTTPS, key security headers, server response, and runtime JS/network errors.',
-          ru: 'HTTPS, ключевые security-заголовки, отклик сервера и runtime-ошибки JS/сети.',
-          he: 'HTTPS, כותרות אבטחה מרכזיות, תגובת שרת ושגיאות JS/רשת בזמן ריצה.',
+          en: 'HTTPS, six security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), 4xx/5xx responses, and runtime JS errors.',
+          ru: 'HTTPS, шесть security-заголовков (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), ответы 4xx/5xx и runtime-ошибки JS.',
+          he: 'HTTPS, שש כותרות אבטחה (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), תגובות 4xx/5xx ושגיאות JS בזמן ריצה.',
         } satisfies Localized,
       },
       {
+        weight: '11%',
         title: {
-          en: 'AI readiness',
-          ru: 'Готовность к AI',
-          he: 'מוכנות ל-AI',
+          en: 'AI Visibility & Brand Discovery',
+          ru: 'AI Visibility & Brand Discovery',
+          he: 'נראות AI וגילוי מותג',
         } satisfies Localized,
         body: {
-          en: 'llms.txt, schema/Organization, AI-bot access in robots, brand/about page, analytics readiness — so assistants can understand your business.',
-          ru: 'llms.txt, schema/Organization, доступ AI-ботов в robots, страница о компании, готовность аналитики — чтобы ассистенты могли понять ваш бизнес.',
-          he: 'llms.txt, schema/Organization, גישת בוטי AI ב-robots, עמוד אודות, מוכנות אנליטיקה — כדי שעוזרים יוכלו להבין את העסק.',
+          en: 'Seven scorecard criteria: llms.txt, MCP manifest, /about, AI-bot rules in robots, Organization schema, llms link, and GA4 dataLayer + consent stub. Agent Readiness (Content-Signal, markdown) is reported separately and does not change the score.',
+          ru: 'Семь критериев scorecard: llms.txt, MCP-манифест, /about, правила AI-ботов в robots, Organization schema, ссылка на llms.txt и GA4 dataLayer + consent stub. Agent Readiness (Content-Signal, markdown) — отдельный блок, без веса в оценке.',
+          he: 'שבעה קריטריונים ל-scorecard: llms.txt, מניפסט MCP, /about, כללי בוטי AI ב-robots, סכמת Organization, קישור ל-llms.txt ו-GA4 dataLayer + consent stub. Agent Readiness (Content-Signal, markdown) מדווח בנפרד ואינו משנה את הציון.',
         } satisfies Localized,
       },
     ],
     categoriesTitle: {
-      en: 'What we actually check',
-      ru: 'Что именно проверяем',
-      he: 'מה אנחנו בודקים בפועל',
+      en: 'What the lab actually runs',
+      ru: 'Что лаборатория снимает',
+      he: 'מה המעבדה מריצה בפועל',
     } satisfies Localized,
     categoriesIntro: {
-      en: 'About 55–60 technical checks across the site and languages. The score is transparent: every finding maps to a concrete check.',
-      ru: 'Около 55–60 технических проверок по сайту и языковым версиям. Оценка прозрачна: каждая находка привязана к конкретной проверке.',
-      he: 'כ-55–60 בדיקות טכניות באתר ובשפות. הציון שקוף: כל ממצא מקושר לבדיקה קונקרטית.',
+      en: '60+ unique signal types. Some run once per site, some on every locale (EN / RU / HE). Every finding maps to a concrete check — the scorecard is a summary, not the protocol.',
+      ru: '60+ уникальных типов сигналов. Часть — один раз на сайт, часть — на каждой локали (EN / RU / HE). Каждая находка привязана к конкретной проверке: scorecard — это свод, не протокол.',
+      he: '60+ סוגי אותות ייחודיים. חלק פעם אחת לאתר, חלק בכל שפה (EN / RU / HE). כל ממצא מקושר לבדיקה קונקרטית — ה-scorecard הוא סיכום, לא הפרוטוקול.',
     } satisfies Localized,
     categories: [
       {
-        en: 'Mobile layout & RTL — overflow, dir=rtl, basic accessibility',
-        ru: 'Мобильная вёрстка и RTL — overflow, dir=rtl, базовая доступность',
-        he: 'פריסת מובייל ו-RTL — overflow, dir=rtl, נגישות בסיסית',
+        title: {
+          en: 'Network & security',
+          ru: 'Сеть и безопасность',
+          he: 'רשת ואבטחה',
+        } satisfies Localized,
+        body: {
+          en: '13 parameters: HTTPS, homepage HTTP status, TTFB, Server, six headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), 4xx/5xx, and runtime JS (console / PageError).',
+          ru: '13 параметров: HTTPS, HTTP-статус главной, TTFB, Server, шесть заголовков (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), ответы 4xx/5xx и runtime JS (console / PageError).',
+          he: '13 פרמטרים: HTTPS, סטטוס HTTP של דף הבית, TTFB, Server, שש כותרות (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), 4xx/5xx ו-JS בזמן ריצה (console / PageError).',
+        } satisfies Localized,
       },
       {
-        en: 'Forms & lead capture — fields, submit, anti-spam, chat widgets',
-        ru: 'Формы и захват лидов — поля, отправка, антиспам, чат-виджеты',
-        he: 'טפסים ולידים — שדות, שליחה, אנטי-ספאם, ווידג׳טי צ׳אט',
+        title: {
+          en: 'Indexing & AI crawlers',
+          ru: 'Индексация и AI-боты',
+          he: 'אינדוקס ובוטי AI',
+        } satisfies Localized,
+        body: {
+          en: 'robots.txt, sitemap.xml, Sitemap: directive; rules for 8 AI crawlers (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, CCBot, Google-Extended, Applebot-Extended, PerplexityBot) and the severe_block flag.',
+          ru: 'robots.txt, sitemap.xml, директива Sitemap:; правила для 8 AI-ботов (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, CCBot, Google-Extended, Applebot-Extended, PerplexityBot) и флаг severe_block.',
+          he: 'robots.txt, sitemap.xml, הנחיית Sitemap:; כללים ל-8 בוטי AI (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, CCBot, Google-Extended, Applebot-Extended, PerplexityBot) ודגל severe_block.',
+        } satisfies Localized,
       },
       {
-        en: 'SEO basics — robots, sitemap, canonical, Open Graph, icons',
-        ru: 'SEO-база — robots, sitemap, canonical, Open Graph, иконки',
-        he: 'בסיס SEO — robots, sitemap, canonical, Open Graph, אייקונים',
+        title: {
+          en: 'PageSpeed Insights',
+          ru: 'PageSpeed Insights',
+          he: 'PageSpeed Insights',
+        } satisfies Localized,
+        body: {
+          en: '10 Lighthouse metrics × mobile and desktop: Performance, Accessibility, Best Practices, SEO, FCP, LCP, CLS, TBT, Speed Index, TTI. Plus TTFB on the origin.',
+          ru: '10 метрик Lighthouse × mobile и desktop: Performance, Accessibility, Best Practices, SEO, FCP, LCP, CLS, TBT, Speed Index, TTI. Плюс TTFB на origin.',
+          he: '10 מדדי Lighthouse × מובייל ודסקטופ: Performance, Accessibility, Best Practices, SEO, FCP, LCP, CLS, TBT, Speed Index, TTI. וגם TTFB ב-origin.',
+        } satisfies Localized,
       },
       {
-        en: 'Speed — Google PageSpeed mobile & desktop, TTFB',
-        ru: 'Скорость — Google PageSpeed mobile и desktop, TTFB',
-        he: 'מהירות — Google PageSpeed מובייל ודסקטופ, TTFB',
+        title: {
+          en: 'Per locale — UX, forms, SEO assets',
+          ru: 'На каждой локали — UX, формы, SEO',
+          he: 'לכל שפה — UX, טפסים, נכסי SEO',
+        } satisfies Localized,
+        body: {
+          en: '~28 signals × EN / RU / HE: title, description, Open Graph, canonical, hreflang, favicon, headings, overflow-x at 375px, forms and anti-spam (Turnstile / reCAPTCHA / hCaptcha / honeypot), chat/messengers, axe-core WCAG 2.1 AA / IS 5568. Hebrew: RTL dir and heading alignment. Spelling: LanguageTool on EN and RU.',
+          ru: '~28 сигналов × EN / RU / HE: title, description, Open Graph, canonical, hreflang, favicon, заголовки, overflow-x на 375px, формы и антиспам (Turnstile / reCAPTCHA / hCaptcha / honeypot), чат/мессенджеры, axe-core WCAG 2.1 AA / IS 5568. Иврит: RTL dir и выравнивание заголовков. Орфография: LanguageTool на EN и RU.',
+          he: '~28 אותות × EN / RU / HE: title, description, Open Graph, canonical, hreflang, favicon, כותרות, overflow-x ב-375px, טפסים ואנטי-ספאם (Turnstile / reCAPTCHA / hCaptcha / honeypot), צ׳אט/מסרים, axe-core WCAG 2.1 AA / IS 5568. עברית: dir ל-RTL ויישור כותרות. איות: LanguageTool ב-EN ו-RU.',
+        } satisfies Localized,
       },
       {
-        en: 'Security — HTTPS and headers (HSTS, CSP, XFO, and more)',
-        ru: 'Безопасность — HTTPS и заголовки (HSTS, CSP, XFO и др.)',
-        he: 'אבטחה — HTTPS וכותרות (HSTS, CSP, XFO ועוד)',
+        title: {
+          en: 'AI Visibility',
+          ru: 'AI Visibility',
+          he: 'נראות AI',
+        } satisfies Localized,
+        body: {
+          en: 'Seven scorecard criteria: GET /llms.txt, /.well-known/mcp, /api/mcp, /about; JSON-LD Organization/FAQ, rel=describedby, dataLayer and consent stub. The seven points feed the score — they are not the whole block.',
+          ru: 'Семь критериев scorecard: GET /llms.txt, /.well-known/mcp, /api/mcp, /about; JSON-LD Organization/FAQ, rel=describedby, dataLayer и consent stub. Семь баллов входят в оценку — это не весь блок.',
+          he: 'שבעה קריטריונים ל-scorecard: GET /llms.txt, /.well-known/mcp, /api/mcp, /about; JSON-LD Organization/FAQ, rel=describedby, dataLayer ו-consent stub. שבע הנקודות נכנסות לציון — זה לא כל הבלוק.',
+        } satisfies Localized,
       },
       {
-        en: 'AI readiness — llms.txt, MCP/schema, AI bots in robots, brand facts',
-        ru: 'Готовность к AI — llms.txt, MCP/schema, AI-боты в robots, факты о бренде',
-        he: 'מוכנות ל-AI — llms.txt, MCP/schema, בוטי AI ב-robots, עובדות מותג',
+        title: {
+          en: 'Agent Readiness Level 1',
+          ru: 'Agent Readiness Level 1',
+          he: 'Agent Readiness Level 1',
+        } satisfies Localized,
+        body: {
+          en: 'Five checks reported separately: valid robots, agent sitemap, crawler rules, Content-Signal, markdown negotiation. The L1 score is not part of the 7 AI Visibility criteria and does not change the overall grade.',
+          ru: 'Пять отдельных проверок: валидный robots, sitemap для агентов, правила ботов, Content-Signal, markdown negotiation. Балл L1 не входит в 7 критериев AI Visibility и не меняет итоговую оценку.',
+          he: 'חמש בדיקות מדווחות בנפרד: robots תקין, sitemap לסוכנים, כללי בוטים, Content-Signal, markdown negotiation. ציון L1 אינו חלק מ-7 קריטריוני AI Visibility ואינו משנה את הציון הכולל.',
+        } satisfies Localized,
       },
-    ] satisfies Localized[],
+      {
+        title: {
+          en: 'Funnel crawl',
+          ru: 'Обход воронки',
+          he: 'סריקת משפך',
+        } satisfies Localized,
+        body: {
+          en: 'Candidates from sitemap and nav; lab opens up to 10 commercial URLs. Per page: HTTP, title, h1, forms, CTA, soft-404, lang, dir, word count. Free discloses 1 URL (homepage); Diagnostic unlocks up to 5; Pro unlocks up to 10 and the full row-by-row checklist.',
+          ru: 'Кандидаты из sitemap и навигации; лаборатория открывает до 10 коммерческих URL. На каждую страницу: HTTP, title, h1, формы, CTA, soft-404, lang, dir, объём текста. Free раскрывает 1 URL (главная); Diagnostic — до 5; Pro — до 10 и полный построчный чеклист.',
+          he: 'מועמדים מ-sitemap ומהניווט; המעבדה פותחת עד 10 כתובות מסחריות. לכל עמוד: HTTP, title, h1, טפסים, CTA, soft-404, lang, dir, היקף טקסט. Free חושף URL אחד (דף הבית); Diagnostic — עד 5; Pro — עד 10 ואת צ׳ק-ליסט השורות המלא.',
+        } satisfies Localized,
+      },
+    ],
     principlesTitle: {
       en: 'What makes this audit useful',
       ru: 'Чем полезен этот аудит',
@@ -283,9 +379,9 @@ export const auditPage = {
       },
       {
         title: {
-          en: 'AI readiness, not fake “ChatGPT checks”',
-          ru: 'Готовность к AI, без ложных «проверок ChatGPT»',
-          he: 'מוכנות ל-AI, בלי “בדיקות ChatGPT” מזויפות',
+          en: 'AI Visibility, not fake “ChatGPT checks”',
+          ru: 'AI Visibility, без ложных «проверок ChatGPT»',
+          he: 'נראות AI, בלי “בדיקות ChatGPT” מזויפות',
         } satisfies Localized,
         body: {
           en: 'We do not claim live citations in ChatGPT. We check whether your site is technically ready for AI crawlers and assistants.',
@@ -300,17 +396,12 @@ export const auditPage = {
           he: 'צעדים הבאים ברורים',
         } satisfies Localized,
         body: {
-          en: 'Top risks come with impact and recommended fixes. Full plans add a complete PDF and a path to implementation with our team.',
-          ru: 'Топ-риски — с влиянием и рекомендованными правками. Полные тарифы дают полный PDF и путь к внедрению вместе с нашей командой.',
-          he: 'הסיכונים העיקריים מגיעים עם השפעה ותיקונים מומלצים. בחבילות המלאות — PDF מלא ונתיב ליישום עם הצוות שלנו.',
+          en: 'Top-3 risks come with business impact. Diagnostic unlocks summary cards. The row-by-row 60+ checklist and fix plan are in Pro; Delegate adds implementation with our team.',
+          ru: 'Топ-3 рисков — с влиянием на бизнес. Diagnostic открывает сводные карточки. Построчный чеклист 60+ и план правок — в Pro; Delegate добавляет внедрение вместе с нашей командой.',
+          he: '3 הסיכונים העיקריים מגיעים עם השפעה עסקית. Diagnostic פותח כרטיסי סיכום. צ׳ק-ליסט 60+ שורה-שורה ותוכנית תיקון — ב-Pro; Delegate מוסיף יישום עם הצוות שלנו.',
         } satisfies Localized,
       },
     ],
-    cta: {
-      en: 'Request your free audit',
-      ru: 'Заказать бесплатный аудит',
-      he: 'בקשת ביקורת חינם',
-    } satisfies Localized,
   },
   pricing: {
     kicker: {
@@ -324,9 +415,9 @@ export const auditPage = {
       he: 'בחרו את החבילה המתאימה',
     } satisfies Localized,
     intro: {
-      en: 'Start with a free preview of your score and top issues. Upgrade for the full PDF, action plan, or hand the fixes to us.',
-      ru: 'Начните с бесплатного превью: оценка и главные проблемы. Полный PDF и план правок — в платных тарифах, либо передайте внедрение нам.',
-      he: 'התחילו בתצוגה מקדימה חינמית: ציון ובעיות עיקריות. PDF מלא ותוכנית תיקון — בחבילות בתשלום, או תעבירו את היישום אלינו.',
+      en: 'Start with a free preview: scorecard, top-3, and Lighthouse. Diagnostic unlocks summary cards and up to 5 funnel URLs. Pro opens the full 60+ checklist, up to 10 funnel URLs, the fix plan, and monthly re-audits — or hand implementation to us.',
+      ru: 'Начните с бесплатного превью: scorecard, топ-3 и Lighthouse. Diagnostic открывает сводные карточки и до 5 URL воронки. Pro — полный чеклист 60+, до 10 URL воронки, план правок и ежемесячный повтор, либо передайте внедрение нам.',
+      he: 'התחילו בתצוגה מקדימה חינם: scorecard, טופ-3 ו-Lighthouse. Diagnostic פותח כרטיסי סיכום ועד 5 כתובות משפך. Pro — צ׳ק-ליסט 60+ מלא, עד 10 כתובות משפך, תוכנית תיקון וביקורת חודשית, או תעבירו את היישום אלינו.',
     } satisfies Localized,
     footnote: {
       en: 'Secure payments · Cancel anytime · Reports in RU / EN / HE',
@@ -355,30 +446,30 @@ export const auditPage = {
           he: 'ללא כרטיס',
         } satisfies Localized,
         description: {
-          en: 'Preview of your site’s health.',
-          ru: 'Превью состояния сайта.',
-          he: 'תצוגה מקדימה של מצב האתר.',
+          en: 'Preview: scorecard, top-3, Lighthouse.',
+          ru: 'Превью: scorecard, топ-3, Lighthouse.',
+          he: 'תצוגה מקדימה: scorecard, טופ-3, Lighthouse.',
         } satisfies Localized,
         features: [
           {
-            en: 'Homepage + key funnel pages (up to 5)',
-            ru: 'Главная и ключевые страницы воронки (до 5)',
-            he: 'דף הבית ועמודי משפך מרכזיים (עד 5)',
+            en: 'Score 0–100 across 5 scorecard scales (A+–F)',
+            ru: 'Оценка 0–100 по 5 шкалам scorecard (A+–F)',
+            he: 'ציון 0–100 ב-5 סקאלות scorecard (A+–F)',
           },
           {
-            en: 'Score 0–100 across 5 business scales',
-            ru: 'Оценка 0–100 по 5 бизнес-шкалам',
-            he: 'ציון 0–100 ב-5 סקאלות עסקיות',
+            en: 'Top-3 conversion / visibility risks',
+            ru: 'Топ-3 уязвимости конверсии и видимости',
+            he: '3 סיכוני המרה ונראות עיקריים',
           },
           {
-            en: 'Top 3 conversion / visibility risks',
-            ru: 'Топ-3 риска для заявок и видимости',
-            he: '3 סיכונים עיקריים ללידים ולנראות',
+            en: 'Lighthouse mobile + desktop preview',
+            ru: 'Превью Lighthouse mobile + desktop',
+            he: 'תצוגת Lighthouse למובייל ולדסקטופ',
           },
           {
-            en: 'Preview report (essentials unlocked)',
-            ru: 'Превью-отчёт (основные блоки открыты)',
-            he: 'דוח תצוגה מקדימה (הבלוקים העיקריים פתוחים)',
+            en: 'Homepage disclosed (funnel crawl stays locked)',
+            ru: 'Раскрыта главная (обход воронки закрыт)',
+            he: 'דף הבית גלוי (סריקת המשפך נעולה)',
           },
         ] satisfies Localized[],
         cta: {
@@ -400,9 +491,9 @@ export const auditPage = {
           he: 'חד-פעמי · מחיר מבצע',
         } satisfies Localized,
         description: {
-          en: 'Full PDF report, one-time.',
-          ru: 'Полный PDF-отчёт, разово.',
-          he: 'דוח PDF מלא, חד-פעמי.',
+          en: 'Summary cards and funnel URLs, one-time.',
+          ru: 'Сводные карточки и URL воронки, разово.',
+          he: 'כרטיסי סיכום וכתובות משפך, חד-פעמי.',
         } satisfies Localized,
         features: [
           {
@@ -411,19 +502,19 @@ export const auditPage = {
             he: 'הכל מ-Free, ובנוסף:',
           },
           {
-            en: 'Full checklist of ~60 checks unlocked',
-            ru: 'Полный чеклист из ~60 проверок',
-            he: 'צ׳ק-ליסט מלא של ~60 בדיקות',
+            en: 'Summary checklist cards (excellent → attention → critical)',
+            ru: 'Сводные карточки чеклиста (отлично → внимание → критично)',
+            he: 'כרטיסי סיכום צ׳ק-ליסט (מצוין → לתשומת לב → קריטי)',
           },
           {
-            en: 'Mobile + desktop PageSpeed details',
+            en: 'Funnel crawl disclosed — up to 5 URLs',
+            ru: 'Обход воронки раскрыт — до 5 URL',
+            he: 'סריקת המשפך גלויה — עד 5 כתובות',
+          },
+          {
+            en: 'PageSpeed mobile + desktop details',
             ru: 'PageSpeed mobile и desktop подробно',
             he: 'פרטי PageSpeed למובייל ולדסקטופ',
-          },
-          {
-            en: 'Priority fix plan with clear next steps',
-            ru: 'Приоритетный план правок с понятными шагами',
-            he: 'תוכנית תיקון לפי עדיפות עם צעדים ברורים',
           },
           {
             en: 'PDF report in RU / EN / HE',
@@ -458,6 +549,16 @@ export const auditPage = {
             en: 'Everything in Diagnostic, plus:',
             ru: 'Всё из Diagnostic, плюс:',
             he: 'הכל מ-Diagnostic, ובנוסף:',
+          },
+          {
+            en: 'Full 60+ checklist and fix plan unlocked',
+            ru: 'Полный чеклист 60+ и план правок открыты',
+            he: 'צ׳ק-ליסט 60+ מלא ותוכנית תיקון פתוחים',
+          },
+          {
+            en: 'Funnel crawl disclosed — up to 10 URLs',
+            ru: 'Обход воронки раскрыт — до 10 URL',
+            he: 'סריקת המשפך גלויה — עד 10 כתובות',
           },
           {
             en: 'Monthly re-run of the full audit',

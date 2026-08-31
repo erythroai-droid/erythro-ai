@@ -54,13 +54,37 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: guarded.message }, { status: guarded.status })
   }
 
-  const { name, email, phone, message, locale, source } = guarded.data
+  const {
+    name,
+    email,
+    phone,
+    message,
+    locale,
+    source,
+    website,
+    auditLanguage,
+    planSlug,
+    planTotal,
+    auditStatus,
+  } = guarded.data
 
   try {
     const payload = await getPayload({ config })
     await payload.create({
       collection: 'contact-submissions',
-      data: { name, email, phone, message, locale, source },
+      data: {
+        name,
+        email,
+        phone,
+        message,
+        locale,
+        source,
+        ...(website ? { website } : {}),
+        ...(auditLanguage ? { auditLanguage } : {}),
+        ...(planSlug ? { planSlug } : {}),
+        ...(planTotal ? { planTotal } : {}),
+        ...(source === 'audit' ? { auditStatus: auditStatus || 'new' } : {}),
+      },
     })
 
     const settings = (await payload.findGlobal({
@@ -77,6 +101,10 @@ export async function POST(request: NextRequest) {
       message,
       locale,
       source,
+      website,
+      auditLanguage,
+      planSlug,
+      planTotal,
     })
     if (!mailed.sent) {
       console.error('[api/contact] saved submission but email was not sent:', mailed.reason)

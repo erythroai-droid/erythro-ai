@@ -727,6 +727,26 @@ export interface ContactSubmission {
    * Site language the visitor used
    */
   locale?: string | null;
+  /**
+   * Audited site URL (AI Audit / order checkout)
+   */
+  website?: string | null;
+  /**
+   * Preferred report language
+   */
+  auditLanguage?: ('en' | 'ru' | 'he') | null;
+  /**
+   * Ordered plan slug (audit-free / audit-diagnostic / audit-pro)
+   */
+  planSlug?: string | null;
+  /**
+   * Displayed order total at checkout (optional)
+   */
+  planTotal?: string | null;
+  /**
+   * Lab workflow: mark report_sent after the PDF is emailed to the client
+   */
+  auditStatus?: ('new' | 'in_progress' | 'report_sent') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1100,6 +1120,11 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   message?: T;
   source?: T;
   locale?: T;
+  website?: T;
+  auditLanguage?: T;
+  planSlug?: T;
+  planTotal?: T;
+  auditStatus?: T;
   updatedAt?: T;
   createdAt?: T;
 }

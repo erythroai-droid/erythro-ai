@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import Button from './Button'
+import AiAuditHeaderButton from './AiAuditHeaderButton'
 import { useSiteContent } from './SiteContentProvider'
 import { navigateHomeWithFullSplash } from '@/lib/splash'
 import { getSectionElement } from '@/lib/domSection'
@@ -373,72 +374,77 @@ export default function Navbar({
               className="hidden h-[64px] w-auto transition-opacity duration-300 lg:block"
             />
           </a>
-          <button
-            ref={menuBtnRef}
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className={`group relative z-[70] flex pointer-events-auto items-center gap-3 overflow-visible cursor-pointer transition-colors duration-300 ${
-              menuOnDark
-                ? 'text-white hover:text-gold-500'
-                : 'text-coal-900 hover:text-erythro-500'
-            }`}
-            aria-label={mobileOpen ? (currentLocale === 'ru' ? 'Закрыть меню' : currentLocale === 'he' ? 'סגירת תפריט' : 'Close menu') : (currentLocale === 'ru' ? 'Открыть меню' : currentLocale === 'he' ? 'פתיחת תפריט' : 'Open menu')}
-            aria-expanded={mobileOpen}
-          >
-            <span className="font-sans text-xs uppercase tracking-[2.4px]">
-              {mobileOpen
-                ? currentLocale === 'ru'
-                  ? 'Закрыть'
-                  : currentLocale === 'he'
-                    ? 'סגירה'
-                    : 'Close'
-                : currentLocale === 'ru'
-                  ? 'Меню'
-                  : currentLocale === 'he'
-                    ? 'תפריט'
-                    : 'Menu'}
-            </span>
-            <svg
-              width="21"
-              height="12"
-              viewBox="-4 -6 29 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              overflow="visible"
-              className="h-[20px] w-[21px] shrink-0 overflow-visible"
-              aria-hidden
+          <div className="flex items-center gap-3.5 sm:gap-5 pointer-events-auto">
+            <div className="hidden lg:flex items-center gap-3.5">
+              <AiAuditHeaderButton currentLocale={currentLocale} />
+            </div>
+            <button
+              ref={menuBtnRef}
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className={`group relative z-[70] flex pointer-events-auto items-center gap-3 overflow-visible cursor-pointer transition-colors duration-300 ${
+                menuOnDark
+                  ? 'text-white hover:text-gold-500'
+                  : 'text-coal-900 hover:text-erythro-500'
+              }`}
+              aria-label={mobileOpen ? (currentLocale === 'ru' ? 'Закрыть меню' : currentLocale === 'he' ? 'סגירת תפריט' : 'Close menu') : (currentLocale === 'ru' ? 'Открыть меню' : currentLocale === 'he' ? 'פתיחת תפריט' : 'Open menu')}
+              aria-expanded={mobileOpen}
             >
-              {/* Top bar — offset right; hover slides left; open → X */}
-              <path
-                d="M5 1C5 0.447715 5.44772 0 6 0H20C20.5523 0 21 0.447715 21 1V1C21 1.55228 20.5523 2 20 2H6C5.44772 2 5 1.55228 5 1V1Z"
-                fill="currentColor"
-                className={`[transform-box:view-box] origin-[10.5px_6px] transition-transform duration-300 ease-out ${
-                  mobileOpen
-                    ? 'translate-y-[5px] -rotate-45 scale-x-[0.85]'
-                    : 'group-hover:-translate-x-[5px]'
-                }`}
-              />
-              {/* Middle bar — offset left; hover slides right; open → hide */}
-              <path
-                d="M0 6C0 5.44772 0.447715 5 1 5H15C15.5523 5 16 5.44772 16 6V6C16 6.55228 15.5523 7 15 7H1C0.447715 7 0 6.55228 0 6V6Z"
-                fill="currentColor"
-                className={`[transform-box:view-box] origin-[10.5px_6px] transition-all duration-300 ease-out ${
-                  mobileOpen
-                    ? 'opacity-0'
-                    : 'group-hover:translate-x-[5px]'
-                }`}
-              />
-              {/* Bottom bar — offset right; hover slides left; open → X */}
-              <path
-                d="M5 11C5 10.4477 5.44772 10 6 10H20C20.5523 10 21 10.4477 21 11V11C21 11.5523 20.5523 12 20 12H6C5.44772 12 5 11.5523 5 11V11Z"
-                fill="currentColor"
-                className={`[transform-box:view-box] origin-[10.5px_6px] transition-transform duration-300 ease-out ${
-                  mobileOpen
-                    ? '-translate-y-[5px] rotate-45 scale-x-[0.85]'
-                    : 'group-hover:-translate-x-[5px]'
-                }`}
-              />
-            </svg>
-          </button>
+              <span className="font-sans text-xs uppercase tracking-[2.4px]">
+                {mobileOpen
+                  ? currentLocale === 'ru'
+                    ? 'Закрыть'
+                    : currentLocale === 'he'
+                      ? 'סגירה'
+                      : 'Close'
+                  : currentLocale === 'ru'
+                    ? 'Меню'
+                    : currentLocale === 'he'
+                      ? 'תפריט'
+                      : 'Menu'}
+              </span>
+              <svg
+                width="21"
+                height="12"
+                viewBox="-4 -6 29 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                overflow="visible"
+                className="h-[20px] w-[21px] shrink-0 overflow-visible"
+                aria-hidden
+              >
+                {/* Top bar — offset right; hover slides left; open → X */}
+                <path
+                  d="M5 1C5 0.447715 5.44772 0 6 0H20C20.5523 0 21 0.447715 21 1V1C21 1.55228 20.5523 2 20 2H6C5.44772 2 5 1.55228 5 1V1Z"
+                  fill="currentColor"
+                  className={`[transform-box:view-box] origin-[10.5px_6px] transition-transform duration-300 ease-out ${
+                    mobileOpen
+                      ? 'translate-y-[5px] -rotate-45 scale-x-[0.85]'
+                      : 'group-hover:-translate-x-[5px]'
+                  }`}
+                />
+                {/* Middle bar — offset left; hover slides right; open → hide */}
+                <path
+                  d="M0 6C0 5.44772 0.447715 5 1 5H15C15.5523 5 16 5.44772 16 6V6C16 6.55228 15.5523 7 15 7H1C0.447715 7 0 6.55228 0 6V6Z"
+                  fill="currentColor"
+                  className={`[transform-box:view-box] origin-[10.5px_6px] transition-all duration-300 ease-out ${
+                    mobileOpen
+                      ? 'opacity-0'
+                      : 'group-hover:translate-x-[5px]'
+                  }`}
+                />
+                {/* Bottom bar — offset right; hover slides left; open → X */}
+                <path
+                  d="M5 11C5 10.4477 5.44772 10 6 10H20C20.5523 10 21 10.4477 21 11V11C21 11.5523 20.5523 12 20 12H6C5.44772 12 5 11.5523 5 11V11Z"
+                  fill="currentColor"
+                  className={`[transform-box:view-box] origin-[10.5px_6px] transition-transform duration-300 ease-out ${
+                    mobileOpen
+                      ? '-translate-y-[5px] rotate-45 scale-x-[0.85]'
+                      : 'group-hover:-translate-x-[5px]'
+                  }`}
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
       {/* 
