@@ -744,9 +744,41 @@ export interface ContactSubmission {
    */
   planTotal?: string | null;
   /**
-   * Lab workflow: mark report_sent after the PDF is emailed to the client
+   * Pipeline: new → in_progress → report_sent; failed after max retries (manual review)
    */
-  auditStatus?: ('new' | 'in_progress' | 'report_sent') | null;
+  auditStatus?: ('new' | 'in_progress' | 'report_sent' | 'failed') | null;
+  /**
+   * Final audit score (0–100)
+   */
+  auditScore?: number | null;
+  /**
+   * Structured LLM findings (JSON)
+   */
+  auditSummary?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * PDF / HTML object URL in Cloudflare R2
+   */
+  reportUrl?: string | null;
+  /**
+   * Inline HTML report for typical sizes (≤ ~2MB); larger reports stay in R2 only
+   */
+  htmlResult?: string | null;
+  /**
+   * Auto-restart attempts (n8n reconciliation)
+   */
+  retryCount?: number | null;
+  /**
+   * Last worker error (no Telegram in MVP — inspect in admin)
+   */
+  errorLast?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1125,6 +1157,12 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   planSlug?: T;
   planTotal?: T;
   auditStatus?: T;
+  auditScore?: T;
+  auditSummary?: T;
+  reportUrl?: T;
+  htmlResult?: T;
+  retryCount?: T;
+  errorLast?: T;
   updatedAt?: T;
   createdAt?: T;
 }

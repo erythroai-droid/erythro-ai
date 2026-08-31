@@ -197,6 +197,8 @@ pnpm test:e2e
 
 Загрузки Payload (коллекция `media`) хранятся в Vercel Blob, а не на эфемерной ФС.
 
+**AI Audit reports:** целевое хранилище — Cloudflare R2 bucket `erythro-audit-reports` (см. [`architecture/r2-audit-storage.md`](./architecture/r2-audit-storage.md)). Media Payload пока на Blob; cutover на R2 — отдельный шаг.
+
 **Код:**
 - Пакет `@payloadcms/storage-vercel-blob` (версия синхронна с ядром Payload — все `@payloadcms/*`
   и `payload` держим на одной версии, иначе peer-конфликт).

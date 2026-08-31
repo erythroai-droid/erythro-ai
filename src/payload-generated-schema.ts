@@ -831,6 +831,12 @@ export const contact_submissions = pgTable(
     planSlug: varchar('plan_slug'),
     planTotal: varchar('plan_total'),
     auditStatus: varchar('audit_status').default('new'),
+    auditScore: numeric('audit_score', { mode: 'number' }),
+    auditSummary: jsonb('audit_summary'),
+    reportUrl: varchar('report_url'),
+    htmlResult: varchar('html_result'),
+    retryCount: numeric('retry_count', { mode: 'number' }).default(0),
+    errorLast: varchar('error_last'),
     updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true, precision: 3 })
       .defaultNow()
       .notNull(),

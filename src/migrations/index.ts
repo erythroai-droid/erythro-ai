@@ -23,6 +23,7 @@ import * as migration_20260811_010000_portfolio_project_richtext from './2026081
 import * as migration_20260815_010000_site_settings_emails from './20260815_010000_site_settings_emails'
 import * as migration_20260822_010000_site_settings_telegram_rename from './20260822_010000_site_settings_telegram_rename'
 import * as migration_20260831_010000_contact_submissions_audit_fields from './20260831_010000_contact_submissions_audit_fields'
+import * as migration_20260831_120000_contact_submissions_audit_pipeline from './20260831_120000_contact_submissions_audit_pipeline'
 
 export const migrations = [
   {
@@ -149,5 +150,10 @@ export const migrations = [
     up: migration_20260831_010000_contact_submissions_audit_fields.up,
     down: migration_20260831_010000_contact_submissions_audit_fields.down,
     name: '20260831_010000_contact_submissions_audit_fields',
+  },
+  {
+    up: migration_20260831_120000_contact_submissions_audit_pipeline.up,
+    down: migration_20260831_120000_contact_submissions_audit_pipeline.down,
+    name: '20260831_120000_contact_submissions_audit_pipeline',
   },
 ]

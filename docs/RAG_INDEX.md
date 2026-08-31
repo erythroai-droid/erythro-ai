@@ -29,6 +29,8 @@ Last updated: 2026-08-28.
 | `docs/AI_VISIBILITY.md` | AI visibility pack (llms.txt, MCP, schema) | One chunk per `##` heading | `ai`, `seo`, `schema`, `robots` |
 | `docs/RAG_INDEX.md` | This map | Single small chunk or skip | `meta`, `rag` |
 | `docs/IMPORT_PROJECT.md` | Pointer to import tool | Skip or one chunk | `portfolio`, `cms`, `import` |
+| `docs/architecture/ai-audit-architecture.md` | AI Audit MVP (R2, worker, no payment) | One chunk per `##` | `audit`, `r2`, `n8n`, `infra` |
+| `docs/architecture/r2-audit-storage.md` | R2 bucket + env for audit reports | One chunk | `r2`, `audit`, `storage` |
 | `scripts/import-project/README.md` | Portfolio folder → CMS import | One chunk per `##` | `portfolio`, `cms`, `import` |
 
 **Optional later (not docs yet):** `scripts/seed.ts` header comments, `payload.config.ts` plugin block, `.github/workflows/test.yml` — only if docs lag behind code.

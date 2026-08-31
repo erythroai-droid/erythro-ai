@@ -1,0 +1,18 @@
+{
+  "name": "@erythro/audit-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI Audit worker skeleton: /api/run-audit + Cloudflare R2 upload",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.787.0",
+    "dotenv": "^16.4.7"
+  }
+}

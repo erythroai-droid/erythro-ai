@@ -4,6 +4,9 @@ import React from 'react'
 import Link from 'next/link'
 import { BorderBeam } from 'border-beam'
 
+/** Hide header CTA until AI Audit MVP is publicly ready. */
+export const AI_AUDIT_HEADER_CTA_ENABLED = false
+
 const SparklesIcon = ({ className = 'w-3.5 h-3.5' }: { className?: string }) => (
   <svg
     viewBox="0 0 24 24"
@@ -27,6 +30,10 @@ export default function AiAuditHeaderButton({
   currentLocale,
   className = '',
 }: AiAuditHeaderButtonProps) {
+  if (!AI_AUDIT_HEADER_CTA_ENABLED) {
+    return null
+  }
+
   const label =
     currentLocale === 'ru'
       ? 'AI-аудит'

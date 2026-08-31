@@ -1,0 +1,21 @@
+services:
+  audit-agent:
+    build: .
+    container_name: audit_agent_worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PORT=8080
+    # No host port publish — reach via Caddy on proxy_network
+    networks:
+      - proxy_network
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 1500M
+
+networks:
+  proxy_network:
+    external: true
