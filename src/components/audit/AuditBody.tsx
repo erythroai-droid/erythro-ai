@@ -341,6 +341,7 @@ function AuditFormPanel({
   const defaultAuditLanguage = (['en', 'ru', 'he'].includes(locale) ? locale : 'en') as AuditReportLanguage
   const [status, setStatus] = useState<Status>('idle')
   const [submitError, setSubmitError] = useState('')
+  const [reportHref, setReportHref] = useState<string | null>(null)
   const [values, setValues] = useState<AuditFormValues>({
     website: '',
     name: '',
@@ -444,6 +445,11 @@ function AuditFormPanel({
         return
       }
       if (!res.ok) throw new Error('Request failed')
+      const payload = (await res.json().catch(() => null)) as {
+        submissionId?: number | string
+      } | null
+      const sid = payload?.submissionId
+      setReportHref(sid != null ? `/audit/report/${sid}` : null)
       setStatus('success')
       setValues({
         website: '',
@@ -488,9 +494,28 @@ function AuditFormPanel({
                 <p className={`m-0 max-w-[420px] font-sans text-base font-light leading-7 ${bodyTone}`}>
                   {tAudit(auditPage.form.success, locale)}
                 </p>
+                {reportHref ? (
+                  <a
+                    href={reportHref}
+                    className={`mt-1 rounded-[40px] border px-8 py-3 text-sm uppercase tracking-widest transition-colors ${
+                      isLight
+                        ? 'border-erythro-500 text-erythro-500 hover:bg-erythro-500 hover:text-white'
+                        : 'border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-coal-900'
+                    }`}
+                  >
+                    {locale === 'ru'
+                      ? 'Смотреть статус отчёта'
+                      : locale === 'he'
+                        ? 'צפה בסטטוס הדוח'
+                        : 'View report status'}
+                  </a>
+                ) : null}
                 <button
                   type="button"
-                  onClick={() => setStatus('idle')}
+                  onClick={() => {
+                    setStatus('idle')
+                    setReportHref(null)
+                  }}
                   className={`mt-2 rounded-[40px] border px-8 py-3 text-sm uppercase tracking-widest transition-colors ${
                     isLight
                       ? 'border-erythro-500 text-erythro-500 hover:bg-erythro-500 hover:text-white'
