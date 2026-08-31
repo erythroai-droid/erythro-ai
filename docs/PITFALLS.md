@@ -564,9 +564,9 @@ CI runs the fix script before API tests.
 
 **Cause:** Wrong/truncated Access Key ID in Vercel Project Env (local key is 32 hex chars). Combined with Payload rejecting large `htmlResult` (`The following field is invalid: Html Result`), CMS stays empty and R2 fallback fails.
 
-**Fix:** Set correct `R2_ACCESS_KEY_ID` (32 chars) on Production+Preview and redeploy. Persist `htmlResult` via SQL in `/api/audit/internal/[id]` (bypass Payload varchar validation). Backfill stuck rows from R2 when needed.
+**Fix:** Set correct `R2_ACCESS_KEY_ID` (32 chars) on Production+Preview and redeploy. Persist audit pipeline fields (including `htmlResult`) via SQL in `/api/audit/internal/[id]` — Payload re-validates existing `html_result` on later updates and keeps status stuck at `in_progress`. Backfill stuck rows from R2/HTML when needed.
 
-**Prevent:** After adding R2 secrets, verify lengths (Access Key 32, Secret 64). Smoke `GetObject` from a Vercel function, not only from the VPS worker.
+**Prevent:** After adding R2 secrets, verify lengths (Access Key 32, Secret 64). Smoke `GetObject` from a Vercel function, not only from the VPS worker. Never use `payload.update` for large audit HTML.
 
 ---
 

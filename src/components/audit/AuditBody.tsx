@@ -342,6 +342,7 @@ function AuditFormPanel({
   const [status, setStatus] = useState<Status>('idle')
   const [submitError, setSubmitError] = useState('')
   const [reportHref, setReportHref] = useState<string | null>(null)
+  const [orderId, setOrderId] = useState<string | null>(null)
   const [values, setValues] = useState<AuditFormValues>({
     website: '',
     name: '',
@@ -447,9 +448,14 @@ function AuditFormPanel({
       if (!res.ok) throw new Error('Request failed')
       const payload = (await res.json().catch(() => null)) as {
         submissionId?: number | string
+        orderId?: string
       } | null
       const sid = payload?.submissionId
       setReportHref(sid != null ? `/audit/report/${sid}` : null)
+      setOrderId(
+        payload?.orderId ||
+          (sid != null ? `AUD-${sid}` : null),
+      )
       setStatus('success')
       setValues({
         website: '',
@@ -494,6 +500,14 @@ function AuditFormPanel({
                 <p className={`m-0 max-w-[420px] font-sans text-base font-light leading-7 ${bodyTone}`}>
                   {tAudit(auditPage.form.success, locale)}
                 </p>
+                {orderId ? (
+                  <p className={`m-0 font-sans text-sm ${bodyTone}`}>
+                    <span className="text-gold-500">
+                      {locale === 'ru' ? 'ID заказа' : locale === 'he' ? 'מספר הזמנה' : 'Order ID'}:
+                    </span>{' '}
+                    <code className="font-mono tracking-wide">{orderId}</code>
+                  </p>
+                ) : null}
                 {reportHref ? (
                   <a
                     href={reportHref}
@@ -515,6 +529,7 @@ function AuditFormPanel({
                   onClick={() => {
                     setStatus('idle')
                     setReportHref(null)
+                    setOrderId(null)
                   }}
                   className={`mt-2 rounded-[40px] border px-8 py-3 text-sm uppercase tracking-widest transition-colors ${
                     isLight

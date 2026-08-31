@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
       auditLanguage,
       planSlug,
       planTotal,
+      ...(source === 'audit' ? { submissionId: created.id } : {}),
     })
     if (!mailed.sent) {
       console.error('[api/contact] saved submission but email was not sent:', mailed.reason)
@@ -132,7 +133,11 @@ export async function POST(request: NextRequest) {
       {
         ok: true,
         ...(source === 'audit'
-          ? { submissionId: created.id, auditQueued: Boolean(auditQueued) }
+          ? {
+              submissionId: created.id,
+              orderId: `AUD-${created.id}`,
+              auditQueued: Boolean(auditQueued),
+            }
           : {}),
       },
       {

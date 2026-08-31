@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { sql } from '@payloadcms/db-postgres'
 import { parseAuditReportId } from '@/lib/auditReport'
 
 export const runtime = 'nodejs'
@@ -62,7 +63,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-/** Worker updates pipeline fields after R2 / failure. */
+/**
+ * Worker updates pipeline fields after R2 / failure.
+ * All writes go through SQL: Payload textarea validation rejects large A44 HTML
+ * and also re-validates existing html_result on later partial updates.
+ */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   if (!authorized(request)) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
@@ -109,34 +114,56 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ message: 'Not found' }, { status: 404 })
     }
 
-    // Payload maps textarea→varchar and rejects large A44 HTML ("Html Result" invalid).
-    // Persist full HTML via SQL text column, then update the rest through Payload.
-    const htmlResult =
-      typeof data.htmlResult === 'string' ? data.htmlResult.replace(/\u0000/g, '') : null
-    if (htmlResult !== null) {
-      delete data.htmlResult
-      const { sql } = await import('@payloadcms/db-postgres')
-      await payload.db.drizzle.execute(
-        sql`update contact_submissions set html_result = ${htmlResult}, updated_at = now() where id = ${id}`,
-      )
+    const sets: ReturnType<typeof sql>[] = []
+    if (typeof data.auditStatus === 'string') {
+      sets.push(sql`audit_status = ${data.auditStatus}`)
+    }
+    if (typeof data.auditScore === 'number') {
+      sets.push(sql`audit_score = ${data.auditScore}`)
+    } else if (data.auditScore === null) {
+      sets.push(sql`audit_score = null`)
+    }
+    if (data.auditSummary !== undefined) {
+      sets.push(sql`audit_summary = ${JSON.stringify(data.auditSummary)}::jsonb`)
+    }
+    if (typeof data.reportUrl === 'string' || data.reportUrl === null) {
+      sets.push(sql`report_url = ${data.reportUrl}`)
+    }
+    if (typeof data.htmlResult === 'string') {
+      sets.push(sql`html_result = ${data.htmlResult.replace(/\u0000/g, '')}`)
+    } else if (data.htmlResult === null) {
+      sets.push(sql`html_result = null`)
+    }
+    if (typeof data.retryCount === 'number') {
+      sets.push(sql`retry_count = ${data.retryCount}`)
+    }
+    if (typeof data.errorLast === 'string' || data.errorLast === null) {
+      sets.push(sql`error_last = ${data.errorLast}`)
+    }
+    sets.push(sql`updated_at = now()`)
+
+    // drizzle sql.join for SET clauses
+    let setSql = sets[0]!
+    for (let i = 1; i < sets.length; i++) {
+      setSql = sql`${setSql}, ${sets[i]!}`
     }
 
-    if (!Object.keys(data).length) {
-      return NextResponse.json({ ok: true, id, auditStatus: existing.auditStatus, htmlSaved: true })
-    }
+    await payload.db.drizzle.execute(
+      sql`update contact_submissions set ${setSql} where id = ${id}`,
+    )
 
-    const updated = await payload.update({
+    const refreshed = await payload.findByID({
       collection: 'contact-submissions',
       id,
-      data,
+      depth: 0,
       overrideAccess: true,
     })
 
     return NextResponse.json({
       ok: true,
-      id: updated.id,
-      auditStatus: updated.auditStatus,
-      htmlSaved: htmlResult !== null,
+      id,
+      auditStatus: refreshed?.auditStatus ?? data.auditStatus ?? existing.auditStatus,
+      htmlSaved: typeof data.htmlResult === 'string',
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)

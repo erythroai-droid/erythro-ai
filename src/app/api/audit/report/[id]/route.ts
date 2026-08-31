@@ -5,6 +5,7 @@ import {
 } from '@/lib/contactRateLimit'
 import {
   isPublicReportUrl,
+  formatAuditOrderId,
   parseAuditReportId,
   type AuditReportPublicPayload,
 } from '@/lib/auditReport'
@@ -54,6 +55,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const body: AuditReportPublicPayload = {
       id,
+      orderId: formatAuditOrderId(id),
       status,
       auditScore: typeof doc.auditScore === 'number' ? doc.auditScore : null,
       reportUrl:

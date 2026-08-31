@@ -18,6 +18,8 @@ export type ContactNotificationInput = {
   auditLanguage?: string
   planSlug?: string
   planTotal?: string
+  /** Numeric CMS id; rendered as AUD-{id} for audit orders */
+  submissionId?: number | string
 }
 
 export type SiteEmailSettings = {
@@ -139,6 +141,9 @@ export function buildContactEmail(input: ContactNotificationInput): { subject: s
     lines.push(`Report language: ${input.auditLanguage || '—'}`)
     lines.push(`Plan: ${input.planSlug?.trim() || '—'}`)
     if (input.planTotal?.trim()) lines.push(`Total: ${input.planTotal.trim()}`)
+    if (input.submissionId != null && String(input.submissionId).trim()) {
+      lines.push(`Order ID: AUD-${String(input.submissionId).trim()}`)
+    }
   }
   lines.push('', input.message)
   const text = lines.join('\n')
@@ -149,6 +154,11 @@ export function buildContactEmail(input: ContactNotificationInput): { subject: s
     <p><strong>Report language:</strong> ${escapeHtml(input.auditLanguage || '—')}</p>
     <p><strong>Plan:</strong> ${escapeHtml(input.planSlug?.trim() || '—')}</p>
     ${input.planTotal?.trim() ? `<p><strong>Total:</strong> ${escapeHtml(input.planTotal.trim())}</p>` : ''}
+    ${
+      input.submissionId != null && String(input.submissionId).trim()
+        ? `<p><strong>Order ID:</strong> <code>AUD-${escapeHtml(String(input.submissionId).trim())}</code></p>`
+        : ''
+    }
       `
       : ''
   const html = `

@@ -2,6 +2,8 @@ export type AuditReportStatus = 'new' | 'in_progress' | 'report_sent' | 'failed'
 
 export type AuditReportPublicPayload = {
   id: number
+  /** Client-facing order id for support, e.g. AUD-88 */
+  orderId: string
   status: AuditReportStatus
   auditScore: number | null
   reportUrl: string | null
@@ -15,11 +17,28 @@ export type AuditReportPublicPayload = {
 
 type LocaleMap = { en: string; ru: string; he: string }
 
+/** Public order id shown in email / UI; maps 1:1 to contact-submissions.id */
+export function formatAuditOrderId(id: number | string): string {
+  const n = typeof id === 'number' ? id : Number(id)
+  if (!Number.isSafeInteger(n) || n <= 0) return `AUD-${String(id).trim()}`
+  return `AUD-${n}`
+}
+
 export const auditReportCopy = {
   title: {
     en: 'Your AI Audit report',
     ru: 'Ваш отчёт AI-аудита',
     he: 'דוח ביקורת ה-AI שלך',
+  } satisfies LocaleMap,
+  orderId: {
+    en: 'Order ID',
+    ru: 'ID заказа',
+    he: 'מספר הזמנה',
+  } satisfies LocaleMap,
+  orderIdHint: {
+    en: 'Save this Order ID. If something goes wrong, send it to support.',
+    ru: 'Сохраните ID заказа. Если отчёт не придёт или возникнет ошибка — укажите его в обращении в поддержку.',
+    he: 'שמרו את מספר ההזמנה. אם משהו לא עובד — שלחו אותו לתמיכה.',
   } satisfies LocaleMap,
   waiting: {
     en: 'We are preparing your report. This page updates automatically.',
@@ -73,9 +92,13 @@ export function tReport(map: LocaleMap, locale: string): string {
   return map.en
 }
 
+/** Accepts numeric id or AUD-123 / aud-123 */
 export function parseAuditReportId(raw: string): number | null {
-  if (!/^\d+$/.test(raw)) return null
-  const n = Number(raw)
+  const trimmed = raw.trim()
+  const m = /^AUD-(\d+)$/i.exec(trimmed)
+  const digits = m ? m[1] : trimmed
+  if (!/^\d+$/.test(digits)) return null
+  const n = Number(digits)
   return Number.isSafeInteger(n) && n > 0 ? n : null
 }
 
@@ -91,3 +114,4 @@ export function isPublicReportUrl(url: string | null | undefined): boolean {
     return false
   }
 }
+
