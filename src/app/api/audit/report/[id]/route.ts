@@ -7,10 +7,12 @@ import {
 } from '@/lib/contactRateLimit'
 import {
   AUDIT_REPORT_HTML_PREVIEW_MAX,
+  isPublicReportUrl,
   parseAuditReportId,
   type AuditReportPublicPayload,
   type AuditReportStatus,
 } from '@/lib/auditReport'
+import { getR2ObjectText } from '@/lib/r2'
 
 export const runtime = 'nodejs'
 
@@ -22,6 +24,12 @@ const ALLOWED_STATUS = new Set<AuditReportStatus>([
 ])
 
 type RouteParams = { params: Promise<{ id: string }> }
+
+function storageKeyFromSummary(summary: unknown): string | null {
+  if (!summary || typeof summary !== 'object') return null
+  const key = (summary as { storageKey?: unknown }).storageKey
+  return typeof key === 'string' && key.trim() ? key.trim() : null
+}
 
 /**
  * Public, non-PII status endpoint for /audit/report/[id] polling.
@@ -68,16 +76,28 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       ? (statusRaw as AuditReportStatus)
       : 'new'
 
-    const html =
+    let html: string | null =
       typeof doc.htmlResult === 'string' && doc.htmlResult.length > 0
         ? doc.htmlResult.slice(0, AUDIT_REPORT_HTML_PREVIEW_MAX)
         : null
+
+    // Fallback: pull HTML from R2 when CMS htmlResult could not be persisted
+    if (!html && status === 'report_sent') {
+      const key = storageKeyFromSummary(doc.auditSummary)
+      if (key) {
+        const fromR2 = await getR2ObjectText(key)
+        if (fromR2) html = fromR2.slice(0, AUDIT_REPORT_HTML_PREVIEW_MAX)
+      }
+    }
 
     const body: AuditReportPublicPayload = {
       id,
       status,
       auditScore: typeof doc.auditScore === 'number' ? doc.auditScore : null,
-      reportUrl: typeof doc.reportUrl === 'string' && doc.reportUrl ? doc.reportUrl : null,
+      reportUrl:
+        typeof doc.reportUrl === 'string' && isPublicReportUrl(doc.reportUrl)
+          ? doc.reportUrl
+          : null,
       htmlPreview: status === 'report_sent' ? html : null,
       website: typeof doc.website === 'string' ? doc.website : null,
       updatedAt: typeof doc.updatedAt === 'string' ? doc.updatedAt : null,

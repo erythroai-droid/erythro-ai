@@ -14,6 +14,7 @@ import type { SiteContent } from '@/lib/defaultContent'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 import {
   auditReportCopy,
+  isPublicReportUrl,
   tReport,
   type AuditReportPublicPayload,
   type AuditReportStatus,
@@ -225,7 +226,10 @@ function ReportBody({
         ) : null}
       </div>
 
-      {data.status === 'report_sent' && data.reportUrl ? (
+      {data.status === 'report_sent' &&
+      isPublicReportUrl(data.reportUrl) &&
+      data.reportUrl &&
+      !data.reportUrl.includes(`/audit/report/${reportId}`) ? (
         <a
           href={data.reportUrl}
           target="_blank"
