@@ -26,7 +26,8 @@ export const interCyrillic = Inter({
 
 /**
  * Inter has no Hebrew subset in next/font — Heebo covers `he` headlines.
- * Applied on `<html>` only when locale is `he`.
+ * Layout adds `heebo.variable` on `<html>` for SSR `he`; `useSitePrefs` must
+ * toggle the same class (and `--font-inter-latin`) on client locale switches.
  *
  * No metric fallback: Arial has no unicode-range and would paint Latin/digits
  * when Heebo is first in a stack (hero SVG probes).
