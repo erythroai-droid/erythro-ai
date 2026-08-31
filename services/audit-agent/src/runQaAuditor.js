@@ -90,10 +90,11 @@ export async function runQaAuditor(input) {
   }
 
   // Web delivery is /api/audit/report/[id]/html — map filesystem-relative figma assets
-  // to site-root static files (public/templates/figma-assets on the Next app).
+  // to the Next proxy that reads from R2 (assets/figma-assets/*).
   html = html
-    .replace(/(?:\.\.\/)+templates\/figma-assets\//g, '/templates/figma-assets/')
-    .replace(/\/api\/audit\/templates\/figma-assets\//g, '/templates/figma-assets/')
+    .replace(/(?:\.\.\/)+templates\/figma-assets\//g, '/api/audit/assets/figma-assets/')
+    .replace(/\/api\/audit\/templates\/figma-assets\//g, '/api/audit/assets/figma-assets/')
+    .replace(/\/templates\/figma-assets\//g, '/api/audit/assets/figma-assets/')
 
   console.log(`[qa-auditor] done score=${score} grade=${grade} htmlBytes=${html.length}`)
   return { html, score, grade, summary, htmlPath, jsonPath, tierFolder: folder }

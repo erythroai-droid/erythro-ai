@@ -48,15 +48,19 @@ export async function findAuditSubmission(id: number): Promise<AuditReportDoc | 
   return doc as AuditReportDoc
 }
 
+/** Site-root path for A44 figma assets proxied from R2. */
+export const AUDIT_REPORT_ASSET_BASE = '/api/audit/assets/figma-assets'
+
 /**
  * A44 HTML uses filesystem-relative asset paths (`../../templates/figma-assets/...`).
  * When served from `/api/audit/report/[id]/html` those resolve under `/api/audit/...`
- * and 404. Map them to site-root static files in `public/templates/figma-assets/`.
+ * and 404. Map them to the R2-backed proxy route.
  */
 export function rewriteAuditReportAssetUrls(html: string): string {
   return html
-    .replace(/(?:\.\.\/)+templates\/figma-assets\//g, '/templates/figma-assets/')
-    .replace(/\/api\/audit\/templates\/figma-assets\//g, '/templates/figma-assets/')
+    .replace(/(?:\.\.\/)+templates\/figma-assets\//g, `${AUDIT_REPORT_ASSET_BASE}/`)
+    .replace(/\/api\/audit\/templates\/figma-assets\//g, `${AUDIT_REPORT_ASSET_BASE}/`)
+    .replace(/\/templates\/figma-assets\//g, `${AUDIT_REPORT_ASSET_BASE}/`)
 }
 
 /** Full report HTML from CMS or R2. */

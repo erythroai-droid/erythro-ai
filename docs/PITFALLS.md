@@ -552,9 +552,9 @@ CI runs the fix script before API tests.
 
 **Cause:** QA_Auditor HTML uses filesystem-relative paths (`../../templates/figma-assets/...`). Served from `/api/audit/report/[id]/html`, the browser resolves them under `/api/audit/...`.
 
-**Fix:** Ship assets in `public/templates/figma-assets/` and rewrite URLs via `rewriteAuditReportAssetUrls` (and in the worker before R2 upload) to `/templates/figma-assets/...`.
+**Fix:** Ship assets in R2 under `assets/figma-assets/` and rewrite URLs via `rewriteAuditReportAssetUrls` to `/api/audit/assets/figma-assets/...` (proxy). Re-upload with `npx tsx scripts/upload_audit_figma_assets_r2.mjs` when icons change.
 
-**Prevent:** Never leave package HTML with `../templates/figma-assets` paths for web delivery.
+**Prevent:** Never leave package HTML with `../templates/figma-assets` paths for web delivery. Keep `public/templates/figma-assets` as the upload source of truth for the R2 sync script.
 
 ---
 
