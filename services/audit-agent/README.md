@@ -1,6 +1,6 @@
 # AI Audit Worker (Node)
 
-Skeleton service for MVP: accepts `POST /api/run-audit`, uploads a stub HTML report to Cloudflare R2, optionally updates Payload `contact-submissions`.
+Skeleton service for MVP: accepts `POST /api/run-audit`, uploads a stub HTML report to Cloudflare R2, updates CMS via `/api/audit/internal/[id]`, emails the client from `order@erythro.ai`.
 
 ## Endpoints
 
@@ -16,15 +16,19 @@ Body:
   "submissionId": 123,
   "targetUrl": "https://example.com",
   "locale": "en",
-  "planSlug": "audit-free"
+  "planSlug": "audit-free",
+  "clientEmail": "client@example.com",
+  "clientName": "Ada"
 }
 ```
 
-Responds `202` immediately; work continues in background.
+Responds `202` immediately; work continues in background. If `clientEmail` is omitted, the worker loads it from CMS (`GET /api/audit/internal/[id]`).
+
+Delivery order: R2 → CMS `report_sent` → SMTP to client.
 
 ## Env
 
-See `.env.example`. Secrets never go in git.
+See `.env.example`. Secrets never go in git. Required for mail: `SMTP_PASS` (same Hostinger mailbox password as Vercel).
 
 ## Docker
 

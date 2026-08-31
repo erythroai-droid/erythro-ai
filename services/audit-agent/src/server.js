@@ -80,6 +80,8 @@ const server = http.createServer(async (req, res) => {
         targetUrl,
         locale: typeof body.locale === 'string' ? body.locale : undefined,
         planSlug: typeof body.planSlug === 'string' ? body.planSlug : undefined,
+        clientEmail: typeof body.clientEmail === 'string' ? body.clientEmail : undefined,
+        clientName: typeof body.clientName === 'string' ? body.clientName : undefined,
       })
     })
     return

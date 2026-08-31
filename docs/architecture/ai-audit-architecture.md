@@ -2,7 +2,7 @@
 
 Статус: **MVP без оплаты**. Платежный шлюз, идемпотентность вебхуков, Telegram-алерты и отдельная RAG-коллекция — отложены (см. §8).
 
-Связанные документы: [`DEPLOYMENT.md`](../DEPLOYMENT.md) · [`r2-audit-storage.md`](./r2-audit-storage.md) · [`infrastructure/vps-n8n.md`](../infrastructure/vps-n8n.md) · [`RAG_INDEX.md`](../RAG_INDEX.md) · [`PITFALLS.md`](../PITFALLS.md)
+Связанные документы: [`DEPLOYMENT.md`](../DEPLOYMENT.md) · [`r2-audit-storage.md`](./r2-audit-storage.md) · [`infrastructure/vps-n8n.md`](../infrastructure/vps-n8n.md) · [`infrastructure/n8n-audit-reconcile.md`](../infrastructure/n8n-audit-reconcile.md) · [`RAG_INDEX.md`](../RAG_INDEX.md) · [`PITFALLS.md`](../PITFALLS.md)
 
 ---
 
@@ -272,7 +272,7 @@ networks:
         ▼ (2) Сразу после create (без платёжного вебхука)
 [Авторизованный POST → agent-api.erythro.ai/api/run-audit]
   Header: X-Agent-Secret-Key
-  Body: { submissionId, targetUrl, locale, planSlug }
+  Body: { submissionId, targetUrl, locale, planSlug, clientEmail, clientName }
         │
         ▼ (3) Worker
   auditStatus → in_progress
@@ -331,8 +331,8 @@ networks:
 5. [x] Worker `/api/run-audit` + секрет — `services/audit-agent` на VPS; секрет в `AGENT_SECRET_TOKEN`
 6. [x] Триггер из `/api/contact` после create (`source=audit`) — `src/lib/auditAgentTrigger.ts` (нужен `AGENT_SECRET_TOKEN` + `AUDIT_AGENT_URL` на Vercel)
 7. [x] Страница `/audit/report/[id]` — polling + iframe/`reportUrl` (`GET /api/audit/report/[id]`)
-8. [ ] Письмо клиенту через существующий SMTP (`order@erythro.ai`)
-9. [ ] n8n cron reconciliation
+8. [x] Письмо клиенту через существующий SMTP (`order@erythro.ai`) — worker `mail.js` + `SMTP_PASS` на VPS; email/name из `/api/contact` (fallback: CMS internal GET)
+9. [x] n8n cron reconciliation — `POST /api/audit/reconcile` + import `infra/n8n/workflows/audit-reconcile.json` (см. [`n8n-audit-reconcile.md`](../infrastructure/n8n-audit-reconcile.md))
 10. [ ] (Позже) оплата → тот же trigger, что п.6
 
 ---
