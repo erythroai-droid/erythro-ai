@@ -558,6 +558,18 @@ CI runs the fix script before API tests.
 
 ---
 
+## PIT-035 — Vercel `R2_ACCESS_KEY_ID` truncated (length 13) breaks report HTML
+
+**Symptom:** Email says report ready; `/api/audit/report/[id]/html` returns `Report HTML not available yet`. Logs: `[r2] getObject failed: Credential access key has length 13, should be 32`.
+
+**Cause:** Wrong/truncated Access Key ID in Vercel Project Env (local key is 32 hex chars). Combined with Payload rejecting large `htmlResult` (`The following field is invalid: Html Result`), CMS stays empty and R2 fallback fails.
+
+**Fix:** Set correct `R2_ACCESS_KEY_ID` (32 chars) on Production+Preview and redeploy. Persist `htmlResult` via SQL in `/api/audit/internal/[id]` (bypass Payload varchar validation). Backfill stuck rows from R2 when needed.
+
+**Prevent:** After adding R2 secrets, verify lengths (Access Key 32, Secret 64). Smoke `GetObject` from a Vercel function, not only from the VPS worker.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`

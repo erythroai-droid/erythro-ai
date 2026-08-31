@@ -44,8 +44,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       locale: doc.locale,
       planSlug: doc.planSlug,
       auditStatus: doc.auditStatus,
+      auditScore: doc.auditScore ?? null,
       reportUrl: doc.reportUrl,
       retryCount: doc.retryCount ?? 0,
+      storageKey:
+        doc.auditSummary &&
+        typeof doc.auditSummary === 'object' &&
+        typeof (doc.auditSummary as { storageKey?: unknown }).storageKey === 'string'
+          ? (doc.auditSummary as { storageKey: string }).storageKey
+          : null,
       updatedAt: doc.updatedAt,
       createdAt: doc.createdAt,
     })
@@ -102,6 +109,22 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ message: 'Not found' }, { status: 404 })
     }
 
+    // Payload maps textarea→varchar and rejects large A44 HTML ("Html Result" invalid).
+    // Persist full HTML via SQL text column, then update the rest through Payload.
+    const htmlResult =
+      typeof data.htmlResult === 'string' ? data.htmlResult.replace(/\u0000/g, '') : null
+    if (htmlResult !== null) {
+      delete data.htmlResult
+      const { sql } = await import('@payloadcms/db-postgres')
+      await payload.db.drizzle.execute(
+        sql`update contact_submissions set html_result = ${htmlResult}, updated_at = now() where id = ${id}`,
+      )
+    }
+
+    if (!Object.keys(data).length) {
+      return NextResponse.json({ ok: true, id, auditStatus: existing.auditStatus, htmlSaved: true })
+    }
+
     const updated = await payload.update({
       collection: 'contact-submissions',
       id,
@@ -109,9 +132,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       overrideAccess: true,
     })
 
-    return NextResponse.json({ ok: true, id: updated.id, auditStatus: updated.auditStatus })
+    return NextResponse.json({
+      ok: true,
+      id: updated.id,
+      auditStatus: updated.auditStatus,
+      htmlSaved: htmlResult !== null,
+    })
   } catch (err) {
-    console.error('[api/audit/internal] PATCH failed:', err)
-    return NextResponse.json({ message: 'Server error' }, { status: 500 })
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[api/audit/internal] PATCH failed:', message)
+    return NextResponse.json(
+      { message: 'Server error', detail: message.slice(0, 500) },
+      { status: 500 },
+    )
   }
 }
