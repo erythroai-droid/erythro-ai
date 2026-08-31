@@ -1,39 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import {
   consumeContactRateLimit,
   getRequestIp,
 } from '@/lib/contactRateLimit'
 import {
-  AUDIT_REPORT_HTML_PREVIEW_MAX,
   isPublicReportUrl,
   parseAuditReportId,
   type AuditReportPublicPayload,
-  type AuditReportStatus,
 } from '@/lib/auditReport'
-import { getR2ObjectText } from '@/lib/r2'
+import {
+  findAuditSubmission,
+  normalizeAuditStatus,
+} from '@/lib/auditReportLoad'
 
 export const runtime = 'nodejs'
 
-const ALLOWED_STATUS = new Set<AuditReportStatus>([
-  'new',
-  'in_progress',
-  'report_sent',
-  'failed',
-])
-
 type RouteParams = { params: Promise<{ id: string }> }
-
-function storageKeyFromSummary(summary: unknown): string | null {
-  if (!summary || typeof summary !== 'object') return null
-  const key = (summary as { storageKey?: unknown }).storageKey
-  return typeof key === 'string' && key.trim() ? key.trim() : null
-}
 
 /**
  * Public, non-PII status endpoint for /audit/report/[id] polling.
- * Does not return name, email, phone, or error stacks.
+ * Ready reports are opened via GET /api/audit/report/[id]/html (full page).
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const ip = getRequestIp(request)
@@ -59,36 +45,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    const payload = await getPayload({ config })
-    const doc = await payload.findByID({
-      collection: 'contact-submissions',
-      id,
-      depth: 0,
-      overrideAccess: true,
-    })
-
-    if (!doc || doc.source !== 'audit') {
+    const doc = await findAuditSubmission(id)
+    if (!doc) {
       return NextResponse.json({ message: 'Not found' }, { status: 404 })
     }
 
-    const statusRaw = (doc.auditStatus || 'new') as string
-    const status: AuditReportStatus = ALLOWED_STATUS.has(statusRaw as AuditReportStatus)
-      ? (statusRaw as AuditReportStatus)
-      : 'new'
-
-    let html: string | null =
-      typeof doc.htmlResult === 'string' && doc.htmlResult.length > 0
-        ? doc.htmlResult.slice(0, AUDIT_REPORT_HTML_PREVIEW_MAX)
-        : null
-
-    // Fallback: pull HTML from R2 when CMS htmlResult could not be persisted
-    if (!html && status === 'report_sent') {
-      const key = storageKeyFromSummary(doc.auditSummary)
-      if (key) {
-        const fromR2 = await getR2ObjectText(key)
-        if (fromR2) html = fromR2.slice(0, AUDIT_REPORT_HTML_PREVIEW_MAX)
-      }
-    }
+    const status = normalizeAuditStatus(doc.auditStatus)
 
     const body: AuditReportPublicPayload = {
       id,
@@ -98,7 +60,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         typeof doc.reportUrl === 'string' && isPublicReportUrl(doc.reportUrl)
           ? doc.reportUrl
           : null,
-      htmlPreview: status === 'report_sent' ? html : null,
+      htmlPreview: null,
+      readyHtmlUrl: status === 'report_sent' ? `/api/audit/report/${id}/html` : null,
       website: typeof doc.website === 'string' ? doc.website : null,
       updatedAt: typeof doc.updatedAt === 'string' ? doc.updatedAt : null,
     }

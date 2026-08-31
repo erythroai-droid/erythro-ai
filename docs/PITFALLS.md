@@ -528,7 +528,7 @@ CI runs the fix script before API tests.
 
 **Cause:** Worker stored/emailed the private S3 API URL (`*.r2.cloudflarestorage.com/...`) because `R2_PUBLIC_BASE_URL` was unset. That endpoint requires signed auth — browsers cannot open it.
 
-**Fix:** Email and client-facing `reportUrl` use `https://erythro.ai/audit/report/[id]` (htmlPreview on the page). Private storage URL stays only in `auditSummary.storageUrl`. Optionally set a public R2 custom domain / r2.dev as `R2_PUBLIC_BASE_URL` later.
+**Fix:** Email and client-facing `reportUrl` use `https://erythro.ai/audit/report/[id]`, which redirects to `/api/audit/report/[id]/html` (standalone A44 document, not an iframe). Private storage URL stays only in `auditSummary.storageUrl`. Optionally set a public R2 custom domain / r2.dev as `R2_PUBLIC_BASE_URL` later.
 
 **Prevent:** Never put `r2.cloudflarestorage.com` URLs in customer emails or external CTAs. Gate UI with `isPublicReportUrl()`.
 

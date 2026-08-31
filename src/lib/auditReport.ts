@@ -5,13 +5,13 @@ export type AuditReportPublicPayload = {
   status: AuditReportStatus
   auditScore: number | null
   reportUrl: string | null
-  /** Truncated HTML for iframe srcDoc when small enough */
+  /** @deprecated Report opens as full page via readyHtmlUrl; kept null for older clients */
   htmlPreview: string | null
+  /** Path to standalone HTML document when status is report_sent */
+  readyHtmlUrl: string | null
   website: string | null
   updatedAt: string | null
 }
-
-export const AUDIT_REPORT_HTML_PREVIEW_MAX = 200_000
 
 type LocaleMap = { en: string; ru: string; he: string }
 
