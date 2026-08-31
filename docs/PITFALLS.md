@@ -552,9 +552,9 @@ CI runs the fix script before API tests.
 
 **Cause:** QA_Auditor HTML uses filesystem-relative paths (`../../templates/figma-assets/...`). Served from `/api/audit/report/[id]/html`, the browser resolves them under `/api/audit/...`.
 
-**Fix:** Ship assets in R2 under `assets/figma-assets/` and rewrite URLs via `rewriteAuditReportAssetUrls` to `/api/audit/assets/figma-assets/...` (proxy). Re-upload with `npx tsx scripts/upload_audit_figma_assets_r2.mjs` when icons change.
+**Fix:** Ship assets in `public/templates/figma-assets/` (primary) and optionally R2 `assets/figma-assets/`. Rewrite HTML to `/templates/figma-assets/...`. `/api/audit/assets/figma-assets/...` falls back to local files when R2 credentials fail. Re-upload R2 copy with `npx tsx scripts/upload_audit_figma_assets_r2.mjs` when icons change.
 
-**Prevent:** Never leave package HTML with `../templates/figma-assets` paths for web delivery. Keep `public/templates/figma-assets` as the upload source of truth for the R2 sync script.
+**Prevent:** Never leave package HTML with `../templates/figma-assets` paths for web delivery. Do not rely only on R2 GetObject for logos — Vercel secret mismatches return opaque 404s.
 
 ---
 

@@ -89,12 +89,11 @@ export async function runQaAuditor(input) {
     throw new Error(`QA_Auditor produced empty HTML (expected ${htmlPath})`)
   }
 
-  // Web delivery is /api/audit/report/[id]/html — map filesystem-relative figma assets
-  // to the Next proxy that reads from R2 (assets/figma-assets/*).
+  // Prefer site-root static files in public/templates/figma-assets (reliable on Vercel).
   html = html
-    .replace(/(?:\.\.\/)+templates\/figma-assets\//g, '/api/audit/assets/figma-assets/')
-    .replace(/\/api\/audit\/templates\/figma-assets\//g, '/api/audit/assets/figma-assets/')
-    .replace(/\/templates\/figma-assets\//g, '/api/audit/assets/figma-assets/')
+    .replace(/(?:\.\.\/)+templates\/figma-assets\//g, '/templates/figma-assets/')
+    .replace(/\/api\/audit\/templates\/figma-assets\//g, '/templates/figma-assets/')
+    .replace(/\/api\/audit\/assets\/figma-assets\//g, '/templates/figma-assets/')
 
   console.log(`[qa-auditor] done score=${score} grade=${grade} htmlBytes=${html.length}`)
   return { html, score, grade, summary, htmlPath, jsonPath, tierFolder: folder }
