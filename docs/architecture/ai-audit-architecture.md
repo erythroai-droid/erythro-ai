@@ -61,7 +61,7 @@
 |---|---|
 | `/audit` | Лендинг / заказ AI-аудита (существующий) |
 | `/order/audit-free`, `/order/audit-diagnostic`, `/order/audit-pro` | Чекаут по тарифу (без оплаты в MVP — submit заявки) |
-| **`/audit/report/[id]`** | **Выдача результата** (polling статуса + безопасный просмотр отчёта) |
+| **`/audit/report/[id]`** | **Выдача результата** (polling; готовый отчёт → standalone HTML) |
 
 `/audit` и `/audit/report/[id]` не смешивать: лендинг ≠ страница результата.
 
@@ -288,7 +288,7 @@ networks:
         │
         ▼ (5) Выдача
   Email с ссылкой / вложением
-  Страница /audit/report/[id] (polling → iframe srcDoc или redirect на reportUrl)
+  Страница /audit/report/[id] (polling → redirect на /api/audit/report/[id]/html)
 ```
 
 Когда подключат оплату: между шагами (1) и (2) встанет шлюз + webhook; шаг (2) станет «после paid». Контракт worker **не меняется**.
@@ -330,10 +330,12 @@ networks:
 4. [x] Caddy + DNS `n8n` / `agent-api` на VPS — Caddy/n8n/worker подняты; DNS A (DNS only) + Let's Encrypt OK
 5. [x] Worker `/api/run-audit` + секрет — `services/audit-agent` на VPS; секрет в `AGENT_SECRET_TOKEN`
 6. [x] Триггер из `/api/contact` после create (`source=audit`) — `src/lib/auditAgentTrigger.ts` (нужен `AGENT_SECRET_TOKEN` + `AUDIT_AGENT_URL` на Vercel)
-7. [x] Страница `/audit/report/[id]` — polling + iframe/`reportUrl` (`GET /api/audit/report/[id]`)
-8. [x] Письмо клиенту через существующий SMTP (`order@erythro.ai`) — worker `mail.js` + `SMTP_PASS` на VPS; email/name из `/api/contact` (fallback: CMS internal GET)
+7. [x] Страница `/audit/report/[id]` — polling; готовый отчёт как standalone HTML (`GET /api/audit/report/[id]/html`)
+8. [x] Письмо клиенту через существующий SMTP (`order@erythro.ai`) — worker `mail.js` + `SMTP_PASS` на VPS; email/name из `/api/contact` (fallback: CMS internal GET); ссылка в письме = `/audit/report/[id]` (не private R2)
 9. [x] n8n cron reconciliation — `POST /api/audit/reconcile` + import `infra/n8n/workflows/audit-reconcile.json` (см. [`n8n-audit-reconcile.md`](../infrastructure/n8n-audit-reconcile.md))
+9a. [x] Реальный QA_Auditor (Java/Playwright) в `services/audit-agent/QA_Auditor` вместо stub HTML
 10. [ ] (Позже) оплата → тот же trigger, что п.6
+11. [ ] (Позже) публичный `R2_PUBLIC_BASE_URL` / custom domain для прямых ссылок на HTML/PDF
 
 ---
 

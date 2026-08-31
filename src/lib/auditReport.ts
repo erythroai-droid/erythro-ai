@@ -5,13 +5,13 @@ export type AuditReportPublicPayload = {
   status: AuditReportStatus
   auditScore: number | null
   reportUrl: string | null
-  /** Truncated HTML for iframe srcDoc when small enough */
+  /** @deprecated Report opens as full page via readyHtmlUrl; kept null for older clients */
   htmlPreview: string | null
+  /** Path to standalone HTML document when status is report_sent */
+  readyHtmlUrl: string | null
   website: string | null
   updatedAt: string | null
 }
-
-export const AUDIT_REPORT_HTML_PREVIEW_MAX = 200_000
 
 type LocaleMap = { en: string; ru: string; he: string }
 
@@ -77,4 +77,17 @@ export function parseAuditReportId(raw: string): number | null {
   if (!/^\d+$/.test(raw)) return null
   const n = Number(raw)
   return Number.isSafeInteger(n) && n > 0 ? n : null
+}
+
+/** Private S3/R2 API endpoints are not openable in the browser without signed URLs. */
+export function isPublicReportUrl(url: string | null | undefined): boolean {
+  if (!url || !/^https?:\/\//i.test(url)) return false
+  try {
+    const host = new URL(url).hostname.toLowerCase()
+    if (host.endsWith('.r2.cloudflarestorage.com')) return false
+    if (host.endsWith('.amazonaws.com')) return false
+    return true
+  } catch {
+    return false
+  }
 }

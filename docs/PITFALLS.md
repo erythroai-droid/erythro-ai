@@ -510,6 +510,42 @@ CI runs the fix script before API tests.
 
 ---
 
+## PIT-031 — Docker Compose eats `$` inside `SMTP_PASS` on the audit worker
+
+**Symptom:** Worker logs `email skipped: SMTP_PASS not set` or SMTP auth fails after deploy; `docker compose` warns `The "R" variable is not set` (or another letter from the password).
+
+**Cause:** Compose interpolates `$VAR` / `$R` in `/home/audit-agent/.env` when recreating the container, so a Hostinger password containing `$` is truncated or emptied.
+
+**Fix:** Escape literal dollars as `$$` when writing worker `.env` (`scripts/deploy_vps_audit_stack.py`). Verify with `docker exec audit_agent_worker node -e "console.log(String((process.env.SMTP_PASS||'').length))"` — length must match local `SMTP_PASS`.
+
+**Prevent:** Never paste raw `$…` secrets into Compose env files without `$$` escaping. Prefer `env_file` values that are pre-escaped by the deploy script.
+
+---
+
+## PIT-032 — Audit email / “Open full report” returns R2 `InvalidArgument` Authorization XML
+
+**Symptom:** Client opens the link from the audit email (or “Open full report”) and sees `<Error><Code>InvalidArgument</Code><Message>Authorization</Message></Error>` instead of HTML.
+
+**Cause:** Worker stored/emailed the private S3 API URL (`*.r2.cloudflarestorage.com/...`) because `R2_PUBLIC_BASE_URL` was unset. That endpoint requires signed auth — browsers cannot open it.
+
+**Fix:** Email and client-facing `reportUrl` use `https://erythro.ai/audit/report/[id]`, which redirects to `/api/audit/report/[id]/html` (standalone A44 document, not an iframe). Private storage URL stays only in `auditSummary.storageUrl`. Optionally set a public R2 custom domain / r2.dev as `R2_PUBLIC_BASE_URL` later.
+
+**Prevent:** Never put `r2.cloudflarestorage.com` URLs in customer emails or external CTAs. Gate UI with `isPublicReportUrl()`.
+
+---
+
+## PIT-033 — CMS `htmlResult` PATCH returns 500 for full A44 HTML
+
+**Symptom:** QA_Auditor finishes (score + R2 upload OK) but `PATCH /api/audit/internal/[id]` with `htmlResult` (~50KB+) returns 500; retry without `htmlResult` succeeds.
+
+**Cause:** Likely request/WAF or Payload update path choking on large HTML body (column itself is `text` / unlimited).
+
+**Fix:** Worker retries PATCH without `htmlResult` after failure; stores `auditSummary.storageKey`. Report API loads HTML from R2 via `getR2ObjectText(storageKey)` when `htmlResult` is empty.
+
+**Prevent:** Do not rely on CMS as the only store for full report HTML. Always upload to R2 first; keep CMS preview optional.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`

@@ -14,6 +14,7 @@ import type { SiteContent } from '@/lib/defaultContent'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 import {
   auditReportCopy,
+  isPublicReportUrl,
   tReport,
   type AuditReportPublicPayload,
   type AuditReportStatus,
@@ -78,9 +79,13 @@ export default function AuditReportClient({
         return 'retry' as const
       }
       const json = (await res.json()) as AuditReportPublicPayload
+      if (json.status === 'report_sent' && json.readyHtmlUrl) {
+        window.location.replace(json.readyHtmlUrl)
+        return 'stop' as const
+      }
       setData(json)
       setError(null)
-      if (json.status === 'report_sent' || json.status === 'failed') {
+      if (json.status === 'failed') {
         return 'stop' as const
       }
       return 'retry' as const
@@ -144,7 +149,13 @@ export default function AuditReportClient({
               {error === 'not_found' ? (
                 <p className={`m-0 text-base ${muted}`}>{tReport(auditReportCopy.notFound, locale)}</p>
               ) : (
-                <ReportBody data={data} locale={locale} muted={muted} isLight={isLight} />
+                <ReportBody
+                  data={data}
+                  reportId={reportId}
+                  locale={locale}
+                  muted={muted}
+                  isLight={isLight}
+                />
               )}
             </div>
           </main>
@@ -185,11 +196,13 @@ function statusLabel(status: AuditReportStatus, locale: string): string {
 
 function ReportBody({
   data,
+  reportId,
   locale,
   muted,
   isLight,
 }: {
   data: AuditReportPublicPayload | null
+  reportId: string
   locale: string
   muted: string
   isLight: boolean
@@ -225,7 +238,10 @@ function ReportBody({
         ) : null}
       </div>
 
-      {data.status === 'report_sent' && data.reportUrl ? (
+      {data.status === 'report_sent' &&
+      isPublicReportUrl(data.reportUrl) &&
+      data.reportUrl &&
+      !data.reportUrl.includes(`/audit/report/${reportId}`) ? (
         <a
           href={data.reportUrl}
           target="_blank"
@@ -238,17 +254,6 @@ function ReportBody({
         >
           {tReport(auditReportCopy.openExternal, locale)}
         </a>
-      ) : null}
-
-      {data.status === 'report_sent' && data.htmlPreview ? (
-        <iframe
-          title={tReport(auditReportCopy.title, locale)}
-          srcDoc={data.htmlPreview}
-          sandbox=""
-          className={`min-h-[70vh] w-full rounded-xl border ${
-            isLight ? 'border-black/10 bg-white' : 'border-white/10 bg-white'
-          }`}
-        />
       ) : null}
     </div>
   )

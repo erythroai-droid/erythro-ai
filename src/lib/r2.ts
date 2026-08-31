@@ -43,3 +43,30 @@ export function buildR2ObjectUrl(key: string, config: R2Config): string {
   }
   return `${getR2Endpoint(config.accountId)}/${config.bucket}/${normalized}`
 }
+
+/** Read object body as UTF-8 text (for serving audit HTML when CMS htmlResult is empty). */
+export async function getR2ObjectText(key: string): Promise<string | null> {
+  const config = getR2Config()
+  if (!config) return null
+  const normalized = key.replace(/^\/+/, '')
+  try {
+    const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3')
+    const client = new S3Client({
+      region: 'auto',
+      endpoint: getR2Endpoint(config.accountId),
+      credentials: {
+        accessKeyId: config.accessKeyId,
+        secretAccessKey: config.secretAccessKey,
+      },
+    })
+    const res = await client.send(
+      new GetObjectCommand({ Bucket: config.bucket, Key: normalized }),
+    )
+    const bytes = await res.Body?.transformToByteArray()
+    if (!bytes) return null
+    return Buffer.from(bytes).toString('utf8')
+  } catch (err) {
+    console.error('[r2] getObject failed:', err instanceof Error ? err.message : err)
+    return null
+  }
+}
