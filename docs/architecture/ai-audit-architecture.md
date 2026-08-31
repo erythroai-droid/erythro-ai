@@ -330,7 +330,7 @@ networks:
 4. [x] Caddy + DNS `n8n` / `agent-api` на VPS — Caddy/n8n/worker подняты; DNS A (DNS only) + Let's Encrypt OK
 5. [x] Worker `/api/run-audit` + секрет — `services/audit-agent` на VPS; секрет в `AGENT_SECRET_TOKEN`
 6. [x] Триггер из `/api/contact` после create (`source=audit`) — `src/lib/auditAgentTrigger.ts` (нужен `AGENT_SECRET_TOKEN` + `AUDIT_AGENT_URL` на Vercel)
-7. [ ] Страница `/audit/report/[id]`
+7. [x] Страница `/audit/report/[id]` — polling + iframe/`reportUrl` (`GET /api/audit/report/[id]`)
 8. [ ] Письмо клиенту через существующий SMTP (`order@erythro.ai`)
 9. [ ] n8n cron reconciliation
 10. [ ] (Позже) оплата → тот же trigger, что п.6
