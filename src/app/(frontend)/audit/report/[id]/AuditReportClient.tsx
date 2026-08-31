@@ -14,6 +14,7 @@ import type { SiteContent } from '@/lib/defaultContent'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 import {
   auditReportCopy,
+  formatAuditOrderId,
   isPublicReportUrl,
   tReport,
   type AuditReportPublicPayload,
@@ -221,6 +222,11 @@ function ReportBody({
         <p className="m-0 text-sm font-medium uppercase tracking-[0.12em] text-gold-500">
           {statusLabel(data.status, locale)}
         </p>
+        <p className="m-0 text-base">
+          <span className="text-gold-500">{tReport(auditReportCopy.orderId, locale)}:</span>{' '}
+          <code className="font-mono text-[0.95em] tracking-wide">{data.orderId || formatAuditOrderId(reportId)}</code>
+        </p>
+        <p className={`m-0 text-sm ${muted}`}>{tReport(auditReportCopy.orderIdHint, locale)}</p>
         {data.website ? (
           <p className={`m-0 break-all text-sm ${muted}`}>{data.website}</p>
         ) : null}

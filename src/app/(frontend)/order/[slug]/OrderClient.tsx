@@ -1059,6 +1059,8 @@ function AuditOrderModal({
   const defaultAuditLanguage = (['en', 'ru', 'he'].includes(locale) ? locale : 'en') as AuditReportLanguage
   const [status, setStatus] = useState<ModalStatus>('idle')
   const [submitError, setSubmitError] = useState('')
+  const [orderId, setOrderId] = useState<string | null>(null)
+  const [reportHref, setReportHref] = useState<string | null>(null)
   const [values, setValues] = useState<AuditFormValues>({
     name: '',
     email: '',
@@ -1186,6 +1188,13 @@ function AuditOrderModal({
         return
       }
       if (!res.ok) throw new Error('Request failed')
+      const payload = (await res.json().catch(() => null)) as {
+        submissionId?: number | string
+        orderId?: string
+      } | null
+      const sid = payload?.submissionId
+      setOrderId(payload?.orderId || (sid != null ? `AUD-${sid}` : null))
+      setReportHref(sid != null ? `/audit/report/${sid}` : null)
       setStatus('success')
     } catch {
       setSubmitError(tForm(contactForm.error))
@@ -1263,9 +1272,33 @@ function AuditOrderModal({
             <p className="mx-auto max-w-[420px] text-sm text-white/80 leading-6">
               {tAudit(auditPage.form.success, locale)}
             </p>
+            {orderId ? (
+              <p className="mx-auto mt-3 max-w-[420px] text-sm text-white/80">
+                <span className="text-gold-500">
+                  {locale === 'ru' ? 'ID заказа' : locale === 'he' ? 'מספר הזמנה' : 'Order ID'}:
+                </span>{' '}
+                <code className="font-mono tracking-wide text-white">{orderId}</code>
+              </p>
+            ) : null}
+            {reportHref ? (
+              <a
+                href={reportHref}
+                className="mt-4 inline-flex rounded-[40px] border border-gold-500 px-8 py-3 text-sm uppercase tracking-widest text-gold-500 transition-colors hover:bg-gold-500 hover:text-coal-900"
+              >
+                {locale === 'ru'
+                  ? 'Смотреть статус отчёта'
+                  : locale === 'he'
+                    ? 'צפה בסטטוס הדוח'
+                    : 'View report status'}
+              </a>
+            ) : null}
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                setOrderId(null)
+                setReportHref(null)
+                onClose()
+              }}
               className="mt-6 rounded-[40px] border border-gold-500 px-8 py-3 text-sm uppercase tracking-widest text-gold-500 transition-colors hover:bg-gold-500 hover:text-coal-900"
             >
               {tForm(contactForm.close)}

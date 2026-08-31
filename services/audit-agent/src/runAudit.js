@@ -1,6 +1,7 @@
 import { uploadReportObject } from './r2Upload.js'
 import { getContactSubmission, updateContactSubmission } from './payload.js'
 import { sendClientAuditEmail } from './mail.js'
+import { runQaAuditor } from './runQaAuditor.js'
 
 function siteBase() {
   return (
@@ -10,9 +11,14 @@ function siteBase() {
   )
 }
 
+function formatOrderId(id) {
+  const n = typeof id === 'number' ? id : Number(id)
+  if (!Number.isSafeInteger(n) || n <= 0) return `AUD-${String(id).trim()}`
+  return `AUD-${n}`
+}
+
 /**
- * Skeleton audit job: stub HTML → R2 → CMS → client email.
- * Real Playwright / LLM will replace the stub body later.
+ * Full audit job: QA_Auditor (Java/Playwright) → R2 → CMS → client email.
  *
  * @param {{
  *   submissionId: number|string,
@@ -43,71 +49,86 @@ export async function runAuditJob(job) {
       auditStatus: 'in_progress',
     })
 
-    const html = `<!DOCTYPE html>
-<html lang="${escapeHtml(locale)}">
-<head>
-  <meta charset="utf-8" />
-  <title>Erythro.ai Audit stub — ${escapeHtml(targetUrl)}</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem; }
-    code { background: #f4f4f5; padding: 0.1em 0.35em; border-radius: 4px; }
-  </style>
-</head>
-<body>
-  <h1>AI Audit report (skeleton)</h1>
-  <p>Target: <a href="${escapeAttr(targetUrl)}">${escapeHtml(targetUrl)}</a></p>
-  <p>Plan: <code>${escapeHtml(planSlug)}</code> · Locale: <code>${escapeHtml(locale)}</code></p>
-  <p>Submission: <code>${escapeHtml(String(submissionId))}</code></p>
-  <p>Generated at: <code>${escapeHtml(startedAt)}</code></p>
-  <p>This is a placeholder. Playwright + LLM analysis will replace this page.</p>
-</body>
-</html>`
+    const result = await runQaAuditor({
+      targetUrl,
+      reportLang: locale,
+      planSlug,
+    })
 
-    const key = `audits/${submissionId}/${Date.now()}-stub.html`
-    const { url } = await uploadReportObject({
+    const key = `audits/${submissionId}/${Date.now()}-${result.tierFolder}.html`
+    const uploaded = await uploadReportObject({
       key,
-      body: html,
+      body: result.html,
       contentType: 'text/html; charset=utf-8',
     })
 
     const statusPageUrl = `${siteBase()}/audit/report/${submissionId}`
+    const publicReportUrl = uploaded.url.includes('.r2.cloudflarestorage.com/')
+      ? statusPageUrl
+      : uploaded.url
 
-    // Atomic delivery order: storage + DB first, then email
-    await updateContactSubmission(submissionId, {
+    const patchBase = {
       auditStatus: 'report_sent',
-      reportUrl: url,
-      auditScore: 0,
+      reportUrl: publicReportUrl,
+      auditScore: result.score,
       auditSummary: {
-        stub: true,
-        targetUrl,
+        stub: false,
         planSlug,
         locale,
         generatedAt: startedAt,
+        tier: result.summary?.tier,
+        reportLang: result.summary?.reportLang,
+        pageCap: result.summary?.pageCap,
+        grade: result.grade,
+        overallScore: result.score,
+        storageKey: uploaded.key,
       },
-      htmlResult: html.slice(0, 100_000),
       errorLast: null,
-    })
+    }
+
+    const htmlPreview = result.html.slice(0, 500_000).replace(/\u0000/g, '')
+    try {
+      await updateContactSubmission(submissionId, {
+        ...patchBase,
+        htmlResult: htmlPreview,
+      })
+    } catch (patchErr) {
+      console.warn(
+        `[audit] submission=${submissionId} PATCH with html failed, retry without htmlResult:`,
+        patchErr instanceof Error ? patchErr.message : patchErr,
+      )
+      await updateContactSubmission(submissionId, patchBase)
+    }
 
     if (clientEmail) {
       const mailed = await sendClientAuditEmail({
         to: clientEmail,
         clientName,
         targetUrl,
-        reportUrl: url,
         statusPageUrl,
+        orderId: submissionId,
         locale,
       })
       if (!mailed.sent) {
         console.warn(`[audit] submission=${submissionId} email skipped: ${mailed.reason}`)
       } else {
-        console.log(`[audit] submission=${submissionId} email sent to client`)
+        console.log(
+          `[audit] submission=${submissionId} email sent to client orderId=${mailed.orderId || formatOrderId(submissionId)}`,
+        )
       }
     } else {
       console.warn(`[audit] submission=${submissionId} no clientEmail — skip mail`)
     }
 
-    console.log(`[audit] submission=${submissionId} ok reportUrl=${url}`)
-    return { ok: true, reportUrl: url }
+    console.log(
+      `[audit] submission=${submissionId} ok score=${result.score} orderId=${formatOrderId(submissionId)} reportUrl=${publicReportUrl}`,
+    )
+    return {
+      ok: true,
+      reportUrl: publicReportUrl,
+      score: result.score,
+      orderId: formatOrderId(submissionId),
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error(`[audit] submission=${submissionId} failed:`, message)
@@ -121,16 +142,4 @@ export async function runAuditJob(job) {
     }
     return { ok: false, error: message }
   }
-}
-
-function escapeHtml(s) {
-  return String(s)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-}
-
-function escapeAttr(s) {
-  return escapeHtml(s).replaceAll("'", '&#39;')
 }
