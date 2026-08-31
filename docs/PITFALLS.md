@@ -546,6 +546,18 @@ CI runs the fix script before API tests.
 
 ---
 
+## PIT-034 — A44 report logos 404 under `/api/audit/templates/figma-assets/`
+
+**Symptom:** Standalone report page loads, but header/footer logos and icons are missing; network shows `Route not found "/api/audit/templates/figma-assets/logo-digital.svg"`.
+
+**Cause:** QA_Auditor HTML uses filesystem-relative paths (`../../templates/figma-assets/...`). Served from `/api/audit/report/[id]/html`, the browser resolves them under `/api/audit/...`.
+
+**Fix:** Ship assets in `public/templates/figma-assets/` and rewrite URLs via `rewriteAuditReportAssetUrls` (and in the worker before R2 upload) to `/templates/figma-assets/...`.
+
+**Prevent:** Never leave package HTML with `../templates/figma-assets` paths for web delivery.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
