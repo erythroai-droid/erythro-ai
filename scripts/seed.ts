@@ -12,7 +12,8 @@ import {
   footer,
 } from '../src/translations'
 import { SERVICE_PAGES, SERVICE_ID_TO_SLUG } from '../src/lib/servicePages'
-import { ORDER_PLANS } from '../src/lib/orderPlans'
+import { ORDER_PLANS, AUDIT_ORDER_PLANS } from '../src/lib/orderPlans'
+import { auditPage } from '../src/lib/auditPage'
 import { PORTFOLIO_PROJECTS } from '../src/lib/portfolioProjects'
 import { lexicalFromParagraphs, lexicalFromText } from '../src/lib/lexical'
 
@@ -269,15 +270,16 @@ async function run() {
     ),
   )
 
-  // Solution plans (home cards + /order/[slug])
+  // Plans (homepage Solutions + /order + AI Audit /order/audit-*)
   await seedCollection(
     payload,
     'solution-plans',
-    byLocale((loc) =>
-      solutions.cards.map((card, i) => {
+    byLocale((loc) => {
+      const solutionRows = solutions.cards.map((card, i) => {
         const plan = ORDER_PLANS.find((p) => p.slug === card.id) || ORDER_PLANS[i]
         return {
           title: card.title[loc],
+          kind: 'solution' as const,
           slug: card.id,
           price: card.price,
           currency: card.currency || 'ILS',
@@ -323,9 +325,134 @@ async function run() {
                 })),
               }
             : {}),
+          ...(plan?.seoTitle || plan?.seoDescription
+            ? {
+                seo: {
+                  ...(plan.seoTitle ? { title: plan.seoTitle[loc] || plan.seoTitle.en } : {}),
+                  ...(plan.seoDescription
+                    ? { description: plan.seoDescription[loc] || plan.seoDescription.en }
+                    : {}),
+                },
+              }
+            : {}),
         }
-      }),
-    ),
+      })
+
+      const auditRows = AUDIT_ORDER_PLANS.map((plan, i) => ({
+        title: plan.card.title[loc] || plan.card.title.en,
+        kind: 'audit' as const,
+        slug: plan.slug,
+        price: plan.card.price,
+        currency: plan.card.currency || 'ILS',
+        order: 100 + i,
+        priceNote: !!plan.card.priceNote,
+        featured: !!plan.card.featured,
+        ...(plan.card.originalPrice ? { originalPrice: plan.card.originalPrice } : {}),
+        features: plan.card.features.map((f) => ({
+          ...(f.label ? { label: f.label[loc] || f.label.en } : {}),
+          ...(f.value ? { value: f.value[loc] || f.value.en } : {}),
+        })),
+        ...(plan.subtitle ? { subtitle: plan.subtitle[loc] || plan.subtitle.en } : {}),
+        ...(plan.includes
+          ? { includes: lexicalFromText(plan.includes[loc] || plan.includes.en) }
+          : {}),
+        ...(plan.seoTitle || plan.seoDescription
+          ? {
+              seo: {
+                ...(plan.seoTitle ? { title: plan.seoTitle[loc] || plan.seoTitle.en } : {}),
+                ...(plan.seoDescription
+                  ? { description: plan.seoDescription[loc] || plan.seoDescription.en }
+                  : {}),
+              },
+            }
+          : {}),
+      }))
+
+      return [...solutionRows, ...auditRows]
+    }),
+  )
+
+  // Audit landing page (/audit)
+  await seedGlobal(
+    payload,
+    'audit-page',
+    byLocale((loc) => ({
+      title: auditPage.title[loc],
+      metaDescription: auditPage.metaDescription[loc],
+      tabs: {
+        audit: auditPage.tabs.audit[loc],
+        how: auditPage.tabs.how[loc],
+        pricing: auditPage.tabs.pricing[loc],
+      },
+      form: {
+        heading: auditPage.form.heading[loc],
+        intro: auditPage.form.intro[loc],
+        introNote: auditPage.form.introNote[loc],
+        requiredNote: auditPage.form.requiredNote[loc],
+        website: auditPage.form.website[loc],
+        websitePlaceholder: auditPage.form.websitePlaceholder[loc],
+        websiteInvalid: auditPage.form.websiteInvalid[loc],
+        auditLanguage: auditPage.form.auditLanguage[loc],
+        auditLanguageOptions: {
+          en: auditPage.form.auditLanguageOptions.en[loc],
+          ru: auditPage.form.auditLanguageOptions.ru[loc],
+          he: auditPage.form.auditLanguageOptions.he[loc],
+        },
+        submit: auditPage.form.submit[loc],
+        success: auditPage.form.success[loc],
+      },
+      how: {
+        kicker: auditPage.how.kicker[loc],
+        heroTitle: auditPage.how.heroTitle[loc],
+        heroIntro: auditPage.how.heroIntro[loc],
+        stats: auditPage.how.stats.map((s) => ({ label: s[loc] })),
+        stepsHeading: auditPage.how.stepsHeading[loc],
+        steps: auditPage.how.steps.map((s) => ({
+          label: s.label[loc],
+          title: s.title[loc],
+          body: s.body[loc],
+        })),
+        methodologyTitle: auditPage.how.methodologyTitle[loc],
+        weightNote: auditPage.how.weightNote[loc],
+        methodologyIntro: auditPage.how.methodologyIntro[loc],
+        pillars: auditPage.how.pillars.map((p) => ({
+          weight: p.weight,
+          title: p.title[loc],
+          body: p.body[loc],
+        })),
+        categoriesTitle: auditPage.how.categoriesTitle[loc],
+        categoriesIntro: auditPage.how.categoriesIntro[loc],
+        categories: auditPage.how.categories.map((c) => ({
+          title: c.title[loc],
+          body: c.body[loc],
+        })),
+        principlesTitle: auditPage.how.principlesTitle[loc],
+        principles: auditPage.how.principles.map((p) => ({
+          title: p.title[loc],
+          body: p.body[loc],
+        })),
+      },
+      pricing: {
+        kicker: auditPage.pricing.kicker[loc],
+        title: auditPage.pricing.title[loc],
+        intro: auditPage.pricing.intro[loc],
+        footnote: auditPage.pricing.footnote[loc],
+        agency: auditPage.pricing.agency[loc],
+        agencyCta: auditPage.pricing.agencyCta[loc],
+        plans: auditPage.pricing.plans.map((p) => ({
+          planId: p.id,
+          featured: p.id === 'diagnostic',
+          name: p.name[loc],
+          price: p.price[loc],
+          ...(p.priceCompare ? { priceCompare: p.priceCompare[loc] } : {}),
+          ...(p.priceNote ? { priceNote: p.priceNote[loc] } : {}),
+          ...(p.description ? { description: p.description[loc] } : {}),
+          features: p.features.map((f) => ({ feature: f[loc] })),
+          cta: p.cta[loc],
+          ctaHref: p.ctaHref,
+        })),
+      },
+    })),
   )
 
   // Portfolio projects (/portfolio + /portfolio/[slug])

@@ -430,7 +430,8 @@ export default [
 |---|---|---|
 | `/portfolio`, `/portfolio/[slug]` | **Portfolio Projects** (Pages) | `cmsPages.ts` |
 | `/services/[slug]` | **Services** (+ slug, hero, summary, description, offerings) | `cmsPages.ts` |
-| `/order/[slug]` | **Solution Plans** (+ slug, subtitle, promo, periods, addons) | `cmsPages.ts` |
+| `/order/[slug]` | **Plans** (`kind`: solution \| audit; + slug, subtitle, promo, periods, addons) | `cmsPages.ts` |
+| `/audit` | Global **Audit Page** (`audit-page`) | `auditPage.server.ts` |
 
 Главная по-прежнему через `getSiteContent`. Пустая/недоступная CMS → статический фолбэк.
 После добавления полей: перезапуск `npm run dev` (Postgres `push`), затем при необходимости

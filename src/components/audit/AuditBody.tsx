@@ -14,8 +14,15 @@ import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import {
   auditPage,
   tAudit,
+  type AuditPageContent,
   type AuditTabId,
 } from '@/lib/auditPage'
+
+const AuditPageContext = React.createContext<AuditPageContent>(auditPage as AuditPageContent)
+
+function useAuditPage(): AuditPageContent {
+  return React.useContext(AuditPageContext)
+}
 import {
   AUDIT_REPORT_LANGUAGES,
   buildAuditContactPayload,
@@ -35,6 +42,8 @@ if (typeof window !== 'undefined') {
 interface AuditBodyProps {
   locale: string
   theme?: 'light' | 'dark'
+  /** CMS-backed copy; falls back to static auditPage */
+  page?: AuditPageContent
 }
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
@@ -55,13 +64,13 @@ const AUDIT_BEAM_PROPS = {
   style: AUDIT_BEAM_STYLE,
 }
 
-export default function AuditBody({ locale, theme = 'dark' }: AuditBodyProps) {
+export default function AuditBody({ locale, theme = 'dark', page = auditPage }: AuditBodyProps) {
   const [activeTab, setActiveTab] = useState<AuditTabId>('audit')
   const formRef = useRef<HTMLDivElement | null>(null)
 
   const isLight = theme === 'light'
   const tForm = (field: Record<string, string>) => field[locale] || field.en
-  const title = tAudit(auditPage.title, locale)
+  const title = tAudit(page.title, locale)
 
   const bodyTone = isLight ? 'text-coal-900/85' : 'text-white/80'
   const headingTone = isLight ? 'text-coal-900' : 'text-white'
@@ -86,6 +95,7 @@ export default function AuditBody({ locale, theme = 'dark' }: AuditBodyProps) {
   }, [activeTab, locale, theme])
 
   return (
+    <AuditPageContext.Provider value={page as AuditPageContent}>
     <section
       id="audit-page"
       data-menu-contrast={isLight ? 'light' : 'dark'}
@@ -127,7 +137,7 @@ export default function AuditBody({ locale, theme = 'dark' }: AuditBodyProps) {
                       : 'text-white/70 hover:text-white'
                 }`}
               >
-                {tAudit(auditPage.tabs[tabId], locale)}
+                {tAudit(page.tabs[tabId], locale)}
               </button>
             )
           })}
@@ -168,6 +178,7 @@ export default function AuditBody({ locale, theme = 'dark' }: AuditBodyProps) {
 
       <div className="h-[calc(30px+2rem)] w-full shrink-0 lg:hidden" aria-hidden />
     </section>
+    </AuditPageContext.Provider>
   )
 }
 
@@ -231,6 +242,7 @@ function AuditLanguageSelect({
   describedBy?: string
   onChange: (language: AuditReportLanguage) => void
 }) {
+  const auditPage = useAuditPage()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
   const listId = `${id}-list`
@@ -334,6 +346,7 @@ function AuditFormPanel({
   bodyTone: string
   tForm: (field: Record<string, string>) => string
 }) {
+  const auditPage = useAuditPage()
   const isLight = theme === 'light'
   const beamSurfaceClass = isLight
     ? 'border-coal-900/10 bg-white'
@@ -818,6 +831,7 @@ function AuditHowPanel({
   headingTone: string
   accentTone: string
 }) {
+  const auditPage = useAuditPage()
   const { how } = auditPage
 
   return (
@@ -1007,12 +1021,12 @@ function AuditPricingCard({
   isLight,
   onRequestAudit,
 }: {
-  plan: (typeof auditPage.pricing.plans)[number]
+  plan: AuditPageContent['pricing']['plans'][number]
   locale: string
   isLight: boolean
   onRequestAudit: () => void
 }) {
-  const featured = plan.id === 'diagnostic'
+  const featured = Boolean(plan.featured) || plan.id === 'diagnostic'
   const priceText = tAudit(plan.price, locale)
   const { prefix, amount, suffix } = splitAuditPrice(priceText)
   const ctaHref = 'ctaHref' in plan ? plan.ctaHref : undefined
@@ -1122,6 +1136,7 @@ function AuditPricingPanel({
   isLight: boolean
   onRequestAudit: () => void
 }) {
+  const auditPage = useAuditPage()
   const { pricing } = auditPage
 
   return (

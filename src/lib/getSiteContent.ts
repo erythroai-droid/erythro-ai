@@ -323,7 +323,15 @@ export async function getSiteContent(): Promise<SiteContent> {
     }
 
     if (Array.isArray(plansRes?.docs) && plansRes.docs.length) {
-      content.solutions.cards = plansRes.docs.map((d: any, i: number) => {
+      content.solutions.cards = plansRes.docs
+        .filter((d: any) => {
+          const kind = d.kind === 'audit' || d.kind === 'solution' ? d.kind : undefined
+          const slug = typeof d.slug === 'string' ? d.slug : ''
+          if (kind === 'audit') return false
+          if (!kind && slug.startsWith('audit-')) return false
+          return true
+        })
+        .map((d: any, i: number) => {
         const fb = defaultSiteContent.solutions.cards[i]
         const features = (d.features ?? []).map((f: any, fi: number) => {
           const fbF = fb?.features?.[fi]

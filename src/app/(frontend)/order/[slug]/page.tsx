@@ -6,6 +6,7 @@ import OrderClient from './OrderClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getAllOrderSlugsCms, getCachedOrderPlans, getOrderPlanBySlug } from '@/lib/cmsPages'
 import { getAllOrderSlugs, ORDER_PLANS, tLocale } from '@/lib/orderPlans'
+import { getCachedAuditPage } from '@/lib/auditPage.server'
 import { getRequestPrefs } from '@/lib/requestPrefs'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
@@ -65,9 +66,10 @@ export default async function OrderPage({ params }: OrderPageProps) {
   if (!plan) notFound()
 
   const { initialLocale, initialTheme } = await getRequestPrefs('light')
-  const [content, plans] = await Promise.all([
+  const [content, plans, auditPageContent] = await Promise.all([
     getCachedSiteContent(),
     getCachedOrderPlans().catch(() => ORDER_PLANS),
+    getCachedAuditPage(),
   ])
 
   const list = plans.length ? plans : ORDER_PLANS
@@ -104,6 +106,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
       plan={plan}
       prev={toNeighbor(prevPlan)}
       next={toNeighbor(nextPlan)}
+      auditForm={isAuditPlan ? auditPageContent.form : undefined}
     />
   )
 }

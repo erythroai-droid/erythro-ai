@@ -50,7 +50,7 @@ import {
   type AuditReportLanguage,
 } from '@/lib/auditFormValidation'
 import { contactForm } from '@/translations'
-import { auditPage, tAudit } from '@/lib/auditPage'
+import { auditPage, tAudit, type AuditPageContent } from '@/lib/auditPage'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -66,6 +66,8 @@ interface OrderClientProps {
   plan: OrderPlan
   prev?: ProjectNavNeighbor | null
   next?: ProjectNavNeighbor | null
+  /** CMS form copy for audit checkout fields (website / report language). */
+  auditForm?: AuditPageContent['form']
 }
 
 export default function OrderClient({
@@ -75,9 +77,11 @@ export default function OrderClient({
   plan,
   prev = null,
   next = null,
+  auditForm,
 }: OrderClientProps) {
   const a11yTranslations = content.accessibility
   const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'light', initialTheme)
+  const formCopy = auditForm ?? auditPage.form
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   const pickA11y = (field?: Record<string, string> | null) =>
@@ -1270,7 +1274,7 @@ function AuditOrderModal({
               {locale === 'ru' ? 'Заказ оформлен!' : locale === 'he' ? 'ההזמנה התקבלה!' : 'Order received!'}
             </h2>
             <p className="mx-auto max-w-[420px] text-sm text-white/80 leading-6">
-              {tAudit(auditPage.form.success, locale)}
+              {tAudit(formCopy.success, locale)}
             </p>
             {orderId ? (
               <p className="mx-auto mt-3 max-w-[420px] text-sm text-white/80">
@@ -1390,7 +1394,7 @@ function AuditOrderModal({
 
                 <div>
                   <label htmlFor="audit-order-website" className={labelClass}>
-                    {tAudit(auditPage.form.website, locale)}
+                    {tAudit(formCopy.website, locale)}
                     {requiredMark}
                   </label>
                   <input
@@ -1401,7 +1405,7 @@ function AuditOrderModal({
                     required
                     value={values.website}
                     onChange={handleChange}
-                    placeholder={tAudit(auditPage.form.websitePlaceholder, locale)}
+                    placeholder={tAudit(formCopy.websitePlaceholder, locale)}
                     className={inputClass('website')}
                     autoComplete="url"
                     autoCapitalize="off"
@@ -1414,7 +1418,7 @@ function AuditOrderModal({
                   {fieldErrors.website ? (
                     <p role="alert" className="mt-1 m-0 text-xs text-erythro-500">
                       {fieldErrors.website === 'invalid'
-                        ? tAudit(auditPage.form.websiteInvalid, locale)
+                        ? tAudit(formCopy.websiteInvalid, locale)
                         : tForm(contactForm.fieldRequired)}
                     </p>
                   ) : null}
@@ -1423,7 +1427,7 @@ function AuditOrderModal({
                 <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                   <div ref={langSelectRef} className="relative">
                     <label htmlFor="audit-order-language" className={labelClass}>
-                      {tAudit(auditPage.form.auditLanguage, locale)}
+                      {tAudit(formCopy.auditLanguage, locale)}
                       {requiredMark}
                     </label>
                     <button
@@ -1436,7 +1440,7 @@ function AuditOrderModal({
                         'auditLanguage',
                       )} cursor-pointer pe-10 text-start flex items-center justify-between`}
                     >
-                      <span>{tAudit(auditPage.form.auditLanguageOptions[values.auditLanguage], locale)}</span>
+                      <span>{tAudit(formCopy.auditLanguageOptions[values.auditLanguage], locale)}</span>
                       <svg
                         className={`h-4 w-4 text-white/50 transition-transform ${
                           langSelectOpen ? 'rotate-180' : ''
@@ -1472,7 +1476,7 @@ function AuditOrderModal({
                                   selected ? 'text-gold-500 bg-white/5' : 'text-white'
                                 } hover:bg-gold-500 hover:text-coal-900`}
                               >
-                                {tAudit(auditPage.form.auditLanguageOptions[lang], locale)}
+                                {tAudit(formCopy.auditLanguageOptions[lang], locale)}
                               </button>
                             </li>
                           )

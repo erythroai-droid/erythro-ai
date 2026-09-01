@@ -30,6 +30,7 @@ import { SiteSettings } from './globals/SiteSettings'
 import { LegalPrivacy } from './globals/LegalPrivacy'
 import { LegalTerms } from './globals/LegalTerms'
 import { LegalAccessibility } from './globals/LegalAccessibility'
+import { AuditPage } from './globals/AuditPage'
 import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
@@ -45,6 +46,11 @@ export default buildConfig({
     },
     components: {
       actions: ['/components/admin/ThemeToggle#ThemeToggle'],
+      beforeDashboard: ['/components/admin/AuditsDashboard#AuditsDashboard'],
+      afterNavLinks: [
+        '/components/admin/AuditsNavLink#AuditsNavLink',
+        '/components/admin/AuditOrdersNavLink#AuditOrdersNavLink',
+      ],
     },
   },
   collections: [
@@ -58,7 +64,7 @@ export default buildConfig({
     Partners,
     ContactSubmissions,
   ],
-  globals: [Header, Hero, ServicesIntro, CaseStudies, SolutionsIntro, FAQ, Footer, SiteSettings, LegalPrivacy, LegalTerms, LegalAccessibility],
+  globals: [Header, Hero, ServicesIntro, CaseStudies, SolutionsIntro, FAQ, Footer, SiteSettings, LegalPrivacy, LegalTerms, LegalAccessibility, AuditPage],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, EXPERIMENTAL_TableFeature()],
   }),
