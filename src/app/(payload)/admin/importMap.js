@@ -26,12 +26,17 @@ import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { AuditActions as AuditActions_d68e8284f938145fd3a6f753ff3d078d } from '../../../components/admin/AuditActions'
 import { AuditActionsCell as AuditActionsCell_d68e8284f938145fd3a6f753ff3d078d } from '../../../components/admin/AuditActions'
+import { CompactTextCell as CompactTextCell_6c75be75af3d474a9a4458997fd0b0d8 } from '../../../components/admin/CompactTextCell'
+import { SourceBadgeCell as SourceBadgeCell_3472cf698bdf4ced58b0213a911dc07d } from '../../../components/admin/SourceBadgeCell'
 import { AuditStatusCell as AuditStatusCell_90598d21a356610c87f8c97a143ebe3d } from '../../../components/admin/AuditStatusCell'
+import { CompactNumberCell as CompactNumberCell_2b4ba1512b08e2926a6b0339bba30411 } from '../../../components/admin/CompactNumberCell'
 import { SiteEmailSelect as SiteEmailSelect_30db27f8d892d48b69f8e5b1c40f89db } from '../../../components/admin/SiteEmailSelect'
 import { ThemeToggle as ThemeToggle_fc85bd5ac375c29cf24795ab8778bf43 } from '../../../components/admin/ThemeToggle'
-import { AuditsNavLink as AuditsNavLink_06c591d1fd6d00eb37f90ea2265fe269 } from '../../../components/admin/AuditsNavLink'
+import { SubmissionSourcesNavLinks as SubmissionSourcesNavLinks_5c33d830c42ef071fd813d575880d20e } from '../../../components/admin/SubmissionSourcesNavLinks'
 import { AuditOrdersNavLink as AuditOrdersNavLink_47538a203d0ccfb4bd7092f885babc58 } from '../../../components/admin/AuditOrdersNavLink'
+import { SubmissionsOverview as SubmissionsOverview_654c3d00fb7a4821aa383852b218e1f7 } from '../../../components/admin/SubmissionsOverview'
 import { AuditsDashboard as AuditsDashboard_df9fced2d399c5eaf8b22d96df00fd90 } from '../../../components/admin/AuditsDashboard'
+import { SubmissionsListStyles as SubmissionsListStyles_d50d2c0c3dc71fb11b818ef92d0607be } from '../../../components/admin/SubmissionsListStyles'
 import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -65,12 +70,17 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/components/admin/AuditActions#AuditActions": AuditActions_d68e8284f938145fd3a6f753ff3d078d,
   "/components/admin/AuditActions#AuditActionsCell": AuditActionsCell_d68e8284f938145fd3a6f753ff3d078d,
+  "/components/admin/CompactTextCell#CompactTextCell": CompactTextCell_6c75be75af3d474a9a4458997fd0b0d8,
+  "/components/admin/SourceBadgeCell#SourceBadgeCell": SourceBadgeCell_3472cf698bdf4ced58b0213a911dc07d,
   "/components/admin/AuditStatusCell#AuditStatusCell": AuditStatusCell_90598d21a356610c87f8c97a143ebe3d,
+  "/components/admin/CompactNumberCell#CompactNumberCell": CompactNumberCell_2b4ba1512b08e2926a6b0339bba30411,
   "/components/admin/SiteEmailSelect#SiteEmailSelect": SiteEmailSelect_30db27f8d892d48b69f8e5b1c40f89db,
   "/components/admin/ThemeToggle#ThemeToggle": ThemeToggle_fc85bd5ac375c29cf24795ab8778bf43,
-  "/components/admin/AuditsNavLink#AuditsNavLink": AuditsNavLink_06c591d1fd6d00eb37f90ea2265fe269,
+  "/components/admin/SubmissionSourcesNavLinks#SubmissionSourcesNavLinks": SubmissionSourcesNavLinks_5c33d830c42ef071fd813d575880d20e,
   "/components/admin/AuditOrdersNavLink#AuditOrdersNavLink": AuditOrdersNavLink_47538a203d0ccfb4bd7092f885babc58,
+  "/components/admin/SubmissionsOverview#SubmissionsOverview": SubmissionsOverview_654c3d00fb7a4821aa383852b218e1f7,
   "/components/admin/AuditsDashboard#AuditsDashboard": AuditsDashboard_df9fced2d399c5eaf8b22d96df00fd90,
+  "/components/admin/SubmissionsListStyles#SubmissionsListStyles": SubmissionsListStyles_d50d2c0c3dc71fb11b818ef92d0607be,
   "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

@@ -46,9 +46,13 @@ export default buildConfig({
     },
     components: {
       actions: ['/components/admin/ThemeToggle#ThemeToggle'],
-      beforeDashboard: ['/components/admin/AuditsDashboard#AuditsDashboard'],
+      providers: ['/components/admin/SubmissionsListStyles#SubmissionsListStyles'],
+      beforeDashboard: [
+        '/components/admin/SubmissionsOverview#SubmissionsOverview',
+        '/components/admin/AuditsDashboard#AuditsDashboard',
+      ],
       afterNavLinks: [
-        '/components/admin/AuditsNavLink#AuditsNavLink',
+        '/components/admin/SubmissionSourcesNavLinks#SubmissionSourcesNavLinks',
         '/components/admin/AuditOrdersNavLink#AuditOrdersNavLink',
       ],
     },
