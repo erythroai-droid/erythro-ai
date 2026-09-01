@@ -31,7 +31,7 @@ export const AuditOrdersNavLink: React.FC = () => {
       prefetch={false}
       {...(active ? { 'aria-current': 'page' as const } : {})}
     >
-      <span className="nav__link-label">Audit Orders</span>
+      <span className="nav__link-label">Audit Order Plans</span>
     </Link>
   )
 }
