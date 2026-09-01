@@ -22,7 +22,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     `)
     await db.execute(sql`
       ALTER TABLE "contact_submissions"
-      ADD COLUMN IF NOT EXISTS "html_result" varchar;
+      ADD COLUMN IF NOT EXISTS "html_result" text;
     `)
     await db.execute(sql`
       ALTER TABLE "contact_submissions"

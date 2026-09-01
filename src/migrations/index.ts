@@ -25,6 +25,7 @@ import * as migration_20260822_010000_site_settings_telegram_rename from './2026
 import * as migration_20260831_010000_contact_submissions_audit_fields from './20260831_010000_contact_submissions_audit_fields'
 import * as migration_20260831_120000_contact_submissions_audit_pipeline from './20260831_120000_contact_submissions_audit_pipeline'
 import * as migration_20260901_010000_audit_page_cms from './20260901_010000_audit_page_cms'
+import * as migration_20260902_010000_contact_submissions_ip from './20260902_010000_contact_submissions_ip'
 
 export const migrations = [
   {
@@ -161,5 +162,10 @@ export const migrations = [
     up: migration_20260901_010000_audit_page_cms.up,
     down: migration_20260901_010000_audit_page_cms.down,
     name: '20260901_010000_audit_page_cms',
+  },
+  {
+    up: migration_20260902_010000_contact_submissions_ip.up,
+    down: migration_20260902_010000_contact_submissions_ip.down,
+    name: '20260902_010000_contact_submissions_ip',
   },
 ]

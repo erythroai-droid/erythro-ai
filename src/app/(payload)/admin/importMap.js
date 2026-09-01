@@ -24,8 +24,11 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { SubmissionOpenField as SubmissionOpenField_ed3429d9770ee2c9a966d914f88f275f } from '../../../components/admin/SubmissionOpenCell'
+import { SubmissionOpenCell as SubmissionOpenCell_ed3429d9770ee2c9a966d914f88f275f } from '../../../components/admin/SubmissionOpenCell'
+import { SubmissionDetail as SubmissionDetail_53daf1427e2ae5403dda1bc184a082e3 } from '../../../components/admin/SubmissionDetail'
 import { AuditActions as AuditActions_d68e8284f938145fd3a6f753ff3d078d } from '../../../components/admin/AuditActions'
-import { AuditActionsCell as AuditActionsCell_d68e8284f938145fd3a6f753ff3d078d } from '../../../components/admin/AuditActions'
+import { SubmissionNameCell as SubmissionNameCell_8dab726a5f91765317fbac34157b2a50 } from '../../../components/admin/SubmissionNameCell'
 import { CompactTextCell as CompactTextCell_6c75be75af3d474a9a4458997fd0b0d8 } from '../../../components/admin/CompactTextCell'
 import { SourceBadgeCell as SourceBadgeCell_3472cf698bdf4ced58b0213a911dc07d } from '../../../components/admin/SourceBadgeCell'
 import { AuditStatusCell as AuditStatusCell_90598d21a356610c87f8c97a143ebe3d } from '../../../components/admin/AuditStatusCell'
@@ -68,8 +71,11 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "/components/admin/SubmissionOpenCell#SubmissionOpenField": SubmissionOpenField_ed3429d9770ee2c9a966d914f88f275f,
+  "/components/admin/SubmissionOpenCell#SubmissionOpenCell": SubmissionOpenCell_ed3429d9770ee2c9a966d914f88f275f,
+  "/components/admin/SubmissionDetail#SubmissionDetail": SubmissionDetail_53daf1427e2ae5403dda1bc184a082e3,
   "/components/admin/AuditActions#AuditActions": AuditActions_d68e8284f938145fd3a6f753ff3d078d,
-  "/components/admin/AuditActions#AuditActionsCell": AuditActionsCell_d68e8284f938145fd3a6f753ff3d078d,
+  "/components/admin/SubmissionNameCell#SubmissionNameCell": SubmissionNameCell_8dab726a5f91765317fbac34157b2a50,
   "/components/admin/CompactTextCell#CompactTextCell": CompactTextCell_6c75be75af3d474a9a4458997fd0b0d8,
   "/components/admin/SourceBadgeCell#SourceBadgeCell": SourceBadgeCell_3472cf698bdf4ced58b0213a911dc07d,
   "/components/admin/AuditStatusCell#AuditStatusCell": AuditStatusCell_90598d21a356610c87f8c97a143ebe3d,
