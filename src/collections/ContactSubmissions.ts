@@ -12,8 +12,12 @@ export const ContactSubmissions: CollectionConfig = {
   labels: { singular: 'Submission', plural: 'Submissions' },
   admin: {
     useAsTitle: 'name',
-    /** Use sidebar shortcuts (Solution / AI Audit / Contact) — not the unfiltered list. */
-    hidden: true,
+    /**
+     * Keep routes reachable for filtered sidebar links (Solution / AI Audit / Contact).
+     * `hidden: true` 404s those URLs — Payload drops the collection from visibleEntities.
+     * `group: false` hides only the unfiltered entry from the default nav / dashboard.
+     */
+    group: false,
     defaultColumns: [
       'auditActions',
       'name',
@@ -24,7 +28,6 @@ export const ContactSubmissions: CollectionConfig = {
       'createdAt',
     ],
     listSearchableFields: ['name', 'email', 'website', 'planSlug'],
-    group: 'Operations',
     description:
       'All site intakes. Open a filtered list from the sidebar: Solution Orders, AI Audit Orders, or Contact Inquiries.',
   },
