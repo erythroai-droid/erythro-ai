@@ -108,6 +108,17 @@ Access: публичный REST `create` **запрещён**. Создание 
 
 Импорты Payload 3: `import type { CollectionConfig } from 'payload'` (не `payload/types`).
 
+### 3.4. Управление в Payload Admin
+
+| Элемент | Где |
+|---|---|
+| Тексты `/audit` (форма, How it works, Pricing cards) | Global **Pages → Audit Page** (`audit-page`) |
+| Заказы `/order/audit-*` | Collection **Plans** с `kind: AI Audit` (sidebar **Audit Orders**) |
+| Счётчики pipeline + re-queue | Dashboard + Contact Submissions / AI Audits |
+| Staff re-queue API | `POST /api/audit/admin/requeue` |
+
+Статический фолбэк: `src/lib/auditPage.ts`, `AUDIT_ORDER_PLANS` в `orderPlans.ts`. После seed CMS — источник правды.
+
 ---
 
 ## 4. Хранилище: миграция на Cloudflare R2
@@ -334,6 +345,8 @@ networks:
 8. [x] Письмо клиенту через существующий SMTP (`order@erythro.ai`) — worker `mail.js` + `SMTP_PASS` на VPS; email/name из `/api/contact` (fallback: CMS internal GET); ссылка в письме = `/audit/report/[id]` (не private R2)
 9. [x] n8n cron reconciliation — `POST /api/audit/reconcile` + import `infra/n8n/workflows/audit-reconcile.json` (см. [`n8n-audit-reconcile.md`](../infrastructure/n8n-audit-reconcile.md))
 9a. [x] Реальный QA_Auditor (Java/Playwright) в `services/audit-agent/QA_Auditor` вместо stub HTML
+9b. [x] Управление пайплайном аудита в Payload Admin (dashboard, nav «AI Audits», re-queue)
+9c. [x] CMS: global `audit-page` + Plans `kind=audit` для `/audit` и `/order/audit-*`
 10. [ ] (Позже) оплата → тот же trigger, что п.6
 11. [ ] (Позже) публичный `R2_PUBLIC_BASE_URL` / custom domain для прямых ссылок на HTML/PDF
 

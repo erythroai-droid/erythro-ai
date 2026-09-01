@@ -24,8 +24,14 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { AuditActions as AuditActions_d68e8284f938145fd3a6f753ff3d078d } from '../../../components/admin/AuditActions'
+import { AuditActionsCell as AuditActionsCell_d68e8284f938145fd3a6f753ff3d078d } from '../../../components/admin/AuditActions'
+import { AuditStatusCell as AuditStatusCell_90598d21a356610c87f8c97a143ebe3d } from '../../../components/admin/AuditStatusCell'
 import { SiteEmailSelect as SiteEmailSelect_30db27f8d892d48b69f8e5b1c40f89db } from '../../../components/admin/SiteEmailSelect'
 import { ThemeToggle as ThemeToggle_fc85bd5ac375c29cf24795ab8778bf43 } from '../../../components/admin/ThemeToggle'
+import { AuditsNavLink as AuditsNavLink_06c591d1fd6d00eb37f90ea2265fe269 } from '../../../components/admin/AuditsNavLink'
+import { AuditOrdersNavLink as AuditOrdersNavLink_47538a203d0ccfb4bd7092f885babc58 } from '../../../components/admin/AuditOrdersNavLink'
+import { AuditsDashboard as AuditsDashboard_df9fced2d399c5eaf8b22d96df00fd90 } from '../../../components/admin/AuditsDashboard'
 import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -57,8 +63,14 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "/components/admin/AuditActions#AuditActions": AuditActions_d68e8284f938145fd3a6f753ff3d078d,
+  "/components/admin/AuditActions#AuditActionsCell": AuditActionsCell_d68e8284f938145fd3a6f753ff3d078d,
+  "/components/admin/AuditStatusCell#AuditStatusCell": AuditStatusCell_90598d21a356610c87f8c97a143ebe3d,
   "/components/admin/SiteEmailSelect#SiteEmailSelect": SiteEmailSelect_30db27f8d892d48b69f8e5b1c40f89db,
   "/components/admin/ThemeToggle#ThemeToggle": ThemeToggle_fc85bd5ac375c29cf24795ab8778bf43,
+  "/components/admin/AuditsNavLink#AuditsNavLink": AuditsNavLink_06c591d1fd6d00eb37f90ea2265fe269,
+  "/components/admin/AuditOrdersNavLink#AuditOrdersNavLink": AuditOrdersNavLink_47538a203d0ccfb4bd7092f885babc58,
+  "/components/admin/AuditsDashboard#AuditsDashboard": AuditsDashboard_df9fced2d399c5eaf8b22d96df00fd90,
   "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

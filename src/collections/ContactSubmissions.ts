@@ -16,9 +16,14 @@ export const ContactSubmissions: CollectionConfig = {
       'planSlug',
       'auditStatus',
       'auditScore',
+      'retryCount',
+      'auditActions',
       'createdAt',
     ],
+    listSearchableFields: ['name', 'email', 'website', 'planSlug'],
     group: 'Content',
+    description:
+      'Contact / order leads and AI Audit pipeline (source=audit). Use sidebar “AI Audits” for the filtered list.',
   },
   // Submissions are created server-side via the local API in /api/contact
   // (which overrides access), so public REST create is disabled to prevent spam.
@@ -30,6 +35,17 @@ export const ContactSubmissions: CollectionConfig = {
     delete: ({ req }) => Boolean(req.user),
   },
   fields: [
+    {
+      name: 'auditActions',
+      type: 'ui',
+      admin: {
+        condition: auditOnly,
+        components: {
+          Field: '/components/admin/AuditActions#AuditActions',
+          Cell: '/components/admin/AuditActions#AuditActionsCell',
+        },
+      },
+    },
     { name: 'name', type: 'text', required: true },
     { name: 'email', type: 'email', required: true },
     { name: 'phone', type: 'text' },
@@ -101,6 +117,9 @@ export const ContactSubmissions: CollectionConfig = {
         description:
           'Pipeline: new → in_progress → report_sent; failed after max retries (manual review)',
         condition: auditOnly,
+        components: {
+          Cell: '/components/admin/AuditStatusCell#AuditStatusCell',
+        },
       },
     },
     {

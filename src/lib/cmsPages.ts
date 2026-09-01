@@ -608,6 +608,12 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
 
   return {
     slug: d.slug || fb.slug,
+    kind:
+      d.kind === 'audit' || d.kind === 'solution'
+        ? d.kind
+        : String(d.slug || fb.slug).startsWith('audit-')
+          ? 'audit'
+          : fb.kind || 'solution',
     card,
     subtitle: locMapCms(d.subtitle),
     periods,

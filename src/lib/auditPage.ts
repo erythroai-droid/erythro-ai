@@ -630,3 +630,63 @@ export const auditPage = {
     ],
   },
 } as const
+
+/** Mutable CMS / runtime shape (arrays, not readonly tuples from `as const`). */
+export type AuditPageContent = {
+  slug: string
+  title: Localized
+  metaDescription: Localized
+  tabs: { audit: Localized; how: Localized; pricing: Localized }
+  form: {
+    heading: Localized
+    intro: Localized
+    introNote: Localized
+    requiredNote: Localized
+    website: Localized
+    websitePlaceholder: Localized
+    websiteInvalid: Localized
+    auditLanguage: Localized
+    auditLanguageOptions: { en: Localized; ru: Localized; he: Localized }
+    submit: Localized
+    success: Localized
+  }
+  how: {
+    kicker: Localized
+    heroTitle: Localized
+    heroIntro: Localized
+    stats: Localized[]
+    stepsHeading: Localized
+    steps: Array<{ label: Localized; title: Localized; body: Localized }>
+    methodologyTitle: Localized
+    weightNote: Localized
+    methodologyIntro: Localized
+    pillars: Array<{ weight: string; title: Localized; body: Localized }>
+    categoriesTitle: Localized
+    categoriesIntro: Localized
+    categories: Array<{ title: Localized; body: Localized }>
+    principlesTitle: Localized
+    principles: Array<{ title: Localized; body: Localized }>
+  }
+  pricing: {
+    kicker: Localized
+    title: Localized
+    intro: Localized
+    footnote: Localized
+    agency: Localized
+    agencyCta: Localized
+    plans: Array<{
+      id: string
+      badge: string | null
+      name: Localized
+      price: Localized
+      priceCompare?: Localized
+      priceNote?: Localized
+      description?: Localized
+      features: Localized[]
+      cta: Localized
+      ctaHref: string
+      featured?: boolean
+    }>
+  }
+}
+

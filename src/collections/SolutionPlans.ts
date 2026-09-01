@@ -6,15 +6,32 @@ import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
 
 export const SolutionPlans: CollectionConfig = {
   slug: 'solution-plans',
-  labels: { singular: 'Solution Plan', plural: 'Solution Plans' },
+  labels: { singular: 'Plan', plural: 'Plans' },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'slug', 'price', 'featured', 'order'],
+    defaultColumns: ['title', 'kind', 'slug', 'price', 'featured', 'order'],
     group: 'Content',
+    description:
+      'Solution plans (homepage Solutions + /order) and AI Audit plans (/order/audit-*). Use the "Kind" field to separate them.',
   },
   hooks: { afterChange: [revalidateOnChange], afterDelete: [revalidateOnDelete] },
   fields: [
     locText('title', { required: true }),
+    {
+      name: 'kind',
+      type: 'select',
+      required: true,
+      defaultValue: 'solution',
+      options: [
+        { label: 'Solution', value: 'solution' },
+        { label: 'AI Audit', value: 'audit' },
+      ],
+      admin: {
+        description:
+          'Solution = homepage Solutions section + /order. AI Audit = /order/audit-* only (hidden from homepage Solutions).',
+        position: 'sidebar',
+      },
+    },
     {
       name: 'slug',
       type: 'text',

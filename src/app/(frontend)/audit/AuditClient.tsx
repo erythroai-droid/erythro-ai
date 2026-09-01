@@ -12,18 +12,21 @@ import WhatsAppButton from '@/components/WhatsAppButton'
 import HeaderChipStrip from '@/components/HeaderChipStrip'
 import AuditBody from '@/components/audit/AuditBody'
 import type { SiteContent } from '@/lib/defaultContent'
+import type { AuditPageContent } from '@/lib/auditPage'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface AuditClientProps {
   initialLocale: string
   initialTheme?: 'light' | 'dark'
   content: SiteContent
+  auditPageContent: AuditPageContent
 }
 
 export default function AuditClient({
   initialLocale,
   initialTheme,
   content,
+  auditPageContent,
 }: AuditClientProps) {
   const a11yTranslations = content.accessibility
   const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
@@ -86,7 +89,7 @@ export default function AuditClient({
           />
 
           <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
-            <AuditBody locale={locale} theme={theme} />
+            <AuditBody locale={locale} theme={theme} page={auditPageContent} />
           </div>
 
           <div className="relative z-30 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
