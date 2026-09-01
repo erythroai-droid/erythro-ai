@@ -4,7 +4,7 @@ import {
   AUDITS_ACTIVE_HREF,
   AUDITS_FAILED_HREF,
   AUDITS_LIST_HREF,
-} from './auditAdminLinks'
+} from './submissionAdminLinks'
 
 type StatusKey = 'new' | 'in_progress' | 'failed' | 'report_sent'
 
@@ -119,8 +119,8 @@ export const AuditsDashboard: React.FC<ServerProps> = async ({ payload, user }) 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-          gap: 10,
+          gridTemplateColumns: 'repeat(4, minmax(0, 92px))',
+          gap: 8,
         }}
       >
         {(Object.keys(LABELS) as StatusKey[]).map((key) => (

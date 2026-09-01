@@ -212,26 +212,26 @@ export const AuditActionsCell: React.FC<{ rowData?: Row }> = ({ rowData }) => {
   }
 
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-      <a href={statusPage} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>
+    <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 4, alignItems: 'center', maxWidth: 132 }}>
+      <a href={statusPage} target="_blank" rel="noreferrer" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
         Status
       </a>
       {reportUrl ? (
-        <a href={reportUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12 }}>
-          Report
+        <a href={reportUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
+          PDF
         </a>
       ) : null}
       <button
         type="button"
         className="btn btn--size-small btn--style-secondary"
-        style={{ ...btnStyle, paddingInline: 8, fontSize: 12 }}
+        style={{ ...btnStyle, paddingInline: 6, fontSize: 11, minHeight: 24 }}
         disabled={!website || busy}
         onClick={() => void onRequeue()}
       >
-        {busy ? '…' : 'Re-queue'}
+        {busy ? '…' : '↻'}
       </button>
       {hint ? (
-        <span style={{ fontSize: 11, color: 'var(--theme-elevation-600)' }}>{hint}</span>
+        <span style={{ fontSize: 10, color: 'var(--theme-elevation-600)', whiteSpace: 'nowrap' }}>{hint}</span>
       ) : null}
     </div>
   )

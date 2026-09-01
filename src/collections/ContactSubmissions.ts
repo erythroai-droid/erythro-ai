@@ -1,29 +1,32 @@
 import type { CollectionConfig } from 'payload'
+import { CONTACT_SUBMISSION_SOURCES } from '@/lib/contactSubmissionSources'
 
 const auditOnly = (_: unknown, siblingData: { source?: string | null }) =>
   siblingData?.source === 'audit'
 
+const orderOrAudit = (_: unknown, siblingData: { source?: string | null }) =>
+  siblingData?.source === 'audit' || siblingData?.source === 'order'
+
 export const ContactSubmissions: CollectionConfig = {
   slug: 'contact-submissions',
-  labels: { singular: 'Contact Submission', plural: 'Contact Submissions' },
+  labels: { singular: 'Submission', plural: 'Submissions' },
   admin: {
     useAsTitle: 'name',
+    /** Use sidebar shortcuts (Solution / AI Audit / Contact) — not the unfiltered list. */
+    hidden: true,
     defaultColumns: [
+      'auditActions',
       'name',
       'email',
-      'source',
       'website',
-      'planSlug',
       'auditStatus',
       'auditScore',
-      'retryCount',
-      'auditActions',
       'createdAt',
     ],
     listSearchableFields: ['name', 'email', 'website', 'planSlug'],
-    group: 'Content',
+    group: 'Operations',
     description:
-      'Contact / order leads and AI Audit pipeline (source=audit). Use sidebar “AI Audits” for the filtered list.',
+      'All site intakes. Open a filtered list from the sidebar: Solution Orders, AI Audit Orders, or Contact Inquiries.',
   },
   // Submissions are created server-side via the local API in /api/contact
   // (which overrides access), so public REST create is disabled to prevent spam.
@@ -46,20 +49,25 @@ export const ContactSubmissions: CollectionConfig = {
         },
       },
     },
-    { name: 'name', type: 'text', required: true },
-    { name: 'email', type: 'email', required: true },
+    { name: 'name', type: 'text', required: true, admin: { components: { Cell: '/components/admin/CompactTextCell#CompactTextCell' } } },
+    { name: 'email', type: 'email', required: true, admin: { components: { Cell: '/components/admin/CompactTextCell#CompactTextCell' } } },
     { name: 'phone', type: 'text' },
     { name: 'message', type: 'textarea', required: true },
     {
       name: 'source',
       type: 'select',
       defaultValue: 'contact',
-      options: [
-        { label: 'Contact / feedback', value: 'contact' },
-        { label: 'Solutions / Order', value: 'order' },
-        { label: 'AI Audit', value: 'audit' },
-      ],
-      admin: { description: 'Which site form created this submission', readOnly: true },
+      options: CONTACT_SUBMISSION_SOURCES.map((s) => ({
+        label: s.navLabel,
+        value: s.id,
+      })),
+      admin: {
+        description: 'Intake channel (set by the site form; do not change manually)',
+        readOnly: true,
+        components: {
+          Cell: '/components/admin/SourceBadgeCell#SourceBadgeCell',
+        },
+      },
     },
     {
       name: 'locale',
@@ -70,8 +78,9 @@ export const ContactSubmissions: CollectionConfig = {
       name: 'website',
       type: 'text',
       admin: {
-        description: 'Audited site URL (AI Audit / order checkout)',
+        description: 'Audited site URL (AI Audit checkout only)',
         condition: auditOnly,
+        components: { Cell: '/components/admin/CompactTextCell#CompactTextCell' },
       },
     },
     {
@@ -83,7 +92,7 @@ export const ContactSubmissions: CollectionConfig = {
         { label: 'Hebrew', value: 'he' },
       ],
       admin: {
-        description: 'Preferred report language',
+        description: 'Preferred report language (AI Audit)',
         condition: auditOnly,
       },
     },
@@ -91,16 +100,18 @@ export const ContactSubmissions: CollectionConfig = {
       name: 'planSlug',
       type: 'text',
       admin: {
-        description: 'Ordered plan slug (audit-free / audit-diagnostic / audit-pro)',
-        condition: auditOnly,
+        description: 'Ordered plan slug from checkout (solutions or audit plans)',
+        condition: orderOrAudit,
+        components: { Cell: '/components/admin/CompactTextCell#CompactTextCell' },
       },
     },
     {
       name: 'planTotal',
       type: 'text',
       admin: {
-        description: 'Displayed order total at checkout (optional)',
-        condition: auditOnly,
+        description: 'Displayed order total at checkout',
+        condition: orderOrAudit,
+        components: { Cell: '/components/admin/CompactTextCell#CompactTextCell' },
       },
     },
     {
@@ -130,6 +141,7 @@ export const ContactSubmissions: CollectionConfig = {
       admin: {
         description: 'Final audit score (0–100)',
         condition: auditOnly,
+        components: { Cell: '/components/admin/CompactNumberCell#CompactNumberCell' },
       },
     },
     {
