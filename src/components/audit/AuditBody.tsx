@@ -454,11 +454,17 @@ function AuditFormPanel({
         ),
       })
       if (res.status === 429) {
-        setSubmitError(tForm(contactForm.rateLimited))
+        const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
+        setSubmitError(errPayload?.message || tForm(contactForm.rateLimited))
         setStatus('error')
         return
       }
-      if (!res.ok) throw new Error('Request failed')
+      if (!res.ok) {
+        const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
+        setSubmitError(errPayload?.message || tForm(contactForm.error))
+        setStatus('error')
+        return
+      }
       const payload = (await res.json().catch(() => null)) as {
         submissionId?: number | string
         orderId?: string

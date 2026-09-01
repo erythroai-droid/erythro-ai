@@ -113,6 +113,7 @@ export interface Config {
     'legal-privacy': LegalPrivacy;
     'legal-terms': LegalTerm;
     'legal-accessibility': LegalAccessibility;
+    'audit-page': AuditPage;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -126,6 +127,7 @@ export interface Config {
     'legal-privacy': LegalPrivacySelect<false> | LegalPrivacySelect<true>;
     'legal-terms': LegalTermsSelect<false> | LegalTermsSelect<true>;
     'legal-accessibility': LegalAccessibilitySelect<false> | LegalAccessibilitySelect<true>;
+    'audit-page': AuditPageSelect<false> | AuditPageSelect<true>;
   };
   locale: 'en' | 'ru' | 'he';
   widgets: {
@@ -337,12 +339,18 @@ export interface Service {
   createdAt: string;
 }
 /**
+ * Solution plans (homepage Solutions + /order) and AI Audit plans (/order/audit-*). Use the "Kind" field to separate them.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "solution-plans".
  */
 export interface SolutionPlan {
   id: number;
   title: string;
+  /**
+   * Solution = homepage Solutions section + /order. AI Audit = /order/audit-* only (hidden from homepage Solutions).
+   */
+  kind: 'solution' | 'audit';
   /**
    * Stable id / order URL, e.g. "business-automation" → /order/business-automation
    */
@@ -710,6 +718,8 @@ export interface Partner {
   createdAt: string;
 }
 /**
+ * All site intakes. Open a filtered list from the sidebar: Solution Orders, AI Audit Orders, or Contact Inquiries.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contact-submissions".
  */
@@ -720,27 +730,27 @@ export interface ContactSubmission {
   phone?: string | null;
   message: string;
   /**
-   * Which site form created this submission
+   * Intake channel (set by the site form; do not change manually)
    */
-  source?: ('contact' | 'order' | 'audit') | null;
+  source?: ('order' | 'audit' | 'contact') | null;
   /**
    * Site language the visitor used
    */
   locale?: string | null;
   /**
-   * Audited site URL (AI Audit / order checkout)
+   * Audited site URL (AI Audit checkout only)
    */
   website?: string | null;
   /**
-   * Preferred report language
+   * Preferred report language (AI Audit)
    */
   auditLanguage?: ('en' | 'ru' | 'he') | null;
   /**
-   * Ordered plan slug (audit-free / audit-diagnostic / audit-pro)
+   * Ordered plan slug from checkout (solutions or audit plans)
    */
   planSlug?: string | null;
   /**
-   * Displayed order total at checkout (optional)
+   * Displayed order total at checkout
    */
   planTotal?: string | null;
   /**
@@ -779,6 +789,10 @@ export interface ContactSubmission {
    * Last worker error (no Telegram in MVP — inspect in admin)
    */
   errorLast?: string | null;
+  /**
+   * Client IP address at intake time
+   */
+  ip?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1002,6 +1016,7 @@ export interface ServicesSelect<T extends boolean = true> {
  */
 export interface SolutionPlansSelect<T extends boolean = true> {
   title?: T;
+  kind?: T;
   slug?: T;
   price?: T;
   currency?: T;
@@ -1163,6 +1178,7 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   htmlResult?: T;
   retryCount?: T;
   errorLast?: T;
+  ip?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1691,6 +1707,157 @@ export interface LegalAccessibility {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-page".
+ */
+export interface AuditPage {
+  id: number;
+  /**
+   * Page <title> and H1
+   */
+  title: string;
+  /**
+   * SEO meta description (~155 chars)
+   */
+  metaDescription?: string | null;
+  /**
+   * Labels shown in the audit page tab navigation
+   */
+  tabs?: {
+    audit?: string | null;
+    how?: string | null;
+    pricing?: string | null;
+  };
+  form?: {
+    heading?: string | null;
+    intro?: string | null;
+    /**
+     * Short note under the intro (rate-limit hint)
+     */
+    introNote?: string | null;
+    /**
+     * "Required field" label
+     */
+    requiredNote?: string | null;
+    website?: string | null;
+    websitePlaceholder?: string | null;
+    /**
+     * Validation error for invalid URL
+     */
+    websiteInvalid?: string | null;
+    auditLanguage?: string | null;
+    /**
+     * Labels for each report-language option in every UI locale. E.g. the EN option reads "English" in EN, "Английский" in RU, "אנגלית" in HE.
+     */
+    auditLanguageOptions?: {
+      en?: string | null;
+      ru?: string | null;
+      he?: string | null;
+    };
+    submit?: string | null;
+    success?: string | null;
+  };
+  how?: {
+    kicker?: string | null;
+    heroTitle?: string | null;
+    heroIntro?: string | null;
+    stats?:
+      | {
+          label: string;
+          id?: string | null;
+        }[]
+      | null;
+    stepsHeading?: string | null;
+    steps?:
+      | {
+          label?: string | null;
+          title?: string | null;
+          body?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    methodologyTitle?: string | null;
+    /**
+     * Suffix after the weight value, e.g. "of the score"
+     */
+    weightNote?: string | null;
+    methodologyIntro?: string | null;
+    pillars?:
+      | {
+          /**
+           * Non-localized weight value, e.g. "27%"
+           */
+          weight?: string | null;
+          title?: string | null;
+          body?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    categoriesTitle?: string | null;
+    categoriesIntro?: string | null;
+    categories?:
+      | {
+          title?: string | null;
+          body?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    principlesTitle?: string | null;
+    principles?:
+      | {
+          title?: string | null;
+          body?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  pricing?: {
+    kicker?: string | null;
+    title?: string | null;
+    intro?: string | null;
+    footnote?: string | null;
+    agency?: string | null;
+    agencyCta?: string | null;
+    plans?:
+      | {
+          /**
+           * Stable plan id, e.g. "free", "diagnostic", "pro", "delegate"
+           */
+          planId: string;
+          featured?: boolean | null;
+          name?: string | null;
+          price?: string | null;
+          /**
+           * Struck-through comparison price (optional)
+           */
+          priceCompare?: string | null;
+          /**
+           * Short note under price, e.g. "one-time · promo"
+           */
+          priceNote?: string | null;
+          /**
+           * Short plan description (optional)
+           */
+          description?: string | null;
+          features?:
+            | {
+                feature: string;
+                id?: string | null;
+              }[]
+            | null;
+          cta?: string | null;
+          /**
+           * Link target: /portfolio, #contacts, #services, or #contact-modal (opens the contact form).
+           */
+          ctaHref?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -1936,6 +2103,125 @@ export interface LegalAccessibilitySelect<T extends boolean = true> {
         id?: T;
       };
   closing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-page_select".
+ */
+export interface AuditPageSelect<T extends boolean = true> {
+  title?: T;
+  metaDescription?: T;
+  tabs?:
+    | T
+    | {
+        audit?: T;
+        how?: T;
+        pricing?: T;
+      };
+  form?:
+    | T
+    | {
+        heading?: T;
+        intro?: T;
+        introNote?: T;
+        requiredNote?: T;
+        website?: T;
+        websitePlaceholder?: T;
+        websiteInvalid?: T;
+        auditLanguage?: T;
+        auditLanguageOptions?:
+          | T
+          | {
+              en?: T;
+              ru?: T;
+              he?: T;
+            };
+        submit?: T;
+        success?: T;
+      };
+  how?:
+    | T
+    | {
+        kicker?: T;
+        heroTitle?: T;
+        heroIntro?: T;
+        stats?:
+          | T
+          | {
+              label?: T;
+              id?: T;
+            };
+        stepsHeading?: T;
+        steps?:
+          | T
+          | {
+              label?: T;
+              title?: T;
+              body?: T;
+              id?: T;
+            };
+        methodologyTitle?: T;
+        weightNote?: T;
+        methodologyIntro?: T;
+        pillars?:
+          | T
+          | {
+              weight?: T;
+              title?: T;
+              body?: T;
+              id?: T;
+            };
+        categoriesTitle?: T;
+        categoriesIntro?: T;
+        categories?:
+          | T
+          | {
+              title?: T;
+              body?: T;
+              id?: T;
+            };
+        principlesTitle?: T;
+        principles?:
+          | T
+          | {
+              title?: T;
+              body?: T;
+              id?: T;
+            };
+      };
+  pricing?:
+    | T
+    | {
+        kicker?: T;
+        title?: T;
+        intro?: T;
+        footnote?: T;
+        agency?: T;
+        agencyCta?: T;
+        plans?:
+          | T
+          | {
+              planId?: T;
+              featured?: T;
+              name?: T;
+              price?: T;
+              priceCompare?: T;
+              priceNote?: T;
+              description?: T;
+              features?:
+                | T
+                | {
+                    feature?: T;
+                    id?: T;
+                  };
+              cta?: T;
+              ctaHref?: T;
+              id?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

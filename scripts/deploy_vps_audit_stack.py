@@ -12,6 +12,8 @@ from __future__ import annotations
 import os
 import secrets
 import sys
+import tarfile
+import tempfile
 from pathlib import Path
 
 import paramiko
@@ -72,15 +74,25 @@ def main() -> None:
     print("[deploy] update n8n compose (preserve n8n_data)")
     sftp_put(sftp, ROOT / "infra/n8n/docker-compose.yml", "/root/n8n/compose.yaml")
 
-    print("[deploy] upload audit-agent")
+    print("[deploy] upload audit-agent (incl. QA_Auditor)")
     exec_checked(client, "mkdir -p /home/audit-agent/src")
     agent = ROOT / "services/audit-agent"
-    sftp_put(sftp, agent / "package.json", "/home/audit-agent/package.json")
-    sftp_put(sftp, agent / "Dockerfile", "/home/audit-agent/Dockerfile")
-    sftp_put(sftp, agent / "docker-compose.yml", "/home/audit-agent/docker-compose.yml")
-    for path in (agent / "src").iterdir():
-        if path.is_file():
-            sftp_put(sftp, path, f"/home/audit-agent/src/{path.name}")
+    # Pack locally → upload tarball → extract (QA_Auditor is many files)
+    tar_local = Path(tempfile.gettempdir()) / "erythro-audit-agent.tgz"
+    with tarfile.open(tar_local, "w:gz") as tar:
+        for name in ("package.json", "Dockerfile", "docker-compose.yml", "src", "QA_Auditor"):
+            path = agent / name
+            if path.exists():
+                tar.add(path, arcname=name)
+    print(f"[deploy] tarball size={tar_local.stat().st_size} bytes")
+    sftp_put(sftp, tar_local, "/tmp/erythro-audit-agent.tgz")
+    exec_checked(
+        client,
+        "rm -rf /home/audit-agent/src /home/audit-agent/QA_Auditor && "
+        "tar -xzf /tmp/erythro-audit-agent.tgz -C /home/audit-agent && "
+        "rm -f /tmp/erythro-audit-agent.tgz",
+    )
+    tar_local.unlink(missing_ok=True)
 
     secret_path = agent / ".env.deployed.secret"
     agent_secret = (os.environ.get("AGENT_SECRET_TOKEN") or "").strip()
@@ -109,7 +121,8 @@ def main() -> None:
         "SMTP_USER=order@erythro.ai",
     ]
     if smtp_pass:
-        env_lines.append(f"SMTP_PASS={smtp_pass}")
+        # docker compose interpolates $VAR in env files — escape literal dollars
+        env_lines.append(f"SMTP_PASS={smtp_pass.replace('$', '$$')}")
     else:
         print("[deploy] WARN: SMTP_PASS missing locally — client audit emails will be skipped until set on VPS")
     public_base = (os.environ.get("R2_PUBLIC_BASE_URL") or "").strip()
@@ -120,6 +133,11 @@ def main() -> None:
         env_lines.append(f"PAYLOAD_API_KEY={payload_key}")
     else:
         env_lines.append("# PAYLOAD_API_KEY=")
+    for opt in ("GEMINI_API_KEY", "PAGESPEED_API_KEY", "QA_AUDITOR_TIMEOUT_MS"):
+        val = (os.environ.get(opt) or "").strip()
+        if val:
+            env_lines.append(f"{opt}={val.replace('$', '$$')}")
+    env_lines.append("QA_AUDITOR_DIR=/app/QA_Auditor")
 
     sftp_write(sftp, "/home/audit-agent/.env", "\n".join(env_lines) + "\n")
     secret_path.write_text(
@@ -144,8 +162,11 @@ def main() -> None:
     print("[deploy] recreate n8n on proxy_network")
     exec_checked(client, "cd /root/n8n && docker compose up -d --force-recreate")
 
-    print("[deploy] build + start audit-agent (may take a few minutes)")
-    out = exec_checked(client, "cd /home/audit-agent && docker compose up -d --build")
+    print("[deploy] build + start audit-agent (Maven + Playwright browsers — may take 10–20 min)")
+    out = exec_checked(
+        client,
+        "cd /home/audit-agent && docker compose up -d --build",
+    )
     print(out)
 
     status = exec_checked(

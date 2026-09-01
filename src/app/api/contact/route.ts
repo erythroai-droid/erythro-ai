@@ -13,6 +13,7 @@ import {
 import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
+import { checkFreeAuditCooldown } from '@/lib/auditRateLimit'
 
 export const runtime = 'nodejs'
 
@@ -72,6 +73,35 @@ export async function POST(request: NextRequest) {
 
   try {
     const payload = await getPayload({ config })
+
+    // Free audit rate limit: 1 domain per user per 5 days
+    if (source === 'audit' && (!planSlug || planSlug === 'audit-free')) {
+      const cooldown = await checkFreeAuditCooldown(payload, {
+        website: website || '',
+        email: email || '',
+        ip,
+        locale: locale || auditLanguage,
+      })
+
+      if (!cooldown.allowed) {
+        return NextResponse.json(
+          {
+            ok: false,
+            message: cooldown.message,
+            reason: cooldown.reason,
+          },
+          {
+            status: 429,
+            headers: {
+              'Retry-After': String(cooldown.retryAfterSec),
+              'X-RateLimit-Limit': '1',
+              'X-RateLimit-Remaining': '0',
+            },
+          },
+        )
+      }
+    }
+
     const created = await payload.create({
       collection: 'contact-submissions',
       data: {
@@ -81,6 +111,7 @@ export async function POST(request: NextRequest) {
         message,
         locale,
         source,
+        ip,
         ...(website ? { website } : {}),
         ...(auditLanguage ? { auditLanguage } : {}),
         ...(planSlug ? { planSlug } : {}),

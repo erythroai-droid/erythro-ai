@@ -23,11 +23,12 @@ export const ContactSubmissions: CollectionConfig = {
       'name',
       'email',
       'website',
+      'ip',
       'auditStatus',
       'auditScore',
       'createdAt',
     ],
-    listSearchableFields: ['name', 'email', 'website', 'planSlug'],
+    listSearchableFields: ['name', 'email', 'website', 'planSlug', 'ip'],
     description:
       'All site intakes. Open a filtered list from the sidebar: Solution Orders, AI Audit Orders, or Contact Inquiries.',
   },
@@ -188,6 +189,15 @@ export const ContactSubmissions: CollectionConfig = {
       admin: {
         description: 'Last worker error (no Telegram in MVP — inspect in admin)',
         condition: auditOnly,
+      },
+    },
+    {
+      name: 'ip',
+      type: 'text',
+      admin: {
+        description: 'Client IP address at intake time',
+        readOnly: true,
+        components: { Cell: '/components/admin/CompactTextCell#CompactTextCell' },
       },
     },
   ],
