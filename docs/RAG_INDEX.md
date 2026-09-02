@@ -3,14 +3,14 @@
 Manifest for building a retrieval corpus from `docs/`. Use this file as the **ingest map**:
 what to chunk, how to tag, and which questions each source answers.
 
-Last updated: 2026-08-28.
+Last updated: 2026-09-02.
 
 ---
 
 ## Goals
 
-1. Answer ops questions: deploy, CI, Blob, migrations, SSL, Vercel hangs.
-2. Answer product/CMS questions: portfolio fields, i18n, Lexical, heroes, images.
+1. Answer ops questions: deploy, CI, Blob, migrations, SSL, Vercel hangs, n8n workflows.
+2. Answer product/CMS questions: portfolio fields, i18n, Lexical, heroes, images, audit pipeline.
 3. Answer “don’t repeat this bug” via `PITFALLS.md` (preferred for incident retrieval).
 4. Answer “how to build a similar site” via `PLAYBOOK.md` §3 (phases A–F) + chronology §2/§9.
 5. Support future agents (Cursor / n8n / import scripts) with stable, self-contained chunks.
@@ -31,6 +31,9 @@ Last updated: 2026-08-28.
 | `docs/IMPORT_PROJECT.md` | Pointer to import tool | Skip or one chunk | `portfolio`, `cms`, `import` |
 | `docs/architecture/ai-audit-architecture.md` | AI Audit MVP (R2, worker, no payment) | One chunk per `##` | `audit`, `r2`, `n8n`, `infra` |
 | `docs/architecture/r2-audit-storage.md` | R2 bucket + env for audit reports | One chunk | `r2`, `audit`, `storage` |
+| `docs/architecture/audit-rate-limiting.md` | 5-day audit rate limit & IP tracking | One chunk per `##` | `audit`, `rate-limit`, `anti-spam`, `ip` |
+| `docs/infrastructure/n8n-audit-reconcile.md` | n8n cron reconcile for stuck audits | One chunk | `n8n`, `audit`, `reconcile`, `vps` |
+| `docs/infrastructure/n8n-email-autoresponder.md` | n8n email autoresponder for order@ & team@ | One chunk per `##` | `n8n`, `email`, `autoresponder`, `imap`, `smtp` |
 | `scripts/import-project/README.md` | Portfolio folder → CMS import | One chunk per `##` | `portfolio`, `cms`, `import` |
 
 **Optional later (not docs yet):** `scripts/seed.ts` header comments, `payload.config.ts` plugin block, `.github/workflows/test.yml` — only if docs lag behind code.
@@ -83,6 +86,9 @@ Rules:
 | “AI visibility / llms.txt / MCP / Organization schema” | `AI_VISIBILITY.md`; `DEPLOYMENT.md` §15; `PLAYBOOK.md` §9.18–9.20 |
 | “Middleware Edge / node:console / markdown negotiation build” | `PIT-024`; `PLAYBOOK.md` §9.20 |
 | “Unit CI green tests but exit 1 / unhandled rejection / order slug 404” | `PIT-025`, `PIT-026`; `vitest.setup.ts` |
+| “Free AI Audit rate limiting / 1 domain per user / 5 days / IP tracking” | `docs/architecture/audit-rate-limiting.md`; `src/lib/auditRateLimit.ts` |
+| “Email autoresponder / order@ & team@ / n8n / IMAP & SMTP Hostinger / RFC 3834” | `docs/infrastructure/n8n-email-autoresponder.md`; `infra/n8n/workflows/email-autoresponder.json`; `PIT-037` |
+| “n8n audit cron reconciliation / stuck jobs” | `docs/infrastructure/n8n-audit-reconcile.md`; `infra/n8n/workflows/audit-reconcile.json` |
 
 ---
 

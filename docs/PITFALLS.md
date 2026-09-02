@@ -584,6 +584,25 @@ CI runs the fix script before API tests.
 
 ---
 
+## PIT-037 — n8n Code node expression `$node.name` breaks execution & light email signature styles
+
+**Tags:** `n8n`, `email`, `autoresponder`, `imap`, `smtp`, `css`
+
+**Symptom:** In n8n Code node, execution throws `Referenced node doesn't exist: The node 'name' doesn't exist`. In addition, autoresponder emails sent with dark theme CSS (e.g. `#cbd5e1`) are unreadable / invisible in standard email clients with white background.
+
+**Cause:**
+1. In n8n JavaScript Code nodes, `$node` is a function `$node["Node Name"]`, not an object with `.name`. Attempting `$node.name` triggers n8n's expression parser looking for a node named `"name"`.
+2. Email HTML signatures without explicit solid black `#000000` text color inherit browser/client defaults or faint slate shades on white canvas.
+
+**Fix:**
+1. Extract recipient and routing metadata directly from incoming IMAP item headers (`delivered-to`, `to`, `return-path`) across `$input.all()`.
+2. Set explicit `color: #000000; background-color: #ffffff;` inline styles on all container, paragraph, label, and link elements.
+3. After editing code in n8n, always click **Publish** (or Save) to update the active background workflow.
+
+**Prevent:** Never use `$node.name` in n8n Code nodes. Always test email HTML signatures against white email clients (Gmail / Apple Mail).
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
