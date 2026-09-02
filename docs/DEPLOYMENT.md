@@ -52,6 +52,10 @@ DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-1-...pooler.supabase.com
 > ⚠️ Пользователей-админов сид **не создаёт** — первый админ создаётся вручную через `/admin`
 > на задеплоенном сайте.
 
+### Предотвращение засыпания БД (Free Tier Keepalive)
+На бесплатном тарифе Supabase проект засыпает (pauses) после 7 дней неактивности.
+Для предотвращения настроен GitHub Actions workflow `.github/workflows/keepalive-db.yml` (каждые 3 дня) и скрипт `scripts/ping-db.mjs` (`pnpm db:ping`), который шлет легковесный ping-запрос к Postgres и HTTP endpoint.
+
 ---
 
 ## 3. Переменные окружения на Vercel
@@ -168,6 +172,9 @@ pnpm install            # при no-TTY ошибке: $env:CI="true"; pnpm insta
 
 # Локальная прод-сборка (быстрый сигнал перед пушем)
 pnpm run build
+
+# Проверка доступности и пинг БД (keepalive)
+pnpm db:ping
 
 # Сидинг Supabase
 pnpm exec tsx scripts/seed.ts
