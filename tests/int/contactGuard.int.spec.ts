@@ -93,6 +93,19 @@ describe('guardContactSubmission', () => {
       }).ok,
     ).toBe(false)
 
+    expect(
+      guardContactSubmission({
+        name: 'Ada',
+        email: 'ada@example.com',
+        phone: '+1',
+        message: 'AI Audit Order',
+        privacyConsent: true,
+        source: 'audit',
+        website: 'example.com',
+        auditLanguage: 'ru',
+      }).ok,
+    ).toBe(false)
+
     const result = guardContactSubmission({
       name: 'Ada',
       email: 'ada@example.com',
@@ -112,6 +125,7 @@ describe('guardContactSubmission', () => {
       expect(result.data.planSlug).toBe('audit-diagnostic')
       expect(result.data.planTotal).toBe('99 ₪')
       expect(result.data.auditStatus).toBe('new')
+      expect(result.data.phone).toBe('+972501234567')
     }
   })
 })

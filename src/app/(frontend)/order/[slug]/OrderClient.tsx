@@ -36,6 +36,8 @@ import ProjectNav, { type ProjectNavNeighbor } from '@/components/portfolio/Proj
 import BidiText from '@/components/BidiText'
 import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
 import { ContactHoneypotField } from '@/components/ContactHoneypotField'
+import { PhoneE164Field } from '@/components/PhoneE164Field'
+import { FieldOkCheck } from '@/components/FieldOkCheck'
 import { ContactSendSpinner } from '@/components/ContactSendingPanel'
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import {
@@ -49,8 +51,9 @@ import {
   type AuditFormValues,
   type AuditReportLanguage,
 } from '@/lib/auditFormValidation'
+import { useAuditFieldChecks } from '@/hooks/useAuditFieldChecks'
 import { contactForm } from '@/translations'
-import { auditPage, tAudit, type AuditPageContent } from '@/lib/auditPage'
+import { auditPage, tAudit, tAuditWebsiteUnreachable, type AuditPageContent } from '@/lib/auditPage'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -143,6 +146,7 @@ export default function OrderClient({
                 theme={theme}
                 prev={prev}
                 next={next}
+                formCopy={formCopy}
               />
             </div>
           </div>
@@ -179,12 +183,14 @@ function OrderCheckout({
   theme,
   prev,
   next,
+  formCopy,
 }: {
   plan: OrderPlan
   locale: string
   theme: 'light' | 'dark'
   prev: ProjectNavNeighbor | null
   next: ProjectNavNeighbor | null
+  formCopy: AuditPageContent['form']
 }) {
   const { open: openContact } = useContactModal()
   const isLight = theme === 'light'
@@ -993,6 +999,7 @@ function OrderCheckout({
           plan={plan}
           locale={locale}
           totalFormatted={money(total)}
+          formCopy={formCopy}
         />
       )}
     </>
@@ -1048,12 +1055,14 @@ function AuditOrderModal({
   plan,
   locale,
   totalFormatted,
+  formCopy,
 }: {
   isOpen: boolean
   onClose: () => void
   plan: OrderPlan
   locale: string
   totalFormatted: string
+  formCopy: AuditPageContent['form']
 }) {
   const isRtl = locale === 'he'
   const titleId = useId()
@@ -1077,6 +1086,16 @@ function AuditOrderModal({
   const [consentError, setConsentError] = useState(false)
   const [langSelectOpen, setLangSelectOpen] = useState(false)
   const langSelectRef = useRef<HTMLDivElement | null>(null)
+  const {
+    ok: fieldOk,
+    checkingWebsite,
+    onValueChange,
+    blurName,
+    blurEmail,
+    blurPhone,
+    blurWebsite,
+    ensureWebsiteOk,
+  } = useAuditFieldChecks(values, setFieldErrors)
 
   const planTitle = tLocale(plan.card.title, locale)
   const tForm = (field: Record<string, string>) => field[locale] || field.en
@@ -1116,13 +1135,16 @@ function AuditOrderModal({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name as AuditField
     setValues((v) => ({ ...v, [name]: e.target.value }))
-    if (fieldErrors[name]) {
-      setFieldErrors((prev) => {
-        const next = { ...prev }
-        delete next[name]
-        return next
-      })
+    onValueChange(name)
+    if (status === 'error') {
+      setStatus('idle')
+      setSubmitError('')
     }
+  }
+
+  const handlePhoneChange = (phone: string) => {
+    setValues((v) => ({ ...v, phone }))
+    onValueChange('phone')
     if (status === 'error') {
       setStatus('idle')
       setSubmitError('')
@@ -1157,6 +1179,9 @@ function AuditOrderModal({
     else setConsentError(false)
 
     if (hasAuditFieldErrors(nextErrors) || !privacyConsent) return
+
+    const websiteOk = await ensureWebsiteOk()
+    if (!websiteOk) return
 
     const honeypot =
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ?? ''
@@ -1215,9 +1240,11 @@ function AuditOrderModal({
   const baseInputClass =
     'w-full rounded-[10px] border bg-white/[0.04] px-3.5 py-2.5 text-sm text-white placeholder:text-white/40 outline-none transition-colors focus:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
   const inputClass = (field: AuditField) =>
-    fieldErrors[field]
-      ? `${baseInputClass} border-erythro-500 focus:border-erythro-500`
-      : `${baseInputClass} border-white/15 focus:border-gold-500`
+    `${
+      fieldErrors[field]
+        ? `${baseInputClass} border-erythro-500 focus:border-erythro-500`
+        : `${baseInputClass} border-white/15 focus:border-gold-500`
+    } ${fieldOk[field] || (field === 'website' && checkingWebsite) ? 'pe-10' : ''}`
   const labelClass = 'mb-1.5 block text-[11px] font-medium uppercase tracking-[0.12em] text-white/70'
 
   const requiredMark = (
@@ -1343,21 +1370,25 @@ function AuditOrderModal({
                       {tForm(contactForm.name)}
                       {requiredMark}
                     </label>
-                    <input
-                      ref={firstFieldRef}
-                      id="audit-order-name"
-                      name="name"
-                      type="text"
-                      required
-                      value={values.name}
-                      onChange={handleChange}
-                      placeholder={tForm(contactForm.name)}
-                      className={inputClass('name')}
-                      autoComplete="name"
-                      autoCapitalize="words"
-                      aria-required="true"
-                      aria-invalid={Boolean(fieldErrors.name) || undefined}
-                    />
+                    <div className="relative">
+                      <input
+                        ref={firstFieldRef}
+                        id="audit-order-name"
+                        name="name"
+                        type="text"
+                        required
+                        value={values.name}
+                        onChange={handleChange}
+                        onBlur={blurName}
+                        placeholder={tForm(contactForm.name)}
+                        className={inputClass('name')}
+                        autoComplete="name"
+                        autoCapitalize="words"
+                        aria-required="true"
+                        aria-invalid={Boolean(fieldErrors.name) || undefined}
+                      />
+                      <FieldOkCheck show={Boolean(fieldOk.name)} />
+                    </div>
                     {fieldErrors.name ? (
                       <p role="alert" className="mt-1 m-0 text-xs text-erythro-500">
                         {tForm(contactForm.fieldRequired)}
@@ -1370,24 +1401,28 @@ function AuditOrderModal({
                       {tForm(contactForm.email)}
                       {requiredMark}
                     </label>
-                    <input
-                      id="audit-order-email"
-                      name="email"
-                      type="email"
-                      inputMode="email"
-                      required
-                      value={values.email}
-                      onChange={handleChange}
-                      placeholder={tForm(contactForm.email)}
-                      className={inputClass('email')}
-                      autoComplete="email"
-                      autoCapitalize="off"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      dir="ltr"
-                      aria-required="true"
-                      aria-invalid={Boolean(fieldErrors.email) || undefined}
-                    />
+                    <div className="relative">
+                      <input
+                        id="audit-order-email"
+                        name="email"
+                        type="email"
+                        inputMode="email"
+                        required
+                        value={values.email}
+                        onChange={handleChange}
+                        onBlur={blurEmail}
+                        placeholder={tForm(contactForm.email)}
+                        className={inputClass('email')}
+                        autoComplete="email"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        dir="ltr"
+                        aria-required="true"
+                        aria-invalid={Boolean(fieldErrors.email) || undefined}
+                      />
+                      <FieldOkCheck show={Boolean(fieldOk.email)} />
+                    </div>
                     {fieldErrors.email ? (
                       <p role="alert" className="mt-1 m-0 text-xs text-erythro-500">
                         {fieldErrors.email === 'invalid'
@@ -1403,29 +1438,35 @@ function AuditOrderModal({
                     {tAudit(formCopy.website, locale)}
                     {requiredMark}
                   </label>
-                  <input
-                    id="audit-order-website"
-                    name="website"
-                    type="url"
-                    inputMode="url"
-                    required
-                    value={values.website}
-                    onChange={handleChange}
-                    placeholder={tAudit(formCopy.websitePlaceholder, locale)}
-                    className={inputClass('website')}
-                    autoComplete="url"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    dir="ltr"
-                    aria-required="true"
-                    aria-invalid={Boolean(fieldErrors.website) || undefined}
-                  />
+                  <div className="relative">
+                    <input
+                      id="audit-order-website"
+                      name="website"
+                      type="url"
+                      inputMode="url"
+                      required
+                      value={values.website}
+                      onChange={handleChange}
+                      onBlur={blurWebsite}
+                      placeholder={tAudit(formCopy.websitePlaceholder, locale)}
+                      className={inputClass('website')}
+                      autoComplete="url"
+                      autoCapitalize="off"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      dir="ltr"
+                      aria-required="true"
+                      aria-invalid={Boolean(fieldErrors.website) || undefined}
+                    />
+                    <FieldOkCheck show={Boolean(fieldOk.website)} checking={checkingWebsite} />
+                  </div>
                   {fieldErrors.website ? (
                     <p role="alert" className="mt-1 m-0 text-xs text-erythro-500">
                       {fieldErrors.website === 'invalid'
                         ? tAudit(formCopy.websiteInvalid, locale)
-                        : tForm(contactForm.fieldRequired)}
+                        : fieldErrors.website === 'unreachable'
+                          ? tAuditWebsiteUnreachable(formCopy.websiteUnreachable, locale)
+                          : tForm(contactForm.fieldRequired)}
                     </p>
                   ) : null}
                 </div>
@@ -1496,27 +1537,22 @@ function AuditOrderModal({
                       {tForm(contactForm.phone)}
                       {requiredMark}
                     </label>
-                    <input
+                    <PhoneE164Field
                       id="audit-order-phone"
-                      name="phone"
-                      type="tel"
-                      inputMode="tel"
-                      required
+                      locale={locale}
                       value={values.phone}
-                      onChange={handleChange}
+                      onChange={handlePhoneChange}
+                      onBlur={blurPhone}
+                      showOk={Boolean(fieldOk.phone)}
+                      invalid={Boolean(fieldErrors.phone)}
                       placeholder={tForm(contactForm.phone)}
-                      className={inputClass('phone')}
-                      autoComplete="tel"
-                      autoCapitalize="off"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      dir="ltr"
-                      aria-required="true"
-                      aria-invalid={Boolean(fieldErrors.phone) || undefined}
+                      variant="box"
                     />
                     {fieldErrors.phone ? (
                       <p role="alert" className="mt-1 m-0 text-xs text-erythro-500">
-                        {tForm(contactForm.fieldRequired)}
+                        {fieldErrors.phone === 'invalid'
+                          ? tForm(contactForm.phoneInvalid)
+                          : tForm(contactForm.fieldRequired)}
                       </p>
                     ) : null}
                   </div>

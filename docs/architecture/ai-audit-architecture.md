@@ -80,7 +80,7 @@
 | `name`, `email`, `phone`, `message` | Контакт клиента |
 | `source` | `audit` для заявок аудита |
 | `locale` | Язык UI сайта |
-| `website` | Проверяемый URL |
+| `website` | Проверяемый URL. На blur формы: DNS A/AAAA на публичный IP через `POST /api/audit/check-website` (`src/lib/checkWebsite.ts`). **Не** HTTP-fetch пользовательского URL (SSRF). n8n для этой проверки не используется. |
 | `auditLanguage` | `en` \| `ru` \| `he` — язык отчёта |
 | `planSlug` | `audit-free` \| `audit-diagnostic` \| `audit-pro` |
 | `planTotal` | Отображаемая сумма (информативно; оплаты нет) |

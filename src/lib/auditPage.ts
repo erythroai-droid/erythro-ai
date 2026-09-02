@@ -6,6 +6,16 @@ export function tAudit(field: Localized, locale: string): string {
   return field[locale as keyof Localized] || field.en
 }
 
+export const AUDIT_WEBSITE_UNREACHABLE = {
+  en: 'This website was not found. Check the address.',
+  ru: 'Такой сайт не найден. Проверьте адрес.',
+  he: 'האתר לא נמצא. בדקו את הכתובת.',
+} satisfies Localized
+
+export function tAuditWebsiteUnreachable(field: Localized | undefined, locale: string): string {
+  return tAudit(field ?? AUDIT_WEBSITE_UNREACHABLE, locale)
+}
+
 export const auditPage = {
   slug: 'audit',
   title: {
@@ -71,6 +81,7 @@ export const auditPage = {
       ru: 'Введите корректный домен или URL',
       he: 'הזינו דומיין או כתובת URL תקינים',
     } satisfies Localized,
+    websiteUnreachable: AUDIT_WEBSITE_UNREACHABLE,
     auditLanguage: {
       en: 'Audit report language',
       ru: 'Язык отчёта аудита',
@@ -645,6 +656,7 @@ export type AuditPageContent = {
     website: Localized
     websitePlaceholder: Localized
     websiteInvalid: Localized
+    websiteUnreachable?: Localized
     auditLanguage: Localized
     auditLanguageOptions: { en: Localized; ru: Localized; he: Localized }
     submit: Localized

@@ -9,11 +9,14 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { contactForm } from '@/translations'
 import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
 import { ContactHoneypotField } from '@/components/ContactHoneypotField'
+import { PhoneE164Field } from '@/components/PhoneE164Field'
+import { FieldOkCheck } from '@/components/FieldOkCheck'
 import { ContactSendSpinner } from '@/components/ContactSendingPanel'
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import {
   auditPage,
   tAudit,
+  tAuditWebsiteUnreachable,
   type AuditPageContent,
   type AuditTabId,
 } from '@/lib/auditPage'
@@ -34,6 +37,7 @@ import {
   type AuditFormValues,
   type AuditReportLanguage,
 } from '@/lib/auditFormValidation'
+import { useAuditFieldChecks } from '@/hooks/useAuditFieldChecks'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -218,7 +222,7 @@ function AuditPillDivider({ isLight }: { isLight: boolean }) {
 }
 
 function auditPillFieldClass(isLight: boolean) {
-  return `h-12 w-full min-w-0 flex-1 border-0 bg-transparent px-4 text-sm outline-none sm:h-[52px] ${
+  return `h-12 w-full min-w-0 flex-1 border-0 bg-transparent ps-4 text-sm outline-none sm:h-[52px] ${
     isLight
       ? 'text-coal-900 placeholder:text-coal-900/40'
       : 'text-white placeholder:text-white/40'
@@ -366,6 +370,17 @@ function AuditFormPanel({
   const [fieldErrors, setFieldErrors] = useState<AuditFieldErrors>({})
   const [privacyConsent, setPrivacyConsent] = useState(false)
   const [consentError, setConsentError] = useState(false)
+  const {
+    ok: fieldOk,
+    checkingWebsite,
+    onValueChange,
+    blurName,
+    blurEmail,
+    blurPhone,
+    blurWebsite,
+    ensureWebsiteOk,
+    resetChecks,
+  } = useAuditFieldChecks(values, setFieldErrors)
 
   useEffect(() => {
     setValues((current) => ({ ...current, auditLanguage: defaultAuditLanguage }))
@@ -379,7 +394,11 @@ function AuditFormPanel({
     const err = fieldErrors[field]
     if (!err) return undefined
     if (field === 'website' && err === 'invalid') return tAudit(auditPage.form.websiteInvalid, locale)
+    if (field === 'website' && err === 'unreachable') {
+      return tAuditWebsiteUnreachable(auditPage.form.websiteUnreachable, locale)
+    }
     if (field === 'email' && err === 'invalid') return tForm(contactForm.emailInvalid)
+    if (field === 'phone' && err === 'invalid') return tForm(contactForm.phoneInvalid)
     return tForm(contactForm.fieldRequired)
   }
 
@@ -395,13 +414,16 @@ function AuditFormPanel({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name as AuditField
     setValues((v) => ({ ...v, [name]: e.target.value }))
-    if (fieldErrors[name]) {
-      setFieldErrors((prev) => {
-        const next = { ...prev }
-        delete next[name]
-        return next
-      })
+    onValueChange(name)
+    if (status === 'error') {
+      setStatus('idle')
+      setSubmitError('')
     }
+  }
+
+  const handlePhoneChange = (phone: string) => {
+    setValues((v) => ({ ...v, phone }))
+    onValueChange('phone')
     if (status === 'error') {
       setStatus('idle')
       setSubmitError('')
@@ -433,6 +455,9 @@ function AuditFormPanel({
     else setConsentError(false)
 
     if (hasAuditFieldErrors(nextFieldErrors) || !privacyConsent) return
+
+    const websiteOk = await ensureWebsiteOk()
+    if (!websiteOk) return
 
     const honeypot =
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ?? ''
@@ -484,6 +509,7 @@ function AuditFormPanel({
         auditLanguage: defaultAuditLanguage,
       })
       setFieldErrors({})
+      resetChecks()
       setPrivacyConsent(false)
     } catch {
       setSubmitError(tForm(contactForm.error))
@@ -598,7 +624,7 @@ function AuditFormPanel({
                         isLight={isLight}
                         hasError={Boolean(fieldErrors.name || fieldErrors.email)}
                       >
-                        <div className="min-w-0 flex-1">
+                        <div className="relative min-w-0 flex-1">
                           <label htmlFor="audit-page-name" className="sr-only">
                             {tForm(contactForm.name)}
                           </label>
@@ -609,18 +635,20 @@ function AuditFormPanel({
                             required
                             value={values.name}
                             onChange={handleChange}
+                            onBlur={blurName}
                             placeholder={requiredPlaceholder(tForm(contactForm.name))}
-                            className={pillFieldClass}
+                            className={`${pillFieldClass} ${fieldOk.name ? 'pe-10' : 'pe-4'}`}
                             autoComplete="name"
                             autoCapitalize="words"
                             aria-required="true"
                             aria-invalid={Boolean(fieldErrors.name) || undefined}
                             aria-describedby={fieldErrors.name ? 'audit-page-name-error' : undefined}
                           />
+                          <FieldOkCheck show={Boolean(fieldOk.name)} isLight={isLight} />
                         </div>
                         <AuditPillDivider isLight={isLight} />
                         <div
-                          className={`min-w-0 flex-1 border-t sm:border-t-0 ${
+                          className={`relative min-w-0 flex-1 border-t sm:border-t-0 ${
                             isLight ? 'border-coal-900/15' : 'border-white/15'
                           }`}
                         >
@@ -635,8 +663,9 @@ function AuditFormPanel({
                             required
                             value={values.email}
                             onChange={handleChange}
+                            onBlur={blurEmail}
                             placeholder={requiredPlaceholder(tForm(contactForm.email))}
-                            className={pillFieldClass}
+                            className={`${pillFieldClass} ${fieldOk.email ? 'pe-10' : 'pe-4'}`}
                             autoComplete="email"
                             autoCapitalize="off"
                             autoCorrect="off"
@@ -646,6 +675,7 @@ function AuditFormPanel({
                             aria-invalid={Boolean(fieldErrors.email) || undefined}
                             aria-describedby={fieldErrors.email ? 'audit-page-email-error' : undefined}
                           />
+                          <FieldOkCheck show={Boolean(fieldOk.email)} isLight={isLight} />
                         </div>
                       </AuditPillShell>
                       {fieldErrors.name ? renderFieldError('name', 'audit-page-name-error') : null}
@@ -654,7 +684,7 @@ function AuditFormPanel({
 
                     <div className="flex flex-col gap-1.5">
                       <AuditPillShell isLight={isLight} hasError={Boolean(fieldErrors.website)}>
-                        <div className="min-w-0 flex-1">
+                        <div className="relative min-w-0 flex-1">
                           <label htmlFor="audit-page-website" className="sr-only">
                             {tAudit(auditPage.form.website, locale)}
                           </label>
@@ -666,8 +696,9 @@ function AuditFormPanel({
                             required
                             value={values.website}
                             onChange={handleChange}
+                            onBlur={blurWebsite}
                             placeholder={requiredPlaceholder(tAudit(auditPage.form.website, locale))}
-                            className={pillFieldClass}
+                            className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'}`}
                             autoComplete="url"
                             autoCapitalize="off"
                             autoCorrect="off"
@@ -676,6 +707,11 @@ function AuditFormPanel({
                             aria-required="true"
                             aria-invalid={Boolean(fieldErrors.website) || undefined}
                             aria-describedby={fieldErrors.website ? 'audit-page-website-error' : undefined}
+                          />
+                          <FieldOkCheck
+                            show={Boolean(fieldOk.website)}
+                            checking={checkingWebsite}
+                            isLight={isLight}
                           />
                         </div>
                       </AuditPillShell>
@@ -699,34 +735,19 @@ function AuditFormPanel({
                           onChange={handleLanguageChange}
                         />
                         <AuditPillDivider isLight={isLight} />
-                        <div
-                          className={`min-w-0 flex-1 border-t sm:border-t-0 ${
-                            isLight ? 'border-coal-900/15' : 'border-white/15'
-                          }`}
-                        >
-                          <label htmlFor="audit-page-phone" className="sr-only">
-                            {tForm(contactForm.phone)}
-                          </label>
-                          <input
-                            id="audit-page-phone"
-                            name="phone"
-                            type="tel"
-                            inputMode="tel"
-                            required
-                            value={values.phone}
-                            onChange={handleChange}
-                            placeholder={requiredPlaceholder(tForm(contactForm.phone))}
-                            className={pillFieldClass}
-                            autoComplete="tel"
-                            autoCapitalize="off"
-                            autoCorrect="off"
-                            spellCheck={false}
-                            dir="ltr"
-                            aria-required="true"
-                            aria-invalid={Boolean(fieldErrors.phone) || undefined}
-                            aria-describedby={fieldErrors.phone ? 'audit-page-phone-error' : undefined}
-                          />
-                        </div>
+                        <PhoneE164Field
+                          id="audit-page-phone"
+                          locale={locale}
+                          value={values.phone}
+                          onChange={handlePhoneChange}
+                          onBlur={blurPhone}
+                          showOk={Boolean(fieldOk.phone)}
+                          invalid={Boolean(fieldErrors.phone)}
+                          describedBy={fieldErrors.phone ? 'audit-page-phone-error' : undefined}
+                          placeholder={requiredPlaceholder(tForm(contactForm.phone))}
+                          variant="pill"
+                          isLight={isLight}
+                        />
                       </AuditPillShell>
                       {renderFieldError('auditLanguage', 'audit-page-audit-language-error')}
                       {renderFieldError('phone', 'audit-page-phone-error')}
