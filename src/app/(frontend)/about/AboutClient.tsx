@@ -8,7 +8,7 @@ import CookieConsent from '@/components/CookieConsent'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
 import { ContactModalProvider } from '@/components/ContactModal'
 import LetsTalkSection from '@/components/LetsTalkSection'
-import WhatsAppButton from '@/components/WhatsAppButton'
+import ChatButton from '@/components/ChatButton'
 import HeaderChipStrip from '@/components/HeaderChipStrip'
 import AboutBody from '@/components/about/AboutBody'
 import type { SiteContent } from '@/lib/defaultContent'
@@ -105,7 +105,7 @@ export default function AboutClient({ initialLocale, initialTheme, content }: Ab
           />
 
           <CookieConsent locale={locale} theme={theme} />
-          <WhatsAppButton />
+          <ChatButton locale={locale} />
         </div>
       </ContactModalProvider>
     </SiteContentProvider>

@@ -8,7 +8,7 @@ import CookieConsent from '@/components/CookieConsent'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
 import { ContactModalProvider } from '@/components/ContactModal'
 import LetsTalkSection from '@/components/LetsTalkSection'
-import WhatsAppButton from '@/components/WhatsAppButton'
+import ChatButton from '@/components/ChatButton'
 import HeaderChipStrip from '@/components/HeaderChipStrip'
 import type { SiteContent } from '@/lib/defaultContent'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
@@ -163,7 +163,7 @@ export default function AuditReportClient({
 
           <LetsTalkSection locale={locale} variant="simple" />
           <FooterSection locale={locale} theme={theme} pinSpacer={false} />
-          <WhatsAppButton />
+          <ChatButton locale={locale} />
           <CookieConsent locale={locale} theme={theme} />
           <AccessibilityPanel
             isOpen={isAccessibilityOpen}
