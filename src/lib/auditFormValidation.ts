@@ -1,4 +1,5 @@
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
+import { toE164Phone } from '@/lib/phoneE164'
 
 export const AUDIT_REPORT_LANGUAGES = ['en', 'ru', 'he'] as const
 export type AuditReportLanguage = (typeof AUDIT_REPORT_LANGUAGES)[number]
@@ -12,14 +13,22 @@ export type AuditFormValues = {
 }
 
 export type AuditField = keyof AuditFormValues
-export type AuditFieldError = 'required' | 'invalid'
+export type AuditFieldError = 'required' | 'invalid' | 'unreachable'
 export type AuditFieldErrors = Partial<Record<AuditField, AuditFieldError>>
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /** Accepts domain or full URL with optional protocol. */
-const WEBSITE_RE =
+export const AUDIT_WEBSITE_RE =
   /^(?:https?:\/\/)?(?:[\da-z](?:[\da-z-]{0,61}[\da-z])?\.)+[a-z]{2,}(?:\/[^\s]*)?$/i
+
+export function isAuditEmailFormat(raw: string): boolean {
+  return EMAIL_RE.test(raw.trim())
+}
+
+export function isAuditWebsiteFormat(raw: string): boolean {
+  return AUDIT_WEBSITE_RE.test(raw.trim())
+}
 
 export function normalizeAuditWebsite(raw: string): string {
   const trimmed = raw.trim()
@@ -33,13 +42,14 @@ export function validateAuditForm(values: AuditFormValues): AuditFieldErrors {
   const website = values.website.trim()
 
   if (!website) errors.website = 'required'
-  else if (!WEBSITE_RE.test(website)) errors.website = 'invalid'
+  else if (!isAuditWebsiteFormat(website)) errors.website = 'invalid'
 
   if (!values.name.trim()) errors.name = 'required'
   if (!values.email.trim()) errors.email = 'required'
-  else if (!EMAIL_RE.test(values.email.trim())) errors.email = 'invalid'
+  else if (!isAuditEmailFormat(values.email)) errors.email = 'invalid'
 
   if (!values.phone.trim()) errors.phone = 'required'
+  else if (!toE164Phone(values.phone)) errors.phone = 'invalid'
 
   if (!values.auditLanguage || !AUDIT_REPORT_LANGUAGES.includes(values.auditLanguage)) {
     errors.auditLanguage = 'required'
@@ -99,7 +109,7 @@ export function buildAuditContactPayload(input: {
   return {
     name: input.values.name.trim(),
     email: input.values.email.trim(),
-    phone: input.values.phone.trim(),
+    phone: toE164Phone(input.values.phone) || input.values.phone.trim(),
     message: input.message,
     website,
     auditLanguage: input.values.auditLanguage,

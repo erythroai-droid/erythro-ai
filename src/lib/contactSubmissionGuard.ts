@@ -1,8 +1,9 @@
 import type { ContactFormSource } from '@/lib/contactNotification'
 import {
   AUDIT_REPORT_LANGUAGES,
-  type AuditReportLanguage,
+  isAuditWebsiteFormat,
   normalizeAuditWebsite,
+  type AuditReportLanguage,
 } from '@/lib/auditFormValidation'
 import {
   sanitizeEmail,
@@ -11,10 +12,9 @@ import {
   sanitizePhone,
   sanitizePlainText,
 } from '@/lib/contactSanitize'
+import { toE164Phone } from '@/lib/phoneE164'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const WEBSITE_RE =
-  /^(?:https?:\/\/)?(?:[\da-z](?:[\da-z-]{0,61}[\da-z])?\.)+[a-z]{2,}(?:\/[^\s]*)?$/i
 const PLAN_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,63}$/i
 
 export const CONTACT_LIMITS = {
@@ -120,12 +120,17 @@ export function guardContactSubmission(body: unknown): ContactGuardResult {
     const planSlug = sanitizePlainText(raw.planSlug, CONTACT_LIMITS.planSlug).toLowerCase()
     const planTotal = sanitizePlainText(raw.planTotal, CONTACT_LIMITS.planTotal)
 
-    if (!websiteRaw || !WEBSITE_RE.test(websiteRaw)) {
+    if (!websiteRaw || !isAuditWebsiteFormat(websiteRaw)) {
       return { ok: false, status: 400, message: 'Valid website is required for audit' }
     }
     if (!auditLanguage) {
       return { ok: false, status: 400, message: 'Audit report language is required' }
     }
+    const e164 = toE164Phone(phone)
+    if (!e164) {
+      return { ok: false, status: 400, message: 'Valid phone with country code is required for audit' }
+    }
+    data.phone = e164
     if (planSlug && !PLAN_SLUG_RE.test(planSlug)) {
       return { ok: false, status: 400, message: 'Invalid plan' }
     }

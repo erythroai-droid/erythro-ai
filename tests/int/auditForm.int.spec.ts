@@ -36,6 +36,18 @@ describe('auditFormValidation', () => {
         phone: '+1',
         auditLanguage: 'ru',
       }),
+    ).toEqual({
+      phone: 'invalid',
+    })
+
+    expect(
+      validateAuditForm({
+        website: 'example.com',
+        name: 'Ada',
+        email: 'ada@example.com',
+        phone: '+972501234567',
+        auditLanguage: 'ru',
+      }),
     ).toEqual({})
   })
 

@@ -603,6 +603,31 @@ CI runs the fix script before API tests.
 
 ---
 
+## PIT-038 — n8n email autoresponder: repeated replies in active client threads & default n8n attribution
+
+**Tags:** `n8n`, `email`, `autoresponder`, `smtp`, `cooldown`, `threading`, `attribution`  
+**Seen:** 2026-09-02 `Erythro.ai Email Autoresponder` (`order@erythro.ai` & `team@erythro.ai`).
+
+**Symptom:**
+1. Clients receive auto-replies on every single reply in an ongoing email conversation.
+2. Multiple new emails sent within a short period trigger multiple duplicate auto-replies out-of-order.
+3. Emails contain the footer string *"This email was sent automatically with n8n"*.
+
+**Cause:**
+1. IMAP trigger fires on every incoming message. Without checking `In-Reply-To`, `References`, or `Re:` / `Fwd:` / `Отв:` prefixes, the workflow treats conversational replies as new requests.
+2. Without rate limiting, sequential emails trigger parallel executions that race and send duplicate responses.
+3. n8n `emailSend` (SMTP) node has default attribution enabled unless explicitly toggled off in node Options.
+
+**Fix:**
+1. **Remove Attribution:** In `emailSend` nodes → **Options** → **Add Option** → `Append n8n Attribution` → toggle **OFF**.
+2. **Thread Detection:** In JavaScript Code node (`Process & Sign Autoresponder`), check headers `in-reply-to`, `references`, and `subject` regex `/^(re:|fwd:|отв:|на:)/i` → push `ongoing_thread_reply` to `skipReasons`.
+3. **24h Cooldown:** Use n8n persistent state `$getWorkflowStaticData('global')` to store `lastReplied[fromAddress] = timestamp` and enforce a 24-hour silence window (`rate_limited_24h`).
+4. Commit updated workflow JSON in `infra/n8n/workflows/email-autoresponder.json` and deploy.
+
+**Prevent:** Always implement conversation threading detection, a 24h per-sender cooldown, and explicit attribution disabling in all transactional autoresponder workflows.
+
+---
+
 ## PIT-039 — GitHub Secret Scanning: hardcoded Google API key (public leak)
 
 **Tags:** `security`, `secrets`, `github`, `pagespeed`, `google-api`  
@@ -619,6 +644,45 @@ CI runs the fix script before API tests.
 4. Commit, push, then in the GitHub alert: **Revoke** (if GitHub can) → **Close as remediated**.
 
 **Prevent:** No `AIza…` / tokens in Java/TS source. Pre-commit secret scan (gitleaks / GitHub push protection). Do not rewrite public git history unless coordinated — rotation is the real kill switch.
+
+---
+
+## PIT-040 — Duplicate auto-replies: Hostinger Mail Autoreply + n8n
+
+**Tags:** `n8n`, `email`, `autoresponder`, `hostinger`, `duplicate`  
+**Seen:** 2026-09-03 `order@erythro.ai` — two different confirmation emails on one inbound message.
+
+**Symptom:** Client receives **two** auto-replies:
+1. Generic Hostinger Mail text: *“Thank you for reaching out…”* / *“technical specialist will get back to you within one business day”* / signature *“Erythro.ai Team”* + *“High-Performance Web & Scalable AI Infrastructure”*.
+2. Branded n8n text from `Process & Sign Autoresponder` (Hello {name}, Customer Service Orders, Tel / Email / URL, *Hi-Load Web Development…*).
+
+The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
+
+**Cause:** Two independent senders on the same mailbox.
+1. **Hostinger Mail Autoreply / Vacation** on `order@erythro.ai` (and possibly `team@`) fires on inbound SMTP *before* IMAP. It appends the Hostinger webmail signature (`hmail-signature`, tagline *High-Performance Web & Scalable AI Infrastructure*). These messages are not saved to `INBOX.Sent`.
+2. **n8n IMAP → SMTP** then sends the JS template.
+
+**Fix:** Keep n8n only. Disable Hostinger Autoreply:
+1. [Hostinger Mail](https://mail.hostinger.com/) → `order@erythro.ai` → **Settings → Auto-reply** (or **Vacation**) → **Off**. Repeat for `team@erythro.ai` if set.
+2. Alternative: hPanel → **Emails** → account menu → **Autoresponder** → disable.
+3. Optional: update the Hostinger **Signature** to the n8n branded block so *manual* webmail replies match; Autoreply must still stay off.
+
+**Prevent:** Before activating an n8n IMAP autoresponder, confirm Hostinger Autoreply/Vacation is off for every watched mailbox. Do not run two auto-reply layers on one inbox.
+
+---
+
+## PIT-041 — Do not HTTP-fetch a user-supplied website URL (SSRF)
+
+**Tags:** `ssrf`, `audit`, `dns`, `forms`  
+**Seen:** 2026-09-03 — website live-check on `/audit` (replaced a proposed n8n workflow)
+
+**Symptom:** “Verify the site exists” by `fetch(userUrl)` from Vercel/n8n can hit `127.0.0.1`, RFC1918, link-local, or cloud metadata.
+
+**Cause:** The URL is attacker-controlled. Server-side HTTP to that URL is classic SSRF.
+
+**Fix:** Format-check the hostname, block localhost / `*.local` / raw IPs, `dns.lookup` only, then require at least one **public** A/AAAA. No HTTP to the target. Implementation: `src/lib/checkWebsite.ts`, `POST /api/audit/check-website`.
+
+**Prevent:** Never proxy or GET a client-supplied URL from app/n8n for “is this site real?”. DNS to a public IP is enough for the form; the audit worker already fetches the site later in its own sandbox.
 
 ---
 
@@ -642,3 +706,5 @@ CI runs the fix script before API tests.
 - [ ] Audit landing/order copy must match QA_Auditor report tiers (PIT-029)
 - [ ] Audit order/form intake must POST structured website / auditLanguage / planSlug (PIT-030)
 - [ ] No hardcoded API keys / `AIza…` in source; secrets only via env (PIT-039)
+- [ ] n8n IMAP autoresponder: Hostinger Autoreply/Vacation must be Off (PIT-040)
+- [ ] User-supplied website check: DNS + public IP only, never HTTP-fetch the URL (PIT-041)

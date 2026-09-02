@@ -63,8 +63,9 @@ export function consumeContactRateLimit(
   key: string,
   now = Date.now(),
   store = getStore(),
+  config?: { limit: number; windowMs: number },
 ): RateLimitResult {
-  const { limit, windowMs } = contactRateLimitConfig()
+  const { limit, windowMs } = config || contactRateLimitConfig()
   const bucket = store.get(key) || { hits: [] }
   const cutoff = now - windowMs
   bucket.hits = bucket.hits.filter((t) => t > cutoff)

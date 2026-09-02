@@ -3,6 +3,7 @@
 import React from 'react'
 import { useDocumentInfo, useFormFields } from '@payloadcms/ui'
 import { submissionSourceDef } from '@/lib/contactSubmissionSources'
+import { whatsAppHref } from '@/lib/phoneE164'
 
 function asText(value: unknown): string {
   if (value == null) return ''
@@ -92,6 +93,7 @@ export const SubmissionDetail: React.FC = () => {
   const websiteHref = typeof website === 'string' && website.trim() ? website.trim() : null
   const emailHref = typeof email === 'string' && email.trim() ? `mailto:${email.trim()}` : null
   const phoneHref = typeof phone === 'string' && phone.trim() ? `tel:${phone.trim()}` : null
+  const waHref = typeof phone === 'string' ? whatsAppHref(phone) : null
 
   return (
     <div
@@ -154,7 +156,21 @@ export const SubmissionDetail: React.FC = () => {
         )}
       </Row>
       <Row label="Phone">
-        {phoneHref ? <a href={phoneHref}>{asText(phone)}</a> : asText(phone) || null}
+        {phoneHref || waHref ? (
+          <span>
+            {phoneHref ? <a href={phoneHref}>{asText(phone)}</a> : asText(phone) || null}
+            {waHref ? (
+              <>
+                {' · '}
+                <a href={waHref} target="_blank" rel="noreferrer">
+                  WhatsApp
+                </a>
+              </>
+            ) : null}
+          </span>
+        ) : (
+          asText(phone) || null
+        )}
       </Row>
       <Row label="Locale">{asText(locale) || null}</Row>
       <Row label="IP">{asText(ip) || null}</Row>

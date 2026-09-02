@@ -811,6 +811,21 @@ export const contactForm = {
     ru: 'Телефон',
     he: 'טלפון',
   },
+  countryCode: {
+    en: 'Country code',
+    ru: 'Код страны',
+    he: 'קידומת מדינה',
+  },
+  searchCountry: {
+    en: 'Search country or code',
+    ru: 'Страна или код',
+    he: 'חיפוש מדינה או קידומת',
+  },
+  phoneInvalid: {
+    en: 'Enter a valid phone number with country code',
+    ru: 'Введите номер с кодом страны',
+    he: 'נא להזין מספר טלפון עם קידומת מדינה',
+  },
   message: {
     en: 'Message',
     ru: 'Сообщение',
