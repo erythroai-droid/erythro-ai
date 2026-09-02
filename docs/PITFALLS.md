@@ -603,6 +603,25 @@ CI runs the fix script before API tests.
 
 ---
 
+## PIT-039 — GitHub Secret Scanning: hardcoded Google API key (public leak)
+
+**Tags:** `security`, `secrets`, `github`, `pagespeed`, `google-api`  
+**Seen:** 2026-09-02 GitHub Secret scanning alert #1 — `AuditCollector.java` fallback `PAGESPEED_API_KEY`.
+
+**Symptom:** GitHub Security → Secret scanning alerts shows **Google API Key** with **Public leak**. Key prefix `AIzaSy…` in `services/audit-agent/QA_Auditor/src/main/java/ai/erythro/AuditCollector.java`.
+
+**Cause:** Last-resort hardcoded Google API key in `getPageSpeedApiKey()` instead of env / `.env` only. Public repo = anyone can call PageSpeed Insights (or whatever APIs the key allows) on your quota/billing.
+
+**Fix (order matters):**
+1. **Revoke/rotate first** in [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials): delete or restrict the leaked key, create a new one.
+2. Put the new key only in env (`PAGESPEED_API_KEY` / `GEMINI_API_KEY`) or local `.env` (gitignored) — never in source.
+3. Remove hardcoded fallback from code (return `null` → anonymous PageSpeed mode).
+4. Commit, push, then in the GitHub alert: **Revoke** (if GitHub can) → **Close as remediated**.
+
+**Prevent:** No `AIza…` / tokens in Java/TS source. Pre-commit secret scan (gitleaks / GitHub push protection). Do not rewrite public git history unless coordinated — rotation is the real kill switch.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -622,3 +641,4 @@ CI runs the fix script before API tests.
 - [ ] If CI reports missing CMS columns that migrations already list — restore with `pnpm db:fix-*` (PIT-028)
 - [ ] Audit landing/order copy must match QA_Auditor report tiers (PIT-029)
 - [ ] Audit order/form intake must POST structured website / auditLanguage / planSlug (PIT-030)
+- [ ] No hardcoded API keys / `AIza…` in source; secrets only via env (PIT-039)
