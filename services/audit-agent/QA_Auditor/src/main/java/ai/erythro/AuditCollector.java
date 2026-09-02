@@ -549,7 +549,7 @@ public class AuditCollector {
         if (geminiKey != null && !geminiKey.isBlank()) {
             return geminiKey;
         }
-        return "AIzaSyAri-3Ij68TkdnBWaWKvjek9voZuQNPl1A";
+        return null;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
