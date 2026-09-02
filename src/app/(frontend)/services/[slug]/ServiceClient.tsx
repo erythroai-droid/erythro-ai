@@ -11,7 +11,7 @@ import ServiceHero from '@/components/services/ServiceHero'
 import ServiceBody from '@/components/services/ServiceBody'
 import ScrollSideButton from '@/components/portfolio/ScrollSideButton'
 import LetsTalkSection from '@/components/LetsTalkSection'
-import WhatsAppButton from '@/components/WhatsAppButton'
+import ChatButton from '@/components/ChatButton'
 import type { SiteContent } from '@/lib/defaultContent'
 import { tLocale, type ServicePage } from '@/lib/servicePages'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
@@ -116,7 +116,7 @@ export default function ServiceClient({ initialLocale, initialTheme, content, se
 
           <CookieConsent locale={locale} theme={theme} />
 
-          <WhatsAppButton />
+          <ChatButton locale={locale} />
         </div>
       </ContactModalProvider>
     </SiteContentProvider>

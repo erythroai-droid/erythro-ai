@@ -8,7 +8,6 @@ import ServicesSection from '@/components/ServicesSection'
 import SolutionSection from '@/components/SolutionSection'
 import FAQSection from '@/components/FAQSection'
 import FooterSection from '@/components/FooterSection'
-import WhatsAppButton from '@/components/WhatsAppButton'
 import ChatButton from '@/components/ChatButton'
 import ScrollSideButton from '@/components/portfolio/ScrollSideButton'
 import { AccessibilityPanel } from '@/components/accessibility'
@@ -149,9 +148,7 @@ export default function HomeClient({ initialLocale, initialTheme, content }: Hom
 
       <ScrollSideButton locale={locale} theme={theme} sectionIds={scrollSectionIds} />
 
-      {/* Desktop chat CTA → contact modal; mobile keeps WhatsApp */}
       <ChatButton locale={locale} />
-      <WhatsAppButton />
 
       {/* Accessibility Control Panel */}
       <AccessibilityPanel

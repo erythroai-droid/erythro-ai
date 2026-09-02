@@ -10,7 +10,7 @@ import CookieConsent from '@/components/CookieConsent'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
 import { ContactModalProvider, useContactModal } from '@/components/ContactModal'
 import Button from '@/components/Button'
-import WhatsAppButton from '@/components/WhatsAppButton'
+import ChatButton from '@/components/ChatButton'
 import HeaderChipStrip from '@/components/HeaderChipStrip'
 import type { SiteContent } from '@/lib/defaultContent'
 import {
@@ -166,7 +166,7 @@ export default function OrderClient({
 
           <CookieConsent locale={locale} theme={theme} />
 
-          <WhatsAppButton />
+          <ChatButton locale={locale} />
         </div>
       </ContactModalProvider>
     </SiteContentProvider>
