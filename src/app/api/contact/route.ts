@@ -14,13 +14,18 @@ import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
 import { checkFreeAuditCooldown } from '@/lib/auditRateLimit'
+import {
+  readTurnstileToken,
+  turnstileActionFromBody,
+  verifyTurnstileToken,
+} from '@/lib/turnstile'
 
 export const runtime = 'nodejs'
 
 /**
  * Isolated contact intake:
- * rate-limit → sanitize/validate → Payload CMS → SMTP notify
- * → (audit) trigger VPS worker /api/run-audit.
+ * rate-limit → honeypot → Turnstile siteverify → sanitize/validate
+ * → Payload CMS → SMTP notify → (audit) trigger VPS worker /api/run-audit.
  * Frontend must POST JSON here only (no direct CMS writes from the browser).
  */
 export async function POST(request: NextRequest) {
@@ -50,6 +55,15 @@ export async function POST(request: NextRequest) {
   if (isContactHoneypotTriggered(body)) {
     // Silent accept — do not persist, notify, or reveal the trap to bots.
     return NextResponse.json({ ok: true })
+  }
+
+  const turnstile = await verifyTurnstileToken({
+    token: readTurnstileToken(body),
+    action: turnstileActionFromBody(body),
+    remoteip: ip === 'unknown' ? undefined : ip,
+  })
+  if (!turnstile.ok) {
+    return NextResponse.json({ message: turnstile.message }, { status: turnstile.status })
   }
 
   const guarded = guardContactSubmission(body)

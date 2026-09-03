@@ -12,7 +12,9 @@ import { ContactHoneypotField } from '@/components/ContactHoneypotField'
 import { PhoneE164Field } from '@/components/PhoneE164Field'
 import { FieldOkCheck } from '@/components/FieldOkCheck'
 import { ContactSendSpinner } from '@/components/ContactSendingPanel'
+import { TurnstileField, isTurnstileSiteKeyConfigured, type TurnstileHandle } from '@/components/TurnstileField'
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
+import { TURNSTILE_TOKEN_FIELD } from '@/lib/turnstile'
 import {
   auditPage,
   tAudit,
@@ -189,15 +191,20 @@ export default function AuditBody({ locale, theme = 'dark', page = auditPage }: 
 function AuditPillShell({
   isLight,
   hasError,
+  clip = false,
   children,
 }: {
   isLight: boolean
   hasError?: boolean
+  /** Clip Chrome autofill squares to the pill. Off when a child opens a dropdown. */
+  clip?: boolean
   children: React.ReactNode
 }) {
   return (
     <div
-      className={`flex min-w-0 flex-col overflow-visible rounded-[24px] border sm:flex-row sm:rounded-full ${
+      className={`audit-pill-shell flex min-w-0 flex-col rounded-[24px] border sm:flex-row sm:rounded-full ${
+        clip ? 'overflow-hidden' : 'overflow-visible'
+      } ${
         hasError
           ? 'border-erythro-500'
           : isLight
@@ -370,6 +377,8 @@ function AuditFormPanel({
   const [fieldErrors, setFieldErrors] = useState<AuditFieldErrors>({})
   const [privacyConsent, setPrivacyConsent] = useState(false)
   const [consentError, setConsentError] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const turnstileRef = useRef<TurnstileHandle>(null)
   const {
     ok: fieldOk,
     checkingWebsite,
@@ -455,6 +464,11 @@ function AuditFormPanel({
     else setConsentError(false)
 
     if (hasAuditFieldErrors(nextFieldErrors) || !privacyConsent) return
+    if (isTurnstileSiteKeyConfigured() && !turnstileToken) {
+      setSubmitError(tForm(contactForm.captchaFailed))
+      setStatus('error')
+      return
+    }
 
     const websiteOk = await ensureWebsiteOk()
     if (!websiteOk) return
@@ -468,15 +482,16 @@ function AuditFormPanel({
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(
-          buildAuditContactPayload({
+        body: JSON.stringify({
+          ...buildAuditContactPayload({
             values,
             locale,
             honeypot,
             message: buildAuditSubmissionMessage(values.website, values.auditLanguage),
             planSlug: 'audit-free',
           }),
-        ),
+          [TURNSTILE_TOKEN_FIELD]: turnstileToken,
+        }),
       })
       if (res.status === 429) {
         const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
@@ -486,7 +501,11 @@ function AuditFormPanel({
       }
       if (!res.ok) {
         const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
-        setSubmitError(errPayload?.message || tForm(contactForm.error))
+        setSubmitError(
+          res.status === 403
+            ? tForm(contactForm.captchaFailed)
+            : errPayload?.message || tForm(contactForm.error),
+        )
         setStatus('error')
         return
       }
@@ -514,6 +533,8 @@ function AuditFormPanel({
     } catch {
       setSubmitError(tForm(contactForm.error))
       setStatus('error')
+    } finally {
+      turnstileRef.current?.reset()
     }
   }
 
@@ -622,6 +643,7 @@ function AuditFormPanel({
                     <div className="flex flex-col gap-1.5">
                       <AuditPillShell
                         isLight={isLight}
+                        clip
                         hasError={Boolean(fieldErrors.name || fieldErrors.email)}
                       >
                         <div className="relative min-w-0 flex-1">
@@ -683,7 +705,7 @@ function AuditFormPanel({
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <AuditPillShell isLight={isLight} hasError={Boolean(fieldErrors.website)}>
+                      <AuditPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.website)}>
                         <div className="relative min-w-0 flex-1">
                           <label htmlFor="audit-page-website" className="sr-only">
                             {tAudit(auditPage.form.website, locale)}
@@ -778,6 +800,13 @@ function AuditFormPanel({
                         setPrivacyConsent(next)
                         if (next) setConsentError(false)
                       }}
+                    />
+
+                    <TurnstileField
+                      ref={turnstileRef}
+                      action="audit"
+                      theme={isLight ? 'light' : 'dark'}
+                      onToken={setTurnstileToken}
                     />
 
                     <div className="pt-1">

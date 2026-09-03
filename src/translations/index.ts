@@ -866,6 +866,11 @@ export const contactForm = {
     ru: 'Слишком много попыток. Подождите минуту и попробуйте снова.',
     he: 'יותר מדי בקשות. המתינו דקה ונסו שוב.',
   },
+  captchaFailed: {
+    en: 'Verification failed. Please try again.',
+    ru: 'Не удалось пройти проверку. Попробуйте ещё раз.',
+    he: 'האימות נכשל. נסו שוב.',
+  },
   close: {
     en: 'Close',
     ru: 'Закрыть',
