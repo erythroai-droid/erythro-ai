@@ -5,7 +5,9 @@ import { useSiteContent } from '@/components/SiteContentProvider'
 import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
 import { ContactHoneypotField } from '@/components/ContactHoneypotField'
 import { ContactSendSpinner } from '@/components/ContactSendingPanel'
+import { TurnstileField, isTurnstileSiteKeyConfigured, type TurnstileHandle } from '@/components/TurnstileField'
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
+import { TURNSTILE_TOKEN_FIELD } from '@/lib/turnstile'
 import { contactForm } from '@/translations'
 import { contactsPage, tContacts } from '@/lib/contactsPage'
 import {
@@ -43,6 +45,8 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({})
   const [privacyConsent, setPrivacyConsent] = useState(false)
   const [consentError, setConsentError] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const turnstileRef = useRef<TurnstileHandle>(null)
   const firstFieldRef = useRef<HTMLInputElement | null>(null)
 
   const bodyTone = isLight ? 'text-coal-900/85' : 'text-white/80'
@@ -106,6 +110,11 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
     else setConsentError(false)
 
     if (hasContactFieldErrors(nextFieldErrors) || !privacyConsent) return
+    if (isTurnstileSiteKeyConfigured() && !turnstileToken) {
+      setSubmitError(t(form.captchaFailed))
+      setStatus('error')
+      return
+    }
 
     const honeypot =
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ?? ''
@@ -119,6 +128,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
         body: JSON.stringify({
           ...values,
           [CONTACT_HONEYPOT_FIELD]: honeypot,
+          [TURNSTILE_TOKEN_FIELD]: turnstileToken,
           locale,
           privacyConsent: true,
           source: 'contact',
@@ -129,7 +139,11 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
         setStatus('error')
         return
       }
-      if (!res.ok) throw new Error('Request failed')
+      if (!res.ok) {
+        setSubmitError(res.status === 403 ? t(form.captchaFailed) : t(form.error))
+        setStatus('error')
+        return
+      }
       setStatus('success')
       setValues({ name: '', email: '', phone: '', message: '' })
       setFieldErrors({})
@@ -137,6 +151,8 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
     } catch {
       setSubmitError(t(form.error))
       setStatus('error')
+    } finally {
+      turnstileRef.current?.reset()
     }
   }
 
@@ -448,6 +464,13 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                           setPrivacyConsent(next)
                           if (next) setConsentError(false)
                         }}
+                      />
+
+                      <TurnstileField
+                        ref={turnstileRef}
+                        action="contact"
+                        theme={isLight ? 'light' : 'dark'}
+                        onToken={setTurnstileToken}
                       />
 
                       <button

@@ -83,6 +83,84 @@
   }
 }
 
+/*
+  Chrome paints a rectangular :-webkit-autofill layer that ignores the parent
+  pill's border-radius when overflow is visible. Clip non-dropdown pills in
+  markup; keep the input's own radius + inset shadow so the highlight matches
+  the field (and stays round on the phone half, which cannot clip).
+*/
+/* Turnstile iframe chrome cannot be restyled. Shell matches widget fill
+   (#313131 / #fafafa); clip crops the 1px light stroke. */
+.turnstile-field {
+  --turnstile-shell-bg: #313131;
+  background: var(--turnstile-shell-bg);
+}
+
+.turnstile-field--light {
+  --turnstile-shell-bg: #fafafa;
+}
+
+.turnstile-field-clip {
+  overflow: hidden;
+  background: var(--turnstile-shell-bg);
+  /* iframe stroke is cropped via height on .turnstile-field-clip */
+}
+
+.turnstile-field-host,
+.turnstile-field-host > div {
+  line-height: 0;
+  font-size: 0;
+}
+
+.audit-pill-phone-input {
+  border-end-end-radius: 24px;
+}
+
+@media (min-width: 640px) {
+  .audit-pill-phone-input {
+    border-end-end-radius: 9999px;
+    border-start-end-radius: 9999px;
+  }
+}
+
+.audit-pill-shell input:-webkit-autofill,
+.audit-pill-shell input:-webkit-autofill:hover,
+.audit-pill-shell input:-webkit-autofill:focus,
+.audit-pill-shell input:-webkit-autofill:active {
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
+  transition: background-color 99999s ease-out;
+  -webkit-box-shadow: 0 0 0 1000px color-mix(in srgb, #fff 4%, var(--coal-500)) inset !important;
+  box-shadow: 0 0 0 1000px color-mix(in srgb, #fff 4%, var(--coal-500)) inset !important;
+}
+
+html:not(.dark) .audit-pill-shell input:-webkit-autofill,
+html:not(.dark) .audit-pill-shell input:-webkit-autofill:hover,
+html:not(.dark) .audit-pill-shell input:-webkit-autofill:focus,
+html:not(.dark) .audit-pill-shell input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--coal-900);
+  caret-color: var(--coal-900);
+  -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+  box-shadow: 0 0 0 1000px #fff inset !important;
+}
+
+.audit-pill-phone-input:-webkit-autofill,
+.audit-pill-phone-input:-webkit-autofill:hover,
+.audit-pill-phone-input:-webkit-autofill:focus,
+.audit-pill-phone-input:-webkit-autofill:active {
+  border-end-end-radius: 24px !important;
+}
+
+@media (min-width: 640px) {
+  .audit-pill-phone-input:-webkit-autofill,
+  .audit-pill-phone-input:-webkit-autofill:hover,
+  .audit-pill-phone-input:-webkit-autofill:focus,
+  .audit-pill-phone-input:-webkit-autofill:active {
+    border-end-end-radius: 9999px !important;
+    border-start-end-radius: 9999px !important;
+  }
+}
+
 @layer base {
   :root {
     /* Primitives - Coal */

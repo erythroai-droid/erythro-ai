@@ -686,6 +686,36 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-042 — Chrome autofill squares the audit pill inputs
+
+**Tags:** `audit`, `forms`, `css`, `autofill`, `chrome`  
+**Seen:** 2026-09-03 — `/audit` name / email / website / phone pills
+
+**Symptom:** After browser autofill, pill fields lose rounded corners (rectangular yellow/gray overlay).
+
+**Cause:** Chrome paints `:-webkit-autofill` as a rectangle. The pill used `overflow-visible` (so language/country dropdowns can escape), so the overlay ignored the pill `border-radius`.
+
+**Fix:** `overflow-hidden` on pills without dropdowns; phone input keeps its own end radius; inset `box-shadow` + `-webkit-text-fill-color` on `:-webkit-autofill` to match dark/light field colors (`src/app/(frontend)/styles.css`, `AuditPillShell`).
+
+**Prevent:** Do not leave rounded form shells at `overflow-visible` without either clipping or giving autofilled inputs their own radius + autofill override.
+
+---
+
+## PIT-043 — Turnstile widget blocked or siteverify skipped
+
+**Tags:** `turnstile`, `csp`, `forms`, `env`  
+**Seen:** 2026-09-03 — contact / audit / order intake
+
+**Symptom:** Widget iframe empty; console CSP `frame-src` / `script-src` / `worker-src` violation. Widget chrome shows «Невозможно подключиться к веб-сайту» (error 600010). Or forms submit without a challenge locally, then `403` on production.
+
+**Cause:** CSP omitted `https://challenges.cloudflare.com` in `frame-src` (script-only is not enough), or blocked Turnstile's `blob:` Web Worker (`worker-src` inherits `default-src 'self'`). Next.js inlines only `NEXT_PUBLIC_*` sitekeys; Cloudflare dashboard names (`TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY`) need the `next.config` env map + secret alias. Production `TURNSTILE_HOSTNAMES` must not include `localhost`. Widget domains in the Cloudflare dashboard *must* include `localhost` for local testing. Opening via a LAN IP (`172.x`) also fails — that hostname is not on the widget.
+
+**Fix:** CSP needs `script-src` / `connect-src` / `frame-src` → `https://challenges.cloudflare.com`, plus `worker-src 'self' blob:` and `blob:` on `script-src`. Accept `TURNSTILE_SITE_KEY` → `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` → `TURNSTILE_SECRET`. Siteverify only on the server (`src/lib/turnstile.ts`). Restart `next dev` after changing public env or CSP. Open local as `http://localhost:3000` (or 3001), not the Hyper-V/WSL LAN IP.
+
+**Prevent:** Never call siteverify from the browser. Reset the widget in `finally` after every submit (tokens are single-use). Mirror Vercel env for Production + Preview.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -708,3 +738,5 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] No hardcoded API keys / `AIza…` in source; secrets only via env (PIT-039)
 - [ ] n8n IMAP autoresponder: Hostinger Autoreply/Vacation must be Off (PIT-040)
 - [ ] User-supplied website check: DNS + public IP only, never HTTP-fetch the URL (PIT-041)
+- [ ] Rounded pill inputs: clip autofill or set input radius + `:-webkit-autofill` override (PIT-042)
+- [ ] Turnstile: CSP `frame-src` + `worker-src blob:` + sitekey `NEXT_PUBLIC_` (or `TURNSTILE_SITE_KEY` map); prod hostnames without localhost (PIT-043)

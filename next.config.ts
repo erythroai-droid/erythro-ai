@@ -8,18 +8,28 @@ const dirname = path.dirname(__filename)
 
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://challenges.cloudflare.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://vitals.vercel-insights.com https://*.public.blob.vercel-storage.com",
+  "frame-src https://challenges.cloudflare.com",
+  "child-src https://challenges.cloudflare.com blob:",
+  "worker-src 'self' blob:",
+  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://vitals.vercel-insights.com https://*.public.blob.vercel-storage.com https://challenges.cloudflare.com",
   "media-src 'self' blob: https:",
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
 ].join('; ')
 
+/** Sitekey is public. Cloudflare dashboard often names it TURNSTILE_SITE_KEY. */
+const turnstileSiteKey =
+  process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || process.env.TURNSTILE_SITE_KEY || ''
+
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: turnstileSiteKey,
+  },
   async headers() {
     return [
       {

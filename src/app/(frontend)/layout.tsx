@@ -174,6 +174,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       suppressHydrationWarning
     >
       <head>
+        <link rel="preconnect" href="https://challenges.cloudflare.com" />
         <link rel="describedby" href="/llms.txt" type="text/plain" />
         <link rel="alternate" type="text/markdown" href="/" />
       </head>

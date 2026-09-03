@@ -12,8 +12,10 @@ import {
 import ContactPrivacyConsent from './ContactPrivacyConsent'
 import { ContactHoneypotField } from './ContactHoneypotField'
 import { ContactSendSpinner } from './ContactSendingPanel'
+import { TurnstileField, isTurnstileSiteKeyConfigured, type TurnstileHandle } from './TurnstileField'
 import type { ContactFormSource } from '@/lib/contactNotification'
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
+import { TURNSTILE_TOKEN_FIELD } from '@/lib/turnstile'
 
 interface ContactModalContextValue {
   open: (source?: ContactFormSource) => void
@@ -77,6 +79,8 @@ function ContactModal({
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({})
   const [privacyConsent, setPrivacyConsent] = useState(false)
   const [consentError, setConsentError] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const turnstileRef = useRef<TurnstileHandle>(null)
   const firstFieldRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -138,6 +142,11 @@ function ContactModal({
     else setConsentError(false)
 
     if (hasContactFieldErrors(nextFieldErrors) || !privacyConsent) return
+    if (isTurnstileSiteKeyConfigured() && !turnstileToken) {
+      setSubmitError(t(form.captchaFailed))
+      setStatus('error')
+      return
+    }
 
     const honeypot =
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ?? ''
@@ -151,6 +160,7 @@ function ContactModal({
         body: JSON.stringify({
           ...values,
           [CONTACT_HONEYPOT_FIELD]: honeypot,
+          [TURNSTILE_TOKEN_FIELD]: turnstileToken,
           locale,
           privacyConsent: true,
           source,
@@ -161,7 +171,11 @@ function ContactModal({
         setStatus('error')
         return
       }
-      if (!res.ok) throw new Error('Request failed')
+      if (!res.ok) {
+        setSubmitError(res.status === 403 ? t(form.captchaFailed) : t(form.error))
+        setStatus('error')
+        return
+      }
       setStatus('success')
       setValues({ name: '', email: '', phone: '', message: '' })
       setFieldErrors({})
@@ -169,6 +183,8 @@ function ContactModal({
     } catch {
       setSubmitError(t(form.error))
       setStatus('error')
+    } finally {
+      turnstileRef.current?.reset()
     }
   }
 
@@ -381,6 +397,13 @@ function ContactModal({
                   setPrivacyConsent(next)
                   if (next) setConsentError(false)
                 }}
+              />
+
+              <TurnstileField
+                ref={turnstileRef}
+                action={source}
+                theme="dark"
+                onToken={setTurnstileToken}
               />
 
               <button
