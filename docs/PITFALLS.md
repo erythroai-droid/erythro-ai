@@ -761,6 +761,21 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-047 — Turnstile widget language follows the browser, not the site locale
+
+**Tags:** `turnstile`, `i18n`, `forms`  
+**Seen:** 2026-09-04 — contact / order / audit forms in EN and HE showed Russian «Успешно»
+
+**Symptom:** Site UI is English or Hebrew, but Cloudflare Turnstile success/privacy copy stays in Russian (or whatever the OS/browser language is).
+
+**Cause:** `turnstile.render` defaults to `language: 'auto'`, which uses the visitor’s browser locale. `TurnstileField` did not pass `language`, so a Russian Windows/Chrome profile always got RU chrome.
+
+**Fix:** Pass `language: 'en' | 'ru' | 'he'` from the site locale into `turnstile.render` (`src/components/TurnstileField.tsx`). Re-render the widget when locale changes.
+
+**Prevent:** Do not rely on Turnstile `auto` for a tri-locale site. Always set `language` from the same locale the form copy uses.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -788,3 +803,4 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Form client ack is API SMTP to the visitor; n8n IMAP only answers inbound from external mailboxes (PIT-044)
 - [ ] Cloudflare Insights/Web Analytics: CSP `script-src` `static.cloudflareinsights.com` + `connect-src` `cloudflareinsights.com` (PIT-045)
 - [ ] RTL/Hebrew dialogs: `overflow-y-auto` must pair with `overflow-x-hidden` (or an `overflow-hidden` wrapper) (PIT-046)
+- [ ] Turnstile widget `language` must follow the site locale, not browser `auto` (PIT-047)

@@ -9,6 +9,8 @@ const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render
 
 type TurnstileWidgetId = string
 
+type TurnstileLanguage = 'en' | 'ru' | 'he'
+
 type TurnstileApi = {
   render: (
     container: HTMLElement,
@@ -17,6 +19,7 @@ type TurnstileApi = {
       action: string
       theme: 'light' | 'dark' | 'auto'
       size: 'normal' | 'flexible' | 'compact'
+      language: TurnstileLanguage
       callback: (token: string) => void
       'expired-callback'?: () => void
       'error-callback'?: () => void
@@ -24,6 +27,11 @@ type TurnstileApi = {
   ) => TurnstileWidgetId
   reset: (widgetId: TurnstileWidgetId) => void
   remove: (widgetId: TurnstileWidgetId) => void
+}
+
+function turnstileLanguage(locale: string): TurnstileLanguage {
+  if (locale === 'ru' || locale === 'he') return locale
+  return 'en'
 }
 
 declare global {
@@ -45,14 +53,16 @@ export const TurnstileField = forwardRef<
   {
     action: TurnstileAction
     theme: 'light' | 'dark' | 'auto'
+    locale: string
     onToken: (token: string) => void
     className?: string
   }
->(function TurnstileField({ action, theme, onToken, className }, ref) {
+>(function TurnstileField({ action, theme, locale, onToken, className }, ref) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const widgetIdRef = useRef<TurnstileWidgetId | null>(null)
   const onTokenRef = useRef(onToken)
   onTokenRef.current = onToken
+  const language = turnstileLanguage(locale)
 
   const renderWidget = useCallback(() => {
     const api = window.turnstile
@@ -63,11 +73,12 @@ export const TurnstileField = forwardRef<
       action,
       theme,
       size: 'flexible',
+      language,
       callback: (token) => onTokenRef.current(token),
       'expired-callback': () => onTokenRef.current(''),
       'error-callback': () => onTokenRef.current(''),
     })
-  }, [action, theme])
+  }, [action, theme, language])
 
   useImperativeHandle(ref, () => ({
     reset: () => {

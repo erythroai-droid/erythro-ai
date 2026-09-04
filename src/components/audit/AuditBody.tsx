@@ -806,6 +806,7 @@ function AuditFormPanel({
                       ref={turnstileRef}
                       action="audit"
                       theme={isLight ? 'light' : 'dark'}
+                      locale={locale}
                       onToken={setTurnstileToken}
                     />
 
