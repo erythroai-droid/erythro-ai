@@ -1287,7 +1287,7 @@ function AuditOrderModal({
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden p-4 sm:p-6"
       dir={isRtl ? 'rtl' : 'ltr'}
       role="dialog"
       aria-modal="true"
@@ -1300,17 +1300,18 @@ function AuditOrderModal({
         className="absolute inset-0 cursor-default bg-black/75 backdrop-blur-sm"
       />
 
-      <div className="faq-accordion-scroll relative max-h-[90vh] w-full max-w-[620px] overflow-y-auto rounded-[12px] border border-white/10 bg-coal-900 p-5 sm:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.6)]">
+      <div className="relative max-h-[90vh] min-w-0 w-full max-w-[620px] overflow-hidden rounded-[12px] border border-white/10 bg-coal-900 shadow-[0_30px_80px_rgba(0,0,0,0.6)]">
         <button
           type="button"
           onClick={onClose}
           aria-label={tForm(contactForm.close)}
-          className="absolute top-4 end-4 flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+          className="absolute top-4 end-4 z-10 flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M12 4 4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>
+        <div className="faq-accordion-scroll max-h-[90vh] min-w-0 w-full overflow-x-hidden overflow-y-auto p-5 sm:p-8">
 
         {status === 'success' ? (
           <div className="py-8 text-center" role="status" aria-live="polite">
@@ -1374,7 +1375,7 @@ function AuditOrderModal({
             <form onSubmit={handleSubmit} className="flex flex-col gap-3.5" noValidate>
               <fieldset
                 disabled={status === 'sending'}
-                className={`m-0 flex min-w-0 flex-col gap-3.5 border-0 p-0 ${
+                className={`m-0 flex min-w-0 max-w-full flex-col gap-3.5 border-0 p-0 ${
                   status === 'sending' ? 'opacity-70' : ''
                 }`}
               >
@@ -1618,6 +1619,7 @@ function AuditOrderModal({
             </form>
           </div>
         )}
+        </div>
       </div>
     </div>
   )

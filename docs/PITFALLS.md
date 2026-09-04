@@ -746,6 +746,21 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-046 — Hebrew (RTL) modals show a horizontal scrollbar
+
+**Tags:** `rtl`, `i18n`, `modals`, `overflow`, `hebrew`  
+**Seen:** 2026-09-04 — contact / solutions order modal, audit order modal (`dir=he`)
+
+**Symptom:** Dialog panel grows a horizontal scrollbar only in Hebrew. EN/RU look fine.
+
+**Cause:** `overflow-y: auto` without an explicit `overflow-x` computes `overflow-x` to `auto`. In RTL that surfaces a few pixels of overflow from: the vertical scrollbar on the inline-start edge, `position: absolute` close (`end-4`) contributing to `scrollWidth`, trailing `letter-spacing` on full-width `tracking-widest` buttons, and LTR chrome (Turnstile iframe, `dir=ltr` inputs).
+
+**Fix:** Clip on an outer `overflow-hidden` shell; keep vertical scroll on an inner `overflow-y-auto overflow-x-hidden min-w-0` scroller; park the close button on the outer shell. Shared `.faq-accordion-scroll` also sets `overflow-x: hidden`. Same pattern as FAQ accordion / a11y panel.
+
+**Prevent:** Never put `overflow-y-auto` alone on an RTL dialog. Always pair with `overflow-x-hidden` (or clip the X axis on a wrapper). Re-check `he` after any modal/form chrome change.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -772,3 +787,4 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Turnstile: CSP `frame-src` + `worker-src blob:` + sitekey `NEXT_PUBLIC_` (or `TURNSTILE_SITE_KEY` map); prod hostnames without localhost (PIT-043)
 - [ ] Form client ack is API SMTP to the visitor; n8n IMAP only answers inbound from external mailboxes (PIT-044)
 - [ ] Cloudflare Insights/Web Analytics: CSP `script-src` `static.cloudflareinsights.com` + `connect-src` `cloudflareinsights.com` (PIT-045)
+- [ ] RTL/Hebrew dialogs: `overflow-y-auto` must pair with `overflow-x-hidden` (or an `overflow-hidden` wrapper) (PIT-046)

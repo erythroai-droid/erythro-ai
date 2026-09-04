@@ -204,7 +204,7 @@ function ContactModal({
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden p-4 sm:p-6"
       dir={isRtl ? 'rtl' : 'ltr'}
       role="dialog"
       aria-modal="true"
@@ -217,17 +217,18 @@ function ContactModal({
         className="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
       />
 
-      <div className="faq-accordion-scroll relative max-h-[90vh] w-full max-w-[600px] overflow-y-auto rounded-[10px] border border-white/10 bg-coal-900 p-5 sm:p-7 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
+      <div className="relative max-h-[90vh] min-w-0 w-full max-w-[600px] overflow-hidden rounded-[10px] border border-white/10 bg-coal-900 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
         <button
           type="button"
           onClick={onClose}
           aria-label={t(form.close)}
-          className="absolute top-4 end-4 flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+          className="absolute top-4 end-4 z-10 flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 4 4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>
+        <div className="faq-accordion-scroll max-h-[90vh] min-w-0 w-full overflow-x-hidden overflow-y-auto p-5 sm:p-7">
 
         {status !== 'success' && (
           <h2 id={titleId} className="mb-4 max-w-[85%] font-semibold normal-case tracking-normal text-[22px] leading-snug text-gold-100 sm:text-[24px]">
@@ -260,7 +261,7 @@ function ContactModal({
           >
             <fieldset
               disabled={status === 'sending'}
-              className={`m-0 flex min-w-0 flex-col gap-3 border-0 p-0 ${
+              className={`m-0 flex min-w-0 max-w-full flex-col gap-3 border-0 p-0 ${
                 status === 'sending' ? 'opacity-70' : ''
               }`}
             >
@@ -361,7 +362,7 @@ function ContactModal({
                   onChange={handleChange}
                   placeholder={t(form.message)}
                   rows={3}
-                  className={`${inputClass('message')} resize-none`}
+                  className={`${inputClass('message')} resize-none overflow-x-hidden break-words`}
                   enterKeyHint="send"
                   aria-required="true"
                   aria-invalid={Boolean(fieldErrors.message) || status === 'error' || undefined}
@@ -427,6 +428,7 @@ function ContactModal({
             ) : null}
           </form>
         )}
+        </div>
       </div>
     </div>
   )
