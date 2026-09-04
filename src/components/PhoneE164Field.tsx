@@ -15,6 +15,34 @@ function tForm(locale: string, field: Record<string, string>): string {
   return field[locale] || field.en
 }
 
+/** Territories that share a parent-country flag on flagcdn. */
+const FLAG_CODE_ALIASES: Partial<Record<CountryCode, string>> = {
+  AC: 'sh',
+  TA: 'sh',
+}
+
+function countryFlagUrl(code: CountryCode, width: 40 | 80): string {
+  const iso = (FLAG_CODE_ALIASES[code] || code).toLowerCase()
+  return `https://flagcdn.com/w${width}/${iso}.png`
+}
+
+function CountryFlag({ code }: { code: CountryCode }) {
+  return (
+    <img
+      src={countryFlagUrl(code, 40)}
+      srcSet={`${countryFlagUrl(code, 40)} 1x, ${countryFlagUrl(code, 80)} 2x`}
+      alt=""
+      width={20}
+      height={15}
+      draggable={false}
+      className="h-3.5 w-5 shrink-0 rounded-[2px] object-cover"
+      loading="lazy"
+      decoding="async"
+      aria-hidden
+    />
+  )
+}
+
 function formatNational(country: CountryCode, raw: string): string {
   return new AsYouType(country).input(raw)
 }
@@ -145,19 +173,19 @@ export function PhoneE164Field({
 
   const pill = variant === 'pill'
   const triggerClass = pill
-    ? `flex h-12 shrink-0 items-center gap-1 bg-transparent ps-4 pe-2 text-sm sm:h-[52px] ${
+    ? `flex h-12 shrink-0 items-center gap-1.5 bg-transparent ps-4 pe-2 text-sm sm:h-[52px] ${
         isLight ? 'text-coal-900' : 'text-white'
       } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500`
-    : 'flex h-full shrink-0 items-center gap-1 bg-transparent ps-3.5 pe-2 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500'
+    : 'flex h-full shrink-0 items-center gap-1.5 bg-transparent ps-3.5 pe-2 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500'
   const inputClass = pill
-    ? `h-12 min-w-0 flex-1 border-0 bg-transparent text-sm outline-none sm:h-[52px] ${
+    ? `audit-pill-phone-input h-12 min-w-0 flex-1 border-0 bg-transparent ps-1 text-sm outline-none sm:h-[52px] ${
         showOk ? 'pe-10' : 'pe-4'
       } ${
         isLight
           ? 'text-coal-900 placeholder:text-coal-900/40'
           : 'text-white placeholder:text-white/40'
       } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500`
-    : `h-full min-w-0 flex-1 border-0 bg-transparent py-2.5 text-sm text-white placeholder:text-white/40 outline-none ${
+    : `h-full min-w-0 flex-1 border-0 bg-transparent py-2.5 ps-1 text-sm text-white placeholder:text-white/40 outline-none ${
         showOk ? 'pe-10' : 'pe-3.5'
       } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500`
   const shellClass = pill
@@ -170,7 +198,7 @@ export function PhoneE164Field({
 
   return (
     <div ref={rootRef} className={shellClass}>
-      <div className="relative shrink-0">
+      <div className="shrink-0">
         <label htmlFor={countryId} className="sr-only">
           {tForm(locale, contactForm.countryCode)}
         </label>
@@ -183,7 +211,10 @@ export function PhoneE164Field({
           onClick={() => setOpen((current) => !current)}
           className={`${triggerClass} cursor-pointer`}
         >
-          <span dir="ltr">+{callingCode}</span>
+          <span dir="ltr" className="flex items-center gap-1.5">
+            <CountryFlag code={country} />
+            <span>+{callingCode}</span>
+          </span>
           <svg
             className={`h-3.5 w-3.5 opacity-60 ${open ? 'rotate-180' : ''}`}
             viewBox="0 0 20 20"
@@ -199,50 +230,7 @@ export function PhoneE164Field({
             />
           </svg>
         </button>
-        {open ? (
-          <div
-            className={`absolute start-0 top-full z-40 mt-1 w-max min-w-[16rem] max-w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-[12px] py-1 ${
-              pill ? 'bg-coal-500 shadow-[0_8px_24px_rgba(0,0,0,0.35)]' : 'border border-white/10 bg-coal-900'
-            }`}
-          >
-            <div className="px-2 pb-1 pt-1">
-              <input
-                ref={searchRef}
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={tForm(locale, contactForm.searchCountry)}
-                className="w-full rounded-md border border-white/15 bg-white/[0.06] px-2 py-1.5 text-sm text-white placeholder:text-white/40 outline-none"
-                autoComplete="off"
-              />
-            </div>
-            <ul id={listId} role="listbox" aria-labelledby={countryId} className="max-h-56 overflow-y-auto">
-              {filtered.map((row) => {
-                const selected = row.code === country
-                return (
-                  <li key={row.code} role="presentation">
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={selected}
-                      onClick={() => handleCountry(row.code)}
-                      className={`flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-start text-sm ${
-                        selected ? 'text-gold-500' : 'text-white'
-                      } hover:bg-gold-500 hover:text-coal-900`}
-                    >
-                      <span className="min-w-0 truncate">{row.name}</span>
-                      <span dir="ltr" className="shrink-0 font-mono text-xs opacity-80">
-                        +{row.callingCode}
-                      </span>
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
-        ) : null}
       </div>
-      <div className={`w-px shrink-0 self-stretch ${pill ? (isLight ? 'bg-coal-900/15' : 'bg-white/15') : 'bg-white/15'}`} aria-hidden />
       <label htmlFor={id} className="sr-only">
         {tForm(locale, contactForm.phone)}
       </label>
@@ -267,6 +255,50 @@ export function PhoneE164Field({
         aria-describedby={describedBy}
       />
       <FieldOkCheck show={showOk} isLight={isLight} />
+      {open ? (
+        <div className="absolute inset-x-0 top-full z-40 mt-1 overflow-hidden rounded-[16px] bg-coal-500 py-1 shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
+          <div className="px-4 pb-1 pt-1.5">
+            <input
+              ref={searchRef}
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={tForm(locale, contactForm.searchCountry)}
+              className="w-full rounded-md border-0 bg-white/[0.06] px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none"
+              autoComplete="off"
+            />
+          </div>
+          <ul
+            id={listId}
+            role="listbox"
+            aria-labelledby={countryId}
+            className="faq-accordion-scroll max-h-56 overflow-y-auto"
+          >
+            {filtered.map((row) => {
+              const selected = row.code === country
+              return (
+                <li key={row.code} role="presentation">
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    onClick={() => handleCountry(row.code)}
+                    className={`flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-start text-sm transition-colors ${
+                      selected ? 'text-gold-500' : 'text-white'
+                    } hover:bg-gold-500 hover:text-coal-900`}
+                  >
+                    <CountryFlag code={row.code} />
+                    <span className="min-w-0 flex-1 truncate">{row.name}</span>
+                    <span dir="ltr" className="shrink-0 opacity-80">
+                      +{row.callingCode}
+                    </span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      ) : null}
     </div>
   )
 }
