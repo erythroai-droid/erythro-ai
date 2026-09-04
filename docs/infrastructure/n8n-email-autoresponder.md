@@ -11,9 +11,15 @@
    - Игнорирует письма от отправителей `@erythro.ai` (защита от зацикливания).
    - Игнорирует `mailer-daemon`, `no-reply`, `postmaster`, `bounce`.
    - Игнорирует письма с заголовками `Auto-Submitted: auto-replied`, `Precedence: bulk/junk/list`, `X-Autoreply`.
-3. **Фирменная подпись (Email Signature)**:
-   - Вставляется в каждое исходящее письмо в форматах HTML и Plain text.
-4. **SMTP Reply**:
+3. **Thread Detection (Защита от спама в диалогах)**:
+   - Игнорирует входящие ответы в рамках существующей переписки (проверка заголовков `In-Reply-To`, `References`, а также тем с префиксами `Re:`, `Fwd:`, `Отв:`, `На:`).
+4. **24h Cooldown Rate-Limiting**:
+   - Использует `$getWorkflowStaticData('global')` для хранения временных меток ответов.
+   - Не отправляет автоответ одному и тому же адресату чаще одного раза в 24 часа при повторных входящих письмах.
+5. **Фирменная подпись и чистое форматирование**:
+   - Вставляется в каждое исходящее письмо в форматах HTML и Plain text с явным цветом текста `#000000` на белом фоне.
+   - Опция **Append n8n Attribution** в узлах SMTP выключена (`OFF`), предотвращая появление строки *"This email was sent automatically with n8n"*.
+6. **SMTP Reply**:
    - Отправляет ответ с соответствующего адреса с корректными заголовками трединга (`In-Reply-To`, `References`, `Auto-Submitted: auto-replied`).
 
 ---
@@ -70,3 +76,8 @@ py -3 scripts/deploy_n8n_email_autoresponder.py
 2. **Workflows → Import from File** → `infra/n8n/workflows/email-autoresponder.json`
 3. Привязать учетные данные IMAP и SMTP к соответствующим узлам.
 4. Включить переключатель **Active**.
+5. **Обязательно выключить Hostinger Autoreply** на тех же ящиках (иначе клиент получит два письма — см. PIT-040):
+   - [Hostinger Mail](https://mail.hostinger.com/) → Settings → **Auto-reply / Vacation** → Off (`order@` и `team@`).
+   - Или hPanel → Emails → Autoresponder → disable.
+
+Подпись Hostinger webmail (*High-Performance Web & Scalable AI Infrastructure*) — это не n8n. Её можно оставить/обновить для ручных писем из webmail; автоответ должен быть только в n8n.

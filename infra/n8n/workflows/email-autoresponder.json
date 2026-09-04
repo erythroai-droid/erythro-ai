@@ -24,7 +24,10 @@
       "name": "IMAP: order@erythro.ai",
       "type": "n8n-nodes-base.emailReadImap",
       "typeVersion": 2,
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "credentials": {
         "imap": {
           "id": "IMAP_ORDER_CRED_ID",
@@ -54,7 +57,10 @@
       "name": "IMAP: team@erythro.ai",
       "type": "n8n-nodes-base.emailReadImap",
       "typeVersion": 2,
-      "position": [0, 260],
+      "position": [
+        0,
+        260
+      ],
       "credentials": {
         "imap": {
           "id": "IMAP_TEAM_CRED_ID",
@@ -64,13 +70,16 @@
     },
     {
       "parameters": {
-        "jsCode": "// Autoresponder processor with RFC 3834 anti-loop protection and branded signatures\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const json = item.json || {};\n  const headers = json.headers || {};\n\n  // 1. Identify recipient mailbox\n  const deliveredTo = String(headers['delivered-to'] || '').toLowerCase();\n  const toField = String(json.to?.text || json.to?.value?.[0]?.address || json.to || '').toLowerCase();\n  const isOrderMailbox = deliveredTo.includes('order@') || toField.includes('order@') || (!deliveredTo.includes('team@') && !toField.includes('team@'));\n  const mailboxEmail = isOrderMailbox ? 'order@erythro.ai' : 'team@erythro.ai';\n  const mailboxRole = isOrderMailbox ? 'Customer Service Orders' : 'Customer Support & Operations Team';\n\n  // 2. Extract sender email\n  const rawFrom = json.from?.value?.[0]?.address || json.from?.text || json.from || headers['return-path'] || '';\n  let fromAddress = String(rawFrom).trim().toLowerCase().replace(/^<|>$/g, '');\n  const senderName = json.from?.value?.[0]?.name || json.fromName || (fromAddress.includes('@') ? fromAddress.split('@')[0] : '');\n\n  // 3. Anti-loop filter (RFC 3834, bounce, no-reply, internal domain)\n  const skipReasons = [];\n  if (!fromAddress || !fromAddress.includes('@')) {\n    skipReasons.push('invalid_from');\n  }\n  if (fromAddress.endsWith('@erythro.ai')) {\n    skipReasons.push('internal_domain');\n  }\n  if (/no-?reply|mailer-daemon|postmaster|daemon|bounce|notifications?@/i.test(fromAddress)) {\n    skipReasons.push('automated_sender');\n  }\n\n  // Check headers\n  const autoSubmitted = String(headers['auto-submitted'] || '').toLowerCase();\n  const precedence = String(headers['precedence'] || '').toLowerCase();\n  const xAutoreply = String(headers['x-autoreply'] || '').toLowerCase();\n\n  if (autoSubmitted && autoSubmitted !== 'no') {\n    skipReasons.push('auto_submitted_header');\n  }\n  if (['bulk', 'junk', 'list', 'auto_reply'].includes(precedence)) {\n    skipReasons.push('precedence_header');\n  }\n  if (xAutoreply === 'yes') {\n    skipReasons.push('x_autoreply_header');\n  }\n\n  if (skipReasons.length > 0) {\n    results.push({\n      json: {\n        skip: true,\n        skipReasons,\n        fromAddress,\n        mailboxEmail\n      }\n    });\n    continue;\n  }\n\n  // 4. Subject formatting\n  const origSubject = (json.subject || '').trim();\n  const replySubject = origSubject.toLowerCase().startsWith('re:') ? origSubject : `Re: ${origSubject || 'Your inquiry to Erythro.ai'}`;\n  const messageId = json.messageId || json['message-id'] || headers['message-id'] || '';\n\n  // 5. Signatures (Plaintext and HTML)\n  const plainSignature =\n`Best regards, \n${mailboxRole} \nTel. +972505308305\nEmail: ${mailboxEmail}\nURL: https://erythro.ai\n----------------------------\nHi-Load Web Development & Ai Agents Automation`;\n\n  const htmlSignature =\n`<div style=\"margin-top: 24px; padding-top: 16px; border-top: 2px solid #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.5; color: #000000;\">\n  <p style=\"margin: 0 0 6px 0; font-size: 14px; font-weight: bold; color: #000000;\">Best regards,<br>${mailboxRole}</p>\n  <p style=\"margin: 0 0 4px 0; font-size: 14px; color: #000000;\">Tel. <a href=\"tel:+972505308305\" style=\"color: #0055cc; text-decoration: underline; font-weight: bold;\">+972505308305</a></p>\n  <p style=\"margin: 0 0 4px 0; font-size: 14px; color: #000000;\">Email: <a href=\"mailto:${mailboxEmail}\" style=\"color: #0055cc; text-decoration: underline; font-weight: bold;\">${mailboxEmail}</a></p>\n  <p style=\"margin: 0 0 10px 0; font-size: 14px; color: #000000;\">URL: <a href=\"https://erythro.ai\" style=\"color: #0055cc; text-decoration: underline; font-weight: bold;\">https://erythro.ai</a></p>\n  <div style=\"font-size: 12px; color: #333333; border-top: 1px dashed #666666; padding-top: 6px; font-weight: bold;\">\n    Hi-Load Web Development &amp; Ai Agents Automation\n  </div>\n</div>`;\n\n  // 6. Message Body\n  const greeting = senderName ? `Hello ${senderName},` : 'Hello,';\n  const mainMessage = 'Thank you for contacting Erythro.ai. We have received your message, and our team is currently reviewing your request. We will contact you with more information within 2-6 business hours.';\n\n  const textBody =\n`${greeting}\n\n${mainMessage}\n\n${plainSignature}`;\n\n  const htmlBody =\n`<div style=\"background-color: #ffffff; color: #000000; font-family: Arial, Helvetica, sans-serif; font-size: 15px; line-height: 1.6; padding: 12px; max-width: 600px;\">\n  <p style=\"margin: 0 0 16px 0; font-size: 15px; color: #000000;\">${greeting}</p>\n  <p style=\"margin: 0 0 16px 0; font-size: 15px; color: #000000;\">${mainMessage}</p>\n  ${htmlSignature}\n</div>`;\n\n  results.push({\n    json: {\n      skip: false,\n      to: fromAddress,\n      from: `Erythro.ai <${mailboxEmail}>`,\n      mailboxEmail,\n      subject: replySubject,\n      textBody,\n      htmlBody,\n      messageId,\n      references: messageId\n    }\n  });\n}\n\nreturn results;"
+        "jsCode": "// Autoresponder processor with RFC 3834 anti-loop protection, thread detection, 24h cooldown, and branded signatures\nconst items = $input.all();\nconst results = [];\n\n// 0. Энергонезависимая память n8n для хранения истории отправки\nconst staticData = $getWorkflowStaticData('global');\nstaticData.lastReplied = staticData.lastReplied || {};\n\nconst COOLDOWN_MS = 24 * 60 * 60 * 1000;\nconst now = Date.now();\n\n// Периодическая очистка старых записей (старше 7 дней)\nfor (const [addr, timestamp] of Object.entries(staticData.lastReplied)) {\n  if (now - timestamp > 7 * 24 * 60 * 60 * 1000) {\n    delete staticData.lastReplied[addr];\n  }\n}\n\nfor (const item of items) {\n  const json = item.json || {};\n  const headers = json.headers || {};\n\n  // 1. Identify recipient mailbox\n  const deliveredTo = String(headers['delivered-to'] || '').toLowerCase();\n  const toField = String(json.to?.text || json.to?.value?.[0]?.address || json.to || '').toLowerCase();\n  const isOrderMailbox = deliveredTo.includes('order@') || toField.includes('order@') || (!deliveredTo.includes('team@') && !toField.includes('team@'));\n  const mailboxEmail = isOrderMailbox ? 'order@erythro.ai' : 'team@erythro.ai';\n  const mailboxRole = isOrderMailbox ? 'Customer Service Orders' : 'Customer Support & Operations Team';\n\n  // 2. Extract sender email\n  const rawFrom = json.from?.value?.[0]?.address || json.from?.text || json.from || headers['return-path'] || '';\n  let fromAddress = String(rawFrom).trim().toLowerCase().replace(/^<|>$/g, '');\n  const senderName = json.from?.value?.[0]?.name || json.fromName || (fromAddress.includes('@') ? fromAddress.split('@')[0] : '');\n\n  // 3. Anti-loop filter, Thread detection & Cooldown\n  const skipReasons = [];\n  if (!fromAddress || !fromAddress.includes('@')) {\n    skipReasons.push('invalid_from');\n  }\n  if (fromAddress.endsWith('@erythro.ai')) {\n    skipReasons.push('internal_domain');\n  }\n  if (/no-?reply|mailer-daemon|postmaster|daemon|bounce|notifications?@/i.test(fromAddress)) {\n    skipReasons.push('automated_sender');\n  }\n\n  // Check bot/auto headers\n  const autoSubmitted = String(headers['auto-submitted'] || '').toLowerCase();\n  const precedence = String(headers['precedence'] || '').toLowerCase();\n  const xAutoreply = String(headers['x-autoreply'] || '').toLowerCase();\n\n  if (autoSubmitted && autoSubmitted !== 'no') {\n    skipReasons.push('auto_submitted_header');\n  }\n  if (['bulk', 'junk', 'list', 'auto_reply'].includes(precedence)) {\n    skipReasons.push('precedence_header');\n  }\n  if (xAutoreply === 'yes') {\n    skipReasons.push('x_autoreply_header');\n  }\n\n  // --- Thread & ongoing conversation detection ---\n  const inReplyTo = headers['in-reply-to'] || json['in-reply-to'] || '';\n  const references = headers['references'] || json['references'] || '';\n  const origSubject = (json.subject || '').trim();\n\n  if (inReplyTo || references || /^(re:|fwd:|отв:|на:)/i.test(origSubject)) {\n    skipReasons.push('ongoing_thread_reply');\n  }\n\n  // --- 24h Cooldown per sender ---\n  const lastReplyTime = staticData.lastReplied[fromAddress] || 0;\n  if (now - lastReplyTime < COOLDOWN_MS) {\n    skipReasons.push('rate_limited_24h');\n  }\n\n  if (skipReasons.length > 0) {\n    results.push({\n      json: {\n        skip: true,\n        skipReasons,\n        fromAddress,\n        mailboxEmail\n      }\n    });\n    continue;\n  }\n\n  staticData.lastReplied[fromAddress] = now;\n\n  // 4. Subject formatting\n  const replySubject = origSubject.toLowerCase().startsWith('re:') ? origSubject : `Re: ${origSubject || 'Your inquiry to Erythro.ai'}`;\n  const messageId = json.messageId || json['message-id'] || headers['message-id'] || '';\n\n  // 5. Signatures (Plaintext and HTML)\n  const plainSignature =\n`Best regards, \n${mailboxRole} \nTel. +972505308305\nEmail: ${mailboxEmail}\nURL: https://erythro.ai\n----------------------------\nHi-Load Web Development & Ai Agents Automation`;\n\n  const htmlSignature =\n`<div style=\"margin-top: 24px; padding-top: 16px; border-top: 2px solid #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.5; color: #000000;\">\n  <p style=\"margin: 0 0 6px 0; font-size: 14px; font-weight: bold; color: #000000;\">Best regards,<br>${mailboxRole}</p>\n  <p style=\"margin: 0 0 4px 0; font-size: 14px; color: #000000;\">Tel. <a href=\"tel:+972505308305\" style=\"color: #0055cc; text-decoration: underline; font-weight: bold;\">+972505308305</a></p>\n  <p style=\"margin: 0 0 4px 0; font-size: 14px; color: #000000;\">Email: <a href=\"mailto:${mailboxEmail}\" style=\"color: #0055cc; text-decoration: underline; font-weight: bold;\">${mailboxEmail}</a></p>\n  <p style=\"margin: 0 0 10px 0; font-size: 14px; color: #000000;\">URL: <a href=\"https://erythro.ai\" style=\"color: #0055cc; text-decoration: underline; font-weight: bold;\">https://erythro.ai</a></p>\n  <div style=\"font-size: 12px; color: #333333; border-top: 1px dashed #666666; padding-top: 6px; font-weight: bold;\">\n    Hi-Load Web Development &amp; Ai Agents Automation\n  </div>\n</div>`;\n\n  // 6. Message Body\n  const greeting = senderName ? `Hello, ${senderName}.` : 'Hello,';\n  const mainMessage = 'Thank you for contacting Erythro.ai. We have received your message, and our team is currently reviewing your request. We will get back to you shortly.';\n\n  const textBody =\n`${greeting}\n\n${mainMessage}\n\n${plainSignature}`;\n\n  const htmlBody =\n`<div style=\"background-color: #ffffff; color: #000000; font-family: Arial, Helvetica, sans-serif; font-size: 15px; line-height: 1.6; padding: 12px; max-width: 600px;\">\n  <p style=\"margin: 0 0 16px 0; font-size: 15px; color: #000000;\">${greeting}</p>\n  <p style=\"margin: 0 0 16px 0; font-size: 15px; color: #000000;\">${mainMessage}</p>\n  ${htmlSignature}\n</div>`;\n\n  results.push({\n    json: {\n      skip: false,\n      to: fromAddress,\n      from: `Erythro.ai <${mailboxEmail}>`,\n      mailboxEmail,\n      subject: replySubject,\n      textBody,\n      htmlBody,\n      messageId,\n      references: messageId\n    }\n  });\n}\n\nreturn results;"
       },
       "id": "code-process-autoresponder",
       "name": "Process & Sign Autoresponder",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [280, 130]
+      "position": [
+        280,
+        130
+      ]
     },
     {
       "parameters": {
@@ -87,7 +96,10 @@
       "name": "Should Send Reply?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [520, 130]
+      "position": [
+        520,
+        130
+      ]
     },
     {
       "parameters": {
@@ -104,7 +116,10 @@
       "name": "Is order@erythro.ai?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [760, 110]
+      "position": [
+        760,
+        110
+      ]
     },
     {
       "parameters": {
@@ -115,14 +130,18 @@
         "html": "={{$json.htmlBody}}",
         "options": {
           "allowUnauthorizedCerts": false,
-          "customHeaders": "{\n  \"In-Reply-To\": \"{{$json.messageId}}\",\n  \"References\": \"{{$json.references}}\",\n  \"Auto-Submitted\": \"auto-replied\",\n  \"Precedence\": \"auto_reply\"\n}"
+          "customHeaders": "{\n  \"In-Reply-To\": \"{{$json.messageId}}\",\n  \"References\": \"{{$json.references}}\",\n  \"Auto-Submitted\": \"auto-replied\",\n  \"Precedence\": \"auto_reply\"\n}",
+          "appendAttribution": false
         }
       },
       "id": "smtp-send-order",
       "name": "SMTP: Reply from order@erythro.ai",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
-      "position": [1020, 0],
+      "position": [
+        1020,
+        0
+      ],
       "credentials": {
         "smtp": {
           "id": "SMTP_ORDER_CRED_ID",
@@ -139,14 +158,18 @@
         "html": "={{$json.htmlBody}}",
         "options": {
           "allowUnauthorizedCerts": false,
-          "customHeaders": "{\n  \"In-Reply-To\": \"{{$json.messageId}}\",\n  \"References\": \"{{$json.references}}\",\n  \"Auto-Submitted\": \"auto-replied\",\n  \"Precedence\": \"auto_reply\"\n}"
+          "customHeaders": "{\n  \"In-Reply-To\": \"{{$json.messageId}}\",\n  \"References\": \"{{$json.references}}\",\n  \"Auto-Submitted\": \"auto-replied\",\n  \"Precedence\": \"auto_reply\"\n}",
+          "appendAttribution": false
         }
       },
       "id": "smtp-send-team",
       "name": "SMTP: Reply from team@erythro.ai",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
-      "position": [1020, 220],
+      "position": [
+        1020,
+        220
+      ],
       "credentials": {
         "smtp": {
           "id": "SMTP_TEAM_CRED_ID",
