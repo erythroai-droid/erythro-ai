@@ -470,6 +470,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                         ref={turnstileRef}
                         action="contact"
                         theme={isLight ? 'light' : 'dark'}
+                        locale={locale}
                         onToken={setTurnstileToken}
                       />
 

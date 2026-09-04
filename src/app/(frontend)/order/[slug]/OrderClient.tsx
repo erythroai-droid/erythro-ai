@@ -1592,6 +1592,7 @@ function AuditOrderModal({
                   ref={turnstileRef}
                   action="audit"
                   theme="dark"
+                  locale={locale}
                   onToken={setTurnstileToken}
                 />
 

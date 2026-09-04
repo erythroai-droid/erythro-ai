@@ -404,6 +404,7 @@ function ContactModal({
                 ref={turnstileRef}
                 action={source}
                 theme="dark"
+                locale={locale}
                 onToken={setTurnstileToken}
               />
 
