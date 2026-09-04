@@ -871,6 +871,31 @@ export const contactForm = {
     ru: 'Не удалось пройти проверку. Попробуйте ещё раз.',
     he: 'האימות נכשל. נסו שוב.',
   },
+  ackSubject: {
+    en: 'We received your request — Erythro.ai',
+    ru: 'Заявка принята — Erythro.ai',
+    he: 'הפנייה התקבלה — Erythro.ai',
+  },
+  ackHello: {
+    en: 'Hello, {name}.',
+    ru: 'Здравствуйте, {name}.',
+    he: 'שלום, {name}.',
+  },
+  ackHelloAnon: {
+    en: 'Hello,',
+    ru: 'Здравствуйте!',
+    he: 'שלום,',
+  },
+  ackBody: {
+    en: 'Thank you — we received your request. Our team is reviewing it and will get back to you shortly.',
+    ru: 'Спасибо, заявка принята. Мы получили ваше обращение и свяжемся с вами в ближайшее время.',
+    he: 'תודה, הפנייה התקבלה. הצוות שלנו בודק אותה ונחזור אליכם בהקדם.',
+  },
+  ackSignoff: {
+    en: 'Best regards,',
+    ru: 'С уважением,',
+    he: 'בברכה,',
+  },
   close: {
     en: 'Close',
     ru: 'Закрыть',

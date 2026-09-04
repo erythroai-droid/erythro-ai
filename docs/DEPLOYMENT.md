@@ -504,8 +504,12 @@ Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24
 
 1. Пишет документ в коллекцию `contact-submissions` (админка).
 2. Читает Site Settings → Contacts → Email.
-3. Шлёт SMTP через `src/lib/contactNotification.ts`: **from** `"Erythro.ai" <order@erythro.ai>`,
-   **to** = Site Settings notify target(s), Reply-To = имя + email посетителя.
+3. Шлёт SMTP **сотрудникам** через `src/lib/contactNotification.ts`: **from** `"Erythro.ai" <order@erythro.ai>`,
+   **to** = Site Settings notify target(s), Reply-To = имя + email посетителя,
+   `Auto-Submitted: auto-generated`.
+4. Шлёт SMTP **клиенту** подтверждение «заявка принята» (`sendClientAcknowledgement`):
+   **to** = email из формы, Reply-To = `order@erythro.ai`, `Auto-Submitted: auto-replied`.
+   n8n IMAP на это не отвечает (From `@erythro.ai` + Auto-Submitted). Ошибка ack не валит `/api/contact`.
 
 Транспорт: `smtp.hostinger.com:465` (fallback 587 STARTTLS). Пароль ящика — Vercel env
 **`SMTP_PASS`** (Production + Preview). Опционально: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
@@ -693,8 +697,12 @@ Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24
 
 1. Пишет документ в коллекцию `contact-submissions` (админка).
 2. Читает Site Settings → Contacts → Email.
-3. Шлёт SMTP через `src/lib/contactNotification.ts`: **from** `"Erythro.ai" <order@erythro.ai>`
-   (display name + mailbox), **to** = Site Settings notify target(s), Reply-To = имя + email посетителя.
+3. Шлёт SMTP **сотрудникам** через `src/lib/contactNotification.ts`: **from** `"Erythro.ai" <order@erythro.ai>`
+   (display name + mailbox), **to** = Site Settings notify target(s), Reply-To = имя + email посетителя,
+   `Auto-Submitted: auto-generated`.
+4. Шлёт SMTP **клиенту** подтверждение «заявка принята» (`sendClientAcknowledgement`):
+   **to** = email из формы, Reply-To = `order@erythro.ai`, `Auto-Submitted: auto-replied`.
+   n8n IMAP на это не отвечает (From `@erythro.ai` + Auto-Submitted). Ошибка ack не валит `/api/contact`.
 
 Транспорт: `smtp.hostinger.com:465` (fallback 587 STARTTLS). Пароль ящика — Vercel env
 **`SMTP_PASS`** (Production + Preview). Опционально: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,

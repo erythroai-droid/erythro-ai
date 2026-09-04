@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import {
   resolveNotifyRecipients,
+  sendClientAcknowledgement,
   sendContactNotification,
   type SiteEmailSettings,
 } from '@/lib/contactNotification'
@@ -25,7 +26,7 @@ export const runtime = 'nodejs'
 /**
  * Isolated contact intake:
  * rate-limit → honeypot → Turnstile siteverify → sanitize/validate
- * → Payload CMS → SMTP notify → (audit) trigger VPS worker /api/run-audit.
+ * → Payload CMS → SMTP staff notify → SMTP client ack → (audit) trigger VPS worker /api/run-audit.
  * Frontend must POST JSON here only (no direct CMS writes from the browser).
  */
 export async function POST(request: NextRequest) {
@@ -156,6 +157,11 @@ export async function POST(request: NextRequest) {
     })
     if (!mailed.sent) {
       console.error('[api/contact] saved submission but email was not sent:', mailed.reason)
+    }
+
+    const acked = await sendClientAcknowledgement({ name, email, locale })
+    if (!acked.sent) {
+      console.error('[api/contact] saved submission but client acknowledgement was not sent:', acked.reason)
     }
 
     let auditQueued: boolean | undefined
