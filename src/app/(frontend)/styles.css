@@ -615,12 +615,14 @@ html:not(.dark) .audit-pill-shell input:-webkit-autofill:active {
 
   /* FAQ accordion: thin gold scrollbar (site style) */
   .faq-accordion-scroll {
+    overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 233, 199, 0.45) rgba(255, 255, 255, 0.04);
   }
 
   .faq-accordion-scroll::-webkit-scrollbar {
     width: 6px;
+    height: 0;
   }
 
   .faq-accordion-scroll::-webkit-scrollbar-thumb {
