@@ -3,7 +3,7 @@
 Manifest for building a retrieval corpus from `docs/`. Use this file as the **ingest map**:
 what to chunk, how to tag, and which questions each source answers.
 
-Last updated: 2026-09-03.
+Last updated: 2026-09-04.
 
 ---
 
@@ -90,6 +90,7 @@ Rules:
 | “Email autoresponder / order@ & team@ / n8n / IMAP & SMTP Hostinger / RFC 3834 / duplicate Hostinger Autoreply / form client ack” | `docs/infrastructure/n8n-email-autoresponder.md`; `infra/n8n/workflows/email-autoresponder.json`; `PIT-037`; `PIT-038`; `PIT-040`; `PIT-044`; `src/lib/contactNotification.ts` |
 | “Audit form website check / DNS / SSRF / no n8n workflow” | `docs/architecture/ai-audit-architecture.md` §3.1; `src/lib/checkWebsite.ts`; `PIT-041` |
 | “n8n audit cron reconciliation / stuck jobs” | `docs/infrastructure/n8n-audit-reconcile.md`; `infra/n8n/workflows/audit-reconcile.json` |
+| “CSP / Cloudflare Insights / beacon.min.js / PageSpeed console” | `next.config.ts` `CONTENT_SECURITY_POLICY`; `PIT-045`; `PIT-043` |
 
 ---
 

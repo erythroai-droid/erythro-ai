@@ -731,6 +731,21 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-045 — Cloudflare Insights beacon blocked by CSP
+
+**Tags:** `csp`, `cloudflare`, `web-analytics`, `psi`  
+**Seen:** 2026-09-04 `erythro.ai` — PageSpeed / Chrome Issues: `beacon.min.js` CSP violation
+
+**Symptom:** Console / PSI: Loading `https://static.cloudflareinsights.com/beacon.min.js/...` violates `script-src`. Chrome Issues panel: Content security policy on `/beacon.min.js`.
+
+**Cause:** Cloudflare Web Analytics auto-injects the Insights beacon on proxied zones. CSP in `next.config.ts` listed Turnstile (`challenges.cloudflare.com`) but not the Insights hosts.
+
+**Fix:** Allow `https://static.cloudflareinsights.com` on `script-src` and `https://cloudflareinsights.com` on `connect-src` (manual beacons). Auto-injected RUM also posts to `'self'` `/cdn-cgi/rum`, which was already allowed. Do not pin the hashed `/beacon.min.js/v…` path — Cloudflare rotates it.
+
+**Prevent:** When enabling a Cloudflare/Vercel/GA script, add both the script origin and its report endpoint to CSP in the same change. Re-check PSI console after deploy.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -756,3 +771,4 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Rounded pill inputs: clip autofill or set input radius + `:-webkit-autofill` override (PIT-042)
 - [ ] Turnstile: CSP `frame-src` + `worker-src blob:` + sitekey `NEXT_PUBLIC_` (or `TURNSTILE_SITE_KEY` map); prod hostnames without localhost (PIT-043)
 - [ ] Form client ack is API SMTP to the visitor; n8n IMAP only answers inbound from external mailboxes (PIT-044)
+- [ ] Cloudflare Insights/Web Analytics: CSP `script-src` `static.cloudflareinsights.com` + `connect-src` `cloudflareinsights.com` (PIT-045)
