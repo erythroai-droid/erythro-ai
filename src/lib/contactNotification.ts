@@ -1,3 +1,5 @@
+import { contactForm } from '@/translations'
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /** Hostinger mailbox used as SMTP From for contact-form notifications. */
@@ -113,12 +115,72 @@ export function resolveNotifyEmail(
   return resolveNotifyRecipients(settingsEmail, source)[0] || CONTACT_MAILBOX
 }
 
+type MailContent = { subject: string; text: string; html: string }
+type AutoSubmitted = 'auto-generated' | 'auto-replied'
+type AckLocale = 'en' | 'ru' | 'he'
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+}
+
+function ackLocale(locale?: string): AckLocale {
+  if (locale === 'ru' || locale === 'he') return locale
+  return 'en'
+}
+
+function mailHeaders(autoSubmitted: AutoSubmitted): Record<string, string> {
+  return {
+    'Auto-Submitted': autoSubmitted,
+    'X-Auto-Response-Suppress': 'All',
+    'X-Mailer': 'Erythro.ai contact form',
+    ...(autoSubmitted === 'auto-replied' ? { Precedence: 'auto_reply' } : {}),
+  }
+}
+
+const ACK_SIGNATURE_TEXT = [
+  'Customer Service Orders',
+  'Tel. +972505308305',
+  `Email: ${CONTACT_MAILBOX}`,
+  'URL: https://erythro.ai',
+  '----------------------------',
+  'Hi-Load Web Development & Ai Agents Automation',
+].join('\n')
+
+const ACK_SIGNATURE_HTML = `
+  <p style="color:#000000;margin:0;">Customer Service Orders</p>
+  <p style="color:#000000;margin:0;">Tel. +972505308305</p>
+  <p style="color:#000000;margin:0;">Email: <a href="mailto:${CONTACT_MAILBOX}" style="color:#000000;">${CONTACT_MAILBOX}</a></p>
+  <p style="color:#000000;margin:0;">URL: <a href="https://erythro.ai" style="color:#000000;">https://erythro.ai</a></p>
+  <p style="color:#000000;margin:12px 0 0 0;">Hi-Load Web Development &amp; Ai Agents Automation</p>
+`.trim()
+
+export function buildClientAckEmail(input: Pick<ContactNotificationInput, 'name' | 'locale'>): MailContent {
+  const locale = ackLocale(input.locale)
+  const dir = locale === 'he' ? 'rtl' : 'ltr'
+  const safeName = input.name.replace(/[\r\n"<>]/g, '').trim().slice(0, 80)
+  const hello = safeName
+    ? contactForm.ackHello[locale].replace('{name}', safeName)
+    : contactForm.ackHelloAnon[locale]
+  const helloHtml = safeName
+    ? contactForm.ackHello[locale].replace('{name}', escapeHtml(safeName))
+    : escapeHtml(contactForm.ackHelloAnon[locale])
+  const body = contactForm.ackBody[locale]
+  const signoff = contactForm.ackSignoff[locale]
+  const subject = contactForm.ackSubject[locale]
+  const text = [hello, '', body, '', signoff, ACK_SIGNATURE_TEXT].join('\n')
+  const html = `
+    <div dir="${dir}" style="color:#000000;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;">
+      <p style="color:#000000;margin:0 0 12px 0;">${helloHtml}</p>
+      <p style="color:#000000;margin:0 0 16px 0;">${escapeHtml(body)}</p>
+      <p style="color:#000000;margin:0 0 4px 0;">${escapeHtml(signoff)}</p>
+      ${ACK_SIGNATURE_HTML}
+    </div>
+  `.trim()
+  return { subject, text, html }
 }
 
 export function buildContactEmail(input: ContactNotificationInput): { subject: string; text: string; html: string } {
@@ -212,7 +274,8 @@ function formatReplyTo(name: string, email: string): string {
 async function sendViaResend(
   to: string | string[],
   replyTo: string,
-  content: ReturnType<typeof buildContactEmail>,
+  content: MailContent,
+  autoSubmitted: AutoSubmitted = 'auto-generated',
 ): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY?.trim()
   const from = formatFromHeader()
@@ -232,10 +295,7 @@ async function sendViaResend(
       subject: content.subject,
       text: content.text,
       html: content.html,
-      headers: {
-        'Auto-Submitted': 'auto-generated',
-        'X-Auto-Response-Suppress': 'All',
-      },
+      headers: mailHeaders(autoSubmitted),
     }),
   })
   if (!res.ok) {
@@ -247,7 +307,8 @@ async function sendViaResend(
 async function sendViaSmtp(
   to: string | string[],
   replyTo: string,
-  content: ReturnType<typeof buildContactEmail>,
+  content: MailContent,
+  autoSubmitted: AutoSubmitted = 'auto-generated',
 ): Promise<void> {
   const host = smtpHost()
   const user = smtpUser()
@@ -280,11 +341,7 @@ async function sendViaSmtp(
       html: content.html,
       // Align envelope with authenticated mailbox (avoids SPF weirdness).
       envelope: { from: envelopeFrom, to: recipients },
-      headers: {
-        'Auto-Submitted': 'auto-generated',
-        'X-Auto-Response-Suppress': 'All',
-        'X-Mailer': 'Erythro.ai contact form',
-      },
+      headers: mailHeaders(autoSubmitted),
     })
   }
 
@@ -299,6 +356,29 @@ async function sendViaSmtp(
   }
 }
 
+function hasMailTransport(): { ok: true } | { ok: false; reason: string } {
+  const hasResend = Boolean(process.env.RESEND_API_KEY?.trim())
+  const hasSmtp = Boolean(process.env.SMTP_PASS?.trim())
+  if (!hasResend && !hasSmtp) {
+    return {
+      ok: false,
+      reason: 'No mail transport: set SMTP_PASS (Hostinger order@erythro.ai) or RESEND_API_KEY',
+    }
+  }
+  return { ok: true }
+}
+
+async function sendOutbound(
+  to: string | string[],
+  replyTo: string,
+  content: MailContent,
+  autoSubmitted: AutoSubmitted,
+): Promise<void> {
+  const hasSmtp = Boolean(process.env.SMTP_PASS?.trim())
+  if (hasSmtp) await sendViaSmtp(to, replyTo, content, autoSubmitted)
+  else await sendViaResend(to, replyTo, content, autoSubmitted)
+}
+
 export async function sendContactNotification(
   to: string | string[],
   input: ContactNotificationInput,
@@ -308,25 +388,43 @@ export async function sendContactNotification(
     return { sent: false, reason: 'invalid notify email' }
   }
   const content = buildContactEmail(input)
-  const hasResend = Boolean(process.env.RESEND_API_KEY?.trim())
-  const hasSmtp = Boolean(process.env.SMTP_PASS?.trim())
-
-  if (!hasResend && !hasSmtp) {
-    return {
-      sent: false,
-      reason: 'No mail transport: set SMTP_PASS (Hostinger order@erythro.ai) or RESEND_API_KEY',
-    }
-  }
-
-  const replyTo = formatReplyTo(input.name, input.email)
+  const transport = hasMailTransport()
+  if (!transport.ok) return { sent: false, reason: transport.reason }
 
   try {
-    if (hasSmtp) await sendViaSmtp(recipients, replyTo, content)
-    else await sendViaResend(recipients, replyTo, content)
+    await sendOutbound(recipients, formatReplyTo(input.name, input.email), content, 'auto-generated')
     return { sent: true }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('[contactNotification] send failed:', message)
+    return { sent: false, reason: message }
+  }
+}
+
+/** Confirmation to the visitor. Independent of n8n IMAP (which ignores @erythro.ai From). */
+export async function sendClientAcknowledgement(
+  input: Pick<ContactNotificationInput, 'name' | 'email' | 'locale'>,
+): Promise<{ sent: boolean; reason?: string }> {
+  const to = input.email?.trim()
+  if (!isUsableEmail(to)) {
+    return { sent: false, reason: 'invalid client email' }
+  }
+  const from = fromAddress().includes('<')
+    ? fromAddress().replace(/^.*<([^>]+)>.*$/, '$1').trim()
+    : fromAddress()
+  if (to.toLowerCase() === from.toLowerCase() || to.toLowerCase() === CONTACT_MAILBOX) {
+    return { sent: false, reason: 'skip ack to own mailbox' }
+  }
+
+  const transport = hasMailTransport()
+  if (!transport.ok) return { sent: false, reason: transport.reason }
+
+  try {
+    await sendOutbound(to, CONTACT_MAILBOX, buildClientAckEmail(input), 'auto-replied')
+    return { sent: true }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[contactNotification] client ack failed:', message)
     return { sent: false, reason: message }
   }
 }

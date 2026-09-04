@@ -21,6 +21,7 @@
    - Опция **Append n8n Attribution** в узлах SMTP выключена (`OFF`), предотвращая появление строки *"This email was sent automatically with n8n"*.
 6. **SMTP Reply**:
    - Отправляет ответ с соответствующего адреса с корректными заголовками трединга (`In-Reply-To`, `References`, `Auto-Submitted: auto-replied`).
+7. **Не покрывает заявки с сайта.** `POST /api/contact` шлёт notify From `order@erythro.ai` (n8n это пропускает). Подтверждение клиенту «заявка принята» — отдельный SMTP из приложения (`sendClientAcknowledgement`, PIT-044), не IMAP Reply-To.
 
 ---
 

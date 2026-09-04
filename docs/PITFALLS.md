@@ -716,6 +716,21 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-044 — Form “thank you” is API SMTP, not n8n IMAP
+
+**Tags:** `email`, `forms`, `n8n`, `autoresponder`, `smtp`  
+**Seen:** 2026-09-04 — contact / order / audit forms
+
+**Symptom:** After a site form submit, staff get the notify mail on `order@erythro.ai`, but the client never receives «спасибо, заявка принята». n8n IMAP autoresponder works for mail sent *from Gmail/other* to `order@`.
+
+**Cause:** Site notify is From `"Erythro.ai" <order@erythro.ai>` To the CMS notify inbox (often the same mailbox), Reply-To = visitor, `Auto-Submitted: auto-generated`. n8n `Process & Sign Autoresponder` skips `From @erythro.ai` and `Auto-Submitted` ≠ `no`. Hostinger Autoreply must stay Off (PIT-040). Teaching n8n to reply to that Reply-To would risk mail loops.
+
+**Fix:** Send a separate confirmation with `sendClientAcknowledgement` in `src/lib/contactNotification.ts` after CMS persist: To = visitor email, From = `order@erythro.ai`, Reply-To = `order@erythro.ai`, `Auto-Submitted: auto-replied`. Do not fail `/api/contact` if ack SMTP fails. n8n stays for inbound mail from **external** mailboxes only.
+
+**Prevent:** Do not re-enable Hostinger Autoreply. Do not make n8n answer internal notify mail. Keep form ack and IMAP autoresponder as two different paths.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -740,3 +755,4 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] User-supplied website check: DNS + public IP only, never HTTP-fetch the URL (PIT-041)
 - [ ] Rounded pill inputs: clip autofill or set input radius + `:-webkit-autofill` override (PIT-042)
 - [ ] Turnstile: CSP `frame-src` + `worker-src blob:` + sitekey `NEXT_PUBLIC_` (or `TURNSTILE_SITE_KEY` map); prod hostnames without localhost (PIT-043)
+- [ ] Form client ack is API SMTP to the visitor; n8n IMAP only answers inbound from external mailboxes (PIT-044)

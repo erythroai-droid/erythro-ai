@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  buildClientAckEmail,
   buildContactEmail,
   resolveDisplayEmail,
   resolveNotifyEmail,
@@ -56,5 +57,30 @@ describe('contactNotification', () => {
     expect(html).toContain('Ada &lt;script&gt;')
     expect(html).toContain('Hello &lt;b&gt;there&lt;/b&gt;')
     expect(html).not.toContain('<script>')
+  })
+
+  it('builds a localized client ack with escaped name', () => {
+    const { html, subject, text } = buildClientAckEmail({
+      name: 'Ada <script>',
+      locale: 'ru',
+    })
+    expect(subject).toBe('Заявка принята — Erythro.ai')
+    expect(text).toContain('Спасибо, заявка принята')
+    expect(text).toContain('Ada script')
+    expect(html).toContain('Ada script')
+    expect(html).toContain('dir="ltr"')
+    expect(html).toContain('color:#000000')
+    expect(html).toContain('background-color:#ffffff')
+    expect(html).not.toContain('<script>')
+  })
+
+  it('uses RTL markup for Hebrew client ack', () => {
+    const { html, subject } = buildClientAckEmail({
+      name: 'Ada',
+      locale: 'he',
+    })
+    expect(subject).toContain('הפנייה התקבלה')
+    expect(html).toContain('dir="rtl"')
+    expect(html).toContain('שלום, Ada.')
   })
 })
