@@ -718,7 +718,7 @@ export interface Partner {
   createdAt: string;
 }
 /**
- * All site intakes. Open a filtered list from the sidebar: Solution Orders, AI Audit Orders, or Contact Inquiries.
+ * Click Open or the name to view the full order / inquiry. Use sidebar filters: Solution Orders, AI Audit Orders, Contact Inquiries.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contact-submissions".
@@ -738,13 +738,9 @@ export interface ContactSubmission {
    */
   locale?: string | null;
   /**
-   * Audited site URL (AI Audit checkout only)
+   * Client IP address at intake time
    */
-  website?: string | null;
-  /**
-   * Preferred report language (AI Audit)
-   */
-  auditLanguage?: ('en' | 'ru' | 'he') | null;
+  ip?: string | null;
   /**
    * Ordered plan slug from checkout (solutions or audit plans)
    */
@@ -753,6 +749,14 @@ export interface ContactSubmission {
    * Displayed order total at checkout
    */
   planTotal?: string | null;
+  /**
+   * Audited site URL (AI Audit checkout only)
+   */
+  website?: string | null;
+  /**
+   * Preferred report language (AI Audit)
+   */
+  auditLanguage?: ('en' | 'ru' | 'he') | null;
   /**
    * Pipeline: new → in_progress → report_sent; failed after max retries (manual review)
    */
@@ -789,10 +793,6 @@ export interface ContactSubmission {
    * Last worker error (no Telegram in MVP — inspect in admin)
    */
   errorLast?: string | null;
-  /**
-   * Client IP address at intake time
-   */
-  ip?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1167,10 +1167,11 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   message?: T;
   source?: T;
   locale?: T;
-  website?: T;
-  auditLanguage?: T;
+  ip?: T;
   planSlug?: T;
   planTotal?: T;
+  website?: T;
+  auditLanguage?: T;
   auditStatus?: T;
   auditScore?: T;
   auditSummary?: T;
@@ -1178,7 +1179,6 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   htmlResult?: T;
   retryCount?: T;
   errorLast?: T;
-  ip?: T;
   updatedAt?: T;
   createdAt?: T;
 }
