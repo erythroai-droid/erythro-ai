@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { agentSecretAuthorized } from '@/lib/agentAuth'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
 
 export const runtime = 'nodejs'
@@ -9,9 +10,7 @@ const DEFAULT_STALE_MINUTES = 10
 const MAX_RETRIES = 3
 
 function authorized(request: NextRequest): boolean {
-  const secret = process.env.AGENT_SECRET_TOKEN?.trim()
-  if (!secret) return false
-  return request.headers.get('x-agent-secret-key') === secret
+  return agentSecretAuthorized(request.headers.get('x-agent-secret-key'))
 }
 
 /**

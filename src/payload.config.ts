@@ -3,11 +3,14 @@ import {
   EXPERIMENTAL_TableFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
+import { s3Storage } from '@payloadcms/storage-s3'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
+
+import { getR2MediaConfig, isR2MediaEnabled } from './lib/r2Media'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
@@ -113,25 +116,55 @@ export default buildConfig({
   },
   sharp,
   plugins: [
-    vercelBlobStorage({
-      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
-      // Vercel Functions reject request bodies > ~4.5 MB. Client uploads go
-      // straight to Blob from the browser and bypass that limit (needed for video).
-      // Re-uploading the same filename (e.g. replacing a video) otherwise fails
-      // on newer @vercel/blob; keep clientUploads for large video files.
-      clientUploads: true,
-      collections: {
-        media: {
-          // Serve media straight from the public Blob URL instead of proxying
-          // through Payload's `/api/media/file/...` route. The proxy route
-          // returns range requests as `200` (instead of `206 Partial Content`)
-          // once cached by Vercel, which breaks <video> playback/seeking. The
-          // direct Blob URL supports proper range requests. Media is public
-          // (`read: () => true`), so dropping Payload access control is safe.
-          disablePayloadAccessControl: true,
-        },
-      },
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    }),
+    // Prefer Cloudflare R2 when public media base URL is configured; otherwise
+    // keep Vercel Blob (local/dev without R2_MEDIA_PUBLIC_BASE_URL).
+    ...(isR2MediaEnabled()
+      ? [
+          (() => {
+            const r2 = getR2MediaConfig()!
+            return s3Storage({
+              enabled: true,
+              clientUploads: true,
+              bucket: r2.bucket,
+              config: {
+                credentials: {
+                  accessKeyId: r2.accessKeyId,
+                  secretAccessKey: r2.secretAccessKey,
+                },
+                region: 'auto',
+                endpoint: r2.endpoint,
+                forcePathStyle: true,
+              },
+              collections: {
+                media: {
+                  // Public R2 / custom domain — Range works for <video> (PIT-003).
+                  disablePayloadAccessControl: true,
+                  generateFileURL: ({ filename, prefix }) => {
+                    const key = prefix ? `${prefix}/${filename}` : filename
+                    return `${r2.publicBaseUrl}/${key}`
+                  },
+                },
+              },
+            })
+          })(),
+        ]
+      : [
+          vercelBlobStorage({
+            enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+            // Vercel Functions reject request bodies > ~4.5 MB. Client uploads go
+            // straight to Blob from the browser and bypass that limit (needed for video).
+            clientUploads: true,
+            collections: {
+              media: {
+                // Serve media straight from the public Blob URL instead of proxying
+                // through Payload's `/api/media/file/...` route. The proxy route
+                // returns range requests as `200` (instead of `206 Partial Content`)
+                // once cached by Vercel, which breaks <video> playback/seeking.
+                disablePayloadAccessControl: true,
+              },
+            },
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+          }),
+        ]),
   ],
 })

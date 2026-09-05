@@ -2956,7 +2956,19 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const lockMobileHeadlineLayout = (texts: string[]) => {
-      if (isMotionDesktop()) return null
+      if (isMotionDesktop()) {
+        // Desktop CLS guard: reserve heading height from the invisible slot
+        // before GSAP portal/frames mutate absolute layers.
+        const headingEl = (slotEl.closest('.hero-heading') as HTMLElement | null) ?? slotEl
+        const slotH = slotEl.getBoundingClientRect().height
+        if (slotH > 0) {
+          gsap.set([inlineEl, slotEl, headingEl], {
+            minHeight: slotH,
+            height: slotH,
+          })
+        }
+        return null
+      }
       const headingEl = (slotEl.closest('.hero-heading') as HTMLElement | null) ?? slotEl
       const headingStyles = getComputedStyle(headingEl)
       const baseFontPx = Number.parseFloat(headingStyles.fontSize) || 36
@@ -3350,10 +3362,13 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
 
         <span
           ref={inlineRef}
-          className="absolute inset-0 flex w-full flex-wrap content-center items-center justify-center whitespace-normal py-[0.12em] text-center opacity-0 lg:w-auto lg:flex-nowrap lg:whitespace-nowrap"
-          style={{ transformStyle: 'preserve-3d' }}
+          className="absolute inset-0 flex w-full flex-wrap content-center items-center justify-center whitespace-normal py-[0.12em] text-center lg:w-auto lg:flex-nowrap lg:whitespace-nowrap"
+          style={{ transformStyle: 'preserve-3d', opacity: 1 }}
           aria-live="polite"
-        />
+        >
+          {/* Visible on first paint for LCP; GSAP replaces contents when motion starts. */}
+          {phrases[0]?.text ?? ''}
+        </span>
       </div>
 
       {/* Portal after mount only — avoids SSR/client HTML mismatch */}

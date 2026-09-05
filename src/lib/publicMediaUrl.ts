@@ -1,6 +1,9 @@
 /**
- * Turn Payload media URLs into public Vercel Blob URLs when possible.
+ * Turn Payload media URLs into public CDN URLs when possible.
  * `/api/media/file/...` breaks <video> Range requests on Vercel (200 vs 206).
+ *
+ * Supports Cloudflare R2 public base (`R2_MEDIA_PUBLIC_BASE_URL`) and legacy
+ * Vercel Blob store URLs during / after migration.
  */
 
 function blobStoreId(): string | undefined {
@@ -11,7 +14,12 @@ function blobStoreId(): string | undefined {
   return token?.match(/^vercel_blob_rw_([a-z\d]+)_/i)?.[1]?.toLowerCase()
 }
 
-function encodeBlobPath(path: string): string {
+function r2MediaPublicBase(): string | undefined {
+  const base = process.env.R2_MEDIA_PUBLIC_BASE_URL?.trim() || process.env.NEXT_PUBLIC_R2_MEDIA_BASE_URL?.trim()
+  return base ? base.replace(/\/+$/, '') : undefined
+}
+
+function encodeObjectPath(path: string): string {
   return path
     .replace(/^\/+/, '')
     .split('/')
@@ -30,21 +38,35 @@ function encodeBlobPath(path: string): string {
 export function blobUrlFromPath(path: string): string | undefined {
   const storeId = blobStoreId()
   if (!storeId || !path.trim()) return undefined
-  return `https://${storeId}.public.blob.vercel-storage.com/${encodeBlobPath(path)}`
+  return `https://${storeId}.public.blob.vercel-storage.com/${encodeObjectPath(path)}`
+}
+
+export function r2MediaUrlFromPath(path: string): string | undefined {
+  const base = r2MediaPublicBase()
+  if (!base || !path.trim()) return undefined
+  return `${base}/${encodeObjectPath(path)}`
+}
+
+function isPublicMediaHost(url: string): boolean {
+  return (
+    url.includes('blob.vercel-storage.com') ||
+    url.includes('.r2.dev') ||
+    Boolean(r2MediaPublicBase() && url.startsWith(r2MediaPublicBase()!))
+  )
 }
 
 /**
- * Prefer an already-public Blob URL. Rewrite Payload proxy paths when we know
- * the store id (server token or NEXT_PUBLIC_BLOB_STORE_ID).
+ * Prefer an already-public CDN URL. Rewrite Payload proxy paths when we know
+ * the R2 public base or Blob store id.
  */
 export function toPublicMediaUrl(url: string): string {
   const trimmed = url.trim()
   if (!trimmed) return trimmed
-  if (trimmed.includes('blob.vercel-storage.com')) return trimmed
+  if (isPublicMediaHost(trimmed)) return trimmed
 
   const match = trimmed.match(/\/(?:api\/)?media\/file\/(.+)$/i)
   if (match?.[1]) {
-    return blobUrlFromPath(match[1]) ?? trimmed
+    return r2MediaUrlFromPath(match[1]) ?? blobUrlFromPath(match[1]) ?? trimmed
   }
 
   return trimmed
@@ -60,20 +82,23 @@ export function mediaDocUrl(media: {
   if (!media || typeof media !== 'object') return undefined
 
   const raw = typeof media.url === 'string' ? media.url.trim() : ''
-  if (raw.includes('blob.vercel-storage.com')) return raw
+  if (isPublicMediaHost(raw)) return raw
 
-  // Prefer rewriting the stored url (includes Blob random suffix) over
+  // Prefer rewriting the stored url (includes CDN random suffix) over
   // rebuilding from `filename`, which can 404 when names diverge.
   if (raw) {
     const rewritten = toPublicMediaUrl(raw)
-    if (rewritten.includes('blob.vercel-storage.com')) return rewritten
+    if (isPublicMediaHost(rewritten)) return rewritten
   }
 
   const filename = typeof media.filename === 'string' ? media.filename.trim() : ''
   const prefix = typeof media.prefix === 'string' ? media.prefix.trim() : ''
   if (filename) {
-    const fromName = blobUrlFromPath(prefix ? `${prefix.replace(/\/?$/, '/')}${filename}` : filename)
-    if (fromName) return fromName
+    const objectPath = prefix ? `${prefix.replace(/\/?$/, '/')}${filename}` : filename
+    const fromR2 = r2MediaUrlFromPath(objectPath)
+    if (fromR2) return fromR2
+    const fromBlob = blobUrlFromPath(objectPath)
+    if (fromBlob) return fromBlob
   }
 
   return raw || undefined

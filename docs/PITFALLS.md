@@ -820,6 +820,51 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-051 — Payload media cutover to R2 needs a public base URL
+
+**Tags:** `media`, `r2`, `blob`, `payload`  
+**Seen:** 2026-09-05 — Blob → `erythro-media`
+
+**Symptom:** After installing `@payloadcms/storage-s3`, admin still uploads to Blob, or `next/image` / `<video>` break on R2 API hostnames.
+
+**Cause:** R2 S3 endpoint (`*.r2.cloudflarestorage.com`) is not a public CDN. Without `R2_MEDIA_PUBLIC_BASE_URL` (r2.dev / custom domain) + `disablePayloadAccessControl` + `generateFileURL`, URLs stay private or Proxy Range breaks video.
+
+**Fix:** Enable public access on `erythro-media`, set `R2_MEDIA_PUBLIC_BASE_URL` / `NEXT_PUBLIC_R2_MEDIA_*`, run `pnpm media:migrate-blob-to-r2 -- --apply`, then `pnpm generate:importmap`. See `docs/architecture/r2-media-storage.md`.
+
+**Prevent:** Never point browsers at the S3 API host. Keep audit reports in a separate bucket from media.
+
+---
+
+## PIT-052 — Audit worker must re-check SSRF and use timing-safe secrets
+
+**Tags:** `security`, `ssrf`, `audit`, `hmac`  
+**Seen:** 2026-09-05
+
+**Symptom:** Compromised or forged worker calls can hit private IPs; secret compares leak via timing.
+
+**Cause:** Form blur uses `checkWebsite.ts`, but `/api/run-audit` previously trusted `targetUrl` after a plain `===` secret check.
+
+**Fix:** Worker runs `assertPublicHttpUrl` before Playwright; Next trigger also re-checks DNS. Secrets use `timingSafeEqual`. Optional HMAC `x-agent-signature` (body SHA-256). Docs: `docs/infrastructure/vps-firewall-cloudflare-access.md`.
+
+**Prevent:** Do not navigate Playwright to user URLs without DNS + private-IP rejection. Prefer `AGENT_REQUIRE_HMAC=1` once n8n signs bodies.
+
+---
+
+## PIT-053 — UFW does not block Docker published ports
+
+**Tags:** `security`, `vps`, `docker`, `ufw`  
+**Seen:** 2026-09-05 — `montblanc_api` on `0.0.0.0:8080`
+
+**Symptom:** UFW allows only 22/80/443, but `curl http://VPS_IP:8080` still returns 200.
+
+**Cause:** `docker-proxy` installs DNAT/ACCEPT in Docker iptables chains; traffic never hits `ufw-user-input`.
+
+**Fix:** Do not publish app ports to `0.0.0.0`. Prefer Caddy + internal network (like n8n) or `127.0.0.1:PORT:PORT`. Emergency: `iptables -I DOCKER-USER 1 -p tcp --dport PORT -j DROP` + `netfilter-persistent save`. Docs: `docs/infrastructure/vps-docker-ports.md`.
+
+**Prevent:** Checklist in `vps-docker-ports.md` on every new compose service; smoke `curl` the host IP on the candidate port after deploy.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -851,3 +896,6 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Optional contact phones: `PhoneE164Field required={false}`; `split` only in combined language+phone pills (PIT-048)
 - [ ] Hebrew phone field: `PhoneE164Field` root `dir="ltr"` so calling code stays on the left (PIT-049)
 - [ ] Backdrop chrome (Menu / Chat / Scroll): sample `data-menu-contrast` before walking to `html`/`body` (PIT-050)
+- [ ] Media on R2: public base URL + importMap after storage plugin swap (PIT-051)
+- [ ] Audit worker: SSRF re-check + timing-safe / HMAC agent auth (PIT-052)
+- [ ] VPS Docker: no `0.0.0.0` publish; Caddy or `127.0.0.1` only (PIT-053)

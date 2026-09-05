@@ -2,7 +2,8 @@
 
 Статус: целевой деплой для AI Audit MVP. DNS — Cloudflare Free; reverse proxy — Caddy; worker — Node skeleton.
 
-Связано: [`ai-audit-architecture.md`](../architecture/ai-audit-architecture.md) · [`r2-audit-storage.md`](../architecture/r2-audit-storage.md) · [`vps-n8n.md`](./vps-n8n.md)
+Связано: [`vps-n8n.md`](./vps-n8n.md) · [`caddy-dns-audit-worker.md`](./caddy-dns-audit-worker.md) · [`vps-docker-ports.md`](./vps-docker-ports.md)
+
 
 ---
 
