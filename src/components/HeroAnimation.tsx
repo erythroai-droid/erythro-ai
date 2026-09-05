@@ -54,13 +54,10 @@ export default function HeroAnimation({
   const desktopIsImage = Boolean(videoUrl && isProbablyImageUrl(videoUrl))
   const hasMobileImage = Boolean(mobileImageUrl)
   const desktopPoster = posterUrl || mobileImageUrl
-  // Mount video only after splash + lg so mobile never downloads it and LCP can use the poster.
+  // Mount video only after splash + lg so mobile never downloads it.
+  // Poster/image always paint via CSS breakpoints (no isLg gate) for LCP.
   const showDesktopVideo =
     Boolean(videoUrl) && !desktopIsImage && isLg && splashDone
-  const showDesktopImage = Boolean(videoUrl) && desktopIsImage && isLg
-  // Poster only until the video is actually playing — otherwise mobile still sits under/over the banner.
-  const showDesktopPoster =
-    Boolean(desktopPoster) && !desktopIsImage && isLg && !desktopVideoPlaying
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)')
@@ -153,8 +150,11 @@ export default function HeroAnimation({
             />
           ) : null}
 
-          {/* Desktop video poster / LCP still — removed once video is playing. */}
-          {showDesktopPoster && desktopPoster ? (
+          {/*
+            Desktop poster always in the SSR/hydration tree (CSS lg:block).
+            Gating on isLg delayed LCP until after useEffect (~1 frame +).
+          */}
+          {desktopPoster && !desktopIsImage ? (
             <Image
               src={desktopPoster}
               alt=""
@@ -164,13 +164,15 @@ export default function HeroAnimation({
               fetchPriority="high"
               loading="eager"
               decoding="async"
-              className="hidden object-cover opacity-85 lg:block"
+              className={`hidden object-cover opacity-85 lg:block ${
+                desktopVideoPlaying ? 'lg:!opacity-0' : ''
+              }`}
             />
           ) : null}
 
-          {showDesktopImage ? (
+          {videoUrl && desktopIsImage ? (
             <Image
-              src={videoUrl!}
+              src={videoUrl}
               alt=""
               fill
               sizes={DESKTOP_HERO_SIZES}

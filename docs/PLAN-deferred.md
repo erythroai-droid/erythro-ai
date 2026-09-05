@@ -9,7 +9,7 @@
 | Priority | Item | Notes |
 |---|---|---|
 | medium | Cloudflare Access на `/admin*` | Zero Trust PIN/SSO — `docs/infrastructure/vps-firewall-cloudflare-access.md` §2 |
-| medium | Desktop CLS (~1.1) | HeroMotionText layout reserve / SSR first paint — CWV |
+| medium | Desktop CLS (~1.1) | Partially addressed: poster LCP without isLg gate, heading min-height + cross-locale slot, useLayoutEffect locale — re-measure after deploy |
 | low | Purge Vercel Blob copies | After admin upload→R2 verified; then drop `BLOB_READ_WRITE_TOKEN` |
 | low | Leftover ~4 Blob URL mentions in HTML | Rewrite/cache already mostly on R2 |
 | low | `AGENT_REQUIRE_HMAC=1` | Only after n8n signs bodies |

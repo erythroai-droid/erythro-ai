@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -18,6 +18,11 @@ interface MotionPhrase {
 interface HeroMotionTextProps {
   phrases: MotionPhrase[]
   className?: string
+  /**
+   * Optional longer string for the invisible layout slot (e.g. longest phrase
+   * across locales) so ISR client locale hydrate doesn't change heading height.
+   */
+  layoutReserveText?: string
 }
 
 /** Off-screen sizing node that must not expand document scroll width. */
@@ -2925,7 +2930,11 @@ async function playExtraFrame(opts: {
  * Hero motion headlines — frame-by-frame cinematic cycle.
  * Frames 1–4 fully specified; frames 5+ use playExtraFrame (random outline).
  */
-export default function HeroMotionText({ phrases, className = '' }: HeroMotionTextProps) {
+export default function HeroMotionText({
+  phrases,
+  className = '',
+  layoutReserveText,
+}: HeroMotionTextProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const slotRef = useRef<HTMLSpanElement>(null)
   const inlineRef = useRef<HTMLSpanElement>(null)
@@ -2939,6 +2948,25 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Lock desktop heading box before paint — useEffect ran too late (CLS ~1).
+  useLayoutEffect(() => {
+    const slotEl = slotRef.current
+    const inlineEl = inlineRef.current
+    if (!slotEl || !inlineEl) return
+    if (typeof window === 'undefined') return
+    if (!window.matchMedia('(min-width: 1024px)').matches) return
+
+    const headingEl = (slotEl.closest('.hero-heading') as HTMLElement | null) ?? slotEl
+    const slotH = slotEl.getBoundingClientRect().height
+    if (slotH <= 0) return
+    headingEl.style.minHeight = `${slotH}px`
+    headingEl.style.height = `${slotH}px`
+    slotEl.style.minHeight = `${slotH}px`
+    slotEl.style.height = `${slotH}px`
+    inlineEl.style.minHeight = `${slotH}px`
+    inlineEl.style.height = `${slotH}px`
+  }, [phrasesKey, layoutReserveText])
 
   useEffect(() => {
     if (!mounted) return
@@ -3340,8 +3368,10 @@ export default function HeroMotionText({ phrases, className = '' }: HeroMotionTe
     </div>
   )
 
-  // Slot sized to the longest phrase so shorter ones don't clip longer cycles.
+  // Slot sized to the longest reserve (cross-locale) or longest current phrase
+  // so shorter cycles / locale hydrate don't clip or shift layout.
   const slotPhrase =
+    (layoutReserveText && layoutReserveText.trim()) ||
     phrases.reduce((longest, p) => (p.text.length > longest.length ? p.text : longest), '') ||
     '—'
 

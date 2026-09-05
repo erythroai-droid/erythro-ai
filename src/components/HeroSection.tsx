@@ -47,6 +47,31 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
     return fallback ? [{ text: fallback, outline: fallback }] : []
   }, [locale, translations.mainHeading, translations.motionHeadings])
 
+  /** Longest phrase across locales — keeps heading box stable when ISR hydrates locale. */
+  const layoutReserveText = useMemo(() => {
+    const locales = ['en', 'ru', 'he'] as const
+    let longest = ''
+    for (const phrase of translations.motionHeadings ?? []) {
+      for (const loc of locales) {
+        let text = ''
+        if (phrase && typeof phrase === 'object' && 'text' in phrase) {
+          const dict = phrase.text as Record<string, string>
+          text = (dict?.[loc] || dict?.en || '').trim()
+        } else if (phrase && typeof phrase === 'object') {
+          const dict = phrase as Record<string, string>
+          text = (dict?.[loc] || dict?.en || '').trim()
+        }
+        if (text.length > longest.length) longest = text
+      }
+    }
+    const main = translations.mainHeading
+    for (const loc of locales) {
+      const text = (main?.[loc] || main?.en || '').trim()
+      if (text.length > longest.length) longest = text
+    }
+    return longest
+  }, [translations.mainHeading, translations.motionHeadings])
+
   const handleFindOutMoreClick = () => {
     const href = (translations.ctaHref || '#contacts').trim()
 
@@ -73,9 +98,9 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
     const buttons = containerRef.current.querySelector('.hero-buttons')
 
     // LCP: keep the headline readable in first paint. Animate only siblings from
-    // opacity 0; heading starts visible so GSAP/splash wait is not render-delay.
+    // opacity 0; heading stays at final position (no y tween → less CLS).
     gsap.set([preHeading, subtext, buttons], { y: 20, opacity: 0 })
-    gsap.set(heading, { y: 12, opacity: 1 })
+    gsap.set(heading, { y: 0, opacity: 1 })
 
     let cancelled = false
     const tl = gsap.timeline({ paused: true })
@@ -87,14 +112,9 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
       clearProps: 'transform',
     })
       .to(
-        heading,
-        { y: 0, duration: 0.8, ease: 'power3.out', clearProps: 'transform' },
-        '-=0.4',
-      )
-      .to(
         subtext,
         { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', clearProps: 'transform' },
-        '-=0.5',
+        '-=0.3',
       )
       .to(
         buttons,
@@ -145,9 +165,9 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
 
         {/* Full-bleed rotating headline — no wrap on large screens */}
         <h1
-          className="hero-heading font-display-5xl !font-bold uppercase mt-0 mb-0 flex min-w-0 w-full max-w-full items-center justify-center select-text tracking-tight px-5 text-center whitespace-normal lg:mt-2 lg:mb-2 lg:px-4 lg:whitespace-nowrap !text-[clamp(28px,9.5vw,48px)] !leading-[1.12] lg:!text-[clamp(36px,4.8vw,72px)] lg:!leading-[1.15] text-gold-500 lg:min-h-[1.15em]"
+          className="hero-heading font-display-5xl !font-bold uppercase mt-0 mb-0 flex min-w-0 w-full max-w-full items-center justify-center select-text tracking-tight px-5 text-center whitespace-normal lg:mt-2 lg:mb-2 lg:px-4 lg:whitespace-nowrap !text-[clamp(28px,9.5vw,48px)] !leading-[1.12] lg:!text-[clamp(36px,4.8vw,72px)] lg:!leading-[1.15] text-gold-500 min-h-[calc(1.12em+0.24em)] lg:min-h-[calc(1.15em+0.24em)]"
         >
-          <HeroMotionText phrases={motionPhrases} />
+          <HeroMotionText phrases={motionPhrases} layoutReserveText={layoutReserveText} />
         </h1>
 
         {/* Description subtext matching Figma geometry spacing & leading */}
