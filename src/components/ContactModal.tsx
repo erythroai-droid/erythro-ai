@@ -323,7 +323,6 @@ function ContactModal({
                       autoCorrect="off"
                       spellCheck={false}
                       enterKeyHint="next"
-                      dir="ltr"
                       aria-required="true"
                       aria-invalid={Boolean(fieldErrors.email) || undefined}
                       aria-describedby={fieldErrors.email ? 'contact-modal-email-error' : undefined}

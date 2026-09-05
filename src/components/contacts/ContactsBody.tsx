@@ -385,7 +385,6 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                             autoCorrect="off"
                             spellCheck={false}
                             enterKeyHint="next"
-                            dir="ltr"
                             aria-required="true"
                             aria-invalid={Boolean(fieldErrors.email) || undefined}
                             aria-describedby={fieldErrors.email ? 'contacts-page-email-error' : undefined}

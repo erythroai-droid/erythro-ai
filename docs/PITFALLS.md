@@ -802,7 +802,7 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 **Fix:** Force `dir="ltr"` and `flex-row` on the `PhoneE164Field` root. Logical padding (`ps-` / `pe-`) then maps to left/right as in EN/RU. Keep the country dropdown `dir="rtl"` in Hebrew so names stay readable.
 
-**Prevent:** Phone numbers are LTR chrome. Do not let the surrounding RTL form reverse the calling-code + number order. Hebrew placeholders on `dir="ltr"` fields (email, phone, URL) must be forced to the physical right via `:placeholder-shown` — `::placeholder { text-align }` alone is ignored when the input is LTR.
+**Prevent:** Phone numbers are LTR chrome. Do not let the surrounding RTL form reverse the calling-code + number order. Hebrew placeholders on remaining `dir="ltr"` fields (phone, URL) must be forced to the physical right via `:placeholder-shown`. Email inherits the RTL form like name — do not set `dir="ltr"` on it, and override UA LTR on `type="email"`.
 
 ---
 
