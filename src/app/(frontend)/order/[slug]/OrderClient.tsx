@@ -1428,7 +1428,6 @@ function AuditOrderModal({
                         autoCapitalize="off"
                         autoCorrect="off"
                         spellCheck={false}
-                        dir="ltr"
                         aria-required="true"
                         aria-invalid={Boolean(fieldErrors.email) || undefined}
                       />

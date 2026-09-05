@@ -116,11 +116,17 @@
   border-end-end-radius: 24px;
 }
 
-/* Hebrew: LTR values (email / phone / URL) stay left once typed, but empty
-   placeholders must sit on the physical right. ::placeholder text-align is
-   ignored in some engines when the input itself is dir=ltr — use
-   :placeholder-shown on the field. Native RTL fields (name, message) already
-   align to start = right. */
+/* Hebrew: email fills from the right like name. Chromium often forces
+   type=email to LTR — override so caret and value match the RTL form.
+   Phone / URL stay dir=ltr; empty placeholders on those must sit on the
+   physical right. ::placeholder text-align is ignored in some engines when
+   the input itself is dir=ltr — use :placeholder-shown. Native RTL fields
+   (name, email, message) already align to start = right. */
+html[dir='rtl'] .audit-pill-shell input[type='email'] {
+  direction: rtl;
+  text-align: right;
+}
+
 html[dir='rtl'] .audit-pill-shell input[dir='ltr']:placeholder-shown,
 html[dir='rtl'] .audit-pill-shell textarea[dir='ltr']:placeholder-shown {
   text-align: right;
