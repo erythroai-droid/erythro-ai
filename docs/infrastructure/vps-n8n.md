@@ -35,6 +35,8 @@ Docker network: `proxy_network` — containers `caddy_proxy`, `n8n`, `audit_agen
 
 Deploy from repo: `py -3 scripts/deploy_vps_audit_stack.py` (needs `VPS_PASSWORD` + local `R2_*`; preferably `SMTP_PASS` + stable `AGENT_SECRET_TOKEN`).
 
+**Новые контейнеры:** не публиковать порты на `0.0.0.0` — см. [`vps-docker-ports.md`](./vps-docker-ports.md) (PIT-053).
+
 See also: [`caddy-dns-audit-worker.md`](./caddy-dns-audit-worker.md), [`n8n-audit-reconcile.md`](./n8n-audit-reconcile.md).
 
 ### n8n workflow (audit reconcile)

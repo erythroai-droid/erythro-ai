@@ -15,7 +15,7 @@ const CONTENT_SECURITY_POLICY = [
   "frame-src https://challenges.cloudflare.com",
   "child-src https://challenges.cloudflare.com blob:",
   "worker-src 'self' blob:",
-  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://vitals.vercel-insights.com https://*.public.blob.vercel-storage.com https://challenges.cloudflare.com https://cloudflareinsights.com",
+  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://vitals.vercel-insights.com https://*.public.blob.vercel-storage.com https://*.r2.dev https://challenges.cloudflare.com https://cloudflareinsights.com",
   "media-src 'self' blob: https:",
   "frame-ancestors 'self'",
   "base-uri 'self'",
@@ -67,6 +67,19 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '*.public.blob.vercel-storage.com',
       },
+      {
+        protocol: 'https',
+        hostname: '*.r2.dev',
+      },
+      // Custom media domain (set R2_MEDIA_PUBLIC_BASE_URL / NEXT_PUBLIC_R2_MEDIA_BASE_URL)
+      ...(process.env.NEXT_PUBLIC_R2_MEDIA_HOST
+        ? [
+            {
+              protocol: 'https' as const,
+              hostname: process.env.NEXT_PUBLIC_R2_MEDIA_HOST.replace(/^https?:\/\//, '').split('/')[0]!,
+            },
+          ]
+        : []),
     ],
   },
   typescript: {

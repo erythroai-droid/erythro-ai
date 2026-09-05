@@ -1,24 +1,27 @@
 import http from 'node:http'
+import { createHmac, timingSafeEqual } from 'node:crypto'
 import { config as loadEnv } from 'dotenv'
 import { runAuditJob } from './runAudit.js'
+import { assertPublicHttpUrl } from './ssrf.js'
 
 loadEnv()
 
 const PORT = Number(process.env.PORT || 8080)
 const AGENT_SECRET = process.env.AGENT_SECRET_TOKEN?.trim() || ''
+const REQUIRE_HMAC = process.env.AGENT_REQUIRE_HMAC === '1'
 
-function readJson(req) {
+function timingSafeStringEqual(a, b) {
+  const left = Buffer.from(a)
+  const right = Buffer.from(b)
+  if (left.length !== right.length) return false
+  return timingSafeEqual(left, right)
+}
+
+function readRawBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = []
     req.on('data', (c) => chunks.push(c))
-    req.on('end', () => {
-      try {
-        const raw = Buffer.concat(chunks).toString('utf8')
-        resolve(raw ? JSON.parse(raw) : {})
-      } catch (err) {
-        reject(err)
-      }
-    })
+    req.on('end', () => resolve(Buffer.concat(chunks)))
     req.on('error', reject)
   })
 }
@@ -39,7 +42,15 @@ function unauthorized(res) {
 function checkSecret(req) {
   if (!AGENT_SECRET) return false
   const header = req.headers['x-agent-secret-key']
-  return typeof header === 'string' && header === AGENT_SECRET
+  return typeof header === 'string' && timingSafeStringEqual(header, AGENT_SECRET)
+}
+
+function checkSignature(rawBody, req) {
+  const header = req.headers['x-agent-signature']
+  if (typeof header !== 'string' || !header.trim()) return false
+  const expected = createHmac('sha256', AGENT_SECRET).update(rawBody).digest('hex')
+  const provided = header.trim().toLowerCase().replace(/^sha256=/i, '')
+  return timingSafeStringEqual(provided, expected)
 }
 
 const server = http.createServer(async (req, res) => {
@@ -56,9 +67,23 @@ const server = http.createServer(async (req, res) => {
       return
     }
 
+    let rawBody
+    try {
+      rawBody = await readRawBody(req)
+    } catch {
+      send(res, 400, { error: 'invalid_body' })
+      return
+    }
+
+    const hasSig = typeof req.headers['x-agent-signature'] === 'string'
+    if ((REQUIRE_HMAC || hasSig) && !checkSignature(rawBody, req)) {
+      unauthorized(res)
+      return
+    }
+
     let body
     try {
-      body = await readJson(req)
+      body = rawBody.length ? JSON.parse(rawBody.toString('utf8')) : {}
     } catch {
       send(res, 400, { error: 'invalid_json' })
       return
@@ -68,6 +93,12 @@ const server = http.createServer(async (req, res) => {
     const targetUrl = typeof body.targetUrl === 'string' ? body.targetUrl.trim() : ''
     if (submissionId == null || !targetUrl) {
       send(res, 400, { error: 'submissionId_and_targetUrl_required' })
+      return
+    }
+
+    const ssrf = await assertPublicHttpUrl(targetUrl)
+    if (!ssrf.ok) {
+      send(res, 400, { error: 'ssrf_blocked', reason: ssrf.reason })
       return
     }
 

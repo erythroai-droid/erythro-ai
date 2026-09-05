@@ -71,10 +71,11 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
     const heading = containerRef.current.querySelector('.hero-heading')
     const subtext = containerRef.current.querySelector('.hero-subtext')
     const buttons = containerRef.current.querySelector('.hero-buttons')
-    const targets = [preHeading, heading, subtext, buttons]
 
-    // Prepare initial position
-    gsap.set(targets, { y: 20, opacity: 0 })
+    // LCP: keep the headline readable in first paint. Animate only siblings from
+    // opacity 0; heading starts visible so GSAP/splash wait is not render-delay.
+    gsap.set([preHeading, subtext, buttons], { y: 20, opacity: 0 })
+    gsap.set(heading, { y: 12, opacity: 1 })
 
     let cancelled = false
     const tl = gsap.timeline({ paused: true })
@@ -87,7 +88,7 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
     })
       .to(
         heading,
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', clearProps: 'transform' },
+        { y: 0, duration: 0.8, ease: 'power3.out', clearProps: 'transform' },
         '-=0.4',
       )
       .to(
@@ -144,7 +145,7 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
 
         {/* Full-bleed rotating headline — no wrap on large screens */}
         <h1
-          className="hero-heading opacity-0 font-display-5xl !font-bold uppercase mt-0 mb-0 flex min-w-0 w-full max-w-full items-center justify-center select-text tracking-tight px-5 text-center whitespace-normal lg:mt-2 lg:mb-2 lg:px-4 lg:whitespace-nowrap !text-[clamp(28px,9.5vw,48px)] !leading-[1.12] lg:!text-[clamp(36px,4.8vw,72px)] lg:!leading-[1.15] text-gold-500"
+          className="hero-heading font-display-5xl !font-bold uppercase mt-0 mb-0 flex min-w-0 w-full max-w-full items-center justify-center select-text tracking-tight px-5 text-center whitespace-normal lg:mt-2 lg:mb-2 lg:px-4 lg:whitespace-nowrap !text-[clamp(28px,9.5vw,48px)] !leading-[1.12] lg:!text-[clamp(36px,4.8vw,72px)] lg:!leading-[1.15] text-gold-500 lg:min-h-[1.15em]"
         >
           <HeroMotionText phrases={motionPhrases} />
         </h1>

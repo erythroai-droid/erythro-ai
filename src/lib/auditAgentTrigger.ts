@@ -1,3 +1,10 @@
+import {
+  AGENT_SECRET_HEADER,
+  AGENT_SIGNATURE_HEADER,
+  signAgentBody,
+} from '@/lib/agentAuth'
+import { checkWebsiteReachable } from '@/lib/checkWebsite'
+
 /**
  * Fire-and-forget (or short-timeout) call to VPS audit worker after an audit lead is saved.
  * Never throws — failures are logged; the contact API must still succeed for the client.
@@ -39,26 +46,36 @@ export async function triggerAuditAgent(
     return { ok: false, reason: 'missing_target_url' }
   }
 
+  const reachable = await checkWebsiteReachable(targetUrl)
+  if (!reachable.ok) {
+    console.error(`[audit-agent] SSRF/DNS block reason=${reachable.reason} url=${targetUrl}`)
+    return { ok: false, reason: `ssrf_${reachable.reason}` }
+  }
+
   const url = `${getAuditAgentBaseUrl()}/api/run-audit`
   const controller = new AbortController()
   const timeoutMs = Number(process.env.AUDIT_AGENT_TIMEOUT_MS || 8_000)
   const timer = setTimeout(() => controller.abort(), timeoutMs)
+
+  const body = JSON.stringify({
+    submissionId: input.submissionId,
+    targetUrl,
+    locale: input.locale || undefined,
+    planSlug: input.planSlug || undefined,
+    clientEmail: input.clientEmail || undefined,
+    clientName: input.clientName || undefined,
+  })
+  const signature = signAgentBody(body)
 
   try {
     const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Agent-Secret-Key': secret,
+        [AGENT_SECRET_HEADER]: secret,
+        ...(signature ? { [AGENT_SIGNATURE_HEADER]: signature } : {}),
       },
-      body: JSON.stringify({
-        submissionId: input.submissionId,
-        targetUrl,
-        locale: input.locale || undefined,
-        planSlug: input.planSlug || undefined,
-        clientEmail: input.clientEmail || undefined,
-        clientName: input.clientName || undefined,
-      }),
+      body,
       signal: controller.signal,
     })
 

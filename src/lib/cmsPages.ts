@@ -322,6 +322,46 @@ async function fetchPortfolioProjects(): Promise<PortfolioProject[]> {
   }
 }
 
+/** Card/grid payload — skip Lexical body/summary blobs that bloat `/portfolio` HTML. */
+async function fetchPortfolioProjectCards(): Promise<PortfolioProject[]> {
+  try {
+    const payload = await getPayload({ config })
+    const res = await payload.find({
+      collection: 'portfolio-projects',
+      locale: 'all',
+      depth: 1,
+      limit: 100,
+      sort: 'order',
+      select: {
+        slug: true,
+        title: true,
+        order: true,
+        category: true,
+        categoryLabel: true,
+        cardImage: true,
+        heroMedia: true,
+        heroMediaMobile: true,
+        tags: true,
+        stack: true,
+        client: true,
+        date: true,
+        description: true,
+        subtitle: true,
+      },
+    })
+    if (!res.docs?.length) {
+      return PORTFOLIO_PROJECTS.map((p) => ({ ...p, body: [], summary: { en: '' } }))
+    }
+    return res.docs.map((d: any) => {
+      const mapped = mapPortfolioDoc(d)
+      return { ...mapped, body: [], summary: mapped.summary || { en: '' } }
+    })
+  } catch (err) {
+    console.error('[cmsPages] portfolio cards fallback:', err)
+    return PORTFOLIO_PROJECTS.map((p) => ({ ...p, body: [], summary: { en: '' } }))
+  }
+}
+
 async function fetchPortfolioCategories(): Promise<PortfolioFilter[]> {
   try {
     const payload = await getPayload({ config })
@@ -677,6 +717,13 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
   unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v7'], {
+    tags: [SITE_CONTENT_TAG],
+    revalidate: false,
+  })()
+
+/** Lean list for `/portfolio` index — avoids shipping every project body Lexical tree. */
+export const getCachedPortfolioProjectCards = () =>
+  unstable_cache(() => fetchPortfolioProjectCards(), ['portfolio-project-cards-v1'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

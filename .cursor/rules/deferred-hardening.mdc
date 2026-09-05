@@ -1,0 +1,21 @@
+---
+description: Remind deferred security/perf follow-ups (Access, HMAC, Edge cache, CF-only UFW)
+alwaysApply: true
+---
+
+# Deferred follow-ups (erythro.ai)
+
+When the user asks about security hardening, VPS firewall, admin protection, audit HMAC, or page-cache/perf — surface `docs/PLAN-deferred.md` and offer the next deferred item. Do not silently skip.
+
+Deferred (do not treat as done):
+
+1. Cloudflare Access for `/admin*`
+2. Worker `AGENT_REQUIRE_HMAC=1` after n8n signs request bodies
+3. True Cloudflare-only UFW on 80/443 — only after `n8n`/`agent-api` are Proxied (orange) with Origin Certificates (today they are DNS-only)
+4. Edge HTML cache / ISR without breaking locale/theme cookies
+5. Re-measure CLS/LCP on production; optional `media.erythro.ai` custom domain for R2
+
+Baseline UFW (22 + 80 + 443 only) is the safe step while services stay DNS-only.
+
+New VPS containers: follow `docs/infrastructure/vps-docker-ports.md` — never assume UFW closes Docker `ports:` (PIT-053).
+

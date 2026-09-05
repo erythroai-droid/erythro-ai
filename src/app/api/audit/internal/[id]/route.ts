@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { sql } from '@payloadcms/db-postgres'
+import { agentSecretAuthorized } from '@/lib/agentAuth'
 import { parseAuditReportId } from '@/lib/auditReport'
 
 export const runtime = 'nodejs'
@@ -9,9 +10,7 @@ export const runtime = 'nodejs'
 type RouteParams = { params: Promise<{ id: string }> }
 
 function authorized(request: NextRequest): boolean {
-  const secret = process.env.AGENT_SECRET_TOKEN?.trim()
-  if (!secret) return false
-  return request.headers.get('x-agent-secret-key') === secret
+  return agentSecretAuthorized(request.headers.get('x-agent-secret-key'))
 }
 
 /** Worker reads submission fields needed for email / retries (includes email). */

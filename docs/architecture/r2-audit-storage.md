@@ -2,7 +2,7 @@
 
 Bucket created **2026-08-31**: `erythro-audit-reports` (location **WEUR**, Standard).
 
-Used for PDF/HTML audit reports (`reportUrl` on `contact-submissions`). Media Payload may stay on Vercel Blob until a later cutover; see [`ai-audit-architecture.md`](./ai-audit-architecture.md) §4.
+Used for PDF/HTML audit reports (`reportUrl` on `contact-submissions`). Payload **media** cutover lives in [`r2-media-storage.md`](./r2-media-storage.md) (bucket `erythro-media`).
 
 ## Env (Vercel + VPS worker)
 

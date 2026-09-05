@@ -1,0 +1,16 @@
+---
+description: VPS Docker must not publish host ports; use Caddy or 127.0.0.1
+alwaysApply: true
+---
+
+# VPS Docker ports (erythro.ai)
+
+When adding or changing **any** Docker / compose service on the Hostinger VPS:
+
+1. Read `docs/infrastructure/vps-docker-ports.md` (and PIT-053).
+2. **Do not** publish `0.0.0.0:PORT` or bare `"PORT:PORT"`.
+3. Default pattern: no host `ports:` — join `proxy_network` and terminate TLS on **Caddy** (80/443 only), same as n8n / audit-agent.
+4. Localhost-only debug: `127.0.0.1:PORT:PORT`.
+5. UFW (22/80/443) is **not** enough — Docker bypasses UFW. If a port was already published, add `DOCKER-USER` DROP and persist, then remove the publish from compose.
+
+Also keep deferred hardening list in `docs/PLAN-deferred.md` in mind when touching VPS security.

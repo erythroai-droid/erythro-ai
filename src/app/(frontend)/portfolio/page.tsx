@@ -4,7 +4,7 @@ import PortfolioClient from './PortfolioClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import {
   getCachedPortfolioCategories,
-  getCachedPortfolioProjects,
+  getCachedPortfolioProjectCards,
 } from '@/lib/cmsPages'
 import { buildPortfolioFilters } from '@/lib/portfolioProjects'
 import { getRequestPrefs } from '@/lib/requestPrefs'
@@ -31,7 +31,7 @@ export default async function PortfolioPage() {
 
   const [content, projects, categoryFilters] = await Promise.all([
     getCachedSiteContent(),
-    getCachedPortfolioProjects(),
+    getCachedPortfolioProjectCards(),
     getCachedPortfolioCategories(),
   ])
 
