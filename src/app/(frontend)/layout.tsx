@@ -1,6 +1,5 @@
 import React from 'react'
 import type { Metadata, Viewport } from 'next'
-import { cookies } from 'next/headers'
 import { getCachedSeoSettings } from '@/lib/getSiteContent'
 import { heebo, inter, interCyrillic, interLatinFamily, robotoMono } from '@/lib/fonts'
 import AnalyticsBootstrap from '@/components/AnalyticsBootstrap'
@@ -9,7 +8,7 @@ import StructuredData from '@/components/StructuredData'
 import SplashHost from '@/components/SplashHost'
 import NavigationTopLoader from '@/components/NavigationTopLoader'
 import SkipToContent from '@/components/SkipToContent'
-import { THEME_BOOTSTRAP_SCRIPT, THEME_COOKIE, isSiteTheme } from '@/lib/sitePrefs'
+import { LOCALE_BOOTSTRAP_SCRIPT, THEME_BOOTSTRAP_SCRIPT } from '@/lib/sitePrefs'
 import './styles.css'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
@@ -61,9 +60,8 @@ const KEYWORDS = [
   'אוטומציה AI',
 ]
 
-function resolveLocale(value?: string): Locale {
-  return value && SUPPORTED_LOCALES.includes(value as Locale) ? (value as Locale) : 'en'
-}
+/** Default SSR locale — no `cookies()` so the layout stays cacheable (ISR). */
+const SSR_LOCALE: Locale = 'en'
 
 export const viewport: Viewport = {
   themeColor: '#0d0d0d',
@@ -72,8 +70,7 @@ export const viewport: Viewport = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const cookieStore = await cookies()
-  const locale = resolveLocale(cookieStore.get('NEXT_LOCALE')?.value)
+  const locale = SSR_LOCALE
 
   // SEO is editable from the Payload "Site Settings" global; fall back to
   // the static values below when a field is left empty (or DB is unavailable).
@@ -145,32 +142,20 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
+  const locale = SSR_LOCALE
 
-  const cookieStore = await cookies()
-  const locale = resolveLocale(cookieStore.get('NEXT_LOCALE')?.value)
-  const themeCookie = cookieStore.get(THEME_COOKIE)?.value
-  const themeClass = isSiteTheme(themeCookie) && themeCookie === 'dark' ? 'dark' : ''
-
-  const fontVars = [
-    inter.variable,
-    locale === 'ru' ? interCyrillic.variable : '',
-    locale === 'he' ? heebo.variable : '',
-    robotoMono.variable,
-    themeClass,
-  ]
+  // Do not read theme/locale cookies here — that forces Dynamic SSR for every
+  // page under (frontend). Theme + lang/dir hydrate via bootstrap scripts.
+  const fontVars = [inter.variable, interCyrillic.variable, heebo.variable, robotoMono.variable]
     .filter(Boolean)
     .join(' ')
 
   return (
     <html
       lang={locale}
-      dir={locale === 'he' ? 'rtl' : 'ltr'}
+      dir="ltr"
       className={fontVars}
-      style={
-        locale === 'he'
-          ? ({ '--font-inter-latin': interLatinFamily } as React.CSSProperties)
-          : undefined
-      }
+      style={{ '--font-inter-latin': interLatinFamily } as React.CSSProperties}
       suppressHydrationWarning
     >
       <head>
@@ -183,6 +168,10 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <script
           id="theme-bootstrap"
           dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }}
+        />
+        <script
+          id="locale-bootstrap"
+          dangerouslySetInnerHTML={{ __html: LOCALE_BOOTSTRAP_SCRIPT }}
         />
         <AnalyticsBootstrap />
         <AnalyticsLoader />

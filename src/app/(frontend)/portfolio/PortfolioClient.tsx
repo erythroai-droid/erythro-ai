@@ -19,6 +19,8 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 interface PortfolioClientProps {
   initialLocale: string
   initialTheme?: 'light' | 'dark'
+  /** ISR pages: hydrate locale/theme from storage after mount (no SSR cookies). */
+  clientHydratePrefs?: boolean
   content: SiteContent
   projects: PortfolioProject[]
   filters: PortfolioFilter[]
@@ -27,12 +29,18 @@ interface PortfolioClientProps {
 export default function PortfolioClient({
   initialLocale,
   initialTheme,
+  clientHydratePrefs,
   content,
   projects,
   filters,
 }: PortfolioClientProps) {
   const a11yTranslations = content.accessibility
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(
+    initialLocale,
+    'dark',
+    initialTheme,
+    clientHydratePrefs ? { clientHydratePrefs: true } : undefined,
+  )
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   const pickA11y = (field?: Record<string, string> | null) =>

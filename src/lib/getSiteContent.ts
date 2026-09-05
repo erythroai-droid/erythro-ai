@@ -575,16 +575,281 @@ export async function getSiteContent(): Promise<SiteContent> {
 }
 
 /**
- * Cached variant of {@link getSiteContent}. The result is locale-independent
- * (it always contains all locales), so a single cache entry serves every
- * visitor regardless of their `NEXT_LOCALE` cookie. The page still reads the
- * cookie outside this cache to pick the initial locale, so language memory is
- * unaffected. Invalidated via the `SITE_CONTENT_TAG` tag whenever content is
- * edited in the Payload admin (see src/lib/revalidate.ts).
+ * Lightweight site content for chrome-only pages (portfolio list, JSON-LD layout).
+ * Skips hero / case-study media / full service cards / rich plan features — only
+ * header, footer, site-settings, FAQ, and slim services/plans for nav children.
+ */
+export async function getShellSiteContent(): Promise<SiteContent> {
+  const content: SiteContent = structuredClone(defaultSiteContent)
+
+  try {
+    const payload = await getPayload({ config })
+
+    const [header, footer, settings, faqG, servicesRes, plansRes] = await Promise.all([
+      payload.findGlobal({ slug: 'header', locale: 'all', depth: 0 }) as Promise<any>,
+      payload.findGlobal({ slug: 'footer', locale: 'all', depth: 0 }) as Promise<any>,
+      payload.findGlobal({ slug: 'site-settings', locale: 'all', depth: 1 }) as Promise<any>,
+      payload.findGlobal({ slug: 'faq-section', locale: 'all', depth: 0 }) as Promise<any>,
+      payload.find({
+        collection: 'services',
+        locale: 'all',
+        depth: 0,
+        limit: 100,
+        sort: 'order',
+        select: { title: true, slug: true, order: true },
+      }) as Promise<any>,
+      payload.find({
+        collection: 'solution-plans',
+        locale: 'all',
+        depth: 0,
+        limit: 100,
+        sort: 'order',
+        select: { title: true, slug: true, kind: true, order: true },
+      }) as Promise<any>,
+    ])
+
+    if (Array.isArray(header?.navItems) && header.navItems.length) {
+      content.navbar.navItems = header.navItems.map((n: any, i: number) => {
+        const rawHref = n.href ?? defaultSiteContent.navbar.navItems[i]?.href ?? '#'
+        const matchingDefault = defaultSiteContent.navbar.navItems.find(
+          (item) => item.href === rawHref || (rawHref === '#contacts' && item.href === '/contacts'),
+        )
+        const children = Array.isArray(n.children)
+          ? n.children
+              .map((c: any) => {
+                const childHref = typeof c?.href === 'string' ? c.href.trim() : ''
+                if (!childHref) return null
+                return {
+                  label: L(c.label, { en: '', ru: '', he: '' }),
+                  href: childHref === '#contacts' ? '/contacts' : childHref,
+                }
+              })
+              .filter(Boolean)
+          : []
+        return {
+          label: L(n.label, matchingDefault?.label ?? {}),
+          description: L(
+            n.description,
+            matchingDefault?.description ?? { en: '', ru: '', he: '' },
+          ),
+          href: rawHref === '#contacts' ? '/contacts' : rawHref,
+          children,
+        }
+      })
+    }
+    if (hasContent(header?.ctaLabel)) content.navbar.ctaLabel = L(header.ctaLabel, content.navbar.ctaLabel)
+    if (typeof header?.ctaHref === 'string' && header.ctaHref.trim()) {
+      content.navbar.ctaHref = header.ctaHref.trim()
+    }
+
+    if (Array.isArray(servicesRes?.docs) && servicesRes.docs.length) {
+      content.services.items = servicesRes.docs.map((d: any, i: number) => {
+        const fb = defaultSiteContent.services.items[i]
+        return {
+          id: fb?.id ?? String(d.id),
+          slug:
+            (typeof d.slug === 'string' && d.slug.trim()) ||
+            (fb?.id ? SERVICE_ID_TO_SLUG[fb.id] : undefined) ||
+            undefined,
+          number: fb?.number || String(i + 1).padStart(2, '0'),
+          title: L(d.title, fb?.title ?? { en: '', ru: '', he: '' }),
+          features: fb?.features ?? { en: [], ru: [], he: [] },
+          image: fb?.image || '',
+          ...(fb?.videoPosterAlt ? { videoPosterAlt: fb.videoPosterAlt } : {}),
+        }
+      })
+    }
+
+    if (Array.isArray(plansRes?.docs) && plansRes.docs.length) {
+      content.solutions.cards = plansRes.docs
+        .filter((d: any) => {
+          const kind = d.kind === 'audit' || d.kind === 'solution' ? d.kind : undefined
+          const slug = typeof d.slug === 'string' ? d.slug : ''
+          if (kind === 'audit') return false
+          if (!kind && slug.startsWith('audit-')) return false
+          return true
+        })
+        .map((d: any, i: number) => {
+          const fb = defaultSiteContent.solutions.cards[i]
+          const slug = typeof d.slug === 'string' && d.slug.trim() ? d.slug.trim() : fb?.id || String(d.id)
+          return {
+            id: slug,
+            title: L(d.title, fb?.title ?? { en: '', ru: '', he: '' }),
+            price: fb?.price ?? '',
+            currency: fb?.currency || 'ILS',
+            features: fb?.features ?? [],
+          }
+        })
+    }
+
+    content.navbar.navItems = content.navbar.navItems.map((item) => {
+      if (Array.isArray(item.children) && item.children.length > 0) return item
+
+      if (item.href === '#services') {
+        const children = content.services.items
+          .map((service) => {
+            const slug = service.slug || (service.id ? SERVICE_ID_TO_SLUG[service.id] : undefined)
+            if (!slug) return null
+            return {
+              label: service.title,
+              href: `/services/${slug}`,
+            }
+          })
+          .filter(Boolean) as Array<{ label: Localized; href: string }>
+        return { ...item, children }
+      }
+
+      if (item.href === '#solutions') {
+        const children = content.solutions.cards.map((card) => ({
+          label: card.title,
+          href: `/order/${card.id}`,
+        }))
+        return { ...item, children }
+      }
+
+      return { ...item, children: item.children ?? [] }
+    })
+
+    content.faq.sectionTitle = L(faqG?.sectionTitle, content.faq.sectionTitle)
+    for (const loc of ['ru', 'he'] as const) {
+      if (content.faq.sectionTitle[loc] === 'FAQ') {
+        content.faq.sectionTitle[loc] = defaultSiteContent.faq.sectionTitle[loc]
+      }
+    }
+    content.faq.sectionSubtitle = L(faqG?.sectionSubtitle, content.faq.sectionSubtitle)
+    if (Array.isArray(faqG?.items) && faqG.items.length) {
+      content.faq.items = faqG.items.map((item: any, i: number) => {
+        const fb = defaultSiteContent.faq.items[i]
+        const answerFallback = fb?.answer ?? { en: '', ru: '', he: '' }
+        return {
+          question: L(item.question, fb?.question ?? { en: '', ru: '', he: '' }),
+          answer: LPlainFromLexical(item.answer, answerFallback),
+          answerRich: LRich(item.answer, answerFallback),
+        }
+      })
+    }
+
+    content.footer.ctaHeadingLine1 = L(footer?.ctaHeadingLine1, content.footer.ctaHeadingLine1)
+    content.footer.ctaHeadingLine2 = L(footer?.ctaHeadingLine2, content.footer.ctaHeadingLine2)
+    content.footer.ctaButton = L(footer?.ctaButton, content.footer.ctaButton)
+    if (typeof footer?.ctaHref === 'string' && footer.ctaHref.trim()) {
+      content.footer.ctaHref = footer.ctaHref.trim()
+    }
+    content.footer.companyTitle = L(footer?.companyTitle, content.footer.companyTitle)
+    content.footer.contactTitle = L(footer?.contactTitle, content.footer.contactTitle)
+    content.footer.emailLabel = L(footer?.emailLabel, content.footer.emailLabel)
+    content.footer.phoneLabel = L(footer?.phoneLabel, content.footer.phoneLabel)
+    content.footer.locationLabel = L(footer?.locationLabel, content.footer.locationLabel)
+    content.footer.locationValue = L(footer?.locationValue, content.footer.locationValue)
+    content.footer.copyright = L(footer?.copyright, content.footer.copyright)
+    if (Array.isArray(footer?.companyLinks) && footer.companyLinks.length) {
+      content.footer.companyLinks = footer.companyLinks.map((n: any, i: number) => ({
+        href: n.href ?? defaultSiteContent.footer.companyLinks[i]?.href ?? '#',
+        label: L(n.label, defaultSiteContent.footer.companyLinks[i]?.label ?? {}),
+      }))
+    }
+    if (Array.isArray(footer?.legalLinks) && footer.legalLinks.length) {
+      content.footer.legalLinks = footer.legalLinks.map((n: any, i: number) => {
+        const fallback =
+          defaultSiteContent.footer.legalLinks.find(
+            (d) => d.id === (n.key || defaultSiteContent.footer.legalLinks[i]?.id),
+          ) || defaultSiteContent.footer.legalLinks[i]
+        const rawHref = typeof n.href === 'string' ? n.href.trim() : ''
+        return {
+          id: n.key || fallback?.id || `legal-${i}`,
+          href: rawHref && rawHref !== '#' ? rawHref : fallback?.href || '#',
+          label: L(n.label, fallback?.label ?? {}),
+        }
+      })
+    }
+
+    const emailRows = Array.isArray(settings?.emails)
+      ? settings.emails
+          .map((row: { label?: unknown; address?: unknown }) => ({
+            label: typeof row?.label === 'string' ? row.label.trim() : '',
+            address: typeof row?.address === 'string' ? row.address.trim() : '',
+          }))
+          .filter((row: { address: string }) => Boolean(row.address))
+      : []
+    if (emailRows.length) content.siteSettings.emails = emailRows
+
+    const pickEmail = (...candidates: unknown[]) => {
+      for (const value of candidates) {
+        if (typeof value === 'string' && value.trim()) return value.trim()
+      }
+      return ''
+    }
+    const fallbackEmail =
+      pickEmail(settings?.email, emailRows[0]?.address) || content.siteSettings.email
+    const emailFooter = pickEmail(settings?.displayEmailFooter, fallbackEmail)
+    const emailContacts = pickEmail(settings?.displayEmailContacts, emailFooter, fallbackEmail)
+    const emailLegal = pickEmail(settings?.displayEmailLegal, fallbackEmail, emailFooter)
+    const notifyContact = pickEmail(settings?.notifyEmailContact, emailFooter, fallbackEmail)
+    const notifyOrder = pickEmail(settings?.notifyEmailOrder, emailFooter, fallbackEmail)
+
+    content.siteSettings.email = emailFooter
+    content.siteSettings.emailFooter = emailFooter
+    content.siteSettings.emailContacts = emailContacts
+    content.siteSettings.emailLegal = emailLegal
+    content.siteSettings.notifyEmailContact = notifyContact
+    content.siteSettings.notifyEmailOrder = notifyOrder
+
+    if (settings?.phone) content.siteSettings.phone = settings.phone
+    if (settings?.phoneDisplay) content.siteSettings.phoneDisplay = settings.phoneDisplay
+    if (settings?.facebook) content.siteSettings.facebook = settings.facebook
+    if (settings?.telegram) content.siteSettings.telegram = settings.telegram
+
+    content.siteSettings.pageHeroes = content.siteSettings.pageHeroes ?? {}
+    // Portfolio / contacts heroes only — skip order/legal media on shell pages.
+    for (const { key, field } of [
+      { key: 'portfolio' as const, field: 'portfolioHeroMedia' },
+      { key: 'contacts' as const, field: 'contactsHeroMedia' },
+    ]) {
+      const media = await resolveMediaDoc(payload, settings?.[field])
+      const url = mediaUrl(media)
+      if (url) {
+        content.siteSettings.pageHeroes[key] = {
+          type: isVideoMedia(media, url) ? 'video' : 'image',
+          src: url,
+        }
+      }
+    }
+
+    content.cookieConsent.message = L(settings?.cookieMessage, content.cookieConsent.message)
+    content.cookieConsent.accept = L(settings?.cookieAccept, content.cookieConsent.accept)
+    content.cookieConsent.decline = L(settings?.cookieDecline, content.cookieConsent.decline)
+  } catch (err) {
+    console.error('[getShellSiteContent] Falling back to default content:', err)
+    return structuredClone(defaultSiteContent)
+  }
+
+  content.accessibility = {
+    ...defaultSiteContent.accessibility,
+    ...content.accessibility,
+  }
+  content.cookieConsent = {
+    ...defaultSiteContent.cookieConsent,
+    ...content.cookieConsent,
+  }
+
+  return content
+}
+
+/**
+ * Cached variant of {@link getSiteContent}. Locale-independent (all locales).
+ * Invalidated via `SITE_CONTENT_TAG` when content is edited in Payload admin.
+ * Prefer {@link getCachedShellSiteContent} on chrome-only routes.
  */
 export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v9-r2'], {
   tags: [SITE_CONTENT_TAG],
 })
+
+/** Cached chrome/shell content — no hero/service media. */
+export const getCachedShellSiteContent = unstable_cache(
+  getShellSiteContent,
+  ['site-shell-content-v1'],
+  { tags: [SITE_CONTENT_TAG] },
+)
 
 export interface SeoSettings {
   title?: Partial<Record<(typeof LOCALES)[number], string>>

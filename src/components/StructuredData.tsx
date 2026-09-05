@@ -1,4 +1,4 @@
-import { getCachedSeoSettings, getCachedSiteContent } from '@/lib/getSiteContent'
+import { getCachedSeoSettings, getCachedShellSiteContent } from '@/lib/getSiteContent'
 import {
   DEFAULT_ORGANIZATION_DESCRIPTION,
   buildFaqPageSchema,
@@ -7,7 +7,7 @@ import {
 } from '@/lib/brandSchema'
 
 export default async function StructuredData() {
-  const [content, seo] = await Promise.all([getCachedSiteContent(), getCachedSeoSettings()])
+  const [content, seo] = await Promise.all([getCachedShellSiteContent(), getCachedSeoSettings()])
   const description = seo.description?.en || DEFAULT_ORGANIZATION_DESCRIPTION
 
   const graph = [

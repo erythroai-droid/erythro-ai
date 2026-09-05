@@ -889,7 +889,8 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 ## PIT-055 — Mobile form “success” with no email: honeypot autofill
 
 **Tags:** `contact`, `email`, `honeypot`, `mobile`, `ios`, `autofill`  
-**Seen:** 2026-09-06. Mobile Safari / Chrome; `POST /api/contact` 200, no CMS row.
+**Seen:** 2026-09-06. Mobile Safari / Chrome; `POST /api/contact` 200, no CMS row.  
+**Verified:** 2026-09-06 after deploy (`hp_erythro_trap`) — site mail arrives from mobile to `order@` / `team@`.
 
 **Symptom:** Desktop form mail arrives. Same lead from the phone shows success on the site, but no row in Contact Submissions and no SMTP to `order@` / `team@`.
 
@@ -898,6 +899,25 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 **Fix:** Rename trap to `hp_erythro_trap`, label `Fax`, `readOnly` + `autoComplete="off"` + password-manager ignore attrs, clip-hide (`h-0 w-0 overflow-hidden`) instead of `-9999px`. Keep dropping legacy `company_website` for scraped bots. Log `[api/contact] honeypot drop`.
 
 **Prevent:** Honeypot name/label must not contain company, website, email, phone, or url. After a “form works, no mail” report, grep Vercel for `honeypot drop` before blaming SMTP.
+
+---
+
+## PIT-056 — `cookies()` / `getRequestPrefs` disables CDN HTML cache (ISR)
+
+**Tags:** `nextjs`, `isr`, `performance`, `locale`, `theme`, `ttfb`  
+**Seen:** 2026-09 — home/portfolio cold TTFB while Blob→R2 cutover; Dynamic SSR on every request.
+
+**Symptom:** `/` and `/portfolio` never hit CDN cache; every visit runs Node SSR. Locale/theme work, but TTFB stays high on cold paths.
+
+**Cause:** Reading `cookies()` in `(frontend)/layout.tsx` or via `getRequestPrefs()` opts the whole route into Dynamic Rendering. App Router cannot statically generate or ISR that HTML.
+
+**Fix:**
+1. Layout SSR defaults (`lang="en"`, no theme class from cookie).
+2. Inline bootstrap scripts (`THEME_BOOTSTRAP_SCRIPT`, `LOCALE_BOOTSTRAP_SCRIPT`) set `html` theme/lang/dir before paint.
+3. Pages that can be cached: drop `getRequestPrefs`; pass `clientHydratePrefs` to `useSitePrefs`; set `export const revalidate = 60`.
+4. Chrome-only routes use `getCachedShellSiteContent()` instead of full `getCachedSiteContent()`.
+
+**Prevent:** Never call `cookies()` / `headers()` in shared frontend layout. Keep per-request prefs on personalized routes (audit report, order) only.
 
 ---
 
@@ -937,3 +957,4 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] VPS Docker: no `0.0.0.0` publish; Caddy or `127.0.0.1` only (PIT-053)
 - [ ] Form-mail “not arriving”: check Hostinger INBOX (not Unread); `team@` password is not `SMTP_PASS` (PIT-054)
 - [ ] Contact honeypot must not be named company/website/email — mobile autofill silent-drops leads (PIT-055)
+- [ ] Shared frontend layout must not call `cookies()` — use bootstrap + `clientHydratePrefs` for ISR (PIT-056)
