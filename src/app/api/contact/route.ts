@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
 
   if (isContactHoneypotTriggered(body)) {
     // Silent accept — do not persist, notify, or reveal the trap to bots.
+    console.warn('[api/contact] honeypot drop')
     return NextResponse.json({ ok: true })
   }
 

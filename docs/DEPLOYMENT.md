@@ -531,7 +531,7 @@ Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24
    (`CONTACT_RATE_LIMIT_MAX`, `CONTACT_RATE_LIMIT_WINDOW_MS`). Ответ `429` + `Retry-After`.
    In-memory per Vercel isolate — **не** общий счётчик по всем инстансам.
 2. **Cloudflare Rate Limiting** (edge, до Vercel) — обязательное дополнение, см. ниже.
-3. **Honeypot** (`company_website`) — заполненный бот получает silent `200` без CMS/SMTP.
+3. **Honeypot** (`hp_erythro_trap`; legacy `company_website` still dropped) — заполненный бот получает silent `200` без CMS/SMTP. Не называть поле company/website: iOS/Chrome autofill на мобилке ложно срабатывает.
 4. **Turnstile siteverify** (`https://challenges.cloudflare.com/turnstile/v0/siteverify`):
    токен `cf-turnstile-response`, `success === true`, `action` = `source`
    (`contact` / `audit` / `order`), hostname из `TURNSTILE_HOSTNAMES`
@@ -723,7 +723,7 @@ Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24
    (`CONTACT_RATE_LIMIT_MAX`, `CONTACT_RATE_LIMIT_WINDOW_MS`). Ответ `429` + `Retry-After`.
    In-memory per Vercel isolate — **не** общий счётчик по всем инстансам.
 2. **Cloudflare Rate Limiting** (edge, до Vercel) — обязательное дополнение, см. ниже.
-3. **Honeypot** (`company_website`) — заполненный бот получает silent `200` без CMS/SMTP.
+3. **Honeypot** (`hp_erythro_trap`; legacy `company_website` still dropped) — заполненный бот получает silent `200` без CMS/SMTP. Не называть поле company/website: iOS/Chrome autofill на мобилке ложно срабатывает.
 4. **Turnstile siteverify** (`https://challenges.cloudflare.com/turnstile/v0/siteverify`):
    токен `cf-turnstile-response`, `success === true`, `action` = `source`
    (`contact` / `audit` / `order`), hostname из `TURNSTILE_HOSTNAMES`

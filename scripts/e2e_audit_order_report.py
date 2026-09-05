@@ -58,6 +58,7 @@ def main() -> None:
         "auditLanguage": "en",
         "planSlug": "audit-free",
         "privacyConsent": True,
+        "hp_erythro_trap": "",
         "company_website": "",
     }
 

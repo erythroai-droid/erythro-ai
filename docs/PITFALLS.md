@@ -865,6 +865,42 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-054 — Site mail is in Hostinger INBOX, Unread stays empty; `team@` password ≠ `order@`
+
+**Tags:** `contact`, `email`, `hostinger`, `n8n`, `imap`  
+**Seen:** 2026-09-06. Mailboxes `order@erythro.ai` / `team@erythro.ai`.
+
+**Symptom:** «Письма с сайта перестали доходить» to `order@` / `team@`. Form still returns success. Rows in `/admin` → Contact Submissions. Gmail Unread / Hostinger Unread empty.
+
+**Cause (three independent layers):**
+1. **SMTP works.** `POST /api/contact` saves then sends From `order@` via `smtp.hostinger.com:465`. Recipients are CMS split: contact → `notifyEmailContact` (`team@`), order/audit → `notifyEmailOrder` (`order@`). DNS MX/SPF/DKIM stay on Cloudflare → Hostinger.
+2. **n8n IMAP marks INBOX as read.** Workflow `Erythro.ai Email Autoresponder` polls both boxes with `markAsRead: true`. Site notify is From `@erythro.ai` + `Auto-Submitted: auto-generated`, so n8n skips the reply but still flags the message `\Seen` within a minute. Unread count is always 0; mail is still in INBOX (not Junk).
+3. **`team@` credentials differ from `SMTP_PASS` (`order@`).** Same password fails IMAP/SMTP 535 on `team@`. n8n team trigger and webmail login for `team@` break even when delivery to that mailbox still succeeds via `order@` SMTP.
+
+**Fix (ops):**
+1. [mail.hostinger.com](https://mail.hostinger.com/) → `order@` → **Inbox / All**, not Unread. Subject `Erythro.ai order inquiry` / `Erythro.ai contact`.
+2. hPanel → Emails → `team@erythro.ai` → reset password if login fails; put the new pass only in n8n IMAP/SMTP **Team** credentials (do not overwrite Vercel `SMTP_PASS` unless `order@` changed too).
+3. Optional: Site Settings → Form notifications → point contact notify at Gmail (`erythro.ai@gmail.com`) if that is the inbox actually read (PIT-021).
+
+**Prevent:** Do not treat Unread=0 as “SMTP down”. Confirm CMS row + IMAP INBOX. Document per-mailbox Hostinger passwords; n8n order vs team credentials are independent.
+
+---
+
+## PIT-055 — Mobile form “success” with no email: honeypot autofill
+
+**Tags:** `contact`, `email`, `honeypot`, `mobile`, `ios`, `autofill`  
+**Seen:** 2026-09-06. Mobile Safari / Chrome; `POST /api/contact` 200, no CMS row.
+
+**Symptom:** Desktop form mail arrives. Same lead from the phone shows success on the site, but no row in Contact Submissions and no SMTP to `order@` / `team@`.
+
+**Cause:** Trap input was named/labelled `company_website` / “Company website” and parked at `-left-[9999px]`. iOS Contacts and Chrome Autofill fill hidden company/website fields (especially on `/order` and `/audit`, which already have a real `website` URL). `/api/contact` treats a non-empty trap as a bot: silent `{ ok: true }`, no persist, no mail.
+
+**Fix:** Rename trap to `hp_erythro_trap`, label `Fax`, `readOnly` + `autoComplete="off"` + password-manager ignore attrs, clip-hide (`h-0 w-0 overflow-hidden`) instead of `-9999px`. Keep dropping legacy `company_website` for scraped bots. Log `[api/contact] honeypot drop`.
+
+**Prevent:** Honeypot name/label must not contain company, website, email, phone, or url. After a “form works, no mail” report, grep Vercel for `honeypot drop` before blaming SMTP.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -899,3 +935,5 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Media on R2: public base URL + importMap after storage plugin swap (PIT-051)
 - [ ] Audit worker: SSRF re-check + timing-safe / HMAC agent auth (PIT-052)
 - [ ] VPS Docker: no `0.0.0.0` publish; Caddy or `127.0.0.1` only (PIT-053)
+- [ ] Form-mail “not arriving”: check Hostinger INBOX (not Unread); `team@` password is not `SMTP_PASS` (PIT-054)
+- [ ] Contact honeypot must not be named company/website/email — mobile autofill silent-drops leads (PIT-055)

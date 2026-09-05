@@ -1,4 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest'
+import { createElement } from 'react'
+import { render } from '@testing-library/react'
 import {
   sanitizeEmail,
   sanitizeMessage,
@@ -11,7 +13,8 @@ import {
   resetContactRateLimitStoreForTests,
 } from '@/lib/contactRateLimit'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
-import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
+import { CONTACT_HONEYPOT_FIELD, isContactHoneypotTriggered } from '@/lib/contactHoneypot'
+import { ContactHoneypotField } from '@/components/ContactHoneypotField'
 
 describe('contactSanitize', () => {
   it('strips html and scripts from plain text', () => {
@@ -132,14 +135,38 @@ describe('guardContactSubmission', () => {
 
 describe('contactHoneypot', () => {
   it('ignores empty trap field', () => {
-    expect(isContactHoneypotTriggered({ company_website: '' })).toBe(false)
-    expect(isContactHoneypotTriggered({ company_website: '   ' })).toBe(false)
+    expect(isContactHoneypotTriggered({ hp_erythro_trap: '' })).toBe(false)
+    expect(isContactHoneypotTriggered({ hp_erythro_trap: '   ' })).toBe(false)
     expect(isContactHoneypotTriggered({ name: 'Ada' })).toBe(false)
   })
 
+  it('does not treat a real audit/order website URL as the trap', () => {
+    expect(
+      isContactHoneypotTriggered({
+        website: 'https://erythro.ai',
+        hp_erythro_trap: '',
+      }),
+    ).toBe(false)
+  })
+
   it('detects filled trap field', () => {
+    expect(isContactHoneypotTriggered({ hp_erythro_trap: 'https://spam.example' })).toBe(true)
+    expect(isContactHoneypotTriggered({ hp_erythro_trap: 1 })).toBe(true)
+  })
+
+  it('still drops the legacy company_website name (scraped bots / old clients)', () => {
     expect(isContactHoneypotTriggered({ company_website: 'https://spam.example' })).toBe(true)
-    expect(isContactHoneypotTriggered({ company_website: 1 })).toBe(true)
+    expect(isContactHoneypotTriggered({ company_website: '' })).toBe(false)
+  })
+
+  it('is not a company/website autofill target', () => {
+    const { container } = render(createElement(ContactHoneypotField, { idPrefix: 'test' }))
+    const input = container.querySelector('input')
+    expect(input?.name).toBe(CONTACT_HONEYPOT_FIELD)
+    expect(input?.readOnly).toBe(true)
+    expect(input?.getAttribute('autocomplete')).toBe('off')
+    expect(input?.id).not.toMatch(/company|website/i)
+    expect(container.textContent).not.toMatch(/company website/i)
   })
 })
 
