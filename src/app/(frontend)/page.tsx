@@ -3,6 +3,7 @@ import HomeClient from './HomeClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import {
   HERO_IMAGE_QUALITY,
+  DESKTOP_HERO_SIZES,
   MOBILE_HERO_SIZES,
   heroImageSrcSet,
 } from '@/lib/heroImage'
@@ -21,19 +22,28 @@ export default async function HomePage() {
   return (
     <>
       {/*
-        LCP preload in the document with fetchpriority=high + imageSrcSet.
-        Mobile-only: desktop hero is video + desktop poster, so preloading
-        Hero_Mobile.webp on lg+ wastes bandwidth (PSI unused-preload warning).
+        LCP preload with fetchpriority=high + imageSrcSet.
+        Split by media: mobile still vs desktop poster (same asset today, different sizes).
       */}
       {mobileHero ? (
-        <link
-          rel="preload"
-          as="image"
-          imageSrcSet={heroImageSrcSet(mobileHero, HERO_IMAGE_QUALITY)}
-          imageSizes={MOBILE_HERO_SIZES}
-          fetchPriority="high"
-          media="(max-width: 1023px)"
-        />
+        <>
+          <link
+            rel="preload"
+            as="image"
+            imageSrcSet={heroImageSrcSet(mobileHero, HERO_IMAGE_QUALITY)}
+            imageSizes={MOBILE_HERO_SIZES}
+            fetchPriority="high"
+            media="(max-width: 1023px)"
+          />
+          <link
+            rel="preload"
+            as="image"
+            imageSrcSet={heroImageSrcSet(mobileHero, HERO_IMAGE_QUALITY)}
+            imageSizes={DESKTOP_HERO_SIZES}
+            fetchPriority="high"
+            media="(min-width: 1024px)"
+          />
+        </>
       ) : null}
       <HomeClient initialLocale="en" content={content} clientHydratePrefs />
     </>

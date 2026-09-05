@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { heebo, interCyrillic, interLatinFamily } from '@/lib/fonts'
 import {
   isSiteLocale,
@@ -54,22 +54,27 @@ export function useSitePrefs(
   const [locale, setLocaleState] = useState(initialLocale)
   const [theme, setThemeState] = useState<SiteTheme>(initialTheme ?? defaultTheme)
 
-  useEffect(() => {
-    if (clientHydratePrefs) {
-      const storedTheme = readStoredTheme()
-      if (storedTheme) setThemeState(storedTheme)
-      else persistTheme(defaultTheme)
+  // useLayoutEffect: apply stored locale before paint to cut CLS from EN→RU/HE swap
+  // after ISR HTML (always SSR as `en`).
+  useLayoutEffect(() => {
+    if (!clientHydratePrefs) return
 
-      const storedLocale = readStoredLocale() || readLocaleCookieClient()
-      if (storedLocale) {
-        applyDocumentLocale(storedLocale)
-        setLocaleState(storedLocale)
-        persistLocale(storedLocale)
-      } else if (isSiteLocale(initialLocale)) {
-        persistLocale(initialLocale)
-      }
-      return
+    const storedTheme = readStoredTheme()
+    if (storedTheme) setThemeState(storedTheme)
+    else persistTheme(defaultTheme)
+
+    const storedLocale = readStoredLocale() || readLocaleCookieClient()
+    if (storedLocale) {
+      applyDocumentLocale(storedLocale)
+      setLocaleState(storedLocale)
+      persistLocale(storedLocale)
+    } else if (isSiteLocale(initialLocale)) {
+      persistLocale(initialLocale)
     }
+  }, [clientHydratePrefs, initialLocale, defaultTheme])
+
+  useEffect(() => {
+    if (clientHydratePrefs) return
 
     if (initialTheme) {
       persistTheme(initialTheme)

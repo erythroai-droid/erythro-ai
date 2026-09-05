@@ -1,12 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import Navbar from '@/components/Navbar'
 import HeroSection from '@/components/HeroSection'
-import CaseStudiesSection from '@/components/CaseStudiesSection'
-import ServicesSection from '@/components/ServicesSection'
-import SolutionSection from '@/components/SolutionSection'
-import FAQSection from '@/components/FAQSection'
 import FooterSection from '@/components/FooterSection'
 import ChatButton from '@/components/ChatButton'
 import ScrollSideButton from '@/components/portfolio/ScrollSideButton'
@@ -17,6 +14,20 @@ import { ContactModalProvider } from '@/components/ContactModal'
 import type { SiteContent } from '@/lib/defaultContent'
 import { persistHomeScrollY } from '@/lib/splash'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
+
+/** Below-fold sections — split client bundles so hero LCP competes with less JS. */
+const CaseStudiesSection = dynamic(() => import('@/components/CaseStudiesSection'), {
+  ssr: true,
+})
+const ServicesSection = dynamic(() => import('@/components/ServicesSection'), {
+  ssr: true,
+})
+const SolutionSection = dynamic(() => import('@/components/SolutionSection'), {
+  ssr: true,
+})
+const FAQSection = dynamic(() => import('@/components/FAQSection'), {
+  ssr: true,
+})
 
 interface HomeClientProps {
   initialLocale: string
@@ -108,6 +119,7 @@ export default function HomeClient({
     <ContactModalProvider locale={locale}>
     <div
       dir={locale === 'he' ? 'rtl' : 'ltr'}
+      suppressHydrationWarning
       className={`min-h-screen font-sans transition-colors duration-500 bg-primary text-main ${
         locale === 'he' ? 'font-sans' : ''
       }`}

@@ -927,6 +927,26 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-057 — Desktop hero LCP delayed by `useState(isLg)` gating the poster
+
+**Tags:** `nextjs`, `lcp`, `cls`, `hero`, `cwv`  
+**Seen:** 2026-09 — home LCP ~4s / CLS ~0.9 despite ISR HIT ~0.3s TTFB.
+
+**Symptom:** Desktop LCP is the hero poster/heading, but poster was missing from the first HTML paint.
+
+**Cause:** `HeroAnimation` only rendered the desktop poster when `isLg === true`, and `isLg` started as `false` until a `matchMedia` `useEffect` ran. First paint had no desktop image; height lock for the motion headline also ran in `useEffect` (after paint) → CLS.
+
+**Fix:**
+1. Always SSR the desktop poster with `hidden lg:block` (CSS), never gate on React `isLg`. Keep video mount behind splash + lg.
+2. Preload poster with `media="(min-width: 1024px)"` alongside mobile preload.
+3. Reserve heading `min-height` in CSS; lock measured height in `useLayoutEffect`; size the invisible slot to the longest phrase across locales (ISR locale hydrate).
+4. Apply stored locale in `useLayoutEffect` (not `useEffect`) when `clientHydratePrefs` is on.
+5. `next/dynamic` for below-fold home sections to free the main thread during LCP.
+
+**Prevent:** LCP media must be in the first HTML with CSS breakpoints, not after client media-query state.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -964,3 +984,4 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Form-mail “not arriving”: check Hostinger INBOX (not Unread); `team@` password is not `SMTP_PASS` (PIT-054)
 - [ ] Contact honeypot must not be named company/website/email — mobile autofill silent-drops leads (PIT-055)
 - [ ] Shared frontend layout / not-found must not call `cookies()`; middleware must not Set-Cookie on HTML; use `force-static` + `getPayloadLocal` for ISR HIT (PIT-056)
+- [ ] Hero LCP media: CSS `lg:block` poster in SSR HTML, not `useState(isLg)` gate (PIT-057)

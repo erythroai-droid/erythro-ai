@@ -10,12 +10,12 @@ When the user asks about next steps, security, admin protection, performance, R2
 **Not critical right now.** Prioritize when they have time:
 
 1. Cloudflare Access for `/admin*`
-2. Desktop CLS (~1.1) on hero
+2. Desktop CLS (~1.1) on hero — re-check after PIT-057 deploy
 3. Purge Vercel Blob after R2 uploads verified; remove `BLOB_READ_WRITE_TOKEN` last
 4. `AGENT_REQUIRE_HMAC=1` only after n8n signs bodies
 5. CF-only UFW after n8n/agent-api are Proxied + Origin Cert
 6. ISR remaining frontend pages (about/contacts/services/order/legal/audit still use `getRequestPrefs`); optional `media.erythro.ai`
 
-Already done: R2 media cutover on site, UFW baseline + Docker :8080 DROP, audit SSRF/HMAC-ready worker, home + `/portfolio` force-static ISR (no cookies in layout/not-found, middleware without Set-Cookie, `getPayloadLocal`).
+Already done: R2 media cutover on site, UFW baseline + Docker :8080 DROP, audit SSRF/HMAC-ready worker, home + `/portfolio` force-static ISR (no cookies in layout/not-found, middleware without Set-Cookie, `getPayloadLocal`), hero LCP/CLS mitigations (PIT-057).
 
 VPS Docker ports: never publish `0.0.0.0` — see `docs/infrastructure/vps-docker-ports.md` (PIT-053).
