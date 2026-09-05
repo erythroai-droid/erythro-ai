@@ -51,7 +51,13 @@ Then:
 pnpm generate:importmap
 ```
 
-Commit the regenerated `importMap.js` (S3 client upload handler). Redeploy. Remove `BLOB_READ_WRITE_TOKEN` only after verifying uploads + video Range on R2.
+**Important:** SQL migration does **not** fire Payload `afterChange` hooks, so Next.js `unstable_cache` may keep serving old Blob URLs until you bust the tag:
+
+```bash
+curl -X POST "https://erythro.ai/api/revalidate?secret=$REVALIDATION_TOKEN"
+```
+
+Or edit/save any media doc in `/admin` once. Commit the regenerated `importMap.js` (S3 client upload handler). Redeploy. Remove `BLOB_READ_WRITE_TOKEN` only after verifying uploads + video Range on R2.
 
 ## Cutover checklist
 

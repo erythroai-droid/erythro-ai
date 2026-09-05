@@ -47,21 +47,45 @@ export function r2MediaUrlFromPath(path: string): string | undefined {
   return `${base}/${encodeObjectPath(path)}`
 }
 
+function isR2PublicHost(url: string): boolean {
+  return url.includes('.r2.dev') || Boolean(r2MediaPublicBase() && url.startsWith(r2MediaPublicBase()!))
+}
+
+function isBlobPublicHost(url: string): boolean {
+  return url.includes('blob.vercel-storage.com')
+}
+
 function isPublicMediaHost(url: string): boolean {
-  return (
-    url.includes('blob.vercel-storage.com') ||
-    url.includes('.r2.dev') ||
-    Boolean(r2MediaPublicBase() && url.startsWith(r2MediaPublicBase()!))
-  )
+  return isR2PublicHost(url) || isBlobPublicHost(url)
+}
+
+/** Extract object key from a Vercel Blob public URL. */
+function blobObjectPath(url: string): string | undefined {
+  try {
+    const u = new URL(url)
+    if (!u.hostname.includes('blob.vercel-storage.com')) return undefined
+    const path = decodeURIComponent(u.pathname.replace(/^\/+/, ''))
+    return path || undefined
+  } catch {
+    return undefined
+  }
 }
 
 /**
- * Prefer an already-public CDN URL. Rewrite Payload proxy paths when we know
- * the R2 public base or Blob store id.
+ * Prefer an already-public CDN URL. When R2 media is configured, rewrite legacy
+ * Blob URLs (and Payload `/api/media/file/...` paths) onto the R2 public base.
  */
 export function toPublicMediaUrl(url: string): string {
   const trimmed = url.trim()
   if (!trimmed) return trimmed
+
+  // Cutover: Blob → R2 when public base is set (stale cache / pre-migrate rows).
+  if (isBlobPublicHost(trimmed) && r2MediaPublicBase()) {
+    const key = blobObjectPath(trimmed)
+    const rewritten = key ? r2MediaUrlFromPath(key) : undefined
+    if (rewritten) return rewritten
+  }
+
   if (isPublicMediaHost(trimmed)) return trimmed
 
   const match = trimmed.match(/\/(?:api\/)?media\/file\/(.+)$/i)
@@ -82,10 +106,10 @@ export function mediaDocUrl(media: {
   if (!media || typeof media !== 'object') return undefined
 
   const raw = typeof media.url === 'string' ? media.url.trim() : ''
-  if (isPublicMediaHost(raw)) return raw
 
   // Prefer rewriting the stored url (includes CDN random suffix) over
   // rebuilding from `filename`, which can 404 when names diverge.
+  // Always run through toPublicMediaUrl so legacy Blob hosts map to R2.
   if (raw) {
     const rewritten = toPublicMediaUrl(raw)
     if (isPublicMediaHost(rewritten)) return rewritten
