@@ -2,34 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { HOMEPAGE_LINK_HEADER } from '@/lib/agentDiscovery'
 import { shouldServeMarkdown } from '@/lib/markdownAccept'
 
-const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
-const DEFAULT_LOCALE = 'en'
-export const LOCALE_COOKIE = 'NEXT_LOCALE'
-
-// Parse the Accept-Language header and return the best matching supported locale.
-function detectLocaleFromHeader(acceptLanguage: string | null): string {
-  if (!acceptLanguage) return DEFAULT_LOCALE
-
-  const ranked = acceptLanguage
-    .split(',')
-    .map((part) => {
-      const [tag, qValue] = part.trim().split(';q=')
-      return {
-        lang: tag.split('-')[0].toLowerCase(),
-        quality: qValue ? parseFloat(qValue) : 1,
-      }
-    })
-    .sort((a, b) => b.quality - a.quality)
-
-  for (const { lang } of ranked) {
-    if (SUPPORTED_LOCALES.includes(lang as (typeof SUPPORTED_LOCALES)[number])) {
-      return lang
-    }
-  }
-
-  return DEFAULT_LOCALE
-}
-
+/**
+ * Edge middleware for markdown negotiation + discovery Link header.
+ *
+ * Do NOT set NEXT_LOCALE here. A Set-Cookie on the response prevents Vercel/CDN
+ * HTML cache (no s-maxage HIT). Locale is applied client-side via bootstrap +
+ * useSitePrefs (see PIT-056).
+ */
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const wantsMarkdown =
@@ -45,19 +24,6 @@ export function middleware(request: NextRequest) {
     response = NextResponse.rewrite(url)
   } else {
     response = NextResponse.next()
-  }
-
-  const existing = request.cookies.get(LOCALE_COOKIE)?.value
-
-  // Only set the cookie when it is missing or invalid, so an explicit user
-  // choice (set on the client) is never overwritten.
-  if (!existing || !SUPPORTED_LOCALES.includes(existing as (typeof SUPPORTED_LOCALES)[number])) {
-    const locale = detectLocaleFromHeader(request.headers.get('accept-language'))
-    response.cookies.set(LOCALE_COOKIE, locale, {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 365, // 1 year
-      sameSite: 'lax',
-    })
   }
 
   // RFC 8288 / RFC 9727 — advertise machine-readable discovery on the homepage.

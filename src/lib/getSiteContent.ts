@@ -1,11 +1,10 @@
-import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
-import config from '@payload-config'
 import { defaultSiteContent, type SiteContent, type Localized } from './defaultContent'
 import { SITE_CONTENT_TAG } from './revalidate'
 import { SERVICE_ID_TO_SLUG } from './servicePages'
 import { isLexicalDoc, lexicalFromText, lexicalToPlain } from './lexical'
 import { mediaDocUrl } from './publicMediaUrl'
+import { getPayloadLocal } from './payloadStatic'
 
 const LOCALES = ['en', 'ru', 'he'] as const
 
@@ -145,25 +144,38 @@ export async function getSiteContent(): Promise<SiteContent> {
   const content: SiteContent = structuredClone(defaultSiteContent)
 
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadLocal()
 
     const [header, hero, servicesIntro, caseStudiesG, solutionsIntro, faqG, footer, settings] =
       await Promise.all([
-        payload.findGlobal({ slug: 'header', locale: 'all', depth: 0 }) as Promise<any>,
-        payload.findGlobal({ slug: 'hero', locale: 'all', depth: 1 }) as Promise<any>,
-        payload.findGlobal({ slug: 'services-section', locale: 'all', depth: 0 }) as Promise<any>,
-        payload.findGlobal({ slug: 'case-studies', locale: 'all', depth: 1 }) as Promise<any>,
-        payload.findGlobal({ slug: 'solutions-section', locale: 'all', depth: 0 }) as Promise<any>,
-        payload.findGlobal({ slug: 'faq-section', locale: 'all', depth: 0 }) as Promise<any>,
-        payload.findGlobal({ slug: 'footer', locale: 'all', depth: 0 }) as Promise<any>,
-        payload.findGlobal({ slug: 'site-settings', locale: 'all', depth: 1 }) as Promise<any>,
+        payload.findGlobal({ slug: 'header', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+        payload.findGlobal({ slug: 'hero', locale: 'all', depth: 1, overrideAccess: true }) as Promise<any>,
+        payload.findGlobal({ slug: 'services-section', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+        payload.findGlobal({ slug: 'case-studies', locale: 'all', depth: 1, overrideAccess: true }) as Promise<any>,
+        payload.findGlobal({ slug: 'solutions-section', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+        payload.findGlobal({ slug: 'faq-section', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+        payload.findGlobal({ slug: 'footer', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+        payload.findGlobal({ slug: 'site-settings', locale: 'all', depth: 1, overrideAccess: true }) as Promise<any>,
       ])
 
     const [servicesRes, plansRes] = await Promise.all([
-      payload.find({ collection: 'services', locale: 'all', depth: 1, limit: 100, sort: 'order' }) as Promise<any>,
-      payload.find({ collection: 'solution-plans', locale: 'all', depth: 0, limit: 100, sort: 'order' }) as Promise<any>,
+      payload.find({
+        collection: 'services',
+        locale: 'all',
+        depth: 1,
+        limit: 100,
+        sort: 'order',
+        overrideAccess: true,
+      }) as Promise<any>,
+      payload.find({
+        collection: 'solution-plans',
+        locale: 'all',
+        depth: 0,
+        limit: 100,
+        sort: 'order',
+        overrideAccess: true,
+      }) as Promise<any>,
     ])
-
     // --- Navbar (Header global) ---
     if (Array.isArray(header?.navItems) && header.navItems.length) {
       content.navbar.navItems = header.navItems.map((n: any, i: number) => {
@@ -583,19 +595,20 @@ export async function getShellSiteContent(): Promise<SiteContent> {
   const content: SiteContent = structuredClone(defaultSiteContent)
 
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadLocal()
 
     const [header, footer, settings, faqG, servicesRes, plansRes] = await Promise.all([
-      payload.findGlobal({ slug: 'header', locale: 'all', depth: 0 }) as Promise<any>,
-      payload.findGlobal({ slug: 'footer', locale: 'all', depth: 0 }) as Promise<any>,
-      payload.findGlobal({ slug: 'site-settings', locale: 'all', depth: 1 }) as Promise<any>,
-      payload.findGlobal({ slug: 'faq-section', locale: 'all', depth: 0 }) as Promise<any>,
+      payload.findGlobal({ slug: 'header', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+      payload.findGlobal({ slug: 'footer', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+      payload.findGlobal({ slug: 'site-settings', locale: 'all', depth: 1, overrideAccess: true }) as Promise<any>,
+      payload.findGlobal({ slug: 'faq-section', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
       payload.find({
         collection: 'services',
         locale: 'all',
         depth: 0,
         limit: 100,
         sort: 'order',
+        overrideAccess: true,
         select: { title: true, slug: true, order: true },
       }) as Promise<any>,
       payload.find({
@@ -604,10 +617,10 @@ export async function getShellSiteContent(): Promise<SiteContent> {
         depth: 0,
         limit: 100,
         sort: 'order',
+        overrideAccess: true,
         select: { title: true, slug: true, kind: true, order: true },
       }) as Promise<any>,
     ])
-
     if (Array.isArray(header?.navItems) && header.navItems.length) {
       content.navbar.navItems = header.navItems.map((n: any, i: number) => {
         const rawHref = n.href ?? defaultSiteContent.navbar.navItems[i]?.href ?? '#'
@@ -864,11 +877,12 @@ export interface SeoSettings {
  */
 export async function getSeoSettings(): Promise<SeoSettings> {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadLocal()
     const settings = (await payload.findGlobal({
       slug: 'site-settings',
       locale: 'all',
       depth: 1,
+      overrideAccess: true,
     })) as any
 
     const out: SeoSettings = {}
