@@ -776,6 +776,50 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-048 — PhoneE164Field is HTML-required by default; standalone pills must not use `split`
+
+**Tags:** `forms`, `phone`, `contact`, `audit`  
+**Seen:** 2026-09-05 — unifying contact / contacts / order checkout with the audit pill form
+
+**Symptom:** Contact modal and `/contacts` blocked submit on an empty phone even though JS validation treats phone as optional. On mobile, a standalone phone pill showed an extra top divider.
+
+**Cause:** `PhoneE164Field` was built for the audit row (language + phone). The `<input>` is `required` by default. The pill shell also used `border-t` so it could sit under the language select on small screens. Reusing the field as the only child of `FormPillShell` inherited both behaviors.
+
+**Fix:** Pass `required={false}` on optional contact phones. Pass `split` only when the phone shares a pill with a sibling (audit page + order checkout). Standalone contact phones stay in their own `FormPillShell` without `split`. Shared chrome lives in `src/components/form/FormPills.tsx`.
+
+**Prevent:** Do not wrap `PhoneE164Field` in an extra `sr-only` phone label — the field already has one. Combined rows: `clip` off when a dropdown opens; `split` on the phone half only. Keep the field root at `dir="ltr"` so the calling code stays on the physical left in Hebrew.
+
+---
+
+## PIT-049 — Hebrew RTL flips the phone calling-code to the right
+
+**Tags:** `forms`, `phone`, `rtl`, `hebrew`  
+**Seen:** 2026-09-05 — all pill forms in `he`
+
+**Symptom:** In Hebrew, the country flag and `+972` sit on the right of the phone field; the national number is on the left.
+
+**Cause:** The page/`form` is `dir="rtl"`. `PhoneE164Field` is a `flex` row, so flex-start moves to the right and the country trigger follows.
+
+**Fix:** Force `dir="ltr"` and `flex-row` on the `PhoneE164Field` root. Logical padding (`ps-` / `pe-`) then maps to left/right as in EN/RU. Keep the country dropdown `dir="rtl"` in Hebrew so names stay readable.
+
+**Prevent:** Phone numbers are LTR chrome. Do not let the surrounding RTL form reverse the calling-code + number order. Hebrew placeholders on `dir="ltr"` fields (email, phone, URL) must be forced to the physical right via `:placeholder-shown` — `::placeholder { text-align }` alone is ignored when the input is LTR.
+
+---
+
+## PIT-050 — Backdrop contrast sampler locks to site theme under overlays
+
+**Tags:** `navbar`, `chat`, `contrast`, `elementsFromPoint`
+
+**Symptom:** Chat FAB (or Scroll) stays gold-500 on a white Case Studies block even though Menu already switched to coal-900.
+
+**Cause:** `useBackdropContrast` walked ancestors of the first `elementsFromPoint` hit. Dev overlays (`NEXTJS-PORTAL`) and other transparent full-viewport nodes sit on top of the page; their ancestor chain reaches `html`/`body` and the sample returns the site theme instead of the section under the control.
+
+**Fix:** Same two-pass as Navbar: honor `data-menu-contrast` anywhere in the stack first; then sample luminance but stop before `BODY`/`HTML`. Mark the control itself `data-contrast-ignore`.
+
+**Prevent:** Do not treat a transparent overlay’s inherited page background as the backdrop. Skip `header` and `[data-contrast-ignore]`. Every full-bleed light/dark section still needs `data-menu-contrast` (PIT-018).
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -804,3 +848,6 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Cloudflare Insights/Web Analytics: CSP `script-src` `static.cloudflareinsights.com` + `connect-src` `cloudflareinsights.com` (PIT-045)
 - [ ] RTL/Hebrew dialogs: `overflow-y-auto` must pair with `overflow-x-hidden` (or an `overflow-hidden` wrapper) (PIT-046)
 - [ ] Turnstile widget `language` must follow the site locale, not browser `auto` (PIT-047)
+- [ ] Optional contact phones: `PhoneE164Field required={false}`; `split` only in combined language+phone pills (PIT-048)
+- [ ] Hebrew phone field: `PhoneE164Field` root `dir="ltr"` so calling code stays on the left (PIT-049)
+- [ ] Backdrop chrome (Menu / Chat / Scroll): sample `data-menu-contrast` before walking to `html`/`body` (PIT-050)

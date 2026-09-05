@@ -148,7 +148,7 @@ export default function HomeClient({ initialLocale, initialTheme, content }: Hom
 
       <ScrollSideButton locale={locale} theme={theme} sectionIds={scrollSectionIds} />
 
-      <ChatButton locale={locale} />
+      <ChatButton locale={locale} theme={theme} />
 
       {/* Accessibility Control Panel */}
       <AccessibilityPanel

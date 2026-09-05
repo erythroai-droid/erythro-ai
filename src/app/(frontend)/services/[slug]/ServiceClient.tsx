@@ -116,7 +116,7 @@ export default function ServiceClient({ initialLocale, initialTheme, content, se
 
           <CookieConsent locale={locale} theme={theme} />
 
-          <ChatButton locale={locale} />
+          <ChatButton locale={locale} theme={theme} />
         </div>
       </ContactModalProvider>
     </SiteContentProvider>

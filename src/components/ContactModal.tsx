@@ -13,6 +13,15 @@ import ContactPrivacyConsent from './ContactPrivacyConsent'
 import { ContactHoneypotField } from './ContactHoneypotField'
 import { ContactSendSpinner } from './ContactSendingPanel'
 import { TurnstileField, isTurnstileSiteKeyConfigured, type TurnstileHandle } from './TurnstileField'
+import { PhoneE164Field } from './PhoneE164Field'
+import {
+  FORM_SUBMIT_CLASS,
+  FormPillDivider,
+  FormPillShell,
+  formPillFieldClass,
+  formPillTextareaClass,
+  requiredPlaceholder,
+} from '@/components/form/FormPills'
 import type { ContactFormSource } from '@/lib/contactNotification'
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import { TURNSTILE_TOKEN_FIELD } from '@/lib/turnstile'
@@ -132,6 +141,14 @@ function ContactModal({
     }
   }
 
+  const handlePhoneChange = (next: string) => {
+    setValues((v) => ({ ...v, phone: next }))
+    if (status === 'error') {
+      setStatus('idle')
+      setSubmitError('')
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (status === 'sending') return
@@ -188,19 +205,9 @@ function ContactModal({
     }
   }
 
-  const baseInputClass =
-    'w-full rounded-[10px] border bg-white/[0.04] px-3.5 py-2.5 text-white placeholder:text-white/40 outline-none transition-colors focus:bg-white/[0.06] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
-  const inputClass = (field: ContactField) =>
-    fieldErrors[field]
-      ? `${baseInputClass} border-erythro-500 focus:border-erythro-500`
-      : `${baseInputClass} border-white/15 focus:border-gold-500`
-  const labelClass = 'mb-1 block text-[11px] font-medium uppercase tracking-[0.12em] text-white/70'
-
-  const requiredMark = (
-    <span className="ms-0.5 text-erythro-500" aria-hidden="true">
-      *
-    </span>
-  )
+  const isLight = false
+  const pillFieldClass = formPillFieldClass(isLight)
+  const fieldLabelClass = 'text-white/60'
 
   return (
     <div
@@ -255,131 +262,141 @@ function ContactModal({
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col gap-3"
+            className="flex flex-col gap-4"
             noValidate
             aria-busy={status === 'sending' || undefined}
           >
             <fieldset
               disabled={status === 'sending'}
-              className={`m-0 flex min-w-0 max-w-full flex-col gap-3 border-0 p-0 ${
+              className={`m-0 flex min-w-0 max-w-full flex-col gap-4 border-0 p-0 ${
                 status === 'sending' ? 'opacity-70' : ''
               }`}
             >
               <legend className="sr-only">{t(form.title)}</legend>
               <ContactHoneypotField idPrefix="contact-modal" />
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="contact-modal-name" className={labelClass}>
-                    {t(form.name)}
-                    {requiredMark}
-                  </label>
-                  <input
-                    ref={firstFieldRef}
-                    id="contact-modal-name"
-                    name="name"
-                    type="text"
-                    required
-                    value={values.name}
-                    onChange={handleChange}
-                    placeholder={t(form.name)}
-                    className={inputClass('name')}
-                    autoComplete="name"
-                    autoCapitalize="words"
-                    enterKeyHint="next"
-                    aria-required="true"
-                    aria-invalid={Boolean(fieldErrors.name) || undefined}
-                    aria-describedby={fieldErrors.name ? 'contact-modal-name-error' : undefined}
-                  />
-                  {fieldErrors.name ? (
-                    <p id="contact-modal-name-error" role="alert" className="mt-1 m-0 text-sm text-erythro-500">
-                      {fieldErrorMessage('name')}
-                    </p>
-                  ) : null}
-                </div>
-                <div>
-                  <label htmlFor="contact-modal-email" className={labelClass}>
-                    {t(form.email)}
-                    {requiredMark}
-                  </label>
-                  <input
-                    id="contact-modal-email"
-                    name="email"
-                    type="email"
-                    inputMode="email"
-                    required
-                    value={values.email}
-                    onChange={handleChange}
-                    placeholder={t(form.email)}
-                    className={inputClass('email')}
-                    autoComplete="email"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    spellCheck={false}
-                    enterKeyHint="next"
-                    dir="ltr"
-                    aria-required="true"
-                    aria-invalid={Boolean(fieldErrors.email) || undefined}
-                    aria-describedby={fieldErrors.email ? 'contact-modal-email-error' : undefined}
-                  />
-                  {fieldErrors.email ? (
-                    <p id="contact-modal-email-error" role="alert" className="mt-1 m-0 text-sm text-erythro-500">
-                      {fieldErrorMessage('email')}
-                    </p>
-                  ) : null}
-                </div>
+
+              <div className="flex flex-col gap-1.5">
+                <FormPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.name || fieldErrors.email)}>
+                  <div className="relative min-w-0 flex-1">
+                    <label htmlFor="contact-modal-name" className="sr-only">
+                      {t(form.name)}
+                    </label>
+                    <input
+                      ref={firstFieldRef}
+                      id="contact-modal-name"
+                      name="name"
+                      type="text"
+                      required
+                      value={values.name}
+                      onChange={handleChange}
+                      placeholder={requiredPlaceholder(t(form.name))}
+                      className={pillFieldClass}
+                      autoComplete="name"
+                      autoCapitalize="words"
+                      enterKeyHint="next"
+                      aria-required="true"
+                      aria-invalid={Boolean(fieldErrors.name) || undefined}
+                      aria-describedby={fieldErrors.name ? 'contact-modal-name-error' : undefined}
+                    />
+                  </div>
+                  <FormPillDivider isLight={isLight} />
+                  <div
+                    className={`relative min-w-0 flex-1 border-t sm:border-t-0 ${
+                      isLight ? 'border-coal-900/15' : 'border-white/15'
+                    }`}
+                  >
+                    <label htmlFor="contact-modal-email" className="sr-only">
+                      {t(form.email)}
+                    </label>
+                    <input
+                      id="contact-modal-email"
+                      name="email"
+                      type="email"
+                      inputMode="email"
+                      required
+                      value={values.email}
+                      onChange={handleChange}
+                      placeholder={requiredPlaceholder(t(form.email))}
+                      className={pillFieldClass}
+                      autoComplete="email"
+                      autoCapitalize="off"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      enterKeyHint="next"
+                      dir="ltr"
+                      aria-required="true"
+                      aria-invalid={Boolean(fieldErrors.email) || undefined}
+                      aria-describedby={fieldErrors.email ? 'contact-modal-email-error' : undefined}
+                    />
+                  </div>
+                </FormPillShell>
+                {fieldErrors.name ? (
+                  <p id="contact-modal-name-error" role="alert" className="m-0 text-sm text-erythro-500">
+                    {fieldErrorMessage('name')}
+                  </p>
+                ) : null}
+                {fieldErrors.email ? (
+                  <p id="contact-modal-email-error" role="alert" className="m-0 text-sm text-erythro-500">
+                    {fieldErrorMessage('email')}
+                  </p>
+                ) : null}
               </div>
-              <div>
-                <label htmlFor="contact-modal-phone" className={labelClass}>
-                  {t(form.phone)}
-                </label>
-                <input
-                  id="contact-modal-phone"
-                  name="phone"
-                  type="tel"
-                  inputMode="tel"
-                  value={values.phone}
-                  onChange={handleChange}
-                  placeholder={t(form.phone)}
-                  className={inputClass('phone')}
-                  autoComplete="tel"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  enterKeyHint="next"
-                  dir="ltr"
-                />
+
+              <div className="relative z-20 flex flex-col gap-1.5">
+                <FormPillShell isLight={isLight}>
+                  <PhoneE164Field
+                    id="contact-modal-phone"
+                    locale={locale}
+                    value={values.phone}
+                    onChange={handlePhoneChange}
+                    placeholder={t(form.phone)}
+                    variant="pill"
+                    required={false}
+                    isLight={isLight}
+                  />
+                </FormPillShell>
               </div>
-              <div>
-                <label htmlFor="contact-modal-message" className={labelClass}>
-                  {t(form.message)}
-                  {requiredMark}
-                </label>
-                <textarea
-                  id="contact-modal-message"
-                  name="message"
-                  required
-                  value={values.message}
-                  onChange={handleChange}
-                  placeholder={t(form.message)}
-                  rows={3}
-                  className={`${inputClass('message')} resize-none overflow-x-hidden break-words`}
-                  enterKeyHint="send"
-                  aria-required="true"
-                  aria-invalid={Boolean(fieldErrors.message) || status === 'error' || undefined}
-                  aria-describedby={
-                    fieldErrors.message
-                      ? 'contact-modal-message-error'
-                      : status === 'error'
-                        ? errorId
-                        : undefined
-                  }
-                />
+
+              <div className="flex flex-col gap-1.5">
+                <FormPillShell isLight={isLight} clip tall hasError={Boolean(fieldErrors.message)}>
+                  <label htmlFor="contact-modal-message" className="sr-only">
+                    {t(form.message)}
+                  </label>
+                  <textarea
+                    id="contact-modal-message"
+                    name="message"
+                    required
+                    value={values.message}
+                    onChange={handleChange}
+                    placeholder={requiredPlaceholder(t(form.message))}
+                    rows={3}
+                    className={`${formPillTextareaClass(isLight)} overflow-x-hidden break-words`}
+                    enterKeyHint="send"
+                    aria-required="true"
+                    aria-invalid={Boolean(fieldErrors.message) || status === 'error' || undefined}
+                    aria-describedby={
+                      fieldErrors.message
+                        ? 'contact-modal-message-error'
+                        : status === 'error'
+                          ? errorId
+                          : undefined
+                    }
+                  />
+                </FormPillShell>
                 {fieldErrors.message ? (
-                  <p id="contact-modal-message-error" role="alert" className="mt-1 m-0 text-sm text-erythro-500">
+                  <p id="contact-modal-message-error" role="alert" className="m-0 text-sm text-erythro-500">
                     {fieldErrorMessage('message')}
                   </p>
                 ) : null}
               </div>
+
+              <p className={`m-0 px-1 text-xs ${fieldLabelClass}`}>
+                <span className="text-erythro-500" aria-hidden="true">
+                  *
+                </span>
+                {' — '}
+                {t(form.fieldRequired)}
+              </p>
 
               {status === 'error' && (
                 <p id={errorId} role="alert" className="text-sm text-erythro-500">
@@ -408,19 +425,18 @@ function ContactModal({
                 onToken={setTurnstileToken}
               />
 
-              <button
-                type="submit"
-                className="mt-1 flex w-full items-center justify-center gap-2.5 rounded-[40px] bg-erythro-500 px-8 py-3 text-sm font-medium uppercase tracking-widest text-white transition-all hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)] disabled:cursor-wait disabled:hover:shadow-none"
-              >
-                {status === 'sending' ? (
-                  <>
-                    <ContactSendSpinner className="h-[18px] w-[18px] shrink-0" />
-                    <span>{t(form.sending)}</span>
-                  </>
-                ) : (
-                  t(form.submit)
-                )}
-              </button>
+              <div className="pt-1">
+                <button type="submit" className={FORM_SUBMIT_CLASS}>
+                  {status === 'sending' ? (
+                    <>
+                      <ContactSendSpinner className="h-[18px] w-[18px] shrink-0" />
+                      <span>{t(form.sending)}</span>
+                    </>
+                  ) : (
+                    t(form.submit)
+                  )}
+                </button>
+              </div>
             </fieldset>
             {status === 'sending' ? (
               <p className="sr-only" role="status" aria-live="polite">

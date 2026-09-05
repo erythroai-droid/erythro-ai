@@ -163,7 +163,7 @@ export default function AuditReportClient({
 
           <LetsTalkSection locale={locale} variant="simple" />
           <FooterSection locale={locale} theme={theme} pinSpacer={false} />
-          <ChatButton locale={locale} />
+          <ChatButton locale={locale} theme={theme} />
           <CookieConsent locale={locale} theme={theme} />
           <AccessibilityPanel
             isOpen={isAccessibilityOpen}

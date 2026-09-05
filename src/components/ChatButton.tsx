@@ -2,17 +2,20 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { Liquid } from 'liquid-gooey'
+import { useBackdropContrast } from '@/hooks/useBackdropContrast'
 import { useContactModal } from './ContactModal'
 import { useSiteContent } from './SiteContentProvider'
 import WhatsAppButton from './WhatsAppButton'
+import { whatsAppHref as buildWhatsAppHref } from '@/lib/phoneE164'
 
 /**
- * Site-wide contact FAB. Desktop: chat trigger fans mail (10 o'clock) +
- * WhatsApp (12 o'clock, mirrored in RTL). Mobile/tablet: original WhatsApp icon.
+ * Site-wide contact FAB. Desktop: chat trigger fans mail, Telegram, and
+ * WhatsApp (mirrored in RTL). Mobile/tablet: original WhatsApp icon.
  */
 
-const FAN_RADIUS = 60
-const MAIL_ANGLE_DEG = 60
+const FAN_RADIUS = 84
+const MAIL_ANGLE_DEG = 80
+const TG_ANGLE_DEG = 40
 const WA_ANGLE_DEG = 0
 
 function fanOffset(open: boolean, angleDeg: number, inward: number) {
@@ -30,18 +33,21 @@ const COPY = {
     triggerOpen: 'Close contact options',
     mail: 'Open contact form',
     whatsapp: 'WhatsApp',
+    telegram: 'Telegram',
   },
   ru: {
     trigger: 'Связаться',
     triggerOpen: 'Закрыть варианты связи',
     mail: 'Открыть контактную форму',
     whatsapp: 'WhatsApp',
+    telegram: 'Telegram',
   },
   he: {
     trigger: 'יצירת קשר',
     triggerOpen: 'סגירת אפשרויות יצירת קשר',
     mail: 'פתיחת טופס יצירת קשר',
     whatsapp: 'WhatsApp',
+    telegram: 'Telegram',
   },
 } as const
 
@@ -74,20 +80,40 @@ function WhatsAppIcon({ className }: { className?: string }) {
   )
 }
 
-const optionClass = (open: boolean) =>
-  `flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full bg-coal-800 text-gold-100 shadow-md transition-all duration-300 hover:border-gold-500 hover:bg-gold-500 hover:text-coal-900 ${
+function TelegramIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+    </svg>
+  )
+}
+
+function optionClass(open: boolean, overDark: boolean) {
+  return `flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full border bg-transparent shadow-none transition-all duration-300 ease-out ${
+    overDark
+      ? 'border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-coal-900'
+      : 'border-coal-900 text-coal-900 hover:bg-coal-900 hover:text-gold-500'
+  } ${
     open ? 'pointer-events-auto opacity-100 scale-100' : 'pointer-events-none opacity-0 scale-50'
   }`
+}
 
-export default function ChatButton({ locale = 'en' }: { locale?: string }) {
+export default function ChatButton({
+  locale = 'en',
+  theme = 'dark',
+}: {
+  locale?: string
+  theme?: 'light' | 'dark'
+}) {
   const copy = pickCopy(locale)
   const { open: openModal } = useContactModal()
   const site = useSiteContent().siteSettings
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const overDark = useBackdropContrast(containerRef, theme)
 
-  const number = (site.phone || '').replace(/[^0-9]/g, '')
-  const whatsAppHref = number ? `https://wa.me/${number}` : ''
+  const whatsAppHref = buildWhatsAppHref(site.phone || '') || ''
+  const telegramHref = (site.telegram || '').trim()
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -108,6 +134,7 @@ export default function ChatButton({ locale = 'en' }: { locale?: string }) {
 
   const inward = locale === 'he' ? 1 : -1
   const mailPos = fanOffset(open, MAIL_ANGLE_DEG, inward)
+  const tgPos = fanOffset(open, TG_ANGLE_DEG, inward)
   const waPos = fanOffset(open, WA_ANGLE_DEG, inward)
 
   return (
@@ -115,13 +142,14 @@ export default function ChatButton({ locale = 'en' }: { locale?: string }) {
     <WhatsAppButton />
     <div
       ref={containerRef}
+      data-contrast-ignore
       className="pointer-events-auto hidden lg:inline-flex fixed bottom-[18px] end-[32px] z-[70] h-[44px] w-[44px] items-center justify-center select-none"
     >
       <Liquid
         blur={5}
         contrast={18}
-        fill="#111111"
-        shadow="0 4px 14px rgba(0, 0, 0, 0.5)"
+        fill="transparent"
+        shadow="none"
         filterPadding={160}
         className="relative h-[44px] w-[44px] overflow-visible"
       >
@@ -138,7 +166,7 @@ export default function ChatButton({ locale = 'en' }: { locale?: string }) {
               openModal()
             }}
             tabIndex={open ? 0 : -1}
-            className={optionClass(open)}
+            className={optionClass(open, overDark)}
             aria-label={copy.mail}
             title={copy.mail}
           >
@@ -147,10 +175,35 @@ export default function ChatButton({ locale = 'en' }: { locale?: string }) {
         </Liquid.Item>
 
         <Liquid.Item
+          x={tgPos.x}
+          y={tgPos.y}
+          transition="bouncy"
+          delay={35}
+          className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
+        >
+          {telegramHref ? (
+            <a
+              href={telegramHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              tabIndex={open ? 0 : -1}
+              onClick={() => setOpen(false)}
+              className={optionClass(open, overDark)}
+              aria-label={copy.telegram}
+              title={copy.telegram}
+            >
+              <TelegramIcon className="h-[18px] w-[18px]" />
+            </a>
+          ) : (
+            <span className={optionClass(false, overDark)} aria-hidden />
+          )}
+        </Liquid.Item>
+
+        <Liquid.Item
           x={waPos.x}
           y={waPos.y}
           transition="bouncy"
-          delay={35}
+          delay={70}
           className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
         >
           {whatsAppHref ? (
@@ -160,14 +213,14 @@ export default function ChatButton({ locale = 'en' }: { locale?: string }) {
               rel="noopener noreferrer"
               tabIndex={open ? 0 : -1}
               onClick={() => setOpen(false)}
-              className={`${optionClass(open)} text-[#25D366] hover:text-coal-900`}
+              className={optionClass(open, overDark)}
               aria-label={copy.whatsapp}
               title={copy.whatsapp}
             >
               <WhatsAppIcon className="h-[18px] w-[18px]" />
             </a>
           ) : (
-            <span className={optionClass(false)} aria-hidden />
+            <span className={optionClass(false, overDark)} aria-hidden />
           )}
         </Liquid.Item>
 
@@ -182,14 +235,22 @@ export default function ChatButton({ locale = 'en' }: { locale?: string }) {
             aria-expanded={open}
             aria-haspopup="menu"
             aria-label={open ? copy.triggerOpen : copy.trigger}
-            className={`group/chat relative flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full border shadow-lg transition-all duration-300 ${
-              open
-                ? 'border-white bg-white text-coal-900 hover:border-gold-500 hover:bg-gold-500'
-                : 'border-white/10 bg-coal-800 text-gold-100 hover:border-gold-500 hover:bg-gold-500 hover:text-coal-900 hover:shadow-gold-500/30'
+            className={`group/chat relative flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full border shadow-none transition-all duration-300 ${
+              overDark
+                ? open
+                  ? 'border-gold-500 bg-gold-500 text-coal-900'
+                  : 'border-gold-500 bg-transparent text-gold-500 hover:bg-gold-500 hover:text-coal-900'
+                : open
+                  ? 'border-coal-900 bg-coal-900 text-gold-500'
+                  : 'border-coal-900 bg-transparent text-coal-900 hover:bg-coal-900 hover:text-gold-500'
             }`}
           >
             {!open && (
-              <span className="pointer-events-none absolute inset-0 rounded-full bg-gold-500/20 animate-ping" />
+              <span
+                className={`pointer-events-none absolute inset-0 rounded-full animate-ping ${
+                  overDark ? 'bg-gold-500/20' : 'bg-coal-900/20'
+                }`}
+              />
             )}
             <ChatIcon className="relative h-[18px] w-[18px] transition-transform duration-200 group-hover/chat:scale-105" />
           </button>

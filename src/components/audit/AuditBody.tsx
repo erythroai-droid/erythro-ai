@@ -11,6 +11,13 @@ import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
 import { ContactHoneypotField } from '@/components/ContactHoneypotField'
 import { PhoneE164Field } from '@/components/PhoneE164Field'
 import { FieldOkCheck } from '@/components/FieldOkCheck'
+import {
+  FORM_SUBMIT_CLASS,
+  FormPillDivider,
+  FormPillShell,
+  formPillFieldClass,
+  requiredPlaceholder,
+} from '@/components/form/FormPills'
 import { ContactSendSpinner } from '@/components/ContactSendingPanel'
 import { TurnstileField, isTurnstileSiteKeyConfigured, type TurnstileHandle } from '@/components/TurnstileField'
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
@@ -188,54 +195,6 @@ export default function AuditBody({ locale, theme = 'dark', page = auditPage }: 
   )
 }
 
-function AuditPillShell({
-  isLight,
-  hasError,
-  clip = false,
-  children,
-}: {
-  isLight: boolean
-  hasError?: boolean
-  /** Clip Chrome autofill squares to the pill. Off when a child opens a dropdown. */
-  clip?: boolean
-  children: React.ReactNode
-}) {
-  return (
-    <div
-      className={`audit-pill-shell flex min-w-0 flex-col rounded-[24px] border sm:flex-row sm:rounded-full ${
-        clip ? 'overflow-hidden' : 'overflow-visible'
-      } ${
-        hasError
-          ? 'border-erythro-500'
-          : isLight
-            ? 'border-coal-900/15'
-            : 'border-white/15'
-      } ${isLight ? 'bg-white' : 'bg-white/[0.04]'}`}
-    >
-      {children}
-    </div>
-  )
-}
-
-function AuditPillDivider({ isLight }: { isLight: boolean }) {
-  return (
-    <div
-      className={`hidden h-auto w-px shrink-0 self-stretch sm:block ${
-        isLight ? 'bg-coal-900/15' : 'bg-white/15'
-      }`}
-      aria-hidden
-    />
-  )
-}
-
-function auditPillFieldClass(isLight: boolean) {
-  return `h-12 w-full min-w-0 flex-1 border-0 bg-transparent ps-4 text-sm outline-none sm:h-[52px] ${
-    isLight
-      ? 'text-coal-900 placeholder:text-coal-900/40'
-      : 'text-white placeholder:text-white/40'
-  } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500`
-}
-
 function AuditLanguageSelect({
   id,
   locale,
@@ -292,7 +251,7 @@ function AuditLanguageSelect({
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
         onClick={() => setOpen((current) => !current)}
-        className={`${auditPillFieldClass(isLight)} cursor-pointer pe-10 text-start`}
+        className={`${formPillFieldClass(isLight)} cursor-pointer pe-10 text-start`}
       >
         {tAudit(auditPage.form.auditLanguageOptions[value], locale)}
       </button>
@@ -395,8 +354,7 @@ function AuditFormPanel({
     setValues((current) => ({ ...current, auditLanguage: defaultAuditLanguage }))
   }, [defaultAuditLanguage])
 
-  const pillFieldClass = auditPillFieldClass(isLight)
-  const requiredPlaceholder = (text: string) => `${text} *`
+  const pillFieldClass = formPillFieldClass(isLight)
   const fieldLabelClass = isLight ? 'text-coal-900/60' : 'text-white/60'
 
   const fieldErrorMessage = (field: AuditField) => {
@@ -641,7 +599,7 @@ function AuditFormPanel({
                     <ContactHoneypotField idPrefix="audit-page" />
 
                     <div className="flex flex-col gap-1.5">
-                      <AuditPillShell
+                      <FormPillShell
                         isLight={isLight}
                         clip
                         hasError={Boolean(fieldErrors.name || fieldErrors.email)}
@@ -668,7 +626,7 @@ function AuditFormPanel({
                           />
                           <FieldOkCheck show={Boolean(fieldOk.name)} isLight={isLight} />
                         </div>
-                        <AuditPillDivider isLight={isLight} />
+                        <FormPillDivider isLight={isLight} />
                         <div
                           className={`relative min-w-0 flex-1 border-t sm:border-t-0 ${
                             isLight ? 'border-coal-900/15' : 'border-white/15'
@@ -699,13 +657,13 @@ function AuditFormPanel({
                           />
                           <FieldOkCheck show={Boolean(fieldOk.email)} isLight={isLight} />
                         </div>
-                      </AuditPillShell>
+                      </FormPillShell>
                       {fieldErrors.name ? renderFieldError('name', 'audit-page-name-error') : null}
                       {fieldErrors.email ? renderFieldError('email', 'audit-page-email-error') : null}
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <AuditPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.website)}>
+                      <FormPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.website)}>
                         <div className="relative min-w-0 flex-1">
                           <label htmlFor="audit-page-website" className="sr-only">
                             {tAudit(auditPage.form.website, locale)}
@@ -736,12 +694,12 @@ function AuditFormPanel({
                             isLight={isLight}
                           />
                         </div>
-                      </AuditPillShell>
+                      </FormPillShell>
                       {renderFieldError('website', 'audit-page-website-error')}
                     </div>
 
                     <div className="relative z-20 flex flex-col gap-1.5">
-                      <AuditPillShell
+                      <FormPillShell
                         isLight={isLight}
                         hasError={Boolean(fieldErrors.auditLanguage || fieldErrors.phone)}
                       >
@@ -756,7 +714,7 @@ function AuditFormPanel({
                           }
                           onChange={handleLanguageChange}
                         />
-                        <AuditPillDivider isLight={isLight} />
+                        <FormPillDivider isLight={isLight} />
                         <PhoneE164Field
                           id="audit-page-phone"
                           locale={locale}
@@ -768,9 +726,10 @@ function AuditFormPanel({
                           describedBy={fieldErrors.phone ? 'audit-page-phone-error' : undefined}
                           placeholder={requiredPlaceholder(tForm(contactForm.phone))}
                           variant="pill"
+                          split
                           isLight={isLight}
                         />
-                      </AuditPillShell>
+                      </FormPillShell>
                       {renderFieldError('auditLanguage', 'audit-page-audit-language-error')}
                       {renderFieldError('phone', 'audit-page-phone-error')}
                     </div>
@@ -813,7 +772,7 @@ function AuditFormPanel({
                     <div className="pt-1">
                       <button
                         type="submit"
-                        className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-full bg-erythro-500 px-8 py-3 text-sm font-medium uppercase tracking-widest text-white shadow-none transition-[box-shadow,transform,opacity] duration-300 ease-out hover:shadow-[0_3px_20px_0_rgba(229,36,33,0.45)] disabled:cursor-wait disabled:hover:shadow-none"
+                        className={FORM_SUBMIT_CLASS}
                       >
                         {status === 'sending' ? (
                           <>

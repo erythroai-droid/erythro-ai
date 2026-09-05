@@ -37,6 +37,13 @@ import BidiText from '@/components/BidiText'
 import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
 import { ContactHoneypotField } from '@/components/ContactHoneypotField'
 import { PhoneE164Field } from '@/components/PhoneE164Field'
+import {
+  FORM_SUBMIT_CLASS,
+  FormPillDivider,
+  FormPillShell,
+  formPillFieldClass,
+  requiredPlaceholder,
+} from '@/components/form/FormPills'
 import { FieldOkCheck } from '@/components/FieldOkCheck'
 import { ContactSendSpinner } from '@/components/ContactSendingPanel'
 import { TurnstileField, isTurnstileSiteKeyConfigured, type TurnstileHandle } from '@/components/TurnstileField'
@@ -172,7 +179,7 @@ export default function OrderClient({
 
           <CookieConsent locale={locale} theme={theme} />
 
-          <ChatButton locale={locale} />
+          <ChatButton locale={locale} theme={theme} />
         </div>
       </ContactModalProvider>
     </SiteContentProvider>
@@ -1253,21 +1260,9 @@ function AuditOrderModal({
     }
   }
 
-  const baseInputClass =
-    'w-full rounded-[10px] border bg-white/[0.04] px-3.5 py-2.5 text-sm text-white placeholder:text-white/40 outline-none transition-colors focus:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
-  const inputClass = (field: AuditField) =>
-    `${
-      fieldErrors[field]
-        ? `${baseInputClass} border-erythro-500 focus:border-erythro-500`
-        : `${baseInputClass} border-white/15 focus:border-gold-500`
-    } ${fieldOk[field] || (field === 'website' && checkingWebsite) ? 'pe-10' : ''}`
-  const labelClass = 'mb-1.5 block text-[11px] font-medium uppercase tracking-[0.12em] text-white/70'
-
-  const requiredMark = (
-    <span className="ms-0.5 text-erythro-500" aria-hidden="true">
-      *
-    </span>
-  )
+  const isLight = false
+  const pillFieldClass = formPillFieldClass(isLight)
+  const fieldLabelClass = 'text-white/60'
 
   const modalTitle =
     locale === 'ru'
@@ -1372,22 +1367,25 @@ function AuditOrderModal({
               </h2>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3.5" noValidate>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
               <fieldset
                 disabled={status === 'sending'}
-                className={`m-0 flex min-w-0 max-w-full flex-col gap-3.5 border-0 p-0 ${
+                className={`m-0 flex min-w-0 max-w-full flex-col gap-4 border-0 p-0 ${
                   status === 'sending' ? 'opacity-70' : ''
                 }`}
               >
                 <ContactHoneypotField idPrefix="audit-order-modal" />
 
-                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="audit-order-name" className={labelClass}>
-                      {tForm(contactForm.name)}
-                      {requiredMark}
-                    </label>
-                    <div className="relative">
+                <div className="flex flex-col gap-1.5">
+                  <FormPillShell
+                    isLight={isLight}
+                    clip
+                    hasError={Boolean(fieldErrors.name || fieldErrors.email)}
+                  >
+                    <div className="relative min-w-0 flex-1">
+                      <label htmlFor="audit-order-name" className="sr-only">
+                        {tForm(contactForm.name)}
+                      </label>
                       <input
                         ref={firstFieldRef}
                         id="audit-order-name"
@@ -1397,8 +1395,8 @@ function AuditOrderModal({
                         value={values.name}
                         onChange={handleChange}
                         onBlur={blurName}
-                        placeholder={tForm(contactForm.name)}
-                        className={inputClass('name')}
+                        placeholder={requiredPlaceholder(tForm(contactForm.name))}
+                        className={`${pillFieldClass} ${fieldOk.name ? 'pe-10' : 'pe-4'}`}
                         autoComplete="name"
                         autoCapitalize="words"
                         aria-required="true"
@@ -1406,19 +1404,15 @@ function AuditOrderModal({
                       />
                       <FieldOkCheck show={Boolean(fieldOk.name)} />
                     </div>
-                    {fieldErrors.name ? (
-                      <p role="alert" className="mt-1 m-0 text-xs text-erythro-500">
-                        {tForm(contactForm.fieldRequired)}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <div>
-                    <label htmlFor="audit-order-email" className={labelClass}>
-                      {tForm(contactForm.email)}
-                      {requiredMark}
-                    </label>
-                    <div className="relative">
+                    <FormPillDivider isLight={isLight} />
+                    <div
+                      className={`relative min-w-0 flex-1 border-t sm:border-t-0 ${
+                        isLight ? 'border-coal-900/15' : 'border-white/15'
+                      }`}
+                    >
+                      <label htmlFor="audit-order-email" className="sr-only">
+                        {tForm(contactForm.email)}
+                      </label>
                       <input
                         id="audit-order-email"
                         name="email"
@@ -1428,8 +1422,8 @@ function AuditOrderModal({
                         value={values.email}
                         onChange={handleChange}
                         onBlur={blurEmail}
-                        placeholder={tForm(contactForm.email)}
-                        className={inputClass('email')}
+                        placeholder={requiredPlaceholder(tForm(contactForm.email))}
+                        className={`${pillFieldClass} ${fieldOk.email ? 'pe-10' : 'pe-4'}`}
                         autoComplete="email"
                         autoCapitalize="off"
                         autoCorrect="off"
@@ -1440,45 +1434,51 @@ function AuditOrderModal({
                       />
                       <FieldOkCheck show={Boolean(fieldOk.email)} />
                     </div>
-                    {fieldErrors.email ? (
-                      <p role="alert" className="mt-1 m-0 text-xs text-erythro-500">
-                        {fieldErrors.email === 'invalid'
-                          ? tForm(contactForm.emailInvalid)
-                          : tForm(contactForm.fieldRequired)}
-                      </p>
-                    ) : null}
-                  </div>
+                  </FormPillShell>
+                  {fieldErrors.name ? (
+                    <p role="alert" className="m-0 text-sm text-erythro-500">
+                      {tForm(contactForm.fieldRequired)}
+                    </p>
+                  ) : null}
+                  {fieldErrors.email ? (
+                    <p role="alert" className="m-0 text-sm text-erythro-500">
+                      {fieldErrors.email === 'invalid'
+                        ? tForm(contactForm.emailInvalid)
+                        : tForm(contactForm.fieldRequired)}
+                    </p>
+                  ) : null}
                 </div>
 
-                <div>
-                  <label htmlFor="audit-order-website" className={labelClass}>
-                    {tAudit(formCopy.website, locale)}
-                    {requiredMark}
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="audit-order-website"
-                      name="website"
-                      type="url"
-                      inputMode="url"
-                      required
-                      value={values.website}
-                      onChange={handleChange}
-                      onBlur={blurWebsite}
-                      placeholder={tAudit(formCopy.websitePlaceholder, locale)}
-                      className={inputClass('website')}
-                      autoComplete="url"
-                      autoCapitalize="off"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      dir="ltr"
-                      aria-required="true"
-                      aria-invalid={Boolean(fieldErrors.website) || undefined}
-                    />
-                    <FieldOkCheck show={Boolean(fieldOk.website)} checking={checkingWebsite} />
-                  </div>
+                <div className="flex flex-col gap-1.5">
+                  <FormPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.website)}>
+                    <div className="relative min-w-0 flex-1">
+                      <label htmlFor="audit-order-website" className="sr-only">
+                        {tAudit(formCopy.website, locale)}
+                      </label>
+                      <input
+                        id="audit-order-website"
+                        name="website"
+                        type="url"
+                        inputMode="url"
+                        required
+                        value={values.website}
+                        onChange={handleChange}
+                        onBlur={blurWebsite}
+                        placeholder={requiredPlaceholder(tAudit(formCopy.website, locale))}
+                        className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'}`}
+                        autoComplete="url"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        dir="ltr"
+                        aria-required="true"
+                        aria-invalid={Boolean(fieldErrors.website) || undefined}
+                      />
+                      <FieldOkCheck show={Boolean(fieldOk.website)} checking={checkingWebsite} />
+                    </div>
+                  </FormPillShell>
                   {fieldErrors.website ? (
-                    <p role="alert" className="mt-1 m-0 text-xs text-erythro-500">
+                    <p role="alert" className="m-0 text-sm text-erythro-500">
                       {fieldErrors.website === 'invalid'
                         ? tAudit(formCopy.websiteInvalid, locale)
                         : fieldErrors.website === 'unreachable'
@@ -1488,29 +1488,32 @@ function AuditOrderModal({
                   ) : null}
                 </div>
 
-                <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-                  <div ref={langSelectRef} className="relative">
-                    <label htmlFor="audit-order-language" className={labelClass}>
-                      {tAudit(formCopy.auditLanguage, locale)}
-                      {requiredMark}
-                    </label>
-                    <button
-                      id="audit-order-language"
-                      type="button"
-                      aria-haspopup="listbox"
-                      aria-expanded={langSelectOpen}
-                      onClick={() => setLangSelectOpen((c) => !c)}
-                      className={`${inputClass(
-                        'auditLanguage',
-                      )} cursor-pointer pe-10 text-start flex items-center justify-between`}
-                    >
-                      <span>{tAudit(formCopy.auditLanguageOptions[values.auditLanguage], locale)}</span>
+                <div className="relative z-20 flex flex-col gap-1.5">
+                  <FormPillShell
+                    isLight={isLight}
+                    hasError={Boolean(fieldErrors.auditLanguage || fieldErrors.phone)}
+                  >
+                    <div ref={langSelectRef} className="relative min-w-0 flex-1">
+                      <label htmlFor="audit-order-language" className="sr-only">
+                        {tAudit(formCopy.auditLanguage, locale)}
+                      </label>
+                      <button
+                        id="audit-order-language"
+                        type="button"
+                        aria-haspopup="listbox"
+                        aria-expanded={langSelectOpen}
+                        onClick={() => setLangSelectOpen((c) => !c)}
+                        className={`${pillFieldClass} cursor-pointer pe-10 text-start`}
+                      >
+                        {tAudit(formCopy.auditLanguageOptions[values.auditLanguage], locale)}
+                      </button>
                       <svg
-                        className={`h-4 w-4 text-white/50 transition-transform ${
+                        className={`pointer-events-none absolute end-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50 ${
                           langSelectOpen ? 'rotate-180' : ''
                         }`}
                         viewBox="0 0 20 20"
                         fill="none"
+                        aria-hidden
                       >
                         <path
                           d="m5 7.5 5 5 5-5"
@@ -1520,40 +1523,33 @@ function AuditOrderModal({
                           strokeLinejoin="round"
                         />
                       </svg>
-                    </button>
-
-                    {langSelectOpen ? (
-                      <ul
-                        role="listbox"
-                        className="absolute inset-x-0 top-full z-30 mt-1 overflow-hidden rounded-[10px] border border-white/10 bg-coal-500 py-1 shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
-                      >
-                        {AUDIT_REPORT_LANGUAGES.map((lang) => {
-                          const selected = lang === values.auditLanguage
-                          return (
-                            <li key={lang} role="presentation">
-                              <button
-                                type="button"
-                                role="option"
-                                aria-selected={selected}
-                                onClick={() => handleLanguageChange(lang)}
-                                className={`flex w-full cursor-pointer items-center px-4 py-2 text-start text-sm transition-colors ${
-                                  selected ? 'text-gold-500 bg-white/5' : 'text-white'
-                                } hover:bg-gold-500 hover:text-coal-900`}
-                              >
-                                {tAudit(formCopy.auditLanguageOptions[lang], locale)}
-                              </button>
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    ) : null}
-                  </div>
-
-                  <div>
-                    <label htmlFor="audit-order-phone" className={labelClass}>
-                      {tForm(contactForm.phone)}
-                      {requiredMark}
-                    </label>
+                      {langSelectOpen ? (
+                        <ul
+                          role="listbox"
+                          className="absolute inset-x-0 top-full z-30 mt-1 overflow-hidden rounded-[16px] bg-coal-500 py-1 shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+                        >
+                          {AUDIT_REPORT_LANGUAGES.map((lang) => {
+                            const selected = lang === values.auditLanguage
+                            return (
+                              <li key={lang} role="presentation">
+                                <button
+                                  type="button"
+                                  role="option"
+                                  aria-selected={selected}
+                                  onClick={() => handleLanguageChange(lang)}
+                                  className={`flex w-full cursor-pointer items-center px-4 py-2.5 text-start text-sm transition-colors ${
+                                    selected ? 'text-gold-500' : 'text-white'
+                                  } hover:bg-gold-500 hover:text-coal-900`}
+                                >
+                                  {tAudit(formCopy.auditLanguageOptions[lang], locale)}
+                                </button>
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      ) : null}
+                    </div>
+                    <FormPillDivider isLight={isLight} />
                     <PhoneE164Field
                       id="audit-order-phone"
                       locale={locale}
@@ -1562,18 +1558,34 @@ function AuditOrderModal({
                       onBlur={blurPhone}
                       showOk={Boolean(fieldOk.phone)}
                       invalid={Boolean(fieldErrors.phone)}
-                      placeholder={tForm(contactForm.phone)}
-                      variant="box"
+                      describedBy={fieldErrors.phone ? 'audit-order-phone-error' : undefined}
+                      placeholder={requiredPlaceholder(tForm(contactForm.phone))}
+                      variant="pill"
+                      split
+                      isLight={isLight}
                     />
-                    {fieldErrors.phone ? (
-                      <p role="alert" className="mt-1 m-0 text-xs text-erythro-500">
-                        {fieldErrors.phone === 'invalid'
-                          ? tForm(contactForm.phoneInvalid)
-                          : tForm(contactForm.fieldRequired)}
-                      </p>
-                    ) : null}
-                  </div>
+                  </FormPillShell>
+                  {fieldErrors.auditLanguage ? (
+                    <p role="alert" className="m-0 text-sm text-erythro-500">
+                      {tForm(contactForm.fieldRequired)}
+                    </p>
+                  ) : null}
+                  {fieldErrors.phone ? (
+                    <p id="audit-order-phone-error" role="alert" className="m-0 text-sm text-erythro-500">
+                      {fieldErrors.phone === 'invalid'
+                        ? tForm(contactForm.phoneInvalid)
+                        : tForm(contactForm.fieldRequired)}
+                    </p>
+                  ) : null}
                 </div>
+
+                <p className={`m-0 px-1 text-xs ${fieldLabelClass}`}>
+                  <span className="text-erythro-500" aria-hidden="true">
+                    *
+                  </span>
+                  {' — '}
+                  {tForm(contactForm.fieldRequired)}
+                </p>
 
                 <ContactPrivacyConsent
                   locale={locale}
@@ -1602,20 +1614,18 @@ function AuditOrderModal({
                   </p>
                 ) : null}
 
-                <button
-                  type="submit"
-                  disabled={status === 'sending'}
-                  className="mt-2 flex w-full items-center justify-center gap-2.5 rounded-[40px] bg-erythro-500 px-8 py-3 text-sm font-medium uppercase tracking-widest text-white transition-all hover:shadow-[0_3px_20px_0_rgba(229,36,33,0.45)] disabled:cursor-wait disabled:hover:shadow-none"
-                >
-                  {status === 'sending' ? (
-                    <>
-                      <ContactSendSpinner className="h-[18px] w-[18px] shrink-0" />
-                      <span>{tForm(contactForm.sending)}</span>
-                    </>
-                  ) : (
-                    submitLabel
-                  )}
-                </button>
+                <div className="pt-1">
+                  <button type="submit" disabled={status === 'sending'} className={FORM_SUBMIT_CLASS}>
+                    {status === 'sending' ? (
+                      <>
+                        <ContactSendSpinner className="h-[18px] w-[18px] shrink-0" />
+                        <span>{tForm(contactForm.sending)}</span>
+                      </>
+                    ) : (
+                      submitLabel
+                    )}
+                  </button>
+                </div>
               </fieldset>
             </form>
           </div>

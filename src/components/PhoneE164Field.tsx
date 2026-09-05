@@ -62,6 +62,8 @@ export function PhoneE164Field({
   variant,
   isLight = false,
   showOk = false,
+  required = true,
+  split = false,
   onBlur,
 }: {
   id: string
@@ -74,6 +76,10 @@ export function PhoneE164Field({
   variant: 'pill' | 'box'
   isLight?: boolean
   showOk?: boolean
+  /** HTML required. Off for optional contact-form phones. */
+  required?: boolean
+  /** Top border on small screens when this field shares a pill with a sibling. */
+  split?: boolean
   onBlur?: () => void
 }) {
   const fallbackCountry = defaultPhoneCountry(locale)
@@ -184,20 +190,20 @@ export function PhoneE164Field({
         isLight
           ? 'text-coal-900 placeholder:text-coal-900/40'
           : 'text-white placeholder:text-white/40'
-      } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500`
+      } rtl:placeholder:text-right focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500`
     : `h-full min-w-0 flex-1 border-0 bg-transparent py-2.5 ps-1 text-sm text-white placeholder:text-white/40 outline-none ${
         showOk ? 'pe-10' : 'pe-3.5'
-      } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500`
+      } rtl:placeholder:text-right focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500`
   const shellClass = pill
-    ? `relative flex min-w-0 flex-1 items-stretch border-t sm:border-t-0 ${
-        isLight ? 'border-coal-900/15' : 'border-white/15'
+    ? `relative flex min-w-0 flex-1 flex-row items-stretch ${
+        split ? `border-t sm:border-t-0 ${isLight ? 'border-coal-900/15' : 'border-white/15'}` : ''
       }`
-    : `relative flex min-w-0 items-stretch overflow-visible rounded-[10px] border ${
+    : `relative flex min-w-0 flex-row items-stretch overflow-visible rounded-[10px] border ${
         invalid ? 'border-erythro-500' : 'border-white/15 focus-within:border-gold-500'
       } bg-white/[0.04]`
 
   return (
-    <div ref={rootRef} className={shellClass}>
+    <div ref={rootRef} className={shellClass} dir="ltr">
       <div className="shrink-0">
         <label htmlFor={countryId} className="sr-only">
           {tForm(locale, contactForm.countryCode)}
@@ -239,7 +245,7 @@ export function PhoneE164Field({
         name="phone"
         type="tel"
         inputMode="tel"
-        required
+        required={required}
         value={national}
         onChange={(event) => handleNational(event.target.value)}
         onBlur={onBlur}
@@ -256,7 +262,10 @@ export function PhoneE164Field({
       />
       <FieldOkCheck show={showOk} isLight={isLight} />
       {open ? (
-        <div className="absolute inset-x-0 top-full z-40 mt-1 overflow-hidden rounded-[16px] bg-coal-500 py-1 shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
+        <div
+          dir={locale === 'he' ? 'rtl' : 'ltr'}
+          className="absolute inset-x-0 top-full z-40 mt-1 overflow-hidden rounded-[16px] bg-coal-500 py-1 shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+        >
           <div className="px-4 pb-1 pt-1.5">
             <input
               ref={searchRef}
@@ -264,7 +273,7 @@ export function PhoneE164Field({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={tForm(locale, contactForm.searchCountry)}
-              className="w-full rounded-md border-0 bg-white/[0.06] px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none"
+              className="w-full rounded-md border-0 bg-white/[0.06] px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none rtl:placeholder:text-right"
               autoComplete="off"
             />
           </div>

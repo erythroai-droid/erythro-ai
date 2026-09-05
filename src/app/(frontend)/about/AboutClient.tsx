@@ -105,7 +105,7 @@ export default function AboutClient({ initialLocale, initialTheme, content }: Ab
           />
 
           <CookieConsent locale={locale} theme={theme} />
-          <ChatButton locale={locale} />
+          <ChatButton locale={locale} theme={theme} />
         </div>
       </ContactModalProvider>
     </SiteContentProvider>

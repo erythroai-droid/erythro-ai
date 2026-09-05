@@ -112,7 +112,7 @@ export default function LegalPageClient({
           />
 
           <CookieConsent locale={locale} theme={theme} />
-          <ChatButton locale={locale} />
+          <ChatButton locale={locale} theme={theme} />
         </div>
       </ContactModalProvider>
     </SiteContentProvider>

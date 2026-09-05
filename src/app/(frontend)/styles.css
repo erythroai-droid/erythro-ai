@@ -116,6 +116,24 @@
   border-end-end-radius: 24px;
 }
 
+/* Hebrew: LTR values (email / phone / URL) stay left once typed, but empty
+   placeholders must sit on the physical right. ::placeholder text-align is
+   ignored in some engines when the input itself is dir=ltr — use
+   :placeholder-shown on the field. Native RTL fields (name, message) already
+   align to start = right. */
+html[dir='rtl'] .audit-pill-shell input[dir='ltr']:placeholder-shown,
+html[dir='rtl'] .audit-pill-shell textarea[dir='ltr']:placeholder-shown {
+  text-align: right;
+  direction: rtl;
+}
+
+html[dir='rtl'] .audit-pill-shell input::placeholder,
+html[dir='rtl'] .audit-pill-shell textarea::placeholder {
+  text-align: right;
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
 @media (min-width: 640px) {
   .audit-pill-phone-input {
     border-end-end-radius: 9999px;
