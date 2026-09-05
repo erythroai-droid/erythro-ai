@@ -26,6 +26,7 @@ import {
   lexicalToPlain,
 } from './lexical'
 import { mediaDocUrl } from './publicMediaUrl'
+import { getPayloadLocal } from './payloadStatic'
 import {
   ORDER_PLANS,
   getAllOrderSlugs,
@@ -325,13 +326,14 @@ async function fetchPortfolioProjects(): Promise<PortfolioProject[]> {
 /** Card/grid payload — skip Lexical body/summary blobs that bloat `/portfolio` HTML. */
 async function fetchPortfolioProjectCards(): Promise<PortfolioProject[]> {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadLocal()
     const res = await payload.find({
       collection: 'portfolio-projects',
       locale: 'all',
       depth: 1,
       limit: 100,
       sort: 'order',
+      overrideAccess: true,
       select: {
         slug: true,
         title: true,
@@ -364,13 +366,14 @@ async function fetchPortfolioProjectCards(): Promise<PortfolioProject[]> {
 
 async function fetchPortfolioCategories(): Promise<PortfolioFilter[]> {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadLocal()
     const res = await payload.find({
       collection: 'portfolio-categories',
       locale: 'all',
       depth: 0,
       limit: 100,
       sort: 'order',
+      overrideAccess: true,
       where: { showInFilters: { equals: true } },
     })
     if (!res.docs?.length) {

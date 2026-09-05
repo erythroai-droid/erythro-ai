@@ -10,7 +10,11 @@ import { buildPortfolioFilters } from '@/lib/portfolioProjects'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
-/** CDN-cacheable HTML; locale/theme hydrate on the client (no cookies()). */
+/**
+ * Full Route Cache / CDN: static HTML with ISR. Must not call cookies()/headers()
+ * anywhere in this tree. Shell CMS + locale hydrate client-side.
+ */
+export const dynamic = 'force-static'
 export const revalidate = 60
 
 export const metadata: Metadata = {

@@ -11,6 +11,9 @@ import SkipToContent from '@/components/SkipToContent'
 import { LOCALE_BOOTSTRAP_SCRIPT, THEME_BOOTSTRAP_SCRIPT } from '@/lib/sitePrefs'
 import './styles.css'
 
+/** Layout shell is locale-agnostic; pages that can be static use ISR revalidate. */
+export const revalidate = 60
+
 const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
 type Locale = (typeof SUPPORTED_LOCALES)[number]
 

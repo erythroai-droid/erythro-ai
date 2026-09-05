@@ -51,7 +51,7 @@ CMS, внутренние страницы, почта форм, CI/деплой
 - Светлая/тёмная тема (класс `dark` на `<html>`, состояние в React).
 
 ### Этап 2. Интернационализация (i18n)
-- `src/middleware.ts` определяет язык по `Accept-Language` и cookie `NEXT_LOCALE`.
+- `src/middleware.ts` — markdown Accept rewrite + homepage Link discovery. Locale is **not** set here (CDN cache; PIT-056).
 - Все строки вынесены в `src/translations/index.ts` (объекты `{ en, ru, he }`).
 - Переключение языка на клиенте мгновенное (без перезагрузки), выбор пишется в cookie.
 - Синхронизация `<html lang>` и `dir` (RTL для `he`).

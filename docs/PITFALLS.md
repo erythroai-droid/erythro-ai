@@ -902,22 +902,28 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
-## PIT-056 — `cookies()` / `getRequestPrefs` disables CDN HTML cache (ISR)
+## PIT-056 — `cookies()` / middleware `Set-Cookie` / Payload headers kill CDN HTML cache
 
-**Tags:** `nextjs`, `isr`, `performance`, `locale`, `theme`, `ttfb`  
-**Seen:** 2026-09 — home/portfolio cold TTFB while Blob→R2 cutover; Dynamic SSR on every request.
+**Tags:** `nextjs`, `isr`, `performance`, `locale`, `theme`, `ttfb`, `middleware`, `cdn`  
+**Seen:** 2026-09 — home/portfolio stayed `ƒ Dynamic` + `Cache-Control: private, no-store` after dropping `getRequestPrefs` from those pages.
 
-**Symptom:** `/` and `/portfolio` never hit CDN cache; every visit runs Node SSR. Locale/theme work, but TTFB stays high on cold paths.
+**Symptom:** No `s-maxage`, no `x-vercel-cache: HIT`, `cf-cache-status: DYNAMIC`. Cold TTFB stays high; warm only improves via Data Cache (`unstable_cache`).
 
-**Cause:** Reading `cookies()` in `(frontend)/layout.tsx` or via `getRequestPrefs()` opts the whole route into Dynamic Rendering. App Router cannot statically generate or ISR that HTML.
+**Cause (stack):**
+1. Any `cookies()` / `headers()` in the shared `(frontend)` tree — including `not-found.tsx` — opts routes into Dynamic Rendering.
+2. Middleware that `Set-Cookie`s `NEXT_LOCALE` makes the response uncacheable at the CDN even when Next would emit ISR headers.
+3. Calling `@payloadcms/next` helpers that wrap `next/headers` (not plain `getPayload` Local API) also forces dynamic.
 
 **Fix:**
-1. Layout SSR defaults (`lang="en"`, no theme class from cookie).
-2. Inline bootstrap scripts (`THEME_BOOTSTRAP_SCRIPT`, `LOCALE_BOOTSTRAP_SCRIPT`) set `html` theme/lang/dir before paint.
-3. Pages that can be cached: drop `getRequestPrefs`; pass `clientHydratePrefs` to `useSitePrefs`; set `export const revalidate = 60`.
-4. Chrome-only routes use `getCachedShellSiteContent()` instead of full `getCachedSiteContent()`.
+1. Layout SSR defaults (`lang="en"`) + `THEME_BOOTSTRAP_SCRIPT` / `LOCALE_BOOTSTRAP_SCRIPT`.
+2. Home + `/portfolio`: `export const dynamic = 'force-static'` + `revalidate = 60`; `clientHydratePrefs`; no `getRequestPrefs`.
+3. `not-found` must not call `cookies()` (client hydrate locale).
+4. Middleware: markdown rewrite + Link header only — **never** set `NEXT_LOCALE`.
+5. CMS reads via `getPayloadLocal()` (`src/lib/payloadStatic.ts`) with `overrideAccess: true` — never `initReq` / `headers()`.
 
-**Prevent:** Never call `cookies()` / `headers()` in shared frontend layout. Keep per-request prefs on personalized routes (audit report, order) only.
+**Verify after deploy:** `Cache-Control` contains `s-maxage=60`, second request `x-vercel-cache: HIT` (or `STALE`), build table shows `○` / ISR for `/` and `/portfolio` (not `ƒ`).
+
+**Prevent:** Never put `cookies()` in shared layout or `not-found`. Never Set-Cookie on cacheable HTML responses. Keep Local API for static pages.
 
 ---
 
@@ -957,4 +963,4 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] VPS Docker: no `0.0.0.0` publish; Caddy or `127.0.0.1` only (PIT-053)
 - [ ] Form-mail “not arriving”: check Hostinger INBOX (not Unread); `team@` password is not `SMTP_PASS` (PIT-054)
 - [ ] Contact honeypot must not be named company/website/email — mobile autofill silent-drops leads (PIT-055)
-- [ ] Shared frontend layout must not call `cookies()` — use bootstrap + `clientHydratePrefs` for ISR (PIT-056)
+- [ ] Shared frontend layout / not-found must not call `cookies()`; middleware must not Set-Cookie on HTML; use `force-static` + `getPayloadLocal` for ISR HIT (PIT-056)
