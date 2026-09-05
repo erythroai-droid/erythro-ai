@@ -10,6 +10,15 @@ import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import { TURNSTILE_TOKEN_FIELD } from '@/lib/turnstile'
 import { contactForm } from '@/translations'
 import { contactsPage, tContacts } from '@/lib/contactsPage'
+import { PhoneE164Field } from '@/components/PhoneE164Field'
+import {
+  FORM_SUBMIT_CLASS,
+  FormPillDivider,
+  FormPillShell,
+  formPillFieldClass,
+  formPillTextareaClass,
+  requiredPlaceholder,
+} from '@/components/form/FormPills'
 import {
   hasContactFieldErrors,
   validateContactForm,
@@ -55,28 +64,11 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
   const cardClass = isLight
     ? 'border-coal-900/10 bg-white/70'
     : 'border-white/10 bg-white/[0.04]'
-  const baseInputClass = isLight
-    ? 'w-full rounded-[10px] border bg-white px-3.5 py-2.5 text-coal-900 placeholder:text-coal-900/40 outline-none transition-colors focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
-    : 'w-full rounded-[10px] border bg-white/[0.04] px-3.5 py-2.5 text-white placeholder:text-white/40 outline-none transition-colors focus:bg-white/[0.06] focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-erythro-500'
-  const inputClass = (field: ContactField) => {
-    if (fieldErrors[field]) {
-      return `${baseInputClass} border-erythro-500 focus:border-erythro-500`
-    }
-    return isLight
-      ? `${baseInputClass} border-coal-900/15 focus:border-erythro-500`
-      : `${baseInputClass} border-white/15 focus:border-gold-500`
-  }
-  const labelClass = isLight
-    ? 'mb-1 block text-[11px] font-medium uppercase tracking-[0.12em] text-coal-900/70'
-    : 'mb-1 block text-[11px] font-medium uppercase tracking-[0.12em] text-white/70'
+  const pillFieldClass = formPillFieldClass(isLight)
+  const fieldLabelClass = isLight ? 'text-coal-900/60' : 'text-white/60'
   const linkClass = isLight
     ? 'text-coal-900 transition-colors hover:text-erythro-500'
     : 'text-white transition-colors hover:text-gold-500'
-  const requiredMark = (
-    <span className="ms-0.5 text-erythro-500" aria-hidden="true">
-      *
-    </span>
-  )
 
   const fieldErrorMessage = (field: ContactField) => {
     const err = fieldErrors[field]
@@ -94,6 +86,14 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
         return next
       })
     }
+    if (status === 'error') {
+      setStatus('idle')
+      setSubmitError('')
+    }
+  }
+
+  const handlePhoneChange = (next: string) => {
+    setValues((v) => ({ ...v, phone: next }))
     if (status === 'error') {
       setStatus('idle')
       setSubmitError('')
@@ -321,23 +321,27 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
               ) : (
                 <form
                   onSubmit={handleSubmit}
-                  className="flex flex-col gap-3"
+                  className="flex flex-col gap-4"
                   noValidate
                   aria-busy={status === 'sending' || undefined}
                 >
                   <fieldset
                     disabled={status === 'sending'}
-                    className={`m-0 flex min-w-0 flex-col gap-3 border-0 p-0 ${
+                    className={`m-0 flex min-w-0 flex-col gap-4 border-0 p-0 ${
                       status === 'sending' ? 'opacity-70' : ''
                     }`}
                   >
                     <legend className="sr-only">{formHeading}</legend>
                     <ContactHoneypotField idPrefix="contacts-page" />
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <div>
-                          <label htmlFor="contacts-page-name" className={labelClass}>
+                    <div className="flex flex-col gap-1.5">
+                      <FormPillShell
+                        isLight={isLight}
+                        clip
+                        hasError={Boolean(fieldErrors.name || fieldErrors.email)}
+                      >
+                        <div className="relative min-w-0 flex-1">
+                          <label htmlFor="contacts-page-name" className="sr-only">
                             {t(form.name)}
-                            {requiredMark}
                           </label>
                           <input
                             ref={firstFieldRef}
@@ -347,8 +351,8 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                             required
                             value={values.name}
                             onChange={handleChange}
-                            placeholder={t(form.name)}
-                            className={inputClass('name')}
+                            placeholder={requiredPlaceholder(t(form.name))}
+                            className={pillFieldClass}
                             autoComplete="name"
                             autoCapitalize="words"
                             enterKeyHint="next"
@@ -356,16 +360,15 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                             aria-invalid={Boolean(fieldErrors.name) || undefined}
                             aria-describedby={fieldErrors.name ? 'contacts-page-name-error' : undefined}
                           />
-                          {fieldErrors.name ? (
-                            <p id="contacts-page-name-error" role="alert" className="mt-1 m-0 text-sm text-erythro-500">
-                              {fieldErrorMessage('name')}
-                            </p>
-                          ) : null}
                         </div>
-                        <div>
-                          <label htmlFor="contacts-page-email" className={labelClass}>
+                        <FormPillDivider isLight={isLight} />
+                        <div
+                          className={`relative min-w-0 flex-1 border-t sm:border-t-0 ${
+                            isLight ? 'border-coal-900/15' : 'border-white/15'
+                          }`}
+                        >
+                          <label htmlFor="contacts-page-email" className="sr-only">
                             {t(form.email)}
-                            {requiredMark}
                           </label>
                           <input
                             id="contacts-page-email"
@@ -375,8 +378,8 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                             required
                             value={values.email}
                             onChange={handleChange}
-                            placeholder={t(form.email)}
-                            className={inputClass('email')}
+                            placeholder={requiredPlaceholder(t(form.email))}
+                            className={pillFieldClass}
                             autoComplete="email"
                             autoCapitalize="off"
                             autoCorrect="off"
@@ -387,38 +390,39 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                             aria-invalid={Boolean(fieldErrors.email) || undefined}
                             aria-describedby={fieldErrors.email ? 'contacts-page-email-error' : undefined}
                           />
-                          {fieldErrors.email ? (
-                            <p id="contacts-page-email-error" role="alert" className="mt-1 m-0 text-sm text-erythro-500">
-                              {fieldErrorMessage('email')}
-                            </p>
-                          ) : null}
                         </div>
-                      </div>
-                      <div>
-                        <label htmlFor="contacts-page-phone" className={labelClass}>
-                          {t(form.phone)}
-                        </label>
-                        <input
+                      </FormPillShell>
+                      {fieldErrors.name ? (
+                        <p id="contacts-page-name-error" role="alert" className="m-0 text-sm text-erythro-500">
+                          {fieldErrorMessage('name')}
+                        </p>
+                      ) : null}
+                      {fieldErrors.email ? (
+                        <p id="contacts-page-email-error" role="alert" className="m-0 text-sm text-erythro-500">
+                          {fieldErrorMessage('email')}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div className="relative z-20 flex flex-col gap-1.5">
+                      <FormPillShell isLight={isLight}>
+                        <PhoneE164Field
                           id="contacts-page-phone"
-                          name="phone"
-                          type="tel"
-                          inputMode="tel"
+                          locale={locale}
                           value={values.phone}
-                          onChange={handleChange}
+                          onChange={handlePhoneChange}
                           placeholder={t(form.phone)}
-                          className={inputClass('phone')}
-                          autoComplete="tel"
-                          autoCapitalize="off"
-                          autoCorrect="off"
-                          spellCheck={false}
-                          enterKeyHint="next"
-                          dir="ltr"
+                          variant="pill"
+                          required={false}
+                          isLight={isLight}
                         />
-                      </div>
-                      <div>
-                        <label htmlFor="contacts-page-message" className={labelClass}>
+                      </FormPillShell>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <FormPillShell isLight={isLight} clip tall hasError={Boolean(fieldErrors.message)}>
+                        <label htmlFor="contacts-page-message" className="sr-only">
                           {t(form.message)}
-                          {requiredMark}
                         </label>
                         <textarea
                           id="contacts-page-message"
@@ -426,9 +430,9 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                           required
                           value={values.message}
                           onChange={handleChange}
-                          placeholder={t(form.message)}
+                          placeholder={requiredPlaceholder(t(form.message))}
                           rows={3}
-                          className={`${inputClass('message')} resize-none`}
+                          className={formPillTextareaClass(isLight)}
                           enterKeyHint="send"
                           aria-required="true"
                           aria-invalid={Boolean(fieldErrors.message) || status === 'error' || undefined}
@@ -440,12 +444,21 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                                 : undefined
                           }
                         />
-                        {fieldErrors.message ? (
-                          <p id="contacts-page-message-error" role="alert" className="mt-1 m-0 text-sm text-erythro-500">
-                            {fieldErrorMessage('message')}
-                          </p>
-                        ) : null}
-                      </div>
+                      </FormPillShell>
+                      {fieldErrors.message ? (
+                        <p id="contacts-page-message-error" role="alert" className="m-0 text-sm text-erythro-500">
+                          {fieldErrorMessage('message')}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <p className={`m-0 px-1 text-xs ${fieldLabelClass}`}>
+                      <span className="text-erythro-500" aria-hidden="true">
+                        *
+                      </span>
+                      {' — '}
+                      {t(form.fieldRequired)}
+                    </p>
 
                       {status === 'error' && (
                         <p id="contacts-page-error" role="alert" className="m-0 text-sm text-erythro-500">
@@ -474,10 +487,8 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                         onToken={setTurnstileToken}
                       />
 
-                      <button
-                        type="submit"
-                        className="mt-1 flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-[40px] bg-erythro-500 px-8 py-3 text-sm font-medium uppercase tracking-widest text-white shadow-none transition-[box-shadow,transform,opacity] duration-300 ease-out hover:shadow-[0_3px_20px_0_rgba(229,36,33,0.45)] disabled:cursor-wait disabled:hover:shadow-none"
-                      >
+                    <div className="pt-1">
+                      <button type="submit" className={FORM_SUBMIT_CLASS}>
                         {status === 'sending' ? (
                           <>
                             <ContactSendSpinner className="h-[18px] w-[18px] shrink-0" />
@@ -487,6 +498,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                           t(form.submit)
                         )}
                       </button>
+                    </div>
                     </fieldset>
                     {status === 'sending' ? (
                       <p className="sr-only" role="status" aria-live="polite">

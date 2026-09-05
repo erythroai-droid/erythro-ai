@@ -36,27 +36,34 @@ export function useBackdropContrast(
     const luminance = (r: number, g: number, b: number) =>
       0.2126 * r + 0.7152 * g + 0.0722 * b
 
+    const skipHit = (el: Element) =>
+      el.closest('header') ||
+      el.closest('[data-contrast-ignore]') ||
+      el.tagName === 'NEXTJS-PORTAL'
+
     const isDarkAtPoint = (x: number, y: number) => {
       const stack = document.elementsFromPoint(x, y)
+
+      // Prefer explicit hints (same as Navbar). Do not walk ancestors for
+      // luminance: a transparent overlay's parent may sit *behind* an opaque
+      // sibling later in the stack (hero coal plate vs sticky wrapper).
       for (const el of stack) {
-        if (!(el instanceof Element)) continue
-        if (el.closest('header')) continue
-        if (el.closest('[data-contrast-ignore]')) continue
+        if (!(el instanceof Element) || skipHit(el)) continue
+        if (el instanceof HTMLElement && el.dataset.menuContrast) {
+          return el.dataset.menuContrast === 'dark'
+        }
+      }
+
+      for (const el of stack) {
+        if (!(el instanceof Element) || skipHit(el)) continue
 
         const tag = el.tagName
         if (tag === 'IMG' || tag === 'VIDEO' || tag === 'CANVAS') return true
 
-        let node: Element | null = el
-        while (node && node !== document.documentElement) {
-          if (node instanceof HTMLElement && node.dataset.menuContrast) {
-            return node.dataset.menuContrast === 'dark'
-          }
-          const style = getComputedStyle(node)
-          const bg = parseRgb(style.backgroundColor)
-          if (bg && bg.a >= 0.15) return luminance(bg.r, bg.g, bg.b) < 0.55
-          if (style.backgroundImage && style.backgroundImage !== 'none') return true
-          node = node.parentElement
-        }
+        const style = getComputedStyle(el)
+        const bg = parseRgb(style.backgroundColor)
+        if (bg && bg.a >= 0.15) return luminance(bg.r, bg.g, bg.b) < 0.55
+        if (style.backgroundImage && style.backgroundImage !== 'none') return true
       }
       return theme === 'dark'
     }
