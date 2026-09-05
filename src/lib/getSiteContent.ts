@@ -582,7 +582,7 @@ export async function getSiteContent(): Promise<SiteContent> {
  * unaffected. Invalidated via the `SITE_CONTENT_TAG` tag whenever content is
  * edited in the Payload admin (see src/lib/revalidate.ts).
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v8'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v9-r2'], {
   tags: [SITE_CONTENT_TAG],
 })
 

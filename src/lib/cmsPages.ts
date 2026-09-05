@@ -716,14 +716,14 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v7'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v8-r2'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
 
 /** Lean list for `/portfolio` index — avoids shipping every project body Lexical tree. */
 export const getCachedPortfolioProjectCards = () =>
-  unstable_cache(() => fetchPortfolioProjectCards(), ['portfolio-project-cards-v1'], {
+  unstable_cache(() => fetchPortfolioProjectCards(), ['portfolio-project-cards-v2-r2'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

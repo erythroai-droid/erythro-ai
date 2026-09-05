@@ -189,3 +189,8 @@ for (const row of rows) {
 await client.end()
 console.log(`Done. processed=${copied} skipped=${skipped} failed=${failed}`)
 if (!APPLY) console.log('Re-run with --apply to upload and rewrite URLs.')
+else {
+  console.log(
+    'Next: POST /api/revalidate?secret=$REVALIDATION_TOKEN (SQL updates skip Payload hooks; Data Cache may still serve Blob URLs).',
+  )
+}
