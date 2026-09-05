@@ -6,6 +6,8 @@ import {
   isSiteLocale,
   persistLocale,
   persistTheme,
+  readLocaleCookieClient,
+  readStoredLocale,
   readStoredTheme,
   type SiteTheme,
 } from '@/lib/sitePrefs'
@@ -28,21 +30,47 @@ function applyDocumentLocale(locale: string) {
   }
 }
 
+export type UseSitePrefsOptions = {
+  /**
+   * ISR / static pages SSR as `en` without reading cookies. After mount, adopt
+   * locale + theme from cookie/localStorage so the first paint can stay cacheable.
+   */
+  clientHydratePrefs?: boolean
+}
+
 /**
  * Shared locale + theme state with cookie/localStorage persistence.
  * Pass `initialTheme` from the request cookie so SSR and the first client
- * render match. When omitted, both sides start from `defaultTheme` and
- * localStorage is applied only after mount.
+ * render match. When omitted (or `clientHydratePrefs`), both sides start from
+ * defaults and storage is applied after mount.
  */
 export function useSitePrefs(
   initialLocale: string,
   defaultTheme: SiteTheme = 'dark',
   initialTheme?: SiteTheme,
+  options?: UseSitePrefsOptions,
 ) {
+  const clientHydratePrefs = options?.clientHydratePrefs === true
   const [locale, setLocaleState] = useState(initialLocale)
   const [theme, setThemeState] = useState<SiteTheme>(initialTheme ?? defaultTheme)
 
   useEffect(() => {
+    if (clientHydratePrefs) {
+      const storedTheme = readStoredTheme()
+      if (storedTheme) setThemeState(storedTheme)
+      else persistTheme(defaultTheme)
+
+      const storedLocale = readStoredLocale() || readLocaleCookieClient()
+      if (storedLocale) {
+        applyDocumentLocale(storedLocale)
+        setLocaleState(storedLocale)
+        persistLocale(storedLocale)
+      } else if (isSiteLocale(initialLocale)) {
+        persistLocale(initialLocale)
+      }
+      return
+    }
+
     if (initialTheme) {
       persistTheme(initialTheme)
     } else {
@@ -51,7 +79,7 @@ export function useSitePrefs(
       else persistTheme(defaultTheme)
     }
     if (isSiteLocale(initialLocale)) persistLocale(initialLocale)
-  }, [initialLocale, initialTheme, defaultTheme])
+  }, [clientHydratePrefs, initialLocale, initialTheme, defaultTheme])
 
   useEffect(() => {
     const root = document.documentElement

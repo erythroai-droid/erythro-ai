@@ -62,6 +62,24 @@ export function persistTheme(theme: SiteTheme) {
   setCookie(THEME_COOKIE, theme)
 }
 
+export function readLocaleCookieClient(): SiteLocale | null {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.match(/(?:^|; )NEXT_LOCALE=([^;]*)/)
+  if (!match?.[1]) return null
+  try {
+    const value = decodeURIComponent(match[1])
+    return isSiteLocale(value) ? value : null
+  } catch {
+    return null
+  }
+}
+
 /** Inline bootstrap: apply stored theme before first paint (paste into layout). */
 export const THEME_BOOTSTRAP_SCRIPT = `(function(){try{var k='${THEME_STORAGE_KEY}';var t=localStorage.getItem(k);if(!t){var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=([^;]*)/);t=m?decodeURIComponent(m[1]):null}var r=document.documentElement;if(t==='light'){r.classList.remove('dark')}else if(t==='dark'){r.classList.add('dark')}}catch(e){}})();`
+
+/**
+ * Apply lang/dir from cookie/localStorage before paint (ISR pages SSR as `en`).
+ * Font CSS variables still settle in `useSitePrefs` after mount.
+ */
+export const LOCALE_BOOTSTRAP_SCRIPT = `(function(){try{var k='${LOCALE_STORAGE_KEY}';var loc=null;try{loc=localStorage.getItem(k)}catch(e){}if(!loc){var m=document.cookie.match(/(?:^|; )${LOCALE_COOKIE}=([^;]*)/);loc=m?decodeURIComponent(m[1]):null}if(loc!=='en'&&loc!=='ru'&&loc!=='he')return;var r=document.documentElement;r.lang=loc;r.dir=loc==='he'?'rtl':'ltr'}catch(e){}})();`
 
