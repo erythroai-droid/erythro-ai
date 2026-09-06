@@ -1,12 +1,7 @@
 import React from 'react'
 import HomeClient from './HomeClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
-import {
-  HERO_IMAGE_QUALITY,
-  DESKTOP_HERO_SIZES,
-  MOBILE_HERO_SIZES,
-  heroImageSrcSet,
-} from '@/lib/heroImage'
+import { heroStillSrc } from '@/lib/heroImage'
 
 /**
  * Full Route Cache / CDN: static HTML with ISR. Must not call cookies()/headers()
@@ -18,32 +13,16 @@ export const revalidate = 60
 export default async function HomePage() {
   const content = await getCachedSiteContent()
   const mobileHero = content.hero.backgroundImageMobile
+  const heroPreload = mobileHero ? heroStillSrc(mobileHero) : null
 
   return (
     <>
       {/*
-        LCP preload with fetchpriority=high + imageSrcSet.
-        Split by media: mobile still vs desktop poster (same asset today, different sizes).
+        LCP preload: same absolute CDN URL as <img src> (PIT-058).
+        One asset serves mobile still + desktop video poster.
       */}
-      {mobileHero ? (
-        <>
-          <link
-            rel="preload"
-            as="image"
-            imageSrcSet={heroImageSrcSet(mobileHero, HERO_IMAGE_QUALITY)}
-            imageSizes={MOBILE_HERO_SIZES}
-            fetchPriority="high"
-            media="(max-width: 1023px)"
-          />
-          <link
-            rel="preload"
-            as="image"
-            imageSrcSet={heroImageSrcSet(mobileHero, HERO_IMAGE_QUALITY)}
-            imageSizes={DESKTOP_HERO_SIZES}
-            fetchPriority="high"
-            media="(min-width: 1024px)"
-          />
-        </>
+      {heroPreload ? (
+        <link rel="preload" as="image" href={heroPreload} fetchPriority="high" />
       ) : null}
       <HomeClient initialLocale="en" content={content} clientHydratePrefs />
     </>
