@@ -400,7 +400,6 @@ export default function FooterSection({ locale, pinSpacer = true, animate = true
             src="/images/hero-sequence/chip (1).webp"
             alt="Erythro Neural Chip"
             fill
-            priority
             sizes="100vw"
             className="object-cover opacity-75"
           />

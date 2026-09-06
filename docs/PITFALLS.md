@@ -956,9 +956,9 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 **Cause:** LCP used `next/image` → `/_next/image?url=…r2.dev…`. Optimizer returned the **same** byte size as the R2 object, but cold requests paid an extra Vercel hop (~2× latency vs direct R2).
 
-**Fix:** For absolute CDN URLs, paint and preload the public URL directly (`heroStillSrc` + `<img>` / `<link rel="preload" href>`). Keep `/_next/image` only for relative/local paths.
+**Fix:** For absolute CDN URLs, paint and preload the public URL directly (`heroStillSrc` + `<img>` / `<link rel="preload" href>`). Keep `/_next/image` only for relative/local paths. Below-fold brand/logo `<img>`s must use `loading="lazy"` so React 19 does not auto-inject competing `<link rel="preload">` for every SSR image.
 
-**Prevent:** Do not route already-optimized WebP hero stills through the image optimizer unless it measurably shrinks transfer size.
+**Prevent:** Do not route already-optimized WebP hero stills through the image optimizer unless it measurably shrinks transfer size. Do not leave eager SSR `<img>` (no `loading="lazy"`) for below-fold logos — React 19 preloads them into `<head>` and steals bandwidth from LCP.
 
 ---
 
