@@ -17,12 +17,24 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 interface AboutClientProps {
   initialLocale: string
   initialTheme?: 'light' | 'dark'
+  /** ISR pages: hydrate locale/theme from storage after mount (no SSR cookies). */
+  clientHydratePrefs?: boolean
   content: SiteContent
 }
 
-export default function AboutClient({ initialLocale, initialTheme, content }: AboutClientProps) {
+export default function AboutClient({
+  initialLocale,
+  initialTheme,
+  clientHydratePrefs,
+  content,
+}: AboutClientProps) {
   const a11yTranslations = content.accessibility
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(
+    initialLocale,
+    'dark',
+    initialTheme,
+    clientHydratePrefs ? { clientHydratePrefs: true } : undefined,
+  )
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   const pickA11y = (field?: Record<string, string> | null) =>

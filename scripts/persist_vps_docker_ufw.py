@@ -22,11 +22,13 @@ rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/loc
 dpkg --configure -a || true
 echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
 echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
-apt-get install -y -qq iptables-persistent netfilter-persistent
-iptables -C DOCKER-USER -p tcp --dport 8080 -j DROP 2>/dev/null || iptables -I DOCKER-USER 1 -p tcp --dport 8080 -j DROP
+# CRITICAL: DO NOT DROP port 8080!
+# Port 8080 is used by montblanc_api and accessed directly by Montblanc frontend (Vercel & pizza-na-dom.mk.ua).
+# Dropping 8080 causes 502 Bad Gateway across the entire Montblanc store (see PIT-060).
+# Remove any accidental 8080 DROP:
+iptables -D DOCKER-USER -p tcp --dport 8080 -j DROP 2>/dev/null || true
 netfilter-persistent save
 echo SAVED
-grep -n 8080 /etc/iptables/rules.v4 || echo '8080 missing from rules.v4'
 iptables -L DOCKER-USER -n
 """
 

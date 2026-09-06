@@ -46,6 +46,9 @@ iptables -A DOCKER-USER -m conntrack --ctstate RELATED,ESTABLISHED -j RETURN
 iptables -A DOCKER-USER -p tcp --dport 80 -j RETURN
 iptables -A DOCKER-USER -p tcp --dport 443 -j RETURN
 iptables -A DOCKER-USER -p udp --dport 443 -j RETURN
+# CRITICAL: Allow Montblanc API on port 8080 (Vercel & pizza-na-dom.mk.ua proxy target)
+# Do NOT drop 8080 until Montblanc is migrated behind Caddy with HTTPS (PIT-060)
+iptables -A DOCKER-USER -p tcp --dport 8080 -j RETURN
 # Drop everything else destined to docker-published ports from outside
 iptables -A DOCKER-USER -j DROP
 echo '=== DOCKER-USER after ==='

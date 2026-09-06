@@ -18,6 +18,8 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 interface LegalPageClientProps {
   initialLocale: string
   initialTheme?: 'light' | 'dark'
+  /** ISR pages: hydrate locale/theme from storage after mount (no SSR cookies). */
+  clientHydratePrefs?: boolean
   content: SiteContent
   page: LegalPage
 }
@@ -25,11 +27,17 @@ interface LegalPageClientProps {
 export default function LegalPageClient({
   initialLocale,
   initialTheme,
+  clientHydratePrefs,
   content,
   page,
 }: LegalPageClientProps) {
   const a11yTranslations = content.accessibility
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(
+    initialLocale,
+    'dark',
+    initialTheme,
+    clientHydratePrefs ? { clientHydratePrefs: true } : undefined,
+  )
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   const pickA11y = (field?: Record<string, string> | null) =>

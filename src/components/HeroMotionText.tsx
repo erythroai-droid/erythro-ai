@@ -704,16 +704,17 @@ async function playFrame1(opts: {
 
   applyStageFade()
 
-  // --- Foreground: instantly huge & centered, then settle via fontSize (not scale)
-  // so glyphs stay sharp — transform scale on huge type causes jagged edges.
+  // --- Foreground: instantly huge & centered, then settle via scale (not fontSize)
+  // so layout geometry stays constant — animating fontSize causes severe CLS (PIT-059).
   // Stage is dir=ltr for transform math; Hebrew needs rtl on the text host or
   // per-glyph spans paint in reverse visual order.
   const mobileWrap = !isMotionDesktop()
   const rtlText = containsRtlScript(mainText)
   const fgFont = rtlText ? resolveHeeboStack(fontFamily) : fontFamily
+  const hugeScale = hugeFontPx / Math.max(normalFontPx, 1)
   fgEl.textContent = ''
   gsap.set(fgEl, {
-    fontSize: hugeFontPx,
+    fontSize: `${normalFontPx}px`,
     fontFamily: fgFont,
     fontWeight,
     letterSpacing,
@@ -724,14 +725,15 @@ async function playFrame1(opts: {
     yPercent: -50,
     x: 0,
     y: 0,
-    scale: 1,
+    scale: hugeScale,
     rotation: 0,
     skewX: 0,
     skewY: 0,
     transformOrigin: '50% 50%',
     opacity: 1,
     zIndex: 2,
-    force3D: false,
+    force3D: true,
+    willChange: 'transform',
     whiteSpace: mobileWrap ? 'normal' : 'nowrap',
     textAlign: 'center',
     maxWidth: mobileWrap ? motionMaxTextWidth() : 'none',
@@ -747,22 +749,21 @@ async function playFrame1(opts: {
     rotation: 0,
     skewX: 0,
     filter: 'none',
-    force3D: false,
+    force3D: true,
   })
 
-  // 1) FG settles into the headline slot
+  // 1) FG settles into the headline slot via GPU transform
   await tweenTo(fgEl, {
     x: targetX,
     y: targetY,
-    fontSize: normalFontPx,
     scale: 1,
     rotation: 0,
     duration: 0.9,
     ease: 'power1.in',
-    force3D: false,
+    force3D: true,
   })
   if (cancelled()) return
-  fgEl.style.fontSize = `${normalFontPx}px`
+  gsap.set(fgEl, { willChange: 'auto' })
 
   // 2) Outline words: first from left, second from right (desktop)
   if (showOutline && leftHost) {
@@ -3358,7 +3359,7 @@ export default function HeroMotionText({
     <div
       ref={stageRef}
       className="pointer-events-none fixed inset-0 z-[100] hidden overflow-hidden"
-      style={{ contain: 'paint', opacity: 0 }}
+      style={{ contain: 'layout paint', opacity: 0 }}
       dir="ltr"
       aria-hidden
     >
