@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { waitForSplashDone } from '@/lib/splash'
+import { waitForPostLcpMotion } from '@/lib/lcpGate'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -2979,6 +2979,8 @@ export default function HeroMotionText({
     const list = phrases.filter((p) => p.text.trim())
     if (!slotEl || !inlineEl || !stageEl || !fgEl || !outlineEl || !list.length) return
 
+    let cancelled = false
+
     const reduced =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -3039,16 +3041,20 @@ export default function HeroMotionText({
     }
 
     if (reduced || list.length < 2) {
-      lockMobileHeadlineLayout(list.map((p) => p.text))
-      inlineEl.textContent = list[0]?.text ?? ''
-      gsap.set(inlineEl, { opacity: 1 })
-      return
+      // Static-only: lock after LCP gate so first paint stays CSS-sized (PIT-059).
+      void waitForPostLcpMotion().then(() => {
+        if (cancelled) return
+        lockMobileHeadlineLayout(list.map((p) => p.text))
+        inlineEl.textContent = list[0]?.text ?? ''
+        gsap.set(inlineEl, { opacity: 1 })
+      })
+      return () => {
+        cancelled = true
+      }
     }
 
-    // Lock mobile type size ASAP so HeroSection intro doesn't later jump when
-    // motion starts. Re-measured after fonts.ready (still under splash).
-    let mobileFontPx = lockMobileHeadlineLayout(list.map((p) => p.text))
-
+    // Defer font lock + GSAP cycle until after LCP (parent also code-splits this module).
+    let mobileFontPx: number | null = null
     let runId = 0
     let running = false
     const delayed: gsap.core.Tween[] = []
@@ -3187,7 +3193,7 @@ export default function HeroMotionText({
           mobileFontPx = lockMobileHeadlineLayout(list.map((p) => p.text))
         }
 
-        await waitForSplashDone()
+        await waitForPostLcpMotion()
         if (isCancelled()) return
 
         const heading = rootRef.current?.closest('.hero-heading') as HTMLElement | null
@@ -3338,6 +3344,7 @@ export default function HeroMotionText({
       startMotion()
     }
     return () => {
+      cancelled = true
       mm.revert()
       io.disconnect()
       stopMotion()

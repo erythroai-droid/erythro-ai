@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { waitForSplashDone } from '@/lib/splash'
 import { DESKTOP_HERO_SIZES, HERO_IMAGE_QUALITY, heroStillSrc, isAbsoluteHeroUrl } from '@/lib/heroImage'
 
@@ -40,10 +38,6 @@ function HeroStill({
       className={className}
     />
   )
-}
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
 }
 
 /** Prefer <video> for Blob/media URLs unless the path clearly looks like an image. */
@@ -116,45 +110,57 @@ export default function HeroAnimation({
     if (!showDesktopVideo) setDesktopVideoPlaying(false)
   }, [showDesktopVideo, videoUrl])
 
-  // GSAP ScrollTrigger for content fade out
+  // Desktop-only scroll fade — load GSAP after lg so mobile LCP skips this chunk work.
   useEffect(() => {
-    if (!containerRef.current || !wrapperRef.current) return
+    if (!isLg || !containerRef.current || !wrapperRef.current) return
 
-    const mm = gsap.matchMedia()
+    let cancelled = false
+    let revert: (() => void) | undefined
 
-    mm.add('(min-width: 1024px)', () => {
-      const el = contentRef.current
-      if (!el) return
+    void (async () => {
+      const { gsap } = await import('gsap')
+      const { ScrollTrigger } = await import('gsap/ScrollTrigger')
+      if (cancelled || !wrapperRef.current || !contentRef.current) return
+      gsap.registerPlugin(ScrollTrigger)
 
-      gsap.set(el, { clearProps: 'transform', opacity: 1 })
+      const mm = gsap.matchMedia()
+      mm.add('(min-width: 1024px)', () => {
+        const el = contentRef.current
+        if (!el) return
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: wrapperRef.current,
-          start: 'top top',
-          end: 'bottom bottom',
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
+        gsap.set(el, { clearProps: 'transform', opacity: 1 })
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: wrapperRef.current,
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        })
+        ScrollTrigger.sort()
+
+        tl.fromTo(
+          el,
+          { opacity: 1 },
+          {
+            opacity: 0,
+            ease: 'power1.inOut',
+            duration: 1.2,
+          },
+          0,
+        )
       })
-      ScrollTrigger.sort()
 
-      tl.fromTo(
-        el,
-        { opacity: 1 },
-        {
-          opacity: 0,
-          ease: 'power1.inOut',
-          duration: 1.2,
-        },
-        0,
-      )
-    })
+      revert = () => mm.revert()
+    })()
 
     return () => {
-      mm.revert()
+      cancelled = true
+      revert?.()
     }
-  }, [])
+  }, [isLg])
 
   return (
     <div

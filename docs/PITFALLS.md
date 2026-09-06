@@ -962,6 +962,25 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-059 — Hero GSAP / HeroMotionText on the critical path tanks mobile lab + score variance
+
+**Tags:** `nextjs`, `lcp`, `tbt`, `gsap`, `hero`, `cwv`  
+**Seen:** 2026-09 — mobile PSI oscillating ~48–70 with desktop ~76–99 after ISR/R2 fixes.
+
+**Symptom:** Lab Performance jumps run-to-run; TBT/LCP dominate. Observed (unthrottled) LCP is fine (~1 s).
+
+**Cause:** `HeroSection` statically imported `HeroMotionText` + `gsap`, so the cinematic headline chunk compiled/ran during LCP under Slow 4G. Small scheduling differences amplified score swings.
+
+**Fix:**
+1. `waitForPostLcpMotion()` (splash → LCP observer/timeout → idle) in `src/lib/lcpGate.ts`.
+2. Keep a static H1 twin until the gate; then dynamic-import `HeroMotionText`.
+3. Hero chrome fade via CSS transitions (no GSAP on critical path).
+4. `HeroAnimation` loads GSAP ScrollTrigger only on `lg`.
+
+**Prevent:** Do not statically import heavy motion modules into the home hero; gate after LCP.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -1001,3 +1020,4 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Shared frontend layout / not-found must not call `cookies()`; middleware must not Set-Cookie on HTML; use `force-static` + `getPayloadLocal` for ISR HIT (PIT-056)
 - [ ] Hero LCP media: CSS `lg:block` poster in SSR HTML, not `useState(isLg)` gate (PIT-057)
 - [ ] Absolute CDN hero stills: preload + `<img>` direct URL, skip `/_next/image` when bytes unchanged (PIT-058)
+- [ ] Home hero: no static import of HeroMotionText/GSAP before LCP (PIT-059)
