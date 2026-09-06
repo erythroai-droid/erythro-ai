@@ -1068,6 +1068,25 @@ Never tween geometric CSS properties (`font-size`, `width`, `height`, `top`, `le
 
 ---
 
+## PIT-064 — Cloudflare Access Subdomain field is not the app name
+
+**Tags:** `cloudflare`, `access`, `zero-trust`, `admin`, `security`  
+**Seen:** 2026-09-06 — while enabling Access for Payload `/admin`.
+
+**Symptom:**
+Filling **Subdomain** with `erythro-admin` builds destination `erythro-admin.erythro.ai/admin*`. Apex `https://erythro.ai/admin` stays public (HTTP 200).
+
+**Cause:**
+In Zero Trust Self-hosted apps, the application **Name** is a label only. The **Public hostname → Subdomain** field is a real DNS label; leave it empty for apex `erythro.ai`.
+
+**Fix:**
+Subdomain = empty, Domain = `erythro.ai`, Path = `/admin*`, plus an Allow policy (email). Verify: `curl.exe -sI https://erythro.ai/admin` → **302** to `*.cloudflareaccess.com` with `Www-Authenticate: Cloudflare-Access`.
+
+**Prevent:**
+Never put the app display name into Subdomain. Confirm the composed hostname preview matches the real admin URL before Save.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`

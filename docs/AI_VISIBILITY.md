@@ -41,11 +41,12 @@ API Catalog, OpenAPI, Markdown negotiation, ACP discovery.
 | OpenAPI | `src/app/openapi.json/route.ts` | `rel=service-desc` для Brand API / MCP |
 | Markdown negotiation | `src/lib/markdownNegotiation.ts` + `src/app/api/markdown-negotiate/` | `Accept: text/markdown` → structured Markdown |
 | ACP discovery | `src/app/.well-known/acp.json/`, `src/app/.well-known/acp/` | Agentic Commerce Protocol discovery |
+| security.txt | `src/app/.well-known/security.txt/route.ts` | RFC 9116 vulnerability disclosure (`Contact: order@`) |
 | Sitemap | `src/app/sitemap.ts` | URL `/about` (и др.) |
 | Layout link | `src/app/(frontend)/layout.tsx` | `<link rel="describedby" href="/llms.txt">`, `alternate` markdown |
 
 Тесты: `tests/int/brandSchema.int.spec.ts`, `tests/int/markdownNegotiation.int.spec.ts`,
-`tests/int/acpDiscovery.int.spec.ts`.
+`tests/int/acpDiscovery.int.spec.ts`, `tests/int/securityTxt.int.spec.ts`.
 
 Внешний скан: [isitagentready.com](https://isitagentready.com/) — ожидать pass для
 `contentSignals`, `linkHeaders`, `apiCatalog` (после деплоя + Cloudflare).
@@ -70,6 +71,7 @@ curl -s https://erythro.ai/llms.txt
 curl -s https://erythro.ai/.well-known/mcp
 curl -s https://erythro.ai/.well-known/api-catalog
 curl -sI https://erythro.ai/.well-known/api-catalog
+curl -s https://erythro.ai/.well-known/security.txt
 curl -s https://erythro.ai/openapi.json
 curl -s https://erythro.ai/about
 curl -s https://erythro.ai/robots.txt
@@ -81,6 +83,7 @@ curl -s -H "Accept: text/markdown" https://erythro.ai/
 - `llms.txt` — 200, markdown с H1 и ссылками на `/about`, `/contacts`
 - `/.well-known/mcp` — 200, `application/json`, поля `mcp_version`, `endpoints`
 - `/.well-known/api-catalog` — 200, `application/linkset+json`, профиль RFC 9727
+- `/.well-known/security.txt` — 200, `text/plain`, `Contact: mailto:order@erythro.ai`, Expires 2027-01-01
 - `/openapi.json` — 200, OpenAPI 3.x с путями `/api/mcp`, `/.well-known/mcp`
 - `/about` — 200, Brand Facts (dl/dt/dd, список услуг, соцсети)
 - Главная — в HTML есть `application/ld+json` с `@type":"Organization"` и `window.dataLayer`

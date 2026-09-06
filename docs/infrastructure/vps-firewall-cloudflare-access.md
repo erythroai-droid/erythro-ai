@@ -76,19 +76,42 @@ Goal: Payload login is not on the open internet.
 
 No app code change required — Access sits in front of Vercel/Cloudflare. Document the Access app name in the team password manager.
 
-**Status (2026-09-06):** Not enabled yet. `curl -I https://erythro.ai/admin` → **200** (Payload login publicly reachable). Create Access app for `erythro.ai/admin*` (and ideally `erythro.ai/api/users*`) with Allow policy for operator email / OTP.
+**Status (2026-09-06):** **Enabled.** Live check: `curl.exe -sI https://erythro.ai/admin` → **HTTP 302** to `*.cloudflareaccess.com/cdn-cgi/access/login/…` with `Www-Authenticate: Cloudflare-Access`. Public site `/` remains **200** (not gated).
+
+**Pitfall:** Subdomain field must be **empty**. Putting `erythro-admin` there would protect `erythro-admin.erythro.ai/admin*` instead of Payload on `erythro.ai/admin*`. App name is a label only.
+
+**API note:** Wrangler OAuth could *list* apps but `POST …/access/apps` returned `auth.forbidden`. Optional script if you later have an Access Edit token: `node scripts/create-cloudflare-access-admin.mjs`.
+
+**Dashboard (done):** Self-hosted app → hostname `erythro.ai` + `/admin*` (empty subdomain) → Allow policy for operator email.
 
 ## 2b. DMARC quarantine (Cloudflare DNS)
 
 Live (2026-09-06): `_dmarc.erythro.ai` → `v=DMARC1; p=quarantine; rua=mailto:order@erythro.ai; pct=100;` (was `p=none`).
 
-Next TXT step after ~7 days of clean reports:
+**Do not raise to `p=reject` before ~2026-09-13.** Quarantine window must collect aggregate reports first.
+
+### Checklist ~2026-09-13 (goal remaining)
+
+1. Inbox `order@erythro.ai`: open DMARC aggregate XML (often subject like `Report domain: erythro.ai`). Confirm no unexpected fail sources for legitimate mail (forms / transactional).
+2. If clean → Cloudflare DNS → edit TXT `_dmarc` to:
 
 ```text
 v=DMARC1; p=reject; rua=mailto:order@erythro.ai; pct=100;
 ```
 
-Use existing `order@erythro.ai` for `rua` (mailbox already receives form mail). Nameservers are Cloudflare (`alice`/`chris`), not Hostinger.
+3. Verify: `curl.exe -s "https://cloudflare-dns.com/dns-query?name=_dmarc.erythro.ai&type=TXT" -H "accept: application/dns-json"` shows `p=reject`.
+4. Re-smoke Access: `curl.exe -sI https://erythro.ai/admin` still **302** Cloudflare Access (not bare 200).
+5. Mark done in `docs/PLAN-deferred.md` + Obsidian sync.
+
+**API helper (needs Zone DNS Edit token in `CLOUDFLARE_API_TOKEN`):**
+
+```bash
+# after reading order@ reports
+node --env-file=.env.local scripts/set-dmarc-reject.mjs --dry-run
+node --env-file=.env.local scripts/set-dmarc-reject.mjs
+```
+
+Or edit TXT in Cloudflare DNS UI. Nameservers are Cloudflare (`alice`/`chris`), not Hostinger.
 
 ## 3. Inter-service auth (already in code)
 

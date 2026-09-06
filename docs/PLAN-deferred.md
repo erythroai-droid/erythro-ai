@@ -8,8 +8,7 @@
 
 | Priority | Item | Notes |
 |---|---|---|
-| high | Cloudflare Access на `/admin*` | Zero Trust PIN/SSO — `docs/infrastructure/vps-firewall-cloudflare-access.md` §2. **Still open:** `/admin` returns 200 without Access gate. |
-| high | DMARC `p=reject` | After ~7 days of clean aggregate reports at `order@erythro.ai`. Live now: `p=quarantine; rua=mailto:order@erythro.ai; pct=100;`. Raise TXT `_dmarc` to `v=DMARC1; p=reject; rua=mailto:order@erythro.ai; pct=100;` |
+| high | DMARC `p=reject` | After ~7 days of clean aggregate reports at `order@erythro.ai`. Live now: `p=quarantine; rua=mailto:order@erythro.ai; pct=100;`. Raise TXT `_dmarc` to `v=DMARC1; p=reject; rua=mailto:order@erythro.ai; pct=100;` (~2026-09-13) |
 | medium | CSP nonce (drop `'unsafe-inline'`) | Public CSP already dropped `'unsafe-eval'`; admin keeps eval for Payload. Full nonce needs middleware + Script wiring. |
 | medium | Desktop CLS (~1.1) | Partially addressed: poster LCP without isLg gate, heading min-height + cross-locale slot, useLayoutEffect locale — re-measure after deploy |
 | low | Purge Vercel Blob copies | After admin upload→R2 verified; then drop `BLOB_READ_WRITE_TOKEN` |
@@ -31,3 +30,4 @@
 - [x] `poweredByHeader: false` + middleware strip `x-powered-by`
 - [x] Public CSP without `'unsafe-eval'` (admin path keeps looser policy)
 - [x] DMARC `p=quarantine` + `rua=mailto:order@erythro.ai` (2026-09-06)
+- [x] Cloudflare Access `/admin*`: empty subdomain + Allow email → `/admin` 302 to Cloudflare Access (2026-09-06)
