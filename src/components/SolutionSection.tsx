@@ -10,12 +10,7 @@ import { useContactModal } from './ContactModal'
 import { isContactModalHref, navigateCtaHref } from '@/lib/ctaNav'
 import StylizedSectionTitle from './StylizedSectionTitle'
 import BidiText from './BidiText'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
-}
+import { loadGsapAfterLcp } from '@/lib/gsapAfterLcp'
 
 interface SolutionSectionProps {
   locale: string
@@ -232,59 +227,68 @@ export default function SolutionSection({ locale, theme = 'dark' }: SolutionSect
   useCursorGlow(sectionRef)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const mm = gsap.matchMedia()
+    let cancelled = false
+    let ctx: { revert: () => void } | null = null
 
-      mm.add('(min-width: 1024px)', () => {
-        gsap.set([headingRef.current, cardsRef.current], {
-          opacity: 0,
-          y: 60,
-        })
+    void loadGsapAfterLcp().then(({ gsap, ScrollTrigger }) => {
+      if (cancelled) return
+      ctx = gsap.context(() => {
+        const mm = gsap.matchMedia()
 
-        gsap.to([headingRef.current, cardsRef.current], {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          stagger: 0.25,
-          ease: 'power2.out',
-          scrollTrigger: {
+        mm.add('(min-width: 1024px)', () => {
+          gsap.set([headingRef.current, cardsRef.current], {
+            opacity: 0,
+            y: 60,
+          })
+
+          gsap.to([headingRef.current, cardsRef.current], {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            stagger: 0.25,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none reverse',
+            },
+          })
+
+          // Keep Solutions pinned: short hold, then FAQ slides up over it
+          ScrollTrigger.create({
+            id: 'solutions-pin',
             trigger: sectionRef.current,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse',
-          },
+            start: 'top top',
+            end: '+=200%',
+            pin: true,
+            pinSpacing: false,
+            invalidateOnRefresh: true,
+          })
         })
 
-        // Keep Solutions pinned: short hold, then FAQ slides up over it
-        ScrollTrigger.create({
-          id: 'solutions-pin',
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: '+=200%',
-          pin: true,
-          pinSpacing: false,
-          invalidateOnRefresh: true,
+        mm.add('(max-width: 1023px)', () => {
+          gsap.set([headingRef.current, cardsRef.current], { opacity: 0, y: 30 })
+
+          gsap.to([headingRef.current, cardsRef.current], {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.15,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top 92%',
+              toggleActions: 'play none none reverse',
+            },
+          })
         })
-      })
+      }, sectionRef)
+    })
 
-      mm.add('(max-width: 1023px)', () => {
-        gsap.set([headingRef.current, cardsRef.current], { opacity: 0, y: 30 })
-
-        gsap.to([headingRef.current, cardsRef.current], {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          stagger: 0.15,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 92%',
-            toggleActions: 'play none none reverse',
-          },
-        })
-      })
-    }, sectionRef)
-
-    return () => ctx.revert()
+    return () => {
+      cancelled = true
+      ctx?.revert()
+    }
   }, [])
 
   return (

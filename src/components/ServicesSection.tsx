@@ -12,12 +12,7 @@ import StylizedSectionTitle from './StylizedSectionTitle'
 import BidiText from './BidiText'
 import { getServiceSlugById } from '@/lib/servicePages'
 import { LETS_TALK_SCROLL_EVENT } from '@/lib/letsTalkScroll'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
-}
+import { loadGsapAfterLcp } from '@/lib/gsapAfterLcp'
 
 interface ServicesSectionProps {
   locale: string
@@ -162,7 +157,12 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
   const mobileButtonRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
+    let cancelled = false
+    let ctx: { revert: () => void } | null = null
+
+    void loadGsapAfterLcp().then(({ gsap, ScrollTrigger }) => {
+      if (cancelled) return
+      ctx = gsap.context(() => {
       const mm = gsap.matchMedia()
 
       // Desktop animation: Pinning, horizontal side-scrolling cards with scrubbing
@@ -485,12 +485,16 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
       })
     }, wrapperRef)
 
-    // After locale/dir changes, refresh so pin start + reveal match the new layout.
-    requestAnimationFrame(() => {
-      ScrollTrigger.refresh()
+      // After locale/dir changes, refresh so pin start + reveal match the new layout.
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh()
+      })
     })
 
-    return () => ctx.revert()
+    return () => {
+      cancelled = true
+      ctx?.revert()
+    }
   }, [locale])
 
   const isLight = theme === 'light'

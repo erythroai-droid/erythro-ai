@@ -990,9 +990,24 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 **Cause:** `HomeClient` mounted Case Studies / Services / Solutions / FAQ / Footer (all GSAP) plus Chat/A11y during the same hydration window as the hero. Navbar also static-imported ScrollTrigger.
 
-**Fix:** Mount below-fold + chrome only after `waitForPostLcpMotion()` via `dynamic(..., { ssr: false })`. Navbar resolves pin scroll with a dynamic `import('gsap/ScrollTrigger')` on click.
+**Fix:** Always SSR/render below-fold sections. Defer only GSAP via `loadGsapAfterLcp()` inside sections, and mount floating chrome (chat/a11y/cookie) after the LCP gate. Navbar keeps lazy ScrollTrigger.
 
 **Prevent:** Do not hydrate GSAP-heavy home sections in the first client paint; gate them after LCP/idle.
+
+---
+
+## PIT-062 — Deferring below-fold mount for TBT caused mobile CLS 0.265
+
+**Tags:** `nextjs`, `cls`, `tbt`, `gsap`, `home`, `cwv`  
+**Seen:** 2026-09 — after PIT-061, two mobile lab runs both reported CLS **0.265** (TBT green ~30–80 ms).
+
+**Symptom:** Spacer `min-h-[70vh]` swapped for Cases/Services/… with mobile `-mt-8` overlap onto the hero → visible layout shift at the fold.
+
+**Cause:** Late client mount (`ssr: false` + `loadBelowFold`) changed document geometry under the LCP viewport.
+
+**Fix:** Always SSR/render below-fold sections. Defer only GSAP via `loadGsapAfterLcp()` inside sections, and mount floating chrome (chat/a11y/cookie) after the LCP gate.
+
+**Prevent:** Do not replace multi-section home HTML with a short spacer after first paint; keep layout in SSR and defer animation JS only.
 
 ---
 
@@ -1037,4 +1052,5 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Absolute CDN hero stills: preload + `<img>` direct URL, skip `/_next/image` when bytes unchanged (PIT-058)
 - [ ] Home hero: no static import of HeroMotionText/GSAP before LCP (PIT-059)
 - [ ] Home below-fold/chrome: mount after LCP gate; no eager Navbar GSAP (PIT-061)
+- [ ] Home CLS: keep below-fold SSR; defer GSAP via loadGsapAfterLcp, not a late section swap (PIT-062)
 
