@@ -947,6 +947,21 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-058 — Hero still through `/_next/image` adds LCP hop without smaller bytes
+
+**Tags:** `nextjs`, `lcp`, `hero`, `r2`, `cwv`  
+**Seen:** 2026-09 — mobile Performance ~69; `Hero_Mobile.webp` already ~50 KiB / 1080×1920.
+
+**Symptom:** Mobile LCP stays ~5–6 s under Slow 4G even after ISR HIT and CLS ≈ 0.
+
+**Cause:** LCP used `next/image` → `/_next/image?url=…r2.dev…`. Optimizer returned the **same** byte size as the R2 object, but cold requests paid an extra Vercel hop (~2× latency vs direct R2).
+
+**Fix:** For absolute CDN URLs, paint and preload the public URL directly (`heroStillSrc` + `<img>` / `<link rel="preload" href>`). Keep `/_next/image` only for relative/local paths.
+
+**Prevent:** Do not route already-optimized WebP hero stills through the image optimizer unless it measurably shrinks transfer size.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -985,3 +1000,4 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Contact honeypot must not be named company/website/email — mobile autofill silent-drops leads (PIT-055)
 - [ ] Shared frontend layout / not-found must not call `cookies()`; middleware must not Set-Cookie on HTML; use `force-static` + `getPayloadLocal` for ISR HIT (PIT-056)
 - [ ] Hero LCP media: CSS `lg:block` poster in SSR HTML, not `useState(isLg)` gate (PIT-057)
+- [ ] Absolute CDN hero stills: preload + `<img>` direct URL, skip `/_next/image` when bytes unchanged (PIT-058)

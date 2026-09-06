@@ -5,7 +5,42 @@ import Image from 'next/image'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { waitForSplashDone } from '@/lib/splash'
-import { DESKTOP_HERO_SIZES, HERO_IMAGE_QUALITY, MOBILE_HERO_SIZES } from '@/lib/heroImage'
+import { DESKTOP_HERO_SIZES, HERO_IMAGE_QUALITY, heroStillSrc, isAbsoluteHeroUrl } from '@/lib/heroImage'
+
+/** Full-bleed LCP still — absolute CDN URLs skip `/_next/image` (PIT-058). */
+function HeroStill({
+  src,
+  className,
+}: {
+  src: string
+  className: string
+}) {
+  if (isAbsoluteHeroUrl(src)) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- LCP must match preload href exactly
+      <img
+        src={heroStillSrc(src)}
+        alt=""
+        fetchPriority="high"
+        decoding="async"
+        className={`absolute inset-0 h-full w-full ${className}`}
+      />
+    )
+  }
+  return (
+    <Image
+      src={src}
+      alt=""
+      fill
+      sizes={DESKTOP_HERO_SIZES}
+      quality={HERO_IMAGE_QUALITY}
+      fetchPriority="high"
+      loading="eager"
+      decoding="async"
+      className={className}
+    />
+  )
+}
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -135,19 +170,9 @@ export default function HeroAnimation({
         {navbar}
 
         <div className="absolute inset-0 w-full h-full pointer-events-none select-none z-0" aria-hidden="true">
-          {/* Mobile LCP still — next/image serves ~viewport width (not full 984px blob). */}
+          {/* Mobile LCP still — direct R2/CDN URL when absolute (no optimizer hop). */}
           {hasMobileImage && mobileImageUrl ? (
-            <Image
-              src={mobileImageUrl}
-              alt=""
-              fill
-              sizes={MOBILE_HERO_SIZES}
-              quality={HERO_IMAGE_QUALITY}
-              fetchPriority="high"
-              loading="eager"
-              decoding="async"
-              className="object-cover opacity-85 lg:hidden"
-            />
+            <HeroStill src={mobileImageUrl} className="object-cover opacity-85 lg:hidden" />
           ) : null}
 
           {/*
@@ -155,15 +180,8 @@ export default function HeroAnimation({
             Gating on isLg delayed LCP until after useEffect (~1 frame +).
           */}
           {desktopPoster && !desktopIsImage ? (
-            <Image
+            <HeroStill
               src={desktopPoster}
-              alt=""
-              fill
-              sizes={DESKTOP_HERO_SIZES}
-              quality={HERO_IMAGE_QUALITY}
-              fetchPriority="high"
-              loading="eager"
-              decoding="async"
               className={`hidden object-cover opacity-85 lg:block ${
                 desktopVideoPlaying ? 'lg:!opacity-0' : ''
               }`}
@@ -171,24 +189,14 @@ export default function HeroAnimation({
           ) : null}
 
           {videoUrl && desktopIsImage ? (
-            <Image
-              src={videoUrl}
-              alt=""
-              fill
-              sizes={DESKTOP_HERO_SIZES}
-              quality={HERO_IMAGE_QUALITY}
-              fetchPriority="high"
-              loading="eager"
-              decoding="async"
-              className="hidden object-cover opacity-85 lg:block"
-            />
+            <HeroStill src={videoUrl} className="hidden object-cover opacity-85 lg:block" />
           ) : null}
 
           {showDesktopVideo ? (
             <video
               key={videoUrl}
               src={videoUrl}
-              poster={desktopPoster || undefined}
+              poster={desktopPoster ? heroStillSrc(desktopPoster) : undefined}
               autoPlay
               loop
               muted
