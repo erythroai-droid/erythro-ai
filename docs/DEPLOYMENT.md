@@ -493,7 +493,7 @@ Vercel Domains → DNS. Автоподключение в hPanel не срабо
 | CNAME | `hostingermail-a._domainkey` | — | `hostingermail-a.dkim.mail.hostinger.com` |
 | CNAME | `hostingermail-b._domainkey` | — | `hostingermail-b.dkim.mail.hostinger.com` |
 | CNAME | `hostingermail-c._domainkey` | — | `hostingermail-c.dkim.mail.hostinger.com` |
-| TXT | `_dmarc` | — | `v=DMARC1; p=none; rua=mailto:order@erythro.ai` |
+| TXT | `_dmarc` | — | `v=DMARC1; p=quarantine; rua=mailto:order@erythro.ai; pct=100;` (was `p=none`; tighten to `p=reject` after a week of clean reports) |
 
 В Name для DKIM только `hostingermail-a._domainkey`, без `.erythro.ai`. После сохранения —
 Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24 ч на пропагацию).
@@ -686,7 +686,7 @@ ALIAS/CAA сайта не трогать.
 | CNAME | `hostingermail-a._domainkey` | — | `hostingermail-a.dkim.mail.hostinger.com` |
 | CNAME | `hostingermail-b._domainkey` | — | `hostingermail-b.dkim.mail.hostinger.com` |
 | CNAME | `hostingermail-c._domainkey` | — | `hostingermail-c.dkim.mail.hostinger.com` |
-| TXT | `_dmarc` | — | `v=DMARC1; p=none; rua=mailto:order@erythro.ai` |
+| TXT | `_dmarc` | — | `v=DMARC1; p=quarantine; rua=mailto:order@erythro.ai; pct=100;` (was `p=none`; tighten to `p=reject` after a week of clean reports) |
 
 В Name для DKIM только `hostingermail-a._domainkey`, без `.erythro.ai`. После сохранения —
 Hostinger Emails → Mailboxes → Domain settings → **Check status** (до 24 ч на пропагацию).

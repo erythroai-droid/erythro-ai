@@ -76,6 +76,20 @@ Goal: Payload login is not on the open internet.
 
 No app code change required — Access sits in front of Vercel/Cloudflare. Document the Access app name in the team password manager.
 
+**Status (2026-09-06):** Not enabled yet. `curl -I https://erythro.ai/admin` → **200** (Payload login publicly reachable). Create Access app for `erythro.ai/admin*` (and ideally `erythro.ai/api/users*`) with Allow policy for operator email / OTP.
+
+## 2b. DMARC quarantine (Cloudflare DNS)
+
+Live (2026-09-06): `_dmarc.erythro.ai` → `v=DMARC1; p=quarantine; rua=mailto:order@erythro.ai; pct=100;` (was `p=none`).
+
+Next TXT step after ~7 days of clean reports:
+
+```text
+v=DMARC1; p=reject; rua=mailto:order@erythro.ai; pct=100;
+```
+
+Use existing `order@erythro.ai` for `rua` (mailbox already receives form mail). Nameservers are Cloudflare (`alice`/`chris`), not Hostinger.
+
 ## 3. Inter-service auth (already in code)
 
 | Hop | Mechanism |
