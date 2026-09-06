@@ -1,20 +1,50 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef } from 'react'
-import { gsap } from 'gsap'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Button from './Button'
 import HeroAnimation from './HeroAnimation'
-import HeroMotionText from './HeroMotionText'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import { isContactModalHref, navigateCtaHref } from '@/lib/ctaNav'
 import { scrollToLetsTalk } from '@/lib/letsTalkScroll'
-import { waitForSplashDone } from '@/lib/splash'
+import { waitForPostLcpMotion } from '@/lib/lcpGate'
 
 interface HeroSectionProps {
   locale: string
   theme?: 'light' | 'dark'
   navbar?: React.ReactNode
+}
+
+type MotionTextComponent = React.ComponentType<{
+  phrases: { text: string; outline: string }[]
+  layoutReserveText?: string
+  className?: string
+}>
+
+/** Mirrors HeroMotionText first-paint DOM so swap after LCP does not CLS. */
+function HeroHeadlineStatic({
+  text,
+  layoutReserveText,
+}: {
+  text: string
+  layoutReserveText?: string
+}) {
+  const slot =
+    (layoutReserveText && layoutReserveText.trim()) || text.trim() || '—'
+
+  return (
+    <div className="relative inline-flex min-w-0 w-full max-w-full items-center justify-center overflow-visible lg:w-auto">
+      <span
+        aria-hidden
+        className="invisible block w-full max-w-full whitespace-normal py-[0.12em] text-center lg:w-auto lg:max-w-[min(100%,calc(100%-2rem))] lg:whitespace-nowrap"
+      >
+        {slot}
+      </span>
+      <span className="absolute inset-0 flex w-full flex-wrap content-center items-center justify-center whitespace-normal py-[0.12em] text-center lg:w-auto lg:flex-nowrap lg:whitespace-nowrap">
+        {text}
+      </span>
+    </div>
+  )
 }
 
 export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSectionProps) {
@@ -23,13 +53,15 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const isLight = theme === 'light'
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const [chromeIn, setChromeIn] = useState(false)
+  const [MotionText, setMotionText] = useState<MotionTextComponent | null>(null)
+
   const motionPhrases = useMemo(() => {
     const pick = (dict: Record<string, string> | undefined, fallback = '') =>
       (dict?.[locale] || dict?.en || fallback).trim()
 
     const fromCms = (translations.motionHeadings ?? [])
       .map((phrase) => {
-        // New shape: { text, outline }; legacy flat: { en, ru, he }
         if (phrase && typeof phrase === 'object' && 'text' in phrase) {
           const text = pick(phrase.text as Record<string, string>)
           const outline = pick(phrase.outline as Record<string, string> | undefined, text)
@@ -42,7 +74,6 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
 
     if (fromCms.length >= 2) return fromCms
 
-    // Fallback if CMS Motion Headings are empty
     const fallback = t(translations.mainHeading)
     return fallback ? [{ text: fallback, outline: fallback }] : []
   }, [locale, translations.mainHeading, translations.motionHeadings])
@@ -72,6 +103,8 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
     return longest
   }, [translations.mainHeading, translations.motionHeadings])
 
+  const firstPhrase = motionPhrases[0]?.text || t(translations.mainHeading)
+
   const handleFindOutMoreClick = () => {
     const href = (translations.ctaHref || '#contacts').trim()
 
@@ -80,7 +113,6 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
       return
     }
 
-    // Preserve legacy dual scroll when pointing at contacts / Let’s Talk
     if (href === '#contacts' || href === '') {
       scrollToLetsTalk({ behavior: 'smooth' })
       return
@@ -89,63 +121,30 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
     navigateCtaHref(href, { openContact })
   }
 
+  // After LCP: load HeroMotionText chunk + reveal chrome (no GSAP on critical path).
   useEffect(() => {
-    if (!containerRef.current) return
-
-    const preHeading = containerRef.current.querySelector('.hero-pre-heading')
-    const heading = containerRef.current.querySelector('.hero-heading')
-    const subtext = containerRef.current.querySelector('.hero-subtext')
-    const buttons = containerRef.current.querySelector('.hero-buttons')
-
-    // LCP: keep the headline readable in first paint. Animate only siblings from
-    // opacity 0; heading stays at final position (no y tween → less CLS).
-    gsap.set([preHeading, subtext, buttons], { y: 20, opacity: 0 })
-    gsap.set(heading, { y: 0, opacity: 1 })
-
     let cancelled = false
-    const tl = gsap.timeline({ paused: true })
-    tl.to(preHeading, {
-      opacity: 1,
-      y: 0,
-      duration: 0.6,
-      ease: 'power3.out',
-      clearProps: 'transform',
-    })
-      .to(
-        subtext,
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', clearProps: 'transform' },
-        '-=0.3',
-      )
-      .to(
-        buttons,
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', clearProps: 'transform' },
-        '-=0.5',
-      )
-
-    // Wait for fonts so HeroMotionText can lock mobile type size before the
-    // intro fades in — otherwise the first lock after splash jerks subtitles.
-    // Wait for splash so pre/heading stay opacity-0 under the brand overlay.
     ;(async () => {
       try {
         if (document.fonts?.ready) await document.fonts.ready
       } catch {
         /* ignore */
       }
+      await waitForPostLcpMotion()
       if (cancelled) return
-      await waitForSplashDone()
+      setChromeIn(true)
+      const mod = await import('./HeroMotionText')
       if (cancelled) return
-      await new Promise<void>((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-      })
-      if (cancelled) return
-      tl.delay(0.15)
-      tl.play()
+      setMotionText(() => mod.default)
     })()
     return () => {
       cancelled = true
-      tl.kill()
     }
   }, [])
+
+  const chromeClass = chromeIn
+    ? 'opacity-100 translate-y-0'
+    : 'opacity-0 translate-y-5'
 
   return (
     <HeroAnimation
@@ -158,25 +157,29 @@ export default function HeroSection({ locale, theme = 'dark', navbar }: HeroSect
         ref={containerRef}
         className="relative mx-auto mt-12 flex w-full max-lg:-translate-y-10 flex-col items-center gap-3 text-center select-none md:mt-16 lg:gap-6"
       >
-        {/* Pre-Heading tag */}
-        <span className="hero-pre-heading opacity-0 font-sans text-xs md:text-sm font-bold tracking-[0.25em] text-gold-500 uppercase select-none animate-pulse px-[30px] mb-[18px] lg:relative lg:-top-6 lg:mb-2">
+        <span
+          className={`hero-pre-heading font-sans text-xs md:text-sm font-bold tracking-[0.25em] text-gold-500 uppercase select-none px-[30px] mb-[18px] lg:relative lg:-top-6 lg:mb-2 transition-[opacity,transform] duration-700 ease-out ${chromeClass} ${chromeIn ? '' : 'animate-pulse'}`}
+        >
           {t(translations.preHeading)}
         </span>
 
-        {/* Full-bleed rotating headline — no wrap on large screens */}
-        <h1
-          className="hero-heading font-display-5xl !font-bold uppercase mt-0 mb-0 flex min-w-0 w-full max-w-full items-center justify-center select-text tracking-tight px-5 text-center whitespace-normal lg:mt-2 lg:mb-2 lg:px-4 lg:whitespace-nowrap !text-[clamp(28px,9.5vw,48px)] !leading-[1.12] lg:!text-[clamp(36px,4.8vw,72px)] lg:!leading-[1.15] text-gold-500 min-h-[calc(1.12em+0.24em)] lg:min-h-[calc(1.15em+0.24em)]"
-        >
-          <HeroMotionText phrases={motionPhrases} layoutReserveText={layoutReserveText} />
+        <h1 className="hero-heading font-display-5xl !font-bold uppercase mt-0 mb-0 flex min-w-0 w-full max-w-full items-center justify-center select-text tracking-tight px-5 text-center whitespace-normal lg:mt-2 lg:mb-2 lg:px-4 lg:whitespace-nowrap !text-[clamp(28px,9.5vw,48px)] !leading-[1.12] lg:!text-[clamp(36px,4.8vw,72px)] lg:!leading-[1.15] text-gold-500 min-h-[calc(1.12em+0.24em)] lg:min-h-[calc(1.15em+0.24em)]">
+          {MotionText ? (
+            <MotionText phrases={motionPhrases} layoutReserveText={layoutReserveText} />
+          ) : (
+            <HeroHeadlineStatic text={firstPhrase} layoutReserveText={layoutReserveText} />
+          )}
         </h1>
 
-        {/* Description subtext matching Figma geometry spacing & leading */}
-        <p className="hero-subtext opacity-0 font-body-lead text-gold-100 mt-4 w-full max-w-full select-text px-[30px] text-center whitespace-normal lg:mt-7">
+        <p
+          className={`hero-subtext font-body-lead text-gold-100 mt-4 w-full max-w-full select-text px-[30px] text-center whitespace-normal lg:mt-7 transition-[opacity,transform] duration-700 ease-out delay-100 ${chromeClass}`}
+        >
           {t(translations.subtext)}
         </p>
 
-        {/* Action Button Group */}
-        <div className="hero-buttons opacity-0 flex items-center justify-center gap-4 mt-6 w-full px-[30px] lg:mt-10">
+        <div
+          className={`hero-buttons flex items-center justify-center gap-4 mt-6 w-full px-[30px] lg:mt-10 transition-[opacity,transform] duration-700 ease-out delay-150 ${chromeClass}`}
+        >
           <Button
             onClick={handleFindOutMoreClick}
             variant="gold-outline"
