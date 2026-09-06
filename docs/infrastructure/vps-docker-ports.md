@@ -38,7 +38,7 @@
    ```
 5. Если временно нужен прямой порт — сразу DROP в `DOCKER-USER` + `netfilter-persistent save` (см. ниже), и завести задачу убрать publish.
 
-## Текущее состояние (2026-09-05)
+## Текущее состояние (2026-09-06)
 
 | Контейнер | Host ports | Статус |
 |---|---|---|
@@ -46,17 +46,30 @@
 | `n8n` | нет | OK — через Caddy |
 | `audit_agent_worker` | нет | OK — через Caddy |
 | `montblanc_db` | `127.0.0.1:3306` | OK |
-| `montblanc_api` | был `0.0.0.0:8080` | снаружи DROP в `DOCKER-USER` (пока publish не убран) |
+| `montblanc_api` | `0.0.0.0:8080` | **ОТКРЫТ И ОБЯЗАТЕЛЕН** (см. предупреждение ниже) |
 
 UFW baseline: allow **22 / 80 / 443**, deny rest (на уровне хоста, не Docker DNAT).
+
+> [!CAUTION]
+> ### КРИТИЧЕСКОЕ ИСКЛЮЧЕНИЕ: `montblanc_api` (порт 8080, PIT-060)
+> **ЗАПРЕЩЕНО дропать порт 8080 в `DOCKER-USER`!**
+> Фронтенды Montblanc (`https://pizza-na-dom.mk.ua` и Vercel `montblanc-frontend.vercel.app`) проксируют API-запросы (каталог товаров `/products`, авторизация `/login`, админка) **напрямую** на `http://46.202.155.56:8080`.
+> Блокировка порта 8080 в iptables приводит к таймауту прокси и полному падению магазина Montblanc с ошибкой `502 Bad Gateway`.
+> 
+> **Порт 8080 должен оставаться доступным снаружи до тех пор, пока:**
+> 1. В `Caddyfile` не будет поднят HTTPS-домен для Montblanc API (например, `api.pizza-na-dom.mk.ua`) с проксированием в `montblanc_api:8080`.
+> 2. Конфигурация фронтенда (Next.js rewrites / Nginx на `pizza-na-dom.mk.ua`) не будет переключена на новый HTTPS-домен Caddy и полностью протестирована.
 
 ## Если уже опубликовали лишний порт
 
 ```bash
-# на VPS — блокирует внешний DNAT в обход UFW
+# на VPS — блокирует внешний DNAT в обход UFW (ТОЛЬКО для портов, не используемых внешними сервисами!)
 iptables -I DOCKER-USER 1 -p tcp --dport <PORT> -j DROP
 netfilter-persistent save
 ```
+
+> [!WARNING]
+> Перед выполнением `DROP` убедитесь, что порт не является точкой входа для других проектов (как 8080 для Montblanc)!
 
 Долгосрочно: убрать publish из compose и перезапустить контейнер; правило iptables можно удалить после проверки.
 

@@ -1011,6 +1011,63 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-060-Montblanc — Dropping port 8080 in DOCKER-USER breaks Montblanc shop with 502 Bad Gateway
+
+**Tags:** `montblanc`, `vps`, `docker`, `iptables`, `vercel`, `proxy`, `502`, `security`  
+**Seen:** 2026-09-06 — products stop loading, admin login fails with "Request failed with status code 502" on `https://pizza-na-dom.mk.ua` and `montblanc-frontend.vercel.app`.
+
+**Symptom:**
+- Frontend catalogue fails to fetch `/products` or `/backend-api/products` (returns 502 Bad Gateway).
+- Admin authentication (`/login`) fails with 502 Bad Gateway.
+- Direct `curl http://46.202.155.56:8080/products` times out from outside the VPS.
+
+**Cause:**
+During security audit / hardening scripts (`harden_vps_docker_ufw.py`, `persist_vps_docker_ufw.py`), rule `-A DOCKER-USER -p tcp -m tcp --dport 8080 -j DROP` was added to `DOCKER-USER` chain following the general "close all non-80/443 docker ports" guideline (PIT-053). However, Montblanc API is NOT yet routed through Caddy; the frontend (both Vercel rewrites and remote Nginx reverse-proxy on `pizza-na-dom.mk.ua`) forwards API requests directly to `http://46.202.155.56:8080`. Dropping 8080 severed all external traffic from Vercel / Nginx to the Spring Boot container.
+
+**Fix:**
+1. Delete the drop rule from runtime iptables:
+   ```bash
+   iptables -D DOCKER-USER -p tcp -m tcp --dport 8080 -j DROP
+   ```
+2. Persist updated rules to avoid regression on reboot:
+   ```bash
+   iptables-save > /etc/iptables/rules.v4
+   ip6tables-save > /etc/iptables/rules.v6
+   ```
+3. Update `vps-docker-ports.md` and hardening scripts to explicitly exempt port 8080.
+
+**Prevent:**
+- **NEVER** apply a blind `DROP` or remove host publish for port 8080 on the VPS without first migrating Montblanc API behind Caddy.
+- Proper migration sequence:
+  1. Add Montblanc domain (e.g. `api.pizza-na-dom.mk.ua`) to `/home/caddy/Caddyfile` with `reverse_proxy montblanc_api:8080`.
+  2. Test SSL and API endpoints through Caddy.
+  3. Update frontend rewrites in `frontend/next.config.mjs` (Vercel env `BACKEND_INTERNAL_URL`) and remote Nginx config.
+  4. Test full catalogue loading and admin login.
+  5. ONLY THEN switch port 8080 to internal / drop direct external access.
+
+---
+
+## PIT-063 — Hero text entrance tweening `fontSize` triggers severe Desktop CLS (1.31)
+
+**Tags:** `nextjs`, `cls`, `gsap`, `hero`, `cwv`, `performance`  
+**Seen:** 2026-09 — performance audit on `erythro.ai` showed Desktop CLS **1.31** (Google threshold < 0.1).
+
+**Symptom:**
+Performance trace records a 1.84s layout shift cluster on Desktop (`DIV class='absolute whitespace-normal text-center font-bold uppercase tracking-tight lg:whitespace-nowrap lg:text-left'`) right after page load and hydration.
+
+**Cause:**
+`HeroMotionText.tsx` Frame 1 initialized the foreground element at `fontSize: hugeFontPx` (~144vh = ~1500px) and ran a 900ms GSAP tween down to `fontSize: normalFontPx` (~50px). Modifying `fontSize` forces layout recalculation on every animation frame, causing continuous layout shifts.
+
+**Fix:**
+1. Keep `fontSize: normalFontPx` constant from the start.
+2. Initialize and tween the element using GPU composite transforms: `scale: hugeScale` down to `scale: 1` with `force3D: true` and `willChange: 'transform'`.
+3. Add `contain: 'layout paint'` to the fixed stage overlay container (`stageRef`).
+
+**Prevent:**
+Never tween geometric CSS properties (`font-size`, `width`, `height`, `top`, `left`) in entering or looping animations. Always use CSS `transform` (`scale`, `translate3d`) so work executes on the GPU compositor without triggering layout recalculations.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -1045,6 +1102,7 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Media on R2: public base URL + importMap after storage plugin swap (PIT-051)
 - [ ] Audit worker: SSRF re-check + timing-safe / HMAC agent auth (PIT-052)
 - [ ] VPS Docker: no `0.0.0.0` publish; Caddy or `127.0.0.1` only (PIT-053)
+- [ ] VPS Docker: do NOT drop port 8080 in DOCKER-USER; Montblanc API requires 8080 until migrated behind Caddy (PIT-060)
 - [ ] Form-mail “not arriving”: check Hostinger INBOX (not Unread); `team@` password is not `SMTP_PASS` (PIT-054)
 - [ ] Contact honeypot must not be named company/website/email — mobile autofill silent-drops leads (PIT-055)
 - [ ] Shared frontend layout / not-found must not call `cookies()`; middleware must not Set-Cookie on HTML; use `force-static` + `getPayloadLocal` for ISR HIT (PIT-056)
@@ -1053,4 +1111,6 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Home hero: no static import of HeroMotionText/GSAP before LCP (PIT-059)
 - [ ] Home below-fold/chrome: mount after LCP gate; no eager Navbar GSAP (PIT-061)
 - [ ] Home CLS: keep below-fold SSR; defer GSAP via loadGsapAfterLcp, not a late section swap (PIT-062)
+- [ ] OAuth SuccessHandler redirect must target the decoupled frontend URL, never the legacy backend host (PIT-048)
+- [ ] Motion typography: never tween geometric CSS (font-size/width/height); use GPU transform scale to prevent CLS (PIT-063)
 

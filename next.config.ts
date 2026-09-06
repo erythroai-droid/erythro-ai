@@ -6,7 +6,28 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
-const CONTENT_SECURITY_POLICY = [
+/**
+ * Public CSP: no 'unsafe-eval' (audit remediation). Inline scripts (GA/Turnstile/
+ * Next) still need 'unsafe-inline' until a nonce pipeline ships.
+ * Admin keeps a looser policy — Payload UI needs eval/inline.
+ */
+const PUBLIC_CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' blob: https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "frame-src https://challenges.cloudflare.com",
+  "child-src https://challenges.cloudflare.com blob:",
+  "worker-src 'self' blob:",
+  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://vitals.vercel-insights.com https://*.public.blob.vercel-storage.com https://*.r2.dev https://challenges.cloudflare.com https://cloudflareinsights.com",
+  "media-src 'self' blob: https:",
+  "frame-ancestors 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ')
+
+const ADMIN_CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline'",
@@ -22,27 +43,40 @@ const CONTENT_SECURITY_POLICY = [
   "form-action 'self'",
 ].join('; ')
 
+const SECURITY_HEADERS = [
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  {
+    key: 'Permissions-Policy',
+    value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+  },
+] as const
+
 /** Sitekey is public. Cloudflare dashboard often names it TURNSTILE_SITE_KEY. */
 const turnstileSiteKey =
   process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || process.env.TURNSTILE_SITE_KEY || ''
 
 const nextConfig: NextConfig = {
+  // Stop advertising stack via X-Powered-By (Next.js; Payload may still append — strip in middleware).
+  poweredByHeader: false,
   env: {
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: turnstileSiteKey,
   },
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: '/admin/:path*',
         headers: [
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
-          },
-          { key: 'Content-Security-Policy', value: CONTENT_SECURITY_POLICY },
+          ...SECURITY_HEADERS,
+          { key: 'Content-Security-Policy', value: ADMIN_CONTENT_SECURITY_POLICY },
+        ],
+      },
+      {
+        source: '/((?!admin).*)',
+        headers: [
+          ...SECURITY_HEADERS,
+          { key: 'Content-Security-Policy', value: PUBLIC_CONTENT_SECURITY_POLICY },
         ],
       },
     ]

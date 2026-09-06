@@ -31,6 +31,9 @@ export function middleware(request: NextRequest) {
     response.headers.set('Link', HOMEPAGE_LINK_HEADER)
   }
 
+  // Defense in depth with next.config poweredByHeader:false (Payload may re-add).
+  response.headers.delete('x-powered-by')
+
   return response
 }
 
