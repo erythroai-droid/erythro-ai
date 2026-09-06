@@ -981,6 +981,21 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 ---
 
+## PIT-061 — Home TBT stays high while GSAP sections hydrate with the hero
+
+**Tags:** `nextjs`, `tbt`, `gsap`, `home`, `cwv`  
+**Seen:** 2026-09 — after PIT-059, mobile lab still red on Total Blocking Time.
+
+**Symptom:** LCP improved; Performance still low because TBT stays ~1–2 s+.
+
+**Cause:** `HomeClient` mounted Case Studies / Services / Solutions / FAQ / Footer (all GSAP) plus Chat/A11y during the same hydration window as the hero. Navbar also static-imported ScrollTrigger.
+
+**Fix:** Mount below-fold + chrome only after `waitForPostLcpMotion()` via `dynamic(..., { ssr: false })`. Navbar resolves pin scroll with a dynamic `import('gsap/ScrollTrigger')` on click.
+
+**Prevent:** Do not hydrate GSAP-heavy home sections in the first client paint; gate them after LCP/idle.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -1021,3 +1036,5 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 - [ ] Hero LCP media: CSS `lg:block` poster in SSR HTML, not `useState(isLg)` gate (PIT-057)
 - [ ] Absolute CDN hero stills: preload + `<img>` direct URL, skip `/_next/image` when bytes unchanged (PIT-058)
 - [ ] Home hero: no static import of HeroMotionText/GSAP before LCP (PIT-059)
+- [ ] Home below-fold/chrome: mount after LCP gate; no eager Navbar GSAP (PIT-061)
+

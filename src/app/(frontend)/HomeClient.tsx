@@ -4,29 +4,47 @@ import React, { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import Navbar from '@/components/Navbar'
 import HeroSection from '@/components/HeroSection'
-import FooterSection from '@/components/FooterSection'
-import ChatButton from '@/components/ChatButton'
-import ScrollSideButton from '@/components/portfolio/ScrollSideButton'
-import { AccessibilityPanel } from '@/components/accessibility'
-import CookieConsent from '@/components/CookieConsent'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
 import { ContactModalProvider } from '@/components/ContactModal'
 import type { SiteContent } from '@/lib/defaultContent'
 import { persistHomeScrollY } from '@/lib/splash'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
+import { waitForPostLcpMotion } from '@/lib/lcpGate'
 
-/** Below-fold sections — split client bundles so hero LCP competes with less JS. */
+/**
+ * Below-fold + chrome — code-split and only mount after LCP/idle (PIT-061).
+ * Keeps GSAP-heavy sections off the TBT window. ssr:false so their chunks are
+ * not forced into the initial hydration graph.
+ */
 const CaseStudiesSection = dynamic(() => import('@/components/CaseStudiesSection'), {
-  ssr: true,
+  ssr: false,
 })
 const ServicesSection = dynamic(() => import('@/components/ServicesSection'), {
-  ssr: true,
+  ssr: false,
 })
 const SolutionSection = dynamic(() => import('@/components/SolutionSection'), {
-  ssr: true,
+  ssr: false,
 })
 const FAQSection = dynamic(() => import('@/components/FAQSection'), {
-  ssr: true,
+  ssr: false,
+})
+const FooterSection = dynamic(() => import('@/components/FooterSection'), {
+  ssr: false,
+})
+const ChatButton = dynamic(() => import('@/components/ChatButton'), {
+  ssr: false,
+})
+const ScrollSideButton = dynamic(
+  () => import('@/components/portfolio/ScrollSideButton'),
+  { ssr: false },
+)
+const AccessibilityPanel = dynamic(
+  () =>
+    import('@/components/accessibility').then((m) => m.AccessibilityPanel),
+  { ssr: false },
+)
+const CookieConsent = dynamic(() => import('@/components/CookieConsent'), {
+  ssr: false,
 })
 
 interface HomeClientProps {
@@ -51,9 +69,8 @@ export default function HomeClient({
     clientHydratePrefs ? { clientHydratePrefs: true } : undefined,
   )
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
+  const [loadBelowFold, setLoadBelowFold] = useState(false)
 
-  // Persist scroll before unload so a mid-page refresh can use the quick splash
-  // and restore ScrollTrigger pins at the right place.
   useEffect(() => {
     const persist = () => persistHomeScrollY()
     window.addEventListener('pagehide', persist)
@@ -64,8 +81,17 @@ export default function HomeClient({
     }
   }, [])
 
-  // Resolve accessibility panel strings for the active locale. The panel
-  // module itself is locale-agnostic; the app supplies the translated labels.
+  // After splash + LCP + idle — mount GSAP sections / chrome (TBT).
+  useEffect(() => {
+    let cancelled = false
+    void waitForPostLcpMotion().then(() => {
+      if (!cancelled) setLoadBelowFold(true)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const pickA11y = (field?: Record<string, string> | null) =>
     (field && (field[locale] || field.en)) || ''
   const faqA11yLabel =
@@ -94,6 +120,7 @@ export default function HomeClient({
       keyboardNavigation: pickA11y(a11yTranslations.keyboardNavigation),
       screenReader: pickA11y(a11yTranslations.screenReader),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- locale drives pickA11y
     [locale],
   )
 
@@ -106,6 +133,7 @@ export default function HomeClient({
       { id: 'contacts-mobile', label: pickA11y(a11yTranslations.screenReaderContacts) },
       { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [faqA11yLabel, locale],
   )
 
@@ -116,78 +144,69 @@ export default function HomeClient({
 
   return (
     <SiteContentProvider value={content}>
-    <ContactModalProvider locale={locale}>
-    <div
-      dir={locale === 'he' ? 'rtl' : 'ltr'}
-      suppressHydrationWarning
-      className={`min-h-screen font-sans transition-colors duration-500 bg-primary text-main ${
-        locale === 'he' ? 'font-sans' : ''
-      }`}
-    >
-      {/* Hero Section with WordStack */}
-      <HeroSection locale={locale} theme={theme} />
+      <ContactModalProvider locale={locale}>
+        <div
+          dir={locale === 'he' ? 'rtl' : 'ltr'}
+          suppressHydrationWarning
+          className={`min-h-screen font-sans transition-colors duration-500 bg-primary text-main ${
+            locale === 'he' ? 'font-sans' : ''
+          }`}
+        >
+          <HeroSection locale={locale} theme={theme} />
 
-      {/*
-        Global fixed header rendered at the root level (not inside the hero).
-        Desktop: logo + Menu (same as inner pages). Mobile: plate with controls.
-      */}
-      <Navbar
-        currentLocale={locale}
-        setLocale={setLocale}
-        theme={theme}
-        setTheme={setTheme}
-        onOpenAccessibility={() => setIsAccessibilityOpen(true)}
-      />
+          <Navbar
+            currentLocale={locale}
+            setLocale={setLocale}
+            theme={theme}
+            setTheme={setTheme}
+            onOpenAccessibility={() => {
+              setLoadBelowFold(true)
+              setIsAccessibilityOpen(true)
+            }}
+          />
 
-      {/*
-        Mobile "stacking" scroll: the hero stays pinned (sticky) while each
-        following section rides up over the previous one with a rounded top edge
-        and soft shadow. Long sections (Services/Solutions) still scroll normally
-        so no content is hidden. `lg:contents` removes these wrappers on desktop,
-        leaving the original GSAP-pinned layout untouched.
-      */}
-      {/* Case Studies showcase with partner logos */}
-      <div className="relative z-10 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
-        <CaseStudiesSection locale={locale} />
-      </div>
+          {loadBelowFold ? (
+            <>
+              <div className="relative z-10 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+                <CaseStudiesSection locale={locale} />
+              </div>
 
-      {/* Services Grid with 12-column geometry */}
-      <div className="relative z-20 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:pointer-events-none lg:contents">
-        <ServicesSection locale={locale} theme={theme} />
-      </div>
+              <div className="relative z-20 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:pointer-events-none lg:contents">
+                <ServicesSection locale={locale} theme={theme} />
+              </div>
 
-      {/* Solution: mobile overlap over Lets Talk */}
-      <div className="relative z-30 -mt-24 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.35)] lg:contents">
-        <SolutionSection locale={locale} theme={theme} />
-      </div>
+              <div className="relative z-30 -mt-24 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.35)] lg:contents">
+                <SolutionSection locale={locale} theme={theme} />
+              </div>
 
-      <div className="relative z-[35] -mt-8 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
-        <FAQSection locale={locale} theme={theme} />
-      </div>
+              <div className="relative z-[35] -mt-8 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+                <FAQSection locale={locale} theme={theme} />
+              </div>
 
-      {/* Footer from Figma */}
-      <div className="relative z-40 -mt-8 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
-        <FooterSection locale={locale} theme={theme} />
-      </div>
+              <div className="relative z-40 -mt-8 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+                <FooterSection locale={locale} theme={theme} />
+              </div>
 
-      <ScrollSideButton locale={locale} theme={theme} sectionIds={scrollSectionIds} />
+              <ScrollSideButton locale={locale} theme={theme} sectionIds={scrollSectionIds} />
+              <ChatButton locale={locale} theme={theme} />
 
-      <ChatButton locale={locale} theme={theme} />
+              <AccessibilityPanel
+                isOpen={isAccessibilityOpen}
+                onClose={() => setIsAccessibilityOpen(false)}
+                labels={a11yLabels}
+                screenReaderTargets={a11yTargets}
+                rtl={locale === 'he'}
+                showPoweredBy
+              />
 
-      {/* Accessibility Control Panel */}
-      <AccessibilityPanel
-        isOpen={isAccessibilityOpen}
-        onClose={() => setIsAccessibilityOpen(false)}
-        labels={a11yLabels}
-        screenReaderTargets={a11yTargets}
-        rtl={locale === 'he'}
-        showPoweredBy
-      />
-
-      {/* Cookie consent banner */}
-      <CookieConsent locale={locale} theme={theme} />
-    </div>
-    </ContactModalProvider>
+              <CookieConsent locale={locale} theme={theme} />
+            </>
+          ) : (
+            // Reserve approximate below-fold space so late mount does not jump the fold as hard.
+            <div className="min-h-[70vh] lg:min-h-[50vh]" aria-hidden />
+          )}
+        </div>
+      </ContactModalProvider>
     </SiteContentProvider>
   )
 }
