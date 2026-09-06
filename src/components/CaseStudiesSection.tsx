@@ -443,6 +443,8 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
                 <img
                   src={brand.src}
                   alt={brand.name}
+                  loading="lazy"
+                  decoding="async"
                   className="h-[38px] w-auto max-w-[160px] object-contain transition-all duration-500 ease-out grayscale opacity-45 hover:grayscale-0 hover:opacity-100 hover:scale-110"
                 />
               </div>
@@ -462,6 +464,8 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
                 <img
                   src={brand.src}
                   alt={brand.name}
+                  loading="lazy"
+                  decoding="async"
                   className="h-[38px] w-auto max-w-[160px] object-contain transition-all duration-500 ease-out grayscale opacity-45 hover:grayscale-0 hover:opacity-100 hover:scale-110"
                 />
               </div>

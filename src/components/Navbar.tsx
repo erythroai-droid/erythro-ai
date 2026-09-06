@@ -371,6 +371,8 @@ export default function Navbar({
               alt={logoAlt}
               width={235}
               height={74}
+              loading="lazy"
+              decoding="async"
               className="hidden h-[64px] w-auto transition-opacity duration-300 lg:block"
             />
           </a>
