@@ -4,12 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSiteContent } from './SiteContentProvider'
 import StylizedSectionTitle from './StylizedSectionTitle'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
-}
+import { loadGsapAfterLcp } from '@/lib/gsapAfterLcp'
 
 interface CaseStudiesSectionProps {
   locale: string
@@ -224,82 +219,91 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
   const marqueeRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const mm = gsap.matchMedia()
+    let cancelled = false
+    let ctx: { revert: () => void } | null = null
 
-      // Desktop animation: Pinning, scrubbing & snapping
-      mm.add('(min-width: 1024px)', () => {
-        // Keep the case card (poster) visible so the media slot never reads as empty
-        // while the video buffers. Only chrome around it fades/slides in.
-        gsap.set([headingRef.current, linkRef.current, marqueeRef.current], {
-          opacity: 0,
-          y: 60,
-        })
-        gsap.set(cardRef.current, {
-          opacity: 1,
-          y: 40,
-        })
+    void loadGsapAfterLcp().then(({ gsap, ScrollTrigger }) => {
+      if (cancelled) return
+      ctx = gsap.context(() => {
+        const mm = gsap.matchMedia()
 
-        gsap.to([headingRef.current, cardRef.current, linkRef.current, marqueeRef.current], {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          stagger: 0.25,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: wrapperRef.current,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse',
-          },
-        })
+        // Desktop animation: Pinning, scrubbing & snapping
+        mm.add('(min-width: 1024px)', () => {
+          // Keep the case card (poster) visible so the media slot never reads as empty
+          // while the video buffers. Only chrome around it fades/slides in.
+          gsap.set([headingRef.current, linkRef.current, marqueeRef.current], {
+            opacity: 0,
+            y: 60,
+          })
+          gsap.set(cardRef.current, {
+            opacity: 1,
+            y: 40,
+          })
 
-        ScrollTrigger.create({
-          id: 'cases-pin',
-          trigger: wrapperRef.current,
-          start: 'top top',
-          end: '+=260%', // Cover the Services lead-in spacer + overlap
-          pin: true,
-          pinSpacing: false, // Services will slide over Case Studies
-          snap: {
-            snapTo: [0, 0.5, 1], // Snap to start, middle, or end
-            duration: { min: 0.3, max: 0.6 },
-            delay: 0.05,
+          gsap.to([headingRef.current, cardRef.current, linkRef.current, marqueeRef.current], {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            stagger: 0.25,
             ease: 'power2.out',
-          },
-          invalidateOnRefresh: true,
-        })
-      })
+            scrollTrigger: {
+              trigger: wrapperRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none reverse',
+            },
+          })
 
-      // Mobile/tablet animation: Simple scroll trigger (no pinning/snapping)
-      mm.add('(max-width: 1023px)', () => {
-        gsap.set([headingRef.current, linkRef.current], {
-          opacity: 0,
-          y: 40,
-        })
-        // Keep the marquee at y:0 — a downward tween would push logos under the
-        // overlapping Services panel (HomeClient -mt-8 stacking).
-        gsap.set(marqueeRef.current, { opacity: 0, y: 0 })
-        gsap.set(cardRef.current, {
-          opacity: 1,
-          y: 24,
-        })
-
-        gsap.to([headingRef.current, cardRef.current, linkRef.current, marqueeRef.current], {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          stagger: 0.25,
-          ease: 'power2.out',
-          scrollTrigger: {
+          ScrollTrigger.create({
+            id: 'cases-pin',
             trigger: wrapperRef.current,
-            start: 'top 92%',
-            toggleActions: 'play none none reverse',
-          },
+            start: 'top top',
+            end: '+=260%', // Cover the Services lead-in spacer + overlap
+            pin: true,
+            pinSpacing: false, // Services will slide over Case Studies
+            snap: {
+              snapTo: [0, 0.5, 1], // Snap to start, middle, or end
+              duration: { min: 0.3, max: 0.6 },
+              delay: 0.05,
+              ease: 'power2.out',
+            },
+            invalidateOnRefresh: true,
+          })
         })
-      })
-    }, wrapperRef)
 
-    return () => ctx.revert()
+        // Mobile/tablet animation: Simple scroll trigger (no pinning/snapping)
+        mm.add('(max-width: 1023px)', () => {
+          gsap.set([headingRef.current, linkRef.current], {
+            opacity: 0,
+            y: 40,
+          })
+          // Keep the marquee at y:0 — a downward tween would push logos under the
+          // overlapping Services panel (HomeClient -mt-8 stacking).
+          gsap.set(marqueeRef.current, { opacity: 0, y: 0 })
+          gsap.set(cardRef.current, {
+            opacity: 1,
+            y: 24,
+          })
+
+          gsap.to([headingRef.current, cardRef.current, linkRef.current, marqueeRef.current], {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            stagger: 0.25,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: wrapperRef.current,
+              start: 'top 92%',
+              toggleActions: 'play none none reverse',
+            },
+          })
+        })
+      }, wrapperRef)
+    })
+
+    return () => {
+      cancelled = true
+      ctx?.revert()
+    }
   }, [])
 
   return (

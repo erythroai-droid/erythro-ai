@@ -12,24 +12,23 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 import { waitForPostLcpMotion } from '@/lib/lcpGate'
 
 /**
- * Below-fold + chrome — code-split and only mount after LCP/idle (PIT-061).
- * Keeps GSAP-heavy sections off the TBT window. ssr:false so their chunks are
- * not forced into the initial hydration graph.
+ * Below-fold sections stay in SSR HTML (PIT-062 CLS). GSAP inside them loads
+ * after LCP via loadGsapAfterLcp. Floating chrome mounts after the same gate.
  */
 const CaseStudiesSection = dynamic(() => import('@/components/CaseStudiesSection'), {
-  ssr: false,
+  ssr: true,
 })
 const ServicesSection = dynamic(() => import('@/components/ServicesSection'), {
-  ssr: false,
+  ssr: true,
 })
 const SolutionSection = dynamic(() => import('@/components/SolutionSection'), {
-  ssr: false,
+  ssr: true,
 })
 const FAQSection = dynamic(() => import('@/components/FAQSection'), {
-  ssr: false,
+  ssr: true,
 })
 const FooterSection = dynamic(() => import('@/components/FooterSection'), {
-  ssr: false,
+  ssr: true,
 })
 const ChatButton = dynamic(() => import('@/components/ChatButton'), {
   ssr: false,
@@ -69,7 +68,7 @@ export default function HomeClient({
     clientHydratePrefs ? { clientHydratePrefs: true } : undefined,
   )
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
-  const [loadBelowFold, setLoadBelowFold] = useState(false)
+  const [loadChrome, setLoadChrome] = useState(false)
 
   useEffect(() => {
     const persist = () => persistHomeScrollY()
@@ -81,11 +80,11 @@ export default function HomeClient({
     }
   }, [])
 
-  // After splash + LCP + idle — mount GSAP sections / chrome (TBT).
+  // Floating chrome only — sections are always in the tree for stable layout (CLS).
   useEffect(() => {
     let cancelled = false
     void waitForPostLcpMotion().then(() => {
-      if (!cancelled) setLoadBelowFold(true)
+      if (!cancelled) setLoadChrome(true)
     })
     return () => {
       cancelled = true
@@ -160,36 +159,35 @@ export default function HomeClient({
             theme={theme}
             setTheme={setTheme}
             onOpenAccessibility={() => {
-              setLoadBelowFold(true)
+              setLoadChrome(true)
               setIsAccessibilityOpen(true)
             }}
           />
 
-          {loadBelowFold ? (
+          <div className="relative z-10 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+            <CaseStudiesSection locale={locale} />
+          </div>
+
+          <div className="relative z-20 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:pointer-events-none lg:contents">
+            <ServicesSection locale={locale} theme={theme} />
+          </div>
+
+          <div className="relative z-30 -mt-24 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.35)] lg:contents">
+            <SolutionSection locale={locale} theme={theme} />
+          </div>
+
+          <div className="relative z-[35] -mt-8 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+            <FAQSection locale={locale} theme={theme} />
+          </div>
+
+          <div className="relative z-40 -mt-8 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+            <FooterSection locale={locale} theme={theme} />
+          </div>
+
+          {loadChrome ? (
             <>
-              <div className="relative z-10 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
-                <CaseStudiesSection locale={locale} />
-              </div>
-
-              <div className="relative z-20 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:pointer-events-none lg:contents">
-                <ServicesSection locale={locale} theme={theme} />
-              </div>
-
-              <div className="relative z-30 -mt-24 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.35)] lg:contents">
-                <SolutionSection locale={locale} theme={theme} />
-              </div>
-
-              <div className="relative z-[35] -mt-8 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
-                <FAQSection locale={locale} theme={theme} />
-              </div>
-
-              <div className="relative z-40 -mt-8 rounded-t-[28px] overflow-hidden shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
-                <FooterSection locale={locale} theme={theme} />
-              </div>
-
               <ScrollSideButton locale={locale} theme={theme} sectionIds={scrollSectionIds} />
               <ChatButton locale={locale} theme={theme} />
-
               <AccessibilityPanel
                 isOpen={isAccessibilityOpen}
                 onClose={() => setIsAccessibilityOpen(false)}
@@ -198,13 +196,9 @@ export default function HomeClient({
                 rtl={locale === 'he'}
                 showPoweredBy
               />
-
               <CookieConsent locale={locale} theme={theme} />
             </>
-          ) : (
-            // Reserve approximate below-fold space so late mount does not jump the fold as hard.
-            <div className="min-h-[70vh] lg:min-h-[50vh]" aria-hidden />
-          )}
+          ) : null}
         </div>
       </ContactModalProvider>
     </SiteContentProvider>

@@ -7,12 +7,7 @@ import { useContactModal } from './ContactModal'
 import { navigateCtaHref } from '@/lib/ctaNav'
 import { openConsentSettings } from '@/lib/privacyConsent'
 import Button from './Button'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
-}
+import { loadGsapAfterLcp } from '@/lib/gsapAfterLcp'
 
 interface FooterSectionProps {
   locale: string
@@ -121,11 +116,16 @@ export default function FooterSection({ locale, pinSpacer = true, animate = true
 
       const pinId = pinIdMap[sectionId]
       if (pinId) {
-        const st = ScrollTrigger.getById(pinId)
-        if (st) {
-          window.scrollTo({ top: st.start, behavior: 'smooth' })
-          return
-        }
+        void loadGsapAfterLcp().then(({ ScrollTrigger }) => {
+          const st = ScrollTrigger.getById(pinId)
+          if (st) {
+            window.scrollTo({ top: st.start, behavior: 'smooth' })
+            return
+          }
+          const target = document.getElementById(sectionId)
+          if (target) target.scrollIntoView({ behavior: 'smooth' })
+        })
+        return
       }
 
       // Fallback: scroll to element directly, or jump to home section from inner pages
@@ -280,88 +280,97 @@ export default function FooterSection({ locale, pinSpacer = true, animate = true
   useEffect(() => {
     if (!animate) return
 
-    const ctx = gsap.context(() => {
-      const mm = gsap.matchMedia()
+    let cancelled = false
+    let ctx: { revert: () => void } | null = null
 
-      mm.add('(min-width: 1024px)', () => {
-        // Set canvas resolution on desktop mount
-        const canvas = canvasRef.current
-        if (canvas) {
-          canvas.width = 1920
-          canvas.height = 1080
-        }
+    void loadGsapAfterLcp().then(({ gsap }) => {
+      if (cancelled) return
+      ctx = gsap.context(() => {
+        const mm = gsap.matchMedia()
 
-        // Draw initial frame if we have images
-        renderRef.current()
+        mm.add('(min-width: 1024px)', () => {
+          // Set canvas resolution on desktop mount
+          const canvas = canvasRef.current
+          if (canvas) {
+            canvas.width = 1920
+            canvas.height = 1080
+          }
 
-        gsap.set([columnsRef.current, logoRef.current, barRef.current], {
-          opacity: 0,
-          y: 60,
-        })
+          // Draw initial frame if we have images
+          renderRef.current()
 
-        gsap.to([columnsRef.current, logoRef.current, barRef.current], {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          stagger: 0.25,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: footerRef.current,
-            start: 'top 80%',
-            toggleActions: 'play none none reverse',
-          },
-        })
+          gsap.set([columnsRef.current, logoRef.current, barRef.current], {
+            opacity: 0,
+            y: 60,
+          })
 
-        // Pin the footer and scrub the chip animation
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: footerRef.current,
-            start: 'top top',
-            end: '+=100%', // Pin scroll distance
-            pin: true,
-            pinSpacing: true,
-            scrub: 1,
-            invalidateOnRefresh: true,
-          },
-        })
-
-        tl.to(
-          animationState.current,
-          {
-            frame: 109,
-            snap: 'frame',
-            ease: 'none',
-            onUpdate: () => {
-              renderRef.current()
+          gsap.to([columnsRef.current, logoRef.current, barRef.current], {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            stagger: 0.25,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: footerRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none reverse',
             },
-            duration: 1.2,
-          },
-          0,
-        )
-      })
+          })
 
-      mm.add('(max-width: 1023px)', () => {
-        gsap.set([columnsRef.current, logoRef.current, barRef.current], {
-          opacity: 0,
-          y: 30,
+          // Pin the footer and scrub the chip animation
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: footerRef.current,
+              start: 'top top',
+              end: '+=100%', // Pin scroll distance
+              pin: true,
+              pinSpacing: true,
+              scrub: 1,
+              invalidateOnRefresh: true,
+            },
+          })
+
+          tl.to(
+            animationState.current,
+            {
+              frame: 109,
+              snap: 'frame',
+              ease: 'none',
+              onUpdate: () => {
+                renderRef.current()
+              },
+              duration: 1.2,
+            },
+            0,
+          )
         })
 
-        gsap.to([columnsRef.current, logoRef.current, barRef.current], {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          stagger: 0.15,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: footerRef.current,
-            start: 'top 92%',
-            toggleActions: 'play none none reverse',
-          },
-        })
-      })
-    }, footerRef)
+        mm.add('(max-width: 1023px)', () => {
+          gsap.set([columnsRef.current, logoRef.current, barRef.current], {
+            opacity: 0,
+            y: 30,
+          })
 
-    return () => ctx.revert()
+          gsap.to([columnsRef.current, logoRef.current, barRef.current], {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.15,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: footerRef.current,
+              start: 'top 92%',
+              toggleActions: 'play none none reverse',
+            },
+          })
+        })
+      }, footerRef)
+    })
+
+    return () => {
+      cancelled = true
+      ctx?.revert()
+    }
   }, [animate])
 
   return (
