@@ -34,7 +34,13 @@ Last updated: 2026-09-06.
 | `docs/architecture/audit-rate-limiting.md` | 5-day audit rate limit & IP tracking | One chunk per `##` | `audit`, `rate-limit`, `anti-spam`, `ip` |
 | `docs/infrastructure/n8n-audit-reconcile.md` | n8n cron reconcile for stuck audits | One chunk | `n8n`, `audit`, `reconcile`, `vps` |
 | `docs/infrastructure/n8n-email-autoresponder.md` | n8n email autoresponder for order@ & team@ | One chunk per `##` | `n8n`, `email`, `autoresponder`, `imap`, `smtp` |
+| `docs/infrastructure/vps-firewall-cloudflare-access.md` | VPS UFW + Cloudflare Access `/admin*` + DMARC quarantine→reject | One chunk per `##` | `security`, `access`, `zero-trust`, `dmarc`, `ufw`, `admin` |
+| `docs/infrastructure/vps-docker-ports.md` | Hostinger VPS Docker publish rules (no 0.0.0.0) | One chunk | `vps`, `docker`, `ufw`, `security` |
+| `docs/architecture/r2-media-storage.md` | Payload media on R2 (bucket, public URL, Blob cutover) | One chunk per `##` | `r2`, `media`, `blob`, `storage` |
+| `docs/PLAN-deferred.md` | Deferred hardening / perf backlog | One chunk (whole file) | `deferred`, `security`, `dmarc`, `access`, `perf` |
 | `scripts/import-project/README.md` | Portfolio folder → CMS import | One chunk per `##` | `portfolio`, `cms`, `import` |
+| `scripts/set-dmarc-reject.mjs` | Raise `_dmarc` to `p=reject` (after quarantine window) | Skip body secrets; one chunk: purpose + env + dry-run | `dmarc`, `dns`, `security` |
+| `scripts/create-cloudflare-access-admin.mjs` | Create Access app for `/admin*` via API token | One chunk: purpose + required scopes | `access`, `cloudflare`, `admin` |
 
 **Optional later (not docs yet):** `scripts/seed.ts` header comments, `payload.config.ts` plugin block, `.github/workflows/test.yml` — only if docs lag behind code.
 
@@ -91,7 +97,13 @@ Rules:
 | “Audit form website check / DNS / SSRF / no n8n workflow” | `docs/architecture/ai-audit-architecture.md` §3.1; `src/lib/checkWebsite.ts`; `PIT-041` |
 | “n8n audit cron reconciliation / stuck jobs” | `docs/infrastructure/n8n-audit-reconcile.md`; `infra/n8n/workflows/audit-reconcile.json` |
 | “CSP / Cloudflare Insights / beacon.min.js / PageSpeed console” | `next.config.ts` `CONTENT_SECURITY_POLICY`; `PIT-045`; `PIT-043` |
+| “security.txt / RFC 9116 / vulnerability disclosure contact” | `src/app/.well-known/security.txt/route.ts`; `docs/AI_VISIBILITY.md` |
 | “Montblanc 502 Bad Gateway / goods not loading / admin login 502 / port 8080 blocked” | `PIT-060`; `docs/infrastructure/vps-docker-ports.md`; `docs/PITFALLS.md` |
+| “Cloudflare Access /admin / Zero Trust / Payload login gate / subdomain pitfall” | `docs/infrastructure/vps-firewall-cloudflare-access.md` §2; `PIT-064`; `scripts/create-cloudflare-access-admin.mjs` |
+| “DMARC quarantine / p=reject / order@ reports / _dmarc TXT” | `docs/infrastructure/vps-firewall-cloudflare-access.md` §2b; `docs/PLAN-deferred.md`; `docs/DEPLOYMENT.md` DMARC rows; `scripts/set-dmarc-reject.mjs` |
+| “Hero LCP / CLS / TBT / PSI score jumps / GSAP gate” | `PIT-057`–`PIT-063`; `docs/HERO_MOTION.md`; `docs/PLAN-deferred.md` |
+| “R2 media / Blob cutover / pub-…r2.dev / Payload uploads” | `docs/architecture/r2-media-storage.md`; `PIT` media/R2 entries; `docs/PLAN-deferred.md` |
+| “Deferred security / next hardening steps” | `docs/PLAN-deferred.md`; `.cursor/rules/deferred-hardening.mdc` |
 
 ---
 
@@ -119,6 +131,8 @@ Rules:
 - [x] Playbook §3 as full v1 implementation plan (2026-08-18); chronology through §9.18.
 - [x] Contact hardening + Cloudflare DNS + e2e pitfalls (PIT-020 update, PIT-022, PIT-023).
 - [x] `docs/AI_VISIBILITY.md` — llms.txt, MCP, schema, security headers (2026-08-22).
+- [x] Cloudflare Access `/admin*` + DMARC quarantine runbook + PIT-064 (2026-09-06).
+- [x] R2 media storage + VPS docker ports + PLAN-deferred in corpus (2026-09-06).
 - [ ] `docs/ORDER_CMS.md` mirroring portfolio for Solution Plans / order page.
 - [ ] `docs/I18N_RTL.md` consolidating BiDi / HE scrub / phone LTR fixes from commits.
 - [ ] Scalability track (new playbook section when that work starts — not v1).

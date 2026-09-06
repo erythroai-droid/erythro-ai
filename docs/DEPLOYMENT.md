@@ -606,6 +606,7 @@ pnpm cf:contact-rate-limit
 - `/openapi.json` — OpenAPI 3 для Brand API / MCP (`rel=service-desc`)
 - Markdown negotiation — `Accept: text/markdown` → `src/app/api/markdown-negotiate/`
 - ACP discovery — `/.well-known/acp.json` (и `/.well-known/acp`)
+- `/.well-known/security.txt` — RFC 9116 (`Contact: mailto:order@erythro.ai`, Expires 2027-01-01)
 
 **Проверка после деплоя:**
 
@@ -615,6 +616,7 @@ curl -sI https://erythro.ai/ | findstr /i "^link:"
 curl -s https://erythro.ai/llms.txt
 curl -s https://erythro.ai/.well-known/mcp
 curl -s https://erythro.ai/.well-known/api-catalog
+curl -s https://erythro.ai/.well-known/security.txt
 curl -s https://erythro.ai/openapi.json
 curl -s https://erythro.ai/about
 curl -s https://erythro.ai/robots.txt
