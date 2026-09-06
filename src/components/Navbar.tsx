@@ -7,12 +7,6 @@ import { useSiteContent } from './SiteContentProvider'
 import { navigateHomeWithFullSplash } from '@/lib/splash'
 import { getSectionElement } from '@/lib/domSection'
 import { scrollToLetsTalk } from '@/lib/letsTalkScroll'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
-}
 
 interface NavbarProps {
   currentLocale: string
@@ -304,12 +298,19 @@ export default function Navbar({
       }
       const pinId = pinIdMap[targetId]
       if (pinId) {
-        const st = ScrollTrigger.getById(pinId)
-        if (st) {
-          window.scrollTo({ top: st.start, behavior: 'smooth' })
-          setMobileOpen(false)
-          return
-        }
+        // Lazy ScrollTrigger — avoid pulling GSAP into the navbar critical path (PIT-061).
+        void import('gsap/ScrollTrigger').then(({ ScrollTrigger }) => {
+          const st = ScrollTrigger.getById(pinId)
+          if (st) {
+            window.scrollTo({ top: st.start, behavior: 'smooth' })
+            return
+          }
+          const targetElement =
+            getSectionElement(targetId) || document.getElementById(targetId)
+          targetElement?.scrollIntoView({ behavior: 'smooth' })
+        })
+        setMobileOpen(false)
+        return
       }
 
       if (targetId === 'contacts') {
