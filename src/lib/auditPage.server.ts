@@ -118,16 +118,27 @@ function mapFeatures(
 function mapPlans(raw: unknown[] | undefined, fallback: any[]): any[] {
   if (!Array.isArray(raw) || raw.length === 0) return [...fallback]
 
-  return raw.map((item: unknown, i) => {
-    const r = item as Record<string, unknown>
-    const fb = (fallback[i] ?? {}) as Record<string, unknown>
+  const mappedById = new Map<string, Record<string, unknown>>()
+
+  for (let i = 0; i < raw.length; i++) {
+    const r = raw[i] as Record<string, unknown>
+    const fb = (fallback[i] ??
+      fallback.find(
+        (p: { id?: string }) =>
+          p?.id &&
+          typeof r?.planId === 'string' &&
+          p.id === r.planId.trim(),
+      ) ??
+      {}) as Record<string, unknown>
 
     const planId =
       (typeof r?.planId === 'string' && r.planId.trim()) ||
       (typeof fb?.id === 'string' && fb.id) ||
       ''
 
-    return {
+    if (!planId) continue
+
+    mappedById.set(planId, {
       id: planId,
       badge: fb?.badge ?? null,
       name: pickAllOpt(r?.name as RawLocalized, fb?.name as Localized | undefined),
@@ -135,24 +146,34 @@ function mapPlans(raw: unknown[] | undefined, fallback: any[]): any[] {
       ...(r?.priceCompare
         ? { priceCompare: pickAllOpt(r.priceCompare as RawLocalized) }
         : fb?.priceCompare
-        ? { priceCompare: fb.priceCompare }
-        : {}),
-      priceNote: pickAllOpt(r?.priceNote as RawLocalized, fb?.priceNote as Localized | undefined),
-      ...(r?.description
-        ? { description: pickAllOpt(r.description as RawLocalized) }
-        : fb?.description
-        ? { description: fb.description }
-        : {}),
-      features: mapFeatures(
-        r?.features as unknown[] | undefined,
-        (fb?.features ?? []) as Localized[],
-      ),
+          ? { priceCompare: fb.priceCompare }
+          : {}),
+      priceNote:
+        fb?.priceNote && typeof fb.priceNote === 'object'
+          ? { ...(fb.priceNote as Localized) }
+          : pickAllOpt(r?.priceNote as RawLocalized),
+      ...(fb?.description
+        ? { description: { ...(fb.description as Localized) } }
+        : r?.description
+          ? { description: pickAllOpt(r.description as RawLocalized) }
+          : {}),
+      // Capability bullets stay code-owned so marketing cannot drift from the lab.
+      features:
+        Array.isArray(fb?.features) && (fb.features as Localized[]).length > 0
+          ? [...(fb.features as Localized[])]
+          : mapFeatures(r?.features as unknown[] | undefined, []),
       cta: pickAllOpt(r?.cta as RawLocalized, fb?.cta as Localized | undefined),
       ctaHref:
         (typeof r?.ctaHref === 'string' && r.ctaHref.trim()) ||
         (typeof fb?.ctaHref === 'string' ? (fb.ctaHref as string) : ''),
       featured: typeof r?.featured === 'boolean' ? r.featured : planId === 'diagnostic',
-    }
+    })
+  }
+
+  // Keep fallback plan order; CMS overrides matching ids; missing plans stay from code.
+  return fallback.map((fb) => {
+    const id = typeof fb?.id === 'string' ? fb.id : ''
+    return mappedById.get(id) ?? { ...fb, features: [...(fb.features ?? [])] }
   })
 }
 
@@ -259,8 +280,9 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
       pricing: {
         kicker: pickAll(rawPricing?.kicker as RawLocalized, fallback.pricing.kicker),
         title: pickAll(rawPricing?.title as RawLocalized, fallback.pricing.title),
-        intro: pickAll(rawPricing?.intro as RawLocalized, fallback.pricing.intro),
-        footnote: pickAll(rawPricing?.footnote as RawLocalized, fallback.pricing.footnote),
+        // Intro / footnote stay code-owned — they describe lab unlocks, not free-form CMS copy.
+        intro: { ...fallback.pricing.intro },
+        footnote: { ...fallback.pricing.footnote },
         agency: pickAll(rawPricing?.agency as RawLocalized, fallback.pricing.agency),
         agencyCta: pickAll(rawPricing?.agencyCta as RawLocalized, fallback.pricing.agencyCta),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
