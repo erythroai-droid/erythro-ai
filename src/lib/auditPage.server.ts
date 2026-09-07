@@ -102,11 +102,30 @@ function mapTitleBody(
   })
 }
 
+/** Optional localized field: only return when at least one locale has text (no silent fallback). */
+function pickAllPresent(
+  obj: Record<string, unknown> | null | undefined,
+): Localized | undefined {
+  if (!obj || typeof obj !== 'object') return undefined
+  const out: Localized = { en: '', ru: '', he: '' }
+  let any = false
+  for (const l of LOCALES) {
+    const v = obj[l]
+    if (typeof v === 'string' && v.trim()) {
+      out[l] = v.trim()
+      any = true
+    }
+  }
+  return any ? out : undefined
+}
+
 function mapFeatures(
   raw: unknown[] | undefined,
   fallback: readonly Localized[],
 ): Localized[] {
-  if (!Array.isArray(raw) || raw.length === 0) return [...fallback]
+  // undefined → fallback (CMS plan without features key). Empty array → intentional blank.
+  if (!Array.isArray(raw)) return [...fallback]
+  if (raw.length === 0) return []
   return raw.map((item: unknown, i) => {
     const r = item as Record<string, unknown>
     const fb = fallback[i] ?? { en: '', ru: '', he: '' }
@@ -116,64 +135,42 @@ function mapFeatures(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapPlans(raw: unknown[] | undefined, fallback: any[]): any[] {
+  // CMS plans are the source of truth when present — do not inject code-only plans/notes.
   if (!Array.isArray(raw) || raw.length === 0) return [...fallback]
 
-  const mappedById = new Map<string, Record<string, unknown>>()
-
-  for (let i = 0; i < raw.length; i++) {
-    const r = raw[i] as Record<string, unknown>
-    const fb = (fallback[i] ??
-      fallback.find(
-        (p: { id?: string }) =>
-          p?.id &&
-          typeof r?.planId === 'string' &&
-          p.id === r.planId.trim(),
-      ) ??
+  return raw.map((item: unknown, i) => {
+    const r = item as Record<string, unknown>
+    const planId =
+      (typeof r?.planId === 'string' && r.planId.trim()) || ''
+    const fb = (fallback.find((p: { id?: string }) => p?.id === planId) ??
+      fallback[i] ??
       {}) as Record<string, unknown>
 
-    const planId =
-      (typeof r?.planId === 'string' && r.planId.trim()) ||
-      (typeof fb?.id === 'string' && fb.id) ||
-      ''
+    const priceCompare = pickAllPresent(r?.priceCompare as RawLocalized)
+    const priceNote = pickAllPresent(r?.priceNote as RawLocalized)
+    const description = pickAllPresent(r?.description as RawLocalized)
 
-    if (!planId) continue
-
-    mappedById.set(planId, {
-      id: planId,
+    return {
+      id: planId || (typeof fb?.id === 'string' ? fb.id : `plan-${i}`),
       badge: fb?.badge ?? null,
       name: pickAllOpt(r?.name as RawLocalized, fb?.name as Localized | undefined),
       price: pickAllOpt(r?.price as RawLocalized, fb?.price as Localized | undefined),
-      ...(r?.priceCompare
-        ? { priceCompare: pickAllOpt(r.priceCompare as RawLocalized) }
-        : fb?.priceCompare
-          ? { priceCompare: fb.priceCompare }
-          : {}),
-      priceNote:
-        fb?.priceNote && typeof fb.priceNote === 'object'
-          ? { ...(fb.priceNote as Localized) }
-          : pickAllOpt(r?.priceNote as RawLocalized),
-      ...(fb?.description
-        ? { description: { ...(fb.description as Localized) } }
-        : r?.description
-          ? { description: pickAllOpt(r.description as RawLocalized) }
-          : {}),
-      // Capability bullets stay code-owned so marketing cannot drift from the lab.
-      features:
-        Array.isArray(fb?.features) && (fb.features as Localized[]).length > 0
-          ? [...(fb.features as Localized[])]
-          : mapFeatures(r?.features as unknown[] | undefined, []),
+      ...(priceCompare ? { priceCompare } : {}),
+      ...(priceNote ? { priceNote } : {}),
+      ...(description ? { description } : {}),
+      features: mapFeatures(
+        r?.features as unknown[] | undefined,
+        (fb?.features ?? []) as Localized[],
+      ),
       cta: pickAllOpt(r?.cta as RawLocalized, fb?.cta as Localized | undefined),
       ctaHref:
         (typeof r?.ctaHref === 'string' && r.ctaHref.trim()) ||
         (typeof fb?.ctaHref === 'string' ? (fb.ctaHref as string) : ''),
-      featured: typeof r?.featured === 'boolean' ? r.featured : planId === 'diagnostic',
-    })
-  }
-
-  // Keep fallback plan order; CMS overrides matching ids; missing plans stay from code.
-  return fallback.map((fb) => {
-    const id = typeof fb?.id === 'string' ? fb.id : ''
-    return mappedById.get(id) ?? { ...fb, features: [...(fb.features ?? [])] }
+      featured:
+        typeof r?.featured === 'boolean'
+          ? r.featured
+          : planId === 'diagnostic' || fb?.id === 'diagnostic',
+    }
   })
 }
 
@@ -280,9 +277,8 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
       pricing: {
         kicker: pickAll(rawPricing?.kicker as RawLocalized, fallback.pricing.kicker),
         title: pickAll(rawPricing?.title as RawLocalized, fallback.pricing.title),
-        // Intro / footnote stay code-owned — they describe lab unlocks, not free-form CMS copy.
-        intro: { ...fallback.pricing.intro },
-        footnote: { ...fallback.pricing.footnote },
+        intro: pickAll(rawPricing?.intro as RawLocalized, fallback.pricing.intro),
+        footnote: pickAll(rawPricing?.footnote as RawLocalized, fallback.pricing.footnote),
         agency: pickAll(rawPricing?.agency as RawLocalized, fallback.pricing.agency),
         agencyCta: pickAll(rawPricing?.agencyCta as RawLocalized, fallback.pricing.agencyCta),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

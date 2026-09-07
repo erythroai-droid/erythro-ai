@@ -180,9 +180,21 @@ export const auditPageFields: Field[] = [
                   },
                   locText('name'),
                   locText('price'),
-                  locText('priceCompare', { admin: { description: 'Struck-through comparison price (optional)' } }),
-                  locText('priceNote', { admin: { description: 'Short note under price, e.g. "one-time · promo"' } }),
-                  locTextarea('description', { admin: { description: 'Short plan description (optional)' } }),
+                  locText('priceCompare', {
+                    label: 'Compare price (strikethrough)',
+                    admin: { description: 'Optional. Number only — site adds ₪. Empty = hidden.' },
+                  }),
+                  locText('priceNote', {
+                    label: 'Price note (* under price)',
+                    admin: {
+                      description:
+                        'Optional. Shown as "* …" under the price (e.g. "карта не нужна"). Empty in CMS = nothing on the site — code fallback is not used.',
+                    },
+                  }),
+                  locTextarea('description', {
+                    label: 'Plan description',
+                    admin: { description: 'Optional short plan blurb. Empty = hidden.' },
+                  }),
                   {
                     name: 'features',
                     type: 'array',
