@@ -267,6 +267,13 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
             he: 'דף הבית גלוי (סריקת המשפך נעולה)',
           },
         },
+        {
+          value: {
+            en: 'Report in the language you choose (EN / RU / HE)',
+            ru: 'Отчёт на выбранном языке (EN / RU / HE)',
+            he: 'דוח בשפה שבחרתם (EN / RU / HE)',
+          },
+        },
       ],
     },
     subtitle: {
@@ -339,6 +346,13 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         },
         {
           value: {
+            en: 'Locales EN / RU / HE in the lab crawl',
+            ru: 'Локали EN / RU / HE в обходе лаборатории',
+            he: 'שפות EN / RU / HE בסריקת המעבדה',
+          },
+        },
+        {
+          value: {
             en: 'PDF report in RU / EN / HE',
             ru: 'PDF-отчёт на RU / EN / HE',
             he: 'דוח PDF ב-RU / EN / HE',
@@ -382,7 +396,6 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       id: 'audit-pro',
       currency: 'ILS',
       price: '490',
-      priceNote: true,
       title: {
         en: 'AI Audit: Pro',
         ru: 'AI Аудит: Pro',
@@ -412,56 +425,49 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         },
         {
           value: {
-            en: 'Monthly re-run of the full audit',
-            ru: 'Ежемесячный повтор полного аудита',
-            he: 'הרצה חוזרת חודשית של הביקורת המלאה',
+            en: 'AI Visibility (7 criteria) + Agent Readiness L1',
+            ru: 'AI Visibility (7 критериев) + Agent Readiness L1',
+            he: 'נראות AI (7 קריטריונים) + Agent Readiness L1',
           },
         },
         {
           value: {
-            en: 'Score trend vs previous month',
-            ru: 'Динамика оценки к прошлому месяцу',
-            he: 'מגמת ציון מול החודש הקודם',
+            en: 'Full HTML + PDF report unlocked',
+            ru: 'Полный HTML + PDF отчёт открыт',
+            he: 'דוח HTML + PDF מלא פתוח',
           },
         },
         {
           value: {
-            en: 'Extra recheck after your fixes',
-            ru: 'Дополнительная перепроверка после ваших правок',
-            he: 'בדיקה חוזרת נוספת אחרי התיקונים שלכם',
-          },
-        },
-        {
-          value: {
-            en: 'Priority support (<24h response)',
-            ru: 'Приоритетная поддержка (<24 ч)',
-            he: 'תמיכה בעדיפות (<24 שעות)',
+            en: 'Team support on the report findings',
+            ru: 'Поддержка команды по находкам отчёта',
+            he: 'תמיכת הצוות בממצאי הדוח',
           },
         },
       ],
     },
     subtitle: {
-      en: 'Monthly re-audit and support.',
-      ru: 'Ежемесячный повторный аудит и поддержка.',
-      he: 'ביקורת חוזרת חודשית ותמיכה.',
+      en: 'Full 60+ checklist, fix plan, and AI Visibility.',
+      ru: 'Полный чеклист 60+, план правок и AI Visibility.',
+      he: 'צ׳ק-ליסט 60+ מלא, תוכנית תיקון ונראות AI.',
     },
     periods: [],
     defaultPeriodId: '',
     addons: [],
     includes: {
-      en: 'Pro unlocks the full 60+ checklist and recommendations, discloses up to 10 funnel URLs, then re-runs the lab monthly: score trend vs last month, extra recheck after your fixes, and priority support.',
-      ru: 'Pro открывает полный чеклист 60+ и рекомендации, раскрывает до 10 URL воронки, затем ежемесячно повторяет лабораторию: динамика оценки, внеочередная перепроверка после ваших правок и приоритетная поддержка.',
-      he: 'Pro פותח את צ׳ק-ליסט 60+ המלא ואת ההמלצות, חושף עד 10 כתובות משפך, ואז מריץ את המעבדה כל חודש: מגמת ציון, בדיקה חוזרת אחרי התיקונים ותמיכה בעדיפות.',
+      en: 'Pro unlocks the full 60+ checklist and recommendations, discloses up to 10 funnel URLs, AI Visibility (7 criteria) with Agent Readiness L1, and the full HTML + PDF report.',
+      ru: 'Pro открывает полный чеклист 60+ и рекомендации, раскрывает до 10 URL воронки, AI Visibility (7 критериев) с Agent Readiness L1 и полный HTML + PDF отчёт.',
+      he: 'Pro פותח את צ׳ק-ליסט 60+ המלא ואת ההמלצות, חושף עד 10 כתובות משפך, נראות AI (7 קריטריונים) עם Agent Readiness L1 ואת דוח ה-HTML + PDF המלא.',
     },
     seoTitle: {
-      en: 'Pro AI Audit | Monthly Website QA & Support | Erythro.ai',
-      ru: 'AI Аудит Pro | Ежемесячный мониторинг и поддержка | Erythro.ai',
-      he: 'ביקורת AI Pro | ניטור חודשי ותמיכה | Erythro.ai',
+      en: 'Pro AI Audit | Full Checklist & Fix Plan | Erythro.ai',
+      ru: 'AI Аудит Pro | Полный чеклист и план правок | Erythro.ai',
+      he: 'ביקורת AI Pro | צ׳ק-ליסט מלא ותוכנית תיקון | Erythro.ai',
     },
     seoDescription: {
-      en: 'Monthly website re-audits, score trend tracking, post-fix validation, and priority technical support.',
-      ru: 'Ежемесячные повторные аудиты сайта, отслеживание динамики, перепроверка правок и приоритетная поддержка.',
-      he: 'ביקורות אתר חודשיות חוזרות, מעקב מגמות, אימות תיקונים ותמיכה טכנית בעדיפות.',
+      en: 'Full website audit unlock: 60+ checklist, fix plan, up to 10 funnel URLs, AI Visibility, and HTML + PDF report.',
+      ru: 'Полный аудит сайта: чеклист 60+, план правок, до 10 URL воронки, AI Visibility и HTML + PDF отчёт.',
+      he: 'ביקורת אתר מלאה: צ׳ק-ליסט 60+, תוכנית תיקון, עד 10 כתובות משפך, נראות AI ודוח HTML + PDF.',
     },
   },
 ]

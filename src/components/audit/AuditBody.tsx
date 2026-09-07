@@ -29,6 +29,7 @@ import {
   type AuditPageContent,
   type AuditTabId,
 } from '@/lib/auditPage'
+import { currencySymbol } from '@/lib/orderPlans'
 
 const AuditPageContext = React.createContext<AuditPageContent>(auditPage as AuditPageContent)
 
@@ -1021,10 +1022,12 @@ function AuditHowPanel({
   )
 }
 
+/** Strip leading currency marks so we always render ₪ via currencySymbol (like Solutions). */
 function splitAuditPrice(price: string) {
-  const match = price.trim().match(/^([^\d]*?)([\d][\d.,]*)(.*)$/u)
-  if (!match) return { prefix: '', amount: price, suffix: '' }
-  return { prefix: match[1], amount: match[2], suffix: match[3] }
+  const stripped = price.trim().replace(/^[₪$€]\s*/u, '')
+  const match = stripped.match(/^([\d][\d.,]*)(.*)$/u)
+  if (!match) return { amount: stripped, suffix: '' }
+  return { amount: match[1], suffix: match[2].trim() }
 }
 
 const SOLUTION_CTA_LINK_CLASS =
@@ -1043,7 +1046,13 @@ function AuditPricingCard({
 }) {
   const featured = Boolean(plan.featured) || plan.id === 'diagnostic'
   const priceText = tAudit(plan.price, locale)
-  const { prefix, amount, suffix } = splitAuditPrice(priceText)
+  const { amount, suffix } = splitAuditPrice(priceText)
+  const compareText =
+    'priceCompare' in plan && plan.priceCompare ? tAudit(plan.priceCompare, locale) : ''
+  const compareAmount = compareText ? splitAuditPrice(compareText).amount : ''
+  const priceNote =
+    'priceNote' in plan && plan.priceNote ? tAudit(plan.priceNote, locale).trim() : ''
+  const shekel = currencySymbol('ILS')
   const ctaHref = 'ctaHref' in plan ? plan.ctaHref : undefined
 
   const solutionButtonClassName = featured
@@ -1066,24 +1075,35 @@ function AuditPricingCard({
             : 'min-h-[530px] h-auto border border-gold-500 bg-[#1E1E1E] hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)] lg:min-h-[510px] xl:min-h-[530px]'
       }`}
     >
-        {'priceCompare' in plan && plan.priceCompare ? (
+        {compareAmount ? (
           <p
             dir="ltr"
             className={`absolute top-[17px] font-bold text-sm uppercase text-white ${
               locale === 'he' ? 'start-4' : 'end-4'
             }`}
           >
-            <span className="line-through">{tAudit(plan.priceCompare, locale)}</span>
+            <span>{shekel}</span> <span className="line-through">{compareAmount}</span>
           </p>
         ) : null}
 
-        <div className="relative flex min-h-[70px] w-full items-center justify-center py-2 text-center">
+        <div className="relative flex min-h-[70px] w-full flex-col items-center justify-center gap-1 py-2 text-center">
           <p dir="ltr" className={`font-bold uppercase leading-tight ${priceTone}`}>
-            {prefix ? <span className="text-[1.6125rem] leading-tight">{prefix}</span> : null}
-            {prefix ? ' ' : null}
+            <span className="text-[1.6125rem] leading-tight">{shekel}</span>{' '}
             <span className="text-[2.5rem] leading-tight">{amount}</span>
             {suffix ? <span className="text-base leading-tight">{suffix}</span> : null}
+            {priceNote ? (
+              <span className="relative -top-5 inline-block text-sm leading-none">*</span>
+            ) : null}
           </p>
+          {priceNote ? (
+            <p
+              className={`m-0 max-w-[90%] text-center text-[11px] font-light leading-4 ${
+                featured ? 'text-white/85' : isLight ? 'text-coal-900/70' : 'text-white/70'
+              }`}
+            >
+              * {priceNote}
+            </p>
+          ) : null}
         </div>
 
         <div
@@ -1161,19 +1181,23 @@ function AuditPricingPanel({
       aria-labelledby="audit-tab-pricing"
       className="flex flex-col gap-8 md:gap-10"
     >
-      <div className="flex max-w-3xl flex-col gap-3">
+      <div className="flex w-full flex-col gap-3">
         <p className={`m-0 text-[11px] font-bold uppercase tracking-[0.18em] ${accentTone}`}>
           {tAudit(pricing.kicker, locale)}
         </p>
         <h2 className={`m-0 font-sans text-2xl font-normal leading-tight tracking-[0.04em] md:text-3xl ${headingTone}`}>
           {tAudit(pricing.title, locale)}
         </h2>
-        <p className={`m-0 font-sans text-base font-light leading-7 ${bodyTone}`}>
+        <p className={`m-0 max-w-none font-sans text-base font-light leading-7 ${bodyTone}`}>
           {tAudit(pricing.intro, locale)}
         </p>
       </div>
 
-      <div className="grid w-full grid-cols-1 gap-[30px] sm:grid-cols-2 xl:grid-cols-4 xl:items-center">
+      <div
+        className={`grid w-full grid-cols-1 gap-[30px] sm:grid-cols-2 xl:items-center ${
+          pricing.plans.length >= 4 ? 'xl:grid-cols-4' : 'xl:grid-cols-3'
+        }`}
+      >
         {pricing.plans.map((plan) => (
             <div key={plan.id} className="min-w-0 w-full">
               <AuditPricingCard

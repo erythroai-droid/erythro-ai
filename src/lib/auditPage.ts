@@ -93,9 +93,9 @@ export const auditPage = {
       he: { en: 'Hebrew', ru: 'Иврит', he: 'עברית' },
     },
     submit: {
-      en: 'Request free audit',
+      en: 'Request a free audit',
       ru: 'Заказать бесплатный аудит',
-      he: 'בקשת ביקורת חינם',
+      he: 'להזמין ביקורת חינם',
     } satisfies Localized,
     success: {
       en: 'Thank you! We will run your audit and contact you shortly.',
@@ -155,9 +155,9 @@ export const auditPage = {
       {
         label: { en: 'Step 1', ru: 'Шаг 1', he: 'שלב 1' } satisfies Localized,
         title: {
-          en: 'Send us your URL',
+          en: 'Send your site URL',
           ru: 'Отправьте URL сайта',
-          he: 'שלחו לנו את כתובת האתר',
+          he: 'שלחו את כתובת האתר',
         } satisfies Localized,
         body: {
           en: 'Leave the domain, contacts, and report language. No card needed for the free preview.',
@@ -170,7 +170,7 @@ export const auditPage = {
         title: {
           en: 'The lab runs 60+ checks and the funnel',
           ru: 'Лаборатория снимает 60+ проверок и воронку',
-          he: 'המעבדה מריצה 60+ בדיקות ואת המשפך',
+          he: 'המעבדה מבצעת 60+ בדיקות ואת המשפך',
         } satisfies Localized,
         body: {
           en: 'The lab crawls the homepage and commercially important pages from sitemap and nav (contacts, services, portfolio, pricing) — up to 10 URLs. Locales EN / RU / HE. Mobile at iPhone SE 375×667. PageSpeed (mobile + desktop), forms, SEO, security headers, AI Visibility, Agent Readiness, and LanguageTool spelling on EN/RU.',
@@ -200,7 +200,7 @@ export const auditPage = {
     weightNote: {
       en: 'of the score',
       ru: 'веса оценки',
-      he: 'מהציון',
+      he: 'ממשקל הציון',
     } satisfies Localized,
     methodologyIntro: {
       en: 'The overall score is weighted by business impact: what slows the site, blocks leads, hurts search, creates risk, or leaves the brand invisible to AI tools. The five scales summarise the lab — they are not the whole protocol.',
@@ -275,9 +275,9 @@ export const auditPage = {
       },
     ],
     categoriesTitle: {
-      en: 'What the lab actually runs',
+      en: 'What the lab actually measures',
       ru: 'Что лаборатория снимает',
-      he: 'מה המעבדה מריצה בפועל',
+      he: 'מה המעבדה בודקת בפועל',
     } satisfies Localized,
     categoriesIntro: {
       en: '60+ unique signal types. Some run once per site, some on every locale (EN / RU / HE). Every finding maps to a concrete check — the scorecard is a summary, not the protocol.',
@@ -407,9 +407,9 @@ export const auditPage = {
           he: 'צעדים הבאים ברורים',
         } satisfies Localized,
         body: {
-          en: 'Top-3 risks come with business impact. Diagnostic unlocks summary cards. The row-by-row 60+ checklist and fix plan are in Pro; Delegate adds implementation with our team.',
-          ru: 'Топ-3 рисков — с влиянием на бизнес. Diagnostic открывает сводные карточки. Построчный чеклист 60+ и план правок — в Pro; Delegate добавляет внедрение вместе с нашей командой.',
-          he: '3 הסיכונים העיקריים מגיעים עם השפעה עסקית. Diagnostic פותח כרטיסי סיכום. צ׳ק-ליסט 60+ שורה-שורה ותוכנית תיקון — ב-Pro; Delegate מוסיף יישום עם הצוות שלנו.',
+          en: 'Top-3 risks come with business impact. Diagnostic unlocks summary cards. The row-by-row 60+ checklist, fix plan, and AI Visibility details are in Pro; Delegate adds implementation with our team.',
+          ru: 'Топ-3 рисков — с влиянием на бизнес. Diagnostic открывает сводные карточки. Построчный чеклист 60+, план правок и детали AI Visibility — в Pro; Delegate добавляет внедрение вместе с нашей командой.',
+          he: '3 הסיכונים העיקריים מגיעים עם השפעה עסקית. Diagnostic פותח כרטיסי סיכום. צ׳ק-ליסט 60+ שורה-שורה, תוכנית תיקון ופרטי נראות AI — ב-Pro; Delegate מוסיף יישום עם הצוות שלנו.',
         } satisfies Localized,
       },
     ],
@@ -426,14 +426,14 @@ export const auditPage = {
       he: 'בחרו את החבילה המתאימה',
     } satisfies Localized,
     intro: {
-      en: 'Start with a free preview: scorecard, top-3, and Lighthouse. Diagnostic unlocks summary cards and up to 5 funnel URLs. Pro opens the full 60+ checklist, up to 10 funnel URLs, the fix plan, and monthly re-audits — or hand implementation to us.',
-      ru: 'Начните с бесплатного превью: scorecard, топ-3 и Lighthouse. Diagnostic открывает сводные карточки и до 5 URL воронки. Pro — полный чеклист 60+, до 10 URL воронки, план правок и ежемесячный повтор, либо передайте внедрение нам.',
-      he: 'התחילו בתצוגה מקדימה חינם: scorecard, טופ-3 ו-Lighthouse. Diagnostic פותח כרטיסי סיכום ועד 5 כתובות משפך. Pro — צ׳ק-ליסט 60+ מלא, עד 10 כתובות משפך, תוכנית תיקון וביקורת חודשית, או תעבירו את היישום אלינו.',
+      en: 'Start with a free preview: scorecard, top-3, and Lighthouse. Diagnostic unlocks summary cards and up to 5 funnel URLs. Pro opens the full 60+ checklist, up to 10 funnel URLs, the fix plan, and AI Visibility — or hand implementation to us.',
+      ru: 'Начните с бесплатного превью: scorecard, топ-3 и Lighthouse. Diagnostic открывает сводные карточки и до 5 URL воронки. Pro — полный чеклист 60+, до 10 URL воронки, план правок и AI Visibility, либо передайте внедрение нам.',
+      he: 'התחילו בתצוגה מקדימה חינם: scorecard, טופ-3 ו-Lighthouse. Diagnostic פותח כרטיסי סיכום ועד 5 כתובות משפך. Pro — צ׳ק-ליסט 60+ מלא, עד 10 כתובות משפך, תוכנית תיקון ונראות AI, או תעבירו את היישום אלינו.',
     } satisfies Localized,
     footnote: {
-      en: 'Secure payments · Cancel anytime · Reports in RU / EN / HE',
-      ru: 'Безопасная оплата · Отмена в любой момент · Отчёты на RU / EN / HE',
-      he: 'תשלום מאובטח · ביטול בכל עת · דוחות ב-RU / EN / HE',
+      en: 'Free preview needs no card · Reports in RU / EN / HE',
+      ru: 'Бесплатное превью без карты · Отчёты на RU / EN / HE',
+      he: 'תצוגה מקדימה חינם ללא כרטיס · דוחות ב-RU / EN / HE',
     } satisfies Localized,
     agency: {
       en: 'Need audits for 10+ domains or run an agency?',
@@ -450,7 +450,7 @@ export const auditPage = {
         id: 'free',
         badge: null,
         name: { en: 'Free', ru: 'Бесплатно', he: 'חינם' } satisfies Localized,
-        price: { en: '₪0', ru: '₪0', he: '₪0' } satisfies Localized,
+        price: { en: '0', ru: '0', he: '0' } satisfies Localized,
         priceNote: {
           en: 'no card required',
           ru: 'карта не нужна',
@@ -482,6 +482,11 @@ export const auditPage = {
             ru: 'Раскрыта главная (обход воронки закрыт)',
             he: 'דף הבית גלוי (סריקת המשפך נעולה)',
           },
+          {
+            en: 'Report in the language you choose (EN / RU / HE)',
+            ru: 'Отчёт на выбранном языке (EN / RU / HE)',
+            he: 'דוח בשפה שבחרתם (EN / RU / HE)',
+          },
         ] satisfies Localized[],
         cta: {
           en: 'Get started',
@@ -494,8 +499,8 @@ export const auditPage = {
         id: 'diagnostic',
         badge: null,
         name: { en: 'Diagnostic', ru: 'Диагностика', he: 'אבחון' } satisfies Localized,
-        price: { en: '₪99', ru: '₪99', he: '₪99' } satisfies Localized,
-        priceCompare: { en: '₪290', ru: '₪290', he: '₪290' } satisfies Localized,
+        price: { en: '99', ru: '99', he: '99' } satisfies Localized,
+        priceCompare: { en: '290', ru: '290', he: '290' } satisfies Localized,
         priceNote: {
           en: 'one-time · promo price',
           ru: 'разово · промо',
@@ -528,6 +533,11 @@ export const auditPage = {
             he: 'פרטי PageSpeed למובייל ולדסקטופ',
           },
           {
+            en: 'Locales EN / RU / HE in the lab crawl',
+            ru: 'Локали EN / RU / HE в обходе лаборатории',
+            he: 'שפות EN / RU / HE בסריקת המעבדה',
+          },
+          {
             en: 'PDF report in RU / EN / HE',
             ru: 'PDF-отчёт на RU / EN / HE',
             he: 'דוח PDF ב-RU / EN / HE',
@@ -544,16 +554,16 @@ export const auditPage = {
         id: 'pro',
         badge: null,
         name: { en: 'Pro', ru: 'Pro', he: 'Pro' } satisfies Localized,
-        price: { en: '₪490', ru: '₪490', he: '₪490' } satisfies Localized,
+        price: { en: '490', ru: '490', he: '490' } satisfies Localized,
         priceNote: {
-          en: '/ month',
-          ru: '/ мес',
-          he: '/ חודש',
+          en: 'one-time full unlock',
+          ru: 'разово · полный доступ',
+          he: 'חד-פעמי · גישה מלאה',
         } satisfies Localized,
         description: {
-          en: 'Monthly re-audit and support.',
-          ru: 'Ежемесячный повторный аудит и поддержка.',
-          he: 'ביקורת חוזרת חודשית ותמיכה.',
+          en: 'Full 60+ checklist, fix plan, and AI Visibility.',
+          ru: 'Полный чеклист 60+, план правок и AI Visibility.',
+          he: 'צ׳ק-ליסט 60+ מלא, תוכנית תיקון ונראות AI.',
         } satisfies Localized,
         features: [
           {
@@ -572,24 +582,19 @@ export const auditPage = {
             he: 'סריקת המשפך גלויה — עד 10 כתובות',
           },
           {
-            en: 'Monthly re-run of the full audit',
-            ru: 'Ежемесячный повтор полного аудита',
-            he: 'הרצה חוזרת חודשית של הביקורת המלאה',
+            en: 'AI Visibility (7 criteria) + Agent Readiness L1',
+            ru: 'AI Visibility (7 критериев) + Agent Readiness L1',
+            he: 'נראות AI (7 קריטריונים) + Agent Readiness L1',
           },
           {
-            en: 'Score trend vs previous month',
-            ru: 'Динамика оценки к прошлому месяцу',
-            he: 'מגמת ציון מול החודש הקודם',
+            en: 'Full HTML + PDF report unlocked',
+            ru: 'Полный HTML + PDF отчёт открыт',
+            he: 'דוח HTML + PDF מלא פתוח',
           },
           {
-            en: 'Extra recheck after your fixes',
-            ru: 'Дополнительная перепроверка после ваших правок',
-            he: 'בדיקה חוזרת נוספת אחרי התיקונים שלכם',
-          },
-          {
-            en: 'Priority support (<24h response)',
-            ru: 'Приоритетная поддержка (<24 ч)',
-            he: 'תמיכה בעדיפות (<24 שעות)',
+            en: 'Team support on the report findings',
+            ru: 'Поддержка команды по находкам отчёта',
+            he: 'תמיכת הצוות בממצאי הדוח',
           },
         ] satisfies Localized[],
         cta: {
@@ -602,13 +607,18 @@ export const auditPage = {
       {
         id: 'delegate',
         badge: null,
-        name: { en: 'Delegate', ru: 'Делегат', he: 'דלגט' } satisfies Localized,
-        price: { en: '₪1990+', ru: '₪1990+', he: '₪1990+' } satisfies Localized,
+        name: { en: 'Delegate', ru: 'Делегат', he: 'דלגייט' } satisfies Localized,
+        price: { en: '1990+', ru: '1990+', he: '1990+' } satisfies Localized,
+        priceNote: {
+          en: 'from · scoped with you',
+          ru: 'от · объём согласуем',
+          he: 'מ־ · בהיקף שנסכים',
+        } satisfies Localized,
         features: [
           {
-            en: 'Full audit + 45-minute call',
-            ru: 'Полный аудит + созвон 45 минут',
-            he: 'ביקורת מלאה + שיחה של 45 דקות',
+            en: 'Full Pro audit + 45-minute call',
+            ru: 'Полный аудит Pro + созвон 45 минут',
+            he: 'ביקורת Pro מלאה + שיחה של 45 דקות',
           },
           {
             en: 'Priority roadmap we own with you',
