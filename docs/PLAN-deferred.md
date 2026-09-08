@@ -1,15 +1,18 @@
-# Deferred follow-ups (updated 2026-09-06)
+# Deferred follow-ups (updated 2026-09-08)
 
 Напомнить в следующем сеансе, когда пользователь спросит про безопасность / perf / R2 / admin.
 
 **Критичных blocker сейчас нет** — cutover R2 + UFW baseline + home/portfolio ISR сделаны.
 
+**Временно открыто для QA тарифов аудита (2026-09-08):** `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = true` — нет 5-дневного кулдауна Free и нет IP-окна `POST /api/contact`. Turnstile / honeypot на месте. После прогона Free / Diagnostic / Pro: `AUDIT_SKIP_COOLDOWN=0` на Vercel **или** `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = false`.
+
 ## Next when there is time
 
 | Priority | Item | Notes |
 |---|---|---|
+| high | Restore audit intake limits | After package QA: `AUDIT_SKIP_COOLDOWN=0` or `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = false` in `src/lib/auditRateLimit.ts` |
 | high | DMARC `p=reject` | After ~7 days of clean aggregate reports at `order@erythro.ai`. Live now: `p=quarantine; rua=mailto:order@erythro.ai; pct=100;`. Raise TXT `_dmarc` to `v=DMARC1; p=reject; rua=mailto:order@erythro.ai; pct=100;` (~2026-09-13) |
-| medium | CSP nonce (drop `'unsafe-inline'`) | Public CSP already dropped `'unsafe-eval'`; admin keeps eval for Payload. Full nonce needs middleware + Script wiring. |
+| medium | CSP nonce (drop `'unsafe-inline'`) | **Not critical now** — defense-in-depth only; public prod already without `'unsafe-eval'` (`next.config.ts` adds `'unsafe-eval'` only when `NODE_ENV===development'` — see PIT-066). Needs middleware nonce + wire GA consent / JSON-LD / Turnstile / `next/script`; `style-src` still hard with `experimental.inlineCss`. Admin keeps `'unsafe-eval'` for Payload. Do after DMARC reject window unless an audit forces sooner. |
 | medium | Desktop CLS (~1.1) | Partially addressed: poster LCP without isLg gate, heading min-height + cross-locale slot, useLayoutEffect locale — re-measure after deploy |
 | low | Purge Vercel Blob copies | After admin upload→R2 verified; then drop `BLOB_READ_WRITE_TOKEN` |
 | low | Leftover ~4 Blob URL mentions in HTML | Rewrite/cache already mostly on R2 |

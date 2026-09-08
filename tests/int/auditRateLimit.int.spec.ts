@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
   extractAuditDomain,
   checkFreeAuditCooldown,
@@ -31,6 +31,16 @@ describe('extractAuditDomain', () => {
 
 describe('checkFreeAuditCooldown', () => {
   const now = new Date('2026-09-01T12:00:00.000Z').getTime()
+  const prevSkip = process.env.AUDIT_SKIP_COOLDOWN
+
+  beforeAll(() => {
+    process.env.AUDIT_SKIP_COOLDOWN = '0'
+  })
+
+  afterAll(() => {
+    if (prevSkip === undefined) delete process.env.AUDIT_SKIP_COOLDOWN
+    else process.env.AUDIT_SKIP_COOLDOWN = prevSkip
+  })
 
   function createMockPayload(docs: Array<Record<string, unknown>>): Payload {
     return {
@@ -171,5 +181,29 @@ describe('checkFreeAuditCooldown', () => {
     })
 
     expect(result.allowed).toBe(true)
+  })
+
+  it('allows a recent domain when AUDIT_SKIP_COOLDOWN=1', async () => {
+    process.env.AUDIT_SKIP_COOLDOWN = '1'
+    const twoDaysAgo = new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString()
+    const payload = createMockPayload([
+      {
+        id: 9,
+        website: 'https://target-domain.com',
+        email: 'same@example.com',
+        ip: '10.0.0.1',
+        createdAt: twoDaysAgo,
+        auditStatus: 'report_sent',
+        planSlug: 'audit-free',
+      },
+    ])
+    const result = await checkFreeAuditCooldown(payload, {
+      website: 'https://target-domain.com',
+      email: 'same@example.com',
+      ip: '10.0.0.1',
+      now,
+    })
+    expect(result.allowed).toBe(true)
+    process.env.AUDIT_SKIP_COOLDOWN = '0'
   })
 })
