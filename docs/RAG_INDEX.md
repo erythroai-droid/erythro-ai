@@ -95,6 +95,7 @@ Rules:
 | “Free AI Audit rate limiting / 1 domain per user / 5 days / IP tracking” | `docs/architecture/audit-rate-limiting.md`; `src/lib/auditRateLimit.ts` |
 | “Email autoresponder / order@ & team@ / n8n / IMAP & SMTP Hostinger / RFC 3834 / duplicate Hostinger Autoreply / form client ack” | `docs/infrastructure/n8n-email-autoresponder.md`; `infra/n8n/workflows/email-autoresponder.json`; `PIT-037`; `PIT-038`; `PIT-040`; `PIT-044`; `src/lib/contactNotification.ts` |
 | “Audit form website check / DNS / SSRF / no n8n workflow” | `docs/architecture/ai-audit-architecture.md` §3.1; `src/lib/checkWebsite.ts`; `PIT-041` |
+| “Free audit button does nothing / check-website 200 / no /api/contact” | `PIT-067`; `src/components/audit/AuditBody.tsx`; `src/app/(frontend)/order/[slug]/OrderClient.tsx` |
 | “n8n audit cron reconciliation / stuck jobs” | `docs/infrastructure/n8n-audit-reconcile.md`; `infra/n8n/workflows/audit-reconcile.json` |
 | “CSP / Cloudflare Insights / beacon.min.js / PageSpeed console” | `next.config.ts` `CONTENT_SECURITY_POLICY`; `PIT-045`; `PIT-043` |
 | “security.txt / RFC 9116 / vulnerability disclosure contact” | `src/app/.well-known/security.txt/route.ts`; `docs/AI_VISIBILITY.md` |

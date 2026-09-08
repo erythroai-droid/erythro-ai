@@ -1087,6 +1087,25 @@ Never put the app display name into Subdomain. Confirm the composed hostname pre
 
 ---
 
+## PIT-067 — Free audit button does nothing after website DNS check
+
+**Tags:** `audit`, `react`, `form`, `currentTarget`, `contact-api`  
+**Seen:** 2026-09-09 — live `https://erythro.ai/audit`, CTA «Заказать бесплатный аудит сайта».
+
+**Symptom:**
+Filled form + consent + Turnstile. Click submit. `/api/audit/check-website` returns 200, then **no** `POST /api/contact`. Button stays idle (no spinner, no error, no success). Laboratory never starts.
+
+**Cause:**
+React 17+ nulls `SyntheticEvent.currentTarget` when the handler returns a Promise (after the first `await`). `/audit` and `/order` read the honeypot via `e.currentTarget.elements` **after** `await ensureWebsiteOk()`. That throws `TypeError` **outside** the `try/catch`, so the UI looks like a dead button.
+
+**Fix:**
+Read the honeypot (or `e.currentTarget`) **before** any `await`. Same pattern as `ContactsBody` / `ContactModal`.
+
+**Prevent:**
+Never touch `e.currentTarget` after `await` in a React submit handler. Capture `const form = e.currentTarget` (or honeypot value) first. When adding an intake skip flag, hoist `limited` so success headers cannot `ReferenceError`.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
@@ -1122,6 +1141,7 @@ Never put the app display name into Subdomain. Confirm the composed hostname pre
 - [ ] Audit worker: SSRF re-check + timing-safe / HMAC agent auth (PIT-052)
 - [ ] VPS Docker: no `0.0.0.0` publish; Caddy or `127.0.0.1` only (PIT-053)
 - [ ] VPS Docker: do NOT drop port 8080 in DOCKER-USER; Montblanc API requires 8080 until migrated behind Caddy (PIT-060)
+- [ ] React form submit: read `e.currentTarget` / honeypot before any `await` (PIT-067)
 - [ ] Form-mail “not arriving”: check Hostinger INBOX (not Unread); `team@` password is not `SMTP_PASS` (PIT-054)
 - [ ] Contact honeypot must not be named company/website/email — mobile autofill silent-drops leads (PIT-055)
 - [ ] Shared frontend layout / not-found must not call `cookies()`; middleware must not Set-Cookie on HTML; use `force-static` + `getPayloadLocal` for ISR HIT (PIT-056)

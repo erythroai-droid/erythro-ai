@@ -10,6 +10,7 @@ import {
 import {
   consumeContactRateLimit,
   getRequestIp,
+  type RateLimitResult,
 } from '@/lib/contactRateLimit'
 import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
@@ -32,8 +33,9 @@ export const runtime = 'nodejs'
 export async function POST(request: NextRequest) {
   const ip = getRequestIp(request)
   const skipIntakeLimits = isAuditIntakeLimitsDisabled()
+  let limited: RateLimitResult | undefined
   if (!skipIntakeLimits) {
-    const limited = consumeContactRateLimit(`contact:${ip}`)
+    limited = consumeContactRateLimit(`contact:${ip}`)
     if (!limited.ok) {
       return NextResponse.json(
         { message: 'Too many requests. Please try again later.' },
@@ -196,10 +198,12 @@ export async function POST(request: NextRequest) {
           : {}),
       },
       {
-        headers: {
-          'X-RateLimit-Limit': String(limited.limit),
-          'X-RateLimit-Remaining': String(limited.remaining),
-        },
+        headers: limited
+          ? {
+              'X-RateLimit-Limit': String(limited.limit),
+              'X-RateLimit-Remaining': String(limited.remaining),
+            }
+          : undefined,
       },
     )
   } catch (err) {
