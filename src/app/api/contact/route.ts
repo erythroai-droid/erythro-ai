@@ -14,7 +14,7 @@ import {
 import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
-import { checkFreeAuditCooldown } from '@/lib/auditRateLimit'
+import { checkFreeAuditCooldown, isAuditIntakeLimitsDisabled } from '@/lib/auditRateLimit'
 import {
   readTurnstileToken,
   turnstileActionFromBody,
@@ -31,19 +31,22 @@ export const runtime = 'nodejs'
  */
 export async function POST(request: NextRequest) {
   const ip = getRequestIp(request)
-  const limited = consumeContactRateLimit(`contact:${ip}`)
-  if (!limited.ok) {
-    return NextResponse.json(
-      { message: 'Too many requests. Please try again later.' },
-      {
-        status: 429,
-        headers: {
-          'Retry-After': String(limited.retryAfterSec),
-          'X-RateLimit-Limit': String(limited.limit),
-          'X-RateLimit-Remaining': '0',
+  const skipIntakeLimits = isAuditIntakeLimitsDisabled()
+  if (!skipIntakeLimits) {
+    const limited = consumeContactRateLimit(`contact:${ip}`)
+    if (!limited.ok) {
+      return NextResponse.json(
+        { message: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(limited.retryAfterSec),
+            'X-RateLimit-Limit': String(limited.limit),
+            'X-RateLimit-Remaining': '0',
+          },
         },
-      },
-    )
+      )
+    }
   }
 
   let body: unknown
@@ -90,8 +93,8 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await getPayload({ config })
 
-    // Free audit rate limit: 1 domain per user per 5 days
-    if (source === 'audit' && (!planSlug || planSlug === 'audit-free')) {
+    // Free audit rate limit: 1 domain per user per 5 days (off while QA skip is on)
+    if (!skipIntakeLimits && source === 'audit' && (!planSlug || planSlug === 'audit-free')) {
       const cooldown = await checkFreeAuditCooldown(payload, {
         website: website || '',
         email: email || '',

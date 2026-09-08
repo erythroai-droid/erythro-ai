@@ -3,6 +3,20 @@ import type { Payload } from 'payload'
 export const FREE_AUDIT_COOLDOWN_DAYS = 5
 export const FREE_AUDIT_COOLDOWN_MS = FREE_AUDIT_COOLDOWN_DAYS * 24 * 60 * 60 * 1000
 
+/**
+ * Temporary: skip the 5-day free-audit cooldown (and the IP window in `/api/contact`)
+ * so every plan can be re-tested from the site. Restore after QA:
+ * set `AUDIT_SKIP_COOLDOWN=0` on Vercel, or flip this to `false`.
+ */
+export const AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = true
+
+export function isAuditIntakeLimitsDisabled(): boolean {
+  const v = process.env.AUDIT_SKIP_COOLDOWN?.trim().toLowerCase()
+  if (v === '0' || v === 'false' || v === 'off') return false
+  if (v === '1' || v === 'true' || v === 'on') return true
+  return AUDIT_INTAKE_LIMITS_OPEN_FOR_QA
+}
+
 export const AUDIT_RATE_LIMIT_MESSAGES = {
   domainRecent: {
     en: 'This website was recently audited. Free audit for a domain is available once every 5 days.',
@@ -74,6 +88,10 @@ export async function checkFreeAuditCooldown(
   payload: Payload,
   options: CheckFreeAuditCooldownOptions,
 ): Promise<FreeAuditCooldownResult> {
+  if (isAuditIntakeLimitsDisabled()) {
+    return { allowed: true }
+  }
+
   const now = options.now ?? Date.now()
   const currentDomain = extractAuditDomain(options.website)
   const currentEmail = options.email.trim().toLowerCase()

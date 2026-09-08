@@ -5,10 +5,14 @@
  * Usage: pnpm exec tsx scripts/seed-audit-order-plans.ts
  */
 import 'dotenv/config'
+
+process.env.PAYLOAD_DISABLE_PUSH = '1'
+
 import { getPayload } from 'payload'
 import config from '../src/payload.config'
 import { AUDIT_ORDER_PLANS } from '../src/lib/orderPlans'
 import { lexicalFromText } from '../src/lib/lexical'
+import { pingSiteRevalidate } from './import-project/lib/ping-revalidate'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -47,6 +51,7 @@ function rowForLocale(plan: (typeof AUDIT_ORDER_PLANS)[number], loc: Locale, ind
       ...(f.value ? { value: f.value[loc] || f.value.en } : {}),
     })),
     ...(plan.subtitle ? { subtitle: plan.subtitle[loc] || plan.subtitle.en } : {}),
+    promo: plan.promo ? plan.promo[loc] || plan.promo.en : '',
     ...(plan.includes
       ? { includes: lexicalFromText(plan.includes[loc] || plan.includes.en) }
       : {}),
@@ -115,6 +120,14 @@ async function run() {
       console.log(`  ↑ updated ${loc}: ${plan.slug}`)
     }
   }
+
+  console.log('Busting site cache…')
+  await pingSiteRevalidate([
+    '/order/audit-free',
+    '/order/audit-diagnostic',
+    '/order/audit-pro',
+    '/audit',
+  ])
 
   console.log('Done.')
   process.exit(0)

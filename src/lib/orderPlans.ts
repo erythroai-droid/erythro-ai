@@ -218,9 +218,9 @@ export const AUDIT_CHECK_CATEGORIES = [
       he: 'סריקת משפך',
     } satisfies LocaleMap,
     description: {
-      en: 'Lab up to 10 URLs; Free discloses 1, Diagnostic 5, Pro 10 — HTTP, title, h1, forms, CTA, soft-404',
-      ru: 'Лаборатория до 10 URL; Free раскрывает 1, Diagnostic 5, Pro 10 — HTTP, title, h1, формы, CTA, soft-404',
-      he: 'מעבדה עד 10 URL; Free חושף 1, Diagnostic 5, Pro 10 — HTTP, title, h1, טפסים, CTA, soft-404',
+      en: 'Free: 1 URL (homepage). Diagnostic: up to 5. Pro: up to 10 — HTTP, title, h1, forms, CTA, soft-404',
+      ru: 'Free: 1 URL (главная). Diagnostic: до 5. Pro: до 10 — HTTP, title, h1, формы, CTA, soft-404',
+      he: 'Free: כתובת אחת (דף הבית). Diagnostic: עד 5. Pro: עד 10 — HTTP, title, h1, טפסים, CTA, soft-404',
     } satisfies LocaleMap,
   },
 ]
@@ -241,53 +241,53 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       features: [
         {
           value: {
-            en: 'Score 0–100 across 5 scorecard scales (A+–F)',
-            ru: 'Оценка 0–100 по 5 шкалам scorecard (A+–F)',
-            he: 'ציון 0–100 ב-5 סקאלות scorecard (A+–F)',
+            en: 'Score 0–100 and grade A+–F across 5 scales (speed, leads, SEO, security, AI Visibility)',
+            ru: 'Оценка 0–100 и грейд A+–F по 5 шкалам (скорость, лиды, SEO, безопасность, AI Visibility)',
+            he: 'ציון 0–100 ודרגה A+–F ב-5 סקאלות (מהירות, לידים, SEO, אבטחה, נראות AI)',
           },
         },
         {
           value: {
-            en: 'Top-3 conversion / visibility risks',
-            ru: 'Топ-3 уязвимости конверсии и видимости',
-            he: '3 סיכוני המרה ונראות עיקריים',
+            en: 'Top-3 risks with business impact',
+            ru: 'Топ-3 риска с влиянием на бизнес',
+            he: '3 הסיכונים העיקריים עם השפעה עסקית',
           },
         },
         {
           value: {
-            en: 'Lighthouse mobile + desktop preview',
-            ru: 'Превью Lighthouse mobile + desktop',
-            he: 'תצוגת Lighthouse למובייל ולדסקטופ',
+            en: 'Lighthouse: mobile and desktop',
+            ru: 'Lighthouse: mobile и desktop',
+            he: 'Lighthouse: מובייל ודסקטופ',
           },
         },
         {
           value: {
-            en: 'Homepage disclosed (funnel crawl stays locked)',
-            ru: 'Раскрыта главная (обход воронки закрыт)',
-            he: 'דף הבית גלוי (סריקת המשפך נעולה)',
+            en: 'Homepage only · one site language',
+            ru: 'Проверяется главная · один язык сайта',
+            he: 'דף הבית בלבד · שפת אתר אחת',
           },
         },
         {
           value: {
-            en: 'Report in the language you choose (EN / RU / HE)',
-            ru: 'Отчёт на выбранном языке (EN / RU / HE)',
-            he: 'דוח בשפה שבחרתם (EN / RU / HE)',
+            en: 'HTML report in the language you choose (EN / RU / HE)',
+            ru: 'HTML-отчёт на выбранном языке (EN / RU / HE)',
+            he: 'דוח HTML בשפה שבחרתם (EN / RU / HE)',
           },
         },
       ],
     },
     subtitle: {
-      en: 'Preview: scorecard, top-3, and Lighthouse.',
-      ru: 'Превью: scorecard, топ-3 и Lighthouse.',
-      he: 'תצוגה מקדימה: scorecard, טופ-3 ו-Lighthouse.',
+      en: 'Homepage preview: score, top-3, and Lighthouse.',
+      ru: 'Превью главной: оценка, топ-3 и Lighthouse.',
+      he: 'תצוגה מקדימה של דף הבית: ציון, 3 סיכונים ו-Lighthouse.',
     },
     periods: [],
     defaultPeriodId: '',
     addons: [],
     includes: {
-      en: 'Includes the five-scale scorecard, top-3 conversion risks, and Lighthouse mobile + desktop. The lab still crawls the funnel; Free discloses the homepage only.',
-      ru: 'Включает scorecard по пяти шкалам, топ-3 уязвимости конверсии и Lighthouse mobile + desktop. Лаборатория обходит воронку; в Free раскрыта только главная.',
-      he: 'כולל scorecard בחמש סקאלות, 3 סיכוני המרה ו-Lighthouse למובייל ולדסקטופ. המעבדה סורקת את המשפך; ב-Free נחשף רק דף הבית.',
+      en: 'The report includes a 0–100 score and A+–F grade on five scales (speed & mobile UX, lead gen & forms, SEO, security, AI Visibility), the top-3 risks with business impact, and a Lighthouse table for mobile and desktop. The lab opens one page — the homepage — in the report language. Summary cards, funnel crawl, and the fix plan are in Diagnostic and Pro.',
+      ru: 'В отчёте: оценка 0–100 и грейд A+–F по пяти шкалам (скорость и мобильный UX, лиды и формы, SEO, безопасность, AI Visibility), топ-3 риска с влиянием на бизнес и таблица Lighthouse mobile + desktop. Лаборатория открывает одну страницу — главную — на языке отчёта. Сводные карточки, обход воронки и план правок — в Диагностике и Pro.',
+      he: 'הדוח כולל ציון 0–100 ודרגה A+–F בחמש סקאלות (מהירות ו-UX למובייל, לידים וטפסים, SEO, אבטחה, נראות AI), את 3 הסיכונים העיקריים עם השפעה עסקית וטבלת Lighthouse למובייל ולדסקטופ. המעבדה פותחת עמוד אחד — דף הבית — בשפת הדוח. כרטיסי הסיכום, סריקת המשפך ותוכנית התיקון הם באבחון וב-Pro.',
     },
     seoTitle: {
       en: 'Free AI Website Audit | Erythro.ai',
@@ -295,9 +295,9 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       he: 'ביקורת אתר AI בחינם | Erythro.ai',
     },
     seoDescription: {
-      en: 'Order a free commercial website audit: five-scale scorecard, top-3 risks, Lighthouse preview.',
-      ru: 'Закажите бесплатный коммерческий аудит сайта: scorecard по пяти шкалам, топ-3 риска, превью Lighthouse.',
-      he: 'הזמינו ביקורת אתר מסחרית חינמית: scorecard בחמש סקאלות, 3 סיכונים, תצוגת Lighthouse.',
+      en: 'Free preview audit: 0–100 score on five scales, top-3 risks, and Lighthouse. Homepage only, one language.',
+      ru: 'Бесплатный превью-аудит: оценка 0–100 по пяти шкалам, топ-3 риска и Lighthouse. Главная страница, один язык.',
+      he: 'ביקורת תצוגה מקדימה חינם: ציון 0–100 בחמש סקאלות, 3 סיכונים ו-Lighthouse. דף הבית בלבד, שפה אחת.',
     },
   },
   {
@@ -319,8 +319,22 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         {
           value: {
             en: 'Everything in Free, plus:',
-            ru: 'Всё из Free, плюс:',
-            he: 'הכל מ-Free, ובנוסף:',
+            ru: 'Всё из бесплатного, плюс:',
+            he: 'הכל מהחבילה החינמית, ובנוסף:',
+          },
+        },
+        {
+          value: {
+            en: 'Site crawl in EN, RU and HE',
+            ru: 'Съёмка сайта на EN, RU и HE',
+            he: 'בדיקת האתר ב-EN, RU ו-HE',
+          },
+        },
+        {
+          value: {
+            en: 'Funnel crawl — up to 5 URLs',
+            ru: 'Воронка раскрыта — до 5 URL',
+            he: 'סריקת משפך — עד 5 כתובות',
           },
         },
         {
@@ -332,41 +346,27 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         },
         {
           value: {
-            en: 'Funnel crawl disclosed — up to 5 URLs',
-            ru: 'Обход воронки раскрыт — до 5 URL',
-            he: 'סריקת המשפך גלויה — עד 5 כתובות',
+            en: 'Rollup of forms, HTTPS, layout, and AI Visibility',
+            ru: 'Свод по формам, HTTPS, вёрстке и AI Visibility',
+            he: 'סיכום טפסים, HTTPS, פריסה ונראות AI',
           },
         },
         {
           value: {
-            en: 'PageSpeed mobile + desktop details',
-            ru: 'PageSpeed mobile и desktop подробно',
-            he: 'פרטי PageSpeed למובייל ולדסקטופ',
-          },
-        },
-        {
-          value: {
-            en: 'Locales EN / RU / HE in the lab crawl',
-            ru: 'Локали EN / RU / HE в обходе лаборатории',
-            he: 'שפות EN / RU / HE בסריקת המעבדה',
-          },
-        },
-        {
-          value: {
-            en: 'PDF report in RU / EN / HE',
-            ru: 'PDF-отчёт на RU / EN / HE',
-            he: 'דוח PDF ב-RU / EN / HE',
+            en: 'HTML report in your language · full checklist is in Pro',
+            ru: 'HTML-отчёт на выбранном языке · полный чеклист — в Pro',
+            he: 'דוח HTML בשפה שבחרתם · הצ׳ק-ליסט המלא ב-Pro',
           },
         },
       ],
     },
     subtitle: {
-      en: 'Summary cards and funnel URLs, one-time.',
-      ru: 'Сводные карточки и URL воронки, разово.',
-      he: 'כרטיסי סיכום וכתובות משפך, חד-פעמי.',
+      en: 'Three site languages and up to 5 funnel URLs, one-time.',
+      ru: 'Три языка сайта и до 5 URL воронки, разово.',
+      he: 'שלוש שפות אתר ועד 5 כתובות משפך, חד-פעמי.',
     },
     promo: {
-      en: 'Special promo price · ₪191 discount',
+      en: 'Special promo price · ₪191 off',
       ru: 'Специальная промо-цена · скидка 191 ₪',
       he: 'מחיר מבצע מיוחד · הנחה של ₪191',
     },
@@ -374,19 +374,19 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
     defaultPeriodId: '',
     addons: [],
     includes: {
-      en: 'Diagnostic PDF: five-scale scorecard, top-3 risks, summary checklist cards, Lighthouse, and up to 5 disclosed funnel URLs. The row-by-row 60+ checklist and fix plan stay in Pro.',
-      ru: 'Diagnostic PDF: scorecard по пяти шкалам, топ-3 риска, сводные карточки чеклиста, Lighthouse и до 5 раскрытых URL воронки. Построчный чеклист 60+ и план правок остаются в Pro.',
-      he: 'PDF Diagnostic: scorecard בחמש סקאלות, 3 סיכונים, כרטיסי סיכום, Lighthouse ועד 5 כתובות משפך גלויות. צ׳ק-ליסט 60+ שורה-שורה ותוכנית תיקון נשארים ב-Pro.',
+      en: 'Everything in Free, plus a crawl of the site in EN, RU and HE and up to 5 funnel pages. The report adds summary checklist cards (excellent → attention → critical): layout, forms, HTTPS, AI Visibility, stability. The row-by-row 60+ checklist and written recommendations stay in Pro. One HTML report in the language you choose.',
+      ru: 'Как бесплатный тариф, плюс съёмка сайта на EN, RU и HE и обход до 5 страниц воронки. В отчёте — сводные карточки чеклиста (отлично → внимание → критично): вёрстка, формы, HTTPS, AI Visibility, стабильность. Построчный чеклист 60+ и текст рекомендаций остаются в Pro. Один HTML-отчёт на выбранном языке.',
+      he: 'הכל מהחבילה החינמית, ובנוסף בדיקת האתר ב-EN, RU ו-HE וסריקה של עד 5 עמודי משפך. בדוח — כרטיסי סיכום צ׳ק-ליסט (מצוין → לתשומת לב → קריטי): פריסה, טפסים, HTTPS, נראות AI ויציבות. צ׳ק-ליסט 60+ שורה-שורה והמלצות כתובות נשארים ב-Pro. דוח HTML אחד בשפה שבחרתם.',
     },
     seoTitle: {
-      en: 'Diagnostic AI Audit | Summary PDF | Erythro.ai',
-      ru: 'AI Аудит Диагностика | Сводный PDF | Erythro.ai',
-      he: 'ביקורת AI אבחון | PDF סיכום | Erythro.ai',
+      en: 'Diagnostic AI Audit | Summary report | Erythro.ai',
+      ru: 'AI Аудит Диагностика | Сводный отчёт | Erythro.ai',
+      he: 'ביקורת AI אבחון | דוח סיכום | Erythro.ai',
     },
     seoDescription: {
-      en: 'Diagnostic website audit: scorecard, top-3 risks, summary checklist cards, and up to 5 funnel URLs in PDF.',
-      ru: 'Диагностический аудит сайта: scorecard, топ-3 риска, сводные карточки чеклиста и до 5 URL воронки в PDF.',
-      he: 'ביקורת אבחון לאתר: scorecard, 3 סיכונים, כרטיסי סיכום ועד 5 כתובות משפך ב-PDF.',
+      en: 'Diagnostic website audit: score, top-3, summary cards, three languages, and up to 5 funnel URLs.',
+      ru: 'Диагностика сайта: оценка, топ-3, сводные карточки, три языка и до 5 URL воронки.',
+      he: 'ביקורת אבחון לאתר: ציון, 3 סיכונים, כרטיסי סיכום, שלוש שפות ועד 5 כתובות משפך.',
     },
   },
   {
@@ -405,69 +405,69 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         {
           value: {
             en: 'Everything in Diagnostic, plus:',
-            ru: 'Всё из Diagnostic, плюс:',
-            he: 'הכל מ-Diagnostic, ובנוסף:',
+            ru: 'Всё из Диагностики, плюс:',
+            he: 'הכל מחבילת האבחון, ובנוסף:',
           },
         },
         {
           value: {
-            en: 'Full 60+ checklist and fix plan unlocked',
-            ru: 'Полный чеклист 60+ и план правок открыты',
-            he: 'צ׳ק-ליסט 60+ מלא ותוכנית תיקון פתוחים',
+            en: 'Full 60+ checklist and a fix plan on every row',
+            ru: 'Полный чеклист 60+ и план правок по каждой строке',
+            he: 'צ׳ק-ליסט 60+ מלא ותוכנית תיקון לכל שורה',
           },
         },
         {
           value: {
-            en: 'Funnel crawl disclosed — up to 10 URLs',
-            ru: 'Обход воронки раскрыт — до 10 URL',
-            he: 'סריקת המשפך גלויה — עד 10 כתובות',
+            en: 'Funnel crawl — up to 10 URLs',
+            ru: 'Воронка раскрыта — до 10 URL',
+            he: 'סריקת משפך — עד 10 כתובות',
           },
         },
         {
           value: {
-            en: 'AI Visibility (7 criteria) + Agent Readiness L1',
-            ru: 'AI Visibility (7 критериев) + Agent Readiness L1',
-            he: 'נראות AI (7 קריטריונים) + Agent Readiness L1',
+            en: 'AI Visibility: 7 criteria + Agent Readiness L1',
+            ru: 'AI Visibility: 7 критериев + Agent Readiness L1',
+            he: 'נראות AI: 7 קריטריונים + Agent Readiness L1',
           },
         },
         {
           value: {
-            en: 'Full HTML + PDF report unlocked',
-            ru: 'Полный HTML + PDF отчёт открыт',
-            he: 'דוח HTML + PDF מלא פתוח',
+            en: 'In-report recommendations you can copy',
+            ru: 'Рекомендации в отчёте, можно копировать',
+            he: 'המלצות בדוח, עם אפשרות להעתקה',
           },
         },
         {
           value: {
-            en: 'Team support on the report findings',
-            ru: 'Поддержка команды по находкам отчёта',
-            he: 'תמיכת הצוות בממצאי הדוח',
+            en: 'Full HTML report in the language you choose',
+            ru: 'Полный HTML-отчёт на выбранном языке',
+            he: 'דוח HTML מלא בשפה שבחרתם',
           },
         },
       ],
     },
     subtitle: {
-      en: 'Full 60+ checklist, fix plan, and AI Visibility.',
-      ru: 'Полный чеклист 60+, план правок и AI Visibility.',
-      he: 'צ׳ק-ליסט 60+ מלא, תוכנית תיקון ונראות AI.',
+      en: 'Full 60+ checklist, fix plan, and AI Visibility breakdown.',
+      ru: 'Полный чеклист 60+, план правок и разбор AI Visibility.',
+      he: 'צ׳ק-ליסט 60+ מלא, תוכנית תיקון ופירוט נראות AI.',
     },
     periods: [],
     defaultPeriodId: '',
     addons: [],
     includes: {
-      en: 'Pro unlocks the full 60+ checklist and recommendations, discloses up to 10 funnel URLs, AI Visibility (7 criteria) with Agent Readiness L1, and the full HTML + PDF report.',
-      ru: 'Pro открывает полный чеклист 60+ и рекомендации, раскрывает до 10 URL воронки, AI Visibility (7 критериев) с Agent Readiness L1 и полный HTML + PDF отчёт.',
-      he: 'Pro פותח את צ׳ק-ליסט 60+ המלא ואת ההמלצות, חושף עד 10 כתובות משפך, נראות AI (7 קריטריונים) עם Agent Readiness L1 ואת דוח ה-HTML + PDF המלא.',
+      en: 'Everything in Diagnostic, plus up to 10 funnel pages. Unlocks the full 60+ checklist with a fix on every row — including 7 AI Visibility criteria and Agent Readiness L1. HTML report in the language you choose; recommendations can be copied.',
+      ru: 'Как Диагностика, плюс до 10 страниц воронки. Открыт полный чеклист 60+ с рекомендациями по каждой строке — включая 7 критериев AI Visibility и Agent Readiness L1. HTML-отчёт на выбранном языке, рекомендации можно копировать.',
+      he: 'הכל מחבילת האבחון, ובנוסף עד 10 עמודי משפך. נפתח צ׳ק-ליסט 60+ מלא עם המלצה לכל שורה — כולל 7 קריטריוני נראות AI ו-Agent Readiness L1. דוח HTML בשפה שבחרתם; אפשר להעתיק את ההמלצות.',
     },
     seoTitle: {
-      en: 'Pro AI Audit | Full Checklist & Fix Plan | Erythro.ai',
+      en: 'Pro AI Audit | Full checklist & fix plan | Erythro.ai',
       ru: 'AI Аудит Pro | Полный чеклист и план правок | Erythro.ai',
       he: 'ביקורת AI Pro | צ׳ק-ליסט מלא ותוכנית תיקון | Erythro.ai',
     },
     seoDescription: {
-      en: 'Full website audit unlock: 60+ checklist, fix plan, up to 10 funnel URLs, AI Visibility, and HTML + PDF report.',
-      ru: 'Полный аудит сайта: чеклист 60+, план правок, до 10 URL воронки, AI Visibility и HTML + PDF отчёт.',
-      he: 'ביקורת אתר מלאה: צ׳ק-ליסט 60+, תוכנית תיקון, עד 10 כתובות משפך, נראות AI ודוח HTML + PDF.',
+      en: 'Full website audit: 60+ checklist, fix plan, up to 10 funnel URLs, and AI Visibility breakdown.',
+      ru: 'Полный аудит сайта: чеклист 60+, план правок, до 10 URL воронки и разбор AI Visibility.',
+      he: 'ביקורת אתר מלאה: צ׳ק-ליסט 60+, תוכנית תיקון, עד 10 כתובות משפך ופירוט נראות AI.',
     },
   },
 ]
