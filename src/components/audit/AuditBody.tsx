@@ -429,11 +429,13 @@ function AuditFormPanel({
       return
     }
 
+    // React nulls SyntheticEvent.currentTarget after the first await (PIT-067).
+    const honeypot =
+      (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ??
+      ''
+
     const websiteOk = await ensureWebsiteOk()
     if (!websiteOk) return
-
-    const honeypot =
-      (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ?? ''
 
     setStatus('sending')
     setSubmitError('')
