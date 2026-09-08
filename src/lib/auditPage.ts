@@ -115,9 +115,9 @@ export const auditPage = {
       he: 'איך עובדת הביקורת',
     } satisfies Localized,
     heroIntro: {
-      en: 'The lab runs a commercial QA audit on five scorecard scales: Speed & Mobile UX, Lead gen & Forms, SEO & Visibility, Security & Stability, and AI Visibility & Brand Discovery. You get a 0–100 score with a letter grade (A+–F) and the issues that cost you leads and visibility.',
-      ru: 'Лаборатория проводит коммерческий QA-аудит по пяти шкалам scorecard: скорость и мобильный UX, лиды и формы, SEO и видимость, безопасность и стабильность, AI Visibility & Brand Discovery. Вы получаете оценку 0–100 с грейдом (A+–F) и проблемы, которые мешают заявкам и видимости.',
-      he: 'המעבדה מבצעת ביקורת QA מסחרית בחמש סקאלות: מהירות ו-UX למובייל, לידים וטפסים, SEO ונראות, אבטחה ויציבות, נראות AI וגילוי מותג. אתם מקבלים ציון 0–100 עם דרגה (A+–F) ואת הבעיות שפוגעות בלידים ובנראות.',
+      en: 'The lab runs a commercial QA audit on five scorecard scales: Speed & Mobile UX, Lead gen & Forms, SEO & Visibility, Security & Stability, and AI Visibility & Brand Discovery. You get a 0–100 score with a letter grade (A+–F). How much of the site is crawled — and in how many languages — depends on the plan.',
+      ru: 'Лаборатория проводит коммерческий QA-аудит по пяти шкалам scorecard: скорость и мобильный UX, лиды и формы, SEO и видимость, безопасность и стабильность, AI Visibility & Brand Discovery. Вы получаете оценку 0–100 с грейдом (A+–F). Сколько страниц снимается и на скольких языках — зависит от тарифа.',
+      he: 'המעבדה מבצעת ביקורת QA מסחרית בחמש סקאלות: מהירות ו-UX למובייל, לידים וטפסים, SEO ונראות, אבטחה ויציבות, נראות AI וגילוי מותג. אתם מקבלים ציון 0–100 עם דרגה (A+–F). כמה עמודים נסרקים — ובכמה שפות — תלוי בחבילה.',
     } satisfies Localized,
     stats: [
       {
@@ -131,9 +131,9 @@ export const auditPage = {
         he: '5 סקאלות scorecard',
       },
       {
-        en: 'EN · RU · HE',
-        ru: 'EN · RU · HE',
-        he: 'EN · RU · HE',
+        en: '1 or 3 languages',
+        ru: '1 или 3 языка',
+        he: 'שפה אחת או 3',
       },
       {
         en: 'Lighthouse × 2',
@@ -141,9 +141,9 @@ export const auditPage = {
         he: 'Lighthouse × 2',
       },
       {
-        en: 'Up to 10 funnel URLs',
-        ru: 'До 10 URL воронки',
-        he: 'עד 10 כתובות משפך',
+        en: '1 / 5 / 10 URLs',
+        ru: '1 / 5 / 10 URL',
+        he: '1 / 5 / 10 כתובות',
       },
     ] satisfies Localized[],
     stepsHeading: {
@@ -160,22 +160,22 @@ export const auditPage = {
           he: 'שלחו את כתובת האתר',
         } satisfies Localized,
         body: {
-          en: 'Leave the domain, contacts, and report language. No card needed for the free preview.',
-          ru: 'Укажите домен, контакты и язык отчёта. Для бесплатного превью карта не нужна.',
-          he: 'השאירו דומיין, פרטי קשר ושפת דוח. לתצוגה מקדימה חינמית לא נדרש כרטיס.',
+          en: 'Leave the domain, contacts, and report language. No credit card needed for the free preview.',
+          ru: 'Укажите домен, контакты и язык отчёта. Для бесплатного превью банковская карта не нужна.',
+          he: 'השאירו דומיין, פרטי קשר ושפת דוח. לתצוגה מקדימה חינמית לא נדרש כרטיס אשראי.',
         } satisfies Localized,
       },
       {
         label: { en: 'Step 2', ru: 'Шаг 2', he: 'שלב 2' } satisfies Localized,
         title: {
-          en: 'The lab runs 60+ checks and the funnel',
-          ru: 'Лаборатория снимает 60+ проверок и воронку',
-          he: 'המעבדה מבצעת 60+ בדיקות ואת המשפך',
+          en: 'The lab crawls by plan',
+          ru: 'Лаборатория снимает по тарифу',
+          he: 'המעבדה סורקת לפי חבילה',
         } satisfies Localized,
         body: {
-          en: 'The lab crawls the homepage and commercially important pages from sitemap and nav (contacts, services, portfolio, pricing) — up to 10 URLs. Locales EN / RU / HE. Mobile at iPhone SE 375×667. PageSpeed (mobile + desktop), forms, SEO, security headers, AI Visibility, Agent Readiness, and LanguageTool spelling on EN/RU.',
-          ru: 'Лаборатория обходит главную и коммерчески важные страницы из sitemap и навигации (контакты, услуги, портфолио, цены) — до 10 URL. Локали EN / RU / HE. Мобильная вёрстка — iPhone SE 375×667. PageSpeed (mobile + desktop), формы, SEO, security-заголовки, AI Visibility, Agent Readiness и орфография LanguageTool на EN/RU.',
-          he: 'המעבדה סורקת את דף הבית ועמודים מסחריים מ-sitemap ומהניווט (יצירת קשר, שירותים, פורטפוליו, מחירים) — עד 10 כתובות. שפות EN / RU / HE. מובייל ב-iPhone SE 375×667. PageSpeed (מובייל + דסקטופ), טפסים, SEO, כותרות אבטחה, נראות AI, Agent Readiness ואיות LanguageTool ב-EN/RU.',
+          en: 'Free: homepage in the report language. Diagnostic: EN, RU and HE, up to 5 funnel URLs. Pro: up to 10 URLs. Same protocol on every run: PageSpeed (mobile + desktop), forms, SEO, security headers, AI Visibility, Agent Readiness, and LanguageTool spelling on EN/RU. Mobile viewport: iPhone SE 375×667.',
+          ru: 'Free: главная на языке отчёта. Diagnostic: EN, RU и HE, до 5 URL воронки. Pro: до 10 URL. Один протокол: PageSpeed (mobile + desktop), формы, SEO, security-заголовки, AI Visibility, Agent Readiness и орфография LanguageTool на EN/RU. Мобильная вёрстка — iPhone SE 375×667.',
+          he: 'Free: דף הבית בשפת הדוח. Diagnostic: EN, RU ו-HE, עד 5 כתובות משפך. Pro: עד 10 כתובות. אותו פרוטוקול: PageSpeed (מובייל + דסקטופ), טפסים, SEO, כותרות אבטחה, נראות AI, Agent Readiness ואיות LanguageTool ב-EN/RU. מובייל: iPhone SE 375×667.',
         } satisfies Localized,
       },
       {
@@ -186,9 +186,9 @@ export const auditPage = {
           he: 'מקבלים ציון וצעדים הבאים',
         } satisfies Localized,
         body: {
-          en: 'Score 0–100 with a letter grade (A+–F) and the top-3 conversion risks. Free preview: scorecard, top-3, and Lighthouse. Diagnostic unlocks summary cards and up to 5 funnel URLs. Pro unlocks up to 10 URLs, the full 60+ checklist, and the fix plan.',
-          ru: 'Оценка 0–100 с грейдом (A+–F) и топ-3 уязвимости конверсии. Бесплатное превью: scorecard, топ-3 и Lighthouse. Diagnostic открывает сводные карточки и до 5 URL воронки. Pro — до 10 URL, полный чеклист 60+ и план правок.',
-          he: 'ציון 0–100 עם דרגה (A+–F) ו-3 סיכוני המרה עיקריים. תצוגה מקדימה חינם: scorecard, טופ-3 ו-Lighthouse. Diagnostic פותח כרטיסי סיכום ועד 5 כתובות משפך. Pro — עד 10 כתובות, צ׳ק-ליסט 60+ מלא ותוכנית תיקון.',
+          en: 'Score 0–100 with a letter grade (A+–F) and the top-3 conversion risks. HTML report in the language you choose. Free: scorecard, top-3, and Lighthouse. Diagnostic unlocks summary cards and up to 5 funnel URLs. Pro unlocks up to 10 URLs, the full 60+ checklist, and the fix plan.',
+          ru: 'Оценка 0–100 с грейдом (A+–F) и топ-3 риски конверсии. HTML-отчёт на выбранном языке. Free: scorecard, топ-3 и Lighthouse. Diagnostic открывает сводные карточки и до 5 URL воронки. Pro — до 10 URL, полный чеклист 60+ и план правок.',
+          he: 'ציון 0–100 עם דרגה (A+–F) ו-3 סיכוני המרה עיקריים. דוח HTML בשפה שבחרתם. Free: scorecard, טופ-3 ו-Lighthouse. Diagnostic פותח כרטיסי סיכום ועד 5 כתובות משפך. Pro — עד 10 כתובות, צ׳ק-ליסט 60+ מלא ותוכנית תיקון.',
         } satisfies Localized,
       },
     ],
@@ -280,9 +280,9 @@ export const auditPage = {
       he: 'מה המעבדה בודקת בפועל',
     } satisfies Localized,
     categoriesIntro: {
-      en: '60+ unique signal types. Some run once per site, some on every locale (EN / RU / HE). Every finding maps to a concrete check — the scorecard is a summary, not the protocol.',
-      ru: '60+ уникальных типов сигналов. Часть — один раз на сайт, часть — на каждой локали (EN / RU / HE). Каждая находка привязана к конкретной проверке: scorecard — это свод, не протокол.',
-      he: '60+ סוגי אותות ייחודיים. חלק פעם אחת לאתר, חלק בכל שפה (EN / RU / HE). כל ממצא מקושר לבדיקה קונקרטית — ה-scorecard הוא סיכום, לא הפרוטוקול.',
+      en: '60+ unique signal types. Site-level checks run once. Page and locale checks follow the plan: Free — the report language and the homepage; Diagnostic — EN / RU / HE and up to 5 URLs; Pro — up to 10. Each finding maps to a concrete check — the scorecard is a summary, not the protocol.',
+      ru: '60+ уникальных типов сигналов. Проверки уровня сайта — один раз. Страницы и локали зависят от тарифа: Free — язык отчёта и главная; Diagnostic — EN / RU / HE и до 5 URL; Pro — до 10. Каждая находка привязана к конкретной проверке: scorecard — это свод, не протокол.',
+      he: '60+ סוגי אותות ייחודיים. בדיקות ברמת האתר רצות פעם אחת. עמודים ושפות לפי חבילה: Free — שפת הדוח ודף הבית; Diagnostic — EN / RU / HE ועד 5 כתובות; Pro — עד 10. כל ממצא מקושר לבדיקה קונקרטית — ה-scorecard הוא סיכום, לא הפרוטוקול.',
     } satisfies Localized,
     categories: [
       {
@@ -328,9 +328,9 @@ export const auditPage = {
           he: 'לכל שפה — UX, טפסים, נכסי SEO',
         } satisfies Localized,
         body: {
-          en: '~28 signals × EN / RU / HE: title, description, Open Graph, canonical, hreflang, favicon, headings, overflow-x at 375px, forms and anti-spam (Turnstile / reCAPTCHA / hCaptcha / honeypot), chat/messengers, axe-core WCAG 2.1 AA / IS 5568. Hebrew: RTL dir and heading alignment. Spelling: LanguageTool on EN and RU.',
-          ru: '~28 сигналов × EN / RU / HE: title, description, Open Graph, canonical, hreflang, favicon, заголовки, overflow-x на 375px, формы и антиспам (Turnstile / reCAPTCHA / hCaptcha / honeypot), чат/мессенджеры, axe-core WCAG 2.1 AA / IS 5568. Иврит: RTL dir и выравнивание заголовков. Орфография: LanguageTool на EN и RU.',
-          he: '~28 אותות × EN / RU / HE: title, description, Open Graph, canonical, hreflang, favicon, כותרות, overflow-x ב-375px, טפסים ואנטי-ספאם (Turnstile / reCAPTCHA / hCaptcha / honeypot), צ׳אט/מסרים, axe-core WCAG 2.1 AA / IS 5568. עברית: dir ל-RTL ויישור כותרות. איות: LanguageTool ב-EN ו-RU.',
+          en: 'Diagnostic and Pro probe EN / RU / HE; Free probes the report language only. ~28 signals per locale: title, description, Open Graph, canonical, hreflang, favicon, headings, overflow-x at 375px, forms and anti-spam (Turnstile / reCAPTCHA / hCaptcha / honeypot), chat/messengers, axe-core WCAG 2.1 AA / IS 5568. Hebrew: RTL dir and heading alignment. Spelling: LanguageTool on EN and RU.',
+          ru: 'Diagnostic и Pro снимают EN / RU / HE; Free — только язык отчёта. ~28 сигналов на локаль: title, description, Open Graph, canonical, hreflang, favicon, заголовки, overflow-x на 375px, формы и антиспам (Turnstile / reCAPTCHA / hCaptcha / honeypot), чат/мессенджеры, axe-core WCAG 2.1 AA / IS 5568. Иврит: RTL dir и выравнивание заголовков. Орфография: LanguageTool на EN и RU.',
+          he: 'Diagnostic ו-Pro בודקים EN / RU / HE; Free — רק את שפת הדוח. ~28 אותות לכל שפה: title, description, Open Graph, canonical, hreflang, favicon, כותרות, overflow-x ב-375px, טפסים ואנטי-ספאם (Turnstile / reCAPTCHA / hCaptcha / honeypot), צ׳אט/מסרים, axe-core WCAG 2.1 AA / IS 5568. עברית: dir ל-RTL ויישור כותרות. איות: LanguageTool ב-EN ו-RU.',
         } satisfies Localized,
       },
       {
@@ -364,9 +364,9 @@ export const auditPage = {
           he: 'סריקת משפך',
         } satisfies Localized,
         body: {
-          en: 'Candidates from sitemap and nav; lab opens up to 10 commercial URLs. Per page: HTTP, title, h1, forms, CTA, soft-404, lang, dir, word count. Free discloses 1 URL (homepage); Diagnostic unlocks up to 5; Pro unlocks up to 10 and the full row-by-row checklist.',
-          ru: 'Кандидаты из sitemap и навигации; лаборатория открывает до 10 коммерческих URL. На каждую страницу: HTTP, title, h1, формы, CTA, soft-404, lang, dir, объём текста. Free раскрывает 1 URL (главная); Diagnostic — до 5; Pro — до 10 и полный построчный чеклист.',
-          he: 'מועמדים מ-sitemap ומהניווט; המעבדה פותחת עד 10 כתובות מסחריות. לכל עמוד: HTTP, title, h1, טפסים, CTA, soft-404, lang, dir, היקף טקסט. Free חושף URL אחד (דף הבית); Diagnostic — עד 5; Pro — עד 10 ואת צ׳ק-ליסט השורות המלא.',
+          en: 'Candidates from sitemap and nav. Free crawls 1 URL (homepage); Diagnostic up to 5; Pro up to 10. Per page: HTTP, title, h1, forms, CTA, soft-404, lang, dir, word count. The row-by-row 60+ checklist is in Pro.',
+          ru: 'Кандидаты из sitemap и навигации. Free снимает 1 URL (главная); Diagnostic — до 5; Pro — до 10. На каждую страницу: HTTP, title, h1, формы, CTA, soft-404, lang, dir, объём текста. Построчный чеклист 60+ — в Pro.',
+          he: 'מועמדים מ-sitemap ומהניווט. Free סורק כתובת אחת (דף הבית); Diagnostic — עד 5; Pro — עד 10. לכל עמוד: HTTP, title, h1, טפסים, CTA, soft-404, lang, dir, היקף טקסט. צ׳ק-ליסט 60+ שורה-שורה — ב-Pro.',
         } satisfies Localized,
       },
     ],
@@ -409,7 +409,7 @@ export const auditPage = {
         body: {
           en: 'Top-3 risks come with business impact. Diagnostic unlocks summary cards. The row-by-row 60+ checklist, fix plan, and AI Visibility details are in Pro; Delegate adds implementation with our team.',
           ru: 'Топ-3 рисков — с влиянием на бизнес. Diagnostic открывает сводные карточки. Построчный чеклист 60+, план правок и детали AI Visibility — в Pro; Delegate добавляет внедрение вместе с нашей командой.',
-          he: '3 הסיכונים העיקריים מגיעים עם השפעה עסקית. Diagnostic פותח כרטיסי סיכום. צ׳ק-ליסט 60+ שורה-שורה, תוכנית תיקון ופרטי נראות AI — ב-Pro; Delegate מוסיף יישום עם הצוות שלנו.',
+          he: 'לשלושת הסיכונים העיקריים יש השפעה עסקית. Diagnostic פותח כרטיסי סיכום. צ׳ק-ליסט 60+ שורה-שורה, תוכנית תיקון ופרטי נראות AI — ב-Pro; Delegate מוסיף יישום עם הצוות שלנו.',
         } satisfies Localized,
       },
     ],
@@ -431,9 +431,9 @@ export const auditPage = {
       he: 'התחילו בתצוגה מקדימה חינם: scorecard, טופ-3 ו-Lighthouse. Diagnostic פותח כרטיסי סיכום ועד 5 כתובות משפך. Pro — צ׳ק-ליסט 60+ מלא, עד 10 כתובות משפך, תוכנית תיקון ונראות AI, או תעבירו את היישום אלינו.',
     } satisfies Localized,
     footnote: {
-      en: 'Free preview needs no card · Reports in RU / EN / HE',
-      ru: 'Бесплатное превью без карты · Отчёты на RU / EN / HE',
-      he: 'תצוגה מקדימה חינם ללא כרטיס · דוחות ב-RU / EN / HE',
+      en: 'Secure payment · Choose report language (RU / EN / HE)',
+      ru: 'Безопасная оплата · Выбор языка отчёта (RU / EN / HE)',
+      he: 'תשלום מאובטח · בחירת שפת הדוח (RU / EN / HE)',
     } satisfies Localized,
     agency: {
       en: 'Need audits for 10+ domains or run an agency?',
