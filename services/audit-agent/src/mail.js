@@ -3,6 +3,7 @@
  */
 
 import nodemailer from 'nodemailer'
+import { buildAuditPdfFilename, formatAuditOrderId } from './pdfFilename.js'
 
 const MAILBOX = 'order@erythro.ai'
 const SUPPORT_EMAIL = 'order@erythro.ai'
@@ -13,12 +14,6 @@ function escapeHtml(value) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-}
-
-function formatAuditOrderId(id) {
-  const n = typeof id === 'number' ? id : Number(id)
-  if (!Number.isSafeInteger(n) || n <= 0) return `AUD-${String(id).trim()}`
-  return `AUD-${n}`
 }
 
 function copyForLocale(locale, withPdf) {
@@ -138,7 +133,13 @@ export async function sendClientAuditEmail(input) {
     attachments: withPdf
       ? [
           {
-            filename: input.pdfFilename || `erythro-audit-${orderId}.pdf`,
+            filename:
+              input.pdfFilename ||
+              buildAuditPdfFilename({
+                orderId: input.orderId,
+                targetUrl: input.targetUrl,
+                locale,
+              }),
             content: Buffer.from(pdfBuffer),
             contentType: 'application/pdf',
           },

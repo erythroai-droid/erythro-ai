@@ -443,6 +443,9 @@ public final class A44ReportGenerator {
         min-width: 0;
         padding: 4px 6px;
     }
+    /* Desktop default: wide Lighthouse table. Compact (transposed) is mobile-only. */
+    table.metrics-compact { display: none; }
+    table.metrics-wide { display: table; }
     .metrics-card .metrics-note {
         margin: 0 0 10px;
         padding: 8px 4px 4px;
@@ -740,6 +743,613 @@ public final class A44ReportGenerator {
     }
 """;
 
+    /**
+     * Mobile HTML layout (Figma frame {@code iPhone 17 - 1}, 402-wide).
+     * Appended AFTER {@link #toA4RemCss} so {@code px} breakpoints stay real pixels
+     * and are not converted to rem. Screen-only — PDF/print keeps the A4 canvas.
+     */
+    private static final String MOBILE_SCREEN_CSS = """
+
+    /* Mobile report — Figma iPhone 17 - 1 (402). Screen only; PDF unchanged. */
+    @media screen and (max-width: 720px) {
+        html.report-a4-4 {
+            /* Larger mobile rem: ~1.3 CSS px per design unit on a 390px phone */
+            font-size: calc(100vw / 300) !important;
+        }
+        html.report-a4-4,
+        html.report-a4-4 body {
+            width: 100% !important;
+            min-height: 0 !important;
+            max-width: 100% !important;
+            background: #1e1e1e !important;
+        }
+        html.report-a4-4 body {
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        html.report-a4-4 .page {
+            width: 100% !important;
+            max-width: 100% !important;
+            zoom: 1 !important;
+            box-shadow: none !important;
+            display: flex;
+            flex-direction: column;
+            background: #f3f3f3;
+            overflow-x: hidden;
+        }
+
+        /* Flatten sidebar so brand + URL participate in page flex order */
+        html.report-a4-4 .sheet-sidebar {
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            bottom: auto !important;
+            width: auto !important;
+            height: auto !important;
+            display: contents;
+            background: transparent;
+            z-index: auto;
+        }
+
+        html.report-a4-4 .brand {
+            order: 1;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 119rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16rem 24rem;
+            background: #1e1e1e;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .brand img,
+        html.report-a4-4 .brand svg {
+            width: 276rem !important;
+            max-width: 72%;
+            height: auto !important;
+        }
+
+        html.report-a4-4 .sheet-title {
+            order: 2;
+            position: relative !important;
+            margin: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 87rem;
+            padding: 16rem 20rem;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+        html.report-a4-4 .sheet-title h1 {
+            font-size: 24rem !important;
+            letter-spacing: 2.4rem !important;
+            line-height: 1.2 !important;
+        }
+
+        html.report-a4-4 .sheet-title-fill {
+            order: 3;
+            position: relative !important;
+            margin: 0 !important;
+            width: 100% !important;
+            height: 40rem !important;
+            z-index: 2;
+            font-size: 16rem !important;
+        }
+
+        html.report-a4-4 .sheet-url {
+            order: 4;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: 40rem !important;
+            font-size: 16rem !important;
+            padding: 0 12rem;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .meta {
+            order: 5;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: 40rem !important;
+            min-height: 40rem;
+            background: #1e1e1e;
+            color: #fff;
+            font-size: 10rem !important;
+            z-index: 2;
+            padding: 0 12rem;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .gauge-wrap {
+            order: 6;
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 196rem;
+            display: grid;
+            grid-template-columns: 180rem;
+            grid-template-rows: 180rem;
+            place-content: center;
+            place-items: center;
+            padding: 8rem 10rem 24rem;
+            background: #1e1e1e;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+        html.report-a4-4 .gauge-svg,
+        html.report-a4-4 .gauge-hole {
+            grid-area: 1 / 1;
+            width: 180rem !important;
+            height: 180rem !important;
+            max-width: 180rem;
+            max-height: 180rem;
+            position: relative !important;
+            inset: auto !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            bottom: auto !important;
+            margin: 0 !important;
+        }
+        html.report-a4-4 .gauge-hole {
+            pointer-events: none;
+            text-align: center;
+            overflow: hidden;
+        }
+        html.report-a4-4 .gauge-score {
+            top: 31rem !important;
+            font-size: 50rem !important;
+            line-height: 1 !important;
+        }
+        html.report-a4-4 .gauge-grade {
+            top: 94rem !important;
+            left: 51rem !important;
+            width: 78rem !important;
+            height: 26rem !important;
+            font-size: 10rem !important;
+        }
+        html.report-a4-4 .gauge-sub {
+            top: 126rem !important;
+            font-size: 10rem !important;
+        }
+
+        html.report-a4-4 table.sheet {
+            order: 7;
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: auto !important;
+            border-collapse: collapse;
+        }
+        html.report-a4-4 table.sheet > thead,
+        html.report-a4-4 table.sheet > tfoot {
+            display: none !important;
+        }
+        html.report-a4-4 table.sheet > tbody,
+        html.report-a4-4 table.sheet > tbody > tr,
+        html.report-a4-4 table.sheet > tbody > tr > td {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+        }
+
+        html.report-a4-4 .main {
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            gap: 0;
+        }
+
+        html.report-a4-4 .chart-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+            padding: 30rem 10rem 24rem !important;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .diag-title {
+            font-size: 32rem !important;
+            letter-spacing: 6.4rem !important;
+            line-height: 30rem !important;
+        }
+        html.report-a4-4 .diag-sub {
+            font-size: 16rem !important;
+            letter-spacing: 3.2rem !important;
+        }
+        html.report-a4-4 .chart-body {
+            display: grid !important;
+            grid-template-columns: 118rem minmax(0, 1fr) !important;
+            column-gap: 8rem !important;
+            padding: 0 12rem 8rem !important;
+            align-items: stretch;
+        }
+        html.report-a4-4 .ticks {
+            grid-column: 2 !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+            font-size: 10rem !important;
+            line-height: 12rem !important;
+            letter-spacing: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .ticks span {
+            flex: 0 0 auto;
+            min-width: 0;
+            text-align: center;
+        }
+        html.report-a4-4 .chart-grid-wrap {
+            grid-column: 1 / -1 !important;
+            margin: 6rem 0 !important;
+        }
+        html.report-a4-4 .chart-grid {
+            left: 126rem !important; /* 118 label + 8 gap */
+            right: 0 !important;
+            display: flex !important;
+            justify-content: space-between !important;
+        }
+        html.report-a4-4 .chart-grid i {
+            width: 0 !important;
+            border-left: 1px solid #e8e8e8 !important;
+            height: 100% !important;
+        }
+        html.report-a4-4 .chart-rows {
+            grid-template-columns: 118rem minmax(0, 1fr) !important;
+            column-gap: 8rem !important;
+            row-gap: 10rem !important;
+        }
+        html.report-a4-4 .chart-label {
+            font-size: 13rem !important;
+            line-height: 16rem !important;
+            min-height: 28rem;
+            text-align: right !important;
+            justify-content: flex-end !important;
+        }
+        html.report-a4-4 .bar-track {
+            height: 24rem !important;
+            min-width: 0;
+        }
+
+        html.report-a4-4 .section-rows {
+            width: 100% !important;
+            left: auto !important;
+            gap: 0 !important;
+            padding-bottom: 0 !important;
+            z-index: 2;
+        }
+        html.report-a4-4 .section-row {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            align-items: stretch !important;
+        }
+        html.report-a4-4 .section-toc {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            margin-left: calc(50% - 50vw) !important;
+            margin-right: calc(50% - 50vw) !important;
+            align-self: stretch !important;
+            flex-shrink: 0;
+            padding: 28rem 22rem !important;
+            background: #1e1e1e;
+            box-sizing: border-box;
+            align-items: stretch !important;
+        }
+        html.report-a4-4 .toc-item {
+            width: 100% !important;
+            max-width: none !important;
+            display: flex !important;
+            gap: 12rem;
+            align-items: flex-start;
+        }
+        html.report-a4-4 .toc-bar {
+            height: 56rem;
+            flex-shrink: 0;
+        }
+        html.report-a4-4 .toc-text {
+            width: 100% !important;
+            max-width: none !important;
+            flex: 1 1 auto;
+            font-size: 18rem !important;
+            line-height: 26rem !important;
+            color: #fff !important;
+        }
+        html.report-a4-4 .section-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 18rem 14rem 28rem !important;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .findings-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 18rem !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        html.report-a4-4 .finding-card,
+        html.report-a4-4 .finding-card.gemini-funnel {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-height: 0 !important;
+            box-sizing: border-box;
+            padding: 22rem 18rem !important;
+        }
+        html.report-a4-4 .finding-idx {
+            width: 56rem !important;
+            height: 56rem !important;
+            font-size: 26rem !important;
+        }
+        html.report-a4-4 .finding-head-title {
+            font-size: 18rem !important;
+            line-height: 24rem !important;
+        }
+        html.report-a4-4 .gemini-funnel-body {
+            display: flex !important;
+            flex-direction: column !important;
+            grid-template-columns: none !important;
+            gap: 12rem !important;
+            width: 100% !important;
+        }
+        html.report-a4-4 .gemini-funnel .finding-box,
+        html.report-a4-4 .finding-box {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box;
+            font-size: 15rem !important;
+            line-height: 22rem !important;
+            min-height: 0 !important;
+            padding: 14rem 14rem 14rem 20rem !important;
+        }
+        html.report-a4-4 .finding-box .issue {
+            font-size: 14rem !important;
+            line-height: 21rem !important;
+            margin-top: 6rem !important;
+        }
+        html.report-a4-4 .gemini-funnel-note,
+        html.report-a4-4 .check-result-text,
+        html.report-a4-4 .check-result-label,
+        html.report-a4-4 .check-pages,
+        html.report-a4-4 .scope-lead,
+        html.report-a4-4 .metrics-note {
+            font-size: 14rem !important;
+            line-height: 1.45 !important;
+        }
+        html.report-a4-4 .check-name {
+            font-size: 16rem !important;
+            line-height: 22rem !important;
+        }
+        html.report-a4-4 .check-count {
+            font-size: 16rem !important;
+        }
+        html.report-a4-4 .check-filter {
+            font-size: 12rem !important;
+            min-height: 34rem;
+            padding: 0 14rem;
+        }
+        html.report-a4-4 .cta-sub,
+        html.report-a4-4 .copy,
+        html.report-a4-4 .footer-contact {
+            font-size: 14rem !important;
+            line-height: 1.4 !important;
+        }
+        html.report-a4-4 .cta-title {
+            font-size: 16rem !important;
+            line-height: 22rem !important;
+        }
+
+        html.report-a4-4 .check-toolbar,
+        html.report-a4-4 .check-stack,
+        html.report-a4-4 .check-group,
+        html.report-a4-4 .check-card,
+        html.report-a4-4 .metrics-card,
+        html.report-a4-4 .scope,
+        html.report-a4-4.tier-free .section-free-locked {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        html.report-a4-4 .metrics-card {
+            overflow-x: visible;
+            padding: 18rem 12rem 10rem !important;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 table.metrics-wide {
+            display: none !important;
+        }
+        html.report-a4-4 table.metrics-compact {
+            display: table !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            table-layout: fixed !important;
+            margin: 0 0 8rem !important;
+            border-collapse: collapse;
+        }
+        html.report-a4-4 table.metrics-compact col.col-metric { width: 36%; }
+        html.report-a4-4 table.metrics-compact col.col-mobile,
+        html.report-a4-4 table.metrics-compact col.col-desktop { width: 32%; }
+        html.report-a4-4 table.metrics-compact th,
+        html.report-a4-4 table.metrics-compact td {
+            border: 1px solid #e8e8e8;
+            vertical-align: middle;
+            text-align: center;
+            padding: 14rem 6rem !important;
+            height: auto !important;
+            min-height: 52rem;
+            font-size: 14rem !important;
+            line-height: 1.3 !important;
+            word-break: break-word;
+        }
+        html.report-a4-4 table.metrics-compact thead th {
+            background: #1e1e1e;
+            color: #fff;
+            font-size: 13rem !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-right: 1px solid #fff;
+            padding: 14rem 6rem !important;
+        }
+        html.report-a4-4 table.metrics-compact thead th:last-child {
+            border-right: 1px solid #e8e8e8;
+        }
+        html.report-a4-4 table.metrics-compact th.metrics-corner {
+            background: #1e1e1e;
+            border-right: 1px solid #fff;
+        }
+        html.report-a4-4 table.metrics-compact tbody th {
+            background: #1e1e1e;
+            color: #fff;
+            font-size: 12rem !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-align: center;
+            padding: 14rem 8rem !important;
+            border-right: 1px solid #fff;
+            width: 36%;
+        }
+        html.report-a4-4 table.metrics-compact tbody td {
+            background: #f9f9f9;
+        }
+        html.report-a4-4 table.metrics-compact .pill {
+            width: auto !important;
+            min-width: 44rem;
+            height: 30rem !important;
+            padding: 0 10rem;
+            font-size: 14rem !important;
+        }
+        html.report-a4-4 .check-toolbar {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 12rem;
+        }
+        html.report-a4-4 .check-filters {
+            justify-content: flex-start !important;
+            flex-wrap: wrap;
+        }
+        html.report-a4-4 .check-card {
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .check-top {
+            flex-wrap: wrap;
+            gap: 12rem !important;
+        }
+        html.report-a4-4 .checks-unlock-btn,
+        html.report-a4-4 .btn-unlock,
+        html.report-a4-4 .scope-cta-btn,
+        html.report-a4-4.tier-diagnostic .checks-unlock-btn,
+        html.report-a4-4.tier-free .checks-unlock-btn,
+        html.report-a4-4.tier-free .btn-unlock {
+            min-width: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            white-space: normal !important;
+            height: auto !important;
+            min-height: 48rem;
+            padding: 12rem 20rem !important;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .footer {
+            order: 8;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 24rem 16rem 20rem !important;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+        html.report-a4-4 .footer-actions {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 14rem !important;
+            max-width: 100% !important;
+            margin: 12rem auto 4rem !important;
+        }
+        html.report-a4-4 .footer-actions .footer-contact:first-child,
+        html.report-a4-4 .footer-actions .btn,
+        html.report-a4-4 .footer-actions .footer-contact:last-child {
+            justify-self: center !important;
+        }
+        html.report-a4-4 .footer-contact {
+            white-space: normal !important;
+            justify-content: center;
+            text-align: center;
+            flex-wrap: wrap;
+        }
+        html.report-a4-4 .btn {
+            min-width: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            min-height: 48rem;
+            padding: 12rem 20rem !important;
+            font-size: 16rem !important;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .cta-sub {
+            max-width: 100% !important;
+            padding: 0 4rem;
+        }
+        html.report-a4-4 .cta-title {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* RTL mobile: keep stacked chrome; reset desktop side margins */
+        html.report-a4-4.rtl-report .sheet-title,
+        html.report-a4-4.rtl-report .sheet-title-fill,
+        html.report-a4-4.rtl-report .main {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            width: 100% !important;
+        }
+        html.report-a4-4.rtl-report .section-toc {
+            align-items: flex-end !important;
+        }
+        html.report-a4-4.rtl-report .section-content {
+            padding-left: 12rem !important;
+            padding-right: 12rem !important;
+        }
+        html.report-a4-4.rtl-report .findings-grid,
+        html.report-a4-4.rtl-report .metrics-card,
+        html.report-a4-4.rtl-report .check-stack,
+        html.report-a4-4.rtl-report .scope {
+            width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        html.report-a4-4.rtl-report .chart-label {
+            text-align: left !important;
+            justify-content: flex-start !important;
+        }
+    }
+""";
+
     private A44ReportGenerator() {}
 
     public static String render(AuditReportView view, A44Tier tier, String assetBase) throws IOException {
@@ -812,12 +1422,14 @@ public final class A44ReportGenerator {
             body.append(FILTER_SCRIPT);
         }
 
-        String css = toA4RemCss(loadBaseCss() + EXTRA_CSS);
+        String css = toA4RemCss(loadBaseCss() + EXTRA_CSS) + MOBILE_SCREEN_CSS;
         return "<!DOCTYPE html>\n"
                 + "<html lang=\"" + esc(i18n.htmlLang) + "\""
                 + (i18n.htmlDirAttr == null || i18n.htmlDirAttr.isBlank() ? "" : " " + i18n.htmlDirAttr)
                 + " class=\"" + htmlClass + "\">\n"
-                + "<head>\n<meta charset=\"UTF-8\">\n<title>"
+                + "<head>\n<meta charset=\"UTF-8\">\n"
+                + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+                + "<title>"
                 + (tier == A44Tier.FREE ? i18n.proposalDocTitle : i18n.docTitle)
                 + "</title>\n"
                 + "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n"
@@ -1227,8 +1839,12 @@ public final class A44ReportGenerator {
         String thLcp = "LCP";
         String thCls = "CLS";
         String thAgent = "Funnel<br>pages";
+        String thMobile = "MOBILE";
+        String thDesktop = "DESKTOP";
         StringBuilder rows = new StringBuilder();
         String mobilePerf = "—", mobileLcp = "—", mobileFcp = "—", deskPerf = "—", deskLcp = "—";
+        Map<String, String> mobileRow = null;
+        Map<String, String> desktopRow = null;
         List<Map<String, String>> lh = view.lighthouseRows == null ? List.of() : view.lighthouseRows;
         boolean agentPlaced = false;
         for (Map<String, String> r : lh) {
@@ -1250,16 +1866,19 @@ public final class A44ReportGenerator {
                 mobilePerf = r.get("performance");
                 mobileLcp = r.get("lcp");
                 mobileFcp = r.get("fcp");
+                mobileRow = r;
             } else {
                 deskPerf = r.get("performance");
                 deskLcp = r.get("lcp");
+                desktopRow = r;
             }
         }
         if (lh.isEmpty()) {
             rows.append("<tr><td class=\"device\">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>");
             rows.append(agentBrowseCell(view, pages, 1)).append("</tr>");
         }
-        StringBuilder card = new StringBuilder("<div class=\"metrics-card\"><table class=\"metrics\">");
+        StringBuilder card = new StringBuilder("<div class=\"metrics-card\">");
+        card.append("<table class=\"metrics metrics-wide\">");
         card.append("<colgroup><col class=\"col-device\"><col class=\"col-perf\"><col class=\"col-a11y\">")
                 .append("<col class=\"col-bp\"><col class=\"col-seo\"><col class=\"col-fcp\">")
                 .append("<col class=\"col-lcp\"><col class=\"col-cls\"><col class=\"col-agent\"></colgroup>");
@@ -1269,6 +1888,10 @@ public final class A44ReportGenerator {
                 .append("</th><th>").append(thLcp).append("</th><th>").append(thCls)
                 .append("</th><th>").append(thAgent).append("</th></tr></thead><tbody>")
                 .append(rows).append("</tbody></table>");
+
+        card.append(metricsCompactTable(thMobile, thDesktop, thPerf, thA11y, thBp, thSeo, thFcp, thLcp, thCls,
+                thAgent, mobileRow, desktopRow, view, pages));
+
         if (withRec) {
             card.append(accordion(copy, assetBase,
                     A44Recommendations.lighthouse(i18n.lang, mobilePerf, mobileLcp, mobileFcp, deskPerf, deskLcp),
@@ -1279,6 +1902,67 @@ public final class A44ReportGenerator {
         card.append("<p class=\"metrics-note\">").append(esc(funnelNote(i18n.lang, opened, shown))).append("</p>");
         card.append("</div>");
         return section(i18n.sectionSpeedHtml, card.toString());
+    }
+
+    /** Mobile Lighthouse layout: metric labels in a left black column, MOBILE / DESKTOP as data columns. */
+    private static String metricsCompactTable(
+            String thMobile,
+            String thDesktop,
+            String thPerf,
+            String thA11y,
+            String thBp,
+            String thSeo,
+            String thFcp,
+            String thLcp,
+            String thCls,
+            String thAgent,
+            Map<String, String> mobileRow,
+            Map<String, String> desktopRow,
+            AuditReportView view,
+            int pages) {
+        StringBuilder t = new StringBuilder();
+        t.append("<table class=\"metrics metrics-compact\">");
+        t.append("<colgroup><col class=\"col-metric\"><col class=\"col-mobile\"><col class=\"col-desktop\"></colgroup>");
+        t.append("<thead><tr><th class=\"metrics-corner\" scope=\"col\"></th><th scope=\"col\">")
+                .append(esc(thMobile)).append("</th><th scope=\"col\">").append(esc(thDesktop))
+                .append("</th></tr></thead><tbody>");
+        t.append(metricsCompactRow(thPerf, mobileRow, desktopRow, "performance", true));
+        t.append(metricsCompactRow(thA11y, mobileRow, desktopRow, "accessibility", true));
+        t.append(metricsCompactRow(thBp, mobileRow, desktopRow, "best_practices", true));
+        t.append(metricsCompactRow(thSeo, mobileRow, desktopRow, "seo", true));
+        t.append(metricsCompactRow(thFcp, mobileRow, desktopRow, "fcp", false));
+        t.append(metricsCompactRow(thLcp, mobileRow, desktopRow, "lcp", false));
+        t.append(metricsCompactRow(thCls, mobileRow, desktopRow, "cls", false));
+
+        int shown = Math.max(0, pages);
+        int broken = Math.min(Math.max(0, view.pagesBroken), shown);
+        int opened = Math.max(0, shown - broken);
+        String agentCls = broken > 0 ? "pill-bad" : (shown > 0 ? "pill-good" : "pill-warn");
+        t.append("<tr><th scope=\"row\">").append(thAgent).append("</th>");
+        t.append("<td colspan=\"2\" class=\"agent-browse\"><span class=\"pill ").append(agentCls).append("\">")
+                .append(opened).append("/").append(shown).append("</span></td></tr>");
+        t.append("</tbody></table>");
+        return t.toString();
+    }
+
+    private static String metricsCompactRow(
+            String label,
+            Map<String, String> mobileRow,
+            Map<String, String> desktopRow,
+            String key,
+            boolean pill) {
+        String mobileVal = mobileRow == null ? "—" : String.valueOf(mobileRow.getOrDefault(key, "—"));
+        String deskVal = desktopRow == null ? "—" : String.valueOf(desktopRow.getOrDefault(key, "—"));
+        StringBuilder row = new StringBuilder("<tr><th scope=\"row\">").append(esc(label)).append("</th>");
+        if (pill) {
+            row.append(pillCell(mobileVal));
+            row.append(pillCell(deskVal));
+        } else {
+            row.append("<td>").append(esc(mobileVal)).append("</td>");
+            row.append("<td>").append(esc(deskVal)).append("</td>");
+        }
+        row.append("</tr>");
+        return row.toString();
     }
 
     private static String pillCell(String score) {
@@ -1331,7 +2015,7 @@ public final class A44ReportGenerator {
                     + footerActions(i18n.lang, unlock)
                     + "<div class=\"copy\">" + i18n.copyright + "</div></footer>\n";
         }
-        String whatsapp = "<a class=\"btn\" href=\"https://wa.me/972533333333\">" + esc(i18n.ctaWhatsapp) + "</a>";
+        String whatsapp = "<a class=\"btn\" href=\"https://wa.me/972505308305\">" + esc(i18n.ctaWhatsapp) + "</a>";
         return "<footer class=\"footer\">"
                 + "<div class=\"cta-title\">" + i18n.ctaTitleHtml.replaceAll("<svg[\\s\\S]*?</svg>",
                 "<img src=\"" + assetBase + "/logo-footer.svg\" width=\"96\" height=\"21\" alt=\"Erythro.ai\">")

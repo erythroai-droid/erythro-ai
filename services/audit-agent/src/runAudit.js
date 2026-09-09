@@ -1,6 +1,7 @@
 import { uploadReportObject } from './r2Upload.js'
 import { getContactSubmission, updateContactSubmission } from './payload.js'
 import { sendClientAuditEmail } from './mail.js'
+import { buildAuditPdfFilename, formatAuditOrderId } from './pdfFilename.js'
 import { planAttachesPdf, runQaAuditor } from './runQaAuditor.js'
 
 function siteBase() {
@@ -9,12 +10,6 @@ function siteBase() {
     process.env.NEXT_PUBLIC_SITE_URL?.trim()?.replace(/\/+$/, '') ||
     'https://erythro.ai'
   )
-}
-
-function formatOrderId(id) {
-  const n = typeof id === 'number' ? id : Number(id)
-  if (!Number.isSafeInteger(n) || n <= 0) return `AUD-${String(id).trim()}`
-  return `AUD-${n}`
 }
 
 /**
@@ -64,13 +59,19 @@ export async function runAuditJob(job) {
 
     let pdfUpload = null
     const wantsPdf = planAttachesPdf(planSlug)
+    const pdfFilename = buildAuditPdfFilename({
+      orderId: submissionId,
+      targetUrl,
+      locale,
+      when: startedAt,
+    })
     if (wantsPdf && result.pdf?.length) {
       const pdfKey = `audits/${submissionId}/${Date.now()}-${result.tierFolder}.pdf`
       pdfUpload = await uploadReportObject({
         key: pdfKey,
         body: result.pdf,
         contentType: 'application/pdf',
-        contentDisposition: `attachment; filename="erythro-audit-${formatOrderId(submissionId)}.pdf"`,
+        contentDisposition: `attachment; filename="${pdfFilename}"`,
       })
     } else if (wantsPdf) {
       console.warn(`[audit] submission=${submissionId} Diagnostic/Pro PDF missing — email HTML link only`)
@@ -125,13 +126,13 @@ export async function runAuditJob(job) {
         locale,
         planSlug,
         pdfBuffer: wantsPdf ? result.pdf : null,
-        pdfFilename: `erythro-audit-${formatOrderId(submissionId)}.pdf`,
+        pdfFilename,
       })
       if (!mailed.sent) {
         console.warn(`[audit] submission=${submissionId} email skipped: ${mailed.reason}`)
       } else {
         console.log(
-          `[audit] submission=${submissionId} email sent to client orderId=${mailed.orderId || formatOrderId(submissionId)}`,
+          `[audit] submission=${submissionId} email sent to client orderId=${mailed.orderId || formatAuditOrderId(submissionId)}`,
         )
       }
     } else {
@@ -139,13 +140,13 @@ export async function runAuditJob(job) {
     }
 
     console.log(
-      `[audit] submission=${submissionId} ok score=${result.score} orderId=${formatOrderId(submissionId)} reportUrl=${publicReportUrl}`,
+      `[audit] submission=${submissionId} ok score=${result.score} orderId=${formatAuditOrderId(submissionId)} reportUrl=${publicReportUrl}`,
     )
     return {
       ok: true,
       reportUrl: publicReportUrl,
       score: result.score,
-      orderId: formatOrderId(submissionId),
+      orderId: formatAuditOrderId(submissionId),
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)

@@ -304,6 +304,30 @@ networks:
 
 Когда подключат оплату: между шагами (1) и (2) встанет шлюз + webhook; шаг (2) станет «после paid». Контракт worker **не меняется**.
 
+### 6.1. Именование PDF (клиентское имя файла)
+
+Скачивание / email-вложение / `Content-Disposition` в R2:
+
+```text
+Erythro_Audit_[AUD-N]_[site]_[YYYY-MM-DD]_[LANG].pdf
+```
+
+| Часть | Правило | Пример |
+|---|---|---|
+| Префикс | фиксированный | `Erythro_Audit` |
+| Номер аудита | `AUD-{id}` | `AUD-110` |
+| Сайт | hostname без протокола; точки и прочие символы → `_` | `example_com` |
+| Дата | UTC `YYYY-MM-DD` (момент генерации) | `2026-09-10` |
+| Язык | `RU` / `EN` / `HE` | `RU` |
+
+Пример: `Erythro_Audit_AUD-110_example_com_2026-09-10_RU.pdf`
+
+Реализация: `services/audit-agent/src/pdfFilename.js` (`buildAuditPdfFilename`). Внутренние артефакты QA_Auditor (`reports/.../audit-report_{lang}.pdf`) и R2 object key (`audits/{id}/{ts}-{tier}.pdf`) этим шаблоном не переименовываются.
+
+### 6.2. Мобильный HTML-отчёт
+
+Клиентский HTML (A4-4) на узких экранах (`max-width: 720px`) перестраивается по Figma-фрейму **iPhone 17 - 1** (402px): вертикальный стек лого → title → tier strip → URL → meta → gauge → scorecard → секции → footer. CSS: `MOBILE_SCREEN_CSS` в `A44ReportGenerator.java` (добавляется после rem→A4 конвертации, чтобы breakpoints остались в `px`). PDF/print не затрагивается. Уже сохранённые `htmlResult` в CMS обновятся только после нового прогона аудита.
+
 ---
 
 ## 7. Отказоустойчивость в MVP

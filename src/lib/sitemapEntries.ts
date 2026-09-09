@@ -1,5 +1,3 @@
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { getAllOrderSlugs } from '@/lib/orderPlans'
 import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
 import { getAllServiceSlugs } from '@/lib/servicePages'
@@ -9,6 +7,10 @@ import type { LegalPageId } from '@/lib/legalPages'
 export type SitemapSlugEntry = {
   slug: string
   lastModified?: Date
+}
+
+function hasDatabase(): boolean {
+  return Boolean(process.env.DATABASE_URL?.trim())
 }
 
 function toDate(value: unknown): Date | undefined {
@@ -33,6 +35,9 @@ export function maxLastModified(dates: Array<Date | undefined>): Date | undefine
 async function fetchCollectionSitemap(
   collection: 'services' | 'portfolio-projects' | 'solution-plans',
 ): Promise<SitemapSlugEntry[]> {
+  if (!hasDatabase()) return []
+  const { getPayload } = await import('payload')
+  const config = (await import('@payload-config')).default
   const payload = await getPayload({ config })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const res = await (payload as any).find({
@@ -56,33 +61,81 @@ async function fetchCollectionSitemap(
 }
 
 export async function getServiceSitemapEntries(): Promise<SitemapSlugEntry[]> {
+  const staticSlugs = getAllServiceSlugs()
   try {
     const rows = await fetchCollectionSitemap('services')
-    if (rows.length) return rows
+    if (rows.length) {
+      const existing = new Set(rows.map((r) => r.slug))
+      const missing = staticSlugs
+        .filter((slug) => !existing.has(slug))
+        .map((slug) => ({ slug }))
+      return [...rows, ...missing]
+    }
   } catch (err) {
     console.error('[sitemap] services CMS failed:', err)
   }
-  return getAllServiceSlugs().map((slug) => ({ slug }))
+  return staticSlugs.map((slug) => ({ slug }))
 }
 
 export async function getPortfolioSitemapEntries(): Promise<SitemapSlugEntry[]> {
+  const staticSlugs = getAllPortfolioSlugs()
   try {
     const rows = await fetchCollectionSitemap('portfolio-projects')
-    if (rows.length) return rows
+    if (rows.length) {
+      const existing = new Set(rows.map((r) => r.slug))
+      const missing = staticSlugs
+        .filter((slug) => !existing.has(slug))
+        .map((slug) => ({ slug }))
+      return [...rows, ...missing]
+    }
   } catch (err) {
     console.error('[sitemap] portfolio CMS failed:', err)
   }
-  return getAllPortfolioSlugs().map((slug) => ({ slug }))
+  return staticSlugs.map((slug) => ({ slug }))
 }
 
 export async function getOrderSitemapEntries(): Promise<SitemapSlugEntry[]> {
+  const staticSlugs = getAllOrderSlugs()
   try {
     const rows = await fetchCollectionSitemap('solution-plans')
-    if (rows.length) return rows
+    if (rows.length) {
+      const existing = new Set(rows.map((r) => r.slug))
+      const missing = staticSlugs
+        .filter((slug) => !existing.has(slug))
+        .map((slug) => ({ slug }))
+      return [...rows, ...missing]
+    }
   } catch (err) {
     console.error('[sitemap] order plans CMS failed:', err)
   }
-  return getAllOrderSlugs().map((slug) => ({ slug }))
+  return staticSlugs.map((slug) => ({ slug }))
+}
+
+async function fetchGlobalLastModified(slug: string): Promise<Date | undefined> {
+  if (!hasDatabase()) return undefined
+  try {
+    const { getPayload } = await import('payload')
+    const config = (await import('@payload-config')).default
+    const payload = await getPayload({ config })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = await (payload as any).findGlobal({
+      slug,
+      depth: 0,
+      overrideAccess: true,
+    })
+    return toDate(res?.updatedAt)
+  } catch (err) {
+    console.error(`[sitemap] global ${slug} CMS failed:`, err)
+    return undefined
+  }
+}
+
+export async function getAuditPageLastModified(): Promise<Date | undefined> {
+  return fetchGlobalLastModified('audit-page')
+}
+
+export async function getSiteSettingsLastModified(): Promise<Date | undefined> {
+  return fetchGlobalLastModified('site-settings')
 }
 
 export async function getLegalSitemapEntries(): Promise<
@@ -93,6 +146,9 @@ export async function getLegalSitemapEntries(): Promise<
     { id: 'terms', path: '/terms' },
     { id: 'accessibility', path: '/accessibility' },
   ]
+  if (!hasDatabase()) {
+    return ids.map(({ path }) => ({ path }))
+  }
   const rows = await Promise.all(
     ids.map(async ({ id, path }) => {
       try {
@@ -105,3 +161,4 @@ export async function getLegalSitemapEntries(): Promise<
   )
   return rows
 }
+

@@ -1184,8 +1184,28 @@ Do not auto-open or redirect to separate progress tabs on submit when the flow i
 
 ---
 
+## PIT-070 — Partial CMS collections drop static routes from sitemap.xml
+
+**Tags:** `seo`, `sitemap`, `cms`, `routing`, `fallback`  
+**Seen:** 2026-09-10 — `src/lib/sitemapEntries.ts` and `/sitemap.xml`.
+
+**Symptom:**
+Valid, active site routes (such as `/services/design-branding`, `/order/ai-business-card`, or `/order/enterprise-custom`) return 200 HTTP status but are completely absent from `https://erythro.ai/sitemap.xml`.
+
+**Cause:**
+`getServiceSitemapEntries()`, `getOrderSitemapEntries()`, and `getPortfolioSitemapEntries()` checked if `fetchCollectionSitemap(collection)` returned any documents. If the CMS had even a single document (e.g. only 1 service `enterprise-engineering` or only the 3 `audit-*` plans in `solution-plans`), the functions returned only those CMS rows and completely discarded the static code fallback slugs from `getAllServiceSlugs()`, `getAllOrderSlugs()`, and `getAllPortfolioSlugs()`.
+
+**Fix:**
+Always merge CMS collection entries with static fallback slugs. Use a `Set` of existing CMS slugs to append any missing static slugs so that no valid page is excluded, while preserving accurate `updatedAt` timestamps from CMS documents whenever present.
+
+**Prevent:**
+Whenever providing CMS overrides over static fallback arrays, never branch with `if (rows.length) return rows`. Always merge: `[...rows, ...staticSlugs.filter(s => !cmsSlugs.has(s))]`.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
+- [ ] Sitemap generation must merge CMS collection records with static fallback slugs (PIT-070)
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
 - [ ] Fix script if prod/CI may lag (`pnpm db:fix-*`)
 - [ ] CI runs fix script before API tests when needed
