@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import FooterSection from '@/components/FooterSection'
 import { AccessibilityPanel } from '@/components/accessibility'
@@ -14,9 +14,13 @@ import type { SiteContent } from '@/lib/defaultContent'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 import {
   auditReportCopy,
+  estimateAuditProgressPercent,
+  estimateAuditRemainingMinutes,
   formatAuditOrderId,
   isPublicReportUrl,
+  parseAuditTimestampMs,
   tReport,
+  tReportFill,
   type AuditReportPublicPayload,
   type AuditReportStatus,
 } from '@/lib/auditReport'
@@ -195,6 +199,144 @@ function statusLabel(status: AuditReportStatus, locale: string): string {
   }
 }
 
+function useAuditProgress(status: AuditReportStatus | null, createdAt: string | null) {
+  const fallbackStartRef = useRef(Date.now())
+  const [percent, setPercent] = useState(() =>
+    estimateAuditProgressPercent({
+      status,
+      createdAtMs: parseAuditTimestampMs(createdAt),
+      nowMs: Date.now(),
+    }),
+  )
+  const [remainingMin, setRemainingMin] = useState(() =>
+    estimateAuditRemainingMinutes(parseAuditTimestampMs(createdAt) ?? Date.now(), Date.now()),
+  )
+
+  useEffect(() => {
+    if (status === 'report_sent') {
+      setPercent(100)
+      setRemainingMin(0)
+      return
+    }
+    if (status === 'failed') {
+      setPercent(0)
+      return
+    }
+
+    const createdAtMs = parseAuditTimestampMs(createdAt)
+    const startMs = createdAtMs ?? fallbackStartRef.current
+
+    const tick = () => {
+      const now = Date.now()
+      setPercent(
+        estimateAuditProgressPercent({
+          status,
+          createdAtMs: startMs,
+          nowMs: now,
+        }),
+      )
+      setRemainingMin(estimateAuditRemainingMinutes(startMs, now))
+    }
+
+    tick()
+    const id = window.setInterval(tick, 250)
+    return () => window.clearInterval(id)
+  }, [status, createdAt])
+
+  return { percent, remainingMin }
+}
+
+function AuditWaitingProgress({
+  status,
+  createdAt,
+  locale,
+  muted,
+  isLight,
+}: {
+  status: AuditReportStatus | null
+  createdAt: string | null
+  locale: string
+  muted: string
+  isLight: boolean
+}) {
+  const { percent, remainingMin } = useAuditProgress(status, createdAt)
+  const displayPct = Math.round(percent)
+  const fillClass = isLight ? 'bg-erythro-500' : 'bg-gold-500'
+  const trackClass = isLight ? 'bg-black/10' : 'bg-white/15'
+  const etaText =
+    remainingMin > 0
+      ? tReportFill(auditReportCopy.remaining, locale, { n: remainingMin })
+      : tReport(auditReportCopy.finishing, locale)
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <p className="m-0 text-sm font-medium uppercase tracking-[0.12em] text-gold-500">
+          {tReport(auditReportCopy.progressLabel, locale)}
+        </p>
+        <p className="m-0 font-mono text-sm tabular-nums text-gold-500">{displayPct}%</p>
+      </div>
+      <div
+        role="progressbar"
+        aria-label={tReport(auditReportCopy.progressLabel, locale)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={displayPct}
+        aria-valuetext={`${displayPct}%. ${etaText}`}
+        className={`relative h-2.5 w-full overflow-hidden rounded-full ${trackClass}`}
+      >
+        <div
+          className={`h-full w-full origin-start rounded-full motion-reduce:transition-none ${fillClass} transition-transform duration-500 ease-out`}
+          style={{ transform: `scaleX(${Math.max(0.04, percent / 100)})` }}
+        />
+        <div
+          className={`audit-report-progress-sheen pointer-events-none absolute inset-y-0 start-0 w-1/3 ${
+            isLight ? 'bg-white/50' : 'bg-white/20'
+          }`}
+          aria-hidden
+        />
+      </div>
+      <p className={`m-0 text-sm ${muted}`} aria-live="polite">
+        {etaText}
+      </p>
+      <p className={`m-0 text-sm ${muted}`}>{tReport(auditReportCopy.etaTypical, locale)}</p>
+    </div>
+  )
+}
+
+function EmailNotice({ locale, muted, isLight }: { locale: string; muted: string; isLight: boolean }) {
+  return (
+    <div
+      className={`flex gap-3 rounded-[16px] border p-4 sm:p-5 ${
+        isLight ? 'border-black/10 bg-black/[0.04]' : 'border-gold-500/25 bg-gold-500/10'
+      }`}
+    >
+      <svg
+        className="mt-0.5 size-5 shrink-0 text-gold-500"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden
+      >
+        <path
+          d="M4 6.5A1.5 1.5 0 0 1 5.5 5h13A1.5 1.5 0 0 1 20 6.5v11a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5v-11Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+        />
+        <path
+          d="m5 7 7 5 7-5"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <p className={`m-0 min-w-0 text-sm leading-6 ${muted}`}>
+        {tReport(auditReportCopy.emailNotice, locale)}
+      </p>
+    </div>
+  )
+}
+
 function ReportBody({
   data,
   reportId,
@@ -208,35 +350,31 @@ function ReportBody({
   muted: string
   isLight: boolean
 }) {
-  if (!data) {
-    return (
-      <p className={`m-0 text-base ${muted}`}>{tReport(auditReportCopy.waiting, locale)}</p>
-    )
-  }
-
-  const showWaiting = data.status === 'new' || data.status === 'in_progress'
+  const status = data?.status ?? null
+  const showWaiting = !data || status === 'new' || status === 'in_progress'
+  const orderId = data?.orderId || formatAuditOrderId(reportId)
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <p className="m-0 text-sm font-medium uppercase tracking-[0.12em] text-gold-500">
-          {statusLabel(data.status, locale)}
+          {status ? statusLabel(status, locale) : tReport(auditReportCopy.queued, locale)}
         </p>
         <p className="m-0 text-base">
           <span className="text-gold-500">{tReport(auditReportCopy.orderId, locale)}:</span>{' '}
-          <code className="font-mono text-[0.95em] tracking-wide">{data.orderId || formatAuditOrderId(reportId)}</code>
+          <code className="font-mono text-[0.95em] tracking-wide">{orderId}</code>
         </p>
         <p className={`m-0 text-sm ${muted}`}>{tReport(auditReportCopy.orderIdHint, locale)}</p>
-        {data.website ? (
+        {data?.website ? (
           <p className={`m-0 break-all text-sm ${muted}`}>{data.website}</p>
         ) : null}
         {showWaiting ? (
           <p className={`m-0 text-base ${muted}`}>{tReport(auditReportCopy.waiting, locale)}</p>
         ) : null}
-        {data.status === 'failed' ? (
+        {status === 'failed' ? (
           <p className={`m-0 text-base ${muted}`}>{tReport(auditReportCopy.failed, locale)}</p>
         ) : null}
-        {typeof data.auditScore === 'number' ? (
+        {typeof data?.auditScore === 'number' ? (
           <p className="m-0 text-base">
             <span className="text-gold-500">{tReport(auditReportCopy.score, locale)}:</span>{' '}
             {data.auditScore}
@@ -244,7 +382,20 @@ function ReportBody({
         ) : null}
       </div>
 
-      {data.status === 'report_sent' &&
+      {showWaiting ? (
+        <>
+          <AuditWaitingProgress
+            status={status}
+            createdAt={data?.createdAt ?? null}
+            locale={locale}
+            muted={muted}
+            isLight={isLight}
+          />
+          <EmailNotice locale={locale} muted={muted} isLight={isLight} />
+        </>
+      ) : null}
+
+      {data?.status === 'report_sent' &&
       isPublicReportUrl(data.reportUrl) &&
       data.reportUrl &&
       !data.reportUrl.includes(`/audit/report/${reportId}`) ? (

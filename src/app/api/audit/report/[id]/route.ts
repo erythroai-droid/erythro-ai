@@ -66,6 +66,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       readyHtmlUrl: status === 'report_sent' ? `/api/audit/report/${id}/html` : null,
       website: typeof doc.website === 'string' ? doc.website : null,
       updatedAt: typeof doc.updatedAt === 'string' ? doc.updatedAt : null,
+      createdAt: typeof doc.createdAt === 'string' ? doc.createdAt : null,
     }
 
     return NextResponse.json(body, {

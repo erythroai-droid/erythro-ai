@@ -21,6 +21,7 @@ export type AuditReportDoc = {
   auditSummary?: unknown
   website?: string | null
   updatedAt?: string | null
+  createdAt?: string | null
 }
 
 export function storageKeyFromSummary(summary: unknown): string | null {
