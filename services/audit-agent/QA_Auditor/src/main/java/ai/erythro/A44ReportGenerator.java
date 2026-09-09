@@ -740,6 +740,416 @@ public final class A44ReportGenerator {
     }
 """;
 
+    /**
+     * Mobile HTML layout (Figma frame {@code iPhone 17 - 1}, 402-wide).
+     * Appended AFTER {@link #toA4RemCss} so {@code px} breakpoints stay real pixels
+     * and are not converted to rem. Screen-only — PDF/print keeps the A4 canvas.
+     */
+    private static final String MOBILE_SCREEN_CSS = """
+
+    /* Mobile report — Figma iPhone 17 - 1 (402). Screen only; PDF unchanged. */
+    @media screen and (max-width: 720px) {
+        html.report-a4-4 {
+            /* 1rem ≈ 1 Figma unit at 402-wide canvas */
+            font-size: calc(100vw / 402) !important;
+        }
+        html.report-a4-4,
+        html.report-a4-4 body {
+            width: 100% !important;
+            min-height: 0 !important;
+            max-width: 100% !important;
+            background: #1e1e1e !important;
+        }
+        html.report-a4-4 body {
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        html.report-a4-4 .page {
+            width: 100% !important;
+            max-width: 100% !important;
+            zoom: 1 !important;
+            box-shadow: none !important;
+            display: flex;
+            flex-direction: column;
+            background: #f3f3f3;
+            overflow-x: hidden;
+        }
+
+        /* Flatten sidebar so brand + URL participate in page flex order */
+        html.report-a4-4 .sheet-sidebar {
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            bottom: auto !important;
+            width: auto !important;
+            height: auto !important;
+            display: contents;
+            background: transparent;
+            z-index: auto;
+        }
+
+        html.report-a4-4 .brand {
+            order: 1;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 119rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16rem 24rem;
+            background: #1e1e1e;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .brand img,
+        html.report-a4-4 .brand svg {
+            width: 276rem !important;
+            max-width: 72%;
+            height: auto !important;
+        }
+
+        html.report-a4-4 .sheet-title {
+            order: 2;
+            position: relative !important;
+            margin: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 87rem;
+            padding: 16rem 20rem;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+        html.report-a4-4 .sheet-title h1 {
+            font-size: 24rem !important;
+            letter-spacing: 2.4rem !important;
+            line-height: 1.2 !important;
+        }
+
+        html.report-a4-4 .sheet-title-fill {
+            order: 3;
+            position: relative !important;
+            margin: 0 !important;
+            width: 100% !important;
+            height: 40rem !important;
+            z-index: 2;
+            font-size: 16rem !important;
+        }
+
+        html.report-a4-4 .sheet-url {
+            order: 4;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: 40rem !important;
+            font-size: 16rem !important;
+            padding: 0 12rem;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .meta {
+            order: 5;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: 40rem !important;
+            min-height: 40rem;
+            background: #1e1e1e;
+            color: #fff;
+            font-size: 10rem !important;
+            z-index: 2;
+            padding: 0 12rem;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .gauge-wrap {
+            order: 6;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 196rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 10rem 24rem;
+            background: #1e1e1e;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+        html.report-a4-4 .gauge-svg {
+            width: 180rem !important;
+            height: 180rem !important;
+        }
+
+        html.report-a4-4 table.sheet {
+            order: 7;
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: auto !important;
+            border-collapse: collapse;
+        }
+        html.report-a4-4 table.sheet > thead,
+        html.report-a4-4 table.sheet > tfoot {
+            display: none !important;
+        }
+        html.report-a4-4 table.sheet > tbody,
+        html.report-a4-4 table.sheet > tbody > tr,
+        html.report-a4-4 table.sheet > tbody > tr > td {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+        }
+
+        html.report-a4-4 .main {
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            gap: 0;
+        }
+
+        html.report-a4-4 .chart-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+            padding: 30rem 10rem 24rem !important;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .diag-title {
+            font-size: 32rem !important;
+            letter-spacing: 6.4rem !important;
+            line-height: 30rem !important;
+        }
+        html.report-a4-4 .diag-sub {
+            font-size: 16rem !important;
+            letter-spacing: 3.2rem !important;
+        }
+        html.report-a4-4 .chart-body {
+            padding: 0 8rem;
+        }
+        html.report-a4-4 .chart-rows {
+            grid-template-columns: minmax(96rem, 42%) minmax(0, 1fr) !important;
+            column-gap: 8rem !important;
+            row-gap: 10rem !important;
+        }
+        html.report-a4-4 .chart-label {
+            font-size: 11rem !important;
+            line-height: 12rem !important;
+            min-height: 24rem;
+        }
+        html.report-a4-4 .ticks {
+            font-size: 9rem !important;
+            padding-inline-start: 0;
+        }
+
+        html.report-a4-4 .section-rows {
+            width: 100% !important;
+            left: auto !important;
+            gap: 0 !important;
+            padding-bottom: 0 !important;
+            z-index: 2;
+        }
+        html.report-a4-4 .section-row {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            align-items: stretch !important;
+        }
+        html.report-a4-4 .section-toc {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex-shrink: 0;
+            padding: 24rem 20rem !important;
+            background: #1e1e1e;
+            box-sizing: border-box;
+            align-items: flex-start !important;
+        }
+        html.report-a4-4 .toc-item {
+            width: 100%;
+            max-width: 100%;
+        }
+        html.report-a4-4 .toc-bar {
+            height: 48rem;
+        }
+        html.report-a4-4 .toc-text {
+            width: auto !important;
+            max-width: calc(100% - 24rem);
+            font-size: 16rem !important;
+            line-height: 24rem !important;
+            color: #fff !important;
+        }
+        html.report-a4-4 .section-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 16rem 12rem 24rem !important;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .findings-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 16rem !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        html.report-a4-4 .finding-card,
+        html.report-a4-4 .finding-card.gemini-funnel {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-height: 0 !important;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .finding-box {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .check-toolbar,
+        html.report-a4-4 .check-stack,
+        html.report-a4-4 .check-group,
+        html.report-a4-4 .check-card,
+        html.report-a4-4 .metrics-card,
+        html.report-a4-4 .scope,
+        html.report-a4-4.tier-free .section-free-locked {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        html.report-a4-4 .metrics-card {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        html.report-a4-4 table.metrics {
+            width: max-content;
+            min-width: 100%;
+            max-width: none;
+        }
+        html.report-a4-4 .check-toolbar {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 12rem;
+        }
+        html.report-a4-4 .check-filters {
+            justify-content: flex-start !important;
+            flex-wrap: wrap;
+        }
+        html.report-a4-4 .check-card {
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .check-top {
+            flex-wrap: wrap;
+            gap: 12rem !important;
+        }
+        html.report-a4-4 .checks-unlock-btn,
+        html.report-a4-4 .btn-unlock,
+        html.report-a4-4 .scope-cta-btn,
+        html.report-a4-4.tier-diagnostic .checks-unlock-btn,
+        html.report-a4-4.tier-free .checks-unlock-btn,
+        html.report-a4-4.tier-free .btn-unlock {
+            min-width: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            white-space: normal !important;
+            height: auto !important;
+            min-height: 48rem;
+            padding: 12rem 20rem !important;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .footer {
+            order: 8;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 24rem 16rem 20rem !important;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+        html.report-a4-4 .footer-actions {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 14rem !important;
+            max-width: 100% !important;
+            margin: 12rem auto 4rem !important;
+        }
+        html.report-a4-4 .footer-actions .footer-contact:first-child,
+        html.report-a4-4 .footer-actions .btn,
+        html.report-a4-4 .footer-actions .footer-contact:last-child {
+            justify-self: center !important;
+        }
+        html.report-a4-4 .footer-contact {
+            white-space: normal !important;
+            justify-content: center;
+            text-align: center;
+            flex-wrap: wrap;
+        }
+        html.report-a4-4 .btn {
+            min-width: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            min-height: 48rem;
+            padding: 12rem 20rem !important;
+            font-size: 14rem !important;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .cta-sub {
+            max-width: 100% !important;
+            padding: 0 4rem;
+        }
+        html.report-a4-4 .cta-title {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* RTL mobile: keep stacked chrome; reset desktop side margins */
+        html.report-a4-4.rtl-report .sheet-title,
+        html.report-a4-4.rtl-report .sheet-title-fill,
+        html.report-a4-4.rtl-report .main {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            width: 100% !important;
+        }
+        html.report-a4-4.rtl-report .section-toc {
+            align-items: flex-end !important;
+        }
+        html.report-a4-4.rtl-report .section-content {
+            padding-left: 12rem !important;
+            padding-right: 12rem !important;
+        }
+        html.report-a4-4.rtl-report .findings-grid,
+        html.report-a4-4.rtl-report .metrics-card,
+        html.report-a4-4.rtl-report .check-stack,
+        html.report-a4-4.rtl-report .scope {
+            width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        html.report-a4-4.rtl-report .chart-label {
+            text-align: left !important;
+            justify-content: flex-start !important;
+        }
+    }
+""";
+
     private A44ReportGenerator() {}
 
     public static String render(AuditReportView view, A44Tier tier, String assetBase) throws IOException {
@@ -812,12 +1222,14 @@ public final class A44ReportGenerator {
             body.append(FILTER_SCRIPT);
         }
 
-        String css = toA4RemCss(loadBaseCss() + EXTRA_CSS);
+        String css = toA4RemCss(loadBaseCss() + EXTRA_CSS) + MOBILE_SCREEN_CSS;
         return "<!DOCTYPE html>\n"
                 + "<html lang=\"" + esc(i18n.htmlLang) + "\""
                 + (i18n.htmlDirAttr == null || i18n.htmlDirAttr.isBlank() ? "" : " " + i18n.htmlDirAttr)
                 + " class=\"" + htmlClass + "\">\n"
-                + "<head>\n<meta charset=\"UTF-8\">\n<title>"
+                + "<head>\n<meta charset=\"UTF-8\">\n"
+                + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+                + "<title>"
                 + (tier == A44Tier.FREE ? i18n.proposalDocTitle : i18n.docTitle)
                 + "</title>\n"
                 + "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n"
