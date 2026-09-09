@@ -83,6 +83,38 @@
   }
 }
 
+@keyframes audit-report-progress-sheen {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(320%);
+  }
+}
+
+@keyframes audit-report-progress-sheen-rtl {
+  from {
+    transform: translateX(120%);
+  }
+  to {
+    transform: translateX(-320%);
+  }
+}
+
+.audit-report-progress-sheen {
+  animation: audit-report-progress-sheen 1.8s ease-in-out infinite;
+}
+
+[dir='rtl'] .audit-report-progress-sheen {
+  animation-name: audit-report-progress-sheen-rtl;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audit-report-progress-sheen {
+    animation: none;
+  }
+}
+
 /*
   Chrome paints a rectangular :-webkit-autofill layer that ignores the parent
   pill's border-radius when overflow is visible. Clip non-dropdown pills in
