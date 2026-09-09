@@ -56,33 +56,78 @@ async function fetchCollectionSitemap(
 }
 
 export async function getServiceSitemapEntries(): Promise<SitemapSlugEntry[]> {
+  const staticSlugs = getAllServiceSlugs()
   try {
     const rows = await fetchCollectionSitemap('services')
-    if (rows.length) return rows
+    if (rows.length) {
+      const existing = new Set(rows.map((r) => r.slug))
+      const missing = staticSlugs
+        .filter((slug) => !existing.has(slug))
+        .map((slug) => ({ slug }))
+      return [...rows, ...missing]
+    }
   } catch (err) {
     console.error('[sitemap] services CMS failed:', err)
   }
-  return getAllServiceSlugs().map((slug) => ({ slug }))
+  return staticSlugs.map((slug) => ({ slug }))
 }
 
 export async function getPortfolioSitemapEntries(): Promise<SitemapSlugEntry[]> {
+  const staticSlugs = getAllPortfolioSlugs()
   try {
     const rows = await fetchCollectionSitemap('portfolio-projects')
-    if (rows.length) return rows
+    if (rows.length) {
+      const existing = new Set(rows.map((r) => r.slug))
+      const missing = staticSlugs
+        .filter((slug) => !existing.has(slug))
+        .map((slug) => ({ slug }))
+      return [...rows, ...missing]
+    }
   } catch (err) {
     console.error('[sitemap] portfolio CMS failed:', err)
   }
-  return getAllPortfolioSlugs().map((slug) => ({ slug }))
+  return staticSlugs.map((slug) => ({ slug }))
 }
 
 export async function getOrderSitemapEntries(): Promise<SitemapSlugEntry[]> {
+  const staticSlugs = getAllOrderSlugs()
   try {
     const rows = await fetchCollectionSitemap('solution-plans')
-    if (rows.length) return rows
+    if (rows.length) {
+      const existing = new Set(rows.map((r) => r.slug))
+      const missing = staticSlugs
+        .filter((slug) => !existing.has(slug))
+        .map((slug) => ({ slug }))
+      return [...rows, ...missing]
+    }
   } catch (err) {
     console.error('[sitemap] order plans CMS failed:', err)
   }
-  return getAllOrderSlugs().map((slug) => ({ slug }))
+  return staticSlugs.map((slug) => ({ slug }))
+}
+
+async function fetchGlobalLastModified(slug: string): Promise<Date | undefined> {
+  try {
+    const payload = await getPayload({ config })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = await (payload as any).findGlobal({
+      slug,
+      depth: 0,
+      overrideAccess: true,
+    })
+    return toDate(res?.updatedAt)
+  } catch (err) {
+    console.error(`[sitemap] global ${slug} CMS failed:`, err)
+    return undefined
+  }
+}
+
+export async function getAuditPageLastModified(): Promise<Date | undefined> {
+  return fetchGlobalLastModified('audit-page')
+}
+
+export async function getSiteSettingsLastModified(): Promise<Date | undefined> {
+  return fetchGlobalLastModified('site-settings')
 }
 
 export async function getLegalSitemapEntries(): Promise<
@@ -105,3 +150,4 @@ export async function getLegalSitemapEntries(): Promise<
   )
   return rows
 }
+
