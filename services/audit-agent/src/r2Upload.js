@@ -16,8 +16,8 @@ export function createR2Client() {
 }
 
 /**
- * Upload HTML report stub to R2.
- * @param {{ key: string, body: string | Buffer, contentType?: string }} input
+ * Upload HTML or PDF report to R2.
+ * @param {{ key: string, body: string | Buffer, contentType?: string, contentDisposition?: string }} input
  * @returns {Promise<{ key: string, url: string }>}
  */
 export async function uploadReportObject(input) {
@@ -34,6 +34,7 @@ export async function uploadReportObject(input) {
       Key: key,
       Body: typeof input.body === 'string' ? Buffer.from(input.body, 'utf8') : input.body,
       ContentType: input.contentType || 'text/html; charset=utf-8',
+    ...(input.contentDisposition ? { ContentDisposition: input.contentDisposition } : {}),
     }),
   )
 

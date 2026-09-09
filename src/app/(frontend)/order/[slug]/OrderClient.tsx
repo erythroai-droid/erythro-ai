@@ -29,6 +29,11 @@ import {
   type OrderAddon,
   type OrderPlan,
 } from '@/lib/orderPlans'
+import {
+  closeAuditReportStatusTab,
+  navigateAuditReportStatusTab,
+  openAuditReportStatusPlaceholder,
+} from '@/lib/auditReport'
 import { isLexicalDoc, lexicalToPlain, resolveLexical } from '@/lib/lexical'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
@@ -143,7 +148,7 @@ export default function OrderClient({
             headerContrast="auto"
           />
 
-          <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0">
+          <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] lg:mt-0">
             <div
               className={`relative ${
                 theme === 'light' ? 'bg-[#F4F1EC] text-coal-900' : 'dark-gradient-bg text-main'
@@ -160,7 +165,7 @@ export default function OrderClient({
             </div>
           </div>
 
-          <div className="relative z-40 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0">
+          <div className="relative z-40 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] lg:mt-0">
             <FooterSection locale={locale} theme={theme} pinSpacer={false} />
           </div>
 
@@ -385,7 +390,7 @@ function OrderCheckout({
   }
 
   const cardCls = isLight
-    ? 'bg-white border border-coal-900/10 shadow-[0_8px_30px_rgba(13,13,13,0.06)]'
+    ? 'bg-white border border-coal-900/10'
     : 'bg-coal-800 border border-white/10'
   const muted = isLight ? 'text-gold-900' : 'text-gold-800'
 
@@ -1201,8 +1206,13 @@ function AuditOrderModal({
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ??
       ''
 
+    const statusTab = openAuditReportStatusPlaceholder()
+
     const websiteOk = await ensureWebsiteOk()
-    if (!websiteOk) return
+    if (!websiteOk) {
+      closeAuditReportStatusTab(statusTab)
+      return
+    }
 
     const orderMessage = buildAuditOrderMessage({
       planTitle,
@@ -1231,12 +1241,14 @@ function AuditOrderModal({
         }),
       })
       if (res.status === 429) {
+        closeAuditReportStatusTab(statusTab)
         const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
         setSubmitError(errPayload?.message || tForm(contactForm.rateLimited))
         setStatus('error')
         return
       }
       if (!res.ok) {
+        closeAuditReportStatusTab(statusTab)
         const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
         setSubmitError(
           res.status === 403
@@ -1251,10 +1263,14 @@ function AuditOrderModal({
         orderId?: string
       } | null
       const sid = payload?.submissionId
+      const href = sid != null ? `/audit/report/${sid}` : null
       setOrderId(payload?.orderId || (sid != null ? `AUD-${sid}` : null))
-      setReportHref(sid != null ? `/audit/report/${sid}` : null)
+      setReportHref(href)
+      if (href) navigateAuditReportStatusTab(statusTab, href)
+      else closeAuditReportStatusTab(statusTab)
       setStatus('success')
     } catch {
+      closeAuditReportStatusTab(statusTab)
       setSubmitError(tForm(contactForm.error))
       setStatus('error')
     } finally {
@@ -1297,7 +1313,7 @@ function AuditOrderModal({
         className="absolute inset-0 cursor-default bg-black/75 backdrop-blur-sm"
       />
 
-      <div className="relative max-h-[90vh] min-w-0 w-full max-w-[620px] overflow-hidden rounded-[12px] border border-white/10 bg-coal-900 shadow-[0_30px_80px_rgba(0,0,0,0.6)]">
+      <div className="relative max-h-[90vh] min-w-0 w-full max-w-[620px] overflow-hidden rounded-[12px] border border-white/10 bg-coal-900">
         <button
           type="button"
           onClick={onClose}
@@ -1334,6 +1350,8 @@ function AuditOrderModal({
             {reportHref ? (
               <a
                 href={reportHref}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="mt-4 inline-flex rounded-[40px] border border-gold-500 px-8 py-3 text-sm uppercase tracking-widest text-gold-500 transition-colors hover:bg-gold-500 hover:text-coal-900"
               >
                 {locale === 'ru'

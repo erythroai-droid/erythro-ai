@@ -18,6 +18,12 @@ export function planToTier(planSlug) {
   return { tier: 'FREE', folder: 'free', pageCap: 1 }
 }
 
+/** Paid commercial packs email a PDF; Free is HTML-only. */
+export function planAttachesPdf(planSlug) {
+  const { tier } = planToTier(planSlug)
+  return tier === 'DIAGNOSTIC' || tier === 'PRO'
+}
+
 /**
  * @param {{
  *   targetUrl: string,
@@ -89,14 +95,37 @@ export async function runQaAuditor(input) {
     throw new Error(`QA_Auditor produced empty HTML (expected ${htmlPath})`)
   }
 
+  let pdf = null
+  let pdfPath = path.join(qaDir, 'reports', folder, `audit-report_${reportLang}.pdf`)
+  try {
+    pdf = await fs.readFile(pdfPath)
+  } catch {
+    const fallbacks = [
+      path.join(qaDir, 'reports', folder, `audit-report_${reportLang}.locked.pdf`),
+      path.join(qaDir, 'reports', 'audit-report.pdf'),
+      path.join(qaDir, 'reports', 'audit-report.locked.pdf'),
+    ]
+    for (const fallback of fallbacks) {
+      try {
+        pdf = await fs.readFile(fallback)
+        pdfPath = fallback
+        break
+      } catch {
+        /* try next */
+      }
+    }
+  }
+
   // Prefer site-root static files in public/templates/figma-assets (reliable on Vercel).
   html = html
     .replace(/(?:\.\.\/)+templates\/figma-assets\//g, '/templates/figma-assets/')
     .replace(/\/api\/audit\/templates\/figma-assets\//g, '/templates/figma-assets/')
     .replace(/\/api\/audit\/assets\/figma-assets\//g, '/templates/figma-assets/')
 
-  console.log(`[qa-auditor] done score=${score} grade=${grade} htmlBytes=${html.length}`)
-  return { html, score, grade, summary, htmlPath, jsonPath, tierFolder: folder }
+  console.log(
+    `[qa-auditor] done score=${score} grade=${grade} htmlBytes=${html.length} pdfBytes=${pdf?.length || 0}`,
+  )
+  return { html, pdf, score, grade, summary, htmlPath, pdfPath, jsonPath, tierFolder: folder }
 }
 
 function normalizeLang(lang) {

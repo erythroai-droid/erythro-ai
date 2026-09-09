@@ -118,6 +118,58 @@ export const auditReportCopy = {
   } satisfies LocaleMap,
 }
 
+/**
+ * Open a blank tab during the click gesture. After `await fetch` the browser
+ * treats `window.open` as a popup and often blocks it (same class as PIT-067).
+ */
+export function openAuditReportStatusPlaceholder(): Window | null {
+  if (typeof window === 'undefined') return null
+  const tab = window.open('about:blank', '_blank')
+  if (!tab) return null
+  try {
+    tab.opener = null
+  } catch {
+    /* ignore */
+  }
+  try {
+    tab.document.title = 'Erythro.ai'
+  } catch {
+    /* ignore */
+  }
+  return tab
+}
+
+export function closeAuditReportStatusTab(tab: Window | null) {
+  if (!tab || tab.closed) return
+  try {
+    tab.close()
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Point the waiting tab at `/audit/report/[id]`, or open a new one if blocked. */
+export function navigateAuditReportStatusTab(tab: Window | null, href: string) {
+  if (typeof window === 'undefined' || !href) {
+    closeAuditReportStatusTab(tab)
+    return
+  }
+  if (tab && !tab.closed) {
+    try {
+      tab.location.replace(href)
+      return
+    } catch {
+      /* fall through */
+    }
+  }
+  window.open(href, '_blank', 'noopener,noreferrer')
+}
+
+/** Open `/audit/report/[id]` without replacing the current page. */
+export function openAuditReportStatusTab(href: string) {
+  navigateAuditReportStatusTab(null, href)
+}
+
 export function tReport(map: LocaleMap, locale: string): string {
   if (locale === 'ru' || locale === 'he') return map[locale]
   return map.en

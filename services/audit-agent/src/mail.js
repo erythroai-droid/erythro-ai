@@ -21,12 +21,14 @@ function formatAuditOrderId(id) {
   return `AUD-${n}`
 }
 
-function copyForLocale(locale) {
+function copyForLocale(locale, withPdf) {
   if (locale === 'ru') {
     return {
       subject: (url, orderId) => `Ваш отчёт AI-аудита (${orderId}) — ${url}`,
       greeting: (name) => `Здравствуйте${name ? `, ${name}` : ''}!`,
-      body: 'Отчёт по вашему сайту готов. Открыть можно по ссылке ниже:',
+      body: withPdf
+        ? 'Готовый PDF во вложении. Открыть в браузере можно по ссылке:'
+        : 'Отчёт по вашему сайту готов. Открыть можно по ссылке ниже:',
       orderIdLabel: 'ID заказа',
       support:
         'Если ссылка не открывается или возникла ошибка — напишите в поддержку и укажите этот ID заказа.',
@@ -37,7 +39,9 @@ function copyForLocale(locale) {
     return {
       subject: (url, orderId) => `דוח ביקורת AI (${orderId}) — ${url}`,
       greeting: (name) => `שלום${name ? ` ${name}` : ''},`,
-      body: 'הדוח עבור האתר שלך מוכן. ניתן לפתוח בקישור:',
+      body: withPdf
+        ? 'קובץ ה-PDF מצורף. אפשר גם לפתוח בדפדפן:'
+        : 'הדוח עבור האתר שלך מוכן. ניתן לפתוח בקישור:',
       orderIdLabel: 'מספר הזמנה',
       support: 'אם משהו לא עובד — פנו לתמיכה וציינו את מספר ההזמנה.',
       footer: 'Erythro.ai',
@@ -46,7 +50,9 @@ function copyForLocale(locale) {
   return {
     subject: (url, orderId) => `Your AI Audit report (${orderId}) — ${url}`,
     greeting: (name) => `Hello${name ? `, ${name}` : ''},`,
-    body: 'Your website audit report is ready. Open it here:',
+    body: withPdf
+      ? 'The PDF is attached. You can also open it in the browser:'
+      : 'Your website audit report is ready. Open it here:',
     orderIdLabel: 'Order ID',
     support: 'If the link fails or something goes wrong, contact support and quote this Order ID.',
     footer: 'Erythro.ai',
@@ -61,6 +67,9 @@ function copyForLocale(locale) {
  *   statusPageUrl: string,
  *   orderId: string | number,
  *   locale?: string,
+ *   planSlug?: string,
+ *   pdfBuffer?: Buffer | Uint8Array | null,
+ *   pdfFilename?: string,
  * }} input
  */
 export async function sendClientAuditEmail(input) {
@@ -74,7 +83,9 @@ export async function sendClientAuditEmail(input) {
   }
 
   const locale = input.locale || 'en'
-  const copy = copyForLocale(locale)
+  const pdfBuffer = input.pdfBuffer
+  const withPdf = Boolean(pdfBuffer && pdfBuffer.length)
+  const copy = copyForLocale(locale, withPdf)
   const orderId = formatAuditOrderId(input.orderId)
   const host = process.env.SMTP_HOST?.trim() || 'smtp.hostinger.com'
   const port = Number(process.env.SMTP_PORT || 465)
@@ -124,6 +135,15 @@ export async function sendClientAuditEmail(input) {
     text,
     html,
     envelope: { from: MAILBOX, to: [to] },
+    attachments: withPdf
+      ? [
+          {
+            filename: input.pdfFilename || `erythro-audit-${orderId}.pdf`,
+            content: Buffer.from(pdfBuffer),
+            contentType: 'application/pdf',
+          },
+        ]
+      : [],
     headers: {
       'Auto-Submitted': 'auto-generated',
       'X-Auto-Response-Suppress': 'All',
