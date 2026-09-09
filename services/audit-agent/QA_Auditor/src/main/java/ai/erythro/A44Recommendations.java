@@ -418,9 +418,9 @@ final class A44Recommendations {
         }
         if ("warn".equals(status)) {
             return ReportFindingsCatalog.tr(lang,
-                    "На этой коммерческой странице нет CTA и формы. Поставьте кнопку заявки, wa.me или форму захвата — иначе пользователь уходит в меню наугад.",
-                    "This commercial page has no CTA and no form. Add a lead button, wa.me or a capture form — otherwise the visitor leaves through the menu.",
-                    "בדף המסחרי הזה אין CTA ואין טופס. שימו כפתור פנייה, wa.me או טופס — אחרת המבקר יוצא דרך התפריט.");
+                    "На этой коммерческой странице нет CTA, формы и мгновенного канала. Поставьте кнопку заявки (в том числе модалку), wa.me или форму захвата — иначе пользователь уходит в меню наугад.",
+                    "This commercial page has no CTA, form or instant channel. Add a lead button (including a modal), wa.me or a capture form — otherwise the visitor leaves through the menu.",
+                    "בדף המסחרי הזה אין CTA, טופס או ערוץ מיידי. שימו כפתור פנייה (כולל מודאל), wa.me או טופס — אחרת המבקר יוצא דרך התפריט.");
         }
         return ReportFindingsCatalog.tr(lang,
                 "Почините этот URL воронки (редирект 301 или восстановление страницы).\n\n"

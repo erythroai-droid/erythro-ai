@@ -29,11 +29,6 @@ import {
   type OrderAddon,
   type OrderPlan,
 } from '@/lib/orderPlans'
-import {
-  closeAuditReportStatusTab,
-  navigateAuditReportStatusTab,
-  openAuditReportStatusPlaceholder,
-} from '@/lib/auditReport'
 import { isLexicalDoc, lexicalToPlain, resolveLexical } from '@/lib/lexical'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
@@ -1206,11 +1201,8 @@ function AuditOrderModal({
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ??
       ''
 
-    const statusTab = openAuditReportStatusPlaceholder()
-
     const websiteOk = await ensureWebsiteOk()
     if (!websiteOk) {
-      closeAuditReportStatusTab(statusTab)
       return
     }
 
@@ -1241,14 +1233,12 @@ function AuditOrderModal({
         }),
       })
       if (res.status === 429) {
-        closeAuditReportStatusTab(statusTab)
         const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
         setSubmitError(errPayload?.message || tForm(contactForm.rateLimited))
         setStatus('error')
         return
       }
       if (!res.ok) {
-        closeAuditReportStatusTab(statusTab)
         const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
         setSubmitError(
           res.status === 403
@@ -1266,11 +1256,8 @@ function AuditOrderModal({
       const href = sid != null ? `/audit/report/${sid}` : null
       setOrderId(payload?.orderId || (sid != null ? `AUD-${sid}` : null))
       setReportHref(href)
-      if (href) navigateAuditReportStatusTab(statusTab, href)
-      else closeAuditReportStatusTab(statusTab)
       setStatus('success')
     } catch {
-      closeAuditReportStatusTab(statusTab)
       setSubmitError(tForm(contactForm.error))
       setStatus('error')
     } finally {
@@ -1334,7 +1321,7 @@ function AuditOrderModal({
               </svg>
             </div>
             <h2 className="mb-2 font-sans text-xl font-bold uppercase tracking-[0.04em] text-white">
-              {locale === 'ru' ? 'Заказ оформлен!' : locale === 'he' ? 'ההזמנה התקבלה!' : 'Order received!'}
+              {locale === 'ru' ? 'Заказ отправлен!' : locale === 'he' ? 'ההזמנה נשלחה!' : 'Order submitted!'}
             </h2>
             <p className="mx-auto max-w-[420px] text-sm text-white/80 leading-6">
               {tAudit(formCopy.success, locale)}
@@ -1347,31 +1334,33 @@ function AuditOrderModal({
                 <code className="font-mono tracking-wide text-white">{orderId}</code>
               </p>
             ) : null}
-            {reportHref ? (
-              <a
-                href={reportHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex rounded-[40px] border border-gold-500 px-8 py-3 text-sm uppercase tracking-widest text-gold-500 transition-colors hover:bg-gold-500 hover:text-coal-900"
+            <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              {reportHref ? (
+                <a
+                  href={reportHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-[40px] border border-gold-500 bg-gold-500 px-8 py-3 text-sm font-semibold uppercase tracking-widest text-coal-900 transition-colors hover:border-gold-400 hover:bg-gold-400"
+                >
+                  {locale === 'ru'
+                    ? 'Смотреть статус заказа'
+                    : locale === 'he'
+                      ? 'צפה בסטטוס ההזמנה'
+                      : 'View order status'}
+                </a>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => {
+                  setOrderId(null)
+                  setReportHref(null)
+                  onClose()
+                }}
+                className="inline-flex items-center justify-center rounded-[40px] border border-white/20 px-8 py-3 text-sm uppercase tracking-widest text-white/80 transition-colors hover:border-white/40 hover:text-white"
               >
-                {locale === 'ru'
-                  ? 'Смотреть статус отчёта'
-                  : locale === 'he'
-                    ? 'צפה בסטטוס הדוח'
-                    : 'View report status'}
-              </a>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => {
-                setOrderId(null)
-                setReportHref(null)
-                onClose()
-              }}
-              className="mt-6 rounded-[40px] border border-gold-500 px-8 py-3 text-sm uppercase tracking-widest text-gold-500 transition-colors hover:bg-gold-500 hover:text-coal-900"
-            >
-              {tForm(contactForm.close)}
-            </button>
+                {tForm(contactForm.close)}
+              </button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-4">

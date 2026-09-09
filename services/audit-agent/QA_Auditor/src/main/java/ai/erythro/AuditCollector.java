@@ -266,12 +266,19 @@ public class AuditCollector {
     private static final String CONTACT_TRIGGER_SCRIPT = """
         () => {
             const keywords = [
-                'contact', 'get in touch', 'let us talk', 'lets talk', 'request a quote', 'send request',
-                'связаться', 'свяжитесь', 'контакт', 'заявк', 'обсудить', 'написать',
-                'צור קשר', 'צרו קשר', 'יצירת קשר', 'טופס', 'נדבר'
+                'contact', 'get in touch', 'let us talk', 'lets talk', "let's talk",
+                'request a quote', 'send request', 'get started', 'start now', 'discuss',
+                'связаться', 'свяжитесь', 'контакт', 'заявк', 'обсудить', 'написать', 'начать',
+                'צור קשר', 'צרו קשר', 'יצירת קשר', 'טופס', 'נדבר', 'להתחיל'
             ];
+            const skip = (el) => {
+                if (!el || el.getAttribute('aria-haspopup') === 'menu') return true;
+                const host = el.closest('[id*="cookie" i], [class*="cookie" i], [class*="consent" i], [id*="consent" i]');
+                return !!host;
+            };
             // Buttons only: following a link would navigate away from the audited page
             for (const el of document.querySelectorAll('button, [role="button"]')) {
+                if (skip(el)) continue;
                 const label = [el.innerText, el.getAttribute('aria-label'), el.getAttribute('title')]
                     .filter(Boolean).join(' ').toLowerCase();
                 if (!label.trim()) continue;
@@ -340,17 +347,34 @@ public class AuditCollector {
             const forms = document.querySelectorAll('form').length;
             const text = (document.body ? document.body.innerText : '') || '';
             const words = text.split(/\\s+/).filter(Boolean).length;
-            const ctaRe = /(contact|связ|צור|קשר|whatsapp|wa\\.me|telegram|заявк|order|book|הזמנ|оставьте|оставьте заявку)/i;
+            const ctaRe = /(contact|связ|контакт|обсуд|начать|צור|קשר|whatsapp|wa\\.me|telegram|заявк|order|book|הזמנ|оставьте|let'?s talk|get started|start now|discuss)/i;
             const hasCta = Array.from(document.querySelectorAll('a, button')).some(el => ctaRe.test(
                 [el.innerText, el.getAttribute('aria-label'), el.getAttribute('href')].filter(Boolean).join(' ')
             ));
+            const chatSelectors = [
+                'iframe[src*="tawk"]', 'iframe[src*="crisp"]', 'iframe[src*="intercom"]',
+                'iframe[src*="zendesk"]', 'iframe[src*="jivosite"]', 'iframe[src*="livechat"]',
+                '[class*="chat-widget"]', '[id*="chat-widget"]', '[class*="chatbot"]', '[id*="chatbot"]'
+            ];
+            const chatGlobals = ['Tawk_API', '$crisp', 'Intercom', 'zE', 'jivo_api', 'LiveChatWidget', 'Chatra'];
+            const hasChatWidget = !!(chatSelectors.find(sel => document.querySelector(sel))
+                || chatGlobals.find(name => typeof window[name] !== 'undefined'));
+            const messengerMarkers = ['wa.me', 'api.whatsapp.com', 't.me', 'tg://', 'viber:', 'm.me'];
+            const messengerLinks = Array.from(document.querySelectorAll('a[href]'))
+                .map(a => a.getAttribute('href'))
+                .filter(href => href && messengerMarkers.some(marker => href.includes(marker)))
+                .slice(0, 5);
             const soft404 = /404|not found|page not found|הדף לא נמצא|страница не найдена/i.test(title + ' ' + text.slice(0, 800));
             return {
                 title: title.slice(0, 160),
                 h1: h1.slice(0, 3),
                 formsCount: forms,
+                formViaCta: false,
                 wordCount: words,
                 hasCta: hasCta,
+                hasChatWidget: hasChatWidget,
+                messengerLinks: messengerLinks,
+                hasInstantContactChannel: hasChatWidget || messengerLinks.length > 0,
                 soft404: soft404,
                 htmlLang: document.documentElement.getAttribute('lang'),
                 dir: document.documentElement.getAttribute('dir')
@@ -996,7 +1020,7 @@ public class AuditCollector {
             finalReport.put("ai_visibility", aiVisibility);
 
             // 4. Агентный просмотр: обход ключевых внутренних страниц (не только главная)
-            Map<String, Object> agentBrowse = runAgentBrowse(page, targetUrl, infrastructure, apiKey);
+            Map<String, Object> agentBrowse = runAgentBrowse(page, targetUrl, infrastructure, apiKey, reportLang);
 
             // 5. Проверка производительности через PageSpeed Insights API
             Map<String, Object> pageSpeedData = fetchPageSpeedInsights(targetUrl, getPageSpeedApiKey());
@@ -1425,9 +1449,10 @@ public class AuditCollector {
             sb.append("- **Успешно открыто:** ").append(agentBrowse.getOrDefault("pages_ok", 0))
                     .append(" | битых/soft-404: ").append(agentBrowse.getOrDefault("pages_broken", 0)).append("\n");
             sb.append("- **CTA на внутренних:** ").append(agentBrowse.getOrDefault("inner_pages_with_cta", 0))
-                    .append(" | форм на внутренних: ").append(agentBrowse.getOrDefault("inner_pages_forms_total", 0)).append("\n\n");
-            sb.append("| URL | HTTP | Title | Forms | CTA | OK |\n");
-            sb.append("| :--- | :--- | :--- | :--- | :--- | :--- |\n");
+                    .append(" | форм на внутренних: ").append(agentBrowse.getOrDefault("inner_pages_forms_total", 0)).append("\n");
+            sb.append("- **Как считаем лид:** встроенная форма, форма после клика по CTA, чат и WhatsApp/Telegram.\n\n");
+            sb.append("| URL | HTTP | Title | Forms | via CTA | CTA | Instant | OK |\n");
+            sb.append("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n");
             for (Object pageObj : (List<Object>) agentBrowse.getOrDefault("pages", List.of())) {
                 if (!(pageObj instanceof Map)) continue;
                 Map<String, Object> p = (Map<String, Object>) pageObj;
@@ -1435,7 +1460,9 @@ public class AuditCollector {
                         .append(" | ").append(p.getOrDefault("http_status", "-"))
                         .append(" | ").append(cleanMd(String.valueOf(p.getOrDefault("title", ""))))
                         .append(" | ").append(p.getOrDefault("formsCount", 0))
+                        .append(" | ").append(p.getOrDefault("formViaCta", false))
                         .append(" | ").append(p.getOrDefault("hasCta", false))
+                        .append(" | ").append(p.getOrDefault("hasInstantContactChannel", false))
                         .append(" | ").append(p.getOrDefault("ok", false))
                         .append(" |\n");
             }
@@ -1829,7 +1856,8 @@ public class AuditCollector {
                 lighthouseRows,
                 checkRows,
                 fullSignals,
-                scope
+                scope,
+                parseGeminiFunnel(finalReport)
         );
     }
 
@@ -2368,12 +2396,74 @@ public class AuditCollector {
     }
 
     /**
+     * Same CTA-click probe as locale lead_capture, but for the lightweight agent snapshot.
+     * Without this, Funnel review treats modal/widget sites as "form only on /contacts".
+     */
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> enrichAgentPageSnapshot(Page page, Map<String, Object> snap) {
+        if (snap == null) {
+            return new LinkedHashMap<>();
+        }
+        Map<String, Object> out = new LinkedHashMap<>(snap);
+        if (asLong(out.get("formsCount"), 0) > 0) {
+            out.putIfAbsent("formViaCta", false);
+            return out;
+        }
+        Object triggerLabel;
+        try {
+            triggerLabel = page.evaluate(CONTACT_TRIGGER_SCRIPT);
+        } catch (Exception e) {
+            out.put("formViaCta", false);
+            return out;
+        }
+        if (triggerLabel == null) {
+            out.put("formViaCta", false);
+            return out;
+        }
+        try {
+            page.evaluate("() => document.querySelector('[data-erythro-audit-trigger=\"1\"]').click()");
+            page.waitForTimeout(1800);
+            Map<String, Object> rescan = (Map<String, Object>) page.evaluate(AGENT_PAGE_SNAPSHOT_SCRIPT);
+            if (asLong(rescan.get("formsCount"), 0) > 0) {
+                out.put("formsCount", rescan.get("formsCount"));
+                out.put("formViaCta", true);
+                out.put("triggerLabel", String.valueOf(triggerLabel));
+                out.put("hasCta", true);
+                if (rescan.get("hasChatWidget") != null) {
+                    out.put("hasChatWidget", rescan.get("hasChatWidget"));
+                }
+                if (rescan.get("hasInstantContactChannel") != null) {
+                    out.put("hasInstantContactChannel", rescan.get("hasInstantContactChannel"));
+                }
+                if (rescan.get("messengerLinks") != null) {
+                    out.put("messengerLinks", rescan.get("messengerLinks"));
+                }
+                System.out.println("  Форма воронки после клика по «" + triggerLabel + "»");
+                return out;
+            }
+            out.put("formViaCta", false);
+            out.put("triggerLabel", String.valueOf(triggerLabel));
+        } catch (Exception e) {
+            out.put("formViaCta", false);
+            out.put("triggerLabel", String.valueOf(triggerLabel));
+            System.out.println("  [!] Воронка: не раскрылась форма по «" + triggerLabel + "»: " + e.getMessage());
+        } finally {
+            try {
+                page.keyboard().press("Escape");
+                page.waitForTimeout(400);
+            } catch (Exception ignored) {}
+        }
+        return out;
+    }
+
+    /**
      * Agent browse: discover commercially important same-origin pages (sitemap + nav links),
      * open up to N of them, collect conversion signals, optionally ask Gemini for a short verdict.
      */
     @SuppressWarnings("unchecked")
     private static Map<String, Object> runAgentBrowse(Page page, String targetUrl,
-                                                      Map<String, Object> infrastructure, String geminiApiKey) {
+                                                      Map<String, Object> infrastructure, String geminiApiKey,
+                                                      String reportLang) {
         System.out.println("\n[+] Агентный просмотр: поиск и обход ключевых страниц сайта...");
         Map<String, Object> result = new LinkedHashMap<>();
         int maxPages = getAgentBrowseMaxPages();
@@ -2473,6 +2563,7 @@ public class AuditCollector {
                 int status = response == null ? 0 : response.status();
                 visit.put("http_status", status);
                 Map<String, Object> snap = (Map<String, Object>) page.evaluate(AGENT_PAGE_SNAPSHOT_SCRIPT);
+                snap = enrichAgentPageSnapshot(page, snap);
                 visit.putAll(snap);
                 boolean soft404 = Boolean.TRUE.equals(snap.get("soft404")) || status >= 400;
                 visit.put("ok", status > 0 && status < 400 && !Boolean.TRUE.equals(snap.get("soft404")));
@@ -2486,10 +2577,12 @@ public class AuditCollector {
                     formsOnInner += (int) asLong(snap.get("formsCount"), 0);
                     if (Boolean.TRUE.equals(snap.get("hasCta"))) ctaOnInner++;
                 }
-                System.out.printf("  → %s [%s] forms=%s cta=%s%n",
+                System.out.printf("  → %s [%s] forms=%s viaCta=%s cta=%s instant=%s%n",
                         url, status,
                         snap.get("formsCount"),
-                        snap.get("hasCta"));
+                        snap.get("formViaCta"),
+                        snap.get("hasCta"),
+                        snap.get("hasInstantContactChannel"));
             } catch (Exception e) {
                 visit.put("ok", false);
                 visit.put("error", e.getMessage());
@@ -2516,9 +2609,11 @@ public class AuditCollector {
         result.put("shallow_site", shallowSite);
         result.put("missing_contact_page_in_sample", missingContactPath && !shallowSite);
 
-        if (geminiApiKey != null && !geminiApiKey.isBlank()) {
-            Map<String, Object> gemini = askGeminiAgentBrowse(geminiApiKey, targetUrl, visited);
+        if (shouldAskGemini() && geminiApiKey != null && !geminiApiKey.isBlank()) {
+            Map<String, Object> gemini = askGeminiAgentBrowse(geminiApiKey, targetUrl, visited, reportLang);
             result.put("gemini_review", gemini);
+        } else if (!shouldAskGemini()) {
+            result.put("gemini_review", Map.of("status", "SKIPPED", "reason", "not_pro_tier"));
         } else {
             result.put("gemini_review", Map.of("status", "SKIPPED", "reason", "GEMINI_API_KEY не задан"));
         }
@@ -2583,9 +2678,56 @@ public class AuditCollector {
         return DEFAULT_AGENT_BROWSE_MAX_PAGES;
     }
 
+    private static boolean shouldAskGemini() {
+        String tier = System.getenv("AUDIT_TIER");
+        if (tier == null || tier.isBlank()) {
+            tier = System.getProperty("AUDIT_TIER", "");
+        }
+        if (tier == null || tier.isBlank()) {
+            // Full Free/Diagnostic/Pro package from one crawl — still include Gemini for Pro HTML.
+            return true;
+        }
+        return "PRO".equalsIgnoreCase(tier.trim());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static AuditReportView.GeminiFunnel parseGeminiFunnel(Map<String, Object> finalReport) {
+        if (finalReport == null) {
+            return null;
+        }
+        Object browseObj = finalReport.get("agent_browse");
+        if (!(browseObj instanceof Map<?, ?> browse)) {
+            return null;
+        }
+        Object reviewObj = browse.get("gemini_review");
+        if (!(reviewObj instanceof Map<?, ?> review)) {
+            return null;
+        }
+        if (!"SUCCESS".equals(String.valueOf(review.get("status")))) {
+            return null;
+        }
+        List<String> gaps = new ArrayList<>();
+        Object gapsObj = review.get("gaps");
+        if (gapsObj instanceof List<?> rawGaps) {
+            for (Object item : rawGaps) {
+                if (item == null) {
+                    continue;
+                }
+                String text = String.valueOf(item).trim();
+                if (!text.isBlank()) {
+                    gaps.add(text);
+                }
+            }
+        }
+        String verdict = review.get("verdict") == null ? "" : String.valueOf(review.get("verdict"));
+        String priority = review.get("priority_fix") == null ? "" : String.valueOf(review.get("priority_fix"));
+        AuditReportView.GeminiFunnel funnel = new AuditReportView.GeminiFunnel(verdict, gaps, priority);
+        return funnel.hasContent() ? funnel : null;
+    }
+
     @SuppressWarnings("unchecked")
     private static Map<String, Object> askGeminiAgentBrowse(String apiKey, String targetUrl,
-                                                            List<Map<String, Object>> visited) {
+                                                            List<Map<String, Object>> visited, String reportLang) {
         Map<String, Object> out = new LinkedHashMap<>();
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -2595,19 +2737,33 @@ public class AuditCollector {
                         .append(" | status: ").append(page.getOrDefault("http_status", "?"))
                         .append(" | title: ").append(page.getOrDefault("title", ""))
                         .append(" | forms: ").append(page.getOrDefault("formsCount", 0))
+                        .append(" | formViaCta: ").append(page.getOrDefault("formViaCta", false))
                         .append(" | CTA: ").append(page.getOrDefault("hasCta", false))
+                        .append(" | chat: ").append(page.getOrDefault("hasChatWidget", false))
+                        .append(" | messenger: ").append(page.getOrDefault("hasInstantContactChannel", false))
                         .append(" | soft404: ").append(page.getOrDefault("soft404", false))
                         .append("\n");
             }
+            String answerLang = switch (AuditReportI18n.normalizeLang(reportLang)) {
+                case "he" -> "Hebrew";
+                case "en" -> "English";
+                default -> "Russian";
+            };
             String prompt = """
-                Ты — коммерческий QA-агент Erythro.ai. По результатам обхода страниц сайта %s\
-                 оцени пользовательский путь к заявке. Ответь строго JSON без markdown:
-                {"verdict":"короткий вердикт на русском до 180 символов",\
-                "gaps":["до 3 пробелов воронки на русском"],\
-                "priority_fix":"одна приоритетная доработка на русском"}
-                Страницы:
+                You are Erythro.ai's commercial QA agent. From the funnel crawl of %s, \
+                judge the path to a lead. Reply with strict JSON and no markdown. \
+                All string values MUST be in %s:
+                {"verdict":"short verdict, max 180 characters",\
+                "gaps":["up to 3 funnel gaps"],\
+                "priority_fix":"one priority fix"}
+                Lead capture on a page is VALID if any of: forms>0 (inline OR opened after a CTA click — formViaCta=true), \
+                chat=true, messenger=true (WhatsApp, Telegram, and similar). \
+                A modal or dialog form after a CTA click is a normal modern pattern — do NOT call that \
+                "CTA without an embedded form" or "form only on the contacts page". \
+                Flag a gap only if the visitor cannot submit a lead and has no instant channel.
+                Pages:
                 %s
-                """.formatted(targetUrl, pagesBlock);
+                """.formatted(targetUrl, answerLang, pagesBlock);
 
             Map<String, Object> body = Map.of(
                     "contents", List.of(Map.of(

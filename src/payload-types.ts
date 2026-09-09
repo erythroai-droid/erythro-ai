@@ -1827,15 +1827,15 @@ export interface AuditPage {
           name?: string | null;
           price?: string | null;
           /**
-           * Struck-through comparison price (optional)
+           * Optional. Number only — site adds ₪. Empty = hidden.
            */
           priceCompare?: string | null;
           /**
-           * Short note under price, e.g. "one-time · promo"
+           * Optional. Shown as "* …" under the price (e.g. "карта не нужна"). Empty in CMS = nothing on the site — code fallback is not used.
            */
           priceNote?: string | null;
           /**
-           * Short plan description (optional)
+           * Optional short plan blurb. Empty = hidden.
            */
           description?: string | null;
           features?:

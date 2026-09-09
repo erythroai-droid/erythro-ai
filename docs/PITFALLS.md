@@ -489,7 +489,7 @@ CI runs the fix script before API tests.
 
 **Cause:** Copy described the lab in the abstract, not `A44Tier` disclosure: Free 1 URL (scorecard, top-3, Lighthouse); Diagnostic 5 URLs + summary cards; Pro full 60+ checklist + recommendations **and up to 10 funnel URLs** (`A44Tier.pageCap`: Free=1, Diagnostic=5, Pro=10). Scale names in PDFs are Speed & Mobile UX, SEO & Visibility, Lead gen & Forms, Security & Stability, AI Visibility & Brand Discovery.
 
-**Fix:** Align `src/lib/auditPage.ts` (including `/audit` «How it works»), `src/lib/orderPlans.ts` (`AUDIT_ORDER_PLANS` + `AUDIT_CHECK_CATEGORIES`), and order UI with `QA_Auditor` `A44Copy` / `ReportScopeOfWork` / `AGENTS.md`. Client PDFs say “60+”, not “55–60”. Do not brand Agent Readiness as Vercel. Scorecard weights in `AuditCollector` are Speed 27% · Lead 22% · SEO 22% · Security 18% · AI Visibility 11%; L1 is reported, not weighted. The How-it-works categories **and** Order «What we check» cards must follow `ReportScopeOfWork` itemsCore (network, indexing, PSI, per-locale, AI Visibility, Agent Readiness L1, funnel crawl) — not scorecard-only marketing lists. Pro Order features must disclose `pageCap=10`, not only “everything in Diagnostic”.
+**Fix:** Align `src/lib/auditPage.ts` (including `/audit` «How it works»), `src/lib/orderPlans.ts` (`AUDIT_ORDER_PLANS` + `AUDIT_CHECK_CATEGORIES`), and order UI with `QA_Auditor` `A44Copy` / `ReportScopeOfWork` / `AGENTS.md`. Client PDFs say “60+”, not “55–60”. Do not brand Agent Readiness as Vercel. Scorecard weights in `AuditCollector` are Speed 27% · Lead 22% · SEO 22% · Security 18% · AI Visibility 11%; L1 is reported, not weighted. The How-it-works categories **and** Order «What we check» cards must follow `ReportScopeOfWork` itemsCore (network, indexing, PSI, per-locale, AI Visibility, Agent Readiness L1, funnel crawl) **plus Pro-only Funnel review** (AI verdict after the crawl — not Gemini-branded on the marketing page). Pro Order features must disclose `pageCap=10`, not only “everything in Diagnostic”. After copy edits, PATCH the `audit-page` global and upsert `solution-plans` (`scripts/patch-audit-funnel-review.ts`, `scripts/seed-audit-order-plans.ts`) — CMS arrays win over static fallbacks.
 
 **Prevent:** When auditor checks or tier unlocks change, update landing + order copy in the same change. Diff against `QA_Auditor/AGENTS.md`, `ReportScopeOfWork.java`, and `A44Tier.pageCap`.
 
@@ -1087,6 +1087,46 @@ Never put the app display name into Subdomain. Confirm the composed hostname pre
 
 ---
 
+## PIT-065 — Audit Page Pricing save: `The following field is invalid: id`
+
+**Tags:** `payload`, `postgres`, `audit-page`, `nested-array`, `i18n`  
+**Seen:** 2026-09-07 — filling Audit Page → Pricing in admin (RU saved once, then EN and even RU failed).
+
+**Symptom:**
+Payload admin banner `The following field is invalid: id` / `Value must be unique` when saving the **Audit Page** global, especially the Pricing tab. First save of plan cards can succeed; every later save fails, including the locale that already worked. Not caused by saving 3 cards instead of 4.
+
+**Cause:**
+`pricing.plans[].features` is a **nested** array. On update Payload deletes parent plan rows and expects Postgres `ON DELETE CASCADE` to drop nested feature rows, then re-inserts the same row ids. The handwritten `audit_page_pricing_plans_features` table had **no FK** to `audit_page_pricing_plans(id)`, so leftover feature ids collided (`23505` mapped to path `id`).
+
+**Fix:**
+Migration `20260907_010000_audit_page_pricing_features_fk` adds
+`audit_page_pricing_plans_features_parent_id_fk` … `ON DELETE cascade`.
+Hard-refresh admin, keep the existing 3 plan rows, add Delegate as a 4th card if needed, translate EN/HE **in place** (do not duplicate cards). Do not use Copy locale data.
+
+**Prevent:**
+Handwritten nested-array tables must FK `_parent_id` → parent array `id` with `ON DELETE cascade`, same as Payload’s generated schema (`solution_plans_features`). One-level arrays (How it works stats/steps) are fine without that nested FK.
+
+---
+
+## PIT-066 — Local `next dev`: red splash stuck, client chunks blocked by CSP
+
+**Tags:** `csp`, `next-dev`, `splash`, `unsafe-eval`, `webpack`  
+**Seen:** 2026-09-08 — local homepage hangs on brand splash plate (logo never appears).
+
+**Symptom:**
+SSR HTML loads (page content exists under the overlay), but `.splash-bg` never fades. Console: `Evaluating a string as JavaScript violates … script-src` / missing `'unsafe-eval'`. Webpack cannot load `SplashScreen.tsx` (and other client modules that still need eval in dev).
+
+**Cause:**
+Public CSP removed `'unsafe-eval'` for production hardening. `next dev` still serves client bundles via webpack `eval-source-map`, which requires `script-src 'unsafe-eval'`. Production `next build` output does not need it.
+
+**Fix:**
+In `next.config.ts`, add `'unsafe-eval'` to the **public** CSP only when `NODE_ENV === 'development'`. Keep production public CSP without eval; admin path already allows it for Payload. Restart `next dev` after changing CSP headers (config is read at boot).
+
+**Prevent:**
+Never ship production public CSP with `'unsafe-eval'`. When tightening CSP, smoke-test `next dev` homepage splash + one interactive client island. Long-term: CSP nonce (PLAN-deferred) and/or a non-eval dev sourcemap if eval must stay off everywhere.
+
+---
+
 ## PIT-067 — Free audit button does nothing after website DNS check
 
 **Tags:** `audit`, `react`, `form`, `currentTarget`, `contact-api`  
@@ -1103,6 +1143,44 @@ Read the honeypot (or `e.currentTarget`) **before** any `await`. Same pattern as
 
 **Prevent:**
 Never touch `e.currentTarget` after `await` in a React submit handler. Capture `const form = e.currentTarget` (or honeypot value) first. When adding an intake skip flag, hoist `limited` so success headers cannot `ReferenceError`.
+
+---
+
+## PIT-068 — Funnel review calls a modal/widget site “form only on contacts”
+
+**Tags:** `audit`, `funnel-review`, `gemini`, `lead-capture`, `modal`, `cta`  
+**Seen:** 2026-09-09 — Pro HTML «Разбор воронки» on erythro.ai: «Путь к лиду усложнен: форма заявки есть только на странице контактов».
+
+**Symptom:**
+Client sees CTA «Обсудить» / «Начать сейчас», a contact modal, and a WhatsApp/chat widget on the homepage, but Funnel review says services and home have buttons without embedded forms. Looks like a shallow audit.
+
+**Cause:**
+Gemini Funnel review was fed a one-line crawl: `forms` = `document.querySelectorAll('form').length` and a narrow CTA regex. `ContactModal` mounts only after click (`isOpen && <ContactModal>`). Agent browse did **not** reuse `probeModalLeadForm`. Chat/WhatsApp were not in the prompt. Gemini then invented “form only on /contacts”.
+
+**Fix:**
+Agent browse clicks the same CTA probe as locale lead_capture, counts modal forms (`formViaCta`), chat and messengers, and tells Gemini that a modal after click is a valid lead path. Report + `/audit` copy disclose the method (inline form, CTA-modal, chat/WhatsApp). After copy edits: `PAYLOAD_DISABLE_PUSH=1 pnpm exec tsx scripts/patch-audit-funnel-review.ts`.
+
+**Prevent:**
+Do not judge lead capture from a static `<form>` count on modern sites. Funnel review must see CTA-opened forms and instant channels, and the client PDF must say so.
+
+---
+
+## PIT-069 — Premature new tab navigation skips order confirmation modal
+
+**Tags:** `order`, `modal`, `ux`, `audit-report`, `popup`  
+**Seen:** 2026-09-09 — `/order/[slug]` checkout modal for audit plans.
+
+**Symptom:**
+When clicking «Оформить заказ», the browser immediately navigates away to a new tab with the report progress bar (`/audit/report/[id]`), bypassing the confirmation modal on the order page.
+
+**Cause:**
+`AuditOrderModal` opened a placeholder tab via `openAuditReportStatusPlaceholder()` during the click gesture and navigated it right after `POST /api/contact` returned (`navigateAuditReportStatusTab`). This displaced the user before they could view the order confirmation details or decide to open the status tracking.
+
+**Fix:**
+Remove placeholder tab auto-navigation from `AuditOrderModal.handleSubmit`. Keep the user in the confirmation modal displaying «Заказ отправлен!» and provide a prominent action button «Смотреть статус заказа» (`<a href={reportHref} target="_blank">`), allowing the user to open the progress bar tab upon explicit click.
+
+**Prevent:**
+Do not auto-open or redirect to separate progress tabs on submit when the flow is designed around an explicit confirmation modal with an action button. Rely on explicit user gestures (`target="_blank"` link) to open status views.
 
 ---
 
@@ -1141,7 +1219,10 @@ Never touch `e.currentTarget` after `await` in a React submit handler. Capture `
 - [ ] Audit worker: SSRF re-check + timing-safe / HMAC agent auth (PIT-052)
 - [ ] VPS Docker: no `0.0.0.0` publish; Caddy or `127.0.0.1` only (PIT-053)
 - [ ] VPS Docker: do NOT drop port 8080 in DOCKER-USER; Montblanc API requires 8080 until migrated behind Caddy (PIT-060)
+- [ ] Nested CMS arrays (array-in-array) must FK to the parent row `ON DELETE cascade` (PIT-065)
+- [ ] Local `next dev`: public CSP must allow `'unsafe-eval'` only in development so webpack client chunks hydrate (PIT-066)
 - [ ] React form submit: read `e.currentTarget` / honeypot before any `await` (PIT-067)
+- [ ] Funnel review: CTA-opened modal forms and chat/WhatsApp count as a lead path; disclose the method in the Pro block (PIT-068)
 - [ ] Form-mail “not arriving”: check Hostinger INBOX (not Unread); `team@` password is not `SMTP_PASS` (PIT-054)
 - [ ] Contact honeypot must not be named company/website/email — mobile autofill silent-drops leads (PIT-055)
 - [ ] Shared frontend layout / not-found must not call `cookies()`; middleware must not Set-Cookie on HTML; use `force-static` + `getPayloadLocal` for ISR HIT (PIT-056)
@@ -1152,4 +1233,5 @@ Never touch `e.currentTarget` after `await` in a React submit handler. Capture `
 - [ ] Home CLS: keep below-fold SSR; defer GSAP via loadGsapAfterLcp, not a late section swap (PIT-062)
 - [ ] OAuth SuccessHandler redirect must target the decoupled frontend URL, never the legacy backend host (PIT-048)
 - [ ] Motion typography: never tween geometric CSS (font-size/width/height); use GPU transform scale to prevent CLS (PIT-063)
+- [ ] Order modal flow: keep user in confirmation modal; do not auto-open status tabs on submit (PIT-069)
 

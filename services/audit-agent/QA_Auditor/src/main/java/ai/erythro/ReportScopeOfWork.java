@@ -761,8 +761,9 @@ public final class ReportScopeOfWork {
             "Иврит / RTL — dir на html/body, computed direction, выравнивание заголовков для аудитории Израиля",
             "Орфография — LanguageTool на локалях EN и RU (с словарём исключений Erythro.ai)",
             "Агентный обход воронки — {{CAND}} кандидатов из sitemap и навигации; открыто {{LAB}} URL "
-                    + "(успешно {{OK}}). На каждую страницу {{AGENT}} сигналов: HTTP, title, h1, формы, CTA, "
-                    + "soft-404, lang, dir, объём текста. В этом отчёте раскрыто {{SHOWN}}",
+                    + "(успешно {{OK}}). На каждую страницу {{AGENT}} сигналов: HTTP, title, h1, формы "
+                    + "(включая модалку после CTA), CTA, чат/мессенджер, soft-404, lang, dir, объём текста. "
+                    + "В этом отчёте раскрыто {{SHOWN}}",
             "Пакет Pro — {{PRO}} строк чеклиста, {{SHOWN}} URL воронки, scorecard и топ-3",
             "Пакет Diagnostic — {{SUM}} сводных карточек и {{SHOWN}} URL; {{PRO}} строк полного чеклиста — в Pro",
             "Превью — раскрывает главную; лаборатория уже обошла {{LAB}} URL и {{UNIQUE}} типов сигналов",
@@ -821,7 +822,8 @@ public final class ReportScopeOfWork {
             "Hebrew / RTL — html/body dir, computed direction, heading alignment for the Israel audience",
             "Spelling — LanguageTool on EN and RU (with the Erythro.ai exception lexicon)",
             "Funnel crawl — {{CAND}} candidates from sitemap and nav; opened {{LAB}} URLs "
-                    + "({{OK}} ok). {{AGENT}} signals per page: HTTP, title, h1, forms, CTA, "
+                    + "({{OK}} ok). {{AGENT}} signals per page: HTTP, title, h1, forms "
+                    + "(including a modal after a CTA click), CTA, chat/messenger, "
                     + "soft-404, lang, dir, word count. This report discloses {{SHOWN}}",
             "Pro pack — {{PRO}} checklist rows, {{SHOWN}} funnel URLs, scorecard and top-3",
             "Diagnostic — {{SUM}} summary cards and {{SHOWN}} URLs; the {{PRO}}-row checklist is in Pro",
@@ -880,7 +882,8 @@ public final class ReportScopeOfWork {
             "עברית / RTL — dir ב-html/body, direction מחושב, יישור כותרות לקהל בישראל",
             "איות — LanguageTool ב-EN ו-RU (עם לקסיקון החריגים של Erythro.ai)",
             "סריקת משפך — {{CAND}} מועמדים מ-sitemap וניווט; נפתחו {{LAB}} URL "
-                    + "({{OK}} תקינים). {{AGENT}} אותות לעמוד. בדוח זה נחשפים {{SHOWN}}",
+                    + "({{OK}} תקינים). {{AGENT}} אותות לעמוד: HTTP, title, h1, טפסים "
+                    + "(כולל מודאל אחרי CTA), CTA, צ׳אט/מסנג׳ר. בדוח זה נחשפים {{SHOWN}}",
             "חבילת Pro — {{PRO}} שורות, {{SHOWN}} URL, scorecard ו-3 פערים",
             "Diagnostic — {{SUM}} כרטיסי סיכום ו-{{SHOWN}} URL; {{PRO}} השורות ב-Pro",
             "תצוגה מקדימה — דף הבית; המעבדה כבר סרקה {{LAB}} URL ו-{{UNIQUE}} סוגים",

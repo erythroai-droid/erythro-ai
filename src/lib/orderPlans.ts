@@ -218,9 +218,21 @@ export const AUDIT_CHECK_CATEGORIES = [
       he: 'סריקת משפך',
     } satisfies LocaleMap,
     description: {
-      en: 'Free: 1 URL (homepage). Diagnostic: up to 5. Pro: up to 10 — HTTP, title, h1, forms, CTA, soft-404',
-      ru: 'Free: 1 URL (главная). Diagnostic: до 5. Pro: до 10 — HTTP, title, h1, формы, CTA, soft-404',
-      he: 'Free: כתובת אחת (דף הבית). Diagnostic: עד 5. Pro: עד 10 — HTTP, title, h1, טפסים, CTA, soft-404',
+      en: 'Free: 1 URL (homepage). Diagnostic: up to 5. Pro: up to 10 — HTTP, title, h1, forms (inline and after CTA click), CTA, chat/WhatsApp, soft-404',
+      ru: 'Free: 1 URL (главная). Diagnostic: до 5. Pro: до 10 — HTTP, title, h1, формы (встроенные и после клика по CTA), CTA, чат/WhatsApp, soft-404',
+      he: 'Free: כתובת אחת (דף הבית). Diagnostic: עד 5. Pro: עד 10 — HTTP, title, h1, טפסים (משובצים ואחרי CTA), CTA, צ׳אט/WhatsApp, soft-404',
+    } satisfies LocaleMap,
+  },
+  {
+    title: {
+      en: 'Funnel review',
+      ru: 'Funnel review',
+      he: 'Funnel review',
+    } satisfies LocaleMap,
+    description: {
+      en: 'Pro only: AI verdict on the path to a lead (modal forms and chat/WhatsApp count), up to 3 funnel gaps, and one priority fix',
+      ru: 'Только Pro: AI-вердикт по пути к заявке (модалки и чат считаются), до 3 пробелов воронки и одна приоритетная доработка',
+      he: 'רק Pro: פסק דין AI על הדרך לליד (טפסי מודאל וצ׳אט נספרים), עד 3 פערי משפך ותיקון אחד בעדיפות',
     } satisfies LocaleMap,
   },
 ]
@@ -425,6 +437,13 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         },
         {
           value: {
+            en: 'Funnel review: AI verdict on the lead path (modal forms and chat count), gaps, and one priority fix',
+            ru: 'Funnel review: AI-вердикт по пути к заявке (модалки и чат считаются), пробелы и приоритетная доработка',
+            he: 'Funnel review: פסק דין AI על דרך הליד (טפסי מודאל וצ׳אט נספרים), פערים ותיקון בעדיפות',
+          },
+        },
+        {
+          value: {
             en: 'AI Visibility: 7 criteria + Agent Readiness L1',
             ru: 'AI Visibility: 7 критериев + Agent Readiness L1',
             he: 'נראות AI: 7 קריטריונים + Agent Readiness L1',
@@ -447,17 +466,17 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       ],
     },
     subtitle: {
-      en: 'Full 60+ checklist, fix plan, and AI Visibility breakdown.',
-      ru: 'Полный чеклист 60+, план правок и разбор AI Visibility.',
-      he: 'צ׳ק-ליסט 60+ מלא, תוכנית תיקון ופירוט נראות AI.',
+      en: 'Full 60+ checklist, Funnel review, fix plan, and AI Visibility breakdown.',
+      ru: 'Полный чеклист 60+, Funnel review, план правок и разбор AI Visibility.',
+      he: 'צ׳ק-ליסט 60+ מלא, Funnel review, תוכנית תיקון ופירוט נראות AI.',
     },
     periods: [],
     defaultPeriodId: '',
     addons: [],
     includes: {
-      en: 'Everything in Diagnostic, plus up to 10 funnel pages. Unlocks the full 60+ checklist with a fix on every row — including 7 AI Visibility criteria and Agent Readiness L1. HTML report in the language you choose; recommendations can be copied.',
-      ru: 'Как Диагностика, плюс до 10 страниц воронки. Открыт полный чеклист 60+ с рекомендациями по каждой строке — включая 7 критериев AI Visibility и Agent Readiness L1. HTML-отчёт на выбранном языке, рекомендации можно копировать.',
-      he: 'הכל מחבילת האבחון, ובנוסף עד 10 עמודי משפך. נפתח צ׳ק-ליסט 60+ מלא עם המלצה לכל שורה — כולל 7 קריטריוני נראות AI ו-Agent Readiness L1. דוח HTML בשפה שבחרתם; אפשר להעתיק את ההמלצות.',
+      en: 'Everything in Diagnostic, plus up to 10 funnel pages and Funnel review (AI verdict on the path to a lead, including modal forms and chat widgets). Unlocks the full 60+ checklist with a fix on every row — including 7 AI Visibility criteria and Agent Readiness L1. HTML report in the language you choose; recommendations can be copied.',
+      ru: 'Как Диагностика, плюс до 10 страниц воронки и Funnel review (AI-вердикт по пути к заявке, включая модальные формы и чат). Открыт полный чеклист 60+ с рекомендациями по каждой строке — включая 7 критериев AI Visibility и Agent Readiness L1. HTML-отчёт на выбранном языке, рекомендации можно копировать.',
+      he: 'הכל מחבילת האבחון, ובנוסף עד 10 עמודי משפך ו-Funnel review (פסק דין AI על הדרך לליד, כולל טפסי מודאל וצ׳אט). נפתח צ׳ק-ליסט 60+ מלא עם המלצה לכל שורה — כולל 7 קריטריוני נראות AI ו-Agent Readiness L1. דוח HTML בשפה שבחרתם; אפשר להעתיק את ההמלצות.',
     },
     seoTitle: {
       en: 'Pro AI Audit | Full checklist & fix plan | Erythro.ai',
@@ -465,9 +484,9 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       he: 'ביקורת AI Pro | צ׳ק-ליסט מלא ותוכנית תיקון | Erythro.ai',
     },
     seoDescription: {
-      en: 'Full website audit: 60+ checklist, fix plan, up to 10 funnel URLs, and AI Visibility breakdown.',
-      ru: 'Полный аудит сайта: чеклист 60+, план правок, до 10 URL воронки и разбор AI Visibility.',
-      he: 'ביקורת אתר מלאה: צ׳ק-ליסט 60+, תוכנית תיקון, עד 10 כתובות משפך ופירוט נראות AI.',
+      en: 'Full website audit: 60+ checklist, Funnel review, fix plan, up to 10 funnel URLs, and AI Visibility breakdown.',
+      ru: 'Полный аудит сайта: чеклист 60+, Funnel review, план правок, до 10 URL воронки и разбор AI Visibility.',
+      he: 'ביקורת אתר מלאה: צ׳ק-ליסט 60+, Funnel review, תוכנית תיקון, עד 10 כתובות משפך ופירוט נראות AI.',
     },
   },
 ]

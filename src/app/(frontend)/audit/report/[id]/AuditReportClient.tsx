@@ -146,7 +146,9 @@ export default function AuditReportClient({
           />
 
           <main id="audit-report-page" className="relative z-[1] mx-auto w-full max-w-5xl px-4 pb-20 pt-28 sm:px-6 lg:px-8">
-            <h1 className="m-0 font-sans text-2xl font-medium uppercase tracking-[0.08em] text-gold-500 md:text-3xl">
+            <h1 className={`m-0 font-sans text-2xl font-medium uppercase tracking-[0.08em] md:text-3xl ${
+              isLight ? 'text-coal-900' : 'text-gold-500'
+            }`}>
               {tReport(auditReportCopy.title, locale)}
             </h1>
 
@@ -271,10 +273,20 @@ function AuditWaitingProgress({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <p className="m-0 text-sm font-medium uppercase tracking-[0.12em] text-gold-500">
+        <p
+          className={`m-0 text-sm font-medium uppercase tracking-[0.12em] ${
+            isLight ? 'text-coal-900' : 'text-gold-500'
+          }`}
+        >
           {tReport(auditReportCopy.progressLabel, locale)}
         </p>
-        <p className="m-0 font-mono text-sm tabular-nums text-gold-500">{displayPct}%</p>
+        <p
+          className={`m-0 font-mono text-sm tabular-nums ${
+            isLight ? 'font-semibold text-coal-900' : 'text-gold-500'
+          }`}
+        >
+          {displayPct}%
+        </p>
       </div>
       <div
         role="progressbar"
@@ -304,15 +316,17 @@ function AuditWaitingProgress({
   )
 }
 
-function EmailNotice({ locale, muted, isLight }: { locale: string; muted: string; isLight: boolean }) {
+function EmailNotice({ locale, isLight }: { locale: string; isLight: boolean }) {
   return (
     <div
-      className={`flex gap-3 rounded-[16px] border p-4 sm:p-5 ${
-        isLight ? 'border-black/10 bg-black/[0.04]' : 'border-gold-500/25 bg-gold-500/10'
+      className={`flex items-start gap-3 rounded-[10px] border px-4 py-3 sm:px-5 sm:py-4 ${
+        isLight
+          ? 'border-emerald-700/30 bg-emerald-500/15 text-emerald-950'
+          : 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'
       }`}
     >
       <svg
-        className="mt-0.5 size-5 shrink-0 text-gold-500"
+        className={`mt-0.5 size-5 shrink-0 ${isLight ? 'text-emerald-800' : 'text-emerald-400'}`}
         viewBox="0 0 24 24"
         fill="none"
         aria-hidden
@@ -330,7 +344,7 @@ function EmailNotice({ locale, muted, isLight }: { locale: string; muted: string
           strokeLinejoin="round"
         />
       </svg>
-      <p className={`m-0 min-w-0 text-sm leading-6 ${muted}`}>
+      <p className="m-0 min-w-0 text-sm leading-6">
         {tReport(auditReportCopy.emailNotice, locale)}
       </p>
     </div>
@@ -357,11 +371,17 @@ function ReportBody({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <p className="m-0 text-sm font-medium uppercase tracking-[0.12em] text-gold-500">
+        <p
+          className={`m-0 text-sm font-medium uppercase tracking-[0.12em] ${
+            isLight ? 'text-coal-900' : 'text-gold-500'
+          }`}
+        >
           {status ? statusLabel(status, locale) : tReport(auditReportCopy.queued, locale)}
         </p>
         <p className="m-0 text-base">
-          <span className="text-gold-500">{tReport(auditReportCopy.orderId, locale)}:</span>{' '}
+          <span className={isLight ? 'font-semibold text-coal-900' : 'text-gold-500'}>
+            {tReport(auditReportCopy.orderId, locale)}:
+          </span>{' '}
           <code className="font-mono text-[0.95em] tracking-wide">{orderId}</code>
         </p>
         <p className={`m-0 text-sm ${muted}`}>{tReport(auditReportCopy.orderIdHint, locale)}</p>
@@ -376,7 +396,9 @@ function ReportBody({
         ) : null}
         {typeof data?.auditScore === 'number' ? (
           <p className="m-0 text-base">
-            <span className="text-gold-500">{tReport(auditReportCopy.score, locale)}:</span>{' '}
+            <span className={isLight ? 'font-semibold text-coal-900' : 'text-gold-500'}>
+              {tReport(auditReportCopy.score, locale)}:
+            </span>{' '}
             {data.auditScore}
           </p>
         ) : null}
@@ -391,7 +413,7 @@ function ReportBody({
             muted={muted}
             isLight={isLight}
           />
-          <EmailNotice locale={locale} muted={muted} isLight={isLight} />
+          <EmailNotice locale={locale} isLight={isLight} />
         </>
       ) : null}
 
