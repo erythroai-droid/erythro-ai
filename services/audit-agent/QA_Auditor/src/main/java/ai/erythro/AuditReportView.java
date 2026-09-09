@@ -28,6 +28,23 @@ public final class AuditReportView {
     public final List<Map<String, String>> checkRows;
     public final List<Map<String, String>> fullSignalRows;
     public final ReportScopeOfWork.Stats scope;
+    public final GeminiFunnel geminiFunnel;
+
+    public static final class GeminiFunnel {
+        public final String verdict;
+        public final List<String> gaps;
+        public final String priorityFix;
+
+        public GeminiFunnel(String verdict, List<String> gaps, String priorityFix) {
+            this.verdict = verdict == null ? "" : verdict.trim();
+            this.gaps = gaps == null ? List.of() : List.copyOf(gaps);
+            this.priorityFix = priorityFix == null ? "" : priorityFix.trim();
+        }
+
+        public boolean hasContent() {
+            return !verdict.isBlank() || !gaps.isEmpty() || !priorityFix.isBlank();
+        }
+    }
 
     public AuditReportView(
             AuditReportI18n i18n,
@@ -49,7 +66,8 @@ public final class AuditReportView {
             List<Map<String, String>> lighthouseRows,
             List<Map<String, String>> checkRows,
             List<Map<String, String>> fullSignalRows,
-            ReportScopeOfWork.Stats scope
+            ReportScopeOfWork.Stats scope,
+            GeminiFunnel geminiFunnel
     ) {
         this.i18n = i18n;
         this.targetUrl = targetUrl;
@@ -71,5 +89,6 @@ public final class AuditReportView {
         this.checkRows = checkRows;
         this.fullSignalRows = fullSignalRows == null ? List.of() : fullSignalRows;
         this.scope = scope;
+        this.geminiFunnel = geminiFunnel;
     }
 }

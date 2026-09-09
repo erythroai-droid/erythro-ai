@@ -16,6 +16,7 @@
     "db:fix-portfolio-richtext": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-portfolio-richtext.ts",
     "db:fix-site-settings-page-heroes": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-site-settings-page-heroes.ts",
     "db:fix-solution-feature-columns": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-solution-feature-columns.ts",
+    "db:fix-localization-audit": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_DISABLE_PUSH=1 tsx scripts/fix-localization-audit.ts",
     "db:fix-contact-submissions-audit-fields": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-contact-submissions-audit-fields.ts",
     "db:fix-contact-submissions-audit-pipeline": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-contact-submissions-audit-pipeline.ts",
     "db:fix-contact-submissions-html-result": "node scripts/fix-contact-submissions-html-result.mjs",

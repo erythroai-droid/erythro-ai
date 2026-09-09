@@ -26,6 +26,7 @@ import * as migration_20260831_010000_contact_submissions_audit_fields from './2
 import * as migration_20260831_120000_contact_submissions_audit_pipeline from './20260831_120000_contact_submissions_audit_pipeline'
 import * as migration_20260901_010000_audit_page_cms from './20260901_010000_audit_page_cms'
 import * as migration_20260902_010000_contact_submissions_ip from './20260902_010000_contact_submissions_ip'
+import * as migration_20260907_010000_audit_page_pricing_features_fk from './20260907_010000_audit_page_pricing_features_fk'
 
 export const migrations = [
   {
@@ -167,5 +168,10 @@ export const migrations = [
     up: migration_20260902_010000_contact_submissions_ip.up,
     down: migration_20260902_010000_contact_submissions_ip.down,
     name: '20260902_010000_contact_submissions_ip',
+  },
+  {
+    up: migration_20260907_010000_audit_page_pricing_features_fk.up,
+    down: migration_20260907_010000_audit_page_pricing_features_fk.down,
+    name: '20260907_010000_audit_page_pricing_features_fk',
   },
 ]

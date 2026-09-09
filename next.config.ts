@@ -7,13 +7,18 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 /**
- * Public CSP: no 'unsafe-eval' (audit remediation). Inline scripts (GA/Turnstile/
- * Next) still need 'unsafe-inline' until a nonce pipeline ships.
+ * Public CSP: no 'unsafe-eval' in production (audit remediation). Inline scripts
+ * (GA/Turnstile/Next) still need 'unsafe-inline' until a nonce pipeline ships.
+ * `next dev` webpack uses eval-source-map — without 'unsafe-eval' client chunks
+ * (e.g. SplashScreen) never hydrate and the SSR splash plate sticks forever.
  * Admin keeps a looser policy — Payload UI needs eval/inline.
  */
+const isDev = process.env.NODE_ENV === 'development'
+const SCRIPT_SRC_EVAL = isDev ? " 'unsafe-eval'" : ''
+
 const PUBLIC_CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' blob: https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
+  `script-src 'self' 'unsafe-inline'${SCRIPT_SRC_EVAL} blob: https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://challenges.cloudflare.com https://static.cloudflareinsights.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",

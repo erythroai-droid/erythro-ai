@@ -229,11 +229,13 @@ final class ReportFullSignals {
             boolean soft = bool(page.get("soft404"));
             boolean hasCta = bool(page.get("hasCta"));
             int pageForms = (int) num(page.get("formsCount"), 0);
+            boolean viaCta = bool(page.get("formViaCta"));
+            boolean instant = bool(page.get("hasInstantContactChannel"));
             int words = (int) num(page.get("wordCount"), 0);
             String pageStatus;
             if (!ok || http >= 400 || soft) {
                 pageStatus = "bad";
-            } else if (!hasCta && pageForms == 0) {
+            } else if (!hasCta && pageForms == 0 && !instant) {
                 pageStatus = "warn";
             } else {
                 pageStatus = "good";
@@ -248,6 +250,9 @@ final class ReportFullSignals {
                 result = "HTTP " + http
                         + " · CTA " + yn(i18n, hasCta)
                         + " · forms " + pageForms
+                        + (viaCta ? n(i18n, " (по CTA)", " (via CTA)", " (דרך CTA)") : "")
+                        + " · " + n(i18n, "мгновенный канал ", "instant ", "ערוץ מיידי ")
+                        + yn(i18n, instant)
                         + " · " + words + " "
                         + n(i18n, "слов", "words", "מילים");
                 if (soft) {

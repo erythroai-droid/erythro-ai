@@ -454,6 +454,42 @@ public final class A44ReportGenerator {
         letter-spacing: 0;
         border-top: 1px solid #e8e8e8;
     }
+    .finding-card.gemini-funnel {
+        width: 870px;
+        min-height: 0;
+        box-sizing: border-box;
+        margin: 0;
+    }
+    .gemini-funnel-body {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        flex: 1;
+        min-width: 0;
+    }
+    .gemini-funnel .finding-box {
+        width: auto;
+        min-height: 120px;
+        margin-bottom: 0;
+        box-sizing: border-box;
+    }
+    .gemini-funnel .finding-box ul {
+        margin: 6px 0 0;
+        padding-inline-start: 1.1em;
+    }
+    .gemini-funnel .finding-box li {
+        margin: 0 0 4px;
+    }
+    .gemini-funnel-note {
+        margin: 12px 0 0;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.5;
+        color: #6b6254;
+    }
+    html.rtl-report .gemini-funnel,
+    html.rtl-report .gemini-funnel-body,
+    html.rtl-report .gemini-funnel-note { direction: rtl; }
     html.rtl-report .check-toolbar { direction: rtl; }
     html.rtl-report .check-filters { justify-content: flex-start; }
     html.rtl-report .footer .cta-title,
@@ -753,6 +789,7 @@ public final class A44ReportGenerator {
         body.append("    <div class=\"section-rows\">\n");
         body.append(findingsSection(view, copy, i18n, tier));
         if (tier == A44Tier.PRO) {
+            body.append(geminiFunnelSection(view, i18n));
             body.append(metricsSection(view, copy, i18n, true, assetBase, pagesForTier(view, tier)));
             body.append(checksSection(view, copy, i18n, tier, assetBase));
         } else if (tier == A44Tier.DIAGNOSTIC) {
@@ -898,6 +935,60 @@ public final class A44ReportGenerator {
                     + "</p>";
         }
         return section(i18n.sectionTop3, inner);
+    }
+
+    /** Pro-only: Gemini funnel verdict after top-3, before Lighthouse. Hidden when review was skipped. */
+    private static String geminiFunnelSection(AuditReportView view, AuditReportI18n i18n) {
+        AuditReportView.GeminiFunnel funnel = view == null ? null : view.geminiFunnel;
+        if (funnel == null || !funnel.hasContent()) {
+            return "";
+        }
+        String lang = i18n == null ? "ru" : i18n.lang;
+        String head = ReportFindingsCatalog.tr(lang,
+                "Разбор воронки", "Funnel review", "ניתוח משפך");
+        String verdictLabel = ReportFindingsCatalog.tr(lang,
+                "Вердикт:", "Verdict:", "פסק דין:");
+        String gapsLabel = ReportFindingsCatalog.tr(lang,
+                "Пробелы воронки:", "Funnel gaps:", "פערי משפך:");
+        String fixLabel = ReportFindingsCatalog.tr(lang,
+                "Приоритетная доработка:", "Priority fix:", "תיקון בעדיפות:");
+
+        StringBuilder card = new StringBuilder();
+        card.append("<article class=\"finding-card gemini-funnel\">");
+        card.append("<div class=\"finding-head\"><div class=\"finding-idx\">AI</div>");
+        card.append("<h3 class=\"finding-head-title\">").append(esc(head)).append("</h3></div>");
+        card.append("<div class=\"gemini-funnel-body\">");
+        if (!funnel.verdict.isBlank()) {
+            card.append("<div class=\"finding-box problem\"><strong>").append(esc(verdictLabel))
+                    .append("</strong> ").append(esc(funnel.verdict)).append("</div>");
+        }
+        if (!funnel.gaps.isEmpty()) {
+            card.append("<div class=\"finding-box impact\"><strong>").append(esc(gapsLabel)).append("</strong>");
+            card.append("<ul>");
+            for (String gap : funnel.gaps) {
+                if (gap == null || gap.isBlank()) {
+                    continue;
+                }
+                card.append("<li>").append(esc(gap)).append("</li>");
+            }
+            card.append("</ul></div>");
+        }
+        if (!funnel.priorityFix.isBlank()) {
+            card.append("<div class=\"finding-box solution\"><strong>").append(esc(fixLabel))
+                    .append("</strong> ").append(esc(funnel.priorityFix)).append("</div>");
+        }
+        card.append("</div>");
+        card.append("<p class=\"gemini-funnel-note\">").append(esc(funnelMethodNote(lang))).append("</p>");
+        card.append("</article>");
+        return section(geminiToc(lang), card.toString());
+    }
+
+    private static String geminiToc(String lang) {
+        return switch (lang == null ? "ru" : lang) {
+            case "en" -> "FUNNEL PRIORITY<br>&amp; PATH TO LEAD";
+            case "he" -> "עדיפות המשפך<br>ונתיב לליד";
+            default -> "ПРИОРИТЕТ ВОРОНКИ<br>И ПУТЬ К ЗАЯВКЕ";
+        };
     }
 
     private static String checksSection(
@@ -1207,16 +1298,27 @@ public final class A44ReportGenerator {
     }
 
     private static String funnelNote(String lang, int opened, int shown) {
+        String how = ReportFindingsCatalog.tr(lang,
+                " В путь к заявке входят встроенные формы, формы в модалке после клика по CTA и виджеты чата / WhatsApp / Telegram.",
+                " Lead path includes inline forms, forms that open in a modal after a CTA click, and chat / WhatsApp / Telegram widgets.",
+                " נתיב הליד כולל טפסים משובצים, טפסים שנפתחים במודאל אחרי CTA, ווידג׳טי צ׳אט / WhatsApp / Telegram.");
         if (opened == shown) {
             return ReportFindingsCatalog.tr(lang,
                     "Обход воронки: " + shown + " ключевых URL открыты аудитором (HTTP).",
                     "Funnel crawl: " + shown + " key URLs opened by the auditor (HTTP).",
-                    "סריקת משפך: " + shown + " כתובות נפתחו על ידי הסוקר (HTTP).");
+                    "סריקת משפך: " + shown + " כתובות נפתחו על ידי הסוקר (HTTP).") + how;
         }
         return ReportFindingsCatalog.tr(lang,
                 "Обход воронки: " + opened + " из " + shown + " ключевых URL открыты аудитором (HTTP).",
                 "Funnel crawl: " + opened + " of " + shown + " key URLs opened by the auditor (HTTP).",
-                "סריקת משפך: " + opened + " מתוך " + shown + " כתובות נפתחו על ידי הסוקר (HTTP).");
+                "סריקת משפך: " + opened + " מתוך " + shown + " כתובות נפתחו על ידי הסוקר (HTTP).") + how;
+    }
+
+    private static String funnelMethodNote(String lang) {
+        return ReportFindingsCatalog.tr(lang,
+                "Как считаем путь к заявке: встроенная форма на странице, форма которая открывается по кнопке (Обсудить / Let’s Talk / виджет), чат и мессенджеры. Кнопка без формы — это CTA, не дыра воронки, если клик открывает форму или WhatsApp.",
+                "How we count the path to a lead: an inline form, a form that opens after a CTA click (Discuss / Let’s Talk / widget), plus chat and messengers. A button without a form is a CTA, not a funnel gap, when the click opens a form or WhatsApp.",
+                "איך סופרים את הדרך לליד: טופס משובץ, טופס שנפתח אחרי לחיצה על CTA (Discuss / Let’s Talk / ווידג׳ט), וגם צ׳אט ומסנג׳רים. כפתור בלי טופס הוא CTA, לא פער במשפך, אם הלחיצה פותחת טופס או WhatsApp.");
     }
 
     private static String footer(AuditReportView view, A44Copy copy, AuditReportI18n i18n, A44Tier tier, String assetBase) {
@@ -1256,14 +1358,14 @@ public final class A44ReportGenerator {
     }
 
     private static String section(String tocHtml, String inner) {
-        return """
-        <div class="section-row">
-            <div class="section-toc"><div class="toc-item"><div class="toc-bar"></div><div class="toc-text">%s</div></div></div>
-            <div class="section-content">
-                %s
-            </div>
-        </div>
-""".formatted(tocHtml, inner);
+        return "<div class=\"section-row\">\n"
+                + "            <div class=\"section-toc\"><div class=\"toc-item\"><div class=\"toc-bar\"></div><div class=\"toc-text\">"
+                + tocHtml
+                + "</div></div></div>\n"
+                + "            <div class=\"section-content\">\n"
+                + "                " + inner + "\n"
+                + "            </div>\n"
+                + "        </div>\n";
     }
 
     /** Ensures meta labels end with a colon for spacing before the value. */

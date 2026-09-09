@@ -3,7 +3,7 @@
 Manifest for building a retrieval corpus from `docs/`. Use this file as the **ingest map**:
 what to chunk, how to tag, and which questions each source answers.
 
-Last updated: 2026-09-06.
+Last updated: 2026-09-09.
 
 ---
 
@@ -96,11 +96,13 @@ Rules:
 | “Email autoresponder / order@ & team@ / n8n / IMAP & SMTP Hostinger / RFC 3834 / duplicate Hostinger Autoreply / form client ack” | `docs/infrastructure/n8n-email-autoresponder.md`; `infra/n8n/workflows/email-autoresponder.json`; `PIT-037`; `PIT-038`; `PIT-040`; `PIT-044`; `src/lib/contactNotification.ts` |
 | “Audit form website check / DNS / SSRF / no n8n workflow” | `docs/architecture/ai-audit-architecture.md` §3.1; `src/lib/checkWebsite.ts`; `PIT-041` |
 | “Free audit button does nothing / check-website 200 / no /api/contact” | `PIT-067`; `src/components/audit/AuditBody.tsx`; `src/app/(frontend)/order/[slug]/OrderClient.tsx` |
+| “Funnel review / form only on contacts / modal CTA / chat widget” | `PIT-068`; `AuditCollector` agent browse + Gemini prompt; `A44ReportGenerator` funnel note |
 | “n8n audit cron reconciliation / stuck jobs” | `docs/infrastructure/n8n-audit-reconcile.md`; `infra/n8n/workflows/audit-reconcile.json` |
 | “CSP / Cloudflare Insights / beacon.min.js / PageSpeed console” | `next.config.ts` `CONTENT_SECURITY_POLICY`; `PIT-045`; `PIT-043` |
 | “security.txt / RFC 9116 / vulnerability disclosure contact” | `src/app/.well-known/security.txt/route.ts`; `docs/AI_VISIBILITY.md` |
 | “Montblanc 502 Bad Gateway / goods not loading / admin login 502 / port 8080 blocked” | `PIT-060`; `docs/infrastructure/vps-docker-ports.md`; `docs/PITFALLS.md` |
 | “Cloudflare Access /admin / Zero Trust / Payload login gate / subdomain pitfall” | `docs/infrastructure/vps-firewall-cloudflare-access.md` §2; `PIT-064`; `scripts/create-cloudflare-access-admin.mjs` |
+| “Audit Page Pricing / invalid id / nested features array / ON DELETE CASCADE” | `PIT-065`; `src/migrations/20260907_010000_audit_page_pricing_features_fk.ts`; `src/fields/auditPageFields.ts` |
 | “DMARC quarantine / p=reject / order@ reports / _dmarc TXT” | `docs/infrastructure/vps-firewall-cloudflare-access.md` §2b; `docs/PLAN-deferred.md`; `docs/DEPLOYMENT.md` DMARC rows; `scripts/set-dmarc-reject.mjs` |
 | “Hero LCP / CLS / TBT / PSI score jumps / GSAP gate” | `PIT-057`–`PIT-063`; `docs/HERO_MOTION.md`; `docs/PLAN-deferred.md` |
 | “R2 media / Blob cutover / pub-…r2.dev / Payload uploads” | `docs/architecture/r2-media-storage.md`; `PIT` media/R2 entries; `docs/PLAN-deferred.md` |

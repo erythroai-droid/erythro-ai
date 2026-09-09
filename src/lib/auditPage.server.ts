@@ -92,7 +92,7 @@ function mapTitleBody(
   fallback: Array<{ title: Localized; body: Localized }>,
 ) {
   if (!Array.isArray(raw) || raw.length === 0) return [...fallback]
-  return raw.map((item: unknown, i) => {
+  const mapped = raw.map((item: unknown, i) => {
     const r = item as Record<string, unknown>
     const fb = fallback[i] ?? { title: { en: '', ru: '', he: '' }, body: { en: '', ru: '', he: '' } }
     return {
@@ -100,6 +100,9 @@ function mapTitleBody(
       body: pickAll(r?.body as RawLocalized, fb.body),
     }
   })
+  const seen = new Set(mapped.map((item) => item.title.en.toLowerCase()))
+  const extras = fallback.filter((item) => item.title.en && !seen.has(item.title.en.toLowerCase()))
+  return extras.length ? [...mapped, ...extras] : mapped
 }
 
 /** Optional localized field: only return when at least one locale has text (no silent fallback). */
