@@ -1,5 +1,3 @@
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { getAllOrderSlugs } from '@/lib/orderPlans'
 import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
 import { getAllServiceSlugs } from '@/lib/servicePages'
@@ -9,6 +7,10 @@ import type { LegalPageId } from '@/lib/legalPages'
 export type SitemapSlugEntry = {
   slug: string
   lastModified?: Date
+}
+
+function hasDatabase(): boolean {
+  return Boolean(process.env.DATABASE_URL?.trim())
 }
 
 function toDate(value: unknown): Date | undefined {
@@ -33,6 +35,9 @@ export function maxLastModified(dates: Array<Date | undefined>): Date | undefine
 async function fetchCollectionSitemap(
   collection: 'services' | 'portfolio-projects' | 'solution-plans',
 ): Promise<SitemapSlugEntry[]> {
+  if (!hasDatabase()) return []
+  const { getPayload } = await import('payload')
+  const config = (await import('@payload-config')).default
   const payload = await getPayload({ config })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const res = await (payload as any).find({
@@ -107,7 +112,10 @@ export async function getOrderSitemapEntries(): Promise<SitemapSlugEntry[]> {
 }
 
 async function fetchGlobalLastModified(slug: string): Promise<Date | undefined> {
+  if (!hasDatabase()) return undefined
   try {
+    const { getPayload } = await import('payload')
+    const config = (await import('@payload-config')).default
     const payload = await getPayload({ config })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = await (payload as any).findGlobal({
@@ -138,6 +146,9 @@ export async function getLegalSitemapEntries(): Promise<
     { id: 'terms', path: '/terms' },
     { id: 'accessibility', path: '/accessibility' },
   ]
+  if (!hasDatabase()) {
+    return ids.map(({ path }) => ({ path }))
+  }
   const rows = await Promise.all(
     ids.map(async ({ id, path }) => {
       try {
