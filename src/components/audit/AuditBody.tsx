@@ -30,6 +30,11 @@ import {
   type AuditTabId,
 } from '@/lib/auditPage'
 import { currencySymbol } from '@/lib/orderPlans'
+import {
+  closeAuditReportStatusTab,
+  navigateAuditReportStatusTab,
+  openAuditReportStatusPlaceholder,
+} from '@/lib/auditReport'
 
 const AuditPageContext = React.createContext<AuditPageContent>(auditPage as AuditPageContent)
 
@@ -76,6 +81,28 @@ const AUDIT_BEAM_PROPS = {
   duration: 2.2,
   className: 'w-full overflow-visible',
   style: AUDIT_BEAM_STYLE,
+}
+
+function AuditFormShell({ isLight, children }: { isLight: boolean; children: React.ReactNode }) {
+  const card = (
+    <div
+      className={`relative z-[1] rounded-[20px] border p-5 sm:p-8 lg:p-10 ${
+        isLight
+          ? 'bg-white [border-color:color-mix(in_oklab,var(--color-coal-900)_10%,transparent)]'
+          : 'border-white/10 bg-coal-500'
+      }`}
+    >
+      {children}
+    </div>
+  )
+  if (isLight) return card
+  return (
+    <div className="audit-beam-hue overflow-visible p-4 -m-4">
+      <BorderBeam {...AUDIT_BEAM_PROPS} theme="dark">
+        {card}
+      </BorderBeam>
+    </div>
+  )
 }
 
 export default function AuditBody({ locale, theme = 'dark', page = auditPage }: AuditBodyProps) {
@@ -319,9 +346,6 @@ function AuditFormPanel({
 }) {
   const auditPage = useAuditPage()
   const isLight = theme === 'light'
-  const beamSurfaceClass = isLight
-    ? 'border-coal-900/10 bg-white'
-    : 'border-white/10 bg-coal-500'
   const defaultAuditLanguage = (['en', 'ru', 'he'].includes(locale) ? locale : 'en') as AuditReportLanguage
   const [status, setStatus] = useState<Status>('idle')
   const [submitError, setSubmitError] = useState('')
@@ -434,8 +458,13 @@ function AuditFormPanel({
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ??
       ''
 
+    const statusTab = openAuditReportStatusPlaceholder()
+
     const websiteOk = await ensureWebsiteOk()
-    if (!websiteOk) return
+    if (!websiteOk) {
+      closeAuditReportStatusTab(statusTab)
+      return
+    }
 
     setStatus('sending')
     setSubmitError('')
@@ -455,12 +484,14 @@ function AuditFormPanel({
         }),
       })
       if (res.status === 429) {
+        closeAuditReportStatusTab(statusTab)
         const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
         setSubmitError(errPayload?.message || tForm(contactForm.rateLimited))
         setStatus('error')
         return
       }
       if (!res.ok) {
+        closeAuditReportStatusTab(statusTab)
         const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
         setSubmitError(
           res.status === 403
@@ -475,7 +506,10 @@ function AuditFormPanel({
         orderId?: string
       } | null
       const sid = payload?.submissionId
-      setReportHref(sid != null ? `/audit/report/${sid}` : null)
+      const href = sid != null ? `/audit/report/${sid}` : null
+      setReportHref(href)
+      if (href) navigateAuditReportStatusTab(statusTab, href)
+      else closeAuditReportStatusTab(statusTab)
       setOrderId(
         payload?.orderId ||
           (sid != null ? `AUD-${sid}` : null),
@@ -492,6 +526,7 @@ function AuditFormPanel({
       resetChecks()
       setPrivacyConsent(false)
     } catch {
+      closeAuditReportStatusTab(statusTab)
       setSubmitError(tForm(contactForm.error))
       setStatus('error')
     } finally {
@@ -506,11 +541,7 @@ function AuditFormPanel({
       aria-labelledby="audit-tab-audit"
       className="w-full"
     >
-      <div className="audit-beam-hue overflow-visible p-4 -m-4">
-        <BorderBeam {...AUDIT_BEAM_PROPS} theme={isLight ? 'light' : 'dark'}>
-          <div
-            className={`relative z-[1] rounded-[20px] border p-5 sm:p-8 lg:p-10 ${beamSurfaceClass}`}
-          >
+      <AuditFormShell isLight={isLight}>
             {status === 'success' ? (
               <div className="flex flex-col items-center gap-4 py-8 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white">
@@ -538,6 +569,8 @@ function AuditFormPanel({
                 {reportHref ? (
                   <a
                     href={reportHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={`mt-1 rounded-[40px] border px-8 py-3 text-sm uppercase tracking-widest transition-colors ${
                       isLight
                         ? 'border-erythro-500 text-erythro-500 hover:bg-erythro-500 hover:text-white'
@@ -570,7 +603,11 @@ function AuditFormPanel({
             ) : (
               <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-12 xl:gap-16">
                 <div className="flex flex-col gap-5 lg:pe-2">
-                  <h2 className="m-0 font-sans text-xl font-medium uppercase tracking-[0.08em] text-gold-500 md:text-2xl lg:text-[1.75rem] lg:leading-tight">
+                  <h2
+                    className={`m-0 font-sans text-xl font-medium uppercase tracking-[0.08em] md:text-2xl lg:text-[1.75rem] lg:leading-tight ${
+                      isLight ? 'text-coal-900' : 'text-gold-500'
+                    }`}
+                  >
                     {tAudit(auditPage.form.heading, locale)}
                   </h2>
                   <div className="flex flex-col gap-5">
@@ -795,9 +832,7 @@ function AuditFormPanel({
                 </form>
               </div>
             )}
-          </div>
-        </BorderBeam>
-      </div>
+      </AuditFormShell>
     </div>
   )
 }
@@ -1221,7 +1256,7 @@ function AuditPricingPanel({
         <Link
           href="/contacts"
           className={`text-sm font-medium uppercase tracking-[0.12em] transition-colors ${
-            isLight ? 'text-erythro-500 hover:text-coal-900' : 'text-gold-500 hover:text-white'
+            isLight ? 'text-coal-900 hover:text-erythro-500' : 'text-gold-500 hover:text-white'
           }`}
         >
           {tAudit(pricing.agencyCta, locale)}

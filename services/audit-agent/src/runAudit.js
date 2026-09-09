@@ -1,7 +1,7 @@
 import { uploadReportObject } from './r2Upload.js'
 import { getContactSubmission, updateContactSubmission } from './payload.js'
 import { sendClientAuditEmail } from './mail.js'
-import { runQaAuditor } from './runQaAuditor.js'
+import { planAttachesPdf, runQaAuditor } from './runQaAuditor.js'
 
 function siteBase() {
   return (
@@ -62,6 +62,20 @@ export async function runAuditJob(job) {
       contentType: 'text/html; charset=utf-8',
     })
 
+    let pdfUpload = null
+    const wantsPdf = planAttachesPdf(planSlug)
+    if (wantsPdf && result.pdf?.length) {
+      const pdfKey = `audits/${submissionId}/${Date.now()}-${result.tierFolder}.pdf`
+      pdfUpload = await uploadReportObject({
+        key: pdfKey,
+        body: result.pdf,
+        contentType: 'application/pdf',
+        contentDisposition: `attachment; filename="erythro-audit-${formatOrderId(submissionId)}.pdf"`,
+      })
+    } else if (wantsPdf) {
+      console.warn(`[audit] submission=${submissionId} Diagnostic/Pro PDF missing — email HTML link only`)
+    }
+
     const statusPageUrl = `${siteBase()}/audit/report/${submissionId}`
     const publicReportUrl = uploaded.url.includes('.r2.cloudflarestorage.com/')
       ? statusPageUrl
@@ -82,6 +96,7 @@ export async function runAuditJob(job) {
         grade: result.grade,
         overallScore: result.score,
         storageKey: uploaded.key,
+        pdfStorageKey: pdfUpload?.key || null,
       },
       errorLast: null,
     }
@@ -108,6 +123,9 @@ export async function runAuditJob(job) {
         statusPageUrl,
         orderId: submissionId,
         locale,
+        planSlug,
+        pdfBuffer: wantsPdf ? result.pdf : null,
+        pdfFilename: `erythro-audit-${formatOrderId(submissionId)}.pdf`,
       })
       if (!mailed.sent) {
         console.warn(`[audit] submission=${submissionId} email skipped: ${mailed.reason}`)
