@@ -1230,10 +1230,35 @@ When writing locale string hygiene scripts, never rely on `\b` for HE/RU; always
 
 ---
 
+## PIT-072 — Audit report waiting page hangs: worker trigger timeout + poll 429
+
+**Tags:** `audit`, `worker`, `vercel-cron`, `rate-limit`, `n8n`  
+**Seen:** 2026-09-10 — Pro `#122` stayed `new`; `/audit/report/122` polled until 429.
+
+**Symptom:**
+Form submit succeeds, waiting page never becomes a report, email never arrives. Logs: `[audit-agent] trigger error: This operation was aborted` then `[api/contact] audit worker not queued: timeout`. Status endpoint returns 429.
+
+**Cause:**
+1. `/api/contact` waits only 8s for `POST agent-api.erythro.ai/api/run-audit`. A transient stall aborts the trigger; CMS row stays `new`. The contact API still returns 200.
+2. n8n “AI Audit reconcile” did not hit Vercel (workflow inactive / not running), so nothing re-queued.
+3. Waiting UI polled every 4s through the contact limiter (5 / 60s), so the client saw network errors even if the job later started.
+
+**Fix:**
+- Contact: one inline trigger, then `after()` retries if it timed out.
+- Trigger retries on abort/5xx (reconcile uses 2 attempts).
+- Vercel Cron `GET /api/audit/reconcile` every 2 minutes (`vercel.json`). Set `CRON_SECRET` = `AGENT_SECRET_TOKEN`. `new` stale 2 min; `in_progress` 20 min so a live Pro run is not double-queued.
+- Poll every 8s with a 30/min limiter; honor `Retry-After` and do not treat 429 as a hard network error.
+
+**Prevent:**
+Do not share the contact-form 5/min bucket with `/api/audit/report/[id]`. Do not rely on n8n as the only re-queue. Do not use a 10-minute stale window for `new` jobs — clients are already on the waiting page.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
 - [ ] Sitemap: merge static for services/orders; portfolio = CMS-only when CMS has docs (PIT-070)
+- [ ] Audit waiting page: dedicated poll limiter; Vercel Cron reconcile + contact `after()` retry (PIT-072)
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
 - [ ] Fix script if prod/CI may lag (`pnpm db:fix-*`)
@@ -1283,4 +1308,5 @@ When writing locale string hygiene scripts, never rely on `\b` for HE/RU; always
 - [ ] OAuth SuccessHandler redirect must target the decoupled frontend URL, never the legacy backend host (PIT-048)
 - [ ] Motion typography: never tween geometric CSS (font-size/width/height); use GPU transform scale to prevent CLS (PIT-063)
 - [ ] Order modal flow: keep user in confirmation modal; do not auto-open status tabs on submit (PIT-069)
+- [ ] Audit pipeline: never leave `new` jobs without cron/`after()` requeue; do not poll report status on the contact 5/min limiter (PIT-072)
 

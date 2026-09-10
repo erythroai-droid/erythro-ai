@@ -41,8 +41,8 @@ See also: [`caddy-dns-audit-worker.md`](./caddy-dns-audit-worker.md), [`n8n-audi
 
 ### n8n workflow (audit reconcile)
 
-Авто: `py -3 scripts/deploy_n8n_audit_reconcile.py`  
-Или вручную: import `infra/n8n/workflows/audit-reconcile.json` → Header Auth с `AGENT_SECRET_TOKEN` → Active.  
+Primary: Vercel Cron `GET /api/audit/reconcile` every 2 min (`vercel.json`, set `CRON_SECRET`).  
+Optional VPS backup: `py -3 scripts/deploy_n8n_audit_reconcile.py` (must be **Active**).  
 Details: [`n8n-audit-reconcile.md`](./n8n-audit-reconcile.md).
 
 ---

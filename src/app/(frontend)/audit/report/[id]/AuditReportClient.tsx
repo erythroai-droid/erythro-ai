@@ -18,14 +18,14 @@ import {
   estimateAuditRemainingMinutes,
   formatAuditOrderId,
   isPublicReportUrl,
+  nextAuditPollDelayMs,
   parseAuditTimestampMs,
   tReport,
   tReportFill,
+  AUDIT_REPORT_POLL_MS,
   type AuditReportPublicPayload,
   type AuditReportStatus,
 } from '@/lib/auditReport'
-
-const POLL_MS = 4000
 
 interface AuditReportClientProps {
   reportId: string
@@ -71,32 +71,40 @@ export default function AuditReportClient({
     [locale, a11yTranslations],
   )
 
-  const fetchStatus = useCallback(async () => {
+  const fetchStatus = useCallback(async (): Promise<
+    { action: 'stop' } | { action: 'retry'; delayMs: number }
+  > => {
     try {
       const res = await fetch(`/api/audit/report/${reportId}`, { cache: 'no-store' })
       if (res.status === 404 || res.status === 400) {
         setError('not_found')
         setData(null)
-        return 'stop' as const
+        return { action: 'stop' }
+      }
+      if (res.status === 429) {
+        return {
+          action: 'retry',
+          delayMs: nextAuditPollDelayMs(res.status, res.headers.get('Retry-After')),
+        }
       }
       if (!res.ok) {
         setError('network')
-        return 'retry' as const
+        return { action: 'retry', delayMs: AUDIT_REPORT_POLL_MS }
       }
       const json = (await res.json()) as AuditReportPublicPayload
       if (json.status === 'report_sent' && json.readyHtmlUrl) {
         window.location.replace(json.readyHtmlUrl)
-        return 'stop' as const
+        return { action: 'stop' }
       }
       setData(json)
       setError(null)
       if (json.status === 'failed') {
-        return 'stop' as const
+        return { action: 'stop' }
       }
-      return 'retry' as const
+      return { action: 'retry', delayMs: AUDIT_REPORT_POLL_MS }
     } catch {
       setError('network')
-      return 'retry' as const
+      return { action: 'retry', delayMs: AUDIT_REPORT_POLL_MS }
     }
   }, [reportId])
 
@@ -106,8 +114,8 @@ export default function AuditReportClient({
 
     const tick = async () => {
       const next = await fetchStatus()
-      if (cancelled || next === 'stop') return
-      timer = setTimeout(tick, POLL_MS)
+      if (cancelled || next.action === 'stop') return
+      timer = setTimeout(tick, next.delayMs)
     }
 
     void tick()

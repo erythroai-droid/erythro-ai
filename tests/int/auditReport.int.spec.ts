@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   AUDIT_PROGRESS_EXPECTED_MS,
+  AUDIT_REPORT_POLL_MS,
   estimateAuditProgressPercent,
   estimateAuditRemainingMinutes,
   formatAuditOrderId,
+  nextAuditPollDelayMs,
   parseAuditReportId,
   parseAuditTimestampMs,
   tReportFill,
@@ -109,5 +111,19 @@ describe('tReportFill', () => {
     expect(
       tReportFill({ en: 'About {n} min left', ru: '', he: '' }, 'en', { n: 5 }),
     ).toBe('About 5 min left')
+  })
+})
+
+describe('nextAuditPollDelayMs', () => {
+  it('uses the default cadence on success', () => {
+    expect(nextAuditPollDelayMs(200, null)).toBe(AUDIT_REPORT_POLL_MS)
+  })
+
+  it('honors Retry-After seconds on 429', () => {
+    expect(nextAuditPollDelayMs(429, '12')).toBe(12_000)
+  })
+
+  it('falls back when Retry-After is missing', () => {
+    expect(nextAuditPollDelayMs(429, null)).toBe(Math.min(AUDIT_REPORT_POLL_MS * 2, 30_000))
   })
 })

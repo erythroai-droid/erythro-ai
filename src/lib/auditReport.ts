@@ -139,6 +139,22 @@ export function openAuditReportStatusPlaceholder(): Window | null {
   return tab
 }
 
+export const AUDIT_REPORT_POLL_MS = 8000
+
+/** Delay before the next waiting-page status poll. Honors Retry-After on 429. */
+export function nextAuditPollDelayMs(
+  status: number,
+  retryAfterHeader: string | null,
+  defaultMs = AUDIT_REPORT_POLL_MS,
+): number {
+  if (status !== 429) return defaultMs
+  const sec = Number(retryAfterHeader)
+  if (Number.isFinite(sec) && sec > 0) {
+    return Math.min(Math.max(Math.ceil(sec), 1) * 1000, 60_000)
+  }
+  return Math.min(defaultMs * 2, 30_000)
+}
+
 export function closeAuditReportStatusTab(tab: Window | null) {
   if (!tab || tab.closed) return
   try {

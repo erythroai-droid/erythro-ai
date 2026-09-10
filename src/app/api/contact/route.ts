@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import {
@@ -172,17 +172,31 @@ export async function POST(request: NextRequest) {
 
     let auditQueued: boolean | undefined
     if (source === 'audit' && website) {
-      const triggered = await triggerAuditAgent({
+      const triggerInput = {
         submissionId: created.id,
         targetUrl: website,
         locale: auditLanguage || locale || undefined,
         planSlug: planSlug || undefined,
         clientEmail: email || undefined,
         clientName: name || undefined,
-      })
+      }
+      const triggered = await triggerAuditAgent(triggerInput, { attempts: 1 })
       auditQueued = triggered.ok
       if (!triggered.ok) {
         console.error('[api/contact] audit worker not queued:', triggered.reason)
+        after(async () => {
+          const retry = await triggerAuditAgent(triggerInput, { attempts: 2 })
+          if (retry.ok) {
+            console.info('[api/contact] background audit requeue ok id=', created.id)
+            return
+          }
+          console.error(
+            '[api/contact] background audit requeue failed:',
+            retry.reason,
+            'id=',
+            created.id,
+          )
+        })
       }
     }
 

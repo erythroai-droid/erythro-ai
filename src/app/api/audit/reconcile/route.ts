@@ -1,122 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
-import { agentSecretAuthorized } from '@/lib/agentAuth'
-import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
+import { reconcileRequestAuthorized } from '@/lib/agentAuth'
+import {
+  DEFAULT_IN_PROGRESS_STALE_MINUTES,
+  DEFAULT_NEW_STALE_MINUTES,
+  reconcileStuckAudits,
+} from '@/lib/auditReconcile'
 
 export const runtime = 'nodejs'
-
-const DEFAULT_STALE_MINUTES = 10
-const MAX_RETRIES = 3
+export const maxDuration = 60
 
 function authorized(request: NextRequest): boolean {
-  return agentSecretAuthorized(request.headers.get('x-agent-secret-key'))
+  return reconcileRequestAuthorized(request.headers)
+}
+
+function parseStaleOptions(body: {
+  staleMinutes?: number
+  newStaleMinutes?: number
+  inProgressStaleMinutes?: number
+}): { newStaleMinutes?: number; inProgressStaleMinutes?: number } {
+  const newStaleMinutes =
+    typeof body.newStaleMinutes === 'number'
+      ? body.newStaleMinutes
+      : typeof body.staleMinutes === 'number'
+        ? body.staleMinutes
+        : undefined
+  const inProgressStaleMinutes =
+    typeof body.inProgressStaleMinutes === 'number'
+      ? body.inProgressStaleMinutes
+      : undefined
+  return { newStaleMinutes, inProgressStaleMinutes }
 }
 
 /**
  * Cron / n8n entry: find stuck audit submissions and re-queue the worker.
- * Secured by the same AGENT_SECRET_TOKEN as the VPS agent.
+ * Auth: `X-Agent-Secret-Key` or `Authorization: Bearer` (CRON_SECRET / AGENT_SECRET_TOKEN).
+ * Vercel Cron hits GET every 2 minutes; n8n keeps POST.
  */
-export async function POST(request: NextRequest) {
+async function run(request: NextRequest, body: Record<string, unknown> = {}) {
   if (!authorized(request)) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
   }
 
-  let staleMinutes = DEFAULT_STALE_MINUTES
   try {
-    const body = (await request.json().catch(() => ({}))) as { staleMinutes?: number }
-    if (typeof body.staleMinutes === 'number' && body.staleMinutes > 0) {
-      staleMinutes = Math.min(Math.floor(body.staleMinutes), 120)
-    }
-  } catch {
-    /* empty body ok */
-  }
-
-  const cutoff = new Date(Date.now() - staleMinutes * 60_000).toISOString()
-
-  try {
-    const payload = await getPayload({ config })
-    const found = await payload.find({
-      collection: 'contact-submissions',
-      depth: 0,
-      limit: 25,
-      overrideAccess: true,
-      where: {
-        and: [
-          { source: { equals: 'audit' } },
-          {
-            or: [
-              { auditStatus: { equals: 'new' } },
-              { auditStatus: { equals: 'in_progress' } },
-            ],
-          },
-          { updatedAt: { less_than: cutoff } },
-        ],
-      },
-      sort: 'updatedAt',
-    })
-
-    const results: Array<Record<string, unknown>> = []
-
-    for (const doc of found.docs) {
-      const website = typeof doc.website === 'string' ? doc.website.trim() : ''
-      if (!website) {
-        results.push({ id: doc.id, action: 'skip', reason: 'no_website' })
-        continue
-      }
-
-      const retries = typeof doc.retryCount === 'number' ? doc.retryCount : 0
-      if (retries >= MAX_RETRIES) {
-        await payload.update({
-          collection: 'contact-submissions',
-          id: doc.id,
-          data: {
-            auditStatus: 'failed',
-            errorLast: `Auto-failed after ${MAX_RETRIES} reconcile retries`,
-          },
-          overrideAccess: true,
-        })
-        results.push({ id: doc.id, action: 'failed', retryCount: retries })
-        continue
-      }
-
-      const nextRetry = retries + 1
-      await payload.update({
-        collection: 'contact-submissions',
-        id: doc.id,
-        data: { retryCount: nextRetry },
-        overrideAccess: true,
-      })
-
-      const triggered = await triggerAuditAgent({
-        submissionId: doc.id,
-        targetUrl: website,
-        locale:
-          (typeof doc.auditLanguage === 'string' && doc.auditLanguage) ||
-          (typeof doc.locale === 'string' && doc.locale) ||
-          undefined,
-        planSlug: typeof doc.planSlug === 'string' ? doc.planSlug : undefined,
-        clientEmail: typeof doc.email === 'string' ? doc.email : undefined,
-        clientName: typeof doc.name === 'string' ? doc.name : undefined,
-      })
-
-      results.push({
-        id: doc.id,
-        action: 'requeue',
-        retryCount: nextRetry,
-        queued: triggered.ok,
-        reason: triggered.ok ? undefined : triggered.reason,
-      })
-    }
-
-    return NextResponse.json({
-      ok: true,
-      staleMinutes,
-      scanned: found.docs.length,
-      results,
+    const result = await reconcileStuckAudits(parseStaleOptions(body))
+    return NextResponse.json(result, {
+      headers: { 'Cache-Control': 'no-store' },
     })
   } catch (err) {
     console.error('[api/audit/reconcile] failed:', err)
     return NextResponse.json({ message: 'Server error' }, { status: 500 })
   }
+}
+
+export async function GET(request: NextRequest) {
+  return run(request, {
+    newStaleMinutes: DEFAULT_NEW_STALE_MINUTES,
+    inProgressStaleMinutes: DEFAULT_IN_PROGRESS_STALE_MINUTES,
+  })
+}
+
+export async function POST(request: NextRequest) {
+  const body = (await request.json().catch(() => ({}))) as Record<string, unknown>
+  return run(request, body)
 }

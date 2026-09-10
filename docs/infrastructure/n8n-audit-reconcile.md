@@ -1,45 +1,55 @@
-# n8n: AI Audit reconcile cron
+# Audit stuck-job reconcile
 
-Re-queues stuck Free audit submissions (`auditStatus` = `new` | `in_progress`, stale `updatedAt`) by calling the Next.js reconcile API.
+Primary path is **Vercel Cron** every 2 minutes. n8n remains an optional VPS backup.
+
+Stuck meaning: `source=audit` and `auditStatus` is `new` (worker never started) or `in_progress` (stalled mid-job).
 
 ## Endpoint
 
 ```http
+GET  https://erythro.ai/api/audit/reconcile
 POST https://erythro.ai/api/audit/reconcile
+Authorization: Bearer <CRON_SECRET or AGENT_SECRET_TOKEN>
+# or
 X-Agent-Secret-Key: <AGENT_SECRET_TOKEN>
 Content-Type: application/json
 
-{"staleMinutes": 10}
+{"newStaleMinutes": 2, "inProgressStaleMinutes": 20}
 ```
 
-Auth: same `AGENT_SECRET_TOKEN` as the VPS worker / Vercel.
+Auth (any one):
+
+- `X-Agent-Secret-Key` = `AGENT_SECRET_TOKEN` (n8n / worker)
+- `Authorization: Bearer` = `CRON_SECRET` or `AGENT_SECRET_TOKEN` (Vercel Cron)
 
 Behavior:
 
-- Scans up to 25 stuck `source=audit` rows older than `staleMinutes` (default 10, max 120)
+- `new` older than 2 minutes → re-queue worker (missed `/api/run-audit`)
+- `in_progress` older than 20 minutes → re-queue (hung job, not a healthy Pro run)
 - `retryCount >= 3` → mark `failed`
-- else bump `retryCount` and `POST` worker `/api/run-audit` (with email/name from CMS)
+- Trigger retries twice on timeout/5xx
 
-## Import workflow
+Also: `/api/contact` retries the worker in `after()` if the inline 8s trigger times out, so most misses never wait for cron.
 
-### Авто (предпочтительно)
+## Vercel Cron (primary)
+
+`vercel.json`:
+
+```json
+{
+  "crons": [{ "path": "/api/audit/reconcile", "schedule": "*/2 * * * *" }]
+}
+```
+
+Set Production env **`CRON_SECRET`** to the same value as `AGENT_SECRET_TOKEN` (Vercel injects `Authorization: Bearer $CRON_SECRET` on cron GET). Two-minute schedules need a Pro team.
+
+## n8n backup (optional)
 
 ```bash
-# VPS_PASSWORD + AGENT_SECRET_TOKEN в локальном env
 py -3 scripts/deploy_n8n_audit_reconcile.py
 ```
 
-Скрипт на VPS: импортирует credential `Agent Secret` (`X-Agent-Secret-Key`) + workflow `AI Audit reconcile`, пытается включить Active.
-
-### Вручную
-
-1. Open `https://n8n.erythro.ai` (owner account after reset).
-2. **Workflows → Import from File** → `infra/n8n/workflows/audit-reconcile.json`
-3. Open the **HTTP Request** node → Header Auth credential:
-   - Name: `Agent Secret`
-   - Header Name: `X-Agent-Secret-Key`
-   - Header Value: production `AGENT_SECRET_TOKEN` (from Vercel / VPS `/home/audit-agent/.env`)
-4. Activate the workflow (Schedule every 10 minutes).
+Manual: import `infra/n8n/workflows/audit-reconcile.json`, attach Header Auth `Agent Secret`, **Activate**.
 
 ## Manual smoke
 
@@ -47,11 +57,11 @@ py -3 scripts/deploy_n8n_audit_reconcile.py
 curl -sS -X POST https://erythro.ai/api/audit/reconcile \
   -H "Content-Type: application/json" \
   -H "X-Agent-Secret-Key: $AGENT_SECRET_TOKEN" \
-  -d '{"staleMinutes":10}'
+  -d '{"newStaleMinutes":2,"inProgressStaleMinutes":20}'
 ```
 
 ## Ops notes
 
-- n8n lives on Hostinger VPS behind Caddy (`infra/n8n/docker-compose.yml`).
-- Do not put the secret in the workflow JSON in git — only in n8n credentials.
-- After rotating `AGENT_SECRET_TOKEN`, update Vercel, worker `.env`, and this n8n credential together.
+- Do not put secrets in the workflow JSON in git.
+- After rotating `AGENT_SECRET_TOKEN`, update Vercel (`AGENT_SECRET_TOKEN` + `CRON_SECRET`), worker `.env`, and the n8n credential together.
+- Waiting-page poll uses a dedicated limiter (30/min), not the contact form 5/min bucket.
