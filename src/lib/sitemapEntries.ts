@@ -81,13 +81,10 @@ export async function getPortfolioSitemapEntries(): Promise<SitemapSlugEntry[]> 
   const staticSlugs = getAllPortfolioSlugs()
   try {
     const rows = await fetchCollectionSitemap('portfolio-projects')
-    if (rows.length) {
-      const existing = new Set(rows.map((r) => r.slug))
-      const missing = staticSlugs
-        .filter((slug) => !existing.has(slug))
-        .map((slug) => ({ slug }))
-      return [...rows, ...missing]
-    }
+    // Unlike services/orders, portfolio detail pages do NOT fall back to static
+    // demos when CMS has any docs — merging static slugs here creates sitemap 404s
+    // (e.g. /portfolio/product-launch-landing). Only list CMS-published cases.
+    if (rows.length) return rows
   } catch (err) {
     console.error('[sitemap] portfolio CMS failed:', err)
   }

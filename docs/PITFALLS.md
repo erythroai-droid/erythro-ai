@@ -1201,11 +1201,40 @@ Always merge CMS collection entries with static fallback slugs. Use a `Set` of e
 **Prevent:**
 Whenever providing CMS overrides over static fallback arrays, never branch with `if (rows.length) return rows`. Always merge: `[...rows, ...staticSlugs.filter(s => !cmsSlugs.has(s))]`.
 
+**Exception (portfolio):** `getPortfolioSitemapEntries()` must **not** merge static demo slugs when CMS has any `portfolio-projects` docs. `/portfolio/[slug]` resolves only from CMS (`getPortfolioProjectBySlug` has no static fallback), so merging demos like `product-launch-landing` puts 404 URLs in `sitemap.xml` and the audit funnel flags them. Services/orders still merge because their pages fall back to static.
+
+---
+
+## PIT-071 — Localization audit false positives & incomplete CMS string patches
+
+**Tags:** `i18n`, `cms`, `localization`, `revalidate`, `hebrew`  
+**Seen:** 2026-09-10 — Translater `erythro_ai_localization_audit_v2.md` + `scripts/fix-localization-audit.ts`.
+
+**Symptom:**
+1. Auditor flags FAQ answers like `$21`, `$22` as broken currency / placeholders.
+2. Patch script “succeeds” but live still shows `עוזרי קול`, `DNS серверов`, `עדכוני תלות`.
+3. `pingSiteRevalidate` returns `401 Invalid token` after local Payload writes.
+
+**Cause:**
+1. Next.js RSC Flight payload embeds numeric module refs as `$NN` in HTML — not user-visible copy. Regulatory FAQ text (e.g. IS 5568) can be fine while Flight still contains `$21`.
+2. JS `\b` word boundaries do **not** apply to Hebrew (non-ASCII “word” chars), so `/\bעוזרי קול\b/` never matches. Also `solution-plans` copy in `addons[].full` (Lexical) was omitted from the walk list (`excludes` alone is empty).
+3. Local `.env` `REVALIDATION_TOKEN` ≠ production Vercel secret; Payload hooks cannot `revalidateTag` outside a request (`PIT-015`). Service/order/legal reads use `unstable_cache` with `SITE_CONTENT_TAG` and often `revalidate: false` — page ISR alone does **not** refresh them.
+
+**Fix:**
+- Ignore Flight `$NN` in localization audits; verify visible DOM / CMS fields only.
+- Hebrew replacements without `\b`; include `addons`, `disclaimer`, `paymentNote`, `periods` when patching plans.
+- Align `REVALIDATION_TOKEN` with Vercel and `POST /api/revalidate`, or soft-save any doc in prod admin (hooks run in request scope), or bump `unstable_cache` keys and redeploy.
+
+**Prevent:**
+When writing locale string hygiene scripts, never rely on `\b` for HE/RU; always dump field names for leftover needles before declaring done.
+
 ---
 
 ## Checklist before merging CMS / schema PRs
 
-- [ ] Sitemap generation must merge CMS collection records with static fallback slugs (PIT-070)
+- [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
+- [ ] Sitemap: merge static for services/orders; portfolio = CMS-only when CMS has docs (PIT-070)
+
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
 - [ ] Fix script if prod/CI may lag (`pnpm db:fix-*`)
 - [ ] CI runs fix script before API tests when needed
