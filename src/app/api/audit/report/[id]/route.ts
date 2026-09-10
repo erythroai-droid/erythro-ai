@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   consumeContactRateLimit,
   getRequestIp,
+  auditReportRateLimitConfig,
 } from '@/lib/contactRateLimit'
 import {
   isPublicReportUrl,
@@ -24,7 +25,12 @@ type RouteParams = { params: Promise<{ id: string }> }
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const ip = getRequestIp(request)
-  const limited = consumeContactRateLimit(`audit-report:${ip}`)
+  const limited = consumeContactRateLimit(
+    `audit-report:${ip}`,
+    Date.now(),
+    undefined,
+    auditReportRateLimitConfig(),
+  )
   if (!limited.ok) {
     return NextResponse.json(
       { message: 'Too many requests. Please try again later.' },

@@ -27,7 +27,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "{\n  \"staleMinutes\": 10\n}",
+        "jsonBody": "{\n  \"newStaleMinutes\": 2,\n  \"inProgressStaleMinutes\": 20\n}",
         "options": {
           "timeout": 30000
         }

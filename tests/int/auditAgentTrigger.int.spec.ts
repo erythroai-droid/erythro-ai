@@ -97,4 +97,44 @@ describe('auditAgentTrigger', () => {
       planSlug: 'audit-free',
     })
   })
+
+  it('retries after abort then succeeds', async () => {
+    process.env.AGENT_SECRET_TOKEN = 'test-secret'
+    const abortErr = Object.assign(new Error('This operation was aborted'), { name: 'AbortError' })
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(abortErr)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        text: async () => '',
+      })
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    const result = await triggerAuditAgent(
+      { submissionId: 1, targetUrl: 'https://shop.example' },
+      { attempts: 2 },
+    )
+
+    expect(result).toEqual({ ok: true, status: 202 })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not retry client HTTP errors', async () => {
+    process.env.AGENT_SECRET_TOKEN = 'test-secret'
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: async () => 'unauthorized',
+    })
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    const result = await triggerAuditAgent(
+      { submissionId: 1, targetUrl: 'https://shop.example' },
+      { attempts: 3 },
+    )
+
+    expect(result).toEqual({ ok: false, reason: 'http_401' })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
 })

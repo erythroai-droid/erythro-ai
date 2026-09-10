@@ -38,6 +38,14 @@ export function contactRateLimitConfig(): { limit: number; windowMs: number } {
   }
 }
 
+/** Waiting-page poll + HTML fetch. Must stay above `/audit/report` poll cadence. */
+export function auditReportRateLimitConfig(): { limit: number; windowMs: number } {
+  return {
+    limit: readPositiveInt(process.env.AUDIT_REPORT_RATE_LIMIT_MAX, 30),
+    windowMs: readPositiveInt(process.env.AUDIT_REPORT_RATE_LIMIT_WINDOW_MS, 60_000),
+  }
+}
+
 export function getRequestIp(request: Request): string {
   const headers = request.headers
   const cf = headers.get('cf-connecting-ip')?.trim()

@@ -104,6 +104,7 @@ const server = http.createServer(async (req, res) => {
 
     // Ack immediately — heavy work in background
     send(res, 202, { accepted: true, submissionId })
+    console.log(`[audit-agent] accepted submission=${submissionId}`)
 
     setImmediate(() => {
       void runAuditJob({

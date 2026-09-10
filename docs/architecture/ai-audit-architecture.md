@@ -15,7 +15,7 @@
 | Хранение отчёта в **Cloudflare R2** | Telegram DLQ/алерты |
 | Письмо клиенту с `order@erythro.ai` | Отдельная коллекция `KnowledgeBase` + pgvector |
 | Страница выдачи `/audit/report/[id]` | Cloudflare Pro/Enterprise |
-| n8n reconciliation (базовый cron) | Отдельная коллекция `audits` (пока расширяем `contact-submissions`) |
+| Vercel Cron reconciliation (n8n optional) | Отдельная коллекция `audits` (пока расширяем `contact-submissions`) |
 
 ---
 
@@ -284,6 +284,7 @@ networks:
 [Авторизованный POST → agent-api.erythro.ai/api/run-audit]
   Header: X-Agent-Secret-Key
   Body: { submissionId, targetUrl, locale, planSlug, clientEmail, clientName }
+  Если 8s timeout: `after()` retry + Vercel Cron `/api/audit/reconcile` каждые 2 мин
         │
         ▼ (3) Worker
   auditStatus → in_progress
@@ -333,7 +334,7 @@ Erythro_Audit_[AUD-N]_[site]_[YYYY-MM-DD]_[LANG].pdf
 ## 7. Отказоустойчивость в MVP
 
 1. **Атомарный порядок доставки:** сначала R2 + статус `report_sent` в БД, затем письмо клиенту.
-2. **Cron reconciliation (n8n):** каждые 5–10 мин искать `source=audit` со статусом `new` / `in_progress` старше N минут без `reportUrl` → рестарт worker, `retryCount++`.
+2. **Cron reconciliation (Vercel primary, n8n optional):** every 2 min look for `source=audit` with `new` older than 2 min or `in_progress` older than 20 min without a finished report → restart worker, `retryCount++`. `/api/contact` also retries in `after()` if the first trigger times out.
 3. **Лимит попыток:** при `retryCount >= 3` → `failed`; разбор вручную в Payload Admin (Telegram — позже).
 4. **Многоканальная выдача:**
    - Email с `order@erythro.ai`
@@ -367,7 +368,7 @@ Erythro_Audit_[AUD-N]_[site]_[YYYY-MM-DD]_[LANG].pdf
 6. [x] Триггер из `/api/contact` после create (`source=audit`) — `src/lib/auditAgentTrigger.ts` (нужен `AGENT_SECRET_TOKEN` + `AUDIT_AGENT_URL` на Vercel)
 7. [x] Страница `/audit/report/[id]` — polling; готовый отчёт как standalone HTML (`GET /api/audit/report/[id]/html`)
 8. [x] Письмо клиенту через существующий SMTP (`order@erythro.ai`) — worker `mail.js` + `SMTP_PASS` на VPS; email/name из `/api/contact` (fallback: CMS internal GET); ссылка в письме = `/audit/report/[id]` (не private R2)
-9. [x] n8n cron reconciliation — `POST /api/audit/reconcile` + import `infra/n8n/workflows/audit-reconcile.json` (см. [`n8n-audit-reconcile.md`](../infrastructure/n8n-audit-reconcile.md))
+9. [x] Reconcile stuck jobs — Vercel Cron `GET /api/audit/reconcile` every 2 min (`vercel.json`) + optional n8n (`n8n-audit-reconcile.md`). `new` stale 2 min; `in_progress` 20 min. Contact `after()` retries a missed trigger.
 9a. [x] Реальный QA_Auditor (Java/Playwright) в `services/audit-agent/QA_Auditor` вместо stub HTML
 9b. [x] Управление пайплайном аудита в Payload Admin (dashboard, nav «AI Audits», re-queue)
 9c. [x] CMS: global `audit-page` + Plans `kind=audit` для `/audit` и `/order/audit-*`

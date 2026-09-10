@@ -11,6 +11,7 @@ import {
   consumeContactRateLimit,
   getRequestIp,
   resetContactRateLimitStoreForTests,
+  auditReportRateLimitConfig,
 } from '@/lib/contactRateLimit'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
 import { CONTACT_HONEYPOT_FIELD, isContactHoneypotTriggered } from '@/lib/contactHoneypot'
@@ -194,5 +195,14 @@ describe('contactRateLimit', () => {
       },
     })
     expect(getRequestIp(req)).toBe('1.2.3.4')
+  })
+
+  it('allows waiting-page poll cadence under the report limiter', () => {
+    const config = { ...auditReportRateLimitConfig(), limit: 30, windowMs: 60_000 }
+    for (let i = 0; i < 8; i++) {
+      expect(consumeContactRateLimit('audit-report:t', Date.now(), undefined, config).ok).toBe(
+        true,
+      )
+    }
   })
 })

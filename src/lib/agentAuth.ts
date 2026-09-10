@@ -26,6 +26,30 @@ export function agentSecretAuthorized(headerValue: string | null | undefined): b
   return timingSafeStringEqual(headerValue, expected)
 }
 
+export function bearerToken(headerValue: string | null | undefined): string | null {
+  if (typeof headerValue !== 'string') return null
+  const match = headerValue.match(/^Bearer\s+(\S+)/i)
+  return match?.[1]?.trim() || null
+}
+
+/**
+ * Auth for `/api/audit/reconcile` (n8n + Vercel Cron).
+ * Accepts `x-agent-secret-key` or `Authorization: Bearer` matching
+ * `CRON_SECRET` or `AGENT_SECRET_TOKEN`.
+ */
+export function reconcileRequestAuthorized(headers: {
+  get(name: string): string | null
+}): boolean {
+  if (agentSecretAuthorized(headers.get(AGENT_SECRET_HEADER))) return true
+  const bearer = bearerToken(headers.get('authorization'))
+  if (!bearer) return false
+  const cron = process.env.CRON_SECRET?.trim()
+  if (cron && timingSafeStringEqual(bearer, cron)) return true
+  const agent = secret()
+  if (agent && timingSafeStringEqual(bearer, agent)) return true
+  return false
+}
+
 /** HMAC-SHA256 hex of raw body bytes (or empty string). */
 export function signAgentBody(rawBody: string | Buffer): string | null {
   const expected = secret()

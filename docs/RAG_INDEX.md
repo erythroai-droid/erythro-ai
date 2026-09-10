@@ -32,7 +32,7 @@ Last updated: 2026-09-09.
 | `docs/architecture/ai-audit-architecture.md` | AI Audit MVP (R2, worker, no payment) | One chunk per `##` | `audit`, `r2`, `n8n`, `infra` |
 | `docs/architecture/r2-audit-storage.md` | R2 bucket + env for audit reports | One chunk | `r2`, `audit`, `storage` |
 | `docs/architecture/audit-rate-limiting.md` | 5-day audit rate limit & IP tracking | One chunk per `##` | `audit`, `rate-limit`, `anti-spam`, `ip` |
-| `docs/infrastructure/n8n-audit-reconcile.md` | n8n cron reconcile for stuck audits | One chunk | `n8n`, `audit`, `reconcile`, `vps` |
+| `docs/infrastructure/n8n-audit-reconcile.md` | Vercel Cron + n8n backup for stuck audits | One chunk | `n8n`, `audit`, `reconcile`, `cron`, `vps` |
 | `docs/infrastructure/n8n-email-autoresponder.md` | n8n email autoresponder for order@ & team@ | One chunk per `##` | `n8n`, `email`, `autoresponder`, `imap`, `smtp` |
 | `docs/infrastructure/vps-firewall-cloudflare-access.md` | VPS UFW + Cloudflare Access `/admin*` + DMARC quarantine→reject | One chunk per `##` | `security`, `access`, `zero-trust`, `dmarc`, `ufw`, `admin` |
 | `docs/infrastructure/vps-docker-ports.md` | Hostinger VPS Docker publish rules (no 0.0.0.0) | One chunk | `vps`, `docker`, `ufw`, `security` |
@@ -97,7 +97,7 @@ Rules:
 | “Audit form website check / DNS / SSRF / no n8n workflow” | `docs/architecture/ai-audit-architecture.md` §3.1; `src/lib/checkWebsite.ts`; `PIT-041` |
 | “Free audit button does nothing / check-website 200 / no /api/contact” | `PIT-067`; `src/components/audit/AuditBody.tsx`; `src/app/(frontend)/order/[slug]/OrderClient.tsx` |
 | “Funnel review / form only on contacts / modal CTA / chat widget” | `PIT-068`; `AuditCollector` agent browse + Gemini prompt; `A44ReportGenerator` funnel note |
-| “n8n audit cron reconciliation / stuck jobs” | `docs/infrastructure/n8n-audit-reconcile.md`; `infra/n8n/workflows/audit-reconcile.json` |
+| “audit cron reconciliation / stuck jobs” | `docs/infrastructure/n8n-audit-reconcile.md`; `vercel.json`; `infra/n8n/workflows/audit-reconcile.json` |
 | “CSP / Cloudflare Insights / beacon.min.js / PageSpeed console” | `next.config.ts` `CONTENT_SECURITY_POLICY`; `PIT-045`; `PIT-043` |
 | “security.txt / RFC 9116 / vulnerability disclosure contact” | `src/app/.well-known/security.txt/route.ts`; `docs/AI_VISIBILITY.md` |
 | “Montblanc 502 Bad Gateway / goods not loading / admin login 502 / port 8080 blocked” | `PIT-060`; `docs/infrastructure/vps-docker-ports.md`; `docs/PITFALLS.md` |
