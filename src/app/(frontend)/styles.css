@@ -430,6 +430,13 @@ html:not(.dark) .audit-pill-shell input:-webkit-autofill:active {
       color 0.3s ease;
   }
 
+  /* PIT-073: stop page rubber-band while a portal modal is open (iOS). */
+  html.modal-open,
+  html.modal-open body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
   /* Desktop Typography (DS) base mapping to tags */
   h1 {
     font-size: 48px;

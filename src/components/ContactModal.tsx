@@ -1,6 +1,8 @@
 'use client'
 
 import React, { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
 import { contactForm } from '@/translations'
 import {
   hasContactFieldErrors,
@@ -104,18 +106,17 @@ function ContactModal({
     }
   }, [])
 
-  // Close on Escape and lock background scroll while open.
+  useLockBodyScroll(true)
+
+  // Close on Escape.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKey)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
     firstFieldRef.current?.focus()
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prevOverflow
     }
   }, [onClose])
 
@@ -209,9 +210,9 @@ function ContactModal({
   const pillFieldClass = formPillFieldClass(isLight)
   const fieldLabelClass = 'text-white/60'
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden p-4 sm:p-6"
+      className="fixed inset-0 z-[220] flex items-center justify-center overflow-hidden overscroll-none p-4 sm:p-6"
       dir={isRtl ? 'rtl' : 'ltr'}
       role="dialog"
       aria-modal="true"
@@ -235,7 +236,10 @@ function ContactModal({
             <path d="M12 4 4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>
-        <div className="faq-accordion-scroll max-h-[90vh] min-w-0 w-full overflow-x-hidden overflow-y-auto p-5 sm:p-7">
+        <div
+          data-modal-scroll
+          className="faq-accordion-scroll max-h-[90vh] min-w-0 w-full overflow-x-hidden overflow-y-auto overscroll-contain p-5 sm:p-7"
+        >
 
         {status !== 'success' && (
           <h2 id={titleId} className="mb-4 max-w-[85%] font-semibold normal-case tracking-normal text-[22px] leading-snug text-gold-100 sm:text-[24px]">
@@ -446,6 +450,7 @@ function ContactModal({
         )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from '@/components/Navbar'
@@ -61,6 +62,7 @@ import {
   type AuditReportLanguage,
 } from '@/lib/auditFormValidation'
 import { useAuditFieldChecks } from '@/hooks/useAuditFieldChecks'
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
 import { contactForm } from '@/translations'
 import { auditPage, tAudit, tAuditWebsiteUnreachable, type AuditPageContent } from '@/lib/auditPage'
 
@@ -1111,23 +1113,21 @@ function AuditOrderModal({
   const planTitle = tLocale(plan.card.title, locale)
   const tForm = (field: Record<string, string>) => field[locale] || field.en
 
+  useLockBodyScroll(isOpen)
+
   useEffect(() => {
     setValues((v) => ({ ...v, auditLanguage: defaultAuditLanguage }))
   }, [defaultAuditLanguage])
 
-  // Close on Escape and lock background scroll while open.
   useEffect(() => {
     if (!isOpen) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKey)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
     firstFieldRef.current?.focus()
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prevOverflow
     }
   }, [isOpen, onClose])
 
@@ -1285,9 +1285,9 @@ function AuditOrderModal({
           ? 'שליחת הזמנה'
           : 'Submit Order'
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[120] flex items-center justify-center overflow-hidden p-4 sm:p-6"
+      className="fixed inset-0 z-[220] flex items-center justify-center overflow-hidden overscroll-none p-4 sm:p-6"
       dir={isRtl ? 'rtl' : 'ltr'}
       role="dialog"
       aria-modal="true"
@@ -1311,7 +1311,10 @@ function AuditOrderModal({
             <path d="M12 4 4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>
-        <div className="faq-accordion-scroll max-h-[90vh] min-w-0 w-full overflow-x-hidden overflow-y-auto p-5 sm:p-8">
+        <div
+          data-modal-scroll
+          className="faq-accordion-scroll max-h-[90vh] min-w-0 w-full overflow-x-hidden overflow-y-auto overscroll-contain p-5 sm:p-8"
+        >
 
         {status === 'success' ? (
           <div className="py-8 text-center" role="status" aria-live="polite">
@@ -1640,6 +1643,7 @@ function AuditOrderModal({
         )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

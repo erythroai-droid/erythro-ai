@@ -1254,11 +1254,51 @@ Do not share the contact-form 5/min bucket with `/api/audit/report/[id]`. Do not
 
 ---
 
+## PIT-073 — Mobile modal: page still scrolls, footer covers the dialog
+
+**Tags:** `modal`, `mobile`, `ios`, `z-index`, `overflow`, `portal`  
+**Seen:** 2026-09-11 — contact and order checkout dialogs on phone viewport.
+
+**Symptom:**
+Opening a modal on mobile, the page behind still scrolls (rubber-band). The overlapping footer card slides up and paints on top of the dialog.
+
+**Cause:**
+Inner pages wrap blocks in stacking cards (`relative z-20 -mt-8 max-lg:overflow-hidden` for the page, `z-40` for `FooterSection`). `position: fixed` inside `overflow: hidden` (and transformed ancestors) behaves like `absolute` on iOS, so the dialog stays trapped in the lower stacking context. Footer `z-40` wins. `body { overflow: hidden }` alone does not stop iOS overscroll.
+
+**Fix:**
+Portal the overlay to `document.body` at `z-[220]`. Lock scroll with `useLockBodyScroll` (`html`/`body` overflow, `body { position: fixed; top: -scrollY }`, `touchmove` except `[data-modal-scroll]`). Inner panel: `data-modal-scroll` + `overscroll-contain`.
+
+**Prevent:**
+Never put `position: fixed` dialogs inside the overlapping page/footer wrappers. Always portal to `document.body` and lock both `html` and `body`. Do not rely on `body.style.overflow = hidden` alone on iOS.
+
+---
+
+## PIT-074 — Hebrew audit scorecard labels jump next to the bars
+
+**Tags:** `audit`, `rtl`, `hebrew`, `html-report`, `scorecard`  
+**Seen:** 2026-09-11 — HE HTML report; labels beside the 0–100 bars.
+
+**Symptom:**
+In the Hebrew report the five scale names do not share one edge against the bars: short rows sit far from the track, wrapped rows sit closer — the text “jumps”.
+
+**Cause:**
+RTL scorecard puts labels in the right column. `text-align: right` (and a 128px column vs LTR 214px) flush text to the **outer** edge. Mixed HE + Latin (`SEO`, `UX`, `AI`) wrap unevenly, so the bar-adjacent side is ragged. EN/RU use `text-align: right` in the **left** column, which is the bar edge.
+
+**Fix:**
+Label column is `max-content` (not 214px / 76rem); bars are `minmax(0, 1fr)`. Equal `padding-inline` on `.chart-body`. Overlay lines use **subgrid** + `grid-column: 2` (no hardcoded `left/right` offsets). RTL labels: `text-align: left` (physical left = bar).
+
+**Prevent:**
+Do not copy LTR `text-align: right` onto RTL chart labels. Do not give the label column a fixed width — empty space on the outer side makes screen→text ≠ screen→bars. Keep HE/EN/RU on the same `max-content | 1fr` tracks.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
 - [ ] Sitemap: merge static for services/orders; portfolio = CMS-only when CMS has docs (PIT-070)
 - [ ] Audit waiting page: dedicated poll limiter; Vercel Cron reconcile + contact `after()` retry (PIT-072)
+- [ ] Mobile modals: portal to `document.body` + `useLockBodyScroll`; never nest `fixed` dialogs in `z-20`/`z-40` overflow cards (PIT-073)
+- [ ] HE scorecard: `max-content` labels + `1fr` bars, equal padding-inline; RTL `text-align: left` (PIT-074)
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
 - [ ] Fix script if prod/CI may lag (`pnpm db:fix-*`)
@@ -1309,4 +1349,6 @@ Do not share the contact-form 5/min bucket with `/api/audit/report/[id]`. Do not
 - [ ] Motion typography: never tween geometric CSS (font-size/width/height); use GPU transform scale to prevent CLS (PIT-063)
 - [ ] Order modal flow: keep user in confirmation modal; do not auto-open status tabs on submit (PIT-069)
 - [ ] Audit pipeline: never leave `new` jobs without cron/`after()` requeue; do not poll report status on the contact 5/min limiter (PIT-072)
+- [ ] Mobile modals: `createPortal(..., document.body)` + lock html/body; do not nest `position:fixed` in overlapping footer cards (PIT-073)
+- [ ] HE audit scorecard: do not use LTR `text-align:right` on RTL labels next to bars (PIT-074)
 
