@@ -76,6 +76,7 @@ public final class AuditReportI18n {
     public final String checkRobotsAi;
     public final String checkGa4;
     public final String unlockReportBtn;
+    /** Free / Diagnostic unlock CTAs (checklist, recs overlay, footer, scope). */
     public final String unlockReportUrl;
     public final String proposalDocTitle;
     public final String proposalPreviewBadge;
@@ -256,6 +257,9 @@ public final class AuditReportI18n {
         return resolve(lang).lang;
     }
 
+    /** Pro checkout — target of Free/Diagnostic «unlock full report» buttons. */
+    public static final String UNLOCK_PRO_URL = "https://erythro.ai/order/audit-pro";
+
     private static final String FOOTER_LOGO_SVG = loadFooterLogoSvg();
 
     private static String ctaWithLogo(String prefix) {
@@ -338,7 +342,7 @@ public final class AuditReportI18n {
             "Robots.txt: AI-боты и индексация",
             "GA4 / dataLayer readiness",
             "Разблокировать полный отчёт · 60+ проверок",
-            "https://erythro.ai/audit",
+            UNLOCK_PRO_URL,
             "Preview · Бесплатный коммерческий аудит — Erythro.ai",
             "PREVIEW · БЕСПЛАТНЫЙ АУДИТ",
             "Ключевые метрики и топ-3 уязвимости. Полный отчёт: 60+ проверок, Lighthouse desktop, AI Visibility и план на 3 языках.",
@@ -385,7 +389,7 @@ public final class AuditReportI18n {
             "Robots.txt: AI crawlers & indexing",
             "GA4 / dataLayer readiness",
             "Unlock full report · 60+ checks",
-            "https://erythro.ai/audit",
+            UNLOCK_PRO_URL,
             "Preview · Free Commercial Audit — Erythro.ai",
             "PREVIEW · FREE AUDIT",
             "Key metrics and top 3 vulnerabilities. Full report: 60+ checks, desktop Lighthouse, AI Visibility and 3-language PDF.",
@@ -432,7 +436,7 @@ public final class AuditReportI18n {
             "Robots.txt: בוטים AI ואינדוקס",
             "GA4 / dataLayer readiness",
             "שחרר את הדוח המלא · 60+ בדיקות",
-            "https://erythro.ai/audit",
+            UNLOCK_PRO_URL,
             "Preview · אודיט מסחרי חינם — Erythro.ai",
             "PREVIEW · אודיט חינם",
             "מדדים מרכזיים ו-3 פגיעויות מובילות. דוח מלא: 60+ בדיקות, Lighthouse desktop, AI Visibility ו-PDF ב-3 שפות.",

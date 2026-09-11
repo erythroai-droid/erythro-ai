@@ -1042,9 +1042,11 @@
         height: 16rem;
         margin-left: 0;
         z-index: 2;
-        text-align: right;
-        padding-right: 5rem;
-        padding-left: 0;
+        direction: rtl;
+        unicode-bidi: isolate;
+        text-align: left;
+        padding-right: 0;
+        padding-left: 5rem;
         align-items: flex-start;
     }
     html.rtl-report .diag-title {
@@ -1068,10 +1070,10 @@
         width: 409rem;
     }
     html.rtl-report .chart-label {
-        text-align: right;
-        align-items: flex-end;
-        padding-left: 0;
-        padding-right: 5rem;
+        text-align: left;
+        align-items: flex-start;
+        padding-left: 5rem;
+        padding-right: 0;
     }
     html.rtl-report table.metrics th:first-child,
     html.rtl-report table.metrics td.device {

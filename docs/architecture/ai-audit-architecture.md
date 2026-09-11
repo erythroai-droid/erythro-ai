@@ -327,7 +327,7 @@ Erythro_Audit_[AUD-N]_[site]_[YYYY-MM-DD]_[LANG].pdf
 
 ### 6.2. Мобильный HTML-отчёт
 
-Клиентский HTML (A4-4) на узких экранах (`max-width: 720px`) перестраивается по Figma-фрейму **iPhone 17 - 1** (402px): вертикальный стек лого → title → tier strip → URL → meta → gauge → scorecard → секции → footer. CSS: `MOBILE_SCREEN_CSS` в `A44ReportGenerator.java` (добавляется после rem→A4 конвертации, чтобы breakpoints остались в `px`). PDF/print не затрагивается. Уже сохранённые `htmlResult` в CMS обновятся только после нового прогона аудита.
+Клиентский HTML (A4-4) на узких экранах (`max-width: 720px`) перестраивается по Figma-фрейму **iPhone 17 - 1** (402px): вертикальный стек лого (тёмный) → title (красный) → tier strip `#f3f3f3` / чёрный текст → URL (красный) → meta `#f3f3f3` → gauge на `#f3f3f3` с красным кругом балла → scorecard (заголовок 24rem, подписи `max-content`, полосы `1fr`, одинаковый padding-inline) → секции → footer. На мобайле в футере только WhatsApp (email/телефон скрыты), `cta-title` 18rem. HE/EN/RU scorecard: колонка подписей по ширине текста, полосы забирают остаток; отступ от края карточки до текста = отступ до полос. CTA разблокировки Free/Diagnostic → `https://erythro.ai/order/audit-pro`. CSS: `MOBILE_SCREEN_CSS` в `A44ReportGenerator.java` (добавляется после rem→A4 конвертации, чтобы breakpoints остались в `px`). PDF/print не затрагивается. Уже сохранённые `htmlResult` в CMS обновятся только после нового прогона аудита.
 
 ---
 

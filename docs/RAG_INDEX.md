@@ -3,7 +3,7 @@
 Manifest for building a retrieval corpus from `docs/`. Use this file as the **ingest map**:
 what to chunk, how to tag, and which questions each source answers.
 
-Last updated: 2026-09-09.
+Last updated: 2026-09-11.
 
 ---
 
@@ -107,6 +107,8 @@ Rules:
 | “Hero LCP / CLS / TBT / PSI score jumps / GSAP gate” | `PIT-057`–`PIT-063`; `docs/HERO_MOTION.md`; `docs/PLAN-deferred.md` |
 | “R2 media / Blob cutover / pub-…r2.dev / Payload uploads” | `docs/architecture/r2-media-storage.md`; `PIT` media/R2 entries; `docs/PLAN-deferred.md` |
 | “Deferred security / next hardening steps” | `docs/PLAN-deferred.md`; `.cursor/rules/deferred-hardening.mdc` |
+| “Mobile modal / footer covers dialog / page still scrolls” | `PIT-073`; `src/hooks/useLockBodyScroll.ts` |
+| “Hebrew audit report / scorecard labels jump / bars” | `PIT-074`; `A44ReportGenerator.java` RTL `.chart-label` |
 
 ---
 

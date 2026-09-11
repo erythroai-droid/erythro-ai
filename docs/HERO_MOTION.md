@@ -145,7 +145,7 @@ FG / ряды с ивритом: `direction: rtl` + Heebo (`resolveHeeboStack`).
 |---|---|
 | Hero motion stage | `100` |
 | Navbar / burger header | `110` |
-| Contact modal | `120` |
+| Contact / order modal (portaled to `document.body`) | `220` |
 | Splash screen | `200` |
 | Mobile menu overlay (внутри header) | `60` (ниже кнопки Close `70`) |
 
