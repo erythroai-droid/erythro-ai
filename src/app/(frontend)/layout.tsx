@@ -97,12 +97,16 @@ export async function generateMetadata(): Promise<Metadata> {
     manifest: '/images/favicon/site.webmanifest',
     icons: {
       icon: [
+        { url: '/favicon.ico', sizes: 'any' },
         { url: '/images/favicon/favicon.ico', sizes: 'any' },
         { url: '/images/favicon/favicon_32x32.svg', type: 'image/svg+xml' },
         { url: '/images/favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
         { url: '/images/favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
       ],
-      apple: [{ url: '/images/favicon/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+      apple: [
+        { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+        { url: '/images/favicon/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      ],
     },
     openGraph: {
       type: 'website',

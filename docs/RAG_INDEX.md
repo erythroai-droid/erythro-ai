@@ -109,6 +109,7 @@ Rules:
 | “Deferred security / next hardening steps” | `docs/PLAN-deferred.md`; `.cursor/rules/deferred-hardening.mdc` |
 | “Mobile modal / footer covers dialog / page still scrolls” | `PIT-073`; `src/hooks/useLockBodyScroll.ts` |
 | “Hebrew audit report / scorecard labels jump / bars” | `PIT-074`; `A44ReportGenerator.java` RTL `.chart-label` |
+| “Broken network requests / 13× 4xx / favicon.ico 404” | `PIT-075`; `public/favicon.ico`; `AuditCollector` `failed_network_requests` unique URL+status |
 
 ---
 

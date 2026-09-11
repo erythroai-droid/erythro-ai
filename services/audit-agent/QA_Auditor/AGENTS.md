@@ -87,7 +87,7 @@
 | `sec_xcto` | X-Content-Type-Options | HTTP headers |
 | `sec_referrer` | Referrer-Policy | HTTP headers |
 | `sec_permissions` | Permissions-Policy | HTTP headers |
-| `net_failed` | Ответы 4xx/5xx | Playwright `onResponse` |
+| `net_failed` | Ответы 4xx/5xx (уникальный URL+status, `hits` при повторах) | Playwright `onResponse` |
 | `runtime_console` | `console.error` / `console.warn` | Playwright `onConsoleMessage` |
 | `runtime_pageerror` | Необработанные PageError (JS) | Playwright `onPageError` |
 
