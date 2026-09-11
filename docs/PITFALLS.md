@@ -1285,10 +1285,32 @@ In the Hebrew report the five scale names do not share one edge against the bars
 RTL scorecard puts labels in the right column. `text-align: right` (and a 128px column vs LTR 214px) flush text to the **outer** edge. Mixed HE + Latin (`SEO`, `UX`, `AI`) wrap unevenly, so the bar-adjacent side is ragged. EN/RU use `text-align: right` in the **left** column, which is the bar edge.
 
 **Fix:**
-Label column is `max-content` (not 214px / 76rem); bars are `minmax(0, 1fr)`. Equal `padding-inline` on `.chart-body`. Overlay lines use **subgrid** + `grid-column: 2` (no hardcoded `left/right` offsets). RTL labels: `text-align: left` (physical left = bar).
+Label column is `max-content` on desktop (one line). Mobile (`max-width: 720px`): two-line labels in `108rem` (EN/RU, fits «Лидогенерация») / `58rem` (HE) so bars get the rest (`1fr`). Equal `padding-inline` on `.chart-body`. Overlay lines use **subgrid** + `grid-column: 2`. RTL labels: `text-align: left` (physical left = bar).
 
 **Prevent:**
-Do not copy LTR `text-align: right` onto RTL chart labels. Do not give the label column a fixed width — empty space on the outer side makes screen→text ≠ screen→bars. Keep HE/EN/RU on the same `max-content | 1fr` tracks.
+Do not copy LTR `text-align: right` onto RTL chart labels. On mobile do not use `white-space: nowrap` + `max-content` for scale names — that keeps the label column as wide as the longest single line and starves the bars. Keep HE/EN/RU on the same tracks.
+
+---
+
+## PIT-075 — Audit “13 broken network requests” is one `/favicon.ico` 404 counted per navigate
+
+**Tags:** `audit`, `playwright`, `favicon`, `false-positive`  
+**Seen:** 2026-09-11 — A44 finding «Битые сетевые запросы», count 13 on erythro.ai.
+
+**Symptom:**
+Client HTML/PDF reports 13 (or 3+pageCap) 4xx/5xx responses. The finding lists only a number, so it looks like broken integrations. `GET /favicon.ico` and `/apple-touch-icon.png` at the origin root return 404 even though `link rel=icon` points at `/images/favicon/…`.
+
+**Cause:**
+1. Chromium always requests `/favicon.ico` (and iOS `/apple-touch-icon.png`) at the site root, ignoring `<link rel="icon">` in another folder. There was no `public/favicon.ico`.
+2. Playwright `page.onResponse` recorded every status ≥400 with **no URL dedup**. Diagnostic/Pro: 3 locale homepage loads + up to 10 agent-browse navigations = 13 identical 404s.
+
+**Fix:**
+- Serve copies at `public/favicon.ico`, `public/apple-touch-icon.png`, `public/apple-touch-icon-precomposed.png` (same bytes as `public/images/favicon/`).
+- Metadata icons include the root paths.
+- Auditor stores unique URL+status with a `hits` counter; the finding lists those URLs.
+
+**Prevent:**
+Keep a real file at `/favicon.ico` whenever icons live under `/images/favicon/`. Never treat `failed_network_requests.size()` as a raw event count across navigations.
 
 ---
 
@@ -1298,7 +1320,8 @@ Do not copy LTR `text-align: right` onto RTL chart labels. Do not give the label
 - [ ] Sitemap: merge static for services/orders; portfolio = CMS-only when CMS has docs (PIT-070)
 - [ ] Audit waiting page: dedicated poll limiter; Vercel Cron reconcile + contact `after()` retry (PIT-072)
 - [ ] Mobile modals: portal to `document.body` + `useLockBodyScroll`; never nest `fixed` dialogs in `z-20`/`z-40` overflow cards (PIT-073)
-- [ ] HE scorecard: `max-content` labels + `1fr` bars, equal padding-inline; RTL `text-align: left` (PIT-074)
+- [ ] HE scorecard: desktop `max-content`; mobile 2-line labels in `108rem` EN/RU / `58rem` HE + `1fr` bars; RTL `text-align: left` (PIT-074)
+- [ ] Root `/favicon.ico` and `/apple-touch-icon.png` must exist in `public/` even if icons also live under `/images/favicon/` (PIT-075)
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
 - [ ] Fix script if prod/CI may lag (`pnpm db:fix-*`)
@@ -1351,4 +1374,5 @@ Do not copy LTR `text-align: right` onto RTL chart labels. Do not give the label
 - [ ] Audit pipeline: never leave `new` jobs without cron/`after()` requeue; do not poll report status on the contact 5/min limiter (PIT-072)
 - [ ] Mobile modals: `createPortal(..., document.body)` + lock html/body; do not nest `position:fixed` in overlapping footer cards (PIT-073)
 - [ ] HE audit scorecard: do not use LTR `text-align:right` on RTL labels next to bars (PIT-074)
+- [ ] Favicon: ship `public/favicon.ico` (and apple-touch at root); auditor must unique URL+status, not raw onResponse count (PIT-075)
 

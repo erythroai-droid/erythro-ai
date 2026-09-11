@@ -681,19 +681,10 @@ public class AuditCollector {
 
             Map<String, Object> aiVisibilityDom = null;
 
-            // Перехват сетевых ошибок (4xx/5xx)
-            page.onResponse(response -> {
-                if (response.status() >= 400) {
-                    Map<String, Object> reqError = new HashMap<>();
-                    reqError.put("url", response.url());
-                    reqError.put("status", response.status());
-                    reqError.put("statusText", response.statusText());
-                    reqError.put("locale", "unknown");
-                    failedRequests.add(reqError);
-                }
-            });
-
             final String[] currentLocaleRef = new String[]{"unknown"};
+
+            // 4xx/5xx: unique URL+status (Chromium re-requests /favicon.ico on every navigate)
+            page.onResponse(response -> recordFailedNetwork(failedRequests, response, currentLocaleRef[0]));
 
             // 1. Перехват Dev Console (console.error и console.warn)
             page.onConsoleMessage(msg -> {
@@ -1237,7 +1228,7 @@ public class AuditCollector {
         int totalDevErrors = consoleLogs.size() + uncaughtErrors.size();
         String status = (failedNetwork.isEmpty() && uncaughtErrors.isEmpty()) ? "PASS" : "CONDITIONAL PASS";
         sb.append("- **Общий статус:** `").append(status).append("`\n");
-        sb.append("- **Ошибок сетевых запросов (HTTP 4xx/5xx):** ").append(failedNetwork.size()).append("\n");
+        sb.append("- **Ошибок сетевых запросов (уникальных HTTP 4xx/5xx):** ").append(failedNetwork.size()).append("\n");
         sb.append("- **Сообщений Dev Console / JS Ошибок:** ").append(totalDevErrors).append("\n\n");
 
         sb.append("## 1. 🖥️ DEV CONSOLE & UNCAUGHT JS ERRORS\n");
@@ -1293,10 +1284,11 @@ public class AuditCollector {
         if (failedNetwork.isEmpty()) {
             sb.append("Сетевых ошибок HTTP 4xx/5xx не обнаружено.\n\n");
         } else {
-            sb.append("| Target URL | Status Code | Error Description | Active Locale |\n");
-            sb.append("| :--- | :--- | :--- | :--- |\n");
+            sb.append("| Target URL | Status Code | Hits | Error Description | Active Locale |\n");
+            sb.append("| :--- | :--- | :--- | :--- | :--- |\n");
             for (Map<String, Object> req : failedNetwork) {
                 sb.append("| ").append(req.get("url")).append(" | ").append(req.get("status"))
+                        .append(" | ").append(req.getOrDefault("hits", 1))
                         .append(" | ").append(req.get("statusText")).append(" | ")
                         .append(req.get("locale")).append(" |\n");
             }
@@ -1814,9 +1806,9 @@ public class AuditCollector {
                         "No JS crashes or 4xx/5xx responses recorded",
                         "לא נרשמו קריסות JS או תגובות 4xx/5xx")
                         : ReportFindingsCatalog.tr(i18n.lang,
-                        "JS-исключений: " + uncaughtErrors.size() + ", ответов 4xx/5xx: " + failedNetwork.size(),
-                        "JS exceptions: " + uncaughtErrors.size() + ", 4xx/5xx: " + failedNetwork.size(),
-                        "שגיאות JS: " + uncaughtErrors.size() + ", 4xx/5xx: " + failedNetwork.size()),
+                        "JS-исключений: " + uncaughtErrors.size() + ", уникальных 4xx/5xx: " + failedNetwork.size(),
+                        "JS exceptions: " + uncaughtErrors.size() + ", unique 4xx/5xx: " + failedNetwork.size(),
+                        "שגיאות JS: " + uncaughtErrors.size() + ", 4xx/5xx ייחודיים: " + failedNetwork.size()),
                 runtimeClean ? "good" : (uncaughtErrors.isEmpty() ? "warn" : "bad"),
                 runtimeClean ? i18n.statusStable
                         : (uncaughtErrors.isEmpty() ? i18n.statusNeedsAttention : i18n.statusCritical),
@@ -2311,6 +2303,7 @@ public class AuditCollector {
                 aiRobots != null ? aiRobots.getOrDefault("blocked_bots", List.of()) : List.of(),
                 aiDom != null && Boolean.TRUE.equals(aiDom.get("data_layer_present")),
                 failedNetwork.size(),
+                failedNetworkSamples(failedNetwork),
                 uncaughtErrors.size(),
                 agentBroken,
                 agentVisited,
@@ -2334,6 +2327,75 @@ public class AuditCollector {
     }
 
     @SuppressWarnings("unchecked")
+    private static void recordFailedNetwork(
+            List<Map<String, Object>> failedRequests,
+            Response response,
+            String locale
+    ) {
+        int status = response.status();
+        if (status < 400) {
+            return;
+        }
+        String url = normalizeFailedNetworkUrl(response.url());
+        synchronized (failedRequests) {
+            for (Map<String, Object> existing : failedRequests) {
+                if (status == asLong(existing.get("status"), 0)
+                        && url.equals(String.valueOf(existing.get("url")))) {
+                    existing.put("hits", (int) asLong(existing.get("hits"), 1) + 1);
+                    return;
+                }
+            }
+            Map<String, Object> reqError = new LinkedHashMap<>();
+            reqError.put("url", url);
+            reqError.put("status", status);
+            reqError.put("statusText", response.statusText());
+            reqError.put("locale", locale == null ? "unknown" : locale);
+            reqError.put("hits", 1);
+            failedRequests.add(reqError);
+        }
+    }
+
+    private static String normalizeFailedNetworkUrl(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return "";
+        }
+        try {
+            URI u = URI.create(raw);
+            String path = u.getRawPath() == null ? "" : u.getRawPath();
+            String query = u.getRawQuery();
+            String host = u.getAuthority() == null ? "" : u.getAuthority();
+            String scheme = u.getScheme() == null ? "" : u.getScheme() + "://";
+            return scheme + host + path + (query == null || query.isBlank() ? "" : "?" + query);
+        } catch (Exception e) {
+            int hash = raw.indexOf('#');
+            return hash >= 0 ? raw.substring(0, hash) : raw;
+        }
+    }
+
+    private static List<String> failedNetworkSamples(List<Map<String, Object>> failedNetwork) {
+        List<String> out = new ArrayList<>();
+        if (failedNetwork == null) {
+            return out;
+        }
+        for (Map<String, Object> req : failedNetwork) {
+            String url = String.valueOf(req.getOrDefault("url", ""));
+            String path = url;
+            try {
+                URI u = URI.create(url);
+                if (u.getPath() != null && !u.getPath().isBlank()) {
+                    path = u.getPath();
+                    if (u.getQuery() != null && !u.getQuery().isBlank()) {
+                        path += "?" + u.getQuery();
+                    }
+                }
+            } catch (Exception ignored) {}
+            int hits = (int) asLong(req.get("hits"), 1);
+            String hitBit = hits > 1 ? " ×" + hits : "";
+            out.add(req.get("status") + " " + path + hitBit);
+        }
+        return out;
+    }
+
     private static int countSeriousA11yViolations(Map<String, Object> localeAudits) {
         int total = 0;
         for (Object localeObj : localeAudits.values()) {

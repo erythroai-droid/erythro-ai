@@ -65,6 +65,7 @@ public final class ReportFindingsCatalog {
             Object aiBlockedBots,
             boolean aiDataLayer,
             int failedNetworkCount,
+            List<String> failedNetworkUrls,
             int uncaughtErrorCount,
             int agentBroken,
             int agentVisited,
@@ -529,14 +530,15 @@ public final class ReportFindingsCatalog {
                             "הוסף GA4 Consent Mode stub ב-head לפני באנר עוגיות.")));
         }
         if (ctx.failedNetworkCount > 0) {
+            String samples = formatFailedNetworkSamples(ctx.failedNetworkUrls);
             findings.add(new BizFinding(44,
                     tr(lang, "Битые сетевые запросы на странице",
                             "Broken network requests on the page",
                             "בקשות רשת שבורות בעמוד"),
                     tr(lang,
-                            "Ответов со статусом 4xx/5xx: " + ctx.failedNetworkCount + ".",
-                            "4xx/5xx responses: " + ctx.failedNetworkCount + ".",
-                            "תגובות 4xx/5xx: " + ctx.failedNetworkCount + "."),
+                            "Уникальных URL со статусом 4xx/5xx: " + ctx.failedNetworkCount + samples,
+                            "Unique 4xx/5xx URLs: " + ctx.failedNetworkCount + samples,
+                            "כתובות 4xx/5xx ייחודיות: " + ctx.failedNetworkCount + samples),
                     tr(lang,
                             "Часть ресурсов не загружается: страница неполная, аналитика искажена.",
                             "Resources fail to load — incomplete page and skewed analytics.",
@@ -711,5 +713,15 @@ public final class ReportFindingsCatalog {
             if (p != null) missing.add(p);
         }
         return String.join(", ", missing);
+    }
+
+    private static String formatFailedNetworkSamples(List<String> urls) {
+        if (urls == null || urls.isEmpty()) {
+            return ".";
+        }
+        int shown = Math.min(5, urls.size());
+        String joined = String.join("; ", urls.subList(0, shown));
+        String extra = urls.size() > shown ? "…" : "";
+        return ": " + joined + extra + ".";
     }
 }
