@@ -15,7 +15,7 @@ export const OG_IMAGE_HEIGHT = 630
 /** Per-plan 1200×630 cards on R2 (same public host as homepage Og.jpg). */
 const PLAN_OG_IMAGES: Record<string, string> = {
   'business-automation':
-    'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/business-automation.jpg',
+    'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/business-automation-1200.jpg',
 }
 
 export function ogImageForPlan(slug: string, siteOgImage?: string): string {
