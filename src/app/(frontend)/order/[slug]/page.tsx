@@ -3,10 +3,11 @@ import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import OrderClient from './OrderClient'
-import { getCachedSiteContent } from '@/lib/getSiteContent'
+import { getCachedSeoSettings, getCachedSiteContent } from '@/lib/getSiteContent'
 import { getAllOrderSlugsCms, getCachedOrderPlans, getOrderPlanBySlug } from '@/lib/cmsPages'
 import { getAllOrderSlugs, ORDER_PLANS, tLocale } from '@/lib/orderPlans'
 import { getCachedAuditPage } from '@/lib/auditPage.server'
+import { ogImageFields, ogImageForPlan } from '@/lib/ogImages'
 import { getRequestPrefs } from '@/lib/requestPrefs'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
@@ -45,6 +46,9 @@ export async function generateMetadata({ params }: OrderPageProps): Promise<Meta
   const pageTitle = tLocale(plan.card.title, locale)
   const title = customTitle || `${pageTitle} | Order | Erythro.ai`
   const subtitle = customDescription || tLocale(plan.subtitle, locale)
+  const seo = await getCachedSeoSettings()
+  const ogImage = ogImageForPlan(plan.slug, seo.ogImage)
+  const ogImages = [ogImageFields(ogImage, title)]
 
   return {
     title,
@@ -56,6 +60,13 @@ export async function generateMetadata({ params }: OrderPageProps): Promise<Meta
       url: `${SITE_URL}/order/${plan.slug}`,
       siteName: 'Erythro.ai',
       type: 'website',
+      images: ogImages,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: subtitle,
+      images: [ogImage],
     },
   }
 }
