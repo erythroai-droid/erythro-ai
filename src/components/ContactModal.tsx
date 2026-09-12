@@ -27,6 +27,11 @@ import {
 import type { ContactFormSource } from '@/lib/contactNotification'
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import { TURNSTILE_TOKEN_FIELD } from '@/lib/turnstile'
+import {
+  contactSubmitErrorMessage,
+  postContactForm,
+  readContactSubmitErrorBody,
+} from '@/lib/contactSubmit'
 
 interface ContactModalContextValue {
   open: (source?: ContactFormSource) => void
@@ -93,6 +98,7 @@ function ContactModal({
   const [turnstileToken, setTurnstileToken] = useState('')
   const turnstileRef = useRef<TurnstileHandle>(null)
   const firstFieldRef = useRef<HTMLInputElement | null>(null)
+  const submittingRef = useRef(false)
 
   useEffect(() => {
     try {
@@ -152,7 +158,7 @@ function ContactModal({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (status === 'sending') return
+    if (submittingRef.current || status === 'sending') return
 
     const nextFieldErrors = validateContactForm(values)
     setFieldErrors(nextFieldErrors)
@@ -169,28 +175,27 @@ function ContactModal({
     const honeypot =
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ?? ''
 
+    submittingRef.current = true
     setStatus('sending')
     setSubmitError('')
     try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...values,
-          [CONTACT_HONEYPOT_FIELD]: honeypot,
-          [TURNSTILE_TOKEN_FIELD]: turnstileToken,
-          locale,
-          privacyConsent: true,
-          source,
-        }),
+      const res = await postContactForm({
+        ...values,
+        [CONTACT_HONEYPOT_FIELD]: honeypot,
+        [TURNSTILE_TOKEN_FIELD]: turnstileToken,
+        locale,
+        privacyConsent: true,
+        source,
       })
-      if (res.status === 429) {
-        setSubmitError(t(form.rateLimited))
-        setStatus('error')
-        return
-      }
       if (!res.ok) {
-        setSubmitError(res.status === 403 ? t(form.captchaFailed) : t(form.error))
+        const errPayload = await readContactSubmitErrorBody(res)
+        setSubmitError(
+          contactSubmitErrorMessage(res.status, errPayload, {
+            error: t(form.error),
+            rateLimited: t(form.rateLimited),
+            captchaFailed: t(form.captchaFailed),
+          }),
+        )
         setStatus('error')
         return
       }
@@ -202,6 +207,7 @@ function ContactModal({
       setSubmitError(t(form.error))
       setStatus('error')
     } finally {
+      submittingRef.current = false
       turnstileRef.current?.reset()
     }
   }

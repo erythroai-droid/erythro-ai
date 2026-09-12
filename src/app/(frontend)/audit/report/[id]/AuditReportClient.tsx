@@ -163,14 +163,25 @@ export default function AuditReportClient({
             <div className={`mt-8 rounded-[20px] border p-5 sm:p-8 ${surface}`}>
               {error === 'not_found' ? (
                 <p className={`m-0 text-base ${muted}`}>{tReport(auditReportCopy.notFound, locale)}</p>
+              ) : error === 'network' && !data ? (
+                <p className={`m-0 text-base ${muted}`} role="alert">
+                  {tReport(auditReportCopy.network, locale)}
+                </p>
               ) : (
-                <ReportBody
-                  data={data}
-                  reportId={reportId}
-                  locale={locale}
-                  muted={muted}
-                  isLight={isLight}
-                />
+                <>
+                  {error === 'network' ? (
+                    <p className={`mb-4 mt-0 text-base ${muted}`} role="alert">
+                      {tReport(auditReportCopy.network, locale)}
+                    </p>
+                  ) : null}
+                  <ReportBody
+                    data={data}
+                    reportId={reportId}
+                    locale={locale}
+                    muted={muted}
+                    isLight={isLight}
+                  />
+                </>
               )}
             </div>
           </main>

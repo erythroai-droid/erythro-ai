@@ -288,6 +288,7 @@ async function sendViaResend(
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
+    signal: AbortSignal.timeout(10_000),
     body: JSON.stringify({
       from,
       to: Array.isArray(to) ? to : [to],
@@ -331,6 +332,9 @@ async function sendViaSmtp(
       port: usePort,
       secure,
       auth: { user, pass },
+      connectionTimeout: 10_000,
+      greetingTimeout: 8_000,
+      socketTimeout: 15_000,
     })
     await transporter.sendMail({
       from,

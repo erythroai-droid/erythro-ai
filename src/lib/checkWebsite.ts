@@ -10,7 +10,23 @@ export type WebsiteCheckResult =
 
 export type WebsiteLookup = (hostname: string) => Promise<Array<{ address: string }>>
 
+export const DNS_LOOKUP_TIMEOUT_MS = 5_000
+
 const BLOCKED_HOSTS = new Set(['localhost', 'metadata.google.internal', 'kubernetes.default'])
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(label)), ms)
+      }),
+    ])
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
+}
 
 function hostnameBlocked(hostname: string): boolean {
   const host = hostname.trim().toLowerCase().replace(/\.$/, '')
@@ -86,6 +102,10 @@ export async function checkWebsiteReachable(
 }
 
 async function defaultLookup(hostname: string): Promise<Array<{ address: string }>> {
-  const rows = await dnsLookup(hostname, { all: true, verbatim: true })
+  const rows = await withTimeout(
+    dnsLookup(hostname, { all: true, verbatim: true }),
+    DNS_LOOKUP_TIMEOUT_MS,
+    'DNS_TIMEOUT',
+  )
   return rows.map((row) => ({ address: row.address }))
 }
