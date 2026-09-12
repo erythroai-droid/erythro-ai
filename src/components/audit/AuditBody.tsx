@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { BorderBeam } from 'border-beam'
 import Button from '@/components/Button'
@@ -30,11 +31,7 @@ import {
   type AuditTabId,
 } from '@/lib/auditPage'
 import { currencySymbol } from '@/lib/orderPlans'
-import {
-  closeAuditReportStatusTab,
-  navigateAuditReportStatusTab,
-  openAuditReportStatusPlaceholder,
-} from '@/lib/auditReport'
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
 
 const AuditPageContext = React.createContext<AuditPageContent>(auditPage as AuditPageContent)
 
@@ -102,6 +99,125 @@ function AuditFormShell({ isLight, children }: { isLight: boolean; children: Rea
         {card}
       </BorderBeam>
     </div>
+  )
+}
+
+function AuditFreeSuccessModal({
+  locale,
+  orderId,
+  reportHref,
+  message,
+  closeLabel,
+  onClose,
+}: {
+  locale: string
+  orderId: string | null
+  reportHref: string | null
+  message: string
+  closeLabel: string
+  onClose: () => void
+}) {
+  const titleId = useId()
+  const isRtl = locale === 'he'
+  useLockBodyScroll(true)
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  const title =
+    locale === 'ru' ? 'Заказ отправлен!' : locale === 'he' ? 'ההזמנה נשלחה!' : 'Order submitted!'
+  const statusLabel =
+    locale === 'ru'
+      ? 'Смотреть статус заказа'
+      : locale === 'he'
+        ? 'צפה בסטטוס ההזמנה'
+        : 'View order status'
+  const orderIdLabel =
+    locale === 'ru' ? 'ID заказа' : locale === 'he' ? 'מספר הזמנה' : 'Order ID'
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[220] flex items-center justify-center overflow-hidden overscroll-none p-4 sm:p-6"
+      dir={isRtl ? 'rtl' : 'ltr'}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
+      <button
+        type="button"
+        aria-label={closeLabel}
+        onClick={onClose}
+        className="absolute inset-0 cursor-default bg-black/75 backdrop-blur-sm"
+      />
+      <div className="relative max-h-[90vh] min-w-0 w-full max-w-[620px] overflow-hidden rounded-[12px] border border-white/10 bg-coal-900">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={closeLabel}
+          className="absolute top-4 end-4 z-10 flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M12 4 4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </button>
+        <div
+          data-modal-scroll
+          className="faq-accordion-scroll max-h-[90vh] min-w-0 w-full overflow-x-hidden overflow-y-auto overscroll-contain p-5 sm:p-8"
+        >
+          <div className="py-8 text-center" role="status" aria-live="polite">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="m5 13 4 4L19 7"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <h2
+              id={titleId}
+              className="mb-2 font-sans text-xl font-bold uppercase tracking-[0.04em] text-white"
+            >
+              {title}
+            </h2>
+            <p className="mx-auto max-w-[420px] text-sm text-white/80 leading-6">{message}</p>
+            {orderId ? (
+              <p className="mx-auto mt-3 max-w-[420px] text-sm text-white/80">
+                <span className="text-gold-500">{orderIdLabel}:</span>{' '}
+                <code className="font-mono tracking-wide text-white">{orderId}</code>
+              </p>
+            ) : null}
+            <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              {reportHref ? (
+                <a
+                  href={reportHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-[40px] border border-gold-500 bg-gold-500 px-8 py-3 text-sm font-semibold uppercase tracking-widest text-coal-900 transition-colors hover:border-gold-400 hover:bg-gold-400"
+                >
+                  {statusLabel}
+                </a>
+              ) : null}
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex items-center justify-center rounded-[40px] border border-white/20 px-8 py-3 text-sm uppercase tracking-widest text-white/80 transition-colors hover:border-white/40 hover:text-white"
+              >
+                {closeLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -189,7 +305,6 @@ export default function AuditBody({ locale, theme = 'dark', page = auditPage }: 
             <AuditFormPanel
               locale={locale}
               theme={theme}
-              bodyTone={bodyTone}
               tForm={tForm}
             />
           ) : null}
@@ -336,12 +451,10 @@ function AuditLanguageSelect({
 function AuditFormPanel({
   locale,
   theme,
-  bodyTone,
   tForm,
 }: {
   locale: string
   theme: 'light' | 'dark'
-  bodyTone: string
   tForm: (field: Record<string, string>) => string
 }) {
   const auditPage = useAuditPage()
@@ -363,6 +476,7 @@ function AuditFormPanel({
   const [consentError, setConsentError] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState('')
   const turnstileRef = useRef<TurnstileHandle>(null)
+  const [portalReady, setPortalReady] = useState(false)
   const {
     ok: fieldOk,
     checkingWebsite,
@@ -374,6 +488,10 @@ function AuditFormPanel({
     ensureWebsiteOk,
     resetChecks,
   } = useAuditFieldChecks(values, setFieldErrors)
+
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
 
   useEffect(() => {
     setValues((current) => ({ ...current, auditLanguage: defaultAuditLanguage }))
@@ -458,11 +576,8 @@ function AuditFormPanel({
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ??
       ''
 
-    const statusTab = openAuditReportStatusPlaceholder(locale)
-
     const websiteOk = await ensureWebsiteOk()
     if (!websiteOk) {
-      closeAuditReportStatusTab(statusTab)
       return
     }
 
@@ -484,14 +599,12 @@ function AuditFormPanel({
         }),
       })
       if (res.status === 429) {
-        closeAuditReportStatusTab(statusTab)
         const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
         setSubmitError(errPayload?.message || tForm(contactForm.rateLimited))
         setStatus('error')
         return
       }
       if (!res.ok) {
-        closeAuditReportStatusTab(statusTab)
         const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
         setSubmitError(
           res.status === 403
@@ -508,8 +621,6 @@ function AuditFormPanel({
       const sid = payload?.submissionId
       const href = sid != null ? `/audit/report/${sid}` : null
       setReportHref(href)
-      if (href) navigateAuditReportStatusTab(statusTab, href)
-      else closeAuditReportStatusTab(statusTab)
       setOrderId(
         payload?.orderId ||
           (sid != null ? `AUD-${sid}` : null),
@@ -526,7 +637,6 @@ function AuditFormPanel({
       resetChecks()
       setPrivacyConsent(false)
     } catch {
-      closeAuditReportStatusTab(statusTab)
       setSubmitError(tForm(contactForm.error))
       setStatus('error')
     } finally {
@@ -542,65 +652,6 @@ function AuditFormPanel({
       className="w-full"
     >
       <AuditFormShell isLight={isLight}>
-            {status === 'success' ? (
-              <div className="flex flex-col items-center gap-4 py-8 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden>
-                    <path
-                      d="m5 13 4 4L19 7"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <p className={`m-0 max-w-[420px] font-sans text-base font-light leading-7 ${bodyTone}`}>
-                  {tAudit(auditPage.form.success, locale)}
-                </p>
-                {orderId ? (
-                  <p className={`m-0 font-sans text-sm ${bodyTone}`}>
-                    <span className="text-gold-500">
-                      {locale === 'ru' ? 'ID заказа' : locale === 'he' ? 'מספר הזמנה' : 'Order ID'}:
-                    </span>{' '}
-                    <code className="font-mono tracking-wide">{orderId}</code>
-                  </p>
-                ) : null}
-                {reportHref ? (
-                  <a
-                    href={reportHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`mt-1 rounded-[40px] border px-8 py-3 text-sm uppercase tracking-widest transition-colors ${
-                      isLight
-                        ? 'border-erythro-500 text-erythro-500 hover:bg-erythro-500 hover:text-white'
-                        : 'border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-coal-900'
-                    }`}
-                  >
-                    {locale === 'ru'
-                      ? 'Смотреть статус отчёта'
-                      : locale === 'he'
-                        ? 'צפה בסטטוס הדוח'
-                        : 'View report status'}
-                  </a>
-                ) : null}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStatus('idle')
-                    setReportHref(null)
-                    setOrderId(null)
-                  }}
-                  className={`mt-2 rounded-[40px] border px-8 py-3 text-sm uppercase tracking-widest transition-colors ${
-                    isLight
-                      ? 'border-erythro-500 text-erythro-500 hover:bg-erythro-500 hover:text-white'
-                      : 'border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-coal-900'
-                  }`}
-                >
-                  {tForm(contactForm.close)}
-                </button>
-              </div>
-            ) : (
               <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-12 xl:gap-16">
                 <div className="flex flex-col gap-5 lg:pe-2">
                   <h2
@@ -831,8 +882,21 @@ function AuditFormPanel({
                   ) : null}
                 </form>
               </div>
-            )}
       </AuditFormShell>
+      {portalReady && status === 'success' ? (
+        <AuditFreeSuccessModal
+          locale={locale}
+          orderId={orderId}
+          reportHref={reportHref}
+          message={tAudit(auditPage.form.success, locale)}
+          closeLabel={tForm(contactForm.close)}
+          onClose={() => {
+            setStatus('idle')
+            setReportHref(null)
+            setOrderId(null)
+          }}
+        />
+      ) : null}
     </div>
   )
 }
