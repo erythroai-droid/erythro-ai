@@ -118,11 +118,49 @@ export const auditReportCopy = {
   } satisfies LocaleMap,
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+}
+
+/** Instant waiting chrome for the status tab (PIT-080). Same copy as `/audit/report/[id]`. */
+export function auditWaitingPlaceholderHtml(locale = 'en'): string {
+  const lang = locale === 'ru' || locale === 'he' ? locale : 'en'
+  const dir = lang === 'he' ? 'rtl' : 'ltr'
+  const title = escapeHtml(tReport(auditReportCopy.title, lang))
+  const queued = escapeHtml(tReport(auditReportCopy.queued, lang))
+  const waiting = escapeHtml(tReport(auditReportCopy.waiting, lang))
+  const progress = escapeHtml(tReport(auditReportCopy.progressLabel, lang))
+  const eta = escapeHtml(tReport(auditReportCopy.etaTypical, lang))
+  return `<!DOCTYPE html><html lang="${lang}" dir="${dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} | Erythro.ai</title><style>
+html,body{margin:0;min-height:100%;background:#0d0d0d;color:#fff;font-family:Inter,system-ui,sans-serif}
+main{box-sizing:border-box;max-width:40rem;margin:0 auto;padding:4.5rem 1.5rem 2rem}
+.kicker{margin:0;color:#ffe9c7;font-size:.875rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase}
+.wait{margin:1.25rem 0 0;font-size:1rem;color:rgba(255,255,255,.7)}
+.row{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.5rem 1rem;margin-top:1.5rem}
+.pct{margin:0;font-family:ui-monospace,monospace;font-size:.875rem;color:#ffe9c7}
+.track{position:relative;height:.625rem;margin-top:.75rem;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.15)}
+.fill{height:100%;width:8%;border-radius:999px;background:#ffe9c7}
+.eta{margin:.75rem 0 0;font-size:.875rem;color:rgba(255,255,255,.7)}
+</style></head><body><main>
+<p class="kicker">${queued}</p>
+<p class="wait">${waiting}</p>
+<div class="row"><p class="kicker">${progress}</p><p class="pct">4%</p></div>
+<div class="track" role="progressbar" aria-label="${progress}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="4"><div class="fill"></div></div>
+<p class="eta">${eta}</p>
+</main></body></html>`
+}
+
 /**
- * Open a blank tab during the click gesture. After `await fetch` the browser
+ * Open the status tab during the click gesture. After `await fetch` the browser
  * treats `window.open` as a popup and often blocks it (same class as PIT-067).
+ * Paint waiting UI immediately so the tab is never a blank `about:blank` (PIT-080).
  */
-export function openAuditReportStatusPlaceholder(): Window | null {
+export function openAuditReportStatusPlaceholder(locale = 'en'): Window | null {
   if (typeof window === 'undefined') return null
   const tab = window.open('about:blank', '_blank')
   if (!tab) return null
@@ -132,9 +170,15 @@ export function openAuditReportStatusPlaceholder(): Window | null {
     /* ignore */
   }
   try {
-    tab.document.title = 'Erythro.ai'
+    tab.document.open()
+    tab.document.write(auditWaitingPlaceholderHtml(locale))
+    tab.document.close()
   } catch {
-    /* ignore */
+    try {
+      tab.document.title = tReport(auditReportCopy.title, locale)
+    } catch {
+      /* ignore */
+    }
   }
   return tab
 }

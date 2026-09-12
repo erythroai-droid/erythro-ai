@@ -458,7 +458,7 @@ function AuditFormPanel({
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ??
       ''
 
-    const statusTab = openAuditReportStatusPlaceholder()
+    const statusTab = openAuditReportStatusPlaceholder(locale)
 
     const websiteOk = await ensureWebsiteOk()
     if (!websiteOk) {

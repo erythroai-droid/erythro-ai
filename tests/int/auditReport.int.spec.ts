@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   AUDIT_PROGRESS_EXPECTED_MS,
   AUDIT_REPORT_POLL_MS,
+  auditReportCopy,
+  auditWaitingPlaceholderHtml,
   estimateAuditProgressPercent,
   estimateAuditRemainingMinutes,
   formatAuditOrderId,
@@ -111,6 +113,23 @@ describe('tReportFill', () => {
     expect(
       tReportFill({ en: 'About {n} min left', ru: '', he: '' }, 'en', { n: 5 }),
     ).toBe('About 5 min left')
+  })
+})
+
+describe('auditWaitingPlaceholderHtml', () => {
+  it('paints waiting copy instead of a blank document', () => {
+    const html = auditWaitingPlaceholderHtml('en')
+    expect(html).toContain(auditReportCopy.waiting.en)
+    expect(html).toContain(auditReportCopy.queued.en)
+    expect(html).toContain('background:#0d0d0d')
+    expect(html).toContain('lang="en"')
+    expect(html).toContain('dir="ltr"')
+  })
+
+  it('uses RTL for Hebrew', () => {
+    const html = auditWaitingPlaceholderHtml('he')
+    expect(html).toContain('dir="rtl"')
+    expect(html).toContain(auditReportCopy.waiting.he)
   })
 })
 
