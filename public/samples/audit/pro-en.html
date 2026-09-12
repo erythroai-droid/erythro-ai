@@ -1,0 +1,2597 @@
+<!DOCTYPE html>
+<html lang="en" class="report-a4-4 tier-pro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Commercial QA & AI Conversion Audit — Erythro.ai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 0; }
+html {
+    font-size: calc(210mm / 1230);
+}
+html, body {
+    width: 210mm;
+    min-height: 297mm;
+}
+@media screen {
+    html, body {
+        width: 100%;
+        min-height: 100%;
+        background: #2a2a2a;
+    }
+    body {
+        display: flex;
+        justify-content: center;
+        padding: 24px 0 48px;
+    }
+    .page { zoom: 1.65; box-shadow: 0 8px 32px rgba(0,0,0,0.35); }
+}
+
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: #d9d9d9;
+        color: #1e1e1e;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    @media screen {
+        body {
+            display: flex;
+            justify-content: center;
+            padding: 40rem 24rem 64rem;
+        }
+    }
+    .page {
+        width: 1230rem;
+        background: #f3f3f3;
+        position: relative;
+        overflow: visible;
+        box-shadow: none;
+    }
+    .sheet-sidebar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 285rem;
+        background: #1e1e1e;
+        z-index: 90;
+    }
+    .brand {
+        position: absolute;
+        left: 41.5rem;
+        top: 18.5rem;
+        width: 202rem;
+        height: 63rem;
+        display: block;
+        text-decoration: none;
+    }
+    .brand img, .brand svg { width: 202rem; height: 63rem; display: block; }
+    .sheet-url {
+        position: absolute;
+        left: 0;
+        top: 100rem;
+        width: 285rem;
+        height: 40rem;
+        background: #e52421;
+        color: #fff;
+        font-size: 16rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .meta {
+        position: absolute;
+        left: 0;
+        top: 140rem;
+        width: 285rem;
+        height: 40rem;
+        color: #fff;
+        font-size: 10rem;
+        font-weight: 400;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        z-index: 91;
+    }
+    .meta strong { font-weight: 700; }
+    .gauge-wrap {
+        position: absolute;
+        left: 52.5rem;
+        top: 237rem;
+        width: 180rem;
+        height: 180rem;
+        z-index: 91;
+    }
+    .gauge-svg { width: 180rem; height: 180rem; display: block; }
+    .gauge-hole {
+        position: absolute;
+        inset: 0;
+        text-align: center;
+        pointer-events: none;
+    }
+    .gauge-score {
+        position: absolute;
+        top: 31rem;
+        left: 0; right: 0;
+        font-size: 50rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1;
+    }
+    .gauge-grade {
+        position: absolute;
+        top: 94rem;
+        left: 51rem;
+        width: 78rem;
+        height: 26rem;
+        background: #1e1e1e;
+        color: #ffe9c7;
+        font-size: 10rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50rem;
+        text-transform: uppercase;
+        direction: ltr;
+        unicode-bidi: isolate;
+    }
+    .gauge-sub {
+        position: absolute;
+        top: 126rem;
+        left: 0; right: 0;
+        font-size: 10rem;
+        font-weight: 500;
+        color: #fff;
+    }
+    .sheet-title {
+        position: relative;
+        margin-left: 285rem;
+        height: 100rem;
+        background: #e52421;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        z-index: 95;
+    }
+    .sheet-title h1 {
+        margin: 0;
+        font-size: 30rem;
+        font-weight: 700;
+        letter-spacing: 3rem;
+        line-height: 1.15;
+        text-transform: uppercase;
+    }
+    .sheet-title-fill {
+        margin-left: 285rem;
+        height: 40rem;
+        background: #1e1e1e;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        z-index: 95;
+        position: relative;
+    }
+    .main {
+        margin-left: 285rem;
+        width: 945rem;
+        padding: 30rem 37rem 40rem;
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 30rem;
+    }
+    /* Sibling of .main (not nested): z-index 96 beats sidebar/body::before so
+       white TOC labels paint on the black plaque — same as audit_22.08.26. */
+    .section-rows {
+        position: relative;
+        left: 0;
+        width: 1230rem;
+        margin-top: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 30rem;
+        z-index: 96;
+        padding-bottom: 20rem;
+    }
+    .section-row {
+        display: flex;
+        width: 1230rem;
+        margin-left: 0;
+        align-items: flex-start;
+        gap: 0;
+        position: relative;
+        z-index: 96;
+        /* Large sections must be allowed to split across A4 pages */
+        page-break-inside: auto;
+        break-inside: auto;
+    }
+    .section-toc {
+        width: 285rem;
+        flex-shrink: 0;
+        padding: 24rem 30rem 0;
+        position: relative;
+        z-index: 96;
+    }
+    .toc-item { display: flex; gap: 10rem; align-items: flex-start; }
+    .toc-bar {
+        width: 2rem;
+        height: 60rem;
+        background: #e52421;
+        border-radius: 10rem;
+        flex-shrink: 0;
+        margin-top: 3rem;
+    }
+    .toc-text {
+        font-size: 16rem;
+        font-weight: 700;
+        line-height: 24rem;
+        text-transform: uppercase;
+        color: #fff;
+        width: 213rem;
+    }
+    .section-content {
+        width: 945rem;
+        flex-shrink: 0;
+        padding-left: 37rem;
+        padding-right: 37rem;
+        box-sizing: border-box;
+    }
+
+    /* Diagnostics card */
+    .chart-card {
+        width: 870rem;
+        background: #fff;
+        border: 1rem solid #e8e8e8;
+        border-radius: 10rem;
+        padding: 16rem 10rem 24rem;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .diag-title {
+        text-align: center;
+        text-transform: uppercase;
+        margin: 0 0 4rem;
+        font-weight: 200;
+        font-size: 32rem;
+        letter-spacing: 6.4rem;
+        line-height: 30rem;
+        color: #1e1e1e;
+    }
+    .diag-title span { color: #e52421; }
+    .diag-sub {
+        text-align: center;
+        text-transform: uppercase;
+        font-weight: 200;
+        font-size: 16rem;
+        letter-spacing: 3.2rem;
+        color: #8c806d;
+        margin: 0 0 18rem;
+        line-height: 30rem;
+    }
+    .chart-body {
+        display: grid;
+        grid-template-columns: max-content minmax(0, 1fr);
+        column-gap: 10rem;
+        align-items: stretch;
+        padding: 0 16rem 8rem;
+        box-sizing: border-box;
+    }
+    .ticks {
+        grid-column: 2;
+        display: flex;
+        justify-content: space-between;
+        font-size: 10rem;
+        color: #bababa;
+        text-transform: uppercase;
+        line-height: 12rem;
+        padding: 0;
+        min-width: 0;
+    }
+    .chart-grid-wrap {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: subgrid;
+        position: relative;
+        margin: 6rem 0;
+    }
+    .chart-grid {
+        grid-column: 2;
+        grid-row: 1;
+        position: absolute;
+        inset: 0;
+        display: flex;
+        justify-content: space-between;
+        pointer-events: none;
+        z-index: 0;
+    }
+    .chart-grid i {
+        width: 0;
+        border-left: 1rem solid #e8e8e8;
+        height: 100%;
+        display: block;
+    }
+    .chart-rows {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        display: grid;
+        grid-template-columns: subgrid;
+        column-gap: 10rem;
+        row-gap: 10rem;
+        position: relative;
+        z-index: 1;
+    }
+    .chart-label {
+        font-size: 14rem;
+        font-weight: 300;
+        text-align: right;
+        line-height: 24rem;
+        color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        min-height: 24rem;
+        width: max-content;
+        max-width: 100%;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+    /* Desktop: keep scale names on one line even if copy has a mobile break. */
+    .chart-label br { display: none; }
+    .bar-track {
+        height: 24rem;
+        background: #f9f9f9;
+        border: 1rem solid #e8e8e8;
+        overflow: hidden;
+        min-width: 0;
+    }
+    .bar-fill { height: 100%; }
+    .bar-green { background: #22bf16; }
+    .bar-warn { background: #fa3; }
+    .bar-bad { background: #e52421; }
+
+    /* Top-3 cards */
+    .findings-grid {
+        display: flex;
+        gap: 30rem;
+        width: 870rem;
+    }
+    .finding-card {
+        width: 270rem;
+        min-height: 450rem;
+        background: #fff;
+        border: 1rem solid #e8e8e8;
+        border-radius: 10rem;
+        padding: 20rem;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        box-sizing: border-box;
+        overflow: hidden;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+    .finding-head {
+        display: flex;
+        gap: 14rem;
+        align-items: center;
+        margin-bottom: 20rem;
+        min-height: 60rem;
+    }
+    .finding-idx {
+        width: 60rem;
+        height: 60rem;
+        background: #e52421;
+        border-radius: 5rem;
+        color: #fff;
+        font-size: 30rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        line-height: 1;
+    }
+    .finding-head-title {
+        font-size: 16rem;
+        font-weight: 700;
+        line-height: 20rem;
+        text-transform: uppercase;
+        color: #000;
+        margin: 0;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+    .finding-box {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        min-height: 102rem;
+        padding: 10rem 12rem 10rem 18rem;
+        position: relative;
+        margin-bottom: 10rem;
+        font-size: 11rem;
+        line-height: 18rem;
+        color: #000;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+    .finding-box::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 2rem;
+    }
+    .finding-box.problem { background: #fef3f3; }
+    .finding-box.problem::before { background: #e52421; }
+    .finding-box.impact { background: #fffaf5; }
+    .finding-box.impact::before { background: #ff7900; }
+    .finding-box.solution { background: #f4fff3; }
+    .finding-box.solution::before { background: #22bf16; }
+    .finding-box strong { font-weight: 700; }
+    .finding-box .issue {
+        display: block;
+        font-weight: 500;
+        margin-top: 4rem;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+
+    /* Check cards */
+    .check-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 870rem;
+        gap: 16rem;
+        margin: 0 0 18rem;
+    }
+    .check-count {
+        margin: 0;
+        font-size: 16rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        color: #1e1e1e;
+        white-space: nowrap;
+    }
+    .check-filters {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8rem;
+        flex-wrap: wrap;
+    }
+    .check-filter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 30rem;
+        padding: 0 14rem;
+        border-radius: 30rem;
+        border: 1rem solid #e8e8e8;
+        background: #fff;
+        color: #1e1e1e;
+        font-family: inherit;
+        font-size: 11rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        line-height: 1;
+        cursor: pointer;
+    }
+    .check-filter.is-active {
+        background: #1e1e1e;
+        border-color: #1e1e1e;
+        color: #fff;
+    }
+    .check-stack { display: flex; flex-direction: column; gap: 30rem; width: 870rem; }
+    .check-group {
+        display: flex;
+        flex-direction: column;
+        gap: 30rem;
+        width: 870rem;
+    }
+    .check-group.is-hidden { display: none; }
+    .check-card {
+        background: #fff;
+        border: 1rem solid #e8e8e8;
+        border-radius: 10rem;
+        padding: 20rem 20rem 8rem;
+        width: 870rem;
+    }
+    .check-top {
+        display: flex;
+        align-items: center;
+        gap: 20rem;
+        margin-bottom: 22rem;
+        min-height: 30rem;
+    }
+    .check-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 106rem;
+        height: 30rem;
+        padding: 0 12rem;
+        border-radius: 30rem;
+        color: #fff;
+        font-size: 11rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+    .check-badge.good { background: #22bf16; border: 1rem solid #1ca112; }
+    .check-badge.bad { background: #e52421; border: 1rem solid #bf0d0a; }
+    .check-badge.warn { background: #ff7900; border: 1rem solid #f0790e; }
+    .check-name {
+        font-size: 16rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        line-height: 23rem;
+        color: #000;
+        margin: 0;
+    }
+    .check-result {
+        padding: 16rem 20rem;
+        min-height: 102rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        border-radius: 0 3rem 3rem 0;
+    }
+    .check-result::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 2rem;
+    }
+    .check-result.good { background: #f4fff3; border: 1rem solid #dff3dd; border-left: none; }
+    .check-result.good::before { background: #22bf16; }
+    .check-result.bad { background: #fef3f3; border: 1rem solid #ffdbda; border-left: none; }
+    .check-result.bad::before { background: #e52421; }
+    .check-result.warn { background: #fffaf5; border: 1rem solid #f8eee4; border-left: none; }
+    .check-result.warn::before { background: #ff7900; }
+    .check-result-label {
+        font-size: 10rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        margin: 0 0 2rem;
+        color: #1e1e1e;
+    }
+    .check-result-text {
+        font-size: 14rem;
+        font-weight: 400;
+        line-height: 24rem;
+        color: #000;
+        margin: 0;
+    }
+    .check-acc {
+        margin: 10rem 0 0;
+        border: 0;
+    }
+    .check-acc > summary {
+        display: flex;
+        align-items: center;
+        gap: 8rem;
+        font-size: 10rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        color: #000;
+        list-style: none;
+        cursor: pointer;
+        font-family: inherit;
+        padding: 8rem 0 10rem;
+        user-select: none;
+    }
+    .check-acc > summary::-webkit-details-marker { display: none; }
+    .check-acc > summary::marker { content: ""; }
+    .check-acc > summary img { width: 16rem; height: 16rem; display: block; }
+    .check-acc > summary .arrow {
+        width: 9rem;
+        height: 9rem;
+        transition: transform 0.15s ease;
+    }
+    .check-acc[open] > summary .arrow { transform: rotate(180deg); }
+    .rec-panel {
+        background: #f9f9f9;
+        border-radius: 8rem;
+        padding: 12rem 16rem 16rem;
+        margin: 0 0 12rem;
+    }
+    .rec-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10rem;
+    }
+    .rec-chip {
+        display: inline-flex;
+        align-items: center;
+        height: 20rem;
+        padding: 0 10rem;
+        border-radius: 20rem;
+        background: #fff;
+        border: 1rem solid #e8e8e8;
+        font-size: 10rem;
+        font-weight: 500;
+        color: #8c8c8c;
+        text-transform: lowercase;
+    }
+    .rec-copy {
+        display: inline-flex;
+        align-items: center;
+        gap: 6rem;
+        background: none;
+        border: 0;
+        padding: 2rem 0;
+        cursor: pointer;
+        font-size: 10rem;
+        font-weight: 500;
+        color: #8c8c8c;
+        font-family: inherit;
+        text-transform: lowercase;
+        position: relative;
+        z-index: 2;
+    }
+    .rec-copy.is-copied { color: #22bf16; }
+    .rec-copy img { width: 16rem; height: 16rem; display: block; }
+    .rec-body {
+        margin: 0;
+        font-family: inherit;
+        font-size: 12rem;
+        font-weight: 400;
+        line-height: 18rem;
+        color: #1e1e1e;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .check-pages {
+        font-size: 8rem;
+        font-weight: 400;
+        text-transform: uppercase;
+        color: #000;
+        margin: 0;
+        padding: 8rem 0 4rem;
+        line-height: 16rem;
+        text-align: right;
+        border-top: 1rem solid #e8e8e8;
+    }
+    .metrics-card .metrics-note {
+        margin: 0 0 10rem;
+        padding: 8rem 4rem 4rem;
+        font-size: 11rem;
+        font-weight: 500;
+        line-height: 1.45;
+        color: #6b6254;
+        text-transform: none;
+        letter-spacing: 0;
+        border-top: 1rem solid #e8e8e8;
+    }
+
+    /* Metrics */
+    .metrics-card {
+        width: 870rem;
+        background: #fff;
+        border: 1rem solid #e8e8e8;
+        border-radius: 10rem;
+        padding: 20rem 21rem 8rem;
+        overflow: visible;
+    }
+    table.metrics {
+        width: 828rem;
+        border-collapse: collapse;
+        table-layout: fixed;
+        margin: 0 auto 8rem;
+    }
+    table.metrics col.col-device { width: 154rem; }
+    table.metrics col.col-perf { width: 118rem; }
+    table.metrics col.col-a11y { width: 86rem; }
+    table.metrics col.col-bp { width: 86rem; }
+    table.metrics col.col-seo { width: 44rem; }
+    table.metrics col.col-fcp { width: 58rem; }
+    table.metrics col.col-lcp { width: 58rem; }
+    table.metrics col.col-cls { width: 50rem; }
+    table.metrics col.col-agent { width: 64rem; }
+    table.metrics td.agent-browse {
+        text-align: center;
+        vertical-align: middle;
+        padding: 8rem 2rem;
+    }
+    table.metrics th.col-agent,
+    table.metrics thead th:last-child {
+        font-size: 9rem;
+        padding: 6rem 2rem;
+    }
+    table.metrics td.agent-browse .pill {
+        font-size: 11rem;
+        font-weight: 700;
+        min-width: 0;
+        padding: 4rem 6rem;
+    }
+    table.metrics th {
+        background: #1e1e1e;
+        color: #fff;
+        font-size: 9rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        text-align: center;
+        padding: 6rem 4rem;
+        height: 44rem;
+        border-right: 1rem solid #fff;
+        vertical-align: middle;
+        line-height: 12rem;
+        white-space: normal;
+        overflow: visible;
+        word-break: keep-all;
+    }
+    table.metrics th:first-child { text-align: center; padding-left: 6rem; padding-right: 6rem; }
+    table.metrics th:last-child { border-right: none; }
+    table.metrics td {
+        background: #f9f9f9;
+        border: 1rem solid #e8e8e8;
+        text-align: center;
+        height: 40rem;
+        font-size: 11rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #000;
+        vertical-align: middle;
+    }
+    table.metrics td.device { text-align: center; }
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40rem;
+        height: 24rem;
+        border-radius: 20rem;
+        color: #fff;
+        font-size: 11rem;
+        font-weight: 700;
+    }
+    .pill-good { background: #22bf16; border: 1rem solid #1ca112; }
+    .pill-warn { background: #ff7900; border: 1rem solid #f0790e; }
+    .pill-bad { background: #e52421; border: 1rem solid #bf0d0a; }
+
+    .section-scope .toc-item {
+        align-items: stretch;
+        min-height: 72rem;
+    }
+    .section-scope .toc-bar {
+        height: auto;
+        min-height: 72rem;
+        margin-top: 0;
+        align-self: stretch;
+    }
+    .section-scope .toc-text {
+        line-height: 24rem;
+    }
+    .scope {
+        width: 870rem;
+        background: #fff;
+        border: 1rem solid #e8e8e8;
+        border-radius: 10rem;
+        padding: 28rem 32rem 32rem;
+        box-sizing: border-box;
+    }
+    .scope-lead {
+        font-size: 14rem;
+        line-height: 24rem;
+        color: #1e1e1e;
+        margin: 0 0 20rem;
+    }
+    .scope-lead strong { font-weight: 700; }
+    .scope-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10rem;
+        margin: 0 0 24rem;
+    }
+    .scope-chip {
+        font-size: 11rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        line-height: 16rem;
+        text-transform: uppercase;
+        color: #ffffff;
+        background: #1e1e1e;
+        border-radius: 6rem;
+        padding: 8rem 14rem;
+    }
+    .scope-chip-n { font-weight: 800; letter-spacing: 0; }
+    .scope-items {
+        list-style: none;
+        margin: 0 0 20rem;
+        padding: 0;
+        border-top: 1rem solid #e8e8e8;
+    }
+    .scope-items li {
+        font-size: 13rem;
+        line-height: 24rem;
+        margin: 0;
+        padding: 14rem 0 14rem 16rem;
+        border-bottom: 1rem solid #e8e8e8;
+        position: relative;
+    }
+    .scope-items li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 22rem;
+        width: 6rem;
+        height: 6rem;
+        border-radius: 50%;
+        background: #e52421;
+    }
+    .scope-item-k {
+        display: block;
+        font-weight: 700;
+        font-size: 13rem;
+        line-height: 24rem;
+        color: #1e1e1e;
+        margin: 0 0 2rem;
+    }
+    .scope-item-v {
+        display: block;
+        font-weight: 400;
+        font-size: 13rem;
+        line-height: 24rem;
+        color: #3f3f3f;
+    }
+    .scope-note {
+        font-size: 13rem;
+        line-height: 24rem;
+        color: #3f3f3f;
+        margin: 0;
+        padding: 14rem 16rem;
+        border-left: 3rem solid #e52421;
+        background: #f7f7f7;
+    }
+    .scope-cta {
+        margin: 16rem 0 0;
+        text-align: center;
+    }
+    .scope-cta-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 320rem;
+        max-width: 100%;
+        min-height: 44rem;
+        padding: 10rem 22rem;
+        border-radius: 24rem;
+        background: #e52421;
+        color: #fff;
+        font-size: 12rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        text-decoration: none;
+        text-align: center;
+        line-height: 1.25;
+        box-shadow: 0 4rem 14rem rgba(229, 36, 33, 0.25);
+        box-sizing: border-box;
+    }
+
+    .footer {
+        width: 1230rem;
+        background: #e52421;
+        color: #fff;
+        text-align: center;
+        padding: 20rem 24rem 16rem;
+        position: relative;
+        z-index: 100;
+    }
+    .cta-title {
+        font-size: 16rem;
+        font-weight: 700;
+        line-height: 21rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10rem;
+        margin-bottom: 8rem;
+    }
+    .cta-title img { width: 96rem; height: 21rem; display: block; }
+    .cta-sub {
+        font-size: 12rem;
+        font-weight: 400;
+        line-height: 18rem;
+        margin: 0 auto 10rem;
+        max-width: 1220rem;
+    }
+    .cta-buttons { display: flex; justify-content: center; margin-top: 12rem; }
+    .footer-actions {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        column-gap: 28rem;
+        width: 100%;
+        max-width: 1180rem;
+        margin: 12rem auto 4rem;
+        direction: ltr;
+    }
+    .footer-actions .footer-contact:first-child { justify-self: end; }
+    .footer-actions .btn { justify-self: center; }
+    .footer-actions .footer-contact:last-child { justify-self: start; }
+    .footer-contact {
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 6rem;
+        color: #fff;
+        text-decoration: none;
+        white-space: nowrap;
+        font-size: 14rem;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+    .footer-contact-label {
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        opacity: 0.85;
+        text-transform: none;
+    }
+    .footer-contact-value {
+        direction: ltr;
+        unicode-bidi: isolate;
+    }
+    html.rtl-report .footer-contact { direction: rtl; }
+    html.rtl-report .footer-contact-label { direction: rtl; unicode-bidi: isolate; }
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 320rem;
+        height: 48rem;
+        padding: 0 32rem;
+        border-radius: 28rem;
+        font-size: 16rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: #ffffff;
+        background: transparent;
+        border: 2rem solid #ffffff;
+        line-height: 1;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+    }
+    .copy {
+        font-size: 11rem;
+        font-weight: 400;
+        line-height: 16rem;
+        margin-top: 10rem;
+        opacity: 0.95;
+    }
+
+    @page {
+        size: A4;
+        margin: 0;
+    }
+
+    /* Layout table: thead/tfoot repeat on every printed page and reserve flow
+       space so content never overlaps fixed header/footer chrome. */
+    .sheet {
+        width: 1230rem;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    .sheet-head,
+    .sheet-foot,
+    .sheet-body {
+        padding: 0;
+        margin: 0;
+        border: none;
+        vertical-align: top;
+    }
+    /* Screen: chrome stays in normal flow (title/fill above table, footer below).
+       Print: title/fill/footer become fixed — spacers open only then. */
+    .sheet-head,
+    .sheet-foot { height: 0; }
+
+    .chart-card,
+    .finding-card,
+    .check-card,
+    .metrics-card,
+    .section-row.section-scope,
+    .scope {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    .metrics tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    @media print {
+        html, body { background: #f3f3f3; margin: 0; padding: 0; }
+        .page {
+            box-shadow: none;
+            min-height: 0;
+        }
+
+        .sheet-head { height: 160rem; }
+        .sheet-foot { height: 140rem; }
+        .main { margin-top: -20rem; }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 285rem;
+            background: #1e1e1e;
+            z-index: 89;
+        }
+        .sheet-sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            height: auto;
+            background: transparent;
+            z-index: 90;
+        }
+        .meta,
+        .gauge-wrap { z-index: 91; }
+        .sheet-title,
+        .sheet-title-fill { position: fixed; z-index: 95; }
+        .sheet-title {
+            top: 0;
+            left: 285rem;
+            right: 0;
+            margin-left: 0;
+            width: auto;
+        }
+        .sheet-title-fill {
+            top: 100rem;
+            left: 285rem;
+            right: 0;
+            margin-left: 0;
+            width: auto;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+        .gauge-wrap,
+        .meta { position: absolute; }
+
+        html.rtl-report body::before {
+            left: auto;
+            right: 0;
+        }
+        html.rtl-report .sheet-title,
+        html.rtl-report .sheet-title-fill {
+            left: 0;
+            right: 285rem;
+            margin-left: 0;
+            margin-right: 0;
+            width: auto;
+        }
+    }
+
+    html.tier-diagnostic .check-acc:not(.check-acc-locked) { display: none !important; }
+    html.tier-diagnostic .check-acc-locked {
+        display: block !important;
+        margin-top: 10rem;
+    }
+    html.tier-diagnostic .rec-panel-locked {
+        position: relative;
+        overflow: hidden;
+        min-height: 148rem;
+        border-radius: 8rem;
+        background: #f7f7f7;
+    }
+    html.tier-diagnostic .rec-locked-blur {
+        padding: 16rem 18rem 20rem;
+        pointer-events: none;
+        user-select: none;
+    }
+    html.tier-diagnostic .rec-locked-blur .check-lock-fill {
+        display: block;
+        height: 12rem;
+        width: 78%;
+        margin: 0 0 10rem;
+        border-radius: 6rem;
+        background: linear-gradient(90deg, #e4e4e4, #cfcfcf, #e4e4e4);
+        filter: blur(4rem);
+        opacity: 0.95;
+    }
+    html.tier-diagnostic .rec-locked-blur .check-lock-fill.wide {
+        height: 56rem;
+        width: 94%;
+        margin-bottom: 0;
+    }
+    html.tier-diagnostic .rec-locked-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.48);
+        z-index: 2;
+        padding: 12rem;
+        box-sizing: border-box;
+    }
+    html.tier-diagnostic .checks-unlock-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 480rem;
+        max-width: 100%;
+        min-height: 44rem;
+        height: auto;
+        padding: 10rem 24rem;
+        border-radius: 24rem;
+        background: #e52421;
+        color: #fff;
+        font-size: 11rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        text-decoration: none;
+        text-align: center;
+        line-height: 1.3;
+        box-shadow: 0 4rem 14rem rgba(229, 36, 33, 0.25);
+        white-space: normal;
+        box-sizing: border-box;
+    }
+    html.tier-free .check-acc { display: none !important; }
+    html.tier-free .section-free-locked {
+        width: 870rem;
+    }
+    html.tier-free .free-locked-cta {
+        text-align: center;
+        padding: 8rem 0 4rem;
+    }
+    html.tier-free .checks-unlock-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 320rem;
+        height: 48rem;
+        padding: 0 28rem;
+        border-radius: 24rem;
+        background: #e52421;
+        color: #fff;
+        font-size: 13rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        text-decoration: none;
+        box-shadow: 0 4rem 16rem rgba(229, 36, 33, 0.28);
+    }
+    html.tier-free .proposal-unlock-sub {
+        margin: 10rem 0 0;
+        font-size: 12rem;
+        color: #3f3f3f;
+    }
+    html.tier-free .btn-unlock {
+        min-width: 320rem;
+        height: 48rem;
+        font-size: 14rem;
+        background: #ffffff;
+        color: #e52421;
+        border: none;
+    }
+    html.tier-free .proposal-footer-watermark {
+        font-size: 11rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.85;
+        margin-bottom: 8rem;
+    }
+    html.pdf-export .rec-copy { display: none !important; }
+    html.pdf-export .check-filters,
+    html.pdf-export .check-toolbar { display: none !important; }
+    html.pdf-export .check-group.is-hidden { display: flex !important; }
+    html.pdf-export details.check-acc { display: block !important; }
+    html.pdf-export details.check-acc > summary { pointer-events: none; }
+    html.pdf-export details.check-acc .rec-panel { display: block !important; }
+    html.pdf-export details.check-acc .arrow { display: none !important; }
+
+    /* Hebrew: mirror chrome like audit-report_he.html (sidebar right, content left) */
+    html.rtl-report { direction: rtl; }
+    html.rtl-report .page { direction: ltr; }
+    html.rtl-report .sheet-sidebar { left: auto; right: 0; }
+    html.rtl-report .brand { left: auto; right: 41.5rem; }
+    html.rtl-report .sheet-url,
+    html.rtl-report .meta { left: auto; right: 0; }
+    html.rtl-report .meta {
+        direction: rtl;
+        padding: 0 12rem;
+        box-sizing: border-box;
+        gap: 4rem 8rem;
+        flex-wrap: wrap;
+        line-height: 1.35;
+        height: auto;
+        min-height: 40rem;
+    }
+    html.rtl-report .meta .meta-k {
+        margin-inline-end: 0.75em;
+        white-space: nowrap;
+    }
+    html.rtl-report .meta .meta-datetime,
+    html.rtl-report .meta .meta-locales {
+        direction: ltr;
+        unicode-bidi: isolate;
+        white-space: nowrap;
+    }
+    html.rtl-report .sheet-url { direction: ltr; unicode-bidi: isolate; }
+    html.rtl-report .gauge-wrap { left: auto; right: 52.5rem; }
+    html.rtl-report .gauge-grade {
+        direction: ltr;
+        unicode-bidi: isolate;
+    }
+    html.rtl-report .sheet-title,
+    html.rtl-report .sheet-title-fill {
+        margin-left: 0;
+        margin-right: 285rem;
+        width: 945rem;
+    }
+    html.rtl-report .sheet-title h1 { direction: rtl; }
+    html.rtl-report .main {
+        margin-left: 0;
+        margin-right: 285rem;
+        width: 945rem;
+    }
+    html.rtl-report .section-row {
+        direction: rtl;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    html.rtl-report .section-toc {
+        padding: 24rem 30rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    html.rtl-report .toc-item {
+        direction: rtl;
+        justify-content: flex-start;
+    }
+    html.rtl-report .toc-text {
+        direction: rtl;
+        text-align: right;
+    }
+    /* Match Diagnostics inset: same usable width as .main (945 with 37rem gutters) */
+    html.rtl-report .section-content {
+        width: 945rem;
+        padding-left: 37rem;
+        padding-right: 37rem;
+        box-sizing: border-box;
+        direction: rtl;
+    }
+    html.rtl-report .findings-grid,
+    html.rtl-report .metrics-card,
+    html.rtl-report .check-stack,
+    html.rtl-report .scope {
+        margin-left: auto;
+        margin-right: auto;
+        width: 870rem;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    html.rtl-report .diag-title,
+    html.rtl-report .diag-sub { direction: rtl; }
+    /*
+     * Same tracks as LTR: max-content labels + 1fr bars, equal padding-inline.
+     * Labels sit on the right of the bars; flush to the bar-adjacent (physical left) edge.
+     */
+    html.rtl-report .chart-body,
+    html.rtl-report .chart-rows {
+        direction: rtl;
+    }
+    html.rtl-report .ticks {
+        grid-column: 2;
+        direction: rtl;
+    }
+    html.rtl-report .chart-label {
+        direction: rtl;
+        unicode-bidi: isolate;
+        text-align: left;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 0;
+        width: max-content;
+        max-width: 100%;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+    html.rtl-report .bar-track {
+        direction: rtl;
+    }
+    html.rtl-report .findings-grid { direction: rtl; }
+    html.rtl-report .finding-card,
+    html.rtl-report .finding-head,
+    html.rtl-report .finding-head-title,
+    html.rtl-report .finding-box { direction: rtl; text-align: right; }
+    html.rtl-report .finding-box { padding: 10rem 18rem 10rem 12rem; }
+    html.rtl-report .finding-box::before {
+        left: auto;
+        right: 0;
+    }
+    html.rtl-report .check-card,
+    html.rtl-report .check-top,
+    html.rtl-report .check-name,
+    html.rtl-report .check-result,
+    html.rtl-report .check-acc > summary,
+    html.rtl-report .rec-panel,
+    html.rtl-report .rec-toolbar,
+    html.rtl-report .rec-body,
+    html.rtl-report .scope-lead,
+    html.rtl-report .scope-note,
+    html.rtl-report .scope-stats,
+    html.rtl-report .scope-chip,
+    html.rtl-report .scope-item-k,
+    html.rtl-report .scope-item-v { direction: rtl; text-align: right; }
+    html.rtl-report .scope-cta { direction: rtl; text-align: center; }
+    html.rtl-report .check-result {
+        border-radius: 3rem 0 0 3rem;
+    }
+    html.rtl-report .check-result.good,
+    html.rtl-report .check-result.bad,
+    html.rtl-report .check-result.warn {
+        border-left: 1rem solid;
+        border-right: none;
+    }
+    html.rtl-report .check-result.good { border-left-color: #dff3dd; }
+    html.rtl-report .check-result.bad { border-left-color: #ffdbda; }
+    html.rtl-report .check-result.warn { border-left-color: #f8eee4; }
+    html.rtl-report .check-result::before {
+        left: auto;
+        right: 0;
+    }
+    html.rtl-report .check-pages { text-align: left; direction: rtl; }
+    html.rtl-report .scope-items { padding: 0; }
+    html.rtl-report .scope-items li { padding: 14rem 16rem 14rem 0; }
+    html.rtl-report .scope-items li::before {
+        left: auto;
+        right: 0;
+    }
+    html.rtl-report .scope-note {
+        border-left: none;
+        border-right: 3rem solid #e52421;
+    }
+    html.rtl-report table.metrics {
+        direction: rtl;
+    }
+    html.rtl-report table.metrics th,
+    html.rtl-report table.metrics td {
+        text-align: center;
+    }
+    table.metrics th:first-child {
+        text-align: center;
+        padding-left: 6rem;
+        padding-right: 6rem;
+    }
+    html.rtl-report table.metrics th:first-child,
+    html.rtl-report table.metrics td.device {
+        text-align: right;
+        direction: rtl;
+        padding-right: 12rem;
+        padding-left: 6rem;
+    }
+    html.rtl-report table.metrics td:not(.device),
+    html.rtl-report table.metrics .pill {
+        direction: ltr;
+        unicode-bidi: isolate;
+    }
+    html.rtl-report table.metrics th:first-child {
+        border-right: none;
+    }
+    html.rtl-report table.metrics th:last-child {
+        border-right: 1rem solid #fff;
+    }
+    table.metrics col.col-device { width: 154rem; }
+    table.metrics col.col-perf { width: 118rem; }
+    table.metrics col.col-a11y { width: 86rem; }
+    table.metrics col.col-bp { width: 86rem; }
+    table.metrics col.col-seo { width: 44rem; }
+    table.metrics col.col-fcp { width: 58rem; }
+    table.metrics col.col-lcp { width: 58rem; }
+    table.metrics col.col-cls { width: 50rem; }
+    table.metrics col.col-agent { width: 64rem; }
+    table.metrics td.agent-browse {
+        text-align: center;
+        vertical-align: middle;
+        padding: 8rem 2rem;
+    }
+    table.metrics th.col-agent,
+    table.metrics thead th:last-child {
+        font-size: 9rem;
+        padding: 6rem 2rem;
+    }
+    table.metrics th {
+        font-size: 9rem;
+        text-transform: uppercase;
+        line-height: 12rem;
+    }
+    table.metrics .pill {
+        font-size: 11rem;
+    }
+    table.metrics td.agent-browse .pill {
+        font-size: 11rem;
+        font-weight: 700;
+        min-width: 0;
+        padding: 4rem 6rem;
+    }
+    /* Desktop default: wide Lighthouse table. Compact (transposed) is mobile-only. */
+    table.metrics-compact { display: none; }
+    table.metrics-wide { display: table; }
+    .metrics-card .metrics-note {
+        margin: 0 0 10rem;
+        padding: 8rem 4rem 4rem;
+        font-size: 11rem;
+        font-weight: 500;
+        line-height: 1.45;
+        color: #6b6254;
+        text-transform: none;
+        letter-spacing: 0;
+        border-top: 1rem solid #e8e8e8;
+    }
+    .finding-card.gemini-funnel {
+        width: 870rem;
+        min-height: 0;
+        box-sizing: border-box;
+        margin: 0;
+    }
+    .gemini-funnel-body {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16rem;
+        flex: 1;
+        min-width: 0;
+    }
+    .gemini-funnel .finding-box {
+        width: auto;
+        min-height: 120rem;
+        margin-bottom: 0;
+        box-sizing: border-box;
+    }
+    .gemini-funnel .finding-box ul {
+        margin: 6rem 0 0;
+        padding-inline-start: 1.1em;
+    }
+    .gemini-funnel .finding-box li {
+        margin: 0 0 4rem;
+    }
+    .gemini-funnel-note {
+        margin: 12rem 0 0;
+        font-size: 12rem;
+        font-weight: 500;
+        line-height: 1.5;
+        color: #6b6254;
+    }
+    html.rtl-report .gemini-funnel,
+    html.rtl-report .gemini-funnel-body,
+    html.rtl-report .gemini-funnel-note { direction: rtl; }
+    html.rtl-report .check-toolbar { direction: rtl; }
+    html.rtl-report .check-filters { justify-content: flex-start; }
+    html.rtl-report .footer .cta-title,
+    html.rtl-report .footer .cta-sub,
+    html.rtl-report .footer .copy { direction: rtl; }
+    html.rtl-report .footer .copy { text-align: center; }
+    html.rtl-report .footer-contact { direction: rtl; }
+    html.rtl-report .footer-contact-label { direction: rtl; unicode-bidi: isolate; }
+
+    .footer-actions {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        column-gap: 28rem;
+        width: 100%;
+        max-width: 1180rem;
+        margin: 12rem auto 4rem;
+        direction: ltr;
+    }
+    .footer-actions .footer-contact:first-child { justify-self: end; }
+    .footer-actions .btn { justify-self: center; }
+    .footer-actions .footer-contact:last-child { justify-self: start; }
+    .footer-contact {
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 6rem;
+        color: #fff;
+        text-decoration: none;
+        white-space: nowrap;
+        font-size: 14rem;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+    .footer-contact-label {
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        opacity: 0.85;
+        text-transform: none;
+    }
+    .footer-contact-value {
+        direction: ltr;
+        unicode-bidi: isolate;
+    }
+    .footer-contact:hover .footer-contact-value { text-decoration: underline; }
+
+    .check-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 870rem;
+        gap: 16rem;
+        margin: 0 0 18rem;
+    }
+    .check-count {
+        margin: 0;
+        font-size: 16rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        color: #1e1e1e;
+        white-space: nowrap;
+    }
+    .check-filters {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8rem;
+        flex-wrap: wrap;
+    }
+    .check-filter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 30rem;
+        padding: 0 14rem;
+        border-radius: 30rem;
+        border: 1rem solid #e8e8e8;
+        background: #fff;
+        color: #1e1e1e;
+        font-family: inherit;
+        font-size: 11rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        line-height: 1;
+        cursor: pointer;
+    }
+    .check-filter.is-active {
+        background: #1e1e1e;
+        border-color: #1e1e1e;
+        color: #fff;
+    }
+    .check-stack { gap: 30rem; }
+    .section-scope .toc-item {
+        align-items: stretch;
+        min-height: 72rem;
+    }
+    .section-scope .toc-bar {
+        height: auto;
+        min-height: 72rem;
+        margin-top: 0;
+        align-self: stretch;
+    }
+    .section-scope .toc-text { line-height: 24rem; }
+    .scope-lead { font-size: 14rem; line-height: 24rem; margin: 0 0 20rem; }
+    .scope-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10rem;
+        margin: 0 0 24rem;
+    }
+    .scope-chip {
+        font-size: 11rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        line-height: 16rem;
+        text-transform: uppercase;
+        color: #ffffff;
+        background: #1e1e1e;
+        border-radius: 6rem;
+        padding: 8rem 14rem;
+    }
+    .scope-chip-n { font-weight: 800; letter-spacing: 0; }
+    .scope-items {
+        list-style: none;
+        margin: 0 0 20rem;
+        padding: 0;
+        border-top: 1rem solid #e8e8e8;
+    }
+    .scope-items li {
+        font-size: 13rem;
+        line-height: 24rem;
+        margin: 0;
+        padding: 14rem 0 14rem 16rem;
+        border-bottom: 1rem solid #e8e8e8;
+        position: relative;
+    }
+    .scope-items li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 22rem;
+        width: 6rem;
+        height: 6rem;
+        border-radius: 50%;
+        background: #e52421;
+    }
+    .scope-item-k {
+        display: block;
+        font-weight: 700;
+        font-size: 13rem;
+        line-height: 24rem;
+        color: #1e1e1e;
+        margin: 0 0 2rem;
+    }
+    .scope-item-v {
+        display: block;
+        font-weight: 400;
+        font-size: 13rem;
+        line-height: 24rem;
+        color: #3f3f3f;
+    }
+    .scope-note {
+        font-size: 13rem;
+        line-height: 24rem;
+        padding: 14rem 16rem;
+        background: #f7f7f7;
+        border-left: 3rem solid #e52421;
+    }
+    .section-row.section-scope {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    .section-scope .scope,
+    .section-scope .section-content {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    .scope-cta {
+        margin: 16rem 0 0;
+        text-align: center;
+    }
+    .scope-cta-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 320rem;
+        max-width: 100%;
+        min-height: 44rem;
+        padding: 10rem 22rem;
+        border-radius: 24rem;
+        background: #e52421;
+        color: #fff;
+        font-size: 12rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        text-decoration: none;
+        text-align: center;
+        line-height: 1.25;
+        box-shadow: 0 4rem 14rem rgba(229, 36, 33, 0.25);
+        box-sizing: border-box;
+    }
+    html.rtl-report .scope-cta-btn { direction: rtl; }
+    .check-group {
+        display: flex;
+        flex-direction: column;
+        gap: 30rem;
+        width: 870rem;
+    }
+    .check-group.is-hidden { display: none; }
+    @media print {
+        html.pdf-export body { background: #f3f3f3 !important; padding: 0 !important; display: block !important; }
+        html.pdf-export .rec-copy { display: none !important; }
+        html.pdf-export .check-filters,
+        html.pdf-export .check-toolbar { display: none !important; }
+        html.pdf-export details.check-acc { display: block !important; }
+        html.pdf-export details.check-acc .rec-panel { display: block !important; }
+        html.pdf-export details.check-acc .arrow { display: none !important; }
+        html.pdf-export .check-group.is-hidden { display: flex !important; }
+        html.pdf-export .check-filter { display: none !important; }
+        /* Keep the protocol block on one page (Chromium ignores avoid on flex). */
+        html.pdf-export .section-row.section-scope {
+            display: table;
+            width: 1230rem;
+            table-layout: fixed;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        html.pdf-export .section-row.section-scope > .section-toc,
+        html.pdf-export .section-row.section-scope > .section-content {
+            display: table-cell;
+            vertical-align: top;
+        }
+        html.pdf-export .section-row.section-scope > .section-toc { width: 285rem; }
+        html.pdf-export .section-row.section-scope > .section-content { width: 945rem; }
+        /* Do not stack margin-right on fixed left/right — that opens a white gap
+           equal to the sidebar width between title and HE sidebar. */
+        html.rtl-report .sheet-title,
+        html.rtl-report .sheet-title-fill {
+            left: 0;
+            right: 285rem;
+            margin-left: 0;
+            margin-right: 0;
+            width: auto;
+        }
+    }
+
+    /* Mobile report — Figma iPhone 17 - 1 (402). Screen only; PDF unchanged. */
+    @media screen and (max-width: 720px) {
+        html.report-a4-4 {
+            /* Larger mobile rem: ~1.3 CSS px per design unit on a 390px phone */
+            font-size: calc(100vw / 300) !important;
+        }
+        html.report-a4-4,
+        html.report-a4-4 body {
+            width: 100% !important;
+            min-height: 0 !important;
+            max-width: 100% !important;
+            background: #1e1e1e !important;
+        }
+        html.report-a4-4 body {
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        html.report-a4-4 .page {
+            width: 100% !important;
+            max-width: 100% !important;
+            zoom: 1 !important;
+            box-shadow: none !important;
+            display: flex;
+            flex-direction: column;
+            background: #f3f3f3;
+            overflow-x: hidden;
+        }
+
+        /* Flatten sidebar so brand + URL participate in page flex order */
+        html.report-a4-4 .sheet-sidebar {
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            bottom: auto !important;
+            width: auto !important;
+            height: auto !important;
+            display: contents;
+            background: transparent;
+            z-index: auto;
+        }
+
+        html.report-a4-4 .brand {
+            order: 1;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 128rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14rem 16rem;
+            background: #1e1e1e;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .brand img,
+        html.report-a4-4 .brand svg {
+            width: 318rem !important;
+            max-width: 84%;
+            height: auto !important;
+        }
+
+        html.report-a4-4 .sheet-title {
+            order: 2;
+            position: relative !important;
+            margin: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 87rem;
+            padding: 16rem 20rem;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+        html.report-a4-4 .sheet-title h1 {
+            font-size: 24rem !important;
+            letter-spacing: 2.4rem !important;
+            line-height: 1.2 !important;
+        }
+
+        html.report-a4-4 .sheet-title-fill {
+            order: 3;
+            position: relative !important;
+            margin: 0 !important;
+            width: 100% !important;
+            height: 40rem !important;
+            z-index: 2;
+            font-size: 16rem !important;
+            background: #f3f3f3 !important;
+            color: #1e1e1e !important;
+        }
+
+        html.report-a4-4 .sheet-url {
+            order: 4;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: 40rem !important;
+            font-size: 16rem !important;
+            padding: 0 12rem;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .meta {
+            order: 5;
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: 40rem !important;
+            min-height: 40rem;
+            background: #f3f3f3;
+            color: #1e1e1e;
+            font-size: 10rem !important;
+            z-index: 2;
+            padding: 0 12rem;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .gauge-wrap {
+            order: 6;
+            position: relative !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 196rem;
+            display: grid;
+            grid-template-columns: 180rem;
+            grid-template-rows: 180rem;
+            place-content: center;
+            place-items: center;
+            padding: 8rem 10rem 24rem;
+            background: #f3f3f3;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+        html.report-a4-4 .gauge-svg,
+        html.report-a4-4 .gauge-hole {
+            grid-area: 1 / 1;
+            width: 180rem !important;
+            height: 180rem !important;
+            max-width: 180rem;
+            max-height: 180rem;
+            position: relative !important;
+            inset: auto !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            bottom: auto !important;
+            margin: 0 !important;
+        }
+        html.report-a4-4 .gauge-hole {
+            pointer-events: none;
+            text-align: center;
+            overflow: hidden;
+        }
+        html.report-a4-4 .gauge-score {
+            top: 31rem !important;
+            font-size: 50rem !important;
+            line-height: 1 !important;
+        }
+        html.report-a4-4 .gauge-grade {
+            top: 94rem !important;
+            left: 51rem !important;
+            width: 78rem !important;
+            height: 26rem !important;
+            font-size: 10rem !important;
+        }
+        html.report-a4-4 .gauge-sub {
+            top: 126rem !important;
+            font-size: 10rem !important;
+        }
+
+        html.report-a4-4 table.sheet {
+            order: 7;
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: auto !important;
+            border-collapse: collapse;
+        }
+        html.report-a4-4 table.sheet > thead,
+        html.report-a4-4 table.sheet > tfoot {
+            display: none !important;
+        }
+        html.report-a4-4 table.sheet > tbody,
+        html.report-a4-4 table.sheet > tbody > tr,
+        html.report-a4-4 table.sheet > tbody > tr > td {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+        }
+
+        html.report-a4-4 .main {
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            gap: 0;
+        }
+
+        html.report-a4-4 .chart-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+            padding: 24rem 8rem 20rem !important;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .diag-title {
+            font-size: 24rem !important;
+            letter-spacing: 4.8rem !important;
+            line-height: 26rem !important;
+            max-width: 100%;
+            padding: 0 8rem;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .diag-sub {
+            font-size: 12rem !important;
+            letter-spacing: 2.4rem !important;
+            line-height: 18rem !important;
+            margin-bottom: 12rem !important;
+        }
+        html.report-a4-4 .chart-body {
+            display: grid !important;
+            /* EN/RU: fit longest first line (Лидогенерация) so labels wrap at 2, not 3. */
+            grid-template-columns: 108rem minmax(0, 1fr) !important;
+            column-gap: 6rem !important;
+            padding: 0 0 8rem !important;
+            align-items: stretch;
+        }
+        html.report-a4-4 .ticks {
+            grid-column: 2 !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            width: auto !important;
+            font-size: 8rem !important;
+            line-height: 12rem !important;
+            letter-spacing: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .ticks span {
+            flex: 0 0 auto;
+            min-width: 0;
+            text-align: center;
+        }
+        html.report-a4-4 .chart-grid-wrap {
+            grid-column: 1 / -1 !important;
+            display: grid !important;
+            grid-template-columns: subgrid !important;
+            margin: 6rem 0 !important;
+        }
+        html.report-a4-4 .chart-grid {
+            grid-column: 2 !important;
+            grid-row: 1 !important;
+            left: 0 !important;
+            right: 0 !important;
+            display: flex !important;
+            justify-content: space-between !important;
+        }
+        html.report-a4-4 .chart-grid i {
+            width: 0 !important;
+            border-left: 1px solid #e8e8e8 !important;
+            height: 100% !important;
+        }
+        html.report-a4-4 .chart-rows {
+            grid-column: 1 / -1 !important;
+            grid-row: 1 !important;
+            display: grid !important;
+            grid-template-columns: subgrid !important;
+            column-gap: 6rem !important;
+            row-gap: 12rem !important;
+        }
+        html.report-a4-4 .chart-label {
+            font-size: 11rem !important;
+            line-height: 13rem !important;
+            min-height: 26rem;
+            width: 100% !important;
+            max-width: none !important;
+            min-width: 0 !important;
+            display: block !important;
+            text-align: right !important;
+            white-space: normal !important;
+            overflow-wrap: normal !important;
+            word-break: normal !important;
+            hyphens: none !important;
+        }
+        html.report-a4-4 .chart-label br {
+            display: block !important;
+            content: "";
+        }
+        html.report-a4-4 .bar-track {
+            height: 24rem !important;
+            width: 100%;
+            min-width: 0;
+        }
+
+        html.report-a4-4 .section-rows {
+            width: 100% !important;
+            left: auto !important;
+            gap: 0 !important;
+            padding-bottom: 0 !important;
+            z-index: 2;
+        }
+        html.report-a4-4 .section-row {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            align-items: stretch !important;
+        }
+        html.report-a4-4 .section-toc {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            margin-left: calc(50% - 50vw) !important;
+            margin-right: calc(50% - 50vw) !important;
+            align-self: stretch !important;
+            flex-shrink: 0;
+            padding: 28rem 22rem !important;
+            background: #1e1e1e;
+            box-sizing: border-box;
+            align-items: stretch !important;
+        }
+        html.report-a4-4 .toc-item {
+            width: 100% !important;
+            max-width: none !important;
+            display: flex !important;
+            gap: 12rem;
+            align-items: flex-start;
+        }
+        html.report-a4-4 .toc-bar {
+            height: 56rem;
+            flex-shrink: 0;
+        }
+        html.report-a4-4 .toc-text {
+            width: 100% !important;
+            max-width: none !important;
+            flex: 1 1 auto;
+            font-size: 18rem !important;
+            line-height: 26rem !important;
+            color: #fff !important;
+        }
+        html.report-a4-4 .section-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 18rem 14rem 28rem !important;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .findings-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 18rem !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        html.report-a4-4 .finding-card,
+        html.report-a4-4 .finding-card.gemini-funnel {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-height: 0 !important;
+            box-sizing: border-box;
+            padding: 22rem 18rem !important;
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+            overflow: hidden !important;
+        }
+        html.report-a4-4 .finding-idx {
+            width: 56rem !important;
+            height: 56rem !important;
+            font-size: 26rem !important;
+        }
+        html.report-a4-4 .finding-head-title {
+            font-size: 18rem !important;
+            line-height: 24rem !important;
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+        }
+        html.report-a4-4 .gemini-funnel-body {
+            display: flex !important;
+            flex-direction: column !important;
+            grid-template-columns: none !important;
+            gap: 12rem !important;
+            width: 100% !important;
+        }
+        html.report-a4-4 .gemini-funnel .finding-box,
+        html.report-a4-4 .finding-box {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box;
+            font-size: 15rem !important;
+            line-height: 22rem !important;
+            min-height: 0 !important;
+            padding: 14rem 14rem 14rem 20rem !important;
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+        }
+        html.report-a4-4 .finding-box .issue {
+            font-size: 14rem !important;
+            line-height: 21rem !important;
+            margin-top: 6rem !important;
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+        }
+        html.report-a4-4 .gemini-funnel-note,
+        html.report-a4-4 .check-result-text,
+        html.report-a4-4 .check-result-label,
+        html.report-a4-4 .check-pages,
+        html.report-a4-4 .scope-lead,
+        html.report-a4-4 .metrics-note {
+            font-size: 14rem !important;
+            line-height: 1.45 !important;
+        }
+        html.report-a4-4 .check-name {
+            font-size: 16rem !important;
+            line-height: 22rem !important;
+        }
+        html.report-a4-4 .check-count {
+            font-size: 16rem !important;
+        }
+        html.report-a4-4 .check-filter {
+            font-size: 12rem !important;
+            min-height: 34rem;
+            padding: 0 14rem;
+        }
+        html.report-a4-4 .cta-sub,
+        html.report-a4-4 .copy {
+            font-size: 14rem !important;
+            line-height: 1.4 !important;
+        }
+        html.report-a4-4 .cta-title {
+            display: block !important;
+            text-align: center;
+            font-size: 18rem !important;
+            line-height: 24rem !important;
+        }
+        html.report-a4-4 .cta-title img {
+            display: inline-block !important;
+            width: 108rem !important;
+            height: 24rem !important;
+            vertical-align: -4rem;
+            margin-inline-start: 6rem;
+        }
+
+        html.report-a4-4 .check-toolbar,
+        html.report-a4-4 .check-stack,
+        html.report-a4-4 .check-group,
+        html.report-a4-4 .check-card,
+        html.report-a4-4 .metrics-card,
+        html.report-a4-4 .scope,
+        html.report-a4-4.tier-free .section-free-locked {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        html.report-a4-4 .metrics-card {
+            overflow-x: visible;
+            padding: 18rem 12rem 10rem !important;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 table.metrics-wide {
+            display: none !important;
+        }
+        html.report-a4-4 table.metrics-compact {
+            display: table !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            table-layout: fixed !important;
+            margin: 0 0 8rem !important;
+            border-collapse: collapse;
+        }
+        html.report-a4-4 table.metrics-compact col.col-metric { width: 36%; }
+        html.report-a4-4 table.metrics-compact col.col-mobile,
+        html.report-a4-4 table.metrics-compact col.col-desktop { width: 32%; }
+        html.report-a4-4 table.metrics-compact th,
+        html.report-a4-4 table.metrics-compact td {
+            border: 1px solid #e8e8e8;
+            vertical-align: middle;
+            text-align: center;
+            padding: 14rem 6rem !important;
+            height: auto !important;
+            min-height: 52rem;
+            font-size: 14rem !important;
+            line-height: 1.3 !important;
+            word-break: break-word;
+        }
+        html.report-a4-4 table.metrics-compact thead th {
+            background: #1e1e1e;
+            color: #fff;
+            font-size: 13rem !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-right: 1px solid #fff;
+            padding: 14rem 6rem !important;
+        }
+        html.report-a4-4 table.metrics-compact thead th:last-child {
+            border-right: 1px solid #e8e8e8;
+        }
+        html.report-a4-4 table.metrics-compact th.metrics-corner {
+            background: #1e1e1e;
+            border-right: 1px solid #fff;
+        }
+        html.report-a4-4 table.metrics-compact tbody th {
+            background: #1e1e1e;
+            color: #fff;
+            font-size: 12rem !important;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-align: center;
+            padding: 14rem 8rem !important;
+            border-right: 1px solid #fff;
+            width: 36%;
+        }
+        html.report-a4-4 table.metrics-compact tbody td {
+            background: #f9f9f9;
+        }
+        html.report-a4-4 table.metrics-compact .pill {
+            width: auto !important;
+            min-width: 44rem;
+            height: 30rem !important;
+            padding: 0 10rem;
+            font-size: 14rem !important;
+        }
+        html.report-a4-4 .check-toolbar {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 12rem;
+        }
+        html.report-a4-4 .check-filters {
+            justify-content: flex-start !important;
+            flex-wrap: wrap;
+        }
+        html.report-a4-4 .check-card {
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .check-top {
+            flex-wrap: wrap;
+            gap: 12rem !important;
+        }
+        html.report-a4-4 .checks-unlock-btn,
+        html.report-a4-4 .btn-unlock,
+        html.report-a4-4 .scope-cta-btn,
+        html.report-a4-4.tier-diagnostic .checks-unlock-btn,
+        html.report-a4-4.tier-free .checks-unlock-btn,
+        html.report-a4-4.tier-free .btn-unlock {
+            min-width: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            white-space: normal !important;
+            height: auto !important;
+            min-height: 48rem;
+            padding: 12rem 20rem !important;
+            box-sizing: border-box;
+        }
+
+        html.report-a4-4 .footer {
+            order: 8;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 24rem 16rem 20rem !important;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+        html.report-a4-4 .footer-actions {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 14rem !important;
+            max-width: 100% !important;
+            margin: 12rem auto 4rem !important;
+        }
+        html.report-a4-4 .footer-actions .btn {
+            justify-self: center !important;
+        }
+        html.report-a4-4 .footer-contact {
+            display: none !important;
+        }
+        html.report-a4-4 .btn {
+            min-width: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            min-height: 48rem;
+            padding: 12rem 20rem !important;
+            font-size: 16rem !important;
+            box-sizing: border-box;
+        }
+        html.report-a4-4 .cta-sub {
+            max-width: 100% !important;
+            padding: 0 4rem;
+        }
+
+        /* RTL mobile: keep stacked chrome; reset desktop side margins */
+        html.report-a4-4.rtl-report .sheet-title,
+        html.report-a4-4.rtl-report .sheet-title-fill,
+        html.report-a4-4.rtl-report .main {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            width: 100% !important;
+        }
+        html.report-a4-4.rtl-report .section-toc {
+            align-items: flex-end !important;
+        }
+        html.report-a4-4.rtl-report .section-content {
+            padding-left: 12rem !important;
+            padding-right: 12rem !important;
+        }
+        html.report-a4-4.rtl-report .findings-grid,
+        html.report-a4-4.rtl-report .metrics-card,
+        html.report-a4-4.rtl-report .check-stack,
+        html.report-a4-4.rtl-report .scope {
+            width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        html.report-a4-4.rtl-report .chart-body {
+            grid-template-columns: 58rem minmax(0, 1fr) !important;
+            column-gap: 6rem !important;
+        }
+        html.report-a4-4.rtl-report .chart-grid {
+            left: 0 !important;
+            right: 0 !important;
+        }
+        html.report-a4-4.rtl-report .chart-label {
+            direction: rtl;
+            unicode-bidi: isolate;
+            display: block !important;
+            width: 100% !important;
+            max-width: none !important;
+            min-width: 0 !important;
+            /* Physical left = bar edge (labels are in the right column). */
+            text-align: left !important;
+            white-space: normal !important;
+            overflow-wrap: break-word !important;
+            word-break: normal !important;
+            hyphens: none !important;
+        }
+    }
+
+</style>
+</head>
+<body>
+<div class="page">
+    <aside class="sheet-sidebar">
+        <a class="brand" href="https://erythro.ai/" target="_blank" rel="noopener noreferrer" aria-label="Erythro.ai"><img src="/templates/figma-assets/logo-digital.svg" width="202" height="63" alt="Erythro.ai"></a>
+        <div class="sheet-url">erythro.ai</div>
+    </aside>
+    <div class="meta"><span class="meta-k">Date:</span> <strong class="meta-datetime">11.09.2026 11:42</strong> &nbsp;|&nbsp; <span class="meta-k">Locales:</span> <strong class="meta-locales">EN, RU</strong></div>
+    <div class="gauge-wrap">
+        <svg class="gauge-svg" viewBox="0 0 140 140" aria-hidden="true">
+            <circle cx="70" cy="70" r="70" fill="#E52421"/>
+            <circle cx="70" cy="70" r="58" fill="none" stroke="#1E1E1E" stroke-width="5"/>
+            <path d="M 70 12 A 58 58 0 1 1 70 128 A 58 58 0 1 1 70 12" pathLength="100" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="butt" stroke-dasharray="89 11"/>
+        </svg>
+        <div class="gauge-hole">
+            <div class="gauge-score">89</div>
+            <div class="gauge-grade">GRADE:<span class="gauge-grade-val">A</span></div>
+            <div class="gauge-sub">out of 100 points</div>
+        </div>
+    </div>
+    <div class="sheet-title"><h1>COMMERCIAL QA & AI CONVERSION AUDIT</h1></div>
+    <div class="sheet-title-fill">FULL · Conversion audit</div>
+    <table class="sheet" role="presentation">
+      <thead><tr><td class="sheet-head"></td></tr></thead>
+      <tfoot><tr><td class="sheet-foot"></td></tr></tfoot>
+      <tbody><tr><td class="sheet-body">
+    <div class="main">
+        <div class="chart-card">
+            <h2 class="diag-title"><span>D</span>iagnostic results</h2>
+            <p class="diag-sub">key metrics</p>
+            <div class="chart-body">
+                <div class="ticks" aria-hidden="true"><span>0</span><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span><span>70</span><span>80</span><span>90</span><span>100</span></div>
+                <div class="chart-grid-wrap">
+                    <div class="chart-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                    <div class="chart-rows"><div class="chart-label">Speed <br>&amp; Mobile UX</div><div class="bar-track"><div class="bar-fill bar-warn" style="width:72%"></div></div><div class="chart-label">SEO <br>&amp; Visibility</div><div class="bar-track"><div class="bar-fill bar-green" style="width:94%"></div></div><div class="chart-label">Lead gen <br>&amp; Forms</div><div class="bar-track"><div class="bar-fill bar-green" style="width:100%"></div></div><div class="chart-label">Security <br>&amp; Stability</div><div class="bar-track"><div class="bar-fill bar-green" style="width:90%"></div></div><div class="chart-label">AI Visibility <br>&amp; Brand Discovery</div><div class="bar-track"><div class="bar-fill bar-green" style="width:100%"></div></div></div>
+                </div>
+                <div class="ticks" aria-hidden="true"><span>0</span><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span><span>70</span><span>80</span><span>90</span><span>100</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="section-rows">
+<div class="section-row">
+            <div class="section-toc"><div class="toc-item"><div class="toc-bar"></div><div class="toc-text">top 3 conversion vulnerabilities &amp; missed revenue</div></div></div>
+            <div class="section-content">
+                <div class="findings-grid"><article class="finding-card"><div class="finding-head"><div class="finding-idx">01</div><h3 class="finding-head-title">Conversion vulnerability</h3></div><div class="finding-box problem"><strong>Issue:</strong> Broken network requests on the page<span class="issue">Unique 4xx/5xx URLs: 13: 401 /cdn-cgi/challenge-platform/h/g/p….</span></div><div class="finding-box impact"><strong>Business impact:</strong> Resources fail to load — incomplete page and skewed analytics.</div><div class="finding-box solution"><strong>Erythro.ai solution:</strong> Network audit and removal of broken integrations by Erythro.ai.</div></article><article class="finding-card"><div class="finding-head"><div class="finding-idx">02</div><h3 class="finding-head-title">Conversion vulnerability</h3></div><div class="finding-box problem"><strong>Issue:</strong> Accelerate Core Web Vitals and mobile LCP<span class="issue">Even with good averages, mobile LCP and INP can reach 1.5s and 200ms targets.</span></div><div class="finding-box impact"><strong>Business impact:</strong> Each +100ms delay lowers conversion and raises cost per lead.</div><div class="finding-box solution"><strong>Erythro.ai solution:</strong> Next-gen images, critical CSS and CDN caching by Erythro.ai.</div></article><article class="finding-card"><div class="finding-head"><div class="finding-idx">03</div><h3 class="finding-head-title">Conversion vulnerability</h3></div><div class="finding-box problem"><strong>Issue:</strong> AI qualification of inbound leads<span class="issue">Leads handled manually without auto-qualification and routing.</span></div><div class="finding-box impact"><strong>Business impact:</strong> First response time grows; leads lost between email and CRM.</div><div class="finding-box solution"><strong>Erythro.ai solution:</strong> Erythro.ai n8n/CRM AI agents: qualify, route and task 24/7.</div></article></div>
+            </div>
+        </div>
+<div class="section-row">
+            <div class="section-toc"><div class="toc-item"><div class="toc-bar"></div><div class="toc-text">FUNNEL PRIORITY<br>&amp; PATH TO LEAD</div></div></div>
+            <div class="section-content">
+                <article class="finding-card gemini-funnel"><div class="finding-head"><div class="finding-idx">AI</div><h3 class="finding-head-title">Funnel review</h3></div><div class="gemini-funnel-body"><div class="finding-box problem"><strong>Verdict:</strong> Конверсионный путь полностью исправен: на всех страницах доступна отправка заявок через формы и мессенджеры.</div><div class="finding-box solution"><strong>Priority fix:</strong> Добавить виджет живого онлайн-чата на сайте для посетителей без мессенджеров.</div></div><p class="gemini-funnel-note">How we count the path to a lead: an inline form, a form that opens after a CTA click (Discuss / Let’s Talk / widget), plus chat and messengers. A button without a form is a CTA, not a funnel gap, when the click opens a form or WhatsApp.</p></article>
+            </div>
+        </div>
+<div class="section-row">
+            <div class="section-toc"><div class="toc-item"><div class="toc-bar"></div><div class="toc-text">LOAD SPEED &amp;<br>CORE WEB VITALS<br>(GOOGLE LIGHTHOUSE)</div></div></div>
+            <div class="section-content">
+                <div class="metrics-card"><table class="metrics metrics-wide"><colgroup><col class="col-device"><col class="col-perf"><col class="col-a11y"><col class="col-bp"><col class="col-seo"><col class="col-fcp"><col class="col-lcp"><col class="col-cls"><col class="col-agent"></colgroup><thead><tr><th>DEVICE</th><th>PERFORMANCE</th><th>ACCESSIBILITY</th><th>BEST PRACTICES</th><th>SEO</th><th>FCP</th><th>LCP</th><th>CLS</th><th>Funnel<br>pages</th></tr></thead><tbody><tr><td class="device">MOBILE (iPhone SE)</td><td><span class="pill pill-warn">72</span></td><td><span class="pill pill-good">100</span></td><td><span class="pill pill-good">100</span></td><td><span class="pill pill-good">100</span></td><td>2.4 s</td><td>5.6 s</td><td>0.002</td><td class="agent-browse" rowspan="2"><span class="pill pill-good">10/10</span></td></tr><tr><td class="device">DESKTOP</td><td><span class="pill pill-warn">74</span></td><td><span class="pill pill-good">100</span></td><td><span class="pill pill-good">100</span></td><td><span class="pill pill-good">100</span></td><td>0.6 s</td><td>1.1 s</td><td>0.001</td></tr></tbody></table><table class="metrics metrics-compact"><colgroup><col class="col-metric"><col class="col-mobile"><col class="col-desktop"></colgroup><thead><tr><th class="metrics-corner" scope="col"></th><th scope="col">MOBILE</th><th scope="col">DESKTOP</th></tr></thead><tbody><tr><th scope="row">PERFORMANCE</th><td><span class="pill pill-warn">72</span></td><td><span class="pill pill-warn">74</span></td></tr><tr><th scope="row">ACCESSIBILITY</th><td><span class="pill pill-good">100</span></td><td><span class="pill pill-good">100</span></td></tr><tr><th scope="row">BEST PRACTICES</th><td><span class="pill pill-good">100</span></td><td><span class="pill pill-good">100</span></td></tr><tr><th scope="row">SEO</th><td><span class="pill pill-good">100</span></td><td><span class="pill pill-good">100</span></td></tr><tr><th scope="row">FCP</th><td>2.4 s</td><td>0.6 s</td></tr><tr><th scope="row">LCP</th><td>5.6 s</td><td>1.1 s</td></tr><tr><th scope="row">CLS</th><td>0.002</td><td>0.001</td></tr><tr><th scope="row">Funnel<br>pages</th><td colspan="2" class="agent-browse"><span class="pill pill-good">10/10</span></td></tr></tbody></table><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations to fix issues<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">Mobile Lighthouse 72/100: FCP 2.4 s, LCP 5.6 s (target ≤ 2.5 s). Desktop 74/100, LCP 1.1 s.
+
+Erythro.ai priority — Performance 90+ and LCP &lt; 2.5 s:
+- WebP/AVIF and preload for the LCP image
+- critical CSS, deferred JS
+- CDN cache and 4G compression
+
+Each extra second of mobile LCP burns Google Ads / Meta budget.</pre></div></details><p class="metrics-note">Funnel crawl: 10 key URLs opened by the auditor (HTTP). Lead path includes inline forms, forms that open in a modal after a CTA click, and chat / WhatsApp / Telegram widgets.</p></div>
+            </div>
+        </div>
+<div class="section-row">
+            <div class="section-toc"><div class="toc-item"><div class="toc-bar"></div><div class="toc-text">FULL AUDIT CHECKLIST<br>&amp; FUNNEL CRAWL</div></div></div>
+            <div class="section-content">
+                <div class="check-toolbar"><p class="check-count">Results (26)</p><div class="check-filters" role="tablist"><button type="button" class="check-filter is-active" data-filter="all">all</button><button type="button" class="check-filter" data-filter="good">Excellent</button><button type="button" class="check-filter" data-filter="warn">Needs attention</button><button type="button" class="check-filter" data-filter="bad">Critical</button></div></div><div class="check-stack"><div class="check-group" data-status="good"><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Horizontal overflow (Overflow-X at 375px mobile)</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">Fits smartphone viewport (0px overflow)</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">Overflow-X is clean: 0px at 375px (iPhone SE).
+
+Lock a 375–430px grid regression in releases so blocks, sliders and absolute layers stay inside the viewport. Re-measure on every locale.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Working</span><h3 class="check-name">Lead forms, anti-spam &amp; instant response</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">Forms: 1 (via button). Email: yes, phone: yes, submit: yes. Anti-spam: Cloudflare Turnstile, Honeypot. Instant channel: WhatsApp/Telegram (2)</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">Lead capture is in place: form, anti-spam and an instant channel.
+
+Do not drop the honeypot, Turnstile/reCAPTCHA or wa.me (or chat) in the next release — spam rises and mobile leads disappear.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">OK</span><h3 class="check-name">llms.txt &amp; MCP discovery</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">/llms.txt HTTP 200; /.well-known/mcp JSON OK</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">/llms.txt and MCP discovery pass. Keep a JSON manifest (mcp_version + endpoints) at /.well-known/mcp — do not serve HTML on those URLs.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">OK</span><h3 class="check-name">Brand facts: JSON-LD &amp; /about</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">Organization schema on homepage; /about HTTP 200</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">JSON-LD Organization and /about are in place. Keep name, url, sameAs and contactPoint when editing the template — assistants confuse the brand without them.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">OK</span><h3 class="check-name">Robots.txt: AI crawlers &amp; indexing</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">Allow для AI-ботов: GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, CCBot, Google-Extended, Applebot-Extended, PerplexityBot; robots.txt: 200 OK; sitemap: 200 OK, 23 URL; Content-Signal: {ai-train=no, search=yes, ai-input=yes}</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">AI crawlers are Allow, robots.txt and sitemap.xml return 200.
+
+Do not turn on Cloudflare Managed robots.txt with Disallow: / — that is a severe_block for GPTBot and peers.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">OK</span><h3 class="check-name">GA4 / dataLayer readiness</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">dataLayer + consent stub in head (GA4 G- ID found)</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">dataLayer and the Consent Mode stub are already in &lt;head&gt;. Do not move gtag('consent','default') below the cookie banner — Google will miss consent.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">OK</span><h3 class="check-name">Content Signals + AI crawler rules</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">Content-Signal: {ai-train=no, search=yes, ai-input=yes}; AI bots: Allow</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">Content-Signal is set: agents know whether they may cite the site in answers vs train on it.
+
+Keep Cloudflare Managed robots.txt off — it strips the directive.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">OK</span><h3 class="check-name">Markdown negotiation + agent sitemap</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">text/markdown on Accept + agent sitemap (23 URLs)</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">Markdown negotiation works: the same URL serves text/markdown on Accept and HTML to browsers.
+
+Keep Vary: Accept on the CDN or cache will mix formats.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Secured</span><h3 class="check-name">HTTPS &amp; security HTTP headers</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">HTTPS active; headers 6/6</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">HTTPS and security headers are in place. Do not drop HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy or Permissions-Policy on deploy.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">TTFB and server response</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">TTFB 146 ms, Server: cloudflare</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">TTFB is in the target range. Keep the CDN and a warm origin so the first byte does not grow after a release.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Locale EN · homepage</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">html lang=en, dir=ltr, overflow-x 0px, forms=1</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">Meta and previews for this check are in place. Keep unique title/description, og:image and html lang when content changes.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Agent funnel crawl (10 URLs)</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">Opened 10, broken: 0, with CTA: 10, inner forms: 10</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">This funnel page is live: HTTP 200, CTA or form in place.
+
+Do not remove the lead / WhatsApp button in the next release. Keep menu links on real URLs only.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Funnel page · /</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">HTTP 200 · CTA yes · forms 1 (via CTA) · instant yes · 762 words</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">This funnel page is live: HTTP 200, CTA or form in place.
+
+Do not remove the lead / WhatsApp button in the next release. Keep menu links on real URLs only.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Funnel page · /portfolio</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">HTTP 200 · CTA yes · forms 1 (via CTA) · instant yes · 221 words</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">This funnel page is live: HTTP 200, CTA or form in place.
+
+Do not remove the lead / WhatsApp button in the next release. Keep menu links on real URLs only.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Funnel page · /contacts</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">HTTP 200 · CTA yes · forms 1 · instant yes · 277 words</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">This funnel page is live: HTTP 200, CTA or form in place.
+
+Do not remove the lead / WhatsApp button in the next release. Keep menu links on real URLs only.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Funnel page · /services/enterprise-engineering</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">HTTP 200 · CTA yes · forms 1 (via CTA) · instant yes · 1161 words</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">This funnel page is live: HTTP 200, CTA or form in place.
+
+Do not remove the lead / WhatsApp button in the next release. Keep menu links on real URLs only.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Funnel page · /services/design-branding</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">HTTP 200 · CTA yes · forms 1 (via CTA) · instant yes · 455 words</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">This funnel page is live: HTTP 200, CTA or form in place.
+
+Do not remove the lead / WhatsApp button in the next release. Keep menu links on real URLs only.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Funnel page · /services/development</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">HTTP 200 · CTA yes · forms 1 (via CTA) · instant yes · 490 words</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">This funnel page is live: HTTP 200, CTA or form in place.
+
+Do not remove the lead / WhatsApp button in the next release. Keep menu links on real URLs only.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Funnel page · /services/management</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">HTTP 200 · CTA yes · forms 1 (via CTA) · instant yes · 263 words</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">This funnel page is live: HTTP 200, CTA or form in place.
+
+Do not remove the lead / WhatsApp button in the next release. Keep menu links on real URLs only.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Funnel page · /services/ai-automation</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">HTTP 200 · CTA yes · forms 1 (via CTA) · instant yes · 419 words</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">This funnel page is live: HTTP 200, CTA or form in place.
+
+Do not remove the lead / WhatsApp button in the next release. Keep menu links on real URLs only.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Funnel page · /portfolio/next-project</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">HTTP 200 · CTA yes · forms 1 (via CTA) · instant yes · 199 words</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">This funnel page is live: HTTP 200, CTA or form in place.
+
+Do not remove the lead / WhatsApp button in the next release. Keep menu links on real URLs only.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="good"><div class="check-top"><span class="check-badge good">Excellent</span><h3 class="check-name">Funnel page · /about</h3></div><div class="check-result good"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">HTTP 200 · CTA yes · forms 1 (via CTA) · instant yes · 289 words</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations for improvement<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">This funnel page is live: HTTP 200, CTA or form in place.
+
+Do not remove the lead / WhatsApp button in the next release. Keep menu links on real URLs only.</pre></div></details><p class="check-pages">Pages checked: 10</p></article></div><div class="check-group" data-status="warn"><article class="check-card" data-status="warn"><div class="check-top"><span class="check-badge warn">Needs attention</span><h3 class="check-name">Runtime stability (JS errors &amp; failed requests)</h3></div><div class="check-result warn"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">JS exceptions: 0, unique 4xx/5xx: 13</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations to fix issues<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">Frontend fixes and Playwright coverage for critical flows by Erythro.ai.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="warn"><div class="check-top"><span class="check-badge warn">Needs attention</span><h3 class="check-name">SEO, OpenGraph and messenger preview</h3></div><div class="check-result warn"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">EN: title yes, description yes, og:image yes, canonical yes. RU: title yes, description yes, og:image yes, canonical yes; hreflang missing</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations to fix issues<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">Lock messenger previews: unique title and description per locale, og:image 1200×630, canonical and hreflang between languages.
+
+html lang must match the page language.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="warn"><div class="check-top"><span class="check-badge warn">Needs attention</span><h3 class="check-name">Accessibility WCAG 2.1 AA / IS 5568</h3></div><div class="check-result warn"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">img without alt: 2; unlabeled buttons: 0; axe-core: 0</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations to fix issues<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">Close WCAG 2.1 AA and IS 5568: alt on informative images, aria-label on icon buttons, contrast and focus.
+
+Re-run axe-core at 375px before release.</pre></div></details><p class="check-pages">Pages checked: 10</p></article><article class="check-card" data-status="warn"><div class="check-top"><span class="check-badge warn">Needs attention</span><h3 class="check-name">Locale RU · homepage</h3></div><div class="check-result warn"><p class="check-result-label">CHECK RESULT</p><p class="check-result-text">html lang=en, dir=ltr, overflow-x 0px, forms=1</p></div><details class="check-acc" open><summary><img src="/templates/figma-assets/icon-idea-16.svg" width="16" height="16" alt="">Recommendations to fix issues<img class="arrow" src="/templates/figma-assets/icon-arrow-down.svg" width="9" height="9" alt=""></summary><div class="rec-panel"><div class="rec-toolbar"><span class="rec-chip">code</span><button type="button" class="rec-copy">copy <img src="/templates/figma-assets/icon-copy.svg" width="16" height="16" alt=""></button></div><pre class="rec-body">Lock messenger previews: unique title and description per locale, og:image 1200×630, canonical and hreflang between languages.
+
+html lang must match the page language.</pre></div></details><p class="check-pages">Pages checked: 10</p></article></div></div>
+            </div>
+        </div>
+
+        <div class="section-row section-scope">
+            <div class="section-toc">
+                <div class="toc-item">
+                    <div class="toc-bar"></div>
+                    <div class="toc-text">completed<br>audit protocol</div>
+                </div>
+            </div>
+            <div class="section-content">
+                <div class="scope">
+                    <p class="scope-lead">Erythro.ai lab tested <strong>erythro.ai</strong> in locales <strong>EN, RU</strong> on mobile (iPhone SE 375×667) and desktop. The 5 scorecard scales and 7 AI Visibility score points summarise the lab — they are not the lab.</p>
+<div class="scope-stats"><span class="scope-chip"><span class="scope-chip-n">73</span> signal types</span><span class="scope-chip"><span class="scope-chip-n">201</span> observations</span><span class="scope-chip"><span class="scope-chip-n">2</span> locales · 56 checks</span><span class="scope-chip">Lighthouse × 2</span><span class="scope-chip">lab 10 URLs</span></div><ul class="scope-items"><li><span class="scope-item-k">Network &amp; security</span><span class="scope-item-v">13 parameters: HTTPS, homepage HTTP status, TTFB, Server, 6 headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), 4xx/5xx and runtime JS (console / PageError)</span></li><li><span class="scope-item-k">Indexing</span><span class="scope-item-v">robots.txt, sitemap.xml (23 URLs in the map), Sitemap: directive; rules for 8 AI crawlers (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, CCBot, Google-Extended, Applebot-Extended, PerplexityBot) and severe_block</span></li><li><span class="scope-item-k">AI Visibility</span><span class="scope-item-v">GET /llms.txt, /.well-known/mcp, /api/mcp, /about; JSON-LD Organization/FAQ, rel=describedby, dataLayer and consent stub. 7 criteria feed the scorecard score; that is not the whole block</span></li><li><span class="scope-item-k">Agent Readiness Level 1</span><span class="scope-item-v">5 checks (valid robots, agent sitemap, crawler rules, Content-Signal, markdown negotiation). The L1 score is not part of the 7 AI Visibility criteria</span></li><li><span class="scope-item-k">Google PageSpeed Insights</span><span class="scope-item-v">10 metrics × 2 devices (Performance, Accessibility, Best Practices, SEO, FCP, LCP, CLS, TBT, Speed Index, TTI)</span></li><li><span class="scope-item-k">Per locale</span><span class="scope-item-v">28 signals × 2 = 56: title, description, OpenGraph, canonical, hreflang, favicon, headings, overflow-x at 375px, forms and anti-spam, axe-core WCAG 2.1 AA / IS 5568</span></li><li><span class="scope-item-k">Spelling</span><span class="scope-item-v">LanguageTool on EN and RU (with the Erythro.ai exception lexicon)</span></li><li><span class="scope-item-k">Funnel crawl</span><span class="scope-item-v">23 candidates from sitemap and nav; opened 10 URLs (10 ok). 9 signals per page: HTTP, title, h1, forms (including a modal after a CTA click), CTA, chat/messenger, soft-404, lang, dir, word count. This report discloses 10</span></li><li><span class="scope-item-k">Pro pack</span><span class="scope-item-v">26 checklist rows, 10 funnel URLs, scorecard and top-3</span></li></ul>                    <p class="scope-note">This PDF includes the 5-scale scorecard, top-3 conversion gaps, a 26-row checklist, Lighthouse mobile+desktop and 10 funnel URLs. Raw JSON is on request — not in this file.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+      </td></tr></tbody>
+    </table>
+<footer class="footer"><div class="cta-title">Deploy AI automation and lift site conversion with <img src="/templates/figma-assets/logo-footer.svg" width="96" height="21" alt="Erythro.ai"></div><p class="cta-sub">Book a free review with the Erythro.ai CTO: Core Web Vitals to 90+, AI agents for leads and errors, uptime protection.</p><div class="footer-actions"><a class="footer-contact" href="mailto:team@erythro.ai"><span class="footer-contact-label">email:</span><span class="footer-contact-value" dir="ltr">team@erythro.ai</span></a><a class="btn" href="https://wa.me/972505308305">WhatsApp consultation</a><a class="footer-contact" href="tel:+972505308305"><span class="footer-contact-label">phone:</span><span class="footer-contact-value" dir="ltr">+972 50 530 8 305</span></a></div><div class="copy">© 2026 Erythro.ai — Hi-Load Web Development &amp; AI Agents Automation | Commercial Executive Audit</div></footer>
+</div>
+<script>
+(function () {
+    function copyToClipboard(text) {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            return navigator.clipboard.writeText(text).catch(function () {
+                return copyFallback(text);
+            });
+        }
+        return copyFallback(text);
+    }
+    function copyFallback(text) {
+        return new Promise(function (resolve, reject) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.top = '0';
+            ta.style.left = '0';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            ta.setSelectionRange(0, ta.value.length);
+            var ok = false;
+            try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+            document.body.removeChild(ta);
+            ok ? resolve() : reject(new Error('copy failed'));
+        });
+    }
+    function markCopied(btn) {
+        var label = btn.childNodes[0];
+        btn.classList.add('is-copied');
+        if (label && label.nodeType === 3) label.textContent = 'copied ';
+        window.setTimeout(function () {
+            btn.classList.remove('is-copied');
+            if (label && label.nodeType === 3) label.textContent = 'copy ';
+        }, 1400);
+    }
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.rec-copy');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var panel = btn.closest('.rec-panel');
+        var body = panel && panel.querySelector('.rec-body');
+        if (!body) return;
+        var text = (body.innerText || body.textContent || '').replace(/\u00a0/g, ' ').trim();
+        if (!text) return;
+        copyToClipboard(text).then(function () { markCopied(btn); }).catch(function () {});
+    }, true);
+})();
+</script>
+<script>
+(function () {
+    var root = document.querySelector('.check-filters');
+    if (!root) return;
+    root.addEventListener('click', function (e) {
+        var btn = e.target.closest('.check-filter');
+        if (!btn) return;
+        var filter = btn.getAttribute('data-filter');
+        root.querySelectorAll('.check-filter').forEach(function (b) {
+            b.classList.toggle('is-active', b === btn);
+        });
+        document.querySelectorAll('.check-group').forEach(function (g) {
+            var show = filter === 'all' || g.getAttribute('data-status') === filter;
+            g.classList.toggle('is-hidden', !show);
+        });
+    });
+})();
+</script>
+</body>
+</html>

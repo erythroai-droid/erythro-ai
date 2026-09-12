@@ -30,6 +30,7 @@ import {
   type OrderAddon,
   type OrderPlan,
 } from '@/lib/orderPlans'
+import { auditSampleReportHref, auditSampleReportLabel } from '@/lib/auditSampleReports'
 import { isLexicalDoc, lexicalToPlain, resolveLexical } from '@/lib/lexical'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
@@ -233,6 +234,8 @@ function OrderCheckout({
 
   const title = tLocale(plan.card.title, locale)
   const subtitle = tLocale(plan.subtitle, locale).trim()
+  const sampleHref = isAudit ? auditSampleReportHref(plan.slug, locale) : null
+  const sampleLabel = sampleHref ? auditSampleReportLabel(locale) : ''
   const pricing = calcPlanAmount(plan, periodId)
   const period = plan.periods.find((p) => p.id === periodId) || plan.periods[0]
   const money = (amount: number) => formatPrice(amount, locale, plan.card.currency)
@@ -437,6 +440,36 @@ function OrderCheckout({
                     {title}
                   </h1>
                   {subtitle ? <p className={`mt-1 text-sm ${muted}`}>{subtitle}</p> : null}
+                  {sampleHref ? (
+                    <p className="mt-2 text-sm leading-6">
+                      <a
+                        href={sampleHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-flex max-w-full items-center gap-1.5 font-medium underline decoration-from-font underline-offset-4 transition-colors ${
+                          isLight
+                            ? 'text-erythro-500 hover:text-erythro-600'
+                            : 'text-gold-500 hover:text-gold-400'
+                        }`}
+                      >
+                        <span className="min-w-0 break-words">{sampleLabel}</span>
+                        <svg
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          aria-hidden
+                          className="size-3.5 shrink-0"
+                        >
+                          <path
+                            d="M5 3.5h7.5V11M12.5 3.5 3.5 12.5"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </a>
+                    </p>
+                  ) : null}
                 </div>
               </div>
 
