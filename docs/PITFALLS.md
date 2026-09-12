@@ -1312,6 +1312,101 @@ Client HTML/PDF reports 13 (or 3+pageCap) 4xx/5xx responses. The finding lists o
 **Prevent:**
 Keep a real file at `/favicon.ico` whenever icons live under `/images/favicon/`. Never treat `failed_network_requests.size()` as a raw event count across navigations.
 
+## PIT-076 — Audit report finding card text overflow on long URLs (Turnstile/tracking tokens)
+
+**Tags:** `audit`, `qa-auditor`, `report`, `css`, `overflow`, `pdf`
+
+**Symptom:**
+In the executive summary report (block `01 Уязвимости конверсии` / top-3 conversion vulnerabilities), text overflowed the card boundaries horizontally across the page and pushed down layout in HTML/PDF.
+
+**Cause:**
+1. Background network requests that returned 4xx (e.g. Cloudflare Turnstile token verification requests) contain long cryptographic hashes in the URL path (1000+ characters with no spaces or break characters).
+2. The auditor concatenated up to 5 raw URL paths without truncation into the card's issue description.
+3. CSS styles on `.finding-card`, `.finding-box`, `.finding-box .issue`, `.finding-body` lacked `word-break: break-word` / `overflow-wrap: anywhere` and `box-sizing: border-box`, causing unbreakable token strings to overflow the fixed card containers.
+
+**Fix:**
+- Truncate URL paths to a compact length (max 38-40 chars with ellipsis) in `AuditCollector.java` and `ReportFindingsCatalog.java`.
+- Deduplicate sample URLs by prefix and cap samples to at most 2 distinct entries with `…` suffix if more exist.
+- Add `box-sizing: border-box`, `word-break: break-word`, `overflow-wrap: anywhere`, and `overflow: hidden` to `.finding-card`, `.finding-box`, and `.finding-box .issue` across all HTML report templates and generators (`audit_template_a4_4.html`, `A44ReportGenerator.java`, `audit_template_white_*.html`, `audit_template_proposal_*.html`).
+
+**Prevent:**
+Never inject untruncated URL paths or user-supplied unformatted strings into fixed-size summary cards or PDF print blocks. Always enforce `overflow-wrap: anywhere` and `word-break: break-word` on text containers.
+
+## PIT-077 — Cold audit scores differ from a repeat run
+
+**Tags:** `audit`, `qa-auditor`, `pagespeed`, `ttfb`, `cdn`, `isr`, `warmup`  
+**Seen:** 2026-09-11 — first audit after idle origin/CDN looked worse; the next audit showed “normal” PSI/TTFB.
+
+**Symptom:** A cold audit (first hit of the day, or first lab from Google PageSpeed) reports slower TTFB / lower Performance / worse LCP than a repeat a few minutes later.
+
+**Cause:**
+1. Vercel ISR / Cloudflare edge is `MISS`/`STALE` on the first HTML fetch; serverless may also be cold.
+2. PageSpeed Insights fetches from a **different PoP** than the audit worker. Warming the site from the VPS does not warm Google’s lab path.
+3. TTFB used to keep a single sample after one TLS warmup — still noisy on a just-woken origin.
+
+**Fix:**
+`AuditCollector` now: (1) two origin GETs before Playwright; (2) TTFB = median of 3 samples after discarding TLS; (3) PSI runs a throwaway lab per strategy, then the measured run (fallback to warmup if the second fails). Set `PSI_SKIP_WARMUP=1` to skip the extra PSI call.
+
+**Prevent:** Never treat the first cold lab as the client-facing score. Keep warmup on for production audits.
+
+## PIT-078 — Audit “broken network requests” is Cloudflare Turnstile 401s
+
+**Tags:** `audit`, `qa-auditor`, `cloudflare`, `turnstile`, `false-positive`  
+**Seen:** 2026-09-11 — finding «Битые сетевые запросы», 12 unique 4xx: `401 /cdn-cgi/challenge-platform/h/g/p…`.
+
+**Symptom:** Client report lists many unique 401s on `/cdn-cgi/challenge-platform/…`. Looks like broken integrations; the page itself loads fine.
+
+**Cause:** Turnstile / Bot Fight issues a **new challenge URL** per widget load. Playwright `onResponse` recorded each 401 as a distinct failed URL (PIT-075 only deduped identical URL+status). `/cdn-cgi/` is Cloudflare internals, not the site’s assets.
+
+**Fix:** `AuditCollector.recordFailedNetwork` skips `/cdn-cgi/`, `/challenge-platform/`, and `challenges.cloudflare.com`. Real 4xx/5xx on origin assets still count.
+
+**Prevent:** Do not treat Cloudflare challenge or Turnstile token endpoints as site breakage. Ignore `/cdn-cgi/` in failed-network findings.
+
+## PIT-079 — Order pages drop `og:image`; LinkedIn shows an empty preview
+
+**Tags:** `seo`, `open-graph`, `linkedin`, `order`, `metadata`  
+**Seen:** 2026-09-12 — `https://erythro.ai/order/business-automation` had `og:title` / `og:description` / `og:url` but no `og:image`. LinkedIn Featured card rendered a blank placeholder. Homepage OG was complete (`Og.jpg` on R2, 1200×630, 200 OK). `twitter:image` on the order URL was the homepage `Og.jpg` (inherited from the root layout).
+
+**Cause:** Next.js `generateMetadata` on `/order/[slug]` set its own `openGraph` object **without** `images`. That **replaces** the root layout OG block instead of merging it, so `og:image` / `og:image:width` / `og:image:height` disappear. LinkedIn reads `og:image`, not `twitter:image`.
+
+**Fix:**
+- Always include `openGraph.images` (and matching `twitter.images`) on any route that overrides OG.
+- Default image: Site Settings `Og.jpg` on R2 (`https://pub-bca1ac764c56451890e973c90029a977.r2.dev/Og.jpg`).
+- Business Automation: dedicated 1200×630 offer JPEG at `https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/Business-Automation-4.jpg` (source in `public/images/og/business-automation.jpg`). Helper: `src/lib/ogImages.ts`.
+- After deploy, refresh LinkedIn cache via [Post Inspector](https://www.linkedin.com/post-inspector/). LinkedInBot currently gets `200` HTML from `erythro.ai` (not a Bot Fight challenge).
+
+**Prevent:** If a page sets `openGraph: { title, description, url }`, also set `images: [{ url, width: 1200, height: 630 }]`. Do not rely on the layout OG image leaking through. Prefer a public R2 JPEG (absolute URL) so the crawler does not have to fetch the image through the site’s Cloudflare zone.
+
+## PIT-080 — Free audit opens a blank tab before the waiting page
+
+**Tags:** `audit`, `ux`, `popup`, `waiting`, `modal`  
+**Seen:** 2026-09-12 — `/audit` Free website audit. Click submit → empty / waiting tab instead of staying on the form.
+
+**Cause:** `openAuditReportStatusPlaceholder()` opened `about:blank` on click (PIT-067 popup workaround), then navigated to `/audit/report/[id]` after `POST /api/contact`. `/order` already stopped doing this (PIT-069).
+
+**Fix:** Same as `/order`: do not auto-open a status tab. Keep the user on `/audit` and show a confirmation popup (`AuditFreeSuccessModal`) with the success copy, Order ID, **View order status** (`target="_blank"` on explicit click) and **Close**. Waiting UI is only if they choose the status button.
+
+**Prevent:** Do not auto-open or redirect to `/audit/report/[id]` on submit. Match the order confirmation modal: message + buttons, user-gesture link only.
+
+---
+
+## PIT-081 — Form submit can hang with no error (DNS / SMTP / missing network copy)
+
+**Tags:** `forms`, `timeout`, `audit`, `contact`, `l10n`  
+**Seen:** 2026-09-13 — `/audit` and `/order` checkout: click submit, spinner never appears or never stops; `/audit/report/[id]` looks queued forever on a network blip.
+
+**Cause:**
+1. Website DNS check ran **before** `status = 'sending'` and had no client/server timeout. A hung `fetch('/api/audit/check-website')` or `dns.lookup` looked like a dead button (no spinner, no error). `ensureWebsiteOk() === false` also returned without resetting UI.
+2. `POST /api/contact` and Hostinger SMTP had no timeouts, so a stuck mailbox left the button on «Sending…».
+3. Audit/order forms displayed English API `message` on 400/429. Waiting page set `error = 'network'` but still rendered the queued progress UI with no copy.
+
+**Fix:**
+- Set `sending` before `ensureWebsiteOk()`; idle + field error if the check fails. `AbortSignal.timeout` on contact POST (30s) and website check (8s). DNS lookup races 5s. SMTP `connectionTimeout` / `greetingTimeout` / `socketTimeout`; Resend 10s.
+- Localized `contactSubmitErrorMessage` (cooldown 429 keeps server locale copy; IP window / 400 / 500 use `contactForm.*`).
+- Waiting page shows `auditReportCopy.network` (EN/RU/HE) instead of fake progress when the poll fails.
+
+**Prevent:** Every form POST and outbound mail/DNS must have a timeout and a catch that leaves `sending`. Do not render English `message` from `/api/contact` except localized cooldown `reason`. Network poll failures need visible copy, not only the waiting bar.
+
 ---
 
 ## Checklist before merging CMS / schema PRs
@@ -1322,6 +1417,12 @@ Keep a real file at `/favicon.ico` whenever icons live under `/images/favicon/`.
 - [ ] Mobile modals: portal to `document.body` + `useLockBodyScroll`; never nest `fixed` dialogs in `z-20`/`z-40` overflow cards (PIT-073)
 - [ ] HE scorecard: desktop `max-content`; mobile 2-line labels in `108rem` EN/RU / `58rem` HE + `1fr` bars; RTL `text-align: left` (PIT-074)
 - [ ] Root `/favicon.ico` and `/apple-touch-icon.png` must exist in `public/` even if icons also live under `/images/favicon/` (PIT-075)
+- [ ] Summary finding cards: truncate sample URLs to ≤40 chars and enforce word-break: break-word + overflow-wrap: anywhere (PIT-076)
+- [ ] Audit speed metrics: origin warmup + discard first PSI lab; TTFB median of 3 warm samples (PIT-077)
+- [ ] Audit 4xx list: ignore Cloudflare `/cdn-cgi/` and Turnstile challenge-platform 401s (PIT-078)
+- [ ] Routes that set their own `openGraph` must include `images` (width/height 1200×630); LinkedIn ignores `twitter:image` (PIT-079)
+- [ ] Free-audit submit: confirmation popup like `/order`, no auto-opened waiting tab (PIT-080)
+- [ ] Form POST / website DNS / SMTP: timeouts + localized catch; do not show English API `message` except cooldown (PIT-081)
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
 - [ ] Fix script if prod/CI may lag (`pnpm db:fix-*`)
@@ -1375,4 +1476,9 @@ Keep a real file at `/favicon.ico` whenever icons live under `/images/favicon/`.
 - [ ] Mobile modals: `createPortal(..., document.body)` + lock html/body; do not nest `position:fixed` in overlapping footer cards (PIT-073)
 - [ ] HE audit scorecard: do not use LTR `text-align:right` on RTL labels next to bars (PIT-074)
 - [ ] Favicon: ship `public/favicon.ico` (and apple-touch at root); auditor must unique URL+status, not raw onResponse count (PIT-075)
+- [ ] Audit PSI/TTFB: warmup origin and discard the first Google lab run so cold cache is not the client score (PIT-077)
+- [ ] Audit 4xx: ignore `/cdn-cgi/` and Cloudflare challenge-platform 401 (Turnstile), not site breakage (PIT-078)
+- [ ] Routes that set their own `openGraph` must include `images` (width/height 1200×630); LinkedIn ignores `twitter:image` (PIT-079)
+- [ ] Free-audit submit: confirmation popup like `/order`, no auto-opened waiting tab (PIT-080)
+- [ ] Form POST / website DNS / SMTP: timeouts + localized catch; waiting page must show network copy (PIT-081)
 

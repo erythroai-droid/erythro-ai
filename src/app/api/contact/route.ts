@@ -23,6 +23,7 @@ import {
 } from '@/lib/turnstile'
 
 export const runtime = 'nodejs'
+export const maxDuration = 30
 
 /**
  * Isolated contact intake:

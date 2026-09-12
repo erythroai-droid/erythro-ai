@@ -3,7 +3,7 @@
 Manifest for building a retrieval corpus from `docs/`. Use this file as the **ingest map**:
 what to chunk, how to tag, and which questions each source answers.
 
-Last updated: 2026-09-11.
+Last updated: 2026-09-13.
 
 ---
 
@@ -105,11 +105,16 @@ Rules:
 | “Audit Page Pricing / invalid id / nested features array / ON DELETE CASCADE” | `PIT-065`; `src/migrations/20260907_010000_audit_page_pricing_features_fk.ts`; `src/fields/auditPageFields.ts` |
 | “DMARC quarantine / p=reject / order@ reports / _dmarc TXT” | `docs/infrastructure/vps-firewall-cloudflare-access.md` §2b; `docs/PLAN-deferred.md`; `docs/DEPLOYMENT.md` DMARC rows; `scripts/set-dmarc-reject.mjs` |
 | “Hero LCP / CLS / TBT / PSI score jumps / GSAP gate” | `PIT-057`–`PIT-063`; `docs/HERO_MOTION.md`; `docs/PLAN-deferred.md` |
+| “Cold audit vs repeat / PSI warmup / TTFB median” | `PIT-077`; `AuditCollector` `warmupOrigin` + discarded first PSI lab |
 | “R2 media / Blob cutover / pub-…r2.dev / Payload uploads” | `docs/architecture/r2-media-storage.md`; `PIT` media/R2 entries; `docs/PLAN-deferred.md` |
 | “Deferred security / next hardening steps” | `docs/PLAN-deferred.md`; `.cursor/rules/deferred-hardening.mdc` |
 | “Mobile modal / footer covers dialog / page still scrolls” | `PIT-073`; `src/hooks/useLockBodyScroll.ts` |
 | “Hebrew audit report / scorecard labels jump / bars” | `PIT-074`; `A44ReportGenerator.java` RTL `.chart-label` |
 | “Broken network requests / 13× 4xx / favicon.ico 404” | `PIT-075`; `public/favicon.ico`; `AuditCollector` `failed_network_requests` unique URL+status |
+| “Broken network / 12× 401 /cdn-cgi/challenge-platform / Turnstile” | `PIT-078`; `AuditCollector` `isIgnorableFailedNetwork` |
+| “LinkedIn empty preview / missing og:image / order package share card” | `PIT-079`; `src/lib/ogImages.ts`; `src/app/(frontend)/order/[slug]/page.tsx` |
+| “Free audit blank tab / waiting page instead of confirmation popup” | `PIT-080`; `PIT-069`; `AuditFreeSuccessModal` in `AuditBody.tsx` |
+| “Form submit hangs / sending never ends / no error message” | `PIT-081`; `src/lib/contactSubmit.ts`; `useAuditFieldChecks.ts` |
 
 ---
 

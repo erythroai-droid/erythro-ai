@@ -10,6 +10,7 @@ import {
   type AuditFormValues,
 } from '@/lib/auditFormValidation'
 import { toE164Phone } from '@/lib/phoneE164'
+import { WEBSITE_CHECK_TIMEOUT_MS } from '@/lib/contactSubmit'
 
 export type AuditFieldOk = Partial<Record<AuditField, boolean>>
 
@@ -20,6 +21,7 @@ async function postWebsiteCheck(website: string): Promise<CheckWebsiteResponse> 
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ website }),
+    signal: AbortSignal.timeout(WEBSITE_CHECK_TIMEOUT_MS),
   })
   const payload = (await res.json().catch(() => null)) as CheckWebsiteResponse | null
   if (res.status === 429) return { ok: false, reason: 'rate_limited' }

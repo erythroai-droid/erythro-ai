@@ -116,6 +116,11 @@ export const auditReportCopy = {
     ru: 'Некорректная ссылка на отчёт',
     he: 'קישור דוח לא תקין',
   } satisfies LocaleMap,
+  network: {
+    en: 'Could not load report status. Retrying…',
+    ru: 'Не удалось загрузить статус отчёта. Повторяем попытку…',
+    he: 'לא ניתן לטעון את סטטוס הדוח. מנסים שוב…',
+  } satisfies LocaleMap,
 }
 
 export const AUDIT_REPORT_POLL_MS = 8000

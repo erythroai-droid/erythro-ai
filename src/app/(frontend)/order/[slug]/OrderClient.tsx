@@ -52,6 +52,11 @@ import { TurnstileField, isTurnstileSiteKeyConfigured, type TurnstileHandle } fr
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import { TURNSTILE_TOKEN_FIELD } from '@/lib/turnstile'
 import {
+  contactSubmitErrorMessage,
+  postContactForm,
+  readContactSubmitErrorBody,
+} from '@/lib/contactSubmit'
+import {
   AUDIT_REPORT_LANGUAGES,
   buildAuditContactPayload,
   buildAuditOrderMessage,
@@ -1130,6 +1135,7 @@ function AuditOrderModal({
   const [consentError, setConsentError] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState('')
   const turnstileRef = useRef<TurnstileHandle>(null)
+  const submittingRef = useRef(false)
   const [langSelectOpen, setLangSelectOpen] = useState(false)
   const langSelectRef = useRef<HTMLDivElement | null>(null)
   const {
@@ -1215,7 +1221,7 @@ function AuditOrderModal({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (status === 'sending') return
+    if (submittingRef.current || status === 'sending') return
 
     const nextErrors = validateForm()
     setFieldErrors(nextErrors)
@@ -1234,11 +1240,6 @@ function AuditOrderModal({
       (e.currentTarget.elements.namedItem(CONTACT_HONEYPOT_FIELD) as HTMLInputElement | null)?.value ??
       ''
 
-    const websiteOk = await ensureWebsiteOk()
-    if (!websiteOk) {
-      return
-    }
-
     const orderMessage = buildAuditOrderMessage({
       planTitle,
       planSlug: plan.slug,
@@ -1247,36 +1248,37 @@ function AuditOrderModal({
       totalFormatted,
     })
 
+    submittingRef.current = true
     setStatus('sending')
     setSubmitError('')
+    let posted = false
     try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...buildAuditContactPayload({
-            values,
-            locale,
-            honeypot,
-            message: orderMessage,
-            planSlug: plan.slug,
-            planTotal: totalFormatted,
-          }),
-          [TURNSTILE_TOKEN_FIELD]: turnstileToken,
-        }),
-      })
-      if (res.status === 429) {
-        const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
-        setSubmitError(errPayload?.message || tForm(contactForm.rateLimited))
-        setStatus('error')
+      const websiteOk = await ensureWebsiteOk()
+      if (!websiteOk) {
+        setStatus('idle')
         return
       }
+
+      posted = true
+      const res = await postContactForm({
+        ...buildAuditContactPayload({
+          values,
+          locale,
+          honeypot,
+          message: orderMessage,
+          planSlug: plan.slug,
+          planTotal: totalFormatted,
+        }),
+        [TURNSTILE_TOKEN_FIELD]: turnstileToken,
+      })
       if (!res.ok) {
-        const errPayload = (await res.json().catch(() => null)) as { message?: string } | null
+        const errPayload = await readContactSubmitErrorBody(res)
         setSubmitError(
-          res.status === 403
-            ? tForm(contactForm.captchaFailed)
-            : errPayload?.message || tForm(contactForm.error),
+          contactSubmitErrorMessage(res.status, errPayload, {
+            error: tForm(contactForm.error),
+            rateLimited: tForm(contactForm.rateLimited),
+            captchaFailed: tForm(contactForm.captchaFailed),
+          }),
         )
         setStatus('error')
         return
@@ -1294,7 +1296,8 @@ function AuditOrderModal({
       setSubmitError(tForm(contactForm.error))
       setStatus('error')
     } finally {
-      turnstileRef.current?.reset()
+      submittingRef.current = false
+      if (posted) turnstileRef.current?.reset()
     }
   }
 
