@@ -6,7 +6,7 @@
 import 'server-only'
 import { unstable_cache } from 'next/cache'
 import { SITE_CONTENT_TAG } from './revalidate'
-import { auditPage, type Localized, type AuditPageContent } from './auditPage'
+import { auditPage, isStaleAuditHebrew, type Localized, type AuditPageContent } from './auditPage'
 
 export type { AuditPageContent }
 
@@ -26,7 +26,9 @@ function pickAll(
   const out: Localized = { ...fallback }
   for (const l of LOCALES) {
     const v = obj[l]
-    if (typeof v === 'string' && v.trim()) out[l] = v.trim()
+    if (typeof v !== 'string' || !v.trim()) continue
+    const trimmed = v.trim()
+    out[l] = l === 'he' && isStaleAuditHebrew(trimmed) ? fallback.he : trimmed
   }
   return out
 }
@@ -299,7 +301,7 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
  * Shares the site-content cache tag so Payload admin saves invalidate automatically.
  */
 export function getCachedAuditPage(): Promise<AuditPageContent> {
-  return unstable_cache(() => fetchAuditPage(), ['audit-page'], {
+  return unstable_cache(() => fetchAuditPage(), ['audit-page-v2-he-sanitize'], {
     tags: [SITE_CONTENT_TAG],
   })()
 }

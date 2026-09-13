@@ -1427,6 +1427,33 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 
 ---
 
+## PIT-083 — Audit `/how` Hebrew is CMS machine translation, not the code fallback
+
+**Tags:** `i18n`, `cms`, `audit`, `hebrew`  
+**Seen:** 2026-09-13 — localization audit on live `/audit` after the 13 Sep deploy.
+
+**Symptom:**
+1. Auditor flags FAQ answers `$22`–`$26` as leaked RSC variables (EN/RU empty, HE full text).
+2. Hebrew How-it-works copy: `מפה` for credit card, `רומנית / הולנדית` instead of RU/HE, `המעבדה מסירה` (“removes”), informal `שלח`, step labels `01`/`02`/`03`.
+3. Navbar/Solutions “business automation” looks lowercase vs Free Start.
+4. RU catalog `"Многостраничный сайт "` has a trailing space.
+
+**Cause:**
+1. False positive — Next.js Flight refs `$NN` in HTML (PIT-071). FAQ answers are Lexical; HE often inlines full text while EN/RU stay as module refs.
+2. `fetchAuditPage` merges CMS `audit-page` over `src/lib/auditPage.ts`. Code already has `כרטיס אשראי` / `EN, RU ו-HE` / `המעבדה סורקת` / `שלחו` / `שלב 1`. Live CMS still has the first machine-translation seed, so HE on Vercel stays stale after a code-only deploy. Visual `01`/`02`/`03` on the How track is the same numbered circles for every locale (`HowStepsTrack`); the HE `01` labels were the CMS `step.label`, sr-only.
+3. False positive — tariff names use `uppercase` CSS (`Navbar`, `SolutionSection`). Source is already `Business Automation`.
+4. `locMap` treated `.trim()` as a truthiness check and then assigned the untrimmed CMS string.
+
+**Fix:**
+- Ignore Flight `$NN` and CSS `uppercase` in localization audits (PIT-071).
+- `isStaleAuditHebrew()` in `fetchAuditPage` / `pickAll`: if CMS HE matches the MT needles, use the code fallback. Cache key `audit-page-v2-he-sanitize`.
+- `pnpm db:fix-audit-he-copy` (`scripts/patch-audit-he-copy.ts`) writes HE steps from `auditPage` and trims service offering names.
+- `locMap` / `locList` / `L()` assign `.trim()`.
+
+**Prevent:** After editing `auditPage.ts`, re-seed or run `db:fix-audit-he-copy`; a Vercel deploy of TypeScript fallbacks does not overwrite a filled CMS global. Keep `isStaleAuditHebrew` needles when adding new HE copy. Always persist trimmed CMS strings, not `if (s.trim()) out = s`.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1442,6 +1469,7 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 - [ ] Free-audit submit: confirmation popup like `/order`, no auto-opened waiting tab (PIT-080)
 - [ ] Form POST / website DNS / SMTP: timeouts + localized catch; do not show English API `message` except cooldown (PIT-081)
 - [ ] Contact intake: sanitize/Turnstile/honeypot before DB; no IMAP→CMS; no AV on text-only forms (PIT-082)
+- [ ] Audit HE How-copy: CMS MT needles (`מפה`, `רומנית`, `מסירה`, `שלח את`) must not override `auditPage.ts`; run `pnpm db:fix-audit-he-copy` (PIT-083)
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
 - [ ] Fix script if prod/CI may lag (`pnpm db:fix-*`)
@@ -1501,4 +1529,5 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 - [ ] Free-audit submit: confirmation popup like `/order`, no auto-opened waiting tab (PIT-080)
 - [ ] Form POST / website DNS / SMTP: timeouts + localized catch; waiting page must show network copy (PIT-081)
 - [ ] Contact intake: sanitize/Turnstile/honeypot before DB; no IMAP→CMS; no AV on text-only forms (PIT-082)
+- [ ] Audit HE: do not trust a code-only deploy to fix `audit-page` CMS Hebrew; sanitize + `db:fix-audit-he-copy` (PIT-083)
 

@@ -6,6 +6,23 @@ export function tAudit(field: Localized, locale: string): string {
   return field[locale as keyof Localized] || field.en
 }
 
+/**
+ * Stale machine-translated Hebrew still stored on the `audit-page` CMS global.
+ * `fetchAuditPage` prefers the code fallback when a CMS string matches.
+ */
+export function isStaleAuditHebrew(value: string): boolean {
+  const s = value.trim()
+  if (!s) return false
+  if (/^0[1-9]$/.test(s)) return true
+  return (
+    /מפה אינה נדרשת/.test(s) ||
+    /רומנית/.test(s) ||
+    /הולנדית/.test(s) ||
+    /המעבדה מסירה/.test(s) ||
+    /^שלח את כתובת/.test(s)
+  )
+}
+
 export const AUDIT_WEBSITE_UNREACHABLE = {
   en: 'This website was not found. Check the address.',
   ru: 'Такой сайт не найден. Проверьте адрес.',

@@ -25,7 +25,7 @@ function L(v: any, fallback: Localized): Localized {
   }
   if (v && typeof v === 'object') {
     for (const l of LOCALES) {
-      if (typeof v[l] === 'string' && v[l].trim().length > 0) out[l] = v[l]
+      if (typeof v[l] === 'string' && v[l].trim().length > 0) out[l] = v[l].trim()
     }
   }
   return out
@@ -853,14 +853,14 @@ export async function getShellSiteContent(): Promise<SiteContent> {
  * Invalidated via `SITE_CONTENT_TAG` when content is edited in Payload admin.
  * Prefer {@link getCachedShellSiteContent} on chrome-only routes.
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v9-r2'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v11-l10n'], {
   tags: [SITE_CONTENT_TAG],
 })
 
 /** Cached chrome/shell content — no hero/service media. */
 export const getCachedShellSiteContent = unstable_cache(
   getShellSiteContent,
-  ['site-shell-content-v1'],
+  ['site-shell-content-v3-l10n'],
   { tags: [SITE_CONTENT_TAG] },
 )
 
