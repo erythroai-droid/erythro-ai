@@ -921,12 +921,12 @@ export const contactForm = {
   consentPrefix: {
     en: 'I agree to the',
     ru: 'Согласен(на) с',
-    he: 'אני מסכים/ה ל',
+    he: 'אני מסכים/ה',
   },
   privacyLink: {
     en: 'Privacy Policy',
     ru: 'Политикой конфиденциальности',
-    he: 'מדיניות הפרטיות',
+    he: 'למדיניות הפרטיות',
   },
   /** Nominative title if needed outside consent */
   privacyPolicy: {
@@ -1030,17 +1030,17 @@ export const accessibility = {
   screenReaderServices: {
     en: 'Services section',
     ru: 'Раздел услуг',
-    he: 'מדור שירותים',
+    he: 'אזור שירותים',
   },
   screenReaderSolutions: {
     en: 'Solutions section',
     ru: 'Раздел решений',
-    he: 'מדור פתרונות',
+    he: 'אזור פתרונות',
   },
   screenReaderContacts: {
     en: 'Contact section',
     ru: 'Раздел контактов',
-    he: 'מדור יצירת קשר',
+    he: 'אזור יצירת קשר',
   },
   screenReaderFooter: {
     en: 'Footer',
@@ -1050,7 +1050,7 @@ export const accessibility = {
   screenReaderPortfolio: {
     en: 'Portfolio section',
     ru: 'Раздел портфолио',
-    he: 'מדור תיק עבודות',
+    he: 'אזור תיק עבודות',
   },
   screenReaderProjects: {
     en: 'Projects list',
@@ -1060,21 +1060,21 @@ export const accessibility = {
   screenReaderDetails: {
     en: 'Details section',
     ru: 'Раздел деталей',
-    he: 'מדור פרטים',
+    he: 'אזור פרטים',
   },
   screenReaderDescription: {
     en: 'Description section',
     ru: 'Раздел описания',
-    he: 'מדור תיאור',
+    he: 'אזור תיאור',
   },
   screenReaderOrder: {
     en: 'Order section',
     ru: 'Раздел заказа',
-    he: 'מדור הזמנה',
+    he: 'אזור הזמנה',
   },
   screenReaderSummary: {
     en: 'Summary section',
     ru: 'Раздел итогов',
-    he: 'מדור סיכום',
+    he: 'אזור סיכום',
   },
 }

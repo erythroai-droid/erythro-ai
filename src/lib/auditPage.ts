@@ -29,7 +29,9 @@ export function isStaleAuditHebrew(value: string): boolean {
     /דליפות פרסומות/.test(s) ||
     /60\+\s*אנשים/.test(s) ||
     /ללא כרטיס(?!\s*אשראי)/.test(s) ||
-    /או סוכנות\?/.test(s)
+    /או סוכנות\?/.test(s) ||
+    /הזמן ביקורת/.test(s) ||
+    /^הצלחה!?$/.test(s)
   )
 }
 
