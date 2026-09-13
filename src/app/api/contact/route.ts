@@ -16,6 +16,7 @@ import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
 import { checkFreeAuditCooldown, isAuditIntakeLimitsDisabled } from '@/lib/auditRateLimit'
+import { formatSubmissionTicketId } from '@/lib/submissionTicket'
 import {
   readTurnstileToken,
   turnstileActionFromBody,
@@ -149,6 +150,7 @@ export async function POST(request: NextRequest) {
     })) as SiteEmailSettings
 
     const notifyTo = resolveNotifyRecipients(settings, source)
+    const ticketId = formatSubmissionTicketId(source, created.id)
     const mailed = await sendContactNotification(notifyTo, {
       name,
       email,
@@ -160,13 +162,19 @@ export async function POST(request: NextRequest) {
       auditLanguage,
       planSlug,
       planTotal,
-      ...(source === 'audit' ? { submissionId: created.id } : {}),
+      submissionId: created.id,
     })
     if (!mailed.sent) {
       console.error('[api/contact] saved submission but email was not sent:', mailed.reason)
     }
 
-    const acked = await sendClientAcknowledgement({ name, email, locale })
+    const acked = await sendClientAcknowledgement({
+      name,
+      email,
+      locale,
+      source,
+      submissionId: created.id,
+    })
     if (!acked.sent) {
       console.error('[api/contact] saved submission but client acknowledgement was not sent:', acked.reason)
     }
@@ -204,10 +212,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: true,
+        submissionId: created.id,
+        ...(ticketId ? { ticketId } : {}),
         ...(source === 'audit'
           ? {
-              submissionId: created.id,
-              orderId: `AUD-${created.id}`,
+              orderId: ticketId || `AUD-${created.id}`,
               auditQueued: Boolean(auditQueued),
             }
           : {}),

@@ -12,6 +12,7 @@ import {
   contactSubmitErrorMessage,
   postContactForm,
   readContactSubmitErrorBody,
+  readContactSubmitTicketId,
 } from '@/lib/contactSubmit'
 import { contactForm } from '@/translations'
 import { contactsPage, tContacts } from '@/lib/contactsPage'
@@ -55,6 +56,7 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
 
   const [status, setStatus] = useState<Status>('idle')
   const [submitError, setSubmitError] = useState('')
+  const [ticketId, setTicketId] = useState('')
   const [values, setValues] = useState<ContactFormValues>({ name: '', email: '', phone: '', message: '' })
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({})
   const [privacyConsent, setPrivacyConsent] = useState(false)
@@ -149,6 +151,8 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
         setStatus('error')
         return
       }
+      const payload = (await res.json().catch(() => null)) as { ticketId?: string } | null
+      setTicketId(readContactSubmitTicketId(payload) || '')
       setStatus('success')
       setValues({ name: '', email: '', phone: '', message: '' })
       setFieldErrors({})
@@ -312,9 +316,19 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
                   <p className={`m-0 max-w-[360px] font-sans text-base font-light leading-7 ${bodyTone}`}>
                     {t(form.success)}
                   </p>
+                  {ticketId ? (
+                    <p className={`m-0 text-sm ${isLight ? 'text-erythro-500' : 'text-gold-500'}`}>
+                      {t(form.ackTicket).split('{id}')[0]}
+                      <span dir="ltr">{ticketId}</span>
+                      {t(form.ackTicket).split('{id}')[1]}
+                    </p>
+                  ) : null}
                   <button
                     type="button"
-                    onClick={() => setStatus('idle')}
+                    onClick={() => {
+                      setStatus('idle')
+                      setTicketId('')
+                    }}
                     className={`mt-2 rounded-[40px] border px-8 py-3 text-sm uppercase tracking-widest transition-colors ${
                       isLight
                         ? 'border-erythro-500 text-erythro-500 hover:bg-erythro-500 hover:text-white'

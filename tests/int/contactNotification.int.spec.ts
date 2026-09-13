@@ -59,6 +59,19 @@ describe('contactNotification', () => {
     expect(html).not.toContain('<script>')
   })
 
+  it('adds a ticket id to staff mail for every source', () => {
+    const { html, subject, text } = buildContactEmail({
+      name: 'Ada',
+      email: 'ada@example.com',
+      message: 'Hello',
+      source: 'contact',
+      submissionId: 42,
+    })
+    expect(subject).toBe('Erythro.ai contact REQ-42: Ada')
+    expect(text).toContain('Ticket: REQ-42')
+    expect(html).toContain('REQ-42')
+  })
+
   it('builds a localized client ack with escaped name', () => {
     const { html, subject, text } = buildClientAckEmail({
       name: 'Ada <script>',
@@ -72,6 +85,19 @@ describe('contactNotification', () => {
     expect(html).toContain('color:#000000')
     expect(html).toContain('background-color:#ffffff')
     expect(html).not.toContain('<script>')
+  })
+
+  it('includes a source ticket in the client ack', () => {
+    const { html, subject, text } = buildClientAckEmail({
+      name: 'Ada',
+      locale: 'ru',
+      source: 'audit',
+      submissionId: 153,
+    })
+    expect(subject).toBe('Заявка принята — Erythro.ai #AUD-153')
+    expect(text).toContain('Номер вашей заявки #AUD-153.')
+    expect(html).toContain('#AUD-153')
+    expect(html).toContain('dir="ltr"')
   })
 
   it('uses RTL markup for Hebrew client ack', () => {

@@ -31,6 +31,7 @@ import {
   contactSubmitErrorMessage,
   postContactForm,
   readContactSubmitErrorBody,
+  readContactSubmitTicketId,
 } from '@/lib/contactSubmit'
 
 interface ContactModalContextValue {
@@ -91,6 +92,7 @@ function ContactModal({
 
   const [status, setStatus] = useState<Status>('idle')
   const [submitError, setSubmitError] = useState('')
+  const [ticketId, setTicketId] = useState('')
   const [values, setValues] = useState<ContactFormValues>({ name: '', email: '', phone: '', message: '' })
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({})
   const [privacyConsent, setPrivacyConsent] = useState(false)
@@ -199,6 +201,8 @@ function ContactModal({
         setStatus('error')
         return
       }
+      const payload = (await res.json().catch(() => null)) as { ticketId?: string } | null
+      setTicketId(readContactSubmitTicketId(payload) || '')
       setStatus('success')
       setValues({ name: '', email: '', phone: '', message: '' })
       setFieldErrors({})
@@ -261,6 +265,13 @@ function ContactModal({
               </svg>
             </div>
             <p className="text-white/85">{t(form.success)}</p>
+            {ticketId ? (
+              <p className="mt-3 text-sm text-gold-500">
+                {t(form.ackTicket).split('{id}')[0]}
+                <span dir="ltr">{ticketId}</span>
+                {t(form.ackTicket).split('{id}')[1]}
+              </p>
+            ) : null}
             <button
               type="button"
               onClick={onClose}
