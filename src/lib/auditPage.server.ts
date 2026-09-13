@@ -7,6 +7,7 @@ import 'server-only'
 import { unstable_cache } from 'next/cache'
 import { SITE_CONTENT_TAG } from './revalidate'
 import { auditPage, isStaleAuditHebrew, type Localized, type AuditPageContent } from './auditPage'
+import { normalizeCtaHref } from './ctaNav'
 
 export type { AuditPageContent }
 
@@ -168,9 +169,10 @@ function mapPlans(raw: unknown[] | undefined, fallback: any[]): any[] {
         (fb?.features ?? []) as Localized[],
       ),
       cta: pickAllOpt(r?.cta as RawLocalized, fb?.cta as Localized | undefined),
-      ctaHref:
+      ctaHref: normalizeCtaHref(
         (typeof r?.ctaHref === 'string' && r.ctaHref.trim()) ||
-        (typeof fb?.ctaHref === 'string' ? (fb.ctaHref as string) : ''),
+          (typeof fb?.ctaHref === 'string' ? (fb.ctaHref as string) : ''),
+      ),
       featured:
         typeof r?.featured === 'boolean'
           ? r.featured
@@ -301,7 +303,7 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
  * Shares the site-content cache tag so Payload admin saves invalidate automatically.
  */
 export function getCachedAuditPage(): Promise<AuditPageContent> {
-  return unstable_cache(() => fetchAuditPage(), ['audit-page-v2-he-sanitize'], {
+  return unstable_cache(() => fetchAuditPage(), ['audit-page-v5-pricing-href'], {
     tags: [SITE_CONTENT_TAG],
   })()
 }

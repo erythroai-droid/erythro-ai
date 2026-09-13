@@ -768,7 +768,7 @@ export async function getAllServiceSlugsCms(): Promise<string[]> {
 }
 
 export const getCachedOrderPlans = () =>
-  unstable_cache(() => fetchOrderPlans(), ['order-plans-v2-l10n'], {
+  unstable_cache(() => fetchOrderPlans(), ['order-plans-v3-l10n'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

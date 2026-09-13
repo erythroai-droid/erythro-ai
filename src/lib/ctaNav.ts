@@ -8,6 +8,27 @@ export function isContactModalHref(href: string | null | undefined): boolean {
   return v === CONTACT_MODAL_HREF || v === 'contact-modal' || v === 'modal'
 }
 
+/**
+ * Next `<Link href="order/…">` is page-relative (`/audit/order/…` → 404).
+ * CMS sometimes stores audit CTAs without a leading slash.
+ */
+export function normalizeCtaHref(href: string | null | undefined): string {
+  const raw = (href || '').trim()
+  if (!raw) return ''
+  if (
+    raw.startsWith('/') ||
+    raw.startsWith('#') ||
+    raw.startsWith('mailto:') ||
+    raw.startsWith('tel:') ||
+    raw.startsWith('sms:') ||
+    raw.startsWith('//') ||
+    /^[a-z][a-z0-9+.-]*:/i.test(raw)
+  ) {
+    return raw
+  }
+  return `/${raw}`
+}
+
 function signalNavStart() {
   if (typeof window === 'undefined') return
   window.dispatchEvent(new Event('erythro:nav-start'))
@@ -54,6 +75,6 @@ export function navigateCtaHref(
   }
 
   signalNavStart()
-  window.location.assign(raw.startsWith('/') ? raw : `/${raw}`)
+  window.location.assign(normalizeCtaHref(raw))
   return true
 }

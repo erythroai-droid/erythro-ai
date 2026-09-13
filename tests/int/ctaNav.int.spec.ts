@@ -3,7 +3,25 @@ import {
   CONTACT_MODAL_HREF,
   isContactModalHref,
   navigateCtaHref,
+  normalizeCtaHref,
 } from '@/lib/ctaNav'
+
+describe('normalizeCtaHref', () => {
+  it('prefixes a leading slash on path-relative CMS values', () => {
+    expect(normalizeCtaHref('order/audit-diagnostic')).toBe('/order/audit-diagnostic')
+    expect(normalizeCtaHref('order/audit-pro')).toBe('/order/audit-pro')
+    expect(normalizeCtaHref(' /order/audit-free ')).toBe('/order/audit-free')
+  })
+
+  it('leaves hashes, mailto, and absolute URLs unchanged', () => {
+    expect(normalizeCtaHref('#contact-modal')).toBe('#contact-modal')
+    expect(normalizeCtaHref('mailto:hi@erythro.ai')).toBe('mailto:hi@erythro.ai')
+    expect(normalizeCtaHref('https://erythro.ai/order/audit-pro')).toBe(
+      'https://erythro.ai/order/audit-pro',
+    )
+    expect(normalizeCtaHref('')).toBe('')
+  })
+})
 
 describe('isContactModalHref', () => {
   it('recognizes modal targets', () => {
