@@ -3,6 +3,7 @@ import sitemap from '@/app/sitemap'
 import { getAllServiceSlugs } from '@/lib/servicePages'
 import { getAllOrderSlugs } from '@/lib/orderPlans'
 import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
+import { getPortfolioSitemapEntries } from '@/lib/sitemapEntries'
 
 describe('sitemap()', () => {
   it(
@@ -35,9 +36,24 @@ describe('sitemap()', () => {
         expect(urls.has(`https://erythro.ai/order/${slug}`)).toBe(true)
       }
 
-      // All static portfolio slugs must be included
-      for (const slug of getAllPortfolioSlugs()) {
+      // Portfolio: CMS-published cases when the collection has docs; static
+      // seed slugs only as fallback. Do not require demo URLs that 404 (PIT-070).
+      const portfolio = await getPortfolioSitemapEntries()
+      expect(portfolio.length).toBeGreaterThan(0)
+      for (const { slug } of portfolio) {
         expect(urls.has(`https://erythro.ai/portfolio/${slug}`)).toBe(true)
+      }
+
+      const staticSlugs = getAllPortfolioSlugs()
+      const listed = new Set(portfolio.map((row) => row.slug))
+      const usedStaticFallback =
+        listed.size === staticSlugs.length && staticSlugs.every((slug) => listed.has(slug))
+      if (!usedStaticFallback) {
+        for (const slug of staticSlugs) {
+          if (!listed.has(slug)) {
+            expect(urls.has(`https://erythro.ai/portfolio/${slug}`)).toBe(false)
+          }
+        }
       }
 
       // Check entry properties

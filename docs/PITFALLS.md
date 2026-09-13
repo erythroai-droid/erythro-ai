@@ -374,6 +374,7 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 | Admin `beforeAll` timeout 30s; later admin tests skipped | First compile of `/admin` + `seedTestUser` | `test.describe.configure({ timeout: 120000 })` + `testInfo.setTimeout(120000)` |
 | Homepage expects `Engineering the future`, page has `ENGINEERING FUTURE` | Template/e2e copy not updated after Hero Motion / CMS | Assert current copy (`HERO_MOTION.md` кадр 1) |
 | `webServer` 60s timeout | Cold `next dev` + Payload | `timeout: 180 * 1000`; `reuseExistingServer: true`; free port 3000 |
+| Mobile Hero «Find out more» e2e: `casesTop` still ~500px | Test clicks as soon as `.splash-bg` is gone; `refreshScrollLayout()` `scrollTo(0)` 800ms later cancels the CTA scroll. Asserting `#contacts` hits the hidden desktop overlay (`display:none`, top 0) | Wait ≥1000ms after splash, then click; assert `#contacts-mobile` near top and `#cases` scrolled past |
 
 **Prevent:** After copy or CTA changes, update e2e in the same PR. Local full run: `pnpm test` (int) then `pnpm test:e2e` with Chromium installed. E2E still **not** on GHA — do not assume CI covers UI.
 
@@ -1201,7 +1202,7 @@ Always merge CMS collection entries with static fallback slugs. Use a `Set` of e
 **Prevent:**
 Whenever providing CMS overrides over static fallback arrays, never branch with `if (rows.length) return rows`. Always merge: `[...rows, ...staticSlugs.filter(s => !cmsSlugs.has(s))]`.
 
-**Exception (portfolio):** `getPortfolioSitemapEntries()` must **not** merge static demo slugs when CMS has any `portfolio-projects` docs. `/portfolio/[slug]` resolves only from CMS (`getPortfolioProjectBySlug` has no static fallback), so merging demos like `product-launch-landing` puts 404 URLs in `sitemap.xml` and the audit funnel flags them. Services/orders still merge because their pages fall back to static.
+**Exception (portfolio):** `getPortfolioSitemapEntries()` must **not** merge static demo slugs when CMS has any `portfolio-projects` docs. `/portfolio/[slug]` resolves only from CMS (`getPortfolioProjectBySlug` has no static fallback), so merging demos like `product-launch-landing` puts 404 URLs in `sitemap.xml` and the audit funnel flags them. Services/orders still merge because their pages fall back to static. `tests/int/sitemap.int.spec.ts` must follow this: expect CMS listed slugs, and when CMS drives the list assert seed-only demos are **absent**.
 
 ---
 
@@ -1450,7 +1451,7 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 - [ ] Client locale maps preserved for non-reload i18n pages; font CSS vars (`heebo` / cyrillic / `--font-inter-latin`) synced with `lang`/`dir` (PIT-036)
 - [ ] Local `pnpm build` green; smoke `/admin` after plugin changes
 - [ ] Contact/API changes: guard tests + do not skip SMTP vs CMS split (PIT-020)
-- [ ] UI copy/CTA: update Playwright asserts; Next `<Link>` waits use `commit` (PIT-023)
+- [ ] UI copy/CTA: update Playwright asserts; Next `<Link>` waits use `commit`; mobile Hero e2e waits splash+1s and uses `#contacts-mobile` (PIT-023)
 - [ ] Local e2e with `PAYLOAD_DISABLE_PUSH=1` (PIT-022)
 - [ ] Middleware imports: Edge-safe only — no Payload/CMS (PIT-024)
 - [ ] Markdown/order int tests: static slug or skipIf no DB (PIT-025)
