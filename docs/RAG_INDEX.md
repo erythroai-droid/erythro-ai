@@ -115,6 +115,7 @@ Rules:
 | “LinkedIn empty preview / missing og:image / order package share card” | `PIT-079`; `src/lib/ogImages.ts`; `src/app/(frontend)/order/[slug]/page.tsx` |
 | “Free audit blank tab / waiting page instead of confirmation popup” | `PIT-080`; `PIT-069`; `AuditFreeSuccessModal` in `AuditBody.tsx` |
 | “Form submit hangs / sending never ends / no error message” | `PIT-081`; `src/lib/contactSubmit.ts`; `useAuditFieldChecks.ts` |
+| “form virus scan / SQL injection / phishing / IMAP before DB” | `PIT-082`; `src/lib/contactSanitize.ts`; `src/lib/contactSubmissionGuard.ts`; `src/app/api/contact/route.ts`; `docs/infrastructure/n8n-email-autoresponder.md` |
 
 ---
 

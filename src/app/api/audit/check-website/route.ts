@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { consumeContactRateLimit, getRequestIp } from '@/lib/contactRateLimit'
 import { checkWebsiteReachable } from '@/lib/checkWebsite'
-import { sanitizePlainText } from '@/lib/contactSanitize'
+import { sanitizeWebsiteInput } from '@/lib/contactSanitize'
 
 export const runtime = 'nodejs'
 
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
   const raw =
     body && typeof body === 'object' && !Array.isArray(body)
-      ? sanitizePlainText((body as { website?: unknown }).website, 500)
+      ? sanitizeWebsiteInput((body as { website?: unknown }).website, 500)
       : ''
 
   const result = await checkWebsiteReachable(raw)

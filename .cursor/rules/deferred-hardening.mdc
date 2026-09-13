@@ -9,7 +9,7 @@ When the user asks about next steps, security, admin protection, performance, R2
 
 **Not critical right now.** Prioritize when they have time:
 
-1. **Restore audit intake limits after package QA** — live now: 5-day Free cooldown + `/api/contact` IP window are skipped (`AUDIT_INTAKE_LIMITS_OPEN_FOR_QA`). Set `AUDIT_SKIP_COOLDOWN=0` or flip the flag to `false`.
+1. **Restore audit intake limits after the payment terminal is connected** — live now: 5-day Free cooldown + `/api/contact` IP window are skipped (`AUDIT_INTAKE_LIMITS_OPEN_FOR_QA`). Set `AUDIT_SKIP_COOLDOWN=0` or flip the flag to `false`.
 2. DMARC `p=reject` after ~7 days of clean reports at `order@erythro.ai` (~2026-09-13) — live now `p=quarantine`
 3. CSP nonce / drop `'unsafe-inline'` (medium, not urgent — see `PLAN-deferred.md`)
 4. Desktop CLS (~1.1) on hero — re-check after PIT-057 deploy

@@ -5,7 +5,7 @@ export const FREE_AUDIT_COOLDOWN_MS = FREE_AUDIT_COOLDOWN_DAYS * 24 * 60 * 60 * 
 
 /**
  * Temporary: skip the 5-day free-audit cooldown (and the IP window in `/api/contact`)
- * so every plan can be re-tested from the site. Restore after QA:
+ * while the payment terminal is not live. Restore after the terminal is connected:
  * set `AUDIT_SKIP_COOLDOWN=0` on Vercel, or flip this to `false`.
  */
 export const AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = true

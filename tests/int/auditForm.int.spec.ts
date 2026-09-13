@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildAuditSubmissionMessage,
   normalizeAuditWebsite,
+  sanitizeAuditWebsite,
   validateAuditForm,
 } from '@/lib/auditFormValidation'
 
@@ -53,7 +54,14 @@ describe('auditFormValidation', () => {
 
   it('normalizes website and builds submission message', () => {
     expect(normalizeAuditWebsite('example.com')).toBe('https://example.com')
+    expect(normalizeAuditWebsite('https://example.com/path')).toBe('https://example.com/path')
     expect(buildAuditSubmissionMessage('https://example.com', 'ru')).toContain('Russian')
     expect(buildAuditSubmissionMessage('https://example.com', 'ru')).toContain('https://example.com')
+  })
+
+  it('drops credentials and non-http website URLs', () => {
+    expect(sanitizeAuditWebsite('javascript:example.com')).toBe('')
+    expect(sanitizeAuditWebsite('https://user:pass@example.com')).toBe('')
+    expect(sanitizeAuditWebsite('ftp://example.com')).toBe('')
   })
 })

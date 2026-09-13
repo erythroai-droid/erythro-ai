@@ -2,7 +2,7 @@ import type { ContactFormSource } from '@/lib/contactNotification'
 import {
   AUDIT_REPORT_LANGUAGES,
   isAuditWebsiteFormat,
-  normalizeAuditWebsite,
+  sanitizeAuditWebsite,
   type AuditReportLanguage,
 } from '@/lib/auditFormValidation'
 import {
@@ -11,6 +11,7 @@ import {
   sanitizeMessage,
   sanitizePhone,
   sanitizePlainText,
+  sanitizeWebsiteInput,
 } from '@/lib/contactSanitize'
 import { toE164Phone } from '@/lib/phoneE164'
 
@@ -115,12 +116,13 @@ export function guardContactSubmission(body: unknown): ContactGuardResult {
   }
 
   if (source === 'audit') {
-    const websiteRaw = sanitizePlainText(raw.website, CONTACT_LIMITS.website)
+    const websiteRaw = sanitizeWebsiteInput(raw.website, CONTACT_LIMITS.website)
+    const website = sanitizeAuditWebsite(websiteRaw)
     const auditLanguage = parseAuditLanguage(raw.auditLanguage)
     const planSlug = sanitizePlainText(raw.planSlug, CONTACT_LIMITS.planSlug).toLowerCase()
     const planTotal = sanitizePlainText(raw.planTotal, CONTACT_LIMITS.planTotal)
 
-    if (!websiteRaw || !isAuditWebsiteFormat(websiteRaw)) {
+    if (!website || !isAuditWebsiteFormat(websiteRaw)) {
       return { ok: false, status: 400, message: 'Valid website is required for audit' }
     }
     if (!auditLanguage) {
@@ -135,7 +137,7 @@ export function guardContactSubmission(body: unknown): ContactGuardResult {
       return { ok: false, status: 400, message: 'Invalid plan' }
     }
 
-    data.website = normalizeAuditWebsite(websiteRaw)
+    data.website = website
     data.auditLanguage = auditLanguage
     data.auditStatus = 'new'
     if (planSlug) data.planSlug = planSlug
