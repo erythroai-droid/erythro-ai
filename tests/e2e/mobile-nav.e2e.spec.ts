@@ -12,19 +12,24 @@ test.describe('Mobile navigation regressions', () => {
   test('Hero Find out more scrolls to Let’s Talk, not Cases', async ({ page }) => {
     await page.goto('http://localhost:3000/')
     await waitForSplashGone(page)
+    // SplashScreen.refreshScrollLayout() does scrollTo(0) 800ms after splash on <1024px.
+    // Clicking inside that window is cancelled; humans wait longer (PIT-023).
+    await page.waitForTimeout(1000)
 
     const findMore = page.locator('.hero-buttons button').first()
     await expect(findMore).toBeVisible()
     await findMore.click()
 
-    // Allow smooth scroll + suspended auto-snap to settle.
-    await page.waitForTimeout(2400)
+    // Mobile Let’s Talk is #contacts-mobile; #contacts is the hidden desktop overlay.
+    const letsTalk = page.locator('#contacts-mobile')
+    await expect(letsTalk).toBeVisible()
+    await expect
+      .poll(async () => letsTalk.evaluate((el) => el.getBoundingClientRect().top), {
+        timeout: 8000,
+      })
+      .toBeLessThan(120)
 
-    const contactsTop = await page.locator('#contacts').evaluate((el) => el.getBoundingClientRect().top)
     const casesTop = await page.locator('#cases').evaluate((el) => el.getBoundingClientRect().top)
-
-    // Contacts should be near the top of the viewport; Cases should be above (scrolled past).
-    expect(contactsTop).toBeLessThan(120)
     expect(casesTop).toBeLessThan(-40)
   })
 
