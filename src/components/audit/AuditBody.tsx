@@ -36,6 +36,7 @@ import {
   type AuditTabId,
 } from '@/lib/auditPage'
 import { currencySymbol } from '@/lib/orderPlans'
+import { normalizeCtaHref } from '@/lib/ctaNav'
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
 
 const AuditPageContext = React.createContext<AuditPageContent>(auditPage as AuditPageContent)
@@ -1157,7 +1158,7 @@ function AuditPricingCard({
   const priceNote =
     'priceNote' in plan && plan.priceNote ? tAudit(plan.priceNote, locale).trim() : ''
   const shekel = currencySymbol('ILS')
-  const ctaHref = 'ctaHref' in plan ? plan.ctaHref : undefined
+  const ctaHref = 'ctaHref' in plan ? normalizeCtaHref(plan.ctaHref) : ''
 
   const solutionButtonClassName = featured
     ? 'border-white text-white hover:bg-white hover:text-coal-900 hover:border-white active:bg-white active:text-coal-900 active:border-white aria-busy:bg-white aria-busy:text-coal-900 aria-busy:border-white'

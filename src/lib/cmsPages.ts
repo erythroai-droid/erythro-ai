@@ -83,7 +83,7 @@ function locMap(v: any, fallback: LocaleMap = { en: '' }): LocaleMap {
   }
   if (v && typeof v === 'object') {
     for (const l of LOCALES) {
-      if (typeof v[l] === 'string' && v[l].trim()) out[l] = v[l]
+      if (typeof v[l] === 'string' && v[l].trim()) out[l] = v[l].trim()
     }
   }
   return out
@@ -95,7 +95,7 @@ function locList(rows: any[] | undefined, key: string, fallback: LocaleListMap):
   for (const row of rows) {
     const field = row?.[key]
     for (const l of LOCALES) {
-      const text =
+      const raw =
         typeof field === 'string'
           ? field
           : typeof field?.[l] === 'string'
@@ -103,6 +103,7 @@ function locList(rows: any[] | undefined, key: string, fallback: LocaleListMap):
             : typeof field?.en === 'string'
               ? field.en
               : ''
+      const text = typeof raw === 'string' ? raw.trim() : ''
       if (text) out[l].push(text)
     }
   }
@@ -750,7 +751,7 @@ export async function getAllPortfolioSlugsCms(): Promise<string[]> {
 }
 
 export const getCachedServicePages = () =>
-  unstable_cache(() => fetchServicePages(), ['service-pages'], {
+  unstable_cache(() => fetchServicePages(), ['service-pages-v3-l10n'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
@@ -767,7 +768,7 @@ export async function getAllServiceSlugsCms(): Promise<string[]> {
 }
 
 export const getCachedOrderPlans = () =>
-  unstable_cache(() => fetchOrderPlans(), ['order-plans'], {
+  unstable_cache(() => fetchOrderPlans(), ['order-plans-v3-l10n'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

@@ -1427,6 +1427,54 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 
 ---
 
+## PIT-083 — Audit `/how` Hebrew is CMS machine translation, not the code fallback
+
+**Tags:** `i18n`, `cms`, `audit`, `hebrew`  
+**Seen:** 2026-09-13 — localization audit on live `/audit` after the 13 Sep deploy.
+
+**Symptom:**
+1. Auditor flags FAQ answers `$22`–`$26` as leaked RSC variables (EN/RU empty, HE full text).
+2. Hebrew How-it-works copy: `מפה` for credit card, `רומנית / הולנדית` instead of RU/HE, `המעבדה מסירה` (“removes”), informal `שלח`, step labels `01`/`02`/`03`.
+3. Navbar/Solutions “business automation” looks lowercase vs Free Start.
+4. RU catalog `"Многостраничный сайт "` has a trailing space.
+
+**Cause:**
+1. False positive — Next.js Flight refs `$NN` in HTML (PIT-071). FAQ answers are Lexical; HE often inlines full text while EN/RU stay as module refs.
+2. `fetchAuditPage` merges CMS `audit-page` over `src/lib/auditPage.ts`. Code already has `כרטיס אשראי` / `EN, RU ו-HE` / `המעבדה סורקת` / `שלחו` / `שלב 1`. Live CMS still has the first machine-translation seed, so HE on Vercel stays stale after a code-only deploy. Visual `01`/`02`/`03` on the How track is the same numbered circles for every locale (`HowStepsTrack`); the HE `01` labels were the CMS `step.label`, sr-only.
+3. False positive — tariff names use `uppercase` CSS (`Navbar`, `SolutionSection`). Source is already `Business Automation`.
+4. `locMap` treated `.trim()` as a truthiness check and then assigned the untrimmed CMS string.
+
+**Fix:**
+- Ignore Flight `$NN` and CSS `uppercase` in localization audits (PIT-071).
+- `isStaleAuditHebrew()` in `fetchAuditPage` / `pickAll`: if CMS HE matches the MT needles (`מפה`, `רומנית`, `מסירה`, `מצלמת`, `הונגרית`, `עקיפת המשפך`, `מדריך וגודל`, `דליפות פרסומות`, `משא ומתן על הנחה`, …), use the code fallback. Cache key `audit-page-v4-he-sanitize`.
+- `pnpm db:fix-audit-he-copy` (`scripts/patch-audit-he-copy.ts`) writes HE steps from `auditPage` and trims service offering names.
+- `locMap` / `locList` / `L()` assign `.trim()`.
+
+**Prevent:** After editing `auditPage.ts`, re-seed or run `db:fix-audit-he-copy`; a Vercel deploy of TypeScript fallbacks does not overwrite a filled CMS global. Keep `isStaleAuditHebrew` needles when adding new HE copy. Always persist trimmed CMS strings, not `if (s.trim()) out = s`.
+
+---
+
+## PIT-084 — Audit pricing CTAs without a leading slash 404 under `/audit`
+
+**Tags:** `audit`, `cms`, `next-link`, `i18n`, `pricing`  
+**Seen:** 2026-09-13 — live `/audit` Pricing tab. Diagnostic and Pro “Get started” went to `/audit/order/audit-*` (404). Free was `/order/audit-free` (200).
+
+**Symptom:**
+1. Paid plan buttons 404 on EN/RU/HE. Relative `ctaHref` `order/audit-diagnostic` / `order/audit-pro` in the `audit-page` CMS global.
+2. HE `ללא כרטיס` (ticket/card, not credit card), `או סוכנות?` (audit or an agency?).
+3. RU Free CTA `начать сейчас`; Diagnostic/Pro `Воронка раскрыта` / `Съёмка сайта`. Intro still mentions Delegate though the grid is Free / Diagnostic / Pro.
+
+**Cause:** `mapPlans` copied CMS `ctaHref` as-is. Next `<Link href="order/…">` is **page-relative**. `navigateCtaHref` already prefixed `/` for `window.location`; the pricing cards use `<Link>`. Copy lives in CMS; code fallbacks do not win until sanitized or patched.
+
+**Fix:**
+- `normalizeCtaHref()` (`src/lib/ctaNav.ts`) used in `fetchAuditPage` / `AuditBody` / site-content CTAs. Cache key `audit-page-v5-pricing-href`.
+- HE/RU tariff copy in `auditPage.ts` + `orderPlans.ts`; stale HE needles `60+ אנשים`, `ללא כרטיס`, `או סוכנות?`.
+- `pnpm db:fix-audit-pricing` writes leading-slash hrefs and the new strings into CMS.
+
+**Prevent:** Store internal CTA paths with a leading `/`. Do not put relative paths in a CMS text field that feeds Next `<Link>`. After editing audit pricing copy, run `db:fix-audit-pricing` — a code-only deploy does not overwrite filled CMS.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1442,6 +1490,8 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 - [ ] Free-audit submit: confirmation popup like `/order`, no auto-opened waiting tab (PIT-080)
 - [ ] Form POST / website DNS / SMTP: timeouts + localized catch; do not show English API `message` except cooldown (PIT-081)
 - [ ] Contact intake: sanitize/Turnstile/honeypot before DB; no IMAP→CMS; no AV on text-only forms (PIT-082)
+- [ ] Audit HE How-copy: CMS MT needles (`מפה`, `רומנית`, `מסירה`, `שלח את`) must not override `auditPage.ts`; run `pnpm db:fix-audit-he-copy` (PIT-083)
+- [ ] Audit pricing `<Link>`: CMS `ctaHref` must be `/order/…` (leading slash); run `pnpm db:fix-audit-pricing` (PIT-084)
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
 - [ ] Fix script if prod/CI may lag (`pnpm db:fix-*`)
@@ -1501,4 +1551,6 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 - [ ] Free-audit submit: confirmation popup like `/order`, no auto-opened waiting tab (PIT-080)
 - [ ] Form POST / website DNS / SMTP: timeouts + localized catch; waiting page must show network copy (PIT-081)
 - [ ] Contact intake: sanitize/Turnstile/honeypot before DB; no IMAP→CMS; no AV on text-only forms (PIT-082)
+- [ ] Audit HE: do not trust a code-only deploy to fix `audit-page` CMS Hebrew; sanitize + `db:fix-audit-he-copy` (PIT-083)
+- [ ] Audit pricing CTAs: no relative `order/…` in CMS; `normalizeCtaHref` + `db:fix-audit-pricing` (PIT-084)
 

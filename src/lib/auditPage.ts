@@ -6,6 +6,33 @@ export function tAudit(field: Localized, locale: string): string {
   return field[locale as keyof Localized] || field.en
 }
 
+/**
+ * Stale machine-translated Hebrew still stored on the `audit-page` CMS global.
+ * `fetchAuditPage` prefers the code fallback when a CMS string matches.
+ */
+export function isStaleAuditHebrew(value: string): boolean {
+  const s = value.trim()
+  if (!s) return false
+  if (/^0[1-9]$/.test(s)) return true
+  return (
+    /מפה אינה נדרשת/.test(s) ||
+    /רומנית/.test(s) ||
+    /הולנדית/.test(s) ||
+    /המעבדה מסירה/.test(s) ||
+    /^שלח את כתובת/.test(s) ||
+    /מצלמת/.test(s) ||
+    /הונגרית/.test(s) ||
+    /אנגליה\s*\/\s*רוסית/.test(s) ||
+    /משא ומתן על הנחה/.test(s) ||
+    /עקיפת המשפך/.test(s) ||
+    /מדריך וגודל/.test(s) ||
+    /דליפות פרסומות/.test(s) ||
+    /60\+\s*אנשים/.test(s) ||
+    /ללא כרטיס(?!\s*אשראי)/.test(s) ||
+    /או סוכנות\?/.test(s)
+  )
+}
+
 export const AUDIT_WEBSITE_UNREACHABLE = {
   en: 'This website was not found. Check the address.',
   ru: 'Такой сайт не найден. Проверьте адрес.',
@@ -354,19 +381,19 @@ export const auditPage = {
         body: {
           en: 'Five checks reported separately: valid robots, agent sitemap, crawler rules, Content-Signal, markdown negotiation. The L1 score is not part of the 7 AI Visibility criteria and does not change the overall grade.',
           ru: 'Пять отдельных проверок: валидный robots, sitemap для агентов, правила ботов, Content-Signal, markdown negotiation. Балл L1 не входит в 7 критериев AI Visibility и не меняет итоговую оценку.',
-          he: 'חמש בדיקות מדווחות בנפרד: robots תקין, sitemap לסוכנים, כללי בוטים, Content-Signal, markdown negotiation. ציון L1 אינו חלק מ-7 קריטריוני AI Visibility ואינו משנה את הציון הכולל.',
+          he: 'חמש בדיקות מדווחות בנפרד: robots תקין, sitemap לסוכנים, כללי בוטים, Content-Signal, העברת תוכן בפורמט Markdown (Content Negotiation). ציון L1 אינו חלק מ-7 קריטריוני AI Visibility ואינו משנה את הציון הכולל.',
         } satisfies Localized,
       },
       {
         title: {
           en: 'Funnel crawl',
           ru: 'Обход воронки',
-          he: 'סריקת משפך',
+          he: 'סריקת משפך המכירות',
         } satisfies Localized,
         body: {
           en: 'Candidates from sitemap and nav. Free crawls 1 URL (homepage); Diagnostic up to 5; Pro up to 10. Per page: HTTP, title, h1, forms (inline and after a CTA click), CTA, chat/WhatsApp, soft-404, lang, dir, word count. The row-by-row 60+ checklist is in Pro.',
           ru: 'Кандидаты из sitemap и навигации. Free снимает 1 URL (главная); Diagnostic — до 5; Pro — до 10. На каждую страницу: HTTP, title, h1, формы (встроенные и после клика по CTA), CTA, чат/WhatsApp, soft-404, lang, dir, объём текста. Построчный чеклист 60+ — в Pro.',
-          he: 'מועמדים מ-sitemap ומהניווט. Free סורק כתובת אחת (דף הבית); Diagnostic — עד 5; Pro — עד 10. לכל עמוד: HTTP, title, h1, טפסים (משובצים ואחרי לחיצה על CTA), CTA, צ׳אט/WhatsApp, soft-404, lang, dir, היקף טקסט. צ׳ק-ליסט 60+ שורה-שורה — ב-Pro.',
+          he: 'מועמדים מ-sitemap ומהניווט. Free סורק כתובת אחת (דף הבית); Diagnostic — עד 5; Pro — עד 10. לכל עמוד: HTTP, title, h1, טפסים (משובצים ואחרי לחיצה על CTA), CTA, צ׳אט/WhatsApp, soft-404, lang, כיוון טקסט (dir: RTL/LTR), היקף טקסט. צ׳ק-ליסט 60+ שורה-שורה — ב-Pro.',
         } satisfies Localized,
       },
       {
@@ -397,7 +424,7 @@ export const auditPage = {
         body: {
           en: 'We translate technical issues into lost leads, ad waste, and trust risks — so you know what to fix first.',
           ru: 'Переводим технические проблемы в потерянные заявки, слив рекламы и риски доверия — чтобы было ясно, что чинить в первую очередь.',
-          he: 'מתרגמים בעיות טכניות ללידים שאבדו, בזבוז פרסום וסיכוני אמון — כדי לדעת מה לתקן קודם.',
+          he: 'מתרגמים בעיות טכניות לאובדן לידים, בזבוז תקציבי פרסום ופגיעה באמינות המותג — כדי לדעת מה לתקן קודם.',
         } satisfies Localized,
       },
       {
@@ -431,9 +458,9 @@ export const auditPage = {
           he: 'צעדים הבאים ברורים',
         } satisfies Localized,
         body: {
-          en: 'Top-3 risks come with business impact. Diagnostic unlocks summary cards. The row-by-row 60+ checklist, Funnel review, fix plan, and AI Visibility details are in Pro; Delegate adds implementation with our team.',
-          ru: 'Топ-3 рисков — с влиянием на бизнес. Diagnostic открывает сводные карточки. Построчный чеклист 60+, Funnel review, план правок и детали AI Visibility — в Pro; Delegate добавляет внедрение вместе с нашей командой.',
-          he: 'לשלושת הסיכונים העיקריים יש השפעה עסקית. Diagnostic פותח כרטיסי סיכום. צ׳ק-ליסט 60+ שורה-שורה, Funnel review, תוכנית תיקון ופרטי נראות AI — ב-Pro; Delegate מוסיף יישום עם הצוות שלנו.',
+          en: 'Top-3 risks come with business impact. Diagnostic unlocks summary cards. The row-by-row 60+ checklist, Funnel review, fix plan, and AI Visibility details are in Pro.',
+          ru: 'Топ-3 рисков — с влиянием на бизнес. Diagnostic открывает сводные карточки. Построчный чеклист 60+, Funnel review, план правок и детали AI Visibility — в Pro.',
+          he: 'לשלושת הסיכונים העיקריים יש השפעה עסקית. Diagnostic פותח כרטיסי סיכום. צ׳ק-ליסט מפורט של מעל 60 בדיקות שורה-שורה, Funnel review, תוכנית תיקון ופרטי נראות AI — ב-Pro.',
         } satisfies Localized,
       },
     ],
@@ -450,9 +477,9 @@ export const auditPage = {
       he: 'בחרו את החבילה המתאימה',
     } satisfies Localized,
     intro: {
-      en: 'Start with a free preview: scorecard, top-3, and Lighthouse. Diagnostic unlocks summary cards and up to 5 funnel URLs. Pro opens the full 60+ checklist, up to 10 funnel URLs, Funnel review, the fix plan, and AI Visibility — or hand implementation to us.',
-      ru: 'Начните с бесплатного превью: scorecard, топ-3 и Lighthouse. Diagnostic открывает сводные карточки и до 5 URL воронки. Pro — полный чеклист 60+, до 10 URL воронки, Funnel review, план правок и AI Visibility, либо передайте внедрение нам.',
-      he: 'התחילו בתצוגה מקדימה חינם: scorecard, טופ-3 ו-Lighthouse. Diagnostic פותח כרטיסי סיכום ועד 5 כתובות משפך. Pro — צ׳ק-ליסט 60+ מלא, עד 10 כתובות משפך, Funnel review, תוכנית תיקון ונראות AI, או תעבירו את היישום אלינו.',
+      en: 'Start with a free preview: scorecard, top-3, and Lighthouse. Diagnostic unlocks summary cards and up to 5 funnel URLs. Pro opens the full 60+ checklist, up to 10 funnel URLs, Funnel review, the fix plan, and AI Visibility.',
+      ru: 'Начните с бесплатного превью: scorecard, топ-3 и Lighthouse. Diagnostic открывает сводные карточки и до 5 URL воронки. Pro — полный чеклист 60+, до 10 URL воронки, Funnel review, план правок и AI Visibility.',
+      he: 'התחילו בתצוגה מקדימה חינם: scorecard, טופ-3 ו-Lighthouse. Diagnostic פותח כרטיסי סיכום ועד 5 כתובות משפך. Pro — צ׳ק-ליסט מפורט של מעל 60 בדיקות שורה-שורה, עד 10 כתובות משפך, Funnel review, תוכנית תיקון ונראות AI.',
     } satisfies Localized,
     footnote: {
       en: 'Secure payment · Choose report language (RU / EN / HE)',
@@ -460,9 +487,9 @@ export const auditPage = {
       he: 'תשלום מאובטח · בחירת שפת הדוח (RU / EN / HE)',
     } satisfies Localized,
     agency: {
-      en: 'Need audits for 10+ domains or run an agency?',
-      ru: 'Нужен аудит для 10+ доменов или агентство?',
-      he: 'צריכים ביקורות ל-10+ דומיינים או סוכנות?',
+      en: 'Need an audit for 10+ domains or agency pricing?',
+      ru: 'Нужен аудит для 10+ доменов или агентский тариф?',
+      he: 'דרושה ביקורת עבור 10+ דומיינים או מחיר מיוחד לסוכנויות?',
     } satisfies Localized,
     agencyCta: {
       en: 'Contact us for an agency plan',
@@ -478,7 +505,7 @@ export const auditPage = {
         priceNote: {
           en: 'no card required',
           ru: 'карта не нужна',
-          he: 'ללא כרטיס',
+          he: 'ללא צורך באשראי',
         } satisfies Localized,
         description: {
           en: 'Preview: scorecard, top-3, Lighthouse.',
@@ -547,9 +574,9 @@ export const auditPage = {
             he: 'כרטיסי סיכום צ׳ק-ליסט (מצוין → לתשומת לב → קריטי)',
           },
           {
-            en: 'Funnel crawl disclosed — up to 5 URLs',
-            ru: 'Обход воронки раскрыт — до 5 URL',
-            he: 'סריקת המשפך גלויה — עד 5 כתובות',
+            en: 'Funnel crawl — up to 5 URLs',
+            ru: 'Обход воронки — до 5 URL',
+            he: 'סריקת המשפך — עד 5 כתובות',
           },
           {
             en: 'PageSpeed mobile + desktop details',
@@ -601,9 +628,9 @@ export const auditPage = {
             he: 'צ׳ק-ליסט 60+ מלא ותוכנית תיקון פתוחים',
           },
           {
-            en: 'Funnel crawl disclosed — up to 10 URLs',
-            ru: 'Обход воронки раскрыт — до 10 URL',
-            he: 'סריקת המשפך גלויה — עד 10 כתובות',
+            en: 'Funnel crawl — up to 10 URLs',
+            ru: 'Обход воронки — до 10 URL',
+            he: 'סריקת המשפך — עד 10 כתובות',
           },
           {
             en: 'Funnel review: AI verdict on the lead path (modal forms and chat count), gaps, and one priority fix',

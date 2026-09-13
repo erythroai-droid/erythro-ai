@@ -6,7 +6,7 @@ export const ctaHrefField = (name: string, overrides: Partial<Field> = {}): Fiel
   type: 'text',
   admin: {
     description:
-      'Link target: /portfolio, #contacts, #services, or #contact-modal (opens the contact form).',
+      'Link target with a leading slash: /order/audit-pro, /portfolio, #contacts, or #contact-modal. Relative paths like order/audit-pro become /audit/order/… and 404.',
   },
   ...(overrides as object),
 })

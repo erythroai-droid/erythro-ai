@@ -5,6 +5,7 @@ import { SERVICE_ID_TO_SLUG } from './servicePages'
 import { isLexicalDoc, lexicalFromText, lexicalToPlain } from './lexical'
 import { mediaDocUrl } from './publicMediaUrl'
 import { getPayloadLocal } from './payloadStatic'
+import { normalizeCtaHref } from './ctaNav'
 
 const LOCALES = ['en', 'ru', 'he'] as const
 
@@ -25,7 +26,7 @@ function L(v: any, fallback: Localized): Localized {
   }
   if (v && typeof v === 'object') {
     for (const l of LOCALES) {
-      if (typeof v[l] === 'string' && v[l].trim().length > 0) out[l] = v[l]
+      if (typeof v[l] === 'string' && v[l].trim().length > 0) out[l] = v[l].trim()
     }
   }
   return out
@@ -213,7 +214,7 @@ export async function getSiteContent(): Promise<SiteContent> {
     }
     if (hasContent(header?.ctaLabel)) content.navbar.ctaLabel = L(header.ctaLabel, content.navbar.ctaLabel)
     if (typeof header?.ctaHref === 'string' && header.ctaHref.trim()) {
-      content.navbar.ctaHref = header.ctaHref.trim()
+      content.navbar.ctaHref = normalizeCtaHref(header.ctaHref)
     }
 
     // --- Hero global ---
@@ -222,7 +223,7 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.hero.subtext = L(hero?.subtext, content.hero.subtext)
     content.hero.ctaFind = L(hero?.ctaFind, content.hero.ctaFind)
     if (typeof hero?.ctaHref === 'string' && hero.ctaHref.trim()) {
-      content.hero.ctaHref = hero.ctaHref.trim()
+      content.hero.ctaHref = normalizeCtaHref(hero.ctaHref)
     }
     if (Array.isArray(hero?.words) && hero.words.length >= 2) {
       content.hero.motionHeadings = hero.words.map((item: any, i: number) => {
@@ -331,7 +332,7 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.solutions.sectionSubtitle = L(solutionsIntro?.sectionSubtitle, content.solutions.sectionSubtitle)
     content.solutions.ctaLabel = L(solutionsIntro?.ctaLabel, content.solutions.ctaLabel)
     if (typeof solutionsIntro?.ctaHref === 'string') {
-      content.solutions.ctaHref = solutionsIntro.ctaHref.trim()
+      content.solutions.ctaHref = normalizeCtaHref(solutionsIntro.ctaHref)
     }
 
     if (Array.isArray(plansRes?.docs) && plansRes.docs.length) {
@@ -400,9 +401,9 @@ export async function getSiteContent(): Promise<SiteContent> {
             ? { disclaimer: L(d.disclaimer, fb?.disclaimer ?? { en: '', ru: '', he: '' }) }
             : {}),
           ...(typeof d.ctaHref === 'string' && d.ctaHref.trim()
-            ? { ctaHref: d.ctaHref.trim() }
+            ? { ctaHref: normalizeCtaHref(d.ctaHref) }
             : fb?.ctaHref
-              ? { ctaHref: fb.ctaHref }
+              ? { ctaHref: normalizeCtaHref(fb.ctaHref) }
               : {}),
         }
       })
@@ -479,7 +480,7 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.footer.ctaHeadingLine2 = L(footer?.ctaHeadingLine2, content.footer.ctaHeadingLine2)
     content.footer.ctaButton = L(footer?.ctaButton, content.footer.ctaButton)
     if (typeof footer?.ctaHref === 'string' && footer.ctaHref.trim()) {
-      content.footer.ctaHref = footer.ctaHref.trim()
+      content.footer.ctaHref = normalizeCtaHref(footer.ctaHref)
     }
     content.footer.companyTitle = L(footer?.companyTitle, content.footer.companyTitle)
     content.footer.contactTitle = L(footer?.contactTitle, content.footer.contactTitle)
@@ -652,7 +653,7 @@ export async function getShellSiteContent(): Promise<SiteContent> {
     }
     if (hasContent(header?.ctaLabel)) content.navbar.ctaLabel = L(header.ctaLabel, content.navbar.ctaLabel)
     if (typeof header?.ctaHref === 'string' && header.ctaHref.trim()) {
-      content.navbar.ctaHref = header.ctaHref.trim()
+      content.navbar.ctaHref = normalizeCtaHref(header.ctaHref)
     }
 
     if (Array.isArray(servicesRes?.docs) && servicesRes.docs.length) {
@@ -746,7 +747,7 @@ export async function getShellSiteContent(): Promise<SiteContent> {
     content.footer.ctaHeadingLine2 = L(footer?.ctaHeadingLine2, content.footer.ctaHeadingLine2)
     content.footer.ctaButton = L(footer?.ctaButton, content.footer.ctaButton)
     if (typeof footer?.ctaHref === 'string' && footer.ctaHref.trim()) {
-      content.footer.ctaHref = footer.ctaHref.trim()
+      content.footer.ctaHref = normalizeCtaHref(footer.ctaHref)
     }
     content.footer.companyTitle = L(footer?.companyTitle, content.footer.companyTitle)
     content.footer.contactTitle = L(footer?.contactTitle, content.footer.contactTitle)
@@ -853,14 +854,14 @@ export async function getShellSiteContent(): Promise<SiteContent> {
  * Invalidated via `SITE_CONTENT_TAG` when content is edited in Payload admin.
  * Prefer {@link getCachedShellSiteContent} on chrome-only routes.
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v9-r2'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v12-cta-href'], {
   tags: [SITE_CONTENT_TAG],
 })
 
 /** Cached chrome/shell content — no hero/service media. */
 export const getCachedShellSiteContent = unstable_cache(
   getShellSiteContent,
-  ['site-shell-content-v1'],
+  ['site-shell-content-v3-l10n'],
   { tags: [SITE_CONTENT_TAG] },
 )
 

@@ -338,14 +338,14 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         {
           value: {
             en: 'Site crawl in EN, RU and HE',
-            ru: 'Съёмка сайта на EN, RU и HE',
+            ru: 'Сканирование сайта на EN, RU и HE',
             he: 'בדיקת האתר ב-EN, RU ו-HE',
           },
         },
         {
           value: {
             en: 'Funnel crawl — up to 5 URLs',
-            ru: 'Воронка раскрыта — до 5 URL',
+            ru: 'Обход воронки — до 5 URL',
             he: 'סריקת משפך — עד 5 כתובות',
           },
         },
@@ -387,7 +387,7 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
     addons: [],
     includes: {
       en: 'Everything in Free, plus a crawl of the site in EN, RU and HE and up to 5 funnel pages. The report adds summary checklist cards (excellent → attention → critical): layout, forms, HTTPS, AI Visibility, stability. The row-by-row 60+ checklist and written recommendations stay in Pro. One HTML report in the language you choose.',
-      ru: 'Как бесплатный тариф, плюс съёмка сайта на EN, RU и HE и обход до 5 страниц воронки. В отчёте — сводные карточки чеклиста (отлично → внимание → критично): вёрстка, формы, HTTPS, AI Visibility, стабильность. Построчный чеклист 60+ и текст рекомендаций остаются в Pro. Один HTML-отчёт на выбранном языке.',
+      ru: 'Как бесплатный тариф, плюс сканирование сайта на EN, RU и HE и обход до 5 страниц воронки. В отчёте — сводные карточки чеклиста (отлично → внимание → критично): вёрстка, формы, HTTPS, AI Visibility, стабильность. Построчный чеклист 60+ и текст рекомендаций остаются в Pro. Один HTML-отчёт на выбранном языке.',
       he: 'הכל מהחבילה החינמית, ובנוסף בדיקת האתר ב-EN, RU ו-HE וסריקה של עד 5 עמודי משפך. בדוח — כרטיסי סיכום צ׳ק-ליסט (מצוין → לתשומת לב → קריטי): פריסה, טפסים, HTTPS, נראות AI ויציבות. צ׳ק-ליסט 60+ שורה-שורה והמלצות כתובות נשארים ב-Pro. דוח HTML אחד בשפה שבחרתם.',
     },
     seoTitle: {
@@ -431,7 +431,7 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         {
           value: {
             en: 'Funnel crawl — up to 10 URLs',
-            ru: 'Воронка раскрыта — до 10 URL',
+            ru: 'Обход воронки — до 10 URL',
             he: 'סריקת משפך — עד 10 כתובות',
           },
         },

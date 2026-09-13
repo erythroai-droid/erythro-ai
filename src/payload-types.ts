@@ -1846,7 +1846,7 @@ export interface AuditPage {
             | null;
           cta?: string | null;
           /**
-           * Link target: /portfolio, #contacts, #services, or #contact-modal (opens the contact form).
+           * Link target with a leading slash: /order/audit-pro, /portfolio, #contacts, or #contact-modal. Relative paths like order/audit-pro become /audit/order/… and 404.
            */
           ctaHref?: string | null;
           id?: string | null;
