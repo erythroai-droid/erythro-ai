@@ -41,15 +41,47 @@ async function patchAuditPageHe(payload: any): Promise<number> {
     }
   })
 
+  if (typeof how.categoriesTitle === 'string' && isStaleAuditHebrew(how.categoriesTitle)) dirty += 1
+  if (typeof how.categoriesIntro === 'string' && isStaleAuditHebrew(how.categoriesIntro)) dirty += 1
+  how.categoriesTitle = auditPage.how.categoriesTitle.he
+  how.categoriesIntro = auditPage.how.categoriesIntro.he
+
+  const cmsCategories: any[] = Array.isArray(how.categories) ? how.categories : []
+  how.categories = auditPage.how.categories.map((item, i) => {
+    const cms = cmsCategories[i] ?? {}
+    for (const key of ['title', 'body'] as const) {
+      if (typeof cms[key] === 'string' && isStaleAuditHebrew(cms[key])) dirty += 1
+    }
+    return { ...cms, title: item.title.he, body: item.body.he }
+  })
+
+  if (typeof how.principlesTitle === 'string' && isStaleAuditHebrew(how.principlesTitle)) dirty += 1
+  how.principlesTitle = auditPage.how.principlesTitle.he
+
+  const cmsPrinciples: any[] = Array.isArray(how.principles) ? how.principles : []
+  how.principles = auditPage.how.principles.map((item, i) => {
+    const cms = cmsPrinciples[i] ?? {}
+    for (const key of ['title', 'body'] as const) {
+      if (typeof cms[key] === 'string' && isStaleAuditHebrew(cms[key])) dirty += 1
+    }
+    return { ...cms, title: item.title.he, body: item.body.he }
+  })
+
+  const form = { ...(doc.form ?? {}) }
+  if (typeof form.submit === 'string' && isStaleAuditHebrew(form.submit)) dirty += 1
+  if (typeof form.success === 'string' && isStaleAuditHebrew(form.success)) dirty += 1
+  form.submit = auditPage.form.submit.he
+  form.success = auditPage.form.success.he
+
   await payload.updateGlobal({
     slug: 'audit-page',
     locale: 'he',
-    data: { how },
+    data: { how, form },
     depth: 0,
     overrideAccess: true,
   })
 
-  console.log(`  ✓ audit-page/he steps synced from code (${dirty} stale HE fields replaced)`)
+  console.log(`  ✓ audit-page/he how+form copy synced from code (${dirty} stale HE fields replaced)`)
   return dirty
 }
 

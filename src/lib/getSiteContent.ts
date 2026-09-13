@@ -854,14 +854,14 @@ export async function getShellSiteContent(): Promise<SiteContent> {
  * Invalidated via `SITE_CONTENT_TAG` when content is edited in Payload admin.
  * Prefer {@link getCachedShellSiteContent} on chrome-only routes.
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v12-cta-href'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v13-he-consent'], {
   tags: [SITE_CONTENT_TAG],
 })
 
 /** Cached chrome/shell content — no hero/service media. */
 export const getCachedShellSiteContent = unstable_cache(
   getShellSiteContent,
-  ['site-shell-content-v3-l10n'],
+  ['site-shell-content-v4-he-a11y'],
   { tags: [SITE_CONTENT_TAG] },
 )
 
