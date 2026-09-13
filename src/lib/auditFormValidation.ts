@@ -30,11 +30,27 @@ export function isAuditWebsiteFormat(raw: string): boolean {
   return AUDIT_WEBSITE_RE.test(raw.trim())
 }
 
-export function normalizeAuditWebsite(raw: string): string {
+/** http(s) only, no credentials / javascript: — used before DB write. */
+export function sanitizeAuditWebsite(raw: string): string {
   const trimmed = raw.trim()
-  if (!trimmed) return ''
-  if (/^https?:\/\//i.test(trimmed)) return trimmed
-  return `https://${trimmed}`
+  if (!trimmed || !isAuditWebsiteFormat(trimmed)) return ''
+  const withProto = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+  let url: URL
+  try {
+    url = new URL(withProto)
+  } catch {
+    return ''
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return ''
+  if (url.username || url.password) return ''
+  if (!isAuditWebsiteFormat(url.hostname)) return ''
+  const path = `${url.pathname}${url.search}`
+  const suffix = path === '/' ? '' : path
+  return `${url.protocol}//${url.host}${suffix}`
+}
+
+export function normalizeAuditWebsite(raw: string): string {
+  return sanitizeAuditWebsite(raw)
 }
 
 export function validateAuditForm(values: AuditFormValues): AuditFieldErrors {

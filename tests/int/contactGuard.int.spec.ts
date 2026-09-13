@@ -6,6 +6,7 @@ import {
   sanitizeMessage,
   sanitizePhone,
   sanitizePlainText,
+  sanitizeWebsiteInput,
 } from '@/lib/contactSanitize'
 import {
   consumeContactRateLimit,
@@ -21,11 +22,23 @@ describe('contactSanitize', () => {
   it('strips html and scripts from plain text', () => {
     expect(sanitizePlainText('<b>Hi</b> <script>alert(1)</script>', 120)).toBe('Hi alert(1)')
     expect(sanitizePlainText('javascript:alert(1)', 120)).toBe('alert(1)')
+    expect(sanitizePlainText('file:C:/secret', 120)).toBe('C:/secret')
+  })
+
+  it('decodes HTML entities before stripping tags and protocols', () => {
+    expect(sanitizePlainText('&lt;script&gt;alert(1)&lt;/script&gt;Ada', 120)).toBe('alert(1) Ada')
+    expect(sanitizePlainText('java\u0000script:alert(1)', 120)).toBe('alert(1)')
+    expect(sanitizeMessage('Need help &lt;img src=x onerror=alert(1)&gt;', 5000)).toBe('Need help')
   })
 
   it('keeps newlines in messages but collapses excess blank lines', () => {
     const out = sanitizeMessage('Hello\n\n\n\nWorld<script>', 5000)
     expect(out).toBe('Hello\n\nWorld')
+  })
+
+  it('does not turn javascript: URLs into a normal website host', () => {
+    expect(sanitizeWebsiteInput('javascript:example.com', 500)).toBe('javascript:example.com')
+    expect(sanitizeWebsiteInput('<b>example.com</b>', 500)).toBe('example.com')
   })
 
   it('normalizes email and phone', () => {
@@ -131,6 +144,22 @@ describe('guardContactSubmission', () => {
       expect(result.data.auditStatus).toBe('new')
       expect(result.data.phone).toBe('+972501234567')
     }
+  })
+
+  it('rejects audit websites with credentials or non-http protocols', () => {
+    const base = {
+      name: 'Ada',
+      email: 'ada@example.com',
+      phone: '+972501234567',
+      message: 'AI Audit request',
+      privacyConsent: true,
+      source: 'audit',
+      auditLanguage: 'en',
+    }
+    expect(guardContactSubmission({ ...base, website: 'javascript:example.com' }).ok).toBe(false)
+    expect(guardContactSubmission({ ...base, website: 'https://user:pass@example.com' }).ok).toBe(
+      false,
+    )
   })
 })
 

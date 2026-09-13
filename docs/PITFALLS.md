@@ -1409,6 +1409,23 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 
 ---
 
+## PIT-082 — Contact intake is not an AV/phishing scanner; inbound IMAP is not stored
+
+**Tags:** `security`, `forms`, `sanitize`, `sql`, `email`, `n8n`  
+**Seen:** 2026-09-13 — review of “virus / SQL injection / phishing before DB write”
+
+**Cause:** Intake is **text JSON** (`POST /api/contact`), not files. There is no ClamAV (and none is needed: no `type=file`, IMAP `downloadAttachments: false`). Inbound `order@` / `team@` mail is n8n auto-reply only — body is never written to Payload. SQL injection is not a string-concat risk (Payload/Drizzle bound params). Naive HTML strip (`<\/?[^>]+>`) missed `&lt;script&gt;` and leftover `javascript:` / `file:` obfuscation. Website field accepted any string matching the domain regex (no URL parser, credentials possible in theory). n8n HTML greeting interpolated raw `From` display name.
+
+**Fix:**
+- Keep: rate limit → honeypot → Turnstile siteverify → `guardContactSubmission` (sanitize + validate) → `payload.create`; public REST `create: () => false`. Staff/client HTML uses `escapeHtml`. Website DNS + public IP only (PIT-041).
+- `contactSanitize`: NFKC + control-char strip, HTML entity decode, repeated tag/protocol strip (`javascript|vbscript|data|file|blob|about`), leftover `<>`. Website field keeps the scheme so `javascript:example.com` is rejected, not rewritten to `example.com`.
+- `sanitizeAuditWebsite`: `http:`/`https:` only, reject userinfo, parse via `URL`.
+- n8n autoresponder: escape sender name in HTML greeting (repo JSON; import to n8n to apply live).
+
+**Prevent:** Do not add ClamAV for text-only forms. Do not persist IMAP bodies into CMS. Do not treat client `message` URLs as malware — clients send links; this is not URL reputation. Re-enable IP/cooldown limits after the payment terminal is connected (`AUDIT_INTAKE_LIMITS_OPEN_FOR_QA`, `docs/PLAN-deferred.md`). Never concatenate user strings into SQL.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1423,6 +1440,7 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 - [ ] Routes that set their own `openGraph` must include `images` (width/height 1200×630); LinkedIn ignores `twitter:image` (PIT-079)
 - [ ] Free-audit submit: confirmation popup like `/order`, no auto-opened waiting tab (PIT-080)
 - [ ] Form POST / website DNS / SMTP: timeouts + localized catch; do not show English API `message` except cooldown (PIT-081)
+- [ ] Contact intake: sanitize/Turnstile/honeypot before DB; no IMAP→CMS; no AV on text-only forms (PIT-082)
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
 - [ ] Fix script if prod/CI may lag (`pnpm db:fix-*`)
@@ -1481,4 +1499,5 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 - [ ] Routes that set their own `openGraph` must include `images` (width/height 1200×630); LinkedIn ignores `twitter:image` (PIT-079)
 - [ ] Free-audit submit: confirmation popup like `/order`, no auto-opened waiting tab (PIT-080)
 - [ ] Form POST / website DNS / SMTP: timeouts + localized catch; waiting page must show network copy (PIT-081)
+- [ ] Contact intake: sanitize/Turnstile/honeypot before DB; no IMAP→CMS; no AV on text-only forms (PIT-082)
 

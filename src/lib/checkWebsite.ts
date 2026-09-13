@@ -1,6 +1,6 @@
 import { lookup as dnsLookup } from 'node:dns/promises'
 import { isIP } from 'node:net'
-import { isAuditWebsiteFormat, normalizeAuditWebsite } from '@/lib/auditFormValidation'
+import { isAuditWebsiteFormat, sanitizeAuditWebsite } from '@/lib/auditFormValidation'
 
 export type WebsiteCheckReason = 'format' | 'blocked' | 'dns'
 
@@ -65,9 +65,10 @@ export function isPrivateOrReservedIp(address: string): boolean {
 }
 
 function parsePublicHostname(raw: string): string | null {
-  if (!isAuditWebsiteFormat(raw)) return null
+  const normalized = sanitizeAuditWebsite(raw)
+  if (!normalized) return null
   try {
-    const hostname = new URL(normalizeAuditWebsite(raw)).hostname.toLowerCase()
+    const hostname = new URL(normalized).hostname.toLowerCase()
     if (!hostname || hostnameBlocked(hostname)) return null
     return hostname
   } catch {
