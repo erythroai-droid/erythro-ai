@@ -32,6 +32,14 @@ export async function readContactSubmitErrorBody(res: Response): Promise<Contact
   return (await res.json().catch(() => null)) as ContactSubmitErrorBody | null
 }
 
+export function readContactSubmitTicketId(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return null
+  const rec = payload as { ticketId?: unknown; orderId?: unknown }
+  if (typeof rec.ticketId === 'string' && rec.ticketId.trim()) return rec.ticketId.trim()
+  if (typeof rec.orderId === 'string' && rec.orderId.trim()) return rec.orderId.trim()
+  return null
+}
+
 export async function postContactForm(
   body: unknown,
   timeoutMs = CONTACT_SUBMIT_TIMEOUT_MS,

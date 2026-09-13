@@ -3,6 +3,7 @@
 import React from 'react'
 import { useDocumentInfo, useFormFields } from '@payloadcms/ui'
 import { submissionSourceDef } from '@/lib/contactSubmissionSources'
+import { formatSubmissionTicketId } from '@/lib/submissionTicket'
 import { whatsAppHref } from '@/lib/phoneE164'
 
 function asText(value: unknown): string {
@@ -119,7 +120,7 @@ export const SubmissionDetail: React.FC = () => {
           <div style={{ fontSize: 16, fontWeight: 700 }}>{title}</div>
           <div style={{ marginTop: 2, fontSize: 12, color: 'var(--theme-elevation-600)' }}>
             {channel?.navLabel || source || '—'}
-            {id != null ? ` · #${id}` : null}
+            {id != null ? ` · #${formatSubmissionTicketId(source, id) || id}` : null}
             {createdLabel ? ` · ${createdLabel}` : null}
           </div>
         </div>

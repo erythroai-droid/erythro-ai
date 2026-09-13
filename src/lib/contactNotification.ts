@@ -1,4 +1,5 @@
 import { contactForm } from '@/translations'
+import { formatSubmissionTicketId } from '@/lib/submissionTicket'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -158,7 +159,9 @@ const ACK_SIGNATURE_HTML = `
   <p style="color:#000000;margin:12px 0 0 0;">Hi-Load Web Development &amp; Ai Agents Automation</p>
 `.trim()
 
-export function buildClientAckEmail(input: Pick<ContactNotificationInput, 'name' | 'locale'>): MailContent {
+export function buildClientAckEmail(
+  input: Pick<ContactNotificationInput, 'name' | 'locale' | 'source' | 'submissionId'>,
+): MailContent {
   const locale = ackLocale(input.locale)
   const dir = locale === 'he' ? 'rtl' : 'ltr'
   const safeName = input.name.replace(/[\r\n"<>]/g, '').trim().slice(0, 80)
@@ -170,12 +173,25 @@ export function buildClientAckEmail(input: Pick<ContactNotificationInput, 'name'
     : escapeHtml(contactForm.ackHelloAnon[locale])
   const body = contactForm.ackBody[locale]
   const signoff = contactForm.ackSignoff[locale]
-  const subject = contactForm.ackSubject[locale]
-  const text = [hello, '', body, '', signoff, ACK_SIGNATURE_TEXT].join('\n')
+  const ticket = formatSubmissionTicketId(input.source, input.submissionId)
+  const ticketLine = ticket ? contactForm.ackTicket[locale].replace('{id}', ticket) : ''
+  const subject = ticket
+    ? `${contactForm.ackSubject[locale]} #${ticket}`
+    : contactForm.ackSubject[locale]
+  const text = ticketLine
+    ? [hello, '', body, ticketLine, '', signoff, ACK_SIGNATURE_TEXT].join('\n')
+    : [hello, '', body, '', signoff, ACK_SIGNATURE_TEXT].join('\n')
+  const ticketHtml = ticket
+    ? `<p style="color:#000000;margin:0 0 16px 0;">${escapeHtml(ticketLine).replace(
+        escapeHtml(`#${ticket}`),
+        `<span dir="ltr">#${escapeHtml(ticket)}</span>`,
+      )}</p>`
+    : ''
   const html = `
     <div dir="${dir}" style="color:#000000;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;">
       <p style="color:#000000;margin:0 0 12px 0;">${helloHtml}</p>
       <p style="color:#000000;margin:0 0 16px 0;">${escapeHtml(body)}</p>
+      ${ticketHtml}
       <p style="color:#000000;margin:0 0 4px 0;">${escapeHtml(signoff)}</p>
       ${ACK_SIGNATURE_HTML}
     </div>
@@ -185,14 +201,17 @@ export function buildClientAckEmail(input: Pick<ContactNotificationInput, 'name'
 
 export function buildContactEmail(input: ContactNotificationInput): { subject: string; text: string; html: string } {
   const source = input.source === 'order' ? 'order' : input.source === 'audit' ? 'audit' : 'contact'
+  const ticket = formatSubmissionTicketId(source, input.submissionId)
+  const ticketSuffix = ticket ? ` ${ticket}` : ''
   const subject =
     source === 'order'
-      ? `Erythro.ai order inquiry: ${input.name}`
+      ? `Erythro.ai order inquiry${ticketSuffix}: ${input.name}`
       : source === 'audit'
-        ? `Erythro.ai AI audit: ${input.name}`
-        : `Erythro.ai contact: ${input.name}`
+        ? `Erythro.ai AI audit${ticketSuffix}: ${input.name}`
+        : `Erythro.ai contact${ticketSuffix}: ${input.name}`
   const lines = [
     `Source: ${source}`,
+    ...(ticket ? [`Ticket: ${ticket}`] : []),
     `Name: ${input.name}`,
     `Email: ${input.email}`,
     `Phone: ${input.phone?.trim() || '—'}`,
@@ -203,9 +222,6 @@ export function buildContactEmail(input: ContactNotificationInput): { subject: s
     lines.push(`Report language: ${input.auditLanguage || '—'}`)
     lines.push(`Plan: ${input.planSlug?.trim() || '—'}`)
     if (input.planTotal?.trim()) lines.push(`Total: ${input.planTotal.trim()}`)
-    if (input.submissionId != null && String(input.submissionId).trim()) {
-      lines.push(`Order ID: AUD-${String(input.submissionId).trim()}`)
-    }
   }
   lines.push('', input.message)
   const text = lines.join('\n')
@@ -216,15 +232,11 @@ export function buildContactEmail(input: ContactNotificationInput): { subject: s
     <p><strong>Report language:</strong> ${escapeHtml(input.auditLanguage || '—')}</p>
     <p><strong>Plan:</strong> ${escapeHtml(input.planSlug?.trim() || '—')}</p>
     ${input.planTotal?.trim() ? `<p><strong>Total:</strong> ${escapeHtml(input.planTotal.trim())}</p>` : ''}
-    ${
-      input.submissionId != null && String(input.submissionId).trim()
-        ? `<p><strong>Order ID:</strong> <code>AUD-${escapeHtml(String(input.submissionId).trim())}</code></p>`
-        : ''
-    }
       `
       : ''
   const html = `
     <p><strong>Source:</strong> ${escapeHtml(source)}</p>
+    ${ticket ? `<p><strong>Ticket:</strong> <code dir="ltr">${escapeHtml(ticket)}</code></p>` : ''}
     <p><strong>Name:</strong> ${escapeHtml(input.name)}</p>
     <p><strong>Email:</strong> ${escapeHtml(input.email)}</p>
     <p><strong>Phone:</strong> ${escapeHtml(input.phone?.trim() || '—')}</p>
@@ -407,7 +419,7 @@ export async function sendContactNotification(
 
 /** Confirmation to the visitor. Independent of n8n IMAP (which ignores @erythro.ai From). */
 export async function sendClientAcknowledgement(
-  input: Pick<ContactNotificationInput, 'name' | 'email' | 'locale'>,
+  input: Pick<ContactNotificationInput, 'name' | 'email' | 'locale' | 'source' | 'submissionId'>,
 ): Promise<{ sent: boolean; reason?: string }> {
   const to = input.email?.trim()
   if (!isUsableEmail(to)) {

@@ -1,3 +1,5 @@
+import { formatSubmissionTicketId } from '@/lib/submissionTicket'
+
 export type AuditReportStatus = 'new' | 'in_progress' | 'report_sent' | 'failed'
 
 export type AuditReportPublicPayload = {
@@ -21,13 +23,7 @@ type LocaleMap = { en: string; ru: string; he: string }
 
 /** Public order id shown in email / UI; maps 1:1 to contact-submissions.id */
 export function formatAuditOrderId(id: number | string): string {
-  if (typeof id === 'number') {
-    if (!Number.isSafeInteger(id) || id <= 0) return `AUD-${String(id)}`
-    return `AUD-${id}`
-  }
-  const parsed = parseAuditReportId(id)
-  if (parsed) return `AUD-${parsed}`
-  return `AUD-${id.trim()}`
+  return formatSubmissionTicketId('audit', id) || `AUD-${String(id).trim()}`
 }
 
 export const auditReportCopy = {
