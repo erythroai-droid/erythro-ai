@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
+import { canonicalSiteOrigin, isVercelAppHost, requestHost } from '@/lib/vercelHost'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
+const SITE_URL = canonicalSiteOrigin()
 
 /**
  * Content Signals (https://contentsignals.org/):
@@ -26,26 +27,35 @@ const SHARED_DISALLOWS = ['/admin', '/api/'] as const
 function appendRule(
   lines: string[],
   userAgent: string,
-  options: { disallow: readonly string[] },
+  options: { allow: boolean; disallow: readonly string[] },
 ): void {
   lines.push(`User-Agent: ${userAgent}`)
   lines.push(`Content-Signal: ${CONTENT_SIGNAL}`)
-  lines.push('Allow: /')
+  if (options.allow) lines.push('Allow: /')
   for (const path of options.disallow) {
     lines.push(`Disallow: ${path}`)
   }
   lines.push('')
 }
 
-/** Dynamic robots.txt with Content-Signal preferences (Next 15 has no robots.ts `other` field). */
-export function GET() {
+function vercelAppRobotsBody(): string {
+  const lines: string[] = [
+    'User-Agent: *',
+    'Disallow: /',
+    '',
+  ]
+  return lines.join('\n')
+}
+
+function productionRobotsBody(): string {
   const lines: string[] = []
 
   for (const userAgent of AI_BOT_AGENTS) {
-    appendRule(lines, userAgent, { disallow: SHARED_DISALLOWS })
+    appendRule(lines, userAgent, { allow: true, disallow: SHARED_DISALLOWS })
   }
 
   appendRule(lines, '*', {
+    allow: true,
     disallow: [...SHARED_DISALLOWS, '/my-route'],
   })
 
@@ -53,11 +63,29 @@ export function GET() {
   lines.push(`Sitemap: ${SITE_URL}/sitemap.xml`)
   lines.push('')
 
-  return new NextResponse(lines.join('\n'), {
+  return lines.join('\n')
+}
+
+function robotsResponse(body: string, extraHeaders?: Record<string, string>) {
+  return new NextResponse(body, {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': extraHeaders?.['Cache-Control'] || 'public, max-age=3600',
       'X-Content-Type-Options': 'nosniff',
+      ...extraHeaders,
     },
   })
+}
+
+/** Dynamic robots.txt with Content-Signal preferences (Next 15 has no robots.ts `other` field). */
+export function GET(request?: Request) {
+  const host = request ? requestHost(request.headers) : ''
+  if (isVercelAppHost(host)) {
+    return robotsResponse(vercelAppRobotsBody(), {
+      'Cache-Control': 'public, max-age=300',
+      'X-Robots-Tag': 'noindex, nofollow',
+    })
+  }
+
+  return robotsResponse(productionRobotsBody())
 }

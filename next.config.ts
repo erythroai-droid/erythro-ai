@@ -76,6 +76,9 @@ const turnstileSiteKey =
   process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || process.env.TURNSTILE_SITE_KEY || ''
 
 const nextConfig: NextConfig = {
+  // Canonical is https://erythro.ai (no trailing slash). Inner `/about/` → 308 `/about`.
+  // The HTTP homepage path is always `/`; do not 308 `/` to an empty path.
+  trailingSlash: false,
   // Stop advertising stack via X-Powered-By (Next.js; Payload may still append — strip in middleware).
   poweredByHeader: false,
   env: {
@@ -102,6 +105,15 @@ const nextConfig: NextConfig = {
         headers: [
           ...SECURITY_HEADERS,
           { key: 'Content-Security-Policy', value: PUBLIC_CONTENT_SECURITY_POLICY },
+        ],
+      },
+      {
+        source: '/sitemap.xml',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
+          },
         ],
       },
     ]

@@ -45,6 +45,12 @@ describe('brandSchema', () => {
     const schema = buildWebSiteSchema('Test description') as Record<string, unknown>
     expect(schema['@type']).toBe('WebSite')
     expect(schema.description).toBe('Test description')
+    expect(schema.url).toBe('https://erythro.ai')
+  })
+
+  it('uses the slash-free canonical as Organization url', () => {
+    const schema = buildOrganizationSchema(defaultSiteContent) as Record<string, unknown>
+    expect(schema.url).toBe('https://erythro.ai')
   })
 })
 
