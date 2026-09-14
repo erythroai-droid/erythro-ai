@@ -1475,6 +1475,25 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 
 ---
 
+## PIT-085 — `*.vercel.app` indexes as a duplicate of erythro.ai; sitemap 5xx
+
+**Tags:** `seo`, `robots`, `vercel`, `sitemap`, `canonical`  
+**Seen:** 2026-09-14 — `https://erythro-ai.vercel.app` returns 200 with `index, follow` while canonical is `https://erythro.ai`. Vercel Standard Protection (`all_except_custom_domains`) still leaves the short production alias public.
+
+**Symptom:** Google may index the Vercel alias next to the custom domain. `GET /sitemap.xml` is dynamic against Payload; a DB timeout becomes 5xx and Search Console drops the sitemap.
+
+**Cause:** Production `project.vercel.app` is treated as a production URL, not a preview. `robots.txt` was host-agnostic (`Allow: /`). Sitemap generation had no ISR/`try` fallback.
+
+**Fix:**
+- Host-aware `robots.txt`: `Disallow: /` + `X-Robots-Tag: noindex` on `*.vercel.app`.
+- Middleware: `X-Robots-Tag: noindex, nofollow` on all `*.vercel.app`; **308** production aliases to `https://erythro.ai` (skip `/robots.txt` and `/api/*`).
+- Canonical + JSON-LD + sitemap `<loc>` use `https://erythro.ai` (no trailing slash). Inner pages already 308 `/path/` → `/path`.
+- Sitemap `revalidate = 3600`, static fallback on throw, CDN `s-maxage=3600`, hourly cron `/api/cron/sitemap-health` emails `order@` on failure.
+
+**Prevent:** Do not point GitHub homepage / GSC / ads at `*.vercel.app`. After deploy, `curl -sI https://erythro-ai.vercel.app/` must be 308 (or auth wall), and `curl -s https://erythro-ai.vercel.app/robots.txt` must contain `Disallow: /`.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1492,6 +1511,7 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 - [ ] Contact intake: sanitize/Turnstile/honeypot before DB; no IMAP→CMS; no AV on text-only forms (PIT-082)
 - [ ] Audit HE How-copy: CMS MT needles (`מפה`, `רומנית`, `מסירה`, `שלח את`) must not override `auditPage.ts`; run `pnpm db:fix-audit-he-copy` (PIT-083)
 - [ ] Audit pricing `<Link>`: CMS `ctaHref` must be `/order/…` (leading slash); run `pnpm db:fix-audit-pricing` (PIT-084)
+- [ ] `*.vercel.app` must `Disallow: /` + noindex; production alias 308 → `https://erythro.ai` (PIT-085)
 
 - [ ] Migration file under `src/migrations/` + registered in `index.ts`
 - [ ] Fix script if prod/CI may lag (`pnpm db:fix-*`)
@@ -1553,4 +1573,5 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 - [ ] Contact intake: sanitize/Turnstile/honeypot before DB; no IMAP→CMS; no AV on text-only forms (PIT-082)
 - [ ] Audit HE: do not trust a code-only deploy to fix `audit-page` CMS Hebrew; sanitize + `db:fix-audit-he-copy` (PIT-083)
 - [ ] Audit pricing CTAs: no relative `order/…` in CMS; `normalizeCtaHref` + `db:fix-audit-pricing` (PIT-084)
+- [ ] Do not leave `*.vercel.app` indexable; sitemap must not 5xx (static fallback + health cron) (PIT-085)
 

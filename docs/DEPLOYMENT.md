@@ -72,6 +72,8 @@ DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-1-...pooler.supabase.com
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | sitekey виджета (публичный). Алиас: `TURNSTILE_SITE_KEY` | Cloudflare Turnstile на формах |
 | `TURNSTILE_SECRET` | secret виджета. Алиас: `TURNSTILE_SECRET_KEY` | server-side siteverify, не в браузер |
 | `TURNSTILE_HOSTNAMES` | `erythro.ai,www.erythro.ai` (prod) | allowlist hostname из siteverify; **без** localhost на проде |
+| `XAI_API_KEY` | ключ [console.x.ai](https://console.x.ai) | ИИ-консультант `POST /api/consult`; **не** `NEXT_PUBLIC_*` |
+| `XAI_CONSULT_MODEL` | (опционально) `grok-4.6` | модель консультанта |
 
 Локально те же значения лежат в `.env` (он в `.gitignore`, в репозиторий не попадает).
 
@@ -649,20 +651,30 @@ curl -s -H "Accept: text/markdown" https://erythro.ai/
 ### 14.1. Sitemap
 
 - URL: `https://erythro.ai/sitemap.xml` (`src/app/sitemap.ts`).
+- Canonical `<loc>` for home is `https://erythro.ai` (no trailing slash), matching `link[rel=canonical]`.
 - lastmod для `/services/*`, `/portfolio/*`, `/order/*` — Payload `updatedAt`.
 - Legal (`/privacy`, `/terms`, `/accessibility`) — `statementDate` / `updatedAt` из globals.
 - `/` и `/portfolio` берут max lastmod по связанному контенту; `/contacts` и `/about` включены.
+- Кэш: `export const revalidate = 3600` + CDN `s-maxage=3600, stale-while-revalidate=86400`.
+- 5xx: generation wrapped in try/catch → static slug fallback; hourly cron `GET /api/cron/sitemap-health` emails `order@erythro.ai` (override `OPS_ALERT_EMAIL`).
 - Инвалидация: hooks `revalidate` → tag `payload-content` + `revalidatePath('/sitemap.xml')`.
 
-### 14.2. Search Console после смены NS на Cloudflare
+### 14.2. `*.vercel.app` must not be indexed
 
-1. Открыть [Google Search Console](https://search.google.com/search-console) → свойство `erythro.ai`.
-2. Ownership: meta уже в `layout.tsx`; файл верификации —
-   `https://erythro.ai/googlea9b1e6ba6a1fc012.html` (`public/…`). Если была DNS TXT-проверка
-   на старых NS — подтвердить заново или опереться на meta/file.
+Vercel Standard Protection still leaves `https://erythro-ai.vercel.app` public. After deploy:
+
+- `Host: *.vercel.app` → `robots.txt` is `Disallow: /` + `X-Robots-Tag: noindex, nofollow`.
+- Production `VERCEL_ENV` + `*.vercel.app` HTML → **308** to `https://erythro.ai` (same path). `/robots.txt` and `/api/*` are not redirected.
+- GitHub repo Website / homepage must be `https://erythro.ai`, not the Vercel alias.
+
+### 14.3. Search Console после смены NS на Cloudflare
+
+1. Открыть [Google Search Console](https://search.google.com/search-console) → свойство `https://erythro.ai` (URL-prefix) или `sc-domain:erythro.ai`.
+2. Ownership: meta `google-site-verification` в `layout.tsx`; файл —
+   `https://erythro.ai/googlea9b1e6ba6a1fc012.html`.
 3. Sitemaps → добавить / проверить `https://erythro.ai/sitemap.xml`.
-4. Проверка URL главной → «Запросить индексирование» при необходимости.
-5. Настройки → предпочтительный домен / следить за `www` vs apex (сейчас apex + www → Vercel).
+4. Проверка URL → «Запросить индексирование»: `/`, `/services/ai-automation`, `/services/development`, `/about`, `/portfolio`, `/audit`.
+5. Следить за `www` vs apex и за тем, чтобы `erythro-ai.vercel.app` не индексировался.
 
 Почтовые MX/SPF/DKIM в Cloudflare на индексацию не влияют.
 
@@ -778,24 +790,6 @@ pnpm cf:contact-rate-limit
 
 ## 14. Sitemap + Google Search Console (после Cloudflare DNS)
 
-### 14.1. Sitemap
-
-- URL: `https://erythro.ai/sitemap.xml` (`src/app/sitemap.ts`).
-- lastmod для `/services/*`, `/portfolio/*`, `/order/*` — Payload `updatedAt`.
-- Legal (`/privacy`, `/terms`, `/accessibility`) — `statementDate` / `updatedAt` из globals.
-- `/` и `/portfolio` берут max lastmod по связанному контенту; `/contacts` включён.
-- Инвалидация: hooks `revalidate` → tag `payload-content` + `revalidatePath('/sitemap.xml')`.
-
-### 14.2. Search Console после смены NS на Cloudflare
-
-1. [Google Search Console](https://search.google.com/search-console) → свойство `erythro.ai`.
-2. Ownership: meta в `layout.tsx`; файл —
-   `https://erythro.ai/googlea9b1e6ba6a1fc012.html` (`public/…`). Если была DNS TXT на старых NS —
-   подтвердить заново или опереться на meta/file.
-3. Sitemaps → `https://erythro.ai/sitemap.xml`.
-4. Проверка URL главной → «Запросить индексирование» при необходимости.
-5. Следить за `www` vs apex (оба на Vercel через Cloudflare).
-
-Почтовые MX/SPF/DKIM на индексацию не влияют.
+См. §14 выше (sitemap ISR + `*.vercel.app` noindex + GSC). Дубликат раздела оставлен якорем для старых ссылок.
 
 ---

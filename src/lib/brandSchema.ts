@@ -39,7 +39,7 @@ export function buildOrganizationSchema(
       'איריתרו',
       'איריתרו איי איי',
     ],
-    url: `${SITE_URL}/`,
+    url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
     image: `${SITE_URL}/images/og-image.png`,
     description,
@@ -118,7 +118,7 @@ export function buildWebSiteSchema(description: string = DEFAULT_ORGANIZATION_DE
   return {
     '@type': 'WebSite',
     '@id': `${SITE_URL}/#website`,
-    url: `${SITE_URL}/`,
+    url: SITE_URL,
     name: 'Erythro.ai',
     alternateName: ['Erythro AI', 'Эритро.ай', 'איריתרו'],
     description,

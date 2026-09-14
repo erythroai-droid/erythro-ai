@@ -1,4 +1,7 @@
 import type { MetadataRoute } from 'next'
+import { getAllOrderSlugs } from '@/lib/orderPlans'
+import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
+import { getAllServiceSlugs } from '@/lib/servicePages'
 import {
   getAuditPageLastModified,
   getLegalSitemapEntries,
@@ -8,14 +11,56 @@ import {
   getSiteSettingsLastModified,
   maxLastModified,
 } from '@/lib/sitemapEntries'
+import { canonicalSiteOrigin } from '@/lib/vercelHost'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
+export const revalidate = 3600
 
-/**
- * Dynamic sitemap with CMS `updatedAt` as lastmod.
- * Rebuilt when `payload-content` is revalidated (see revalidate hooks).
- */
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+const SITE_URL = canonicalSiteOrigin()
+
+const CORE_PATHS = [
+  { path: '/', changeFrequency: 'weekly' as const, priority: 1 },
+  { path: '/portfolio', changeFrequency: 'weekly' as const, priority: 0.9 },
+  { path: '/contacts', changeFrequency: 'monthly' as const, priority: 0.7 },
+  { path: '/audit', changeFrequency: 'monthly' as const, priority: 0.75 },
+  { path: '/about', changeFrequency: 'monthly' as const, priority: 0.7 },
+] as const
+
+function loc(path: string): string {
+  return path === '/' ? SITE_URL : `${SITE_URL}${path}`
+}
+
+/** Always-200 fallback when CMS/DB throws (PIT-085). */
+export function staticSitemapFallback(): MetadataRoute.Sitemap {
+  return [
+    ...CORE_PATHS.map((row) => ({
+      url: loc(row.path),
+      changeFrequency: row.changeFrequency,
+      priority: row.priority,
+    })),
+    ...getAllServiceSlugs().map((slug) => ({
+      url: loc(`/services/${slug}`),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    })),
+    ...getAllPortfolioSlugs().map((slug) => ({
+      url: loc(`/portfolio/${slug}`),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    })),
+    ...getAllOrderSlugs().map((slug) => ({
+      url: loc(`/order/${slug}`),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    })),
+    ...['/privacy', '/terms', '/accessibility'].map((path) => ({
+      url: loc(path),
+      changeFrequency: 'yearly' as const,
+      priority: 0.3,
+    })),
+  ]
+}
+
+async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
   const [services, portfolio, orders, legal, auditLastMod, siteSettingsLastMod] =
     await Promise.all([
       getServiceSitemapEntries(),
@@ -35,62 +80,74 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...legal.map((r) => r.lastModified),
   ])
 
-  const entries: MetadataRoute.Sitemap = [
+  return [
     {
-      url: SITE_URL,
+      url: loc('/'),
       lastModified: contentStamp,
       changeFrequency: 'weekly',
       priority: 1,
     },
     {
-      url: `${SITE_URL}/portfolio`,
+      url: loc('/portfolio'),
       lastModified: maxLastModified(portfolio.map((r) => r.lastModified)) || contentStamp,
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: `${SITE_URL}/contacts`,
+      url: loc('/contacts'),
       lastModified: siteSettingsLastMod || contentStamp,
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
-      url: `${SITE_URL}/audit`,
+      url: loc('/audit'),
       lastModified: auditLastMod || contentStamp,
       changeFrequency: 'monthly',
       priority: 0.75,
     },
     {
-      url: `${SITE_URL}/about`,
+      url: loc('/about'),
       lastModified: siteSettingsLastMod || contentStamp,
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     ...services.map((row) => ({
-      url: `${SITE_URL}/services/${row.slug}`,
+      url: loc(`/services/${row.slug}`),
       lastModified: row.lastModified || contentStamp,
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     })),
     ...portfolio.map((row) => ({
-      url: `${SITE_URL}/portfolio/${row.slug}`,
+      url: loc(`/portfolio/${row.slug}`),
       lastModified: row.lastModified || contentStamp,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),
     ...orders.map((row) => ({
-      url: `${SITE_URL}/order/${row.slug}`,
+      url: loc(`/order/${row.slug}`),
       lastModified: row.lastModified || contentStamp,
       changeFrequency: 'monthly' as const,
       priority: 0.6,
     })),
     ...legal.map((row) => ({
-      url: `${SITE_URL}${row.path}`,
+      url: loc(row.path),
       lastModified: row.lastModified || contentStamp,
       changeFrequency: 'yearly' as const,
       priority: 0.3,
     })),
   ]
+}
 
-  return entries
+/**
+ * Dynamic sitemap with CMS `updatedAt` as lastmod.
+ * ISR hourly; rebuilt immediately when `payload-content` is revalidated.
+ * Never throws 5xx — falls back to static slugs.
+ */
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  try {
+    return await buildSitemap()
+  } catch (err) {
+    console.error('[sitemap] generation failed, using static fallback:', err)
+    return staticSitemapFallback()
+  }
 }

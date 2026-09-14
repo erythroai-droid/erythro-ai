@@ -418,6 +418,29 @@ export async function sendContactNotification(
 }
 
 /** Confirmation to the visitor. Independent of n8n IMAP (which ignores @erythro.ai From). */
+/** Ops alert (sitemap 5xx, crons). Uses SMTP/Resend like contact mail. */
+export async function sendOpsAlert(
+  subject: string,
+  text: string,
+): Promise<{ sent: boolean; reason?: string }> {
+  const to =
+    process.env.OPS_ALERT_EMAIL?.trim() ||
+    process.env.CONTACT_NOTIFY_EMAIL?.trim() ||
+    CONTACT_MAILBOX
+  if (!isUsableEmail(to)) return { sent: false, reason: 'invalid ops email' }
+  const transport = hasMailTransport()
+  if (!transport.ok) return { sent: false, reason: transport.reason }
+  const html = `<pre style="font-family:inherit;white-space:pre-wrap">${escapeHtml(text)}</pre>`
+  try {
+    await sendOutbound(to, CONTACT_MAILBOX, { subject, text, html }, 'auto-generated')
+    return { sent: true }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[opsAlert] send failed:', message)
+    return { sent: false, reason: message }
+  }
+}
+
 export async function sendClientAcknowledgement(
   input: Pick<ContactNotificationInput, 'name' | 'email' | 'locale' | 'source' | 'submissionId'>,
 ): Promise<{ sent: boolean; reason?: string }> {

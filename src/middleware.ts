@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { HOMEPAGE_LINK_HEADER } from '@/lib/agentDiscovery'
 import { shouldServeMarkdown } from '@/lib/markdownAccept'
+import {
+  canonicalUrlForPath,
+  isVercelAppHost,
+  requestHost,
+  shouldRedirectVercelAppToCanonical,
+  shouldSkipVercelAppRedirect,
+} from '@/lib/vercelHost'
 
 /**
  * Edge middleware for markdown negotiation + discovery Link header.
@@ -11,6 +18,21 @@ import { shouldServeMarkdown } from '@/lib/markdownAccept'
  */
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+  const host = requestHost(request.headers, request.nextUrl.hostname)
+
+  if (isVercelAppHost(host)) {
+    if (
+      shouldRedirectVercelAppToCanonical(host) &&
+      !shouldSkipVercelAppRedirect(pathname)
+    ) {
+      const location = canonicalUrlForPath(pathname, request.nextUrl.search)
+      const redirect = NextResponse.redirect(location, 308)
+      redirect.headers.set('X-Robots-Tag', 'noindex, nofollow')
+      redirect.headers.delete('x-powered-by')
+      return redirect
+    }
+  }
+
   const wantsMarkdown =
     !pathname.startsWith('/api') &&
     !pathname.startsWith('/admin') &&
@@ -26,6 +48,10 @@ export function middleware(request: NextRequest) {
     response = NextResponse.next()
   }
 
+  if (isVercelAppHost(host)) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+  }
+
   // RFC 8288 / RFC 9727 — advertise machine-readable discovery on the homepage.
   if (pathname === '/') {
     response.headers.set('Link', HOMEPAGE_LINK_HEADER)
@@ -39,7 +65,10 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   // Skip Next internals, static files, and media proxy paths.
+  // Keep robots.txt + sitemap.xml so *.vercel.app can noindex / redirect them.
   matcher: [
     '/((?!_next/static|_next/image|favicon.ico|api/media|.*\\..*).*)',
+    '/robots.txt',
+    '/sitemap.xml',
   ],
 }

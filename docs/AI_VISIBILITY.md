@@ -35,18 +35,19 @@ API Catalog, OpenAPI, Markdown negotiation, ACP discovery.
 | GA bootstrap | `src/components/AnalyticsBootstrap.tsx` | `dataLayer` + Consent Mode default в `<head>` |
 | AI referral | `src/lib/aiReferral.ts` | Детект referrer ChatGPT/Perplexity и push в dataLayer |
 | Security headers | `next.config.ts` → `headers()` | CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy |
-| robots + Content Signals | `src/app/robots.txt/route.ts` | `Allow: /` для AI-ботов; `Content-Signal: ai-train=no, search=yes, ai-input=yes` ([contentsignals.org](https://contentsignals.org/)) |
+| robots + Content Signals | `src/app/robots.txt/route.ts` | На `erythro.ai`: `Allow: /` для AI-ботов + `Content-Signal`. На `*.vercel.app`: `Disallow: /` + noindex |
+| Sitemap | `src/app/sitemap.ts` | ISR 1h, static fallback, health cron; home loc `https://erythro.ai` |
 | Link headers | `src/middleware.ts` + `src/lib/agentDiscovery.ts` | На `/`: `api-catalog`, `service-desc`, `service-doc`, `describedby` (RFC 8288 / 9727) |
 | API Catalog | `src/app/.well-known/api-catalog/route.ts` | `application/linkset+json` каталог публичных API |
 | OpenAPI | `src/app/openapi.json/route.ts` | `rel=service-desc` для Brand API / MCP |
 | Markdown negotiation | `src/lib/markdownNegotiation.ts` + `src/app/api/markdown-negotiate/` | `Accept: text/markdown` → structured Markdown |
 | ACP discovery | `src/app/.well-known/acp.json/`, `src/app/.well-known/acp/` | Agentic Commerce Protocol discovery |
 | security.txt | `src/app/.well-known/security.txt/route.ts` | RFC 9116 vulnerability disclosure (`Contact: order@`) |
-| Sitemap | `src/app/sitemap.ts` | URL `/about` (и др.) |
 | Layout link | `src/app/(frontend)/layout.tsx` | `<link rel="describedby" href="/llms.txt">`, `alternate` markdown |
 
 Тесты: `tests/int/brandSchema.int.spec.ts`, `tests/int/markdownNegotiation.int.spec.ts`,
-`tests/int/acpDiscovery.int.spec.ts`, `tests/int/securityTxt.int.spec.ts`.
+`tests/int/acpDiscovery.int.spec.ts`, `tests/int/securityTxt.int.spec.ts`,
+`tests/int/vercelHost.int.spec.ts`.
 
 Внешний скан: [isitagentready.com](https://isitagentready.com/) — ожидать pass для
 `contentSignals`, `linkHeaders`, `apiCatalog` (после деплоя + Cloudflare).

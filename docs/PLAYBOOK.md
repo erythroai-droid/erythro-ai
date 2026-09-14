@@ -333,6 +333,7 @@ export default [
 - Google Search Console: meta-тег в `head` (`layout.tsx` → `verification.google`) +
   файл `public/googlea9b1e6ba6a1fc012.html`.
 - Sitemap: `src/app/sitemap.ts` + `src/lib/sitemapEntries.ts` — URL из CMS,
+  ISR 1h + static fallback (PIT-085), home loc `https://erythro.ai` без `/`.
   **lastmod** = Payload `updatedAt` (services / portfolio / order plans) и
   `statementDate`/`updatedAt` у legal globals; статичные `/contacts` + legal pages
   тоже в карте. Revalidate на смене контента (`payload-content` → `/sitemap.xml`).
