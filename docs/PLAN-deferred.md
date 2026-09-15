@@ -17,6 +17,8 @@
 | low | Purge Vercel Blob copies | After admin upload→R2 verified; then drop `BLOB_READ_WRITE_TOKEN` |
 | low | Leftover ~4 Blob URL mentions in HTML | Rewrite/cache already mostly on R2 |
 | low | `AGENT_REQUIRE_HMAC=1` | Only after n8n signs bodies |
+| medium | Drop consultant OTP after auth | Chat email verification is a stopgap: set `CONSULT_EMAIL_OTP=0`, delete `/api/consult/request-otp` + `verify-otp` and `src/lib/consultant/otp.ts`, drop the anonymous-quota cookie |
+| low | Purge `consult-sessions` older than 12 months | Retention promised on `/privacy` is manual today; add a cron |
 | later | CF-only UFW 80/443 | Needs orange cloud + Origin Cert for n8n/agent-api |
 | later | ISR remaining frontend pages | services/order/audit still use `getRequestPrefs` / dynamic params (PIT-056) |
 | later | Custom domain `media.erythro.ai` | r2.dev is rate-limited |

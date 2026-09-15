@@ -21,6 +21,9 @@ import { PortfolioCategories } from './collections/PortfolioCategories'
 import { PortfolioProjects } from './collections/PortfolioProjects'
 import { Partners } from './collections/Partners'
 import { ContactSubmissions } from './collections/ContactSubmissions'
+import { ConsultSessions } from './collections/ConsultSessions'
+import { ProjectBriefs } from './collections/ProjectBriefs'
+import { TechConsultTickets } from './collections/TechConsultTickets'
 
 import { Header } from './globals/Header'
 import { Hero } from './globals/Hero'
@@ -34,6 +37,7 @@ import { LegalPrivacy } from './globals/LegalPrivacy'
 import { LegalTerms } from './globals/LegalTerms'
 import { LegalAccessibility } from './globals/LegalAccessibility'
 import { AuditPage } from './globals/AuditPage'
+import { ConsultantSettings } from './globals/ConsultantSettings'
 import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
@@ -70,8 +74,11 @@ export default buildConfig({
     PortfolioProjects,
     Partners,
     ContactSubmissions,
+    ConsultSessions,
+    ProjectBriefs,
+    TechConsultTickets,
   ],
-  globals: [Header, Hero, ServicesIntro, CaseStudies, SolutionsIntro, FAQ, Footer, SiteSettings, LegalPrivacy, LegalTerms, LegalAccessibility, AuditPage],
+  globals: [Header, Hero, ServicesIntro, CaseStudies, SolutionsIntro, FAQ, Footer, SiteSettings, LegalPrivacy, LegalTerms, LegalAccessibility, AuditPage, ConsultantSettings],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, EXPERIMENTAL_TableFeature()],
   }),

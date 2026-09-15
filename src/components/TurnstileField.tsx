@@ -11,33 +11,9 @@ type TurnstileWidgetId = string
 
 type TurnstileLanguage = 'en' | 'ru' | 'he'
 
-type TurnstileApi = {
-  render: (
-    container: HTMLElement,
-    options: {
-      sitekey: string
-      action: string
-      theme: 'light' | 'dark' | 'auto'
-      size: 'normal' | 'flexible' | 'compact'
-      language: TurnstileLanguage
-      callback: (token: string) => void
-      'expired-callback'?: () => void
-      'error-callback'?: () => void
-    },
-  ) => TurnstileWidgetId
-  reset: (widgetId: TurnstileWidgetId) => void
-  remove: (widgetId: TurnstileWidgetId) => void
-}
-
 function turnstileLanguage(locale: string): TurnstileLanguage {
   if (locale === 'ru' || locale === 'he') return locale
   return 'en'
-}
-
-declare global {
-  interface Window {
-    turnstile?: TurnstileApi
-  }
 }
 
 export function isTurnstileSiteKeyConfigured(): boolean {

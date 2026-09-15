@@ -42,7 +42,7 @@ Last updated: 2026-09-14.
 | `scripts/set-dmarc-reject.mjs` | Raise `_dmarc` to `p=reject` (after quarantine window) | Skip body secrets; one chunk: purpose + env + dry-run | `dmarc`, `dns`, `security` |
 | `scripts/create-cloudflare-access-admin.mjs` | Create Access app for `/admin*` via API token | One chunk: purpose + required scopes | `access`, `cloudflare`, `admin` |
 | `docs/consultant/erythro-knowledge-base.md` | Public AI consultant sales KB (live CMS prices) | One chunk per `##` (or whole file for prompt) | `consultant`, `pricing`, `faq`, `audit` |
-| `docs/architecture/grok-bot-consultant.md` | Site consultant on xAI API + widget | One chunk per `##` | `consultant`, `xai`, `chat` |
+| `docs/architecture/gemini-consultant.md` | Site consultant on Gemini Flash + CMS KB, OTP, Translater | One chunk per `##` | `consultant`, `gemini`, `chat`, `otp` |
 
 **Optional later (not docs yet):** `scripts/seed.ts` header comments, `payload.config.ts` plugin block, `.github/workflows/test.yml` — only if docs lag behind code.
 
@@ -119,7 +119,7 @@ Rules:
 | “Form submit hangs / sending never ends / no error message” | `PIT-081`; `src/lib/contactSubmit.ts`; `useAuditFieldChecks.ts` |
 | “form virus scan / SQL injection / phishing / IMAP before DB” | `PIT-082`; `src/lib/contactSanitize.ts`; `src/lib/contactSubmissionGuard.ts`; `src/app/api/contact/route.ts`; `docs/infrastructure/n8n-email-autoresponder.md` |
 | “vercel.app indexed / sitemap 5xx / Search Console duplicate” | `PIT-085`; `src/lib/vercelHost.ts`; `src/app/robots.txt/route.ts`; `src/app/sitemap.ts` |
-| “AI consultant / Grok / widget / live prices / packages” | `docs/consultant/erythro-knowledge-base.md`; `docs/architecture/grok-bot-consultant.md` |
+| “AI consultant / Gemini / widget / live prices / packages / chat OTP” | `docs/consultant/erythro-knowledge-base.md`; `docs/architecture/gemini-consultant.md` |
 
 ---
 

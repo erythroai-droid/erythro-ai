@@ -68,6 +68,11 @@ node_modules/
 .vercel
 .env*
 
+# Translater agent is vendored into the image at build time, not committed here
+/services/translater/agent/
+# Template only — the real .env stays on the VPS
+!/services/translater/.env.example
+
 # Portfolio import working copies (tool + example live in scripts/import-project/)
 /content/imports/*
 !/content/imports/README.md

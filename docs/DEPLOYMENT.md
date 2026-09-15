@@ -72,8 +72,15 @@ DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-1-...pooler.supabase.com
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | sitekey виджета (публичный). Алиас: `TURNSTILE_SITE_KEY` | Cloudflare Turnstile на формах |
 | `TURNSTILE_SECRET` | secret виджета. Алиас: `TURNSTILE_SECRET_KEY` | server-side siteverify, не в браузер |
 | `TURNSTILE_HOSTNAMES` | `erythro.ai,www.erythro.ai` (prod) | allowlist hostname из siteverify; **без** localhost на проде |
-| `XAI_API_KEY` | ключ [console.x.ai](https://console.x.ai) | ИИ-консультант `POST /api/consult`; **не** `NEXT_PUBLIC_*` |
-| `XAI_CONSULT_MODEL` | (опционально) `grok-4.6` | модель консультанта |
+| `GEMINI_API_KEY` | ключ [Google AI Studio](https://aistudio.google.com/app/apikey) | ИИ-консультант `POST /api/consult`; **не** `NEXT_PUBLIC_*` |
+| `GEMINI_CONSULT_MODEL` | (опционально) `gemini-3.6-flash` | модель консультанта |
+| `CONSULT_EMAIL_OTP` | `1` (v1), `0` после авторизации | временное подтверждение email в чате |
+| `CONSULT_OTP_PEPPER` | случайная строка ≥32 символов | hash OTP + подпись cookie; в prod обязателен |
+| `CONSULT_TRANSLATE_URL` | `https://translate.erythro.ai/api/translate` | Translater на VPS; пусто = только глоссарий |
+| `CONSULT_TRANSLATE_SECRET` | общий секрет с контейнером | заголовок к Translater |
+| `CONSULT_PROMPT_CACHE` | (опционально) `0` чтобы выключить | кэш префикса промпта в Gemini; по умолчанию включён |
+| `MONDAY_API_TOKEN` | токен monday.com | карточка проекта после ТЗ |
+| `MONDAY_BOARD_ID` | id доски | куда кладём `TZ-{id}` |
 
 Локально те же значения лежат в `.env` (он в `.gitignore`, в репозиторий не попадает).
 
