@@ -6,7 +6,7 @@
 
 ## 1. Решение
 
-Публичный консультант на сайте вызывает `POST /api/consult`. Мозг — **Gemini API** (`generativelanguage.googleapis.com`), ключ `GEMINI_API_KEY` только server-side. Браузер ключ не видит и на Google напрямую не ходит (CSP `connect-src 'self'`).
+Публичный консультант на сайте вызывает `POST /api/consult`. Мозг — **Gemini API** (`generativelanguage.googleapis.com`), ключ `GEMINI_API_KEY_AI_CHAT` только server-side. Браузер ключ не видит и на Google напрямую не ходит (CSP `connect-src 'self'`).
 
 - Модель жёстко `gemini-3.6-flash` (как Funnel review в `AuditCollector.java`). `GEMINI_CONSULT_MODEL` — аварийный override.
 - SDK: `ai` + `@ai-sdk/google`, `streamText` в Node route.
@@ -37,13 +37,13 @@
   tools: get_knowledge_base, translate_terms, identify_client,
          escalate_tech, draft_brief, submit_brief
         │
-        ├── GEMINI_API_KEY → gemini-3.6-flash
+        ├── GEMINI_API_KEY_AI_CHAT → gemini-3.6-flash
         ├── CONSULT_TRANSLATE_URL → Translater (Docker на VPS, HMAC)
         ├── project-briefs → SMTP order@ (без вложений) → Monday.com
         └── tech-consult-tickets → SMTP техконсультанту
 ```
 
-Нет `GEMINI_API_KEY` → `503`, виджет ведёт на форму.
+Нет `GEMINI_API_KEY_AI_CHAT` → `503`, виджет ведёт на форму.
 
 ### Кэш префикса промпта
 
@@ -84,7 +84,7 @@ Pipeline живёт в Docker на VPS (`proxy_network` + Caddy, host-порт *
 
 | Переменная | Где | Назначение |
 |---|---|---|
-| `GEMINI_API_KEY` | Vercel Production/Preview/Development, `.env` | server-only, консультант |
+| `GEMINI_API_KEY_AI_CHAT` | Vercel Production/Preview/Development, `.env` | server-only, консультант. Отдельный от аудиторского `GEMINI_API_KEY`; он же — fallback для локальной разработки |
 | `GEMINI_CONSULT_MODEL` | опционально | дефолт `gemini-3.6-flash` |
 | `CONSULT_EMAIL_OTP` | Vercel | `1` в v1; `0` после авторизации |
 | `CONSULT_OTP_PEPPER` | Vercel | hash кода + подпись cookie; в prod обязателен |

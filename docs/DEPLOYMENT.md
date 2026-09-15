@@ -72,7 +72,7 @@ DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-1-...pooler.supabase.com
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | sitekey виджета (публичный). Алиас: `TURNSTILE_SITE_KEY` | Cloudflare Turnstile на формах |
 | `TURNSTILE_SECRET` | secret виджета. Алиас: `TURNSTILE_SECRET_KEY` | server-side siteverify, не в браузер |
 | `TURNSTILE_HOSTNAMES` | `erythro.ai,www.erythro.ai` (prod) | allowlist hostname из siteverify; **без** localhost на проде |
-| `GEMINI_API_KEY` | ключ [Google AI Studio](https://aistudio.google.com/app/apikey) | ИИ-консультант `POST /api/consult`; **не** `NEXT_PUBLIC_*` |
+| `GEMINI_API_KEY_AI_CHAT` | ключ [Google AI Studio](https://aistudio.google.com/app/apikey) | ИИ-консультант `POST /api/consult`; **не** `NEXT_PUBLIC_*`. Отдельный от аудиторского `GEMINI_API_KEY`, чтобы публичный чат не выедал квоту воронки. Локально можно обойтись общим `GEMINI_API_KEY` |
 | `GEMINI_CONSULT_MODEL` | (опционально) `gemini-3.6-flash` | модель консультанта |
 | `CONSULT_EMAIL_OTP` | `1` (v1), `0` после авторизации | временное подтверждение email в чате |
 | `CONSULT_OTP_PEPPER` | случайная строка ≥32 символов | hash OTP + подпись cookie; в prod обязателен |

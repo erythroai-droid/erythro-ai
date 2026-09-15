@@ -11,9 +11,16 @@ export function consultModel(): string {
   return process.env.GEMINI_CONSULT_MODEL?.trim() || CONSULT_MODEL
 }
 
-/** Server-only. A `NEXT_PUBLIC_` copy of this key would leak it to the browser. */
+/**
+ * Server-only. A `NEXT_PUBLIC_` copy of this key would leak it to the browser.
+ *
+ * Deliberately a different variable from the QA_Auditor's `GEMINI_API_KEY`
+ * (read by `AuditCollector.java`): chat traffic is public and unbounded, so it
+ * must not be able to exhaust the funnel-review quota or muddle the billing.
+ * The shared name stays as a fallback so a local `.env` with one key works.
+ */
 export function geminiApiKey(): string {
-  return process.env.GEMINI_API_KEY?.trim() || ''
+  return process.env.GEMINI_API_KEY_AI_CHAT?.trim() || process.env.GEMINI_API_KEY?.trim() || ''
 }
 
 export function isConsultantConfigured(): boolean {

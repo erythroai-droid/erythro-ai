@@ -2062,7 +2062,7 @@ export interface AuditPage {
 export interface ConsultantSetting {
   id: number;
   /**
-   * Off hides the widget entry point. The API also returns 503 when GEMINI_API_KEY is missing.
+   * Off hides the widget entry point. The API also returns 503 when GEMINI_API_KEY_AI_CHAT is missing.
    */
   enabled?: boolean | null;
   /**
