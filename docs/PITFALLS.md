@@ -1494,6 +1494,36 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 
 ---
 
+## PIT-087 — Admin Media upload “Failed to fetch” (R2 CORS + CSP)
+
+**Tags:** `media`, `r2`, `cors`, `csp`, `payload`, `admin`  
+**Seen:** 2026-09-15 — `/admin/collections/media/create`
+
+**Symptom:** Choosing a file in Payload Media shows **Failed to fetch**. Vercel may also log `POST /api/media` → `No files were uploaded.` Signed-URL route `/api/storage-s3-generate-signed-url` still returns 200. Chrome console may show a CSP `connect-src` violation to `*.r2.cloudflarestorage.com`.
+
+**Cause (two layers):**
+1. `s3Storage({ clientUploads: true })` has the browser `PUT` the file straight to `*.r2.cloudflarestorage.com`. Bucket `erythro-media` had **no CORS policy** (`wrangler … cors list` → code `10059`).
+2. Even with CORS fixed, admin CSP `connect-src` allowed `*.r2.dev` (CDN reads) but **not** the S3 API host, so the browser blocked the PUT and Payload surfaced a generic network error.
+
+**Fix:**
+1. Apply CORS from `infra/r2-media-cors.json`:
+```bash
+npx wrangler r2 bucket cors set erythro-media --file infra/r2-media-cors.json --force
+```
+2. Add `https://*.r2.cloudflarestorage.com` to **admin** CSP `connect-src` in `next.config.ts`, redeploy.
+3. Verify CORS:
+```bash
+curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-media/cors-probe" \
+  -H "Origin: https://erythro.ai" \
+  -H "Access-Control-Request-Method: PUT" \
+  -H "Access-Control-Request-Headers: content-type,content-length"
+# expect 204 + Access-Control-Allow-Origin: https://erythro.ai
+```
+4. After deploy, `curl -sI https://erythro.ai/admin/login` CSP must include `*.r2.cloudflarestorage.com` in `connect-src`.
+
+**Prevent:** After enabling R2 client uploads, ship CORS + admin CSP in the same change. Keep `infra/r2-media-cors.json` in repo; see `docs/architecture/r2-media-storage.md`. Do not put the S3 API host on the **public** CSP unless a public page truly needs it.
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1574,4 +1604,5 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 - [ ] Audit HE: do not trust a code-only deploy to fix `audit-page` CMS Hebrew; sanitize + `db:fix-audit-he-copy` (PIT-083)
 - [ ] Audit pricing CTAs: no relative `order/…` in CMS; `normalizeCtaHref` + `db:fix-audit-pricing` (PIT-084)
 - [ ] Do not leave `*.vercel.app` indexable; sitemap must not 5xx (static fallback + health cron) (PIT-085)
+- [ ] R2 media `clientUploads`: CORS on `erythro-media` **and** admin CSP `connect-src` includes `*.r2.cloudflarestorage.com` (PIT-087)
 

@@ -33,8 +33,13 @@ MCP creates the bucket only. Public serve URL is dashboard work:
 3. Set `R2_MEDIA_PUBLIC_BASE_URL` / `NEXT_PUBLIC_R2_MEDIA_*` on Vercel (Production + Preview)
 4. Expand the R2 API token to include `erythro-media` Object Read & Write  
    (если миграция падает с `Access Denied` — токен создан только для `erythro-audit-reports`)
-5. CORS on the bucket: allow `PUT` / `GET` from `https://erythro.ai` and admin origins (needed for `clientUploads`)
-
+5. CORS on the bucket: allow `PUT` / `GET` from `https://erythro.ai` and admin origins (needed for `clientUploads`).  
+   Config file: `infra/r2-media-cors.json`. Apply / refresh:
+   ```bash
+   npx wrangler r2 bucket cors set erythro-media --file infra/r2-media-cors.json --force
+   ```
+6. Admin CSP (`next.config.ts` `/admin/:path*`): `connect-src` must include `https://*.r2.cloudflarestorage.com`  
+   (client uploads hit the S3 API host, not `*.r2.dev` — PIT-087).
 ## Migrate existing Blob objects
 
 ```bash
@@ -67,5 +72,6 @@ Or edit/save any media doc in `/admin` once. Commit the regenerated `importMap.j
 - [ ] New admin upload lands on R2 URL (not Blob)
 - [ ] `<video>` seek works (206 Partial Content) on production
 - [ ] `next/image` serves R2 host without 400
-- [ ] CORS for client uploads from `https://erythro.ai` / admin origin
+- [x] CORS for client uploads from `https://erythro.ai` / `localhost:3000` (2026-09-15, PIT-087)
+- [x] Admin CSP `connect-src` includes `*.r2.cloudflarestorage.com` (PIT-087)
 - [ ] Remove `BLOB_READ_WRITE_TOKEN` after verification
