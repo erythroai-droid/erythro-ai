@@ -21,7 +21,7 @@ import {
   addonTermDiscount,
   calcAddonAmount,
   calcPlanAmount,
-  calcTaxAmount,
+  // calcTaxAmount, // temporarily hidden — taxes included in base price
   formatPrice,
   isSubscriptionFeatureLabel,
   SUBSCRIPTION_ADDON_ID,
@@ -274,7 +274,9 @@ function OrderCheckout({
   const taxNote = tLocale(plan.taxNote, locale).trim()
   const taxValue = tLocale(plan.taxValue, locale).trim()
   const subtotal = pricing.base + addonTotal
-  const taxAmount = calcTaxAmount(subtotal, taxNote, taxValue)
+  // TODO: tax is temporarily hidden from the frontend — included in the base price
+  // const taxAmount = calcTaxAmount(subtotal, taxNote, taxValue)
+  const taxAmount = 0
   const total = subtotal + taxAmount
   const accent = isLight ? 'text-gold-900' : 'text-gold-800'
 
@@ -380,7 +382,7 @@ function OrderCheckout({
       `Order: ${title}`,
       `Period: ${tLocale(period?.label, locale)}`,
       `Subtotal: ${money(subtotal)}`,
-      `Tax: ${money(taxAmount)}`,
+      // `Tax: ${money(taxAmount)}`, // temporarily hidden
       `Total: ${money(total)}`,
       addonLines ? `Add-ons: ${addonLines}` : null,
     ]
@@ -988,6 +990,7 @@ function OrderCheckout({
                 </span>
               </div>
 
+              {/* TODO: tax row temporarily hidden — taxes are included in the base price
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-sm font-bold uppercase tracking-[0.04em]">{copy.taxes}</p>
@@ -1001,6 +1004,7 @@ function OrderCheckout({
                     : taxValue || money(0)}
                 </p>
               </div>
+              */}
             </div>
 
             <div className="mt-5 flex items-end justify-between gap-4 border-t border-current/10 pt-5">
