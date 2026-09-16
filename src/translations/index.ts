@@ -488,33 +488,41 @@ export const solutions = {
       ],
     },
     {
-      id: 'ai-business-card',
-      price: '5 000',
+      id: 'ai-smart-card',
+      price: '7 000',
       title: {
-        en: 'AI-Business Card',
-        ru: 'AI-визитка',
-        he: 'כרטיס ביקור AI',
+        en: 'AI Smart Card',
+        ru: 'AI Smart Card',
+        he: 'כרטיס חכם AI',
       },
       features: [
         {
           label: { en: 'Stack:', ru: 'Стек:', he: 'סטאק:' },
           value: {
-            en: 'WordPress, Elementor',
-            ru: 'WordPress, Elementor',
-            he: 'WordPress, Elementor',
+            en: 'Next.js, TypeScript, Tailwind CSS',
+            ru: 'Next.js, TypeScript, Tailwind CSS',
+            he: 'Next.js, TypeScript, Tailwind CSS',
+          },
+        },
+        {
+          label: { en: 'Content:', ru: 'Контент:', he: 'תוכן:' },
+          value: {
+            en: 'Git-based CMS (Decap/Tina) / Jamstack',
+            ru: 'Git-based CMS (Decap/Tina) / Jamstack',
+            he: 'Git-based CMS (Decap/Tina) / Jamstack',
           },
         },
         {
           label: { en: 'AI:', ru: 'AI:', he: 'AI:' },
           value: {
-            en: 'Integration of a ready-made chatbot for booking and answering FAQs',
-            ru: 'Интеграция готового чат-бота для записи и ответов на FAQ',
-            he: 'שילוב צ׳אטבוט מוכן לקביעת תורים ומענה על שאלות נפוצות',
+            en: 'AI Web Widget (FAQ chatbot without vector DB)',
+            ru: 'AI Web Widget (FAQ чат-бот без векторной БД)',
+            he: 'ווידג׳ט AI (צ׳אטבוט FAQ ללא מסד וקטורי)',
           },
         },
         {
           label: { en: 'Subscription:', ru: 'Подписка:', he: 'מנוי:' },
-          value: { en: '350₪/mth', ru: '350₪/мес', he: '₪350/חודש' },
+          value: { en: '400₪/mth', ru: '400₪/мес', he: '₪400/חודש' },
         },
       ],
     },

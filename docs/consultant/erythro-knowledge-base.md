@@ -26,11 +26,14 @@ Do **not** quote leftover `/services/management` USD stubs (`from $800` / `$4 00
 - Order add-on: 12-month subscription ₪2388 (₪199 × 12; 12-month minimum)
 - URL: https://erythro.ai/order/free-start
 
-### AI-Business Card — ₪5 000 | sub ₪350/mo
+### AI Smart Card — ₪7 000 | sub ₪400/mo
 
-- Stack: WordPress, Elementor Pro
-- Smart package — site up to 6–8 sections + basic AI consultant (FAQ-in-prompt, no vector RAG)
-- URL: https://erythro.ai/order/ai-business-card
+- Stack: Next.js (App Router), TypeScript, Tailwind CSS, Vercel Edge / Cloudflare CDN
+- Content: Git-based CMS (Decap CMS / TinaCMS) or Pure Jamstack
+- AI: Embedded AI Web Widget (FAQ chatbot, no complex vector DB / RAG)
+- Limits: No relational DB (Postgres), no n8n workflow orchestration, no RAG over PDFs (upgrade to Business Automation ₪24 000 for these)
+- Order add-on: 12-month subscription ₪4 800 (₪400 × 12)
+- URL: https://erythro.ai/order/ai-smart-card (legacy: https://erythro.ai/order/ai-business-card)
 
 ### Business Automation — ₪24 000 | sub ₪850/mo
 
@@ -171,5 +174,5 @@ Homepage: Design & Branding · Development · Enterprise Engineering · AI & Aut
 - DON'T: Invent prices, discounts, or guarantees not in this knowledge
 - DON'T: Promise exact delivery dates without a brief
 - DON'T: Deep-dive as a free senior architect — hand off instead
-- DON'T: Claim RAG is always required; AI-Business Card uses FAQ-in-prompt without vector RAG
+- DON'T: Claim RAG is always required; AI Smart Card uses static FAQ-in-prompt without vector RAG
 - DON'T: Quote static git fallbacks (e.g. Business Automation ₪14 999, Enterprise from ₪45 000, Diagnostic ₪99, Pro ₪490) — those are stale vs production CMS

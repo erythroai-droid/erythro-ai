@@ -496,16 +496,17 @@ export const ORDER_PLANS: OrderPlan[] = [
   ...AUDIT_ORDER_PLANS,
 ]
 
-const AUDIT_SLUG_ALIASES: Record<string, string> = {
+const ORDER_SLUG_ALIASES: Record<string, string> = {
   free: 'audit-free',
   diagnostic: 'audit-diagnostic',
   pro: 'audit-pro',
+  'ai-business-card': 'ai-smart-card',
 }
 
 export function getOrderPlan(slug: string): OrderPlan | undefined {
   const direct = ORDER_PLANS.find((plan) => plan.slug === slug)
   if (direct) return direct
-  const aliased = AUDIT_SLUG_ALIASES[slug]
+  const aliased = ORDER_SLUG_ALIASES[slug]
   if (aliased) return ORDER_PLANS.find((plan) => plan.slug === aliased)
   return undefined
 }
