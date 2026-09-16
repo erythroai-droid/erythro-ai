@@ -9,7 +9,8 @@ export type ContactField = keyof ContactFormValues
 export type ContactFieldError = 'required' | 'invalid'
 export type ContactFieldErrors = Partial<Record<ContactField, ContactFieldError>>
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+/** Shared with `/api/contact` and the consultant OTP routes. */
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /** Client-side checks aligned with `/api/contact` required fields. */
 export function validateContactForm(values: ContactFormValues): ContactFieldErrors {

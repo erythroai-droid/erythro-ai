@@ -84,6 +84,11 @@ const nextConfig: NextConfig = {
   trailingSlash: false,
   // Stop advertising stack via X-Powered-By (Next.js; Payload may still append — strip in middleware).
   poweredByHeader: false,
+  // The consultant falls back to this markdown snapshot when Postgres is down.
+  // Without tracing it, `docs/` is absent from the serverless bundle.
+  outputFileTracingIncludes: {
+    '/api/consult': ['./docs/consultant/erythro-knowledge-base.md'],
+  },
   env: {
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: turnstileSiteKey,
   },

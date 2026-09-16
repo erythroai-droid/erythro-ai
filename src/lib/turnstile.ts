@@ -4,7 +4,8 @@ export const TURNSTILE_TOKEN_FIELD = 'cf-turnstile-response' as const
 export const TURNSTILE_TOKEN_MAX_LEN = 2048
 export const TURNSTILE_SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 
-export type TurnstileAction = ContactFormSource
+/** `consult` covers the AI consultant widget (chat + OTP request). */
+export type TurnstileAction = ContactFormSource | 'consult'
 
 type SiteverifyResult = {
   success?: boolean

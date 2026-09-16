@@ -6,6 +6,7 @@ import { useBackdropContrast } from '@/hooks/useBackdropContrast'
 import { useContactModal } from './ContactModal'
 import { useSiteContent } from './SiteContentProvider'
 import WhatsAppButton from './WhatsAppButton'
+import ErythroConsultant from './ErythroConsultant'
 import { whatsAppHref as buildWhatsAppHref } from '@/lib/phoneE164'
 
 /**
@@ -14,8 +15,10 @@ import { whatsAppHref as buildWhatsAppHref } from '@/lib/phoneE164'
  */
 
 const FAN_RADIUS = 84
-const MAIL_ANGLE_DEG = 80
-const TG_ANGLE_DEG = 40
+// Four options now: consultant, mail, Telegram, WhatsApp — evenly spread 90°→0°.
+const CONSULT_ANGLE_DEG = 90
+const MAIL_ANGLE_DEG = 60
+const TG_ANGLE_DEG = 30
 const WA_ANGLE_DEG = 0
 
 function fanOffset(open: boolean, angleDeg: number, inward: number) {
@@ -34,6 +37,7 @@ const COPY = {
     mail: 'Open contact form',
     whatsapp: 'WhatsApp',
     telegram: 'Telegram',
+    consultant: 'AI assistant',
   },
   ru: {
     trigger: 'Связаться',
@@ -41,6 +45,7 @@ const COPY = {
     mail: 'Открыть контактную форму',
     whatsapp: 'WhatsApp',
     telegram: 'Telegram',
+    consultant: 'ИИ-ассистент',
   },
   he: {
     trigger: 'יצירת קשר',
@@ -48,12 +53,21 @@ const COPY = {
     mail: 'פתיחת טופס יצירת קשר',
     whatsapp: 'WhatsApp',
     telegram: 'Telegram',
+    consultant: 'עוזר AI',
   },
 } as const
 
 function pickCopy(locale: string) {
   if (locale === 'ru' || locale === 'he') return COPY[locale]
   return COPY.en
+}
+
+function SparkIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2.5l1.7 4.6 4.6 1.7-4.6 1.7-1.7 4.6-1.7-4.6L5.7 8.8l4.6-1.7L12 2.5Zm5.8 11.4l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9.9-2.4Z" />
+    </svg>
+  )
 }
 
 function ChatIcon({ className }: { className?: string }) {
@@ -109,6 +123,7 @@ export default function ChatButton({
   const { open: openModal } = useContactModal()
   const site = useSiteContent().siteSettings
   const [open, setOpen] = useState(false)
+  const [consultOpen, setConsultOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const overDark = useBackdropContrast(containerRef, theme)
 
@@ -133,6 +148,7 @@ export default function ChatButton({
   }, [])
 
   const inward = locale === 'he' ? 1 : -1
+  const consultPos = fanOffset(open, CONSULT_ANGLE_DEG, inward)
   const mailPos = fanOffset(open, MAIL_ANGLE_DEG, inward)
   const tgPos = fanOffset(open, TG_ANGLE_DEG, inward)
   const waPos = fanOffset(open, WA_ANGLE_DEG, inward)
@@ -140,6 +156,25 @@ export default function ChatButton({
   return (
     <>
     <WhatsAppButton />
+
+    {/* Mobile entry point: the desktop fan is lg-only, so the assistant needs
+        its own FAB above the WhatsApp button. */}
+    <button
+      type="button"
+      onClick={() => setConsultOpen(true)}
+      aria-label={copy.consultant}
+      title={copy.consultant}
+      className="lg:hidden fixed bottom-[84px] end-[18px] z-50 flex h-[48px] w-[48px] items-center justify-center rounded-full border border-gold-500 bg-coal-900/90 text-gold-500 shadow-lg backdrop-blur transition-transform duration-300 active:scale-95"
+    >
+      <SparkIcon className="h-[20px] w-[20px]" />
+    </button>
+
+    <ErythroConsultant
+      isOpen={consultOpen}
+      onClose={() => setConsultOpen(false)}
+      locale={locale}
+    />
+
     <div
       ref={containerRef}
       data-contrast-ignore
@@ -154,9 +189,31 @@ export default function ChatButton({
         className="relative h-[44px] w-[44px] overflow-visible"
       >
         <Liquid.Item
+          x={consultPos.x}
+          y={consultPos.y}
+          transition="bouncy"
+          className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false)
+              setConsultOpen(true)
+            }}
+            tabIndex={open ? 0 : -1}
+            className={optionClass(open, overDark)}
+            aria-label={copy.consultant}
+            title={copy.consultant}
+          >
+            <SparkIcon className="h-[18px] w-[18px]" />
+          </button>
+        </Liquid.Item>
+
+        <Liquid.Item
           x={mailPos.x}
           y={mailPos.y}
           transition="bouncy"
+          delay={35}
           className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
         >
           <button
@@ -178,7 +235,7 @@ export default function ChatButton({
           x={tgPos.x}
           y={tgPos.y}
           transition="bouncy"
-          delay={35}
+          delay={70}
           className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
         >
           {telegramHref ? (
@@ -203,7 +260,7 @@ export default function ChatButton({
           x={waPos.x}
           y={waPos.y}
           transition="bouncy"
-          delay={70}
+          delay={105}
           className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
         >
           {whatsAppHref ? (

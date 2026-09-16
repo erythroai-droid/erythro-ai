@@ -1494,6 +1494,28 @@ Never inject untruncated URL paths or user-supplied unformatted strings into fix
 
 ---
 
+## PIT-086 — `pg_advisory_lock` in a migration releases before the commit; parallel `next build` workers collide
+
+**Tags:** `payload`, `postgres`, `migrations`, `build`
+**Seen:** 2026-09-15 — `20260915_010000_consultant_entities` (consultant collections + global).
+
+**Symptom:** `pnpm build` reports `Migrated: … (12488ms)` and then immediately
+
+```
+ERROR: Error running migration … Failed query: SELECT pg_advisory_unlock(…)
+  current transaction is aborted, commands ignored until end of transaction block
+```
+
+The tables are in fact created and `payload migrate:status` says `Yes`, but the build exits 1.
+
+**Cause:** `next build` boots Payload in several workers, so the migration runs concurrently. Payload wraps each migration in a transaction, while `pg_advisory_lock` is *session*-scoped: the `finally` block unlocks before the first worker commits. The second worker then walks into `CREATE TABLE IF NOT EXISTS` for tables it cannot see yet and fails on the unique index over `pg_type`. Its transaction is now aborted, so the `finally` unlock fails too — and that secondary error replaces the real one in the log.
+
+**Fix:** Use `pg_advisory_xact_lock(<id>)`, which Postgres releases at commit or rollback. No `try`/`finally`, so nothing masks the original error. Keep everything else idempotent: `CREATE TABLE/INDEX IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, and `DO $$ … EXCEPTION WHEN duplicate_object` around `CREATE TYPE` and `ADD CONSTRAINT`.
+
+**Prevent:** New migrations take the transaction-scoped lock. Never wrap migration DDL in `try`/`finally` — a cleanup statement on an aborted transaction hides the failure that matters.
+
+---
+
 ## PIT-087 — Admin Media upload “Failed to fetch” (R2 CORS + CSP)
 
 **Tags:** `media`, `r2`, `cors`, `csp`, `payload`, `admin`  
@@ -1604,5 +1626,6 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 - [ ] Audit HE: do not trust a code-only deploy to fix `audit-page` CMS Hebrew; sanitize + `db:fix-audit-he-copy` (PIT-083)
 - [ ] Audit pricing CTAs: no relative `order/…` in CMS; `normalizeCtaHref` + `db:fix-audit-pricing` (PIT-084)
 - [ ] Do not leave `*.vercel.app` indexable; sitemap must not 5xx (static fallback + health cron) (PIT-085)
+- [ ] Migrations: `pg_advisory_xact_lock`, never `pg_advisory_lock` + `finally` unlock (PIT-086)
 - [ ] R2 media `clientUploads`: CORS on `erythro-media` **and** admin CSP `connect-src` includes `*.r2.cloudflarestorage.com` (PIT-087)
 
