@@ -189,7 +189,6 @@ const brandLogos = [
   { name: 'n8n', src: '/images/brands/N8n-logo-new 1.svg' },
   { name: 'Next.js', src: '/images/brands/Nextjs-logo 1.svg' },
   { name: 'Spring', src: '/images/brands/Spring_Framework_Logo_2018 1.svg' },
-  { name: 'WordPress', src: '/images/brands/WordPress_logo 1.svg' },
   { name: 'Figma', src: '/images/brands/figma 1.svg' },
   { name: 'GSAP', src: '/images/brands/gsap 1.svg' },
   { name: 'Hostinger', src: '/images/brands/hostinger 1.svg' },

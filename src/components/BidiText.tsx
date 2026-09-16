@@ -20,7 +20,7 @@ function analyzeBidi(text: string, forceLtr: boolean) {
         /^[\dA-Za-z]/.test(text) ||
         (hasLatin && !hasHebrew)))
 
-  // Pure Latin tech strings (WordPress, Elementor Pro) must keep source order in RTL UI.
+  // Pure Latin tech strings (Next.js, Tailwind CSS) must keep source order in RTL UI.
   const useBdo = ltr && text.length > 0 && !hasHebrew
 
   return { ltr, useBdo }
@@ -30,7 +30,7 @@ function analyzeBidi(text: string, forceLtr: boolean) {
  * Isolates a text run so punctuation, commas, and currency (₪) in Hebrew RTL
  * layouts do not jump to the wrong side of the line.
  *
- * Pure Latin values use `<bdo dir="ltr">` so words like "Elementor Pro" stay in
+ * Pure Latin values use `<bdo dir="ltr">` so words like "Tailwind CSS" stay in
  * source order; mixed Hebrew/Latin uses `<bdi>` with `dir="ltr"` or `dir="auto"`.
  */
 export default function BidiText({ children, className, forceLtr = false }: BidiTextProps) {
