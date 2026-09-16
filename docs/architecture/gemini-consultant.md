@@ -34,7 +34,7 @@
         ▼
 [Vercel Node route]
   system prompt = KB из Payload + bot rules из consultant-settings
-  tools: get_knowledge_base, translate_terms, identify_client,
+  tools: get_knowledge_base, translate_terms, request_email_verification, identify_client,
          escalate_tech, draft_brief, submit_brief
         │
         ├── GEMINI_API_KEY_AI_CHAT → gemini-3.6-flash

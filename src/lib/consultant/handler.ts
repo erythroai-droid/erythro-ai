@@ -75,10 +75,13 @@ export function createConsultHandler(deps: ConsultHandlerDeps) {
     const identity: ConsultIdentity = { ...input.identity }
     const { body, emitter } = createConsultStream()
 
-    const requireEmail = () =>
-      otpEnabled && !identity.verifiedEmail
-        ? refuse('Email is not verified yet. Ask the visitor to confirm their email in the widget.')
-        : null
+    const requireEmail = () => {
+      if (!otpEnabled || identity.verifiedEmail) return null
+      // The widget only shows the OTP fields on this notice. Refusing the
+      // tool without emitting it left the visitor stuck in a text interview.
+      emitter.emit({ type: 'notice', code: 'otp_required' })
+      return refuse('Email is not verified yet. The widget is asking them to confirm it. Wait.')
+    }
 
     const tools = {
       get_knowledge_base: tool({
@@ -154,6 +157,27 @@ export function createConsultHandler(deps: ConsultHandlerDeps) {
             action: { kind: 'escalate', target, ...(slug ? { slug: sanitizeText(slug, 80) } : {}) },
           })
           return { ok: true, shown: target }
+        },
+      }),
+
+      request_email_verification: tool({
+        description:
+          'Open the widget email-verification form. Call this immediately after the storage notice when the visitor wants a custom brief or a technical escalation. Then stop and wait.',
+        inputSchema: jsonSchema<{ reason?: string }>({
+          type: 'object',
+          properties: {
+            reason: {
+              type: 'string',
+              description: '"brief" or "tech" — why verification is needed.',
+            },
+          },
+          additionalProperties: false,
+        }),
+        execute: async () => {
+          if (!otpEnabled) return refuse('Email verification is disabled.')
+          if (identity.verifiedEmail) return { ok: true, alreadyVerified: true }
+          emitter.emit({ type: 'notice', code: 'otp_required' })
+          return { ok: true }
         },
       }),
 

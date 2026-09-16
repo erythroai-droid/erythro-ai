@@ -20,6 +20,8 @@ export interface ConsultantLabels {
   greeting: string
 
   // Email verification
+  /** Shown before the OTP form — the chat will be stored. */
+  savePolicy: string
   otpIntro: string
   otpEmailPlaceholder: string
   otpEmailSubmit: string
@@ -69,6 +71,8 @@ export const defaultConsultantLabels: ConsultantLabels = {
   greeting:
     'Hi, I am the Erythro AI assistant. I can explain our packages, prices and the AI audit, or help you put together a project brief.',
 
+  savePolicy:
+    'If we prepare a project brief or escalate a technical question, this chat is stored for up to 12 months so the team can see the context.',
   otpIntro: 'To continue, confirm your email — we will send a six-digit code.',
   otpEmailPlaceholder: 'you@company.com',
   otpEmailSubmit: 'Send code',

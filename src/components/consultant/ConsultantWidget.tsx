@@ -20,7 +20,9 @@ export type ConsultantChip = {
   id: string
   label: string
   /** `ask` sends a canned question; the rest leave the widget. */
-  action: { kind: 'ask'; text: string } | { kind: 'escalate'; target: ConsultEscalationTarget }
+  action:
+    | { kind: 'ask'; text: string; /** Open the OTP gate after sending (brief / tech). */ gate?: 'otp' }
+    | { kind: 'escalate'; target: ConsultEscalationTarget }
 }
 
 /** All off in v1. The contract exists so enabling them is additive. */
@@ -67,6 +69,17 @@ function textOf(parts: ConsultPart[]): string {
     .map((part) => (part.type === 'text' ? part.text : ''))
     .filter(Boolean)
     .join('\n')
+}
+
+/** Escape + a tiny markdown subset so **bold** and line breaks show as intended. */
+function formatBubble(text: string) {
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br />')
+  return <span dangerouslySetInnerHTML={{ __html: escaped }} />
 }
 
 export default function ConsultantWidget({
@@ -315,7 +328,7 @@ export default function ConsultantWidget({
             key={`${message.role}-${index}`}
             className={`consult__bubble consult__bubble--${message.role}`}
           >
-            {textOf(message.parts)}
+            {formatBubble(textOf(message.parts))}
           </article>
         ))}
 
@@ -356,6 +369,7 @@ export default function ConsultantWidget({
         <section className="consult__gate">
           {otpStage === 'email' ? (
             <>
+              {labels.savePolicy ? <p className="consult__gateIntro">{labels.savePolicy}</p> : null}
               <p className="consult__gateIntro">{labels.otpIntro}</p>
               <div className="consult__gateRow">
                 <input
@@ -425,8 +439,10 @@ export default function ConsultantWidget({
               key={chip.id}
               className="consult__chip"
               onClick={() => {
-                if (chip.action.kind === 'ask') void send(chip.action.text)
-                else onEscalate?.({ target: chip.action.target })
+                if (chip.action.kind === 'ask') {
+                  if (chip.action.gate === 'otp') setOtpStage('email')
+                  void send(chip.action.text)
+                } else onEscalate?.({ target: chip.action.target })
               }}
               disabled={streaming}
             >

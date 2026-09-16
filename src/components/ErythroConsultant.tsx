@@ -28,6 +28,8 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
     inputPlaceholder: 'Ask about packages, prices or your project',
     send: 'Send',
     thinking: 'Typing…',
+    savePolicy:
+      'If we prepare a project brief or escalate a technical question, this chat is stored for up to 12 months so the team can see the context.',
     chipFaq: 'Packages and prices',
     chipBrief: 'Build a brief',
     chipAudit: 'AI audit',
@@ -44,6 +46,8 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
     thinking: 'Печатает…',
     greeting:
       'Здравствуйте, я ИИ-ассистент Erythro. Расскажу про пакеты, цены и ИИ-аудит или помогу собрать ТЗ на проект.',
+    savePolicy:
+      'Если составляем ТЗ или передаём технический вопрос специалисту, переписка сохраняется до 12 месяцев, чтобы команда видела контекст.',
     otpIntro: 'Чтобы продолжить, подтвердите email — пришлём код из шести цифр.',
     otpEmailSubmit: 'Отправить код',
     otpCodeIntro: 'Введите шесть цифр из письма.',
@@ -82,6 +86,8 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
     thinking: 'מקליד…',
     greeting:
       'שלום, אני עוזר ה-AI של Erythro. אסביר על החבילות, המחירים וביקורת ה-AI, או אעזור לבנות מסמך אפיון.',
+    savePolicy:
+      'אם נבנה מסמך אפיון או נעביר שאלה טכנית למומחה, השיחה תישמר עד 12 חודשים כדי שהצוות יראה את ההקשר.',
     otpIntro: 'כדי להמשיך, אשרו את האימייל — נשלח קוד בן שש ספרות.',
     otpEmailSubmit: 'שליחת קוד',
     otpCodeIntro: 'הזינו את שש הספרות מהמייל.',
@@ -169,6 +175,7 @@ export default function ErythroConsultant({
     return {
       ...base,
       ...(cmsCopy.greeting ? { greeting: cmsCopy.greeting } : {}),
+      ...(cmsCopy.savePolicyNotice ? { savePolicy: cmsCopy.savePolicyNotice } : {}),
       ...(cmsCopy.otpPrompt ? { otpIntro: cmsCopy.otpPrompt } : {}),
       ...(cmsCopy.otpCodePrompt ? { otpCodeIntro: cmsCopy.otpCodePrompt } : {}),
       ...(cmsCopy.quotaExhaustedNotice
@@ -190,7 +197,7 @@ export default function ErythroConsultant({
       {
         id: 'brief',
         label: COPY[key].chipBrief!,
-        action: { kind: 'ask', text: ASK_BRIEF[key] },
+        action: { kind: 'ask', text: ASK_BRIEF[key], gate: 'otp' },
       },
       { id: 'audit', label: COPY[key].chipAudit!, action: { kind: 'escalate', target: 'audit' } },
       { id: 'form', label: COPY[key].chipForm!, action: { kind: 'escalate', target: 'form' } },
