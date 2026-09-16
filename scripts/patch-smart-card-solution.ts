@@ -17,9 +17,15 @@ const TITLES: Record<Locale, string> = {
 }
 
 const SUBTITLES: Record<Locale, string> = {
-  en: 'Next.js Pure Jamstack & Git-based CMS with basic AI Web Widget',
-  ru: 'Next.js Pure Jamstack и Git-based CMS с базовым AI Web Widget',
-  he: 'Next.js Pure Jamstack ו-Git-based CMS עם ווידג׳ט AI בסיסי',
+  ru: 'Высокоскоростной сайт на Next.js с базовым AI-консультантом и нулевыми затратами на серверы.',
+  en: 'High-speed Next.js website with a basic AI consultant and zero server costs.',
+  he: 'אתר בעל ביצועים גבוהים על Next.js עם יועץ AI בסיסי ואפס עלויות שרת.',
+}
+
+const PROMOS: Record<Locale, string> = {
+  ru: 'Хостинг Vercel Edge CDN, пожизненный SSL и 1 час ежемесячной поддержки инженера включены в подписку.',
+  en: 'Vercel Edge CDN hosting, lifetime SSL, and 1 hour of monthly engineering support included in the subscription.',
+  he: 'אחסון Vercel Edge CDN, תעודת SSL לכל החיים ושעת תמיכת מהנדס חודשית כלולים במנוי.',
 }
 
 const FEATURES: Record<Locale, Array<{ label: string; value: string }>> = {
@@ -167,6 +173,7 @@ async function run() {
         price: '7 000',
         currency: 'ILS',
         subtitle: SUBTITLES[loc],
+        promo: PROMOS[loc],
         features: FEATURES[loc].map((f) => ({
           label: f.label,
           value: f.value,

@@ -121,6 +121,8 @@ function buildOrderPlan(card: SolutionCardItem): OrderPlan {
   const homeSubscription = card.features.find((f) => isSubscriptionFeatureLabel(f.label))
   const addons = homeSubscription ? [subscriptionAddonFromFeature(homeSubscription)] : []
 
+  const isSmartCard = card.id === 'ai-smart-card'
+
   return {
     slug: card.id,
     kind: 'solution',
@@ -129,7 +131,20 @@ function buildOrderPlan(card: SolutionCardItem): OrderPlan {
       // Subscription rows stay on Solutions cards only — order uses the Add-on card
       features: card.features.filter((f) => !isSubscriptionFeatureLabel(f.label)),
     },
-    subtitle: { en: '', ru: '', he: '' },
+    subtitle: isSmartCard
+      ? {
+          ru: 'Высокоскоростной сайт на Next.js с базовым AI-консультантом и нулевыми затратами на серверы.',
+          en: 'High-speed Next.js website with a basic AI consultant and zero server costs.',
+          he: 'אתר בעל ביצועים גבוהים על Next.js עם יועץ AI בסיסי ואפס עלויות שרת.',
+        }
+      : { en: '', ru: '', he: '' },
+    promo: isSmartCard
+      ? {
+          ru: 'Хостинг Vercel Edge CDN, пожизненный SSL и 1 час ежемесячной поддержки инженера включены в подписку.',
+          en: 'Vercel Edge CDN hosting, lifetime SSL, and 1 hour of monthly engineering support included in the subscription.',
+          he: 'אחסון Vercel Edge CDN, תעודת SSL לכל החיים ושעת תמיכת מהנדס חודשית כלולים במנוי.',
+        }
+      : undefined,
     /** Periods / promo / tax come from CMS only — subscription add-on may be derived above */
     periods: [],
     defaultPeriodId: '',
