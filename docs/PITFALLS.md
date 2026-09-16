@@ -1544,6 +1544,22 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 4. After deploy, `curl -sI https://erythro.ai/admin/login` CSP must include `*.r2.cloudflarestorage.com` in `connect-src`.
 
 **Prevent:** After enabling R2 client uploads, ship CORS + admin CSP in the same change. Keep `infra/r2-media-cors.json` in repo; see `docs/architecture/r2-media-storage.md`. Do not put the S3 API host on the **public** CSP unless a public page truly needs it.
+
+---
+
+## PIT-088 — Consultant chat is silent on Vercel Preview (`POST /api/consult` 403)
+
+**Tags:** `consultant`, `turnstile`, `preview`, `vercel`  
+**Seen:** 2026-09-16 — `feat/ai-consultant` preview `*.vercel.app`
+
+**Symptom:** Widget opens, a question is sent, the typing indicator flashes, then nothing. Runtime logs show `POST /api/consult` → 403. No Gemini call.
+
+**Cause:** `TURNSTILE_HOSTNAMES` is `erythro.ai,www.erythro.ai`. Preview lives on `*.vercel.app`. Siteverify (or an empty token, when the Cloudflare widget refuses that host) fails the hostname allowlist. `NODE_ENV` on Preview is `production`, so the local-dev skip does not apply. The widget only parsed SSE; a JSON 403 left the transcript empty.
+
+**Fix:** `verifyTurnstileToken` returns ok when `VERCEL_ENV=preview` (SSO is the gate). Production still requires a matching token + hostname. The widget shows the unavailable notice for non-SSE error bodies.
+
+**Prevent:** Do not add every preview URL to `TURNSTILE_HOSTNAMES`. Do not treat `NODE_ENV=production` as “this is erythro.ai”.
+
 ---
 
 ## Checklist before merging CMS / schema PRs
@@ -1628,4 +1644,5 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 - [ ] Do not leave `*.vercel.app` indexable; sitemap must not 5xx (static fallback + health cron) (PIT-085)
 - [ ] Migrations: `pg_advisory_xact_lock`, never `pg_advisory_lock` + `finally` unlock (PIT-086)
 - [ ] R2 media `clientUploads`: CORS on `erythro-media` **and** admin CSP `connect-src` includes `*.r2.cloudflarestorage.com` (PIT-087)
+- [ ] Preview chat/forms: do not require Turnstile hostname `erythro.ai` on `*.vercel.app`; gate is Vercel SSO (PIT-088)
 

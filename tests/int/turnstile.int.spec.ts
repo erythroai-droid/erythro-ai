@@ -41,7 +41,21 @@ describe('verifyTurnstileToken', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('skips siteverify on Vercel Preview (PIT-088)', async () => {
+    vi.stubEnv('VERCEL_ENV', 'preview')
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('TURNSTILE_SECRET', 'test-secret')
+    vi.stubEnv('TURNSTILE_HOSTNAMES', 'erythro.ai')
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await verifyTurnstileToken({ token: '', action: 'consult' })
+    expect(result.ok).toBe(true)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('fails closed in production when secret is missing', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production')
     vi.stubEnv('NODE_ENV', 'production')
     vi.stubEnv('TURNSTILE_SECRET', '')
     vi.stubEnv('TURNSTILE_SECRET_KEY', '')
@@ -51,6 +65,7 @@ describe('verifyTurnstileToken', () => {
   })
 
   it('rejects empty or oversized tokens', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production')
     vi.stubEnv('TURNSTILE_SECRET', 'test-secret')
     vi.stubEnv('TURNSTILE_HOSTNAMES', 'localhost')
 
@@ -64,6 +79,7 @@ describe('verifyTurnstileToken', () => {
   })
 
   it('accepts success with matching action and hostname', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production')
     vi.stubEnv('TURNSTILE_SECRET', 'test-secret')
     vi.stubEnv('TURNSTILE_HOSTNAMES', 'localhost')
     vi.stubGlobal(
@@ -83,6 +99,7 @@ describe('verifyTurnstileToken', () => {
   })
 
   it('rejects action or hostname mismatch', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production')
     vi.stubEnv('TURNSTILE_SECRET', 'test-secret')
     vi.stubEnv('TURNSTILE_HOSTNAMES', 'localhost')
     vi.stubGlobal(

@@ -187,7 +187,8 @@ export default function ConsultantWidget({
           }),
         })
 
-        if (!response.body) {
+        const contentType = response.headers.get('content-type') || ''
+        if (!response.body || !contentType.includes('text/event-stream')) {
           pushNotice({ kind: 'text', text: labels.unavailable })
           return
         }
