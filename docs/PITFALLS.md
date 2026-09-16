@@ -1562,6 +1562,21 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 
 ---
 
+## PIT-089 — Consultant “enabled: off” leaves the spark button; click jerks the panel
+
+**Tags:** `consultant`, `chatbutton`, `cache`, `cms`  
+**Seen:** 2026-09-17 — widget deployed, Consultant Settings unchecked
+
+**Symptom:** Admin unchecks **Consultant enabled**. The spark launcher stays on the site (mobile FAB above WhatsApp, and the desktop contact-fan option). Clicking it flashes the chat window, then it collapses — looks like a cached panel.
+
+**Cause:** `enabled` was read only inside `ErythroConsultant` **on first open**. `ChatButton` always rendered the spark entry points. The panel mounts from `sessionStorage` draft immediately, then `/api/consult/copy` returns `enabled: false` and unmounts it. `Cache-Control: private, max-age=60` on that GET also delayed the kill switch in the browser.
+
+**Fix:** `ChatButton` fetches `/api/consult/copy` (`no-store`) on mount and omits the spark FABs when `enabled === false`. The panel waits for that read before painting. `POST /api/consult` returns 503 when the CMS flag is off.
+
+**Prevent:** A public kill switch must hide the **launcher**, not only the dialog. Do not HTTP-cache the copy endpoint that carries `enabled`.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1645,4 +1660,5 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 - [ ] Migrations: `pg_advisory_xact_lock`, never `pg_advisory_lock` + `finally` unlock (PIT-086)
 - [ ] R2 media `clientUploads`: CORS on `erythro-media` **and** admin CSP `connect-src` includes `*.r2.cloudflarestorage.com` (PIT-087)
 - [ ] Preview chat/forms: do not require Turnstile hostname `erythro.ai` on `*.vercel.app`; gate is Vercel SSO (PIT-088)
+- [ ] Consultant Settings `enabled: off` must hide ChatButton spark FABs; `/api/consult/copy` is `no-store` (PIT-089)
 
