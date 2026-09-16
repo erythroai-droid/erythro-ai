@@ -1,0 +1,23 @@
+services:
+  translater:
+    build: .
+    container_name: translater_service
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PORT=8090
+      - TRANSLATER_AGENT_DIR=/app/agent
+    # No host port publish — reach via Caddy on proxy_network (PIT-053).
+    # For local debugging only: ports: ["127.0.0.1:8090:8090"]
+    networks:
+      - proxy_network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.8"
+          memory: 768M
+
+networks:
+  proxy_network:
+    external: true

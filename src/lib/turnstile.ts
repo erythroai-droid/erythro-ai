@@ -4,7 +4,8 @@ export const TURNSTILE_TOKEN_FIELD = 'cf-turnstile-response' as const
 export const TURNSTILE_TOKEN_MAX_LEN = 2048
 export const TURNSTILE_SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 
-export type TurnstileAction = ContactFormSource
+/** `consult` covers the AI consultant widget (chat + OTP request). */
+export type TurnstileAction = ContactFormSource | 'consult'
 
 type SiteverifyResult = {
   success?: boolean
@@ -66,7 +67,10 @@ export type TurnstileVerifySuccess = { ok: true }
 
 /**
  * Canonical Cloudflare siteverify. Tokens are single-use.
- * Skips only in non-production when no secret is configured (local without keys).
+ * Skips only in non-production when no secret is configured (local without keys),
+ * and on Vercel Preview: those hosts are `*.vercel.app`, which `TURNSTILE_HOSTNAMES`
+ * (erythro.ai) rejects, and the widget itself often refuses to mint a token.
+ * Preview stays behind Vercel Authentication. Production is unchanged.
  */
 export async function verifyTurnstileToken(input: {
   token: string
@@ -75,6 +79,10 @@ export async function verifyTurnstileToken(input: {
 }): Promise<TurnstileVerifySuccess | TurnstileVerifyFailure> {
   const secret = turnstileSecret()
   const hostnames = turnstileHostnames()
+
+  if (process.env.VERCEL_ENV === 'preview') {
+    return { ok: true }
+  }
 
   if (!secret) {
     if (process.env.NODE_ENV === 'production') {

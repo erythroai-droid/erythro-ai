@@ -76,6 +76,9 @@ export interface Config {
     'portfolio-projects': PortfolioProject;
     partners: Partner;
     'contact-submissions': ContactSubmission;
+    'consult-sessions': ConsultSession;
+    'project-briefs': ProjectBrief;
+    'tech-consult-tickets': TechConsultTicket;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -92,6 +95,9 @@ export interface Config {
     'portfolio-projects': PortfolioProjectsSelect<false> | PortfolioProjectsSelect<true>;
     partners: PartnersSelect<false> | PartnersSelect<true>;
     'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
+    'consult-sessions': ConsultSessionsSelect<false> | ConsultSessionsSelect<true>;
+    'project-briefs': ProjectBriefsSelect<false> | ProjectBriefsSelect<true>;
+    'tech-consult-tickets': TechConsultTicketsSelect<false> | TechConsultTicketsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -114,6 +120,7 @@ export interface Config {
     'legal-terms': LegalTerm;
     'legal-accessibility': LegalAccessibility;
     'audit-page': AuditPage;
+    'consultant-settings': ConsultantSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -128,6 +135,7 @@ export interface Config {
     'legal-terms': LegalTermsSelect<false> | LegalTermsSelect<true>;
     'legal-accessibility': LegalAccessibilitySelect<false> | LegalAccessibilitySelect<true>;
     'audit-page': AuditPageSelect<false> | AuditPageSelect<true>;
+    'consultant-settings': ConsultantSettingsSelect<false> | ConsultantSettingsSelect<true>;
   };
   locale: 'en' | 'ru' | 'he';
   widgets: {
@@ -797,6 +805,127 @@ export interface ContactSubmission {
   createdAt: string;
 }
 /**
+ * Stored chat transcripts. Only conversations that reached a custom project brief (verified email + phone) are here.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consult-sessions".
+ */
+export interface ConsultSession {
+  id: number;
+  /**
+   * Confirmed by one-time code before the chat was stored
+   */
+  email: string;
+  phone?: string | null;
+  name?: string | null;
+  company?: string | null;
+  /**
+   * Site language the visitor used
+   */
+  locale?: string | null;
+  /**
+   * Transcript as an array of { role, parts }. Parts — not plain strings — so voice and attachments can be added later without a migration.
+   */
+  messages?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Only "bot" in v1. Reserved so an engineer can join this same transcript later.
+   */
+  handoff?: ('bot' | 'queued' | 'human') | null;
+  emailVerifiedAt?: string | null;
+  /**
+   * When the phone number was given and storage began
+   */
+  identifiedAt?: string | null;
+  /**
+   * Client IP at identification
+   */
+  ip?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Briefs collected by the AI consultant. The team is notified at order@erythro.ai; client files live in the CRM card.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "project-briefs".
+ */
+export interface ProjectBrief {
+  id: number;
+  /**
+   * TZ-{id}, assigned right after the row is created
+   */
+  projectNumber?: string | null;
+  /**
+   * Transcript this brief came from
+   */
+  session?: (number | null) | ConsultSession;
+  name?: string | null;
+  company?: string | null;
+  email: string;
+  phone?: string | null;
+  locale?: string | null;
+  /**
+   * Interview result. No links and no attachments by design.
+   */
+  briefMarkdown: string;
+  /**
+   * Stays "draft" if SMTP failed — the brief itself is never lost
+   */
+  status?: ('draft' | 'sent') | null;
+  /**
+   * Monday.com card. "Pending" means create it manually or retry.
+   */
+  crmStatus?: ('pending' | 'created') | null;
+  /**
+   * CRM item id. Kept for staff only — never sent to the client.
+   */
+  crmItemId?: string | null;
+  /**
+   * EN / HE briefs go through the Translater pipeline. "Skipped" means the VPS was unreachable — review the wording.
+   */
+  translaterStatus?: ('translated' | 'skipped') | null;
+  subject?: string | null;
+  emailedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Questions escalated from the chat. Answer the client by email — the widget intentionally has no reply thread.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tech-consult-tickets".
+ */
+export interface TechConsultTicket {
+  id: number;
+  /**
+   * TC-{id}, assigned after create
+   */
+  ticketNumber?: string | null;
+  email: string;
+  locale?: string | null;
+  question: string;
+  /**
+   * Last few turns of the conversation, for context
+   */
+  excerpt?: string | null;
+  /**
+   * Set only when the visitor had already been identified
+   */
+  session?: (number | null) | ConsultSession;
+  status?: ('open' | 'answered') | null;
+  emailedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -855,6 +984,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'contact-submissions';
         value: number | ContactSubmission;
+      } | null)
+    | ({
+        relationTo: 'consult-sessions';
+        value: number | ConsultSession;
+      } | null)
+    | ({
+        relationTo: 'project-briefs';
+        value: number | ProjectBrief;
+      } | null)
+    | ({
+        relationTo: 'tech-consult-tickets';
+        value: number | TechConsultTicket;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1179,6 +1320,62 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   htmlResult?: T;
   retryCount?: T;
   errorLast?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consult-sessions_select".
+ */
+export interface ConsultSessionsSelect<T extends boolean = true> {
+  email?: T;
+  phone?: T;
+  name?: T;
+  company?: T;
+  locale?: T;
+  messages?: T;
+  handoff?: T;
+  emailVerifiedAt?: T;
+  identifiedAt?: T;
+  ip?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "project-briefs_select".
+ */
+export interface ProjectBriefsSelect<T extends boolean = true> {
+  projectNumber?: T;
+  session?: T;
+  name?: T;
+  company?: T;
+  email?: T;
+  phone?: T;
+  locale?: T;
+  briefMarkdown?: T;
+  status?: T;
+  crmStatus?: T;
+  crmItemId?: T;
+  translaterStatus?: T;
+  subject?: T;
+  emailedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tech-consult-tickets_select".
+ */
+export interface TechConsultTicketsSelect<T extends boolean = true> {
+  ticketNumber?: T;
+  email?: T;
+  locale?: T;
+  question?: T;
+  excerpt?: T;
+  session?: T;
+  status?: T;
+  emailedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1857,6 +2054,79 @@ export interface AuditPage {
   createdAt?: string | null;
 }
 /**
+ * AI consultant: prompt guardrails, message limits, email-verification copy and the technical-brief checklist (localized en / ru / he).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consultant-settings".
+ */
+export interface ConsultantSetting {
+  id: number;
+  /**
+   * Off hides the widget entry point. The API also returns 503 when GEMINI_API_KEY_AI_CHAT is missing.
+   */
+  enabled?: boolean | null;
+  /**
+   * Appended to the built-in guardrails. Use it for tone and offer wording — never for prices (those come from the CMS).
+   */
+  botRules?: string | null;
+  /**
+   * First bubble in the widget. Must state that this is an AI assistant.
+   */
+  greeting?: string | null;
+  /**
+   * Visitor messages allowed before email verification is required.
+   */
+  anonMessageLimit?: number | null;
+  /**
+   * Visitor messages per day per verified email. Above this the widget points to order@ / WhatsApp.
+   */
+  verifiedMessageLimit?: number | null;
+  /**
+   * Inbox for technical-consultation tickets. Empty falls back to order@erythro.ai.
+   */
+  techConsultantEmail?: string | null;
+  /**
+   * Shown above the email field when the quota runs out.
+   */
+  otpPrompt?: string | null;
+  /**
+   * Shown above the 6-digit code field.
+   */
+  otpCodePrompt?: string | null;
+  /**
+   * Subject of the verification email.
+   */
+  otpEmailSubject?: string | null;
+  /**
+   * Use {code} for the six digits and {minutes} for the lifetime.
+   */
+  otpEmailBody?: string | null;
+  /**
+   * Said before contacts are requested: the conversation will be stored, files go to the CRM card and not into the chat.
+   */
+  savePolicyNotice?: string | null;
+  quotaExhaustedNotice?: string | null;
+  /**
+   * Interview order. The consultant asks one or two at a time; "I do not know" is an acceptable answer and becomes an open question in the brief.
+   */
+  briefSlots?:
+    | {
+        /**
+         * Stable key, e.g. goal, stack, languages, integrations.
+         */
+        slotId: string;
+        question: string;
+        /**
+         * Example answer shown under the question, e.g. "6-section landing, RU+HE, leads to WhatsApp".
+         */
+        hint?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -2221,6 +2491,35 @@ export interface AuditPageSelect<T extends boolean = true> {
               ctaHref?: T;
               id?: T;
             };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consultant-settings_select".
+ */
+export interface ConsultantSettingsSelect<T extends boolean = true> {
+  enabled?: T;
+  botRules?: T;
+  greeting?: T;
+  anonMessageLimit?: T;
+  verifiedMessageLimit?: T;
+  techConsultantEmail?: T;
+  otpPrompt?: T;
+  otpCodePrompt?: T;
+  otpEmailSubject?: T;
+  otpEmailBody?: T;
+  savePolicyNotice?: T;
+  quotaExhaustedNotice?: T;
+  briefSlots?:
+    | T
+    | {
+        slotId?: T;
+        question?: T;
+        hint?: T;
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;

@@ -1,0 +1,296 @@
+/**
+ * Consultant widget styles.
+ *
+ * Themed only through `--consult-*` variables — no project design tokens, so
+ * the folder drops into another app unchanged. Layout uses logical properties
+ * (`inset-inline-end`, `padding-inline`) so RTL needs no overrides, and no
+ * interactive element has a fixed width: Cyrillic and Hebrew labels run 30-40%
+ * longer than English.
+ */
+
+.consult {
+  --consult-accent: #d4af37;
+  --consult-accent-contrast: #14110c;
+  --consult-surface: #171717;
+  --consult-surface-raised: #202020;
+  --consult-text: #f4f4f4;
+  --consult-text-muted: #a3a3a3;
+  --consult-border: rgba(255, 255, 255, 0.14);
+  --consult-radius: 14px;
+  --consult-gap: 12px;
+  --consult-width: 380px;
+  --consult-max-height: 72vh;
+  --consult-font: inherit;
+
+  position: fixed;
+  inset-block-end: 76px;
+  inset-inline-end: 24px;
+  z-index: 80;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--consult-gap);
+
+  inline-size: min(var(--consult-width), calc(100vw - 32px));
+  max-block-size: var(--consult-max-height);
+
+  padding: var(--consult-gap);
+  border: 1px solid var(--consult-border);
+  border-radius: var(--consult-radius);
+  background: var(--consult-surface);
+  color: var(--consult-text);
+  font-family: var(--consult-font);
+  font-size: 14px;
+  line-height: 1.5;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+}
+
+@media (max-width: 480px) {
+  .consult {
+    inset-block-end: 12px;
+    inset-inline: 12px;
+    --consult-max-height: 80vh;
+  }
+}
+
+.consult__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--consult-gap);
+}
+
+.consult__titles {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.consult__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.consult__disclaimer {
+  margin: 2px 0 0;
+  color: var(--consult-text-muted);
+  font-size: 12px;
+}
+
+.consult__close {
+  flex: 0 0 auto;
+  min-inline-size: 28px;
+  min-block-size: 28px;
+  padding: 0;
+  border: 1px solid var(--consult-border);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.consult__close:hover,
+.consult__close:focus-visible {
+  border-color: var(--consult-accent);
+  color: var(--consult-accent);
+}
+
+.consult__list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-inline-end: 4px;
+}
+
+.consult__bubble {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.consult__bubble--assistant,
+.consult__bubble--engineer {
+  align-self: start;
+  background: var(--consult-surface-raised);
+}
+
+.consult__bubble--engineer {
+  border-inline-start: 2px solid var(--consult-accent);
+}
+
+.consult__bubble--user {
+  align-self: end;
+  background: var(--consult-accent);
+  color: var(--consult-accent-contrast);
+}
+
+.consult__typing,
+.consult__notice {
+  margin: 0;
+  color: var(--consult-text-muted);
+  font-size: 13px;
+}
+
+.consult__panel {
+  border: 1px solid var(--consult-border);
+  border-radius: 10px;
+  padding: 10px;
+  background: var(--consult-surface-raised);
+}
+
+.consult__panelTitle {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.consult__panelHint {
+  margin: 6px 0 0;
+  color: var(--consult-text-muted);
+  font-size: 12px;
+}
+
+.consult__brief {
+  margin: 0;
+  max-block-size: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+.consult__gate {
+  border: 1px solid var(--consult-border);
+  border-radius: 10px;
+  padding: 10px;
+  background: var(--consult-surface-raised);
+}
+
+.consult__gateIntro {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.consult__gateRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.consult__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.consult__chip {
+  padding: 5px 10px;
+  border: 1px solid var(--consult-border);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.consult__chip:hover:not(:disabled),
+.consult__chip:focus-visible {
+  border-color: var(--consult-accent);
+  color: var(--consult-accent);
+}
+
+.consult__composer {
+  display: flex;
+  gap: 8px;
+}
+
+.consult__input {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--consult-border);
+  border-radius: 8px;
+  background: var(--consult-surface-raised);
+  color: inherit;
+  font: inherit;
+}
+
+.consult__input--code {
+  /* Digits read left-to-right even inside an RTL panel. */
+  direction: ltr;
+  letter-spacing: 0.3em;
+  text-align: center;
+  flex: 0 1 8ch;
+}
+
+.consult__input:focus-visible {
+  outline: 2px solid var(--consult-accent);
+  outline-offset: 1px;
+}
+
+.consult__button {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  border: 1px solid var(--consult-accent);
+  border-radius: 8px;
+  background: var(--consult-accent);
+  color: var(--consult-accent-contrast);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.consult__button:disabled,
+.consult__chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.consult__link {
+  margin-block-start: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--consult-accent);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.consult__error {
+  margin: 8px 0 0;
+  color: #f87171;
+  font-size: 12px;
+}
+
+/* Invisible Turnstile host: present for `execute()`, never visible. */
+.consult__turnstile {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  overflow: hidden;
+}
+
+.consult__srOnly {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .consult__list {
+    scroll-behavior: auto;
+  }
+}

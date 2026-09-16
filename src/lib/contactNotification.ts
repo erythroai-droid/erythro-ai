@@ -108,6 +108,15 @@ export function resolveNotifyRecipients(
   return recipients
 }
 
+/** Inbox for technical-consultation tickets from the chat. */
+export function resolveTechConsultRecipient(
+  settingsEmail?: string | null,
+): string {
+  const candidate = settingsEmail?.trim()
+  if (isUsableEmail(candidate)) return candidate
+  return resolveNotifyRecipients(null, 'order')[0] || CONTACT_MAILBOX
+}
+
 /** @deprecated use resolveNotifyRecipients */
 export function resolveNotifyEmail(
   settingsEmail?: string | null,
@@ -437,6 +446,43 @@ export async function sendOpsAlert(
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('[opsAlert] send failed:', message)
+    return { sent: false, reason: message }
+  }
+}
+
+/**
+ * Plain transactional mail for the AI consultant (brief to `order@`, technical
+ * ticket to the specialist, verification code to the visitor).
+ *
+ * No `attachments` are ever passed: briefs and tickets are text-only by design,
+ * files belong in the CRM card. `auto-generated` (not `auto-replied`) keeps the
+ * n8n autoresponder, which watches *incoming* order@ mail, out of the loop.
+ */
+export async function sendConsultantMail(input: {
+  to: string | string[]
+  replyTo?: string
+  subject: string
+  text: string
+  html: string
+}): Promise<{ sent: boolean; reason?: string }> {
+  const recipients = (Array.isArray(input.to) ? input.to : [input.to]).filter(isUsableEmail)
+  if (!recipients.length) return { sent: false, reason: 'invalid recipient' }
+
+  const transport = hasMailTransport()
+  if (!transport.ok) return { sent: false, reason: transport.reason }
+
+  const replyTo = isUsableEmail(input.replyTo) ? input.replyTo.trim() : CONTACT_MAILBOX
+  try {
+    await sendOutbound(
+      recipients,
+      replyTo,
+      { subject: input.subject, text: input.text, html: input.html },
+      'auto-generated',
+    )
+    return { sent: true }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[consultantMail] send failed:', message)
     return { sent: false, reason: message }
   }
 }
