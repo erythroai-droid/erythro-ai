@@ -6,7 +6,7 @@ import { useBackdropContrast } from '@/hooks/useBackdropContrast'
 import { useContactModal } from './ContactModal'
 import { useSiteContent } from './SiteContentProvider'
 import WhatsAppButton from './WhatsAppButton'
-import ErythroConsultant from './ErythroConsultant'
+import ErythroConsultant, { type ConsultantCopy } from './ErythroConsultant'
 import { whatsAppHref as buildWhatsAppHref } from '@/lib/phoneE164'
 
 /**
@@ -60,6 +60,10 @@ const COPY = {
 function pickCopy(locale: string) {
   if (locale === 'ru' || locale === 'he') return COPY[locale]
   return COPY.en
+}
+
+function consultLocaleParam(locale: string) {
+  return locale === 'ru' || locale === 'he' ? locale : 'en'
 }
 
 function SparkIcon({ className }: { className?: string }) {
@@ -124,11 +128,30 @@ export default function ChatButton({
   const site = useSiteContent().siteSettings
   const [open, setOpen] = useState(false)
   const [consultOpen, setConsultOpen] = useState(false)
+  const [consultantCopy, setConsultantCopy] = useState<ConsultantCopy | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const overDark = useBackdropContrast(containerRef, theme)
 
   const whatsAppHref = buildWhatsAppHref(site.phone || '') || ''
   const telegramHref = (site.telegram || '').trim()
+  const consultantEnabled = consultantCopy?.enabled !== false
+
+  useEffect(() => {
+    let cancelled = false
+    fetch(`/api/consult/copy?locale=${consultLocaleParam(locale)}`, { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: ConsultantCopy | null) => {
+        if (cancelled || !data) return
+        setConsultantCopy(data)
+        if (data.enabled === false) setConsultOpen(false)
+      })
+      .catch(() => {
+        /* keep the launcher visible; built-in copy is the fallback */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [locale])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -149,8 +172,8 @@ export default function ChatButton({
 
   const inward = locale === 'he' ? 1 : -1
   const consultPos = fanOffset(open, CONSULT_ANGLE_DEG, inward)
-  const mailPos = fanOffset(open, MAIL_ANGLE_DEG, inward)
-  const tgPos = fanOffset(open, TG_ANGLE_DEG, inward)
+  const mailPos = fanOffset(open, consultantEnabled ? MAIL_ANGLE_DEG : 90, inward)
+  const tgPos = fanOffset(open, consultantEnabled ? TG_ANGLE_DEG : 45, inward)
   const waPos = fanOffset(open, WA_ANGLE_DEG, inward)
 
   return (
@@ -158,7 +181,9 @@ export default function ChatButton({
     <WhatsAppButton />
 
     {/* Mobile entry point: the desktop fan is lg-only, so the assistant needs
-        its own FAB above the WhatsApp button. */}
+        its own FAB above the WhatsApp button. Hidden when Consultant Settings
+        → enabled is off (PIT-089). */}
+    {consultantEnabled ? (
     <button
       type="button"
       onClick={() => setConsultOpen(true)}
@@ -168,12 +193,16 @@ export default function ChatButton({
     >
       <SparkIcon className="h-[20px] w-[20px]" />
     </button>
+    ) : null}
 
+    {consultantEnabled ? (
     <ErythroConsultant
       isOpen={consultOpen}
       onClose={() => setConsultOpen(false)}
       locale={locale}
+      copy={consultantCopy}
     />
+    ) : null}
 
     <div
       ref={containerRef}
@@ -188,6 +217,7 @@ export default function ChatButton({
         filterPadding={160}
         className="relative h-[44px] w-[44px] overflow-visible"
       >
+        {consultantEnabled ? (
         <Liquid.Item
           x={consultPos.x}
           y={consultPos.y}
@@ -208,6 +238,7 @@ export default function ChatButton({
             <SparkIcon className="h-[18px] w-[18px]" />
           </button>
         </Liquid.Item>
+        ) : null}
 
         <Liquid.Item
           x={mailPos.x}

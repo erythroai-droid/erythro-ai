@@ -45,6 +45,12 @@
 
 Нет `GEMINI_API_KEY_AI_CHAT` → `503`, виджет ведёт на форму.
 
+Consultant Settings → **Consultant enabled** = off:
+
+- `ChatButton` прячет spark-кнопку (мобильный FAB и пункт в desktop contact-fan) сразу после `GET /api/consult/copy` (`Cache-Control: private, no-store`).
+- Панель чата не монтируется, пока copy не ответил — иначе окно вспыхивает из черновика в sessionStorage и сразу пропадает (PIT-089).
+- `POST /api/consult` тоже отвечает `503 unconfigured`, чтобы кэшированный клиент не писал в модель.
+
 ### Кэш префикса промпта
 
 Системный промпт (правила + глоссарий + слоты ТЗ + вся KB) одинаков для всех посетителей на одной локали и весит несколько тысяч входных токенов. Он уходит в **explicit context cache** Gemini (`cachedContents`), а в запрос идёт только история диалога:

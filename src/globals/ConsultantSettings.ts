@@ -32,7 +32,7 @@ export const ConsultantSettings: GlobalConfig = {
               label: 'Consultant enabled',
               admin: {
                 description:
-                  'Off hides the widget entry point. The API also returns 503 when GEMINI_API_KEY_AI_CHAT is missing.',
+                  'Off removes the spark launcher (mobile FAB and the desktop contact-fan option) and returns 503 from the chat API. The API also returns 503 when GEMINI_API_KEY_AI_CHAT is missing.',
               },
             },
             locTextarea('botRules', {

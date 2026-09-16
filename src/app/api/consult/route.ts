@@ -23,6 +23,7 @@ import {
   type ConsultMessage,
 } from '@/lib/consultant'
 import {
+  getCachedConsultantCopy,
   getCachedConsultantKnowledge,
   getCachedConsultantRules,
 } from '@/lib/consultantKnowledge.server'
@@ -100,6 +101,13 @@ export async function POST(request: NextRequest) {
     })
   }
 
+  const payload = (body || {}) as Record<string, unknown>
+  const locale: ConsultLocale = consultLocale(payload.locale)
+  const copy = await getCachedConsultantCopy(locale)
+  if (!copy.enabled) {
+    return consultNoticeResponse('unconfigured', 503)
+  }
+
   const turnstile = await verifyTurnstileToken({
     token: readTurnstileToken(body),
     action: 'consult',
@@ -112,8 +120,6 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const payload = (body || {}) as Record<string, unknown>
-  const locale: ConsultLocale = consultLocale(payload.locale)
   const messages = parseMessages(payload.messages)
   if (!messages.length) {
     return new Response(JSON.stringify({ message: 'No messages' }), {

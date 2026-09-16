@@ -129,7 +129,7 @@ const ASK_BRIEF: Record<Locale, string> = {
   he: 'אני צריך פרויקט מותאם. עזרו לי לבנות אפיון.',
 }
 
-type ConsultantCopy = {
+export type ConsultantCopy = {
   enabled: boolean
   greeting: string
   otpPrompt: string
@@ -142,21 +142,39 @@ export default function ErythroConsultant({
   isOpen,
   onClose,
   locale = 'en',
+  copy: copyFromHost,
 }: {
   isOpen: boolean
   onClose: () => void
   locale?: string
+  /** Prefetch from `ChatButton` so the launcher can hide before first open. */
+  copy?: ConsultantCopy | null
 }) {
   const key = pickLocale(locale)
   const site = useSiteContent().siteSettings
   const { open: openContactModal } = useContactModal()
-  const [cmsCopy, setCmsCopy] = useState<ConsultantCopy | null>(null)
+  const [cmsCopy, setCmsCopy] = useState<ConsultantCopy | null>(copyFromHost ?? null)
+  const [copyReady, setCopyReady] = useState(Boolean(copyFromHost))
 
-  // Copy is editor-owned; fetched on first open so closed pages cost nothing.
   useEffect(() => {
-    if (!isOpen || cmsCopy) return
+    if (copyFromHost) return
+    setCmsCopy(null)
+    setCopyReady(false)
+  }, [key, copyFromHost])
+
+  useEffect(() => {
+    if (!copyFromHost) return
+    setCmsCopy(copyFromHost)
+    setCopyReady(true)
+  }, [copyFromHost])
+
+  // Copy is editor-owned. Do not paint the panel until this returns: a disabled
+  // consultant must not flash the window and then unmount (PIT-089).
+  useEffect(() => {
+    if (copyReady || cmsCopy) return
+    if (!isOpen) return
     let cancelled = false
-    fetch(`/api/consult/copy?locale=${key}`)
+    fetch(`/api/consult/copy?locale=${key}`, { cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data: ConsultantCopy | null) => {
         if (!cancelled && data) setCmsCopy(data)
@@ -164,10 +182,13 @@ export default function ErythroConsultant({
       .catch(() => {
         /* built-in copy is a fine fallback */
       })
+      .finally(() => {
+        if (!cancelled) setCopyReady(true)
+      })
     return () => {
       cancelled = true
     }
-  }, [isOpen, cmsCopy, key])
+  }, [isOpen, cmsCopy, copyReady, key])
 
   const labels = useMemo<Partial<ConsultantLabels>>(() => {
     const base = COPY[key]
@@ -213,6 +234,8 @@ export default function ErythroConsultant({
   }, [key, whatsAppLink])
 
   if (cmsCopy && !cmsCopy.enabled) return null
+  // Wait for the kill-switch read before mounting the dialog.
+  if (isOpen && !copyReady) return null
 
   return (
     <ConsultantWidget
