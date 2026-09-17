@@ -2,7 +2,7 @@
 
 Статус: **v1 реализован**. Канон цен — живая CMS (Payload/Postgres), снимок в [`docs/consultant/erythro-knowledge-base.md`](../consultant/erythro-knowledge-base.md) — только fallback при падении CMS.
 
-Связанные документы: [`RAG_INDEX.md`](../RAG_INDEX.md) · [`DEPLOYMENT.md`](../DEPLOYMENT.md) · [`AI_VISIBILITY.md`](../AI_VISIBILITY.md) · [`vps-docker-ports.md`](../infrastructure/vps-docker-ports.md)
+Связанные документы: [`RAG_INDEX.md`](../RAG_INDEX.md) · [`DEPLOYMENT.md`](../DEPLOYMENT.md) · [`AI_VISIBILITY.md`](../AI_VISIBILITY.md) · [`vps-docker-ports.md`](../infrastructure/vps-docker-ports.md) · [`ai-token-spend.md`](./ai-token-spend.md)
 
 ## 1. Решение
 
@@ -47,8 +47,9 @@
 
 Consultant Settings → **Consultant enabled** = off:
 
-- `ChatButton` прячет spark-кнопку (мобильный FAB и пункт в desktop contact-fan) сразу после `GET /api/consult/copy` (`Cache-Control: private, no-store`).
+- `ChatButton` прячет кнопку «ИИ консультант» сразу после `GET /api/consult/copy` (`Cache-Control: private, no-store`).
 - Панель чата не монтируется, пока copy не ответил — иначе окно вспыхивает из черновика в sessionStorage и сразу пропадает (PIT-089).
+- Лаунчер — градиентная CTA в том же языке, что скрытая header-кнопка AI Audit (`BorderBeam` + colorful). По клику панель выезжает снизу на весь экран (как бургер, `z-index` 180), скролл страницы блокируется. WhatsApp / контакты / Telegram — в футере панели, не отдельным FAB.
 - `POST /api/consult` тоже отвечает `503 unconfigured`, чтобы кэшированный клиент не писал в модель.
 
 ### Кэш префикса промпта
@@ -59,8 +60,8 @@ Consultant Settings → **Consultant enabled** = off:
 - TTL 1 час; на холодном старте делается один `LIST`, чтобы рестарты не плодили дубликаты, которые тарифицируются за хранение;
 - в кэш кладётся **только** `systemInstruction`. Описания инструментов остаются в запросе, иначе правка инструмента ломала бы кэш;
 - запрос не может содержать одновременно `cachedContent` и `systemInstruction` — отправляется ровно одно из двух;
-- кэш — оптимизация, а не зависимость: если Gemini отверг хэндл и ни один чанк ещё не отправлен, запрос повторяется с инлайн-промптом, а кэш забывается;
-- `CONSULT_PROMPT_CACHE=0` выключает механизм целиком.
+- **Gemini 3.x** отвергает `cachedContent` вместе с `tools` / `tool_config` на том же GenerateContent (PIT-093). Пока консультант шлёт tools, кэш **не** подключается: в `streamText` идёт инлайн-`system`. `textStream` глотает этот 400 без throw и без токенов, поэтому «retry after reject» не срабатывал;
+- кэш — оптимизация, не зависимость; `CONSULT_PROMPT_CACHE=0` выключает механизм целиком. Вернуть хэндл можно только когда декларации tools лежат внутри cache, не в запросе.
 
 ## 4. Антиспам и временный OTP
 
