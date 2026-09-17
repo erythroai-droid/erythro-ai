@@ -11,8 +11,8 @@ export const SMART_CARD_TITLE: Localized = {
 
 const CMS_LABEL_ALIASES = new Set(['Content:', 'Контент:', 'תוכן:', 'CMS:'])
 
-function trim(value: string | undefined): string {
-  return (value || '').trim()
+function trim(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : ''
 }
 
 export function orderPageTitleSuffix(locale: string): string {
@@ -33,26 +33,30 @@ export function sanitizeCtaLabel(label: Localized): Localized {
 }
 
 export function sanitizePlanTitle(slug: string | undefined, title: Localized): Localized {
-  const out: Localized = { ...title }
-  if (slug && SMART_CARD_SLUGS.has(slug)) {
-    const en = trim(out.en)
-    const ru = trim(out.ru)
-    const he = trim(out.he)
-    if (!en || /^(AI[-\s])?Business Card$/i.test(en) || en === 'AI-визитка') {
-      out.en = SMART_CARD_TITLE.en
+  try {
+    const out: Localized = { ...title }
+    if (slug && SMART_CARD_SLUGS.has(slug)) {
+      const en = trim(out.en)
+      const ru = trim(out.ru)
+      const he = trim(out.he)
+      if (!en || /^(AI[-\s])?Business Card$/i.test(en) || en === 'AI-визитка') {
+        out.en = SMART_CARD_TITLE.en
+      }
+      if (!ru || ru === 'AI Smart Card' || /^(AI[-\s])?Business Card$/i.test(ru)) {
+        out.ru = SMART_CARD_TITLE.ru
+      }
+      if (!he || he === 'כרטיס ביקור AI') {
+        out.he = SMART_CARD_TITLE.he
+      }
+      return out
     }
-    if (!ru || ru === 'AI Smart Card' || /^(AI[-\s])?Business Card$/i.test(ru)) {
-      out.ru = SMART_CARD_TITLE.ru
-    }
-    if (!he || he === 'כרטיס ביקור AI') {
-      out.he = SMART_CARD_TITLE.he
-    }
-    return out
-  }
 
-  if (trim(out.en) === 'business automation') out.en = 'Business Automation'
-  if (trim(out.ru) === 'бизнес-автоматизация') out.ru = 'Бизнес-автоматизация'
-  return out
+    if (trim(out.en) === 'business automation') out.en = 'Business Automation'
+    if (trim(out.ru) === 'бизнес-автоматизация') out.ru = 'Бизнес-автоматизация'
+    return out
+  } catch {
+    return title
+  }
 }
 
 function sanitizeLocaleValue(value: string): string {
@@ -73,20 +77,26 @@ function sanitizeLocaleValue(value: string): string {
 }
 
 export function sanitizeFeature(feature: SolutionFeature): SolutionFeature {
-  const label = feature.label ? { ...feature.label } : undefined
-  const value = feature.value ? { ...feature.value } : undefined
+  try {
+    const label = feature.label ? { ...feature.label } : undefined
+    const value = feature.value ? { ...feature.value } : undefined
 
-  if (label) {
-    for (const loc of Object.keys(label)) {
-      if (CMS_LABEL_ALIASES.has(trim(label[loc]))) label[loc] = 'CMS:'
+    if (label) {
+      for (const loc of Object.keys(label)) {
+        if (CMS_LABEL_ALIASES.has(trim(label[loc]))) label[loc] = 'CMS:'
+      }
     }
-  }
-  if (value) {
-    for (const loc of Object.keys(value)) {
-      if (value[loc]) value[loc] = sanitizeLocaleValue(value[loc])
+    if (value) {
+      for (const loc of Object.keys(value)) {
+        if (typeof value[loc] === 'string' && value[loc]) {
+          value[loc] = sanitizeLocaleValue(value[loc])
+        }
+      }
     }
+    return { ...feature, ...(label ? { label } : {}), ...(value ? { value } : {}) }
+  } catch {
+    return feature
   }
-  return { ...feature, ...(label ? { label } : {}), ...(value ? { value } : {}) }
 }
 
 export function sanitizeSeoTitle(

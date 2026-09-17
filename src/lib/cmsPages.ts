@@ -24,6 +24,7 @@ import {
   isLexicalDoc,
   lexicalHasContent,
   lexicalToPlain,
+  pickLocalizedLexical,
 } from './lexical'
 import { mediaDocUrl } from './publicMediaUrl'
 import { getPayloadLocal } from './payloadStatic'
@@ -612,15 +613,13 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
       const fullPlain: LocaleMap = { en: '', ru: '', he: '' }
       const fullRich: Record<string, unknown> = {}
       let hasFull = false
+      const fullSource = a.full ?? a.fullRich
       for (const loc of LOCALES) {
-        const raw =
-          a.full && typeof a.full === 'object' && !Array.isArray(a.full) && !isLexicalDoc(a.full)
-            ? (a.full as Record<string, unknown>)[loc] ?? (a.full as Record<string, unknown>).en
-            : a.full
-        if (isLexicalDoc(raw)) {
+        const raw = pickLocalizedLexical(fullSource, loc)
+        if (isLexicalDoc(raw) && lexicalHasContent(raw)) {
           fullRich[loc] = raw
           fullPlain[loc] = lexicalToPlain(raw)
-          if (fullPlain[loc]) hasFull = true
+          hasFull = true
         } else if (typeof raw === 'string' && raw.trim()) {
           fullRich[loc] = lexicalFromText(raw)
           fullPlain[loc] = raw.trim()
@@ -673,23 +672,23 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
       const includesPlain: LocaleMap = { en: '', ru: '', he: '' }
       const includesRich: Record<string, unknown> = {}
       let hasIncludes = false
+      const includesSource = d.includes ?? d.includesRich
       for (const loc of LOCALES) {
-        const raw =
-          d.includes &&
-          typeof d.includes === 'object' &&
-          !Array.isArray(d.includes) &&
-          !isLexicalDoc(d.includes)
-            ? (d.includes as Record<string, unknown>)[loc] ??
-              (d.includes as Record<string, unknown>).en
-            : d.includes
-        if (isLexicalDoc(raw)) {
+        const raw = pickLocalizedLexical(includesSource, loc)
+        if (isLexicalDoc(raw) && lexicalHasContent(raw)) {
           includesRich[loc] = raw
           includesPlain[loc] = lexicalToPlain(raw)
-          if (includesPlain[loc]) hasIncludes = true
+          hasIncludes = true
         } else if (typeof raw === 'string' && raw.trim()) {
           includesRich[loc] = lexicalFromText(raw)
           includesPlain[loc] = raw.trim()
           hasIncludes = true
+        }
+      }
+      if (!hasIncludes && (fb.includes || fb.includesRich)) {
+        return {
+          ...(fb.includes ? { includes: fb.includes } : {}),
+          ...(fb.includesRich ? { includesRich: fb.includesRich } : {}),
         }
       }
       return hasIncludes ? { includes: includesPlain, includesRich } : {}
@@ -716,7 +715,15 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
       sort: 'order',
     })
     if (!res.docs?.length) return ORDER_PLANS
-    const cmsPlans = res.docs.map((d: any, i: number) => mapOrderFromPlanDoc(d, i))
+    const cmsPlans = res.docs.flatMap((d: any, i: number) => {
+      try {
+        return [mapOrderFromPlanDoc(d, i)]
+      } catch (err) {
+        console.error('[cmsPages] skip plan', d?.slug ?? d?.id, err)
+        return []
+      }
+    })
+    if (!cmsPlans.length) return ORDER_PLANS
     const cmsSlugs = new Set(cmsPlans.map((p) => p.slug))
     const extraStatic = ORDER_PLANS.filter((p) => !cmsSlugs.has(p.slug))
     return [...cmsPlans, ...extraStatic]
@@ -776,7 +783,7 @@ export async function getAllServiceSlugsCms(): Promise<string[]> {
 }
 
 export const getCachedOrderPlans = () =>
-  unstable_cache(() => fetchOrderPlans(), ['order-plans-v4-smart-card-i18n'], {
+  unstable_cache(() => fetchOrderPlans(), ['order-plans-v5-includes-l10n'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

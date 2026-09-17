@@ -1610,9 +1610,23 @@ Homepage cards, burger children, and `/order/[slug]` all read Payload `solution-
 Canonical names: EN `AI Smart Card`, RU `AI-визитка`, HE `כרטיס חכם AI`. Runtime hygiene in `src/lib/copyHygiene.ts` (applied from `getSiteContent` + `cmsPages`). Localized order title suffix. Checkout labels and `ProjectNav` RU `Назад` / `Далее`. CMS: `scripts/fix-localization-audit.ts` + `scripts/patch-smart-card-solution.ts`. Bump `unstable_cache` keys (`site-content-v14-smart-card-i18n`, `order-plans-v4-smart-card-i18n`).
 
 **Prevent:**
-Do not treat CMS strings as already-localized because EN looks fine. After renaming a plan, patch **title + header children + seo.title** in all three locales, or leave submenu empty so it is generated from cards. Do not hardcode English chrome (`Order`, `Get a start`) in `generateMetadata` or section CTAs.
+Do not treat CMS strings as already-localized because EN looks fine. After renaming a plan, patch **title + header children + seo.title** in all three locales, or leave submenu empty so it is generated from cards. Do not hardcode English chrome (`Order`, `Get a start`) in `generateMetadata` or section CTAs. When mapping Payload `locale: 'all'` rich text, prefer `{en,ru,he}` locale keys even if a sibling empty `root` makes `isLexicalDoc(value)` true — otherwise “What's included” disappears (PIT-092).
 
 ---
+
+## PIT-092 — Order “What's included” vanishes after a plans cache bump
+
+**Tags:** `i18n`, `cms`, `order`, `lexical`, `cache`  
+**Seen:** 2026-09-18 — after `order-plans-v4-smart-card-i18n`; `/order/ai-smart-card` kept Stack/CMS/AI but lost «Что входит в разработку?» / subscription details.
+
+**Symptom:** Plan feature rows still render. The accordion “What's included in development?” and expandable subscription copy do not.
+
+**Cause:** `unstable_cache` key bump forced a cold Payload `locale: 'all'` read. Localized Lexical fields can arrive as `{ en, ru, he, root }`. `isLexicalDoc` saw the empty sibling `root` and treated the wrapper as the document, so `lexicalToPlain` was empty and `hasIncludes` / `hasFull` stayed false. A throw in `mapOrderFromPlanDoc` would also cache static `ORDER_PLANS` (`revalidate: false`) which have no solution `includes`.
+
+**Fix:** `pickLocalizedLexical` in `src/lib/lexical.ts` chooses locale docs first. Mapper uses `lexicalHasContent` and reads `includes`/`full` or `includesRich`/`fullRich`. Per-plan try/catch. Cache key `order-plans-v5-includes-l10n`.
+
+**Prevent:**
+Never gate Lexical UI on `isLexicalDoc(localeAllValue)` or `lexicalToPlain` alone. After changing an `unstable_cache` key with `revalidate: false`, confirm the first fill is not the static fallback.
 
 ## Checklist before merging CMS / schema PRs
 
@@ -1700,4 +1714,5 @@ Do not treat CMS strings as already-localized because EN looks fine. After renam
 - [ ] Consultant Settings `enabled: off` must hide the AI-consultant launcher; `/api/consult/copy` is `no-store` (PIT-089)
 - [ ] Slide overlays: keep mounted closed, add the open class after paint; do not `return null` while copy loads (PIT-090)
 - [ ] Solutions/order i18n: canonical Smart Card names + `copyHygiene`; never hardcode `| Order |` or `Get a start` (PIT-091)
+- [ ] Order Lexical includes: pick `{en,ru,he}` before `isLexicalDoc` on locale-all wrappers; bump plans cache after mapper fixes (PIT-092)
 
