@@ -622,10 +622,10 @@ function OrderCheckout({
                                 isLight ? 'text-coal-900/85' : 'text-white/85'
                               }`}
                             >
-                              {includesDoc && isLexicalDoc(includesDoc) ? (
+                              {includesDoc && isLexicalDoc(includesDoc) && lexicalHasContent(includesDoc) ? (
                                 <RichText data={includesDoc as never} />
                               ) : (
-                                <p>{plainIncludes}</p>
+                                <p className="whitespace-pre-line">{plainIncludes}</p>
                               )}
                             </div>
                           </div>
@@ -859,10 +859,10 @@ function OrderCheckout({
                                   isLight ? 'text-coal-900/85' : 'text-white/85'
                                 }`}
                               >
-                                {fullDoc && isLexicalDoc(fullDoc) ? (
+                                {fullDoc && isLexicalDoc(fullDoc) && lexicalHasContent(fullDoc) ? (
                                   <RichText data={fullDoc as never} />
                                 ) : (
-                                  <p>{plainFull}</p>
+                                  <p className="whitespace-pre-line">{plainFull}</p>
                                 )}
                               </div>
                             </div>

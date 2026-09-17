@@ -211,7 +211,6 @@ export default function ErythroConsultant({
   }, [cmsCopy, key])
 
   const whatsAppLink = buildWhatsAppHref(site.phone || '') || ''
-  const telegramHref = (site.telegram || '').trim()
 
   const chips = useMemo<ConsultantChip[]>(() => {
     return [
@@ -235,28 +234,15 @@ export default function ErythroConsultant({
   }, [key])
 
   const footerActions = useMemo<ConsultantChip[]>(() => {
-    const out: ConsultantChip[] = []
-    if (whatsAppLink) {
-      out.push({
+    if (!whatsAppLink) return []
+    return [
+      {
         id: 'whatsapp',
         label: COPY[key].footerWhatsApp!,
         action: { kind: 'escalate', target: 'whatsapp' },
-      })
-    }
-    out.push({
-      id: 'contacts',
-      label: COPY[key].footerContacts!,
-      action: { kind: 'escalate', target: 'form' },
-    })
-    if (telegramHref) {
-      out.push({
-        id: 'telegram',
-        label: COPY[key].footerTelegram!,
-        action: { kind: 'escalate', target: 'telegram' },
-      })
-    }
-    return out
-  }, [key, telegramHref, whatsAppLink])
+      },
+    ]
+  }, [key, whatsAppLink])
 
   if (cmsCopy && !cmsCopy.enabled) return null
 
@@ -278,10 +264,6 @@ export default function ErythroConsultant({
         }
         if (target === 'whatsapp') {
           if (whatsAppLink) window.open(whatsAppLink, '_blank', 'noopener,noreferrer')
-          return
-        }
-        if (target === 'telegram') {
-          if (telegramHref) window.open(telegramHref, '_blank', 'noopener,noreferrer')
           return
         }
         // The chat never places an order: hand off to the existing pages.

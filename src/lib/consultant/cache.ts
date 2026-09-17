@@ -9,9 +9,12 @@ import { createHash } from 'node:crypto'
  * it upstream means Gemini bills the prefix once per cache instead of once per
  * message.
  *
- * Only `systemInstruction` goes into the cache. Tool declarations stay in the
- * request, so editing a tool never invalidates the cache and the request keeps
- * a single source of truth for what the model may call.
+ * Only `systemInstruction` goes into the cache. Tool declarations used to stay
+ * in the request so editing a tool would not invalidate the cache. Gemini 3.x
+ * now rejects `cachedContent` together with `tools` / `tool_config` on the same
+ * GenerateContent call (PIT-093), so the consultant handler currently skips the
+ * cache while tools are attached. Do not wire a cache handle back onto
+ * `streamText` until declarations live inside the cache.
  *
  * Everything here is best-effort: any failure returns `null` and the caller
  * sends the plain prompt.

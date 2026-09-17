@@ -1592,6 +1592,21 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 
 ---
 
+## PIT-093 — Consultant answer never streams (Gemini cache + tools)
+
+**Tags:** `consultant`, `gemini`, `cache`, `ai-sdk`  
+**Seen:** 2026-09-18 — local `POST /api/consult` 200, «Печатает…» then empty
+
+**Symptom:** The visitor sends a question. The typing indicator shows, then disappears. No assistant bubble, no error notice. Runtime log: `CachedContent can not be used with GenerateContent request setting system_instruction, tools or tool_config`.
+
+**Cause:** The explicit context cache held only `systemInstruction`. The request still sent `tools`. Gemini 3.x rejects that pair with 400. AI SDK `textStream` swallows the 400 (no throw, no tokens), so the retry-without-cache path never ran and the widget treated the empty SSE as a finished answer.
+
+**Fix:** Do not attach `cachedContent` while the consultant sends tools. Pass inline `system` on every `streamText` call. Re-enable the prefix cache only after tool declarations live inside the cache, not on the request.
+
+**Prevent:** A 200 SSE with zero `text-delta` frames is a failed answer. Do not assume `textStream` throws on provider 400s. Log Gemini cache errors.
+
+---
+
 ## PIT-091 — AI Smart Card / AI-визитка copy drifts between CMS, menu, and order chrome
 
 **Tags:** `i18n`, `cms`, `solutions`, `order`, `seo`  
@@ -1621,12 +1636,12 @@ Do not treat CMS strings as already-localized because EN looks fine. After renam
 
 **Symptom:** Plan feature rows still render. The accordion “What's included in development?” and expandable subscription copy do not.
 
-**Cause:** `unstable_cache` key bump forced a cold Payload `locale: 'all'` read. Localized Lexical fields can arrive as `{ en, ru, he, root }`. `isLexicalDoc` saw the empty sibling `root` and treated the wrapper as the document, so `lexicalToPlain` was empty and `hasIncludes` / `hasFull` stayed false. A throw in `mapOrderFromPlanDoc` would also cache static `ORDER_PLANS` (`revalidate: false`) which have no solution `includes`.
+**Cause:** `unstable_cache` key bump forced a cold Payload `locale: 'all'` read. Top-level localized Lexical (`includes`) often arrives as an empty `{ root }` shell **without** `{en,ru,he}` keys, while nested addon `full` still maps. `isLexicalDoc` treated the empty shell as the document, `hasIncludes` stayed false, and static `ORDER_PLANS` for solutions had no `includes` fallback. Empty locale rows also made `resolveLexical` return a blank doc and skip plain-text fallback.
 
-**Fix:** `pickLocalizedLexical` in `src/lib/lexical.ts` chooses locale docs first. Mapper uses `lexicalHasContent` and reads `includes`/`full` or `includesRich`/`fullRich`. Per-plan try/catch. Cache key `order-plans-v5-includes-l10n`.
+**Fix:** Fetch `en`/`ru`/`he` alongside `locale: 'all'` and merge rich text that actually has content. `pickLocalizedLexical` skips empty shells; `resolveLexical` falls through to fallback. Smart Card static `ORDER_PLANS` now has includes copy. Cache key `order-plans-v6-includes-locale-merge`.
 
 **Prevent:**
-Never gate Lexical UI on `isLexicalDoc(localeAllValue)` or `lexicalToPlain` alone. After changing an `unstable_cache` key with `revalidate: false`, confirm the first fill is not the static fallback.
+Never gate Lexical UI on `isLexicalDoc(localeAllValue)` or `lexicalToPlain` alone. After changing an `unstable_cache` key with `revalidate: false`, confirm the first fill is not an empty Lexical shell. Keep a static `includes` fallback on solution plans.
 
 ## Checklist before merging CMS / schema PRs
 
@@ -1713,6 +1728,7 @@ Never gate Lexical UI on `isLexicalDoc(localeAllValue)` or `lexicalToPlain` alon
 - [ ] Preview chat/forms: do not require Turnstile hostname `erythro.ai` on `*.vercel.app`; gate is Vercel SSO (PIT-088)
 - [ ] Consultant Settings `enabled: off` must hide the AI-consultant launcher; `/api/consult/copy` is `no-store` (PIT-089)
 - [ ] Slide overlays: keep mounted closed, add the open class after paint; do not `return null` while copy loads (PIT-090)
+- [ ] Consultant + Gemini cache: do not send `cachedContent` together with `tools`; Gemini 3.x 400 is swallowed by `textStream` (PIT-093)
 - [ ] Solutions/order i18n: canonical Smart Card names + `copyHygiene`; never hardcode `| Order |` or `Get a start` (PIT-091)
-- [ ] Order Lexical includes: pick `{en,ru,he}` before `isLexicalDoc` on locale-all wrappers; bump plans cache after mapper fixes (PIT-092)
+- [ ] Order Lexical includes: merge per-locale rich text when `locale: 'all'` is an empty shell; keep static `includes` on solution plans (PIT-092)
 

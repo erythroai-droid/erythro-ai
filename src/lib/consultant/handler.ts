@@ -1,7 +1,6 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { jsonSchema, stepCountIs, streamText, tool, type ModelMessage } from 'ai'
 
-import { forgetCachedSystemPrompt, getCachedSystemPrompt } from './cache'
 import { consultModel, geminiApiKey } from './config'
 import { buildSystemPrompt } from './prompt'
 import { sanitizeBriefMarkdown, sanitizeText, stripUrls } from './sanitize'
@@ -330,41 +329,24 @@ export function createConsultHandler(deps: ConsultHandlerDeps) {
     void (async () => {
       const assistantChunks: string[] = []
       try {
-        const cachedPrompt = await getCachedSystemPrompt({ apiKey, model: modelId, system })
+        // Gemini 3.x rejects `cachedContent` together with `tools` /
+        // `tool_config` on the same GenerateContent call (INVALID_ARGUMENT).
+        // The consultant always sends tools, so the prefix cache cannot ride
+        // along until tool declarations live inside the cache (PIT-093).
+        // `textStream` also swallows that 400 — no throw, no tokens — so we
+        // must not attach a cache handle at all.
+        const result = streamText({
+          model: google(modelId),
+          system,
+          messages: toModelMessages(messages),
+          tools,
+          stopWhen: stepCountIs(6),
+          temperature: 0.3,
+        })
 
-        // The prefix cache is an optimisation, never a dependency: if Gemini
-        // rejects the cache handle we drop it and replay with the inline prompt.
-        // Only safe while nothing has been emitted yet.
-        const attempts = cachedPrompt ? [cachedPrompt, null] : [null]
-
-        for (const cacheName of attempts) {
-          try {
-            const result = streamText({
-              model: google(modelId),
-              // Gemini rejects a request carrying both a cache handle and its
-              // own systemInstruction — send exactly one of them.
-              ...(cacheName
-                ? { providerOptions: { google: { cachedContent: cacheName } } }
-                : { system }),
-              messages: toModelMessages(messages),
-              tools,
-              stopWhen: stepCountIs(6),
-              temperature: 0.3,
-            })
-
-            for await (const delta of result.textStream) {
-              assistantChunks.push(delta)
-              emitter.emit({ type: 'text-delta', delta })
-            }
-            break
-          } catch (err) {
-            if (cacheName === null || assistantChunks.length > 0) throw err
-            console.error(
-              '[consult] cached prompt rejected, retrying inline:',
-              err instanceof Error ? err.message : String(err),
-            )
-            forgetCachedSystemPrompt(modelId, system)
-          }
+        for await (const delta of result.textStream) {
+          assistantChunks.push(delta)
+          emitter.emit({ type: 'text-delta', delta })
         }
       } catch (err) {
         console.error('[consult] stream failed:', err instanceof Error ? err.message : String(err))
