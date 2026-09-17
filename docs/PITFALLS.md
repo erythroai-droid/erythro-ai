@@ -1592,6 +1592,28 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 
 ---
 
+## PIT-091 — AI Smart Card / AI-визитка copy drifts between CMS, menu, and order chrome
+
+**Tags:** `i18n`, `cms`, `solutions`, `order`, `seo`  
+**Seen:** 2026-09-18 — live `/#solutions` + `/order/ai-business-card` EN/RU/HE audit.
+
+**Symptom:**
+1. Solutions CTA on EN is `Get a start` (not English).
+2. Menu still says `AI-Business Card` / `AI-визитка` / `כרטיס ביקור AI` while the card and checkout say `AI Smart Card` / `כרטיס חכם AI`.
+3. RU/HE order `<title>` keeps `| Order |`; RU tariff name stays English `AI Smart Card`.
+4. Checkout summary: RU `Итог`/`Итого`/`Всего к оплате` stacked; HE subtotal is `ביניים` instead of `סכום ביניים`. Wizard buttons: `Предыдущий` / `Следующий`.
+
+**Cause:**
+Homepage cards, burger children, and `/order/[slug]` all read Payload `solution-plans` / `solutions-section` / `header`. Stale CMS rows override `src/translations` (`Get started`, localized titles). `generateMetadata` hardcoded `| Order |`. Header submenu children, when present, are **not** derived from plan titles, so a rename of the card does not rename the menu.
+
+**Fix:**
+Canonical names: EN `AI Smart Card`, RU `AI-визитка`, HE `כרטיס חכם AI`. Runtime hygiene in `src/lib/copyHygiene.ts` (applied from `getSiteContent` + `cmsPages`). Localized order title suffix. Checkout labels and `ProjectNav` RU `Назад` / `Далее`. CMS: `scripts/fix-localization-audit.ts` + `scripts/patch-smart-card-solution.ts`. Bump `unstable_cache` keys (`site-content-v14-smart-card-i18n`, `order-plans-v4-smart-card-i18n`).
+
+**Prevent:**
+Do not treat CMS strings as already-localized because EN looks fine. After renaming a plan, patch **title + header children + seo.title** in all three locales, or leave submenu empty so it is generated from cards. Do not hardcode English chrome (`Order`, `Get a start`) in `generateMetadata` or section CTAs.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1677,4 +1699,5 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 - [ ] Preview chat/forms: do not require Turnstile hostname `erythro.ai` on `*.vercel.app`; gate is Vercel SSO (PIT-088)
 - [ ] Consultant Settings `enabled: off` must hide the AI-consultant launcher; `/api/consult/copy` is `no-store` (PIT-089)
 - [ ] Slide overlays: keep mounted closed, add the open class after paint; do not `return null` while copy loads (PIT-090)
+- [ ] Solutions/order i18n: canonical Smart Card names + `copyHygiene`; never hardcode `| Order |` or `Get a start` (PIT-091)
 

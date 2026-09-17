@@ -6,6 +6,7 @@ import OrderClient from './OrderClient'
 import { getCachedSeoSettings, getCachedSiteContent } from '@/lib/getSiteContent'
 import { getAllOrderSlugsCms, getCachedOrderPlans, getOrderPlanBySlug } from '@/lib/cmsPages'
 import { getAllOrderSlugs, ORDER_PLANS, tLocale } from '@/lib/orderPlans'
+import { orderPageTitleSuffix } from '@/lib/copyHygiene'
 import { getCachedAuditPage } from '@/lib/auditPage.server'
 import { ogImageFields, ogImageForPlan } from '@/lib/ogImages'
 import { getRequestPrefs } from '@/lib/requestPrefs'
@@ -44,7 +45,8 @@ export async function generateMetadata({ params }: OrderPageProps): Promise<Meta
   const customTitle = tLocale(plan.seoTitle, locale)
   const customDescription = tLocale(plan.seoDescription, locale)
   const pageTitle = tLocale(plan.card.title, locale)
-  const title = customTitle || `${pageTitle} | Order | Erythro.ai`
+  const orderSuffix = orderPageTitleSuffix(locale)
+  const title = customTitle || `${pageTitle} | ${orderSuffix} | Erythro.ai`
   const subtitle = customDescription || tLocale(plan.subtitle, locale)
   const seo = await getCachedSeoSettings()
   const ogImage = ogImageForPlan(plan.slug, seo.ogImage)

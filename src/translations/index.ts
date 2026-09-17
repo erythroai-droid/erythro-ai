@@ -492,7 +492,7 @@ export const solutions = {
       price: '7 000',
       title: {
         en: 'AI Smart Card',
-        ru: 'AI Smart Card',
+        ru: 'AI-визитка',
         he: 'כרטיס חכם AI',
       },
       features: [
@@ -505,19 +505,19 @@ export const solutions = {
           },
         },
         {
-          label: { en: 'Content:', ru: 'Контент:', he: 'תוכן:' },
+          label: { en: 'CMS:', ru: 'CMS:', he: 'CMS:' },
           value: {
-            en: 'Git-based CMS (Decap/Tina) / Jamstack',
-            ru: 'Git-based CMS (Decap/Tina) / Jamstack',
-            he: 'Git-based CMS (Decap/Tina) / Jamstack',
+            en: 'Git-based (Decap/Tina) / Jamstack',
+            ru: 'Git-based (Decap/Tina) / Jamstack',
+            he: 'Git-based (Decap/Tina) / Jamstack',
           },
         },
         {
           label: { en: 'AI:', ru: 'AI:', he: 'AI:' },
           value: {
-            en: 'AI Web Widget (FAQ chatbot without vector DB)',
-            ru: 'AI Web Widget (FAQ чат-бот без векторной БД)',
-            he: 'ווידג׳ט AI (צ׳אטבוט FAQ ללא מסד וקטורי)',
+            en: 'AI Web Widget (FAQ chatbot without a vector database)',
+            ru: 'AI Web Widget (FAQ-чат-бот без векторной базы данных)',
+            he: 'ווידג׳ט AI (צ׳אטבוט FAQ ללא מסד נתונים וקטורי)',
           },
         },
         {
@@ -534,7 +534,7 @@ export const solutions = {
       featured: true,
       title: {
         en: 'Business Automation',
-        ru: 'бизнес-автоматизация',
+        ru: 'Бизнес-автоматизация',
         he: 'אוטומציה עסקית',
       },
       features: [
