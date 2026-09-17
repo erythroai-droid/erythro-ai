@@ -1571,9 +1571,9 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 
 **Cause:** `enabled` was read only inside `ErythroConsultant` **on first open**. `ChatButton` always rendered the entry points. The panel mounts from `sessionStorage` draft immediately, then `/api/consult/copy` returns `enabled: false` and unmounts it. `Cache-Control: private, max-age=60` on that GET also delayed the kill switch in the browser.
 
-**Fix:** `ChatButton` fetches `/api/consult/copy` (`no-store`) on mount and omits the AI-consultant launcher when `enabled === false` (the contact fan + WhatsApp FAB stay as fallback). `POST /api/consult` returns 503 when the CMS flag is off. Do **not** unmount the overlay while that fetch is in flight — see PIT-090.
+**Fix:** `ChatButton` fetches `/api/consult/copy` (`no-store`) on mount and omits the AI-consultant launcher when `enabled === false` (the contact fan + WhatsApp FAB stay as fallback). Trust that boolean — do not require a non-empty greeting, and do not `unstable_cache` the copy payload. `POST /api/consult` returns 503 when the CMS flag is off. Do **not** unmount the overlay while that fetch is in flight — see PIT-090.
 
-**Prevent:** A public kill switch must hide the **launcher**, not only the dialog. Do not HTTP-cache the copy endpoint that carries `enabled`.
+**Prevent:** A public kill switch must hide the **launcher**, not only the dialog. Do not HTTP-cache or `unstable_cache` the copy endpoint that carries `enabled`. Do not ignore `enabled: false` when greeting is empty.
 
 ---
 

@@ -301,7 +301,8 @@ export function getCachedConsultantRules(locale: ConsultLocale): Promise<Consult
   )()
 }
 
-/** Widget copy (greeting, OTP labels) — read uncached at render time only. */
+/** Widget copy (greeting, OTP labels, launcher kill switch). Not cached:
+ *  `enabled` must follow the admin checkbox on the next request (PIT-089). */
 export async function fetchConsultantCopy(locale: ConsultLocale): Promise<{
   enabled: boolean
   greeting: string
@@ -334,7 +335,5 @@ export async function fetchConsultantCopy(locale: ConsultLocale): Promise<{
 }
 
 export function getCachedConsultantCopy(locale: ConsultLocale) {
-  return unstable_cache(() => fetchConsultantCopy(locale), ['consultant-copy-v1', locale], {
-    tags: [SITE_CONTENT_TAG],
-  })()
+  return fetchConsultantCopy(locale)
 }
