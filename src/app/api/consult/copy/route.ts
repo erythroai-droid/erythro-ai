@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { consultLocale, isConsultantConfigured } from '@/lib/consultant'
+import { consultLocale } from '@/lib/consultant'
 import { getCachedConsultantCopy } from '@/lib/consultantKnowledge.server'
 
 export const runtime = 'nodejs'
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   const locale = consultLocale(request.nextUrl.searchParams.get('locale'))
   const copy = await getCachedConsultantCopy(locale)
   return NextResponse.json(
-    { ...copy, enabled: copy.enabled && isConsultantConfigured() },
+    { ...copy, enabled: copy.enabled },
     { headers: { 'Cache-Control': 'private, no-store' } },
   )
 }

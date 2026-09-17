@@ -23,8 +23,8 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
   en: {
     title: 'Erythro assistant',
     disclaimer: 'AI assistant. Answers come from the erythro.ai knowledge base.',
-    openLabel: 'Open the AI assistant',
-    closeLabel: 'Close the AI assistant',
+    openLabel: 'Open the AI consultant',
+    closeLabel: 'Close',
     inputPlaceholder: 'Ask about packages, prices or your project',
     send: 'Send',
     thinking: 'Typing…',
@@ -32,15 +32,17 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
       'If we prepare a project brief or escalate a technical question, this chat is stored for up to 12 months so the team can see the context.',
     chipFaq: 'Packages and prices',
     chipBrief: 'Build a brief',
-    chipAudit: 'AI audit',
-    chipWhatsApp: 'WhatsApp',
-    chipForm: 'Contact form',
+    chipAudit: 'Take an audit',
+    chipOrder: 'Order a site',
+    footerWhatsApp: 'WhatsApp',
+    footerContacts: 'Contacts',
+    footerTelegram: 'Telegram',
   },
   ru: {
     title: 'Ассистент Erythro',
     disclaimer: 'ИИ-ассистент. Отвечает по базе знаний erythro.ai.',
-    openLabel: 'Открыть ИИ-ассистента',
-    closeLabel: 'Закрыть ИИ-ассистента',
+    openLabel: 'Открыть ИИ-консультанта',
+    closeLabel: 'Закрыть',
     inputPlaceholder: 'Спросите о пакетах, ценах или своём проекте',
     send: 'Отправить',
     thinking: 'Печатает…',
@@ -72,15 +74,17 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
       'Вопрос ушёл специалисту. Ответ придёт на email — треда в этом чате нет.',
     chipFaq: 'Пакеты и цены',
     chipBrief: 'Составить ТЗ',
-    chipAudit: 'ИИ-аудит',
-    chipWhatsApp: 'WhatsApp',
-    chipForm: 'Контактная форма',
+    chipAudit: 'Пройти аудит',
+    chipOrder: 'Заказать сайт',
+    footerWhatsApp: 'WhatsApp',
+    footerContacts: 'Контакты',
+    footerTelegram: 'Telegram',
   },
   he: {
     title: 'עוזר Erythro',
     disclaimer: 'עוזר AI. התשובות מבוססות על מסד הידע של erythro.ai.',
-    openLabel: 'פתיחת עוזר ה-AI',
-    closeLabel: 'סגירת עוזר ה-AI',
+    openLabel: 'פתיחת יועץ ה-AI',
+    closeLabel: 'סגירה',
     inputPlaceholder: 'שאלו על חבילות, מחירים או הפרויקט שלכם',
     send: 'שליחה',
     thinking: 'מקליד…',
@@ -111,9 +115,11 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
     ticketCreated: 'השאלה הועברה למומחה. התשובה תגיע במייל — אין כאן שרשור.',
     chipFaq: 'חבילות ומחירים',
     chipBrief: 'בניית אפיון',
-    chipAudit: 'ביקורת AI',
-    chipWhatsApp: 'WhatsApp',
-    chipForm: 'טופס יצירת קשר',
+    chipAudit: 'לעבור ביקורת',
+    chipOrder: 'להזמין אתר',
+    footerWhatsApp: 'WhatsApp',
+    footerContacts: 'יצירת קשר',
+    footerTelegram: 'Telegram',
   },
 }
 
@@ -168,11 +174,10 @@ export default function ErythroConsultant({
     setCopyReady(true)
   }, [copyFromHost])
 
-  // Copy is editor-owned. Do not paint the panel until this returns: a disabled
-  // consultant must not flash the window and then unmount (PIT-089).
+  // Prefetch CMS copy on mount so the first open is not gated on the network.
+  // Kill switch is owned by ChatButton (PIT-089) — do not unmount this tree.
   useEffect(() => {
     if (copyReady || cmsCopy) return
-    if (!isOpen) return
     let cancelled = false
     fetch(`/api/consult/copy?locale=${key}`, { cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : null))
@@ -188,7 +193,7 @@ export default function ErythroConsultant({
     return () => {
       cancelled = true
     }
-  }, [isOpen, cmsCopy, copyReady, key])
+  }, [cmsCopy, copyReady, key])
 
   const labels = useMemo<Partial<ConsultantLabels>>(() => {
     const base = COPY[key]
@@ -206,10 +211,16 @@ export default function ErythroConsultant({
   }, [cmsCopy, key])
 
   const whatsAppLink = buildWhatsAppHref(site.phone || '') || ''
+  const telegramHref = (site.telegram || '').trim()
 
-  // Live channels stay visible even in the anonymous FAQ stage.
   const chips = useMemo<ConsultantChip[]>(() => {
-    const out: ConsultantChip[] = [
+    return [
+      {
+        id: 'order',
+        label: COPY[key].chipOrder!,
+        action: { kind: 'escalate', target: 'order' },
+      },
+      { id: 'audit', label: COPY[key].chipAudit!, action: { kind: 'escalate', target: 'audit' } },
       {
         id: 'faq',
         label: COPY[key].chipFaq!,
@@ -220,22 +231,34 @@ export default function ErythroConsultant({
         label: COPY[key].chipBrief!,
         action: { kind: 'ask', text: ASK_BRIEF[key], gate: 'otp' },
       },
-      { id: 'audit', label: COPY[key].chipAudit!, action: { kind: 'escalate', target: 'audit' } },
-      { id: 'form', label: COPY[key].chipForm!, action: { kind: 'escalate', target: 'form' } },
     ]
+  }, [key])
+
+  const footerActions = useMemo<ConsultantChip[]>(() => {
+    const out: ConsultantChip[] = []
     if (whatsAppLink) {
       out.push({
         id: 'whatsapp',
-        label: COPY[key].chipWhatsApp!,
+        label: COPY[key].footerWhatsApp!,
         action: { kind: 'escalate', target: 'whatsapp' },
       })
     }
+    out.push({
+      id: 'contacts',
+      label: COPY[key].footerContacts!,
+      action: { kind: 'escalate', target: 'form' },
+    })
+    if (telegramHref) {
+      out.push({
+        id: 'telegram',
+        label: COPY[key].footerTelegram!,
+        action: { kind: 'escalate', target: 'telegram' },
+      })
+    }
     return out
-  }, [key, whatsAppLink])
+  }, [key, telegramHref, whatsAppLink])
 
   if (cmsCopy && !cmsCopy.enabled) return null
-  // Wait for the kill-switch read before mounting the dialog.
-  if (isOpen && !copyReady) return null
 
   return (
     <ConsultantWidget
@@ -245,6 +268,7 @@ export default function ErythroConsultant({
       rtl={key === 'he'}
       labels={labels}
       chips={chips}
+      footerActions={footerActions}
       turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
       onEscalate={({ target, slug }) => {
         if (target === 'form') {
@@ -254,6 +278,10 @@ export default function ErythroConsultant({
         }
         if (target === 'whatsapp') {
           if (whatsAppLink) window.open(whatsAppLink, '_blank', 'noopener,noreferrer')
+          return
+        }
+        if (target === 'telegram') {
+          if (telegramHref) window.open(telegramHref, '_blank', 'noopener,noreferrer')
           return
         }
         // The chat never places an order: hand off to the existing pages.
