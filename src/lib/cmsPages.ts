@@ -510,6 +510,65 @@ async function fetchServicePages(): Promise<ServicePage[]> {
   }
 }
 
+function indexPlanDocs(docs: unknown[] | undefined): Map<string | number, any> {
+  const map = new Map<string | number, any>()
+  for (const doc of docs || []) {
+    if (doc && typeof doc === 'object' && 'id' in doc) {
+      map.set((doc as { id: string | number }).id, doc)
+    }
+  }
+  return map
+}
+
+function localeRichMap(
+  allValue: unknown,
+  per: { en?: unknown; ru?: unknown; he?: unknown },
+): unknown {
+  const out: Record<string, unknown> = {}
+  let any = false
+  for (const loc of LOCALES) {
+    const candidates = [pickLocalizedLexical(allValue, loc), per[loc]]
+    const raw = candidates.find((row) => lexicalHasContent(row) || (typeof row === 'string' && row.trim()))
+    if (raw != null) {
+      out[loc] = raw
+      any = true
+    }
+  }
+  return any ? out : allValue
+}
+
+function addonFullFrom(doc: any, addon: any, index: number): unknown {
+  const list = Array.isArray(doc?.addons) ? doc.addons : []
+  const id = addon?.addonId || addon?.id
+  const match = id
+    ? list.find((row: any) => row?.addonId === id || row?.id === id)
+    : undefined
+  return (match ?? list[index])?.full
+}
+
+function mergePlanLocaleRichText(
+  doc: any,
+  per: { en?: any; ru?: any; he?: any },
+): any {
+  const next = { ...doc }
+  next.includes = localeRichMap(doc.includes ?? doc.includesRich, {
+    en: per.en?.includes,
+    ru: per.ru?.includes,
+    he: per.he?.includes,
+  })
+  if (Array.isArray(doc.addons)) {
+    next.addons = doc.addons.map((addon: any, index: number) => ({
+      ...addon,
+      full: localeRichMap(addon.full ?? addon.fullRich, {
+        en: addonFullFrom(per.en, addon, index),
+        ru: addonFullFrom(per.ru, addon, index),
+        he: addonFullFrom(per.he, addon, index),
+      }),
+    }))
+  }
+  return next
+}
+
 function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
   const fb =
     ORDER_PLANS.find((p) => p.slug === d.slug) ||
@@ -629,6 +688,14 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
       if (hasFull) {
         addon.full = fullPlain
         addon.fullRich = fullRich
+      } else {
+        const fbAddon = fb.addons.find(
+          (row) =>
+            row.id === addon.id ||
+            (isSubscriptionFeatureLabel(row.name) && isSubscriptionFeatureLabel(addon.name)),
+        )
+        if (fbAddon?.full) addon.full = fbAddon.full
+        if (fbAddon?.fullRich) addon.fullRich = fbAddon.fullRich
       }
       return addon
     })
@@ -707,17 +774,32 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
 async function fetchOrderPlans(): Promise<OrderPlan[]> {
   try {
     const payload = await getPayload({ config })
-    const res = await payload.find({
-      collection: 'solution-plans',
-      locale: 'all',
+    const query = {
+      collection: 'solution-plans' as const,
       depth: 0,
       limit: 100,
-      sort: 'order',
-    })
+      sort: 'order' as const,
+    }
+    const [res, enRes, ruRes, heRes] = await Promise.all([
+      payload.find({ ...query, locale: 'all' }),
+      payload.find({ ...query, locale: 'en', fallbackLocale: false }),
+      payload.find({ ...query, locale: 'ru', fallbackLocale: false }),
+      payload.find({ ...query, locale: 'he', fallbackLocale: false }),
+    ])
     if (!res.docs?.length) return ORDER_PLANS
+    const per = {
+      en: indexPlanDocs(enRes.docs),
+      ru: indexPlanDocs(ruRes.docs),
+      he: indexPlanDocs(heRes.docs),
+    }
     const cmsPlans = res.docs.flatMap((d: any, i: number) => {
       try {
-        return [mapOrderFromPlanDoc(d, i)]
+        const merged = mergePlanLocaleRichText(d, {
+          en: per.en.get(d.id),
+          ru: per.ru.get(d.id),
+          he: per.he.get(d.id),
+        })
+        return [mapOrderFromPlanDoc(merged, i)]
       } catch (err) {
         console.error('[cmsPages] skip plan', d?.slug ?? d?.id, err)
         return []
@@ -783,7 +865,7 @@ export async function getAllServiceSlugsCms(): Promise<string[]> {
 }
 
 export const getCachedOrderPlans = () =>
-  unstable_cache(() => fetchOrderPlans(), ['order-plans-v5-includes-l10n'], {
+  unstable_cache(() => fetchOrderPlans(), ['order-plans-v6-includes-locale-merge'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

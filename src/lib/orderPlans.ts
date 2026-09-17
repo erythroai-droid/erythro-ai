@@ -117,11 +117,51 @@ export interface OrderPlan {
   seoDescription?: LocaleMap
 }
 
+const SMART_CARD_INCLUDES: Record<'en' | 'ru' | 'he', string[]> = {
+  ru: [
+    'Проектирование и верстка на Next.js (5–6 секций): Hero-экран с конверсионным CTA; Преимущества / О компании; Карточки услуг с ценами; Форма захвата контактов; Футер, контакты, соцсети.',
+    'Скорость и SEO: Мгновенный отклик (Google PageSpeed 95–100), нативная RTL-верстка под иврит, Schema.org и динамический robots.txt/sitemap.',
+    'Безопасная обработка лидов: Serverless API Route с отправкой заявок сразу в Telegram и на Email (с защитой от спам-ботов через Honeypot, без n8n).',
+    'Управление контентом: Pure Jamstack (правки текстов через 1 ч инженера в подписке) или Git-based CMS (Decap CMS / TinaCMS) с бесплатной админкой прямо в браузере и хранением в GitHub.',
+    'Базовый AI-консультант: Встраиваемый легковесный виджет чата с обучением по статическому FAQ компании (без сложной векторной БД и без RAG).',
+    'Подписка за ₪400/мес: Хостинг Vercel Edge CDN, SSL-сертификат, мониторинг доступности 24/7, покрытие токенов FAQ-бота и до 1 часа в месяц работы инженера на обновление цен и контента.',
+    'Четкие границы пакета: ❌ Нет тяжелой реляционной базы данных PostgreSQL (данные хранятся в репозитории/файлах); ❌ Нет n8n оркестрации и сквозной интеграции с CRM; ❌ Нет сложного RAG-поиска по PDF-документам компании.',
+  ],
+  en: [
+    'Next.js Architecture & Layout (5–6 sections): Hero screen with high-converting CTA; Key advantages / About company; Service cards with pricing; Lead capture form; Footer, contacts, social links.',
+    'Performance & SEO: Instant response (Google PageSpeed 95–100), native RTL Hebrew support, Schema.org microdata, and dynamic robots.txt/sitemap.',
+    'Secure Lead Handling: Serverless API Route delivering submissions directly to Telegram & Email with Honeypot anti-spam protection (no heavy n8n instance needed).',
+    'Content Management: Pure Jamstack (content edits via 1 hr included engineering support) or Git-based CMS (Decap CMS / TinaCMS) with in-browser admin storing JSON/Markdown in GitHub.',
+    'Basic AI Consultant: Lightweight embedded chat widget trained on static company FAQ (without complex vector DB or RAG pipeline).',
+    'Maintenance at ₪400/mo: Vercel Edge CDN hosting, SSL, 24/7 uptime monitoring, token allowance for FAQ bot, and up to 1 hr/month engineering work for price and content changes.',
+    'Clear Package Boundaries: ❌ No heavy PostgreSQL relational database; ❌ No n8n workflow orchestration or multi-step CRM integration; ❌ No complex RAG search over corporate PDF documents.',
+  ],
+  he: [
+    'אפיון ופיתוח ב-Next.js (5–6 סקציות): מסך Hero עם CTA ממיר; יתרונות / אודות החברה; כרטיסי שירותים ומחירים; טופס לכידת לידים; פוטר, יצירת קשר ורשתות חברתיות.',
+    'ביצועים ו-SEO: תגובה מהירה במיוחד (Google PageSpeed 95–100), תמיכה טבעית ב-RTL לעברית, מיקרו-דאטה Schema.org וקובצי robots.txt/sitemap דינמיים.',
+    'ניתוב לידים מאובטח: נתיב Serverless API המעביר פניות ישירות לטלגרם ולאימייל עם מנגנון Honeypot נגד בוטים (ללא תלות ב-n8n).',
+    'ניהול תוכן: Pure Jamstack (עדכוני תוכן במסגרת שעת מהנדס במנוי) או Git-based CMS (Decap / TinaCMS) עם ממשק ניהול בדפדפן ושמירה ב-GitHub ללא מסד נתונים.',
+    'יועץ AI בסיסי: ווידג׳ט צ׳אט מוטמע וקליל המאומן על שאלות ותשובות נפוצות (FAQ) סטטיות (ללא מסד נתונים וקטורי וללא RAG מורכב).',
+    'מנוי תחזוקה ב-₪400/חודש: אחסון Vercel Edge CDN, תעודת SSL, ניטור זמינות 24/7, כיסוי טוקנים לבוט ועד שעה בחודש של מהנדס לעדכון מחירים ותכנים.',
+    'גבולות ברורים של החבילה: ❌ ללא מסד נתונים רלציוני כבד PostgreSQL; ❌ ללא תזמור תהליכים ב-n8n ואינטגרציית CRM עמוקה; ❌ ללא חיפוש RAG מתקדם על גבי מסמכי PDF.',
+  ],
+}
+
 function buildOrderPlan(card: SolutionCardItem): OrderPlan {
   const homeSubscription = card.features.find((f) => isSubscriptionFeatureLabel(f.label))
   const addons = homeSubscription ? [subscriptionAddonFromFeature(homeSubscription)] : []
 
   const isSmartCard = card.id === 'ai-smart-card'
+  if (isSmartCard && addons[0]) {
+    addons[0] = {
+      ...addons[0],
+      full: {
+        ru: 'Хостинг Vercel Edge, SSL, мониторинг доступности 24/7, покрытие токенов FAQ-бота и до 1 часа в месяц работы инженера на обновление цен и контента.',
+        en: 'Hosting on Vercel Edge, SSL, 24/7 monitoring, FAQ bot token allowance, and up to 1 hr/month engineering support for content & price updates.',
+        he: 'אחסון Vercel Edge, SSL, ניטור זמינות 24/7, כיסוי טוקנים לבוט FAQ ועד שעה בחודש של מהנדס לעדכון מחירים ותוכן.',
+      },
+    }
+  }
 
   return {
     slug: card.id,
@@ -143,6 +183,13 @@ function buildOrderPlan(card: SolutionCardItem): OrderPlan {
           ru: 'Хостинг Vercel Edge CDN, пожизненный SSL и 1 час ежемесячной поддержки инженера включены в подписку.',
           en: 'Vercel Edge CDN hosting, lifetime SSL, and 1 hour of monthly engineering support included in the subscription.',
           he: 'אחסון Vercel Edge CDN, תעודת SSL לכל החיים ושעת תמיכת מהנדס חודשית כלולים במנוי.',
+        }
+      : undefined,
+    includes: isSmartCard
+      ? {
+          ru: SMART_CARD_INCLUDES.ru.join('\n\n'),
+          en: SMART_CARD_INCLUDES.en.join('\n\n'),
+          he: SMART_CARD_INCLUDES.he.join('\n\n'),
         }
       : undefined,
     /** Periods / promo / tax come from CMS only — subscription add-on may be derived above */
