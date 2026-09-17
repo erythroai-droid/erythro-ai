@@ -31,7 +31,7 @@ import {
   type OrderPlan,
 } from '@/lib/orderPlans'
 import { auditSampleReportHref, auditSampleReportLabel } from '@/lib/auditSampleReports'
-import { isLexicalDoc, lexicalToPlain, resolveLexical } from '@/lib/lexical'
+import { isLexicalDoc, lexicalHasContent, resolveLexical } from '@/lib/lexical'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 import ProjectNav, { type ProjectNavNeighbor } from '@/components/portfolio/ProjectNav'
@@ -529,7 +529,7 @@ function OrderCheckout({
                 const plainIncludes = tLocale(plan.includes, locale).trim()
                 const includesDoc = resolveLexical(plan.includesRich, locale, plainIncludes || null)
                 const hasIncludes =
-                  Boolean(includesDoc && lexicalToPlain(includesDoc)) || Boolean(plainIncludes)
+                  Boolean(includesDoc && lexicalHasContent(includesDoc)) || Boolean(plainIncludes)
                 const hasChecks = isAudit
 
                 if (!featureRows.length && !hasIncludes && !hasChecks) {
@@ -750,7 +750,7 @@ function OrderCheckout({
               const amounts = calcAddonAmount(addonMonthlyAmount(addon, locale), months, discount)
               const plainFull = tLocale(addon.full, locale).trim()
               const fullDoc = resolveLexical(addon.fullRich, locale, plainFull || null)
-              const hasFull = Boolean(fullDoc && lexicalToPlain(fullDoc)) || Boolean(plainFull)
+              const hasFull = Boolean(fullDoc && lexicalHasContent(fullDoc)) || Boolean(plainFull)
               const badgeCls =
                 'inline-flex w-fit shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]'
               const includesTitleClass = `min-w-0 text-sm font-semibold leading-6 ${

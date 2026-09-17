@@ -68,6 +68,24 @@ export function isLexicalDoc(value: unknown): value is LexicalDoc {
   )
 }
 
+const LEXICAL_LOCALES = ['en', 'ru', 'he'] as const
+
+/**
+ * Payload `locale: 'all'` rich text is `{ en, ru, he }` but may also carry a
+ * sibling empty `root`, which makes `isLexicalDoc(value)` true and used to
+ * hide per-locale “what's included” docs.
+ */
+export function pickLocalizedLexical(value: unknown, locale: string): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value
+  const rec = value as Record<string, unknown>
+  const hasLocaleDocs = LEXICAL_LOCALES.some((loc) => {
+    const row = rec[loc]
+    return isLexicalDoc(row) || (typeof row === 'string' && row.trim().length > 0)
+  })
+  if (hasLocaleDocs) return rec[locale] ?? rec.en
+  return value
+}
+
 /**
  * Normalize CMS / fallback content into a Lexical doc for a locale.
  * Accepts: Lexical JSON, plain string, or legacy `{ text }[]` paragraph arrays.
@@ -77,12 +95,13 @@ export function resolveLexical(
   locale: string,
   fallback?: LexicalDoc | string | string[] | null,
 ): LexicalDoc | null {
+  const picked = pickLocalizedLexical(value, locale)
   const pick =
-    value && typeof value === 'object' && !Array.isArray(value) && !isLexicalDoc(value)
-      ? (value as Record<string, unknown>)[locale] ??
-        (value as Record<string, unknown>).en ??
-        value
-      : value
+    picked && typeof picked === 'object' && !Array.isArray(picked) && !isLexicalDoc(picked)
+      ? (picked as Record<string, unknown>)[locale] ??
+        (picked as Record<string, unknown>).en ??
+        picked
+      : picked
 
   if (isLexicalDoc(pick)) return pick
   if (typeof pick === 'string' && pick.trim()) return lexicalFromText(pick)

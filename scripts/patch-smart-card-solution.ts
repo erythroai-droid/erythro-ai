@@ -147,7 +147,7 @@ async function run() {
         discountMonths1: 0,
         discountMonths6: 0,
         discountMonths12: 0,
-        fullRich: subFullRich,
+        full: subFullRich,
       },
       ...(priorityAddon
         ? [
@@ -179,7 +179,7 @@ async function run() {
           value: f.value,
         })),
         addons: updatedAddons,
-        includesRich: lexicalFromParagraphs(INCLUDES_PARAGRAPHS[loc]),
+        includes: lexicalFromParagraphs(INCLUDES_PARAGRAPHS[loc]),
         seo: {
           title: SEO_TITLES[loc],
           description: SEO_DESCS[loc],
