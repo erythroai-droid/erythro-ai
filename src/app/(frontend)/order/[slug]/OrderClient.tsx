@@ -282,11 +282,11 @@ function OrderCheckout({
 
   const copy = {
     period: locale === 'ru' ? 'Варианты оплаты' : locale === 'he' ? 'אפשרויות תשלום' : 'Payment options',
-    summary: locale === 'ru' ? 'Итог заказа' : locale === 'he' ? 'סיכום הזמנה' : 'Order summary',
-    subtotal: locale === 'ru' ? 'Итого' : locale === 'he' ? 'ביניים' : 'Subtotal',
+    summary: locale === 'ru' ? 'Сводка заказа' : locale === 'he' ? 'סיכום הזמנה' : 'Order summary',
+    subtotal: locale === 'ru' ? 'Подытог' : locale === 'he' ? 'סכום ביניים' : 'Subtotal',
     addonTotal: locale === 'ru' ? 'Итого:' : locale === 'he' ? 'סה״כ:' : 'Total:',
     totalDue:
-      locale === 'ru' ? 'Всего к оплате' : locale === 'he' ? 'סה״כ לתשלום' : 'Total due',
+      locale === 'ru' ? 'Итого к оплате' : locale === 'he' ? 'סה״כ לתשלום' : 'Total due',
     taxes: locale === 'ru' ? 'Налоги' : locale === 'he' ? 'מיסים' : 'Taxes',
     planRow: locale === 'ru' ? 'Тариф' : locale === 'he' ? 'מסלול' : 'Plan',
     term: locale === 'ru' ? 'Срок подписки' : locale === 'he' ? 'תקופת מנוי' : 'Subscription term',

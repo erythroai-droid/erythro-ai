@@ -38,6 +38,7 @@ import {
   type OrderAddon,
   type OrderPeriod,
 } from './orderPlans'
+import { sanitizeFeature, sanitizePlanTitle, sanitizeSeoTitle } from './copyHygiene'
 import { solutions, type SolutionCardItem } from '@/translations'
 
 const LOCALES = ['en', 'ru', 'he'] as const
@@ -521,7 +522,10 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
       d.currency === 'USD' || d.currency === 'EUR' || d.currency === 'ILS'
         ? d.currency
         : fb.card.currency || 'ILS',
-    title: locMap(d.title, fb.card.title) as SolutionCardItem['title'],
+    title: sanitizePlanTitle(
+      d.slug || fb.slug,
+      locMap(d.title, fb.card.title) as SolutionCardItem['title'],
+    ),
     features: [],
     ...(hasLocalizedSeo(d.pricePrefix)
       ? { pricePrefix: locMapCms(d.pricePrefix) as SolutionCardItem['pricePrefix'] }
@@ -559,7 +563,7 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
             row.value = legacy as any
           }
         }
-        return row
+        return sanitizeFeature(row)
       })
   }
 
@@ -692,7 +696,11 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
     })(),
     ...(hasLocalizedSeo(d.taxNote) ? { taxNote: locMapCms(d.taxNote) } : {}),
     ...(hasLocalizedSeo(d.taxValue) ? { taxValue: locMapCms(d.taxValue) } : {}),
-    ...(hasLocalizedSeo(d.seo?.title) ? { seoTitle: locMapCms(d.seo.title) } : {}),
+    ...(() => {
+      const cmsSeo = hasLocalizedSeo(d.seo?.title) ? locMapCms(d.seo.title) : undefined
+      const seoTitle = sanitizeSeoTitle(d.slug || fb.slug, cmsSeo || fb.seoTitle, card.title)
+      return seoTitle ? { seoTitle } : {}
+    })(),
     ...(hasLocalizedSeo(d.seo?.description) ? { seoDescription: locMapCms(d.seo.description) } : {}),
   }
 }
@@ -768,7 +776,7 @@ export async function getAllServiceSlugsCms(): Promise<string[]> {
 }
 
 export const getCachedOrderPlans = () =>
-  unstable_cache(() => fetchOrderPlans(), ['order-plans-v3-l10n'], {
+  unstable_cache(() => fetchOrderPlans(), ['order-plans-v4-smart-card-i18n'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

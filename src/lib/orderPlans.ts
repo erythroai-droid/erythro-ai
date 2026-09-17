@@ -149,6 +149,11 @@ function buildOrderPlan(card: SolutionCardItem): OrderPlan {
     periods: [],
     defaultPeriodId: '',
     addons,
+    seoTitle: {
+      en: `${card.title.en} | Order | Erythro.ai`,
+      ru: `${card.title.ru} | Оформление заказа | Erythro.ai`,
+      he: `${card.title.he} | הזמנה | Erythro.ai`,
+    },
   }
 }
 

@@ -6,6 +6,7 @@ import { isLexicalDoc, lexicalFromText, lexicalToPlain } from './lexical'
 import { mediaDocUrl } from './publicMediaUrl'
 import { getPayloadLocal } from './payloadStatic'
 import { normalizeCtaHref } from './ctaNav'
+import { applySiteContentCopyHygiene } from './copyHygiene'
 
 const LOCALES = ['en', 'ru', 'he'] as const
 
@@ -584,7 +585,7 @@ export async function getSiteContent(): Promise<SiteContent> {
     ...content.cookieConsent,
   }
 
-  return content
+  return applySiteContentCopyHygiene(content)
 }
 
 /**
@@ -846,7 +847,7 @@ export async function getShellSiteContent(): Promise<SiteContent> {
     ...content.cookieConsent,
   }
 
-  return content
+  return applySiteContentCopyHygiene(content)
 }
 
 /**
@@ -854,14 +855,14 @@ export async function getShellSiteContent(): Promise<SiteContent> {
  * Invalidated via `SITE_CONTENT_TAG` when content is edited in Payload admin.
  * Prefer {@link getCachedShellSiteContent} on chrome-only routes.
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v13-he-consent'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v14-smart-card-i18n'], {
   tags: [SITE_CONTENT_TAG],
 })
 
 /** Cached chrome/shell content — no hero/service media. */
 export const getCachedShellSiteContent = unstable_cache(
   getShellSiteContent,
-  ['site-shell-content-v4-he-a11y'],
+  ['site-shell-content-v5-smart-card-i18n'],
   { tags: [SITE_CONTENT_TAG] },
 )
 

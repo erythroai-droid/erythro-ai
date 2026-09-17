@@ -34,7 +34,7 @@ interface ProjectNavProps {
 function tNav(locale: string, kind: ListingNavKind) {
   if (kind === 'audit') {
     if (locale === 'ru') {
-      return { prev: 'Предыдущий', next: 'Следующий', list: 'Все тарифы аудита' }
+      return { prev: 'Назад', next: 'Далее', list: 'Все тарифы аудита' }
     }
     if (locale === 'he') {
       return { prev: 'הקודם', next: 'הבא', list: 'כל מחירי הביקורת' }
@@ -43,7 +43,7 @@ function tNav(locale: string, kind: ListingNavKind) {
   }
   if (kind === 'solutions') {
     if (locale === 'ru') {
-      return { prev: 'Предыдущий', next: 'Следующий', list: 'Все решения' }
+      return { prev: 'Назад', next: 'Далее', list: 'Все решения' }
     }
     if (locale === 'he') {
       return { prev: 'הקודם', next: 'הבא', list: 'כל הפתרונות' }
@@ -51,7 +51,7 @@ function tNav(locale: string, kind: ListingNavKind) {
     return { prev: 'Previous', next: 'Next', list: 'All solutions' }
   }
   if (locale === 'ru') {
-    return { prev: 'Предыдущий', next: 'Следующий', list: 'Все проекты' }
+    return { prev: 'Назад', next: 'Далее', list: 'Все проекты' }
   }
   if (locale === 'he') {
     return { prev: 'הקודם', next: 'הבא', list: 'כל הפרויקטים' }

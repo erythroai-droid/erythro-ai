@@ -26,11 +26,11 @@ Do **not** quote leftover `/services/management` USD stubs (`from $800` / `$4 00
 - Order add-on: 12-month subscription ₪2388 (₪199 × 12; 12-month minimum)
 - URL: https://erythro.ai/order/free-start
 
-### AI Smart Card — ₪7 000 | sub ₪400/mo
+### AI Smart Card / AI-визитка / כרטיס חכם AI — ₪7 000 | sub ₪400/mo
 
 - Stack: Next.js (App Router), TypeScript, Tailwind CSS, Vercel Edge / Cloudflare CDN
 - Content: Git-based CMS (Decap CMS / TinaCMS) or Pure Jamstack
-- AI: Embedded AI Web Widget (FAQ chatbot, no complex vector DB / RAG)
+- AI: Embedded AI Web Widget (FAQ chatbot, no vector database / RAG)
 - Limits: No relational DB (Postgres), no n8n workflow orchestration, no RAG over PDFs (upgrade to Business Automation ₪24 000 for these)
 - Order add-on: 12-month subscription ₪4 800 (₪400 × 12)
 - URL: https://erythro.ai/order/ai-smart-card (legacy: https://erythro.ai/order/ai-business-card)

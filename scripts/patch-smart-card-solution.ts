@@ -12,7 +12,7 @@ type Locale = (typeof LOCALES)[number]
 
 const TITLES: Record<Locale, string> = {
   en: 'AI Smart Card',
-  ru: 'AI Smart Card',
+  ru: 'AI-визитка',
   he: 'כרטיס חכם AI',
 }
 
@@ -31,20 +31,20 @@ const PROMOS: Record<Locale, string> = {
 const FEATURES: Record<Locale, Array<{ label: string; value: string }>> = {
   en: [
     { label: 'Stack:', value: 'Next.js, TypeScript, Tailwind CSS' },
-    { label: 'Content:', value: 'Git-based CMS (Decap/Tina) / Jamstack' },
-    { label: 'AI:', value: 'AI Web Widget (FAQ chatbot without vector DB)' },
+    { label: 'CMS:', value: 'Git-based (Decap/Tina) / Jamstack' },
+    { label: 'AI:', value: 'AI Web Widget (FAQ chatbot without a vector database)' },
     { label: 'Subscription:', value: '400₪/mo.' },
   ],
   ru: [
     { label: 'Стек:', value: 'Next.js, TypeScript, Tailwind CSS' },
-    { label: 'Контент:', value: 'Git-based CMS (Decap/Tina) / Jamstack' },
-    { label: 'AI:', value: 'AI Web Widget (FAQ чат-бот без векторной БД)' },
+    { label: 'CMS:', value: 'Git-based (Decap/Tina) / Jamstack' },
+    { label: 'AI:', value: 'AI Web Widget (FAQ-чат-бот без векторной базы данных)' },
     { label: 'Подписка:', value: '400₪/мес' },
   ],
   he: [
     { label: 'סטאק:', value: 'Next.js, TypeScript, Tailwind CSS' },
-    { label: 'תוכן:', value: 'Git-based CMS (Decap/Tina) / Jamstack' },
-    { label: 'AI:', value: 'ווידג׳ט AI (צ׳אטבוט FAQ ללא מסד וקטורי)' },
+    { label: 'CMS:', value: 'Git-based (Decap/Tina) / Jamstack' },
+    { label: 'AI:', value: 'ווידג׳ט AI (צ׳אטבוט FAQ ללא מסד נתונים וקטורי)' },
     { label: 'מנוי:', value: '400 ₪ לחודש' },
   ],
 }
@@ -98,14 +98,14 @@ const INCLUDES_PARAGRAPHS: Record<Locale, string[]> = {
 }
 
 const SEO_TITLES: Record<Locale, string> = {
-  en: 'Order AI Smart Card for ₪7,000 | Next.js & AI Web Widget | Erythro.ai',
-  ru: 'Заказ AI Smart Card за ₪7,000 | Next.js и AI Web Widget | Erythro.ai',
-  he: 'הזמנת כרטיס חכם AI ב-₪7,000 | Next.js ווידג׳ט AI | Erythro.ai',
+  en: 'AI Smart Card | Order | Erythro.ai',
+  ru: 'AI-визитка | Оформление заказа | Erythro.ai',
+  he: 'כרטיס חכם AI | הזמנה | Erythro.ai',
 }
 
 const SEO_DESCS: Record<Locale, string> = {
   en: 'Custom AI Smart Card & Landing Page built on Next.js, TypeScript & Tailwind CSS for ₪7,000. Features embedded AI assistant, native RTL Hebrew support, and ₪400/mo maintenance.',
-  ru: 'Закажите разработку AI Smart Card на Next.js, TypeScript и Tailwind CSS за ₪7,000. Включен встроенный ИИ-виджет для ответов на FAQ, хостинг и поддержка ₪400/мес, SEO и RTL-поддержка иврита.',
+  ru: 'Закажите разработку AI-визитки на Next.js, TypeScript и Tailwind CSS за ₪7,000. Включен встроенный ИИ-виджет для ответов на FAQ, хостинг и поддержка ₪400/мес, SEO и RTL-поддержка иврита.',
   he: 'הזמינו כרטיס חכם דיגיטלי על בסיס Next.js, TypeScript ו-Tailwind CSS ב-₪7,000. כולל עוזר AI מובנה, תמיכה מלאה ב-RTL, אחסון ותחזוקה ב-₪400/חודש.',
 }
 

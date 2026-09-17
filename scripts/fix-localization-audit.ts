@@ -60,14 +60,80 @@ function patchHeCopy(s: string): { next: string; changed: boolean } {
     .replace(/מאוטמטים תהליכים עסקיים באמצעות מערכות AI מתקדמות/g, HE_SUBTEXT_FIX)
     .replace(/הנדסת ארגונים/g, HE_ENTERPRISE_TITLE)
     .replace(/גישה ללא אמון/g, HE_ZERO_TRUST)
+    // v2 audit — High-Tech Hebrew calques
+    .replace(/עבור סיפוק לקוחות פוטנציאליים/g, 'לסינון וסיווג לידים (Lead Qualification)')
+    .replace(/סיפוק לקוחות פוטנציאליים/g, 'סינון וסיווג לידים (Lead Qualification)')
+    .replace(/ברזולוציה הימנית/g, 'בפורמט RTL (מימין לשמאל)')
+    .replace(/עם תמיכה חלקה ברזולוציה הימנית/g, 'עם תמיכה מלאה ב-RTL (ימין-לשמאל)')
+    .replace(/דליים מבודדים של AWS S3 \/ Supabase Storage/g, 'מאגרי אחסון (Buckets) מבודדים של AWS S3 / Supabase Storage')
+    .replace(/דליים מבודדים של AWS S3/g, 'מאגרי אחסון (Buckets) מבודדים של AWS S3')
+    .replace(/דליים מבודדים/g, 'מאגרי אחסון מבודדים (Buckets)')
+    .replace(/\bדליים\b/g, 'באקטים (Buckets)')
+    .replace(/קישורי קנון תקפים/g, 'תגיות Canonical תקפות')
+    .replace(/קישורי קנון/g, 'תגיות Canonical')
+    .replace(/שרתים אחוריים של Java Spring Boot/g, 'ארכיטקטורת צד-שרת (Backend) ב-Java Spring Boot')
+    .replace(/שרתים אחוריים/g, 'מערכות Backend')
+    .replace(/יירוט אסימונים מאובטח/g, 'ניהול וקליטת טוקנים מאובטחת')
+    .replace(/יירוט אסימונים/g, 'ניהול וקליטת טוקנים')
+    .replace(/תשתית סובלנית לתקלות ברמת Enterprise/g, 'תשתית עמידה בפני תקלות ברמת Enterprise')
+    .replace(/תשתית סובלנית לתקלות/g, 'תשתית עמידה בפני תקלות')
+    .replace(/סובלנית לתקלות/g, 'עמידה בפני תקלות')
+    .replace(/צור קשר, ישראל/g, 'אילת, ישראל')
+    .replace(/נתב אפליקציות Next\.js/g, 'Next.js App Router')
+    .replace(/עדכוני תלות \(SLA\)/g, 'עדכוני ספריות ותלויות (Dependencies)')
+    .replace(/עדכוני תלות מערכת/g, 'עדכוני ספריות ותלויות מערכת')
+    .replace(/עדכוני תלות/g, 'עדכוני ספריות ותלויות')
+    // No \\b — Hebrew is non-word for JS word boundaries
+    .replace(/עוזרי קול חכמים/g, 'עוזרים קוליים חכמים')
+    .replace(/עוזרי קול/g, 'עוזרים קוליים')
+    // Support package bullets: insert missing sentence breaks between clauses
+    .replace(
+      /(מהנדס תורן:[^.]*?)(\s+)(צ['׳']אט ישיר:)/g,
+      '$1. $3',
+    )
+    .replace(
+      /(צ['׳']אט ישיר:[^.]*?)(\s+)(מנהל ייעודי:|מנהל פרויקט:)/g,
+      '$1. $3',
+    )
+  if (next.trim() === 'כרטיס ביקור AI') next = 'כרטיס חכם AI'
+  if (next.trim() === 'תוכן:') next = 'CMS:'
+  if (next.trim() === 'ביניים') next = 'סכום ביניים'
+  next = next.replace('בוט שאלות ותשובות', 'צ׳אטבוט FAQ')
+  next = next.replace(/ו*וידג['׳']ט/g, 'ווידג׳ט')
+  next = next.replace('ללא מסד וקטורי', 'ללא מסד נתונים וקטורי')
+  next = next.replace(
+    'Git-based CMS (Decap/Tina) / Jamstack',
+    'Git-based (Decap/Tina) / Jamstack',
+  )
+  if (next.trim() === 'Git-based CMS') next = 'Git-based'
   if (next.trim() === 'תיק') next = HE_PORTFOLIO
   return { next, changed: next !== s }
 }
 
 function patchEnCopy(s: string): { next: string; changed: boolean } {
   if (typeof s !== 'string' || !s) return { next: s, changed: false }
-  let next = s.replace(/Enterprise\s+Система(\s*\/\s*SaaS\s*\/\s*Web Apps?)?/gi, 'Enterprise Systems / SaaS / Web Apps')
+  let next = s
+    .replace(/Enterprise\s+Система(\s*\/\s*SaaS\s*\/\s*Web Apps?)?/gi, 'Enterprise Systems / SaaS / Web Apps')
+    .replace(/Custom Landing Page \(Jamstack\)/g, 'Multi-Page Corporate Website (Jamstack)')
+    // Free Start SEO: product is a one-pager — avoid "Landing Page" jargon clash with multi-page offer
+    .replace(/Custom Landing Page for/g, 'One-Page Website for')
+    .replace(/Custom-designed custom project/gi, 'Bespoke Architecture')
+    .replace(/Automation Process\.\s*\(Custom-designed custom project\)/gi, 'Custom Automation Workflows (Bespoke Architecture)')
+    .replace(/Automation Process\.\s*\(Bespoke Architecture\)/gi, 'Custom Automation Workflows (Bespoke Architecture)')
+    .replace(/\bVoice Assistance\b/g, 'Voice Assistants')
+    .replace(/\bVoice assistance\b/g, 'Voice assistants')
+    .replace(/\bvoice assistance\b/g, 'voice assistants')
+    .replace(/animation,\s{2,}foundation/g, 'animation, foundation')
+  if (next.trim() === 'Get a start') next = 'Get started'
+  if (next.trim() === 'AI-Business Card' || next.trim() === 'AI Business Card') next = 'AI Smart Card'
+  if (next.trim() === 'Content:') next = 'CMS:'
+  if (next.trim() === 'Git-based CMS') next = 'Git-based'
+  next = next.replace('Git-based CMS (Decap/Tina) / Jamstack', 'Git-based (Decap/Tina) / Jamstack')
+  next = next.replace('without vector DB', 'without a vector database')
   if (next.trim() === 'business automation') next = 'Business Automation'
+  if (next.trim() === '18') next = '18%'
+  if (/^vat\s*18$/i.test(next.trim())) next = 'VAT 18%'
+  if (/^18\s*\(vat\)$/i.test(next.trim())) next = '18% (VAT)'
   return { next, changed: next !== s }
 }
 
@@ -79,8 +145,26 @@ function patchRuCopy(s: string): { next: string; changed: boolean } {
     .replace(/Cloudflare WAF,\s+DDoS защита/g, 'Cloudflare WAF, DDoS-защита')
     .replace(/Zero Trust access/g, 'Zero Trust доступ')
     .replace(/работа с big data\./g, 'работа с big data')
+    .replace(/\bpod RTL\b/g, 'под RTL')
+    .replace(/адаптацию макетов pod RTL\/иврит/g, 'адаптацию макетов под RTL/иврит')
+    .replace(
+      /Не включает приобретение доменного имени Настройка DNS серверов Хостинг и SSL-сертификат:/g,
+      'Не включает приобретение доменного имени. Настройка DNS-серверов. Хостинг и SSL-сертификат:',
+    )
+    .replace(/DNS серверов/g, 'DNS-серверов')
     .replace(/  +/g, ' ')
     .replace(/ИИ-агенты\.$/g, 'ИИ-агенты')
+  if (next.trim() === 'AI Smart Card') next = 'AI-визитка'
+  if (next.trim() === 'бизнес-автоматизация') next = 'Бизнес-автоматизация'
+  if (next.trim() === 'Контент:') next = 'CMS:'
+  next = next.replace(/Заказ AI Smart Card/g, 'Заказ AI-визитки')
+  next = next.replace('FAQ чат-бот', 'FAQ-чат-бот')
+  next = next.replace('без векторной БД', 'без векторной базы данных')
+  next = next.replace(
+    'Git-based CMS (Decap/Tina) / Jamstack',
+    'Git-based (Decap/Tina) / Jamstack',
+  )
+  if (next.trim() === 'Git-based CMS') next = 'Git-based'
   return { next, changed: next !== s }
 }
 
@@ -205,21 +289,49 @@ async function run() {
 
   await dumpHero('after')
 
-  // Header nav: תיק → תיק עבודות
+  // Solutions section CTA: "Get a start" is not English.
   {
-    const all = await payload.findGlobal({ slug: 'header', locale: 'all', depth: 0, overrideAccess: true })
-    console.log('\n[before] header.navItems', JSON.stringify(all.navItems?.map((n: any) => n.label)))
-    const he = await payload.findGlobal({ slug: 'header', locale: 'he', depth: 0, overrideAccess: true })
-    const patched = walkPatch({ navItems: he.navItems }, 'he')
-    if (patched.changed) {
-      await payload.updateGlobal({
-        slug: 'header',
-        locale: 'he',
-        data: { navItems: patched.value.navItems },
+    for (const loc of ['en', 'ru', 'he'] as const) {
+      const doc = await payload.findGlobal({
+        slug: 'solutions-section',
+        locale: loc,
         depth: 0,
         overrideAccess: true,
       })
-      changes.push('header/he')
+      const patched = walkPatch(
+        {
+          ctaLabel: doc.ctaLabel,
+          sectionTitle: doc.sectionTitle,
+          sectionSubtitle: doc.sectionSubtitle,
+        },
+        loc,
+      )
+      if (!patched.changed) continue
+      await payload.updateGlobal({
+        slug: 'solutions-section',
+        locale: loc,
+        data: patched.value,
+        depth: 0,
+        overrideAccess: true,
+      })
+      changes.push(`solutions-section/${loc}`)
+    }
+  }
+
+  // Header nav: תיק → תיק עבודות; AI-Business Card / визитка aliases
+  {
+    for (const loc of ['en', 'ru', 'he'] as const) {
+      const row = await payload.findGlobal({ slug: 'header', locale: loc, depth: 0, overrideAccess: true })
+      const patched = walkPatch({ navItems: row.navItems, ctaLabel: row.ctaLabel }, loc)
+      if (!patched.changed) continue
+      await payload.updateGlobal({
+        slug: 'header',
+        locale: loc,
+        data: patched.value,
+        depth: 0,
+        overrideAccess: true,
+      })
+      changes.push(`header/${loc}`)
     }
   }
 
@@ -284,15 +396,29 @@ async function run() {
             subtitle: row.subtitle,
             promo: row.promo,
             seo: row.seo,
+            taxNote: row.taxNote,
+            excludes: row.excludes,
+            includes: row.includes,
+            support: row.support,
+            description: row.description,
+            disclaimer: row.disclaimer,
+            paymentNote: row.paymentNote,
+            priceNote: row.priceNote,
+            addons: row.addons,
+            periods: row.periods,
           },
           loc,
         )
         if (!patched.changed) continue
+        const data: Record<string, any> = {}
+        for (const [k, v] of Object.entries(patched.value)) {
+          if (v !== undefined) data[k] = v
+        }
         await payload.update({
           collection: 'solution-plans',
           id: doc.id,
           locale: loc,
-          data: patched.value,
+          data,
           depth: 0,
           overrideAccess: true,
         })
@@ -329,6 +455,8 @@ async function run() {
             seo: row.seo,
             summary: row.summary,
             description: row.description,
+            body: row.body,
+            content: row.content,
           },
           loc,
         )
@@ -350,6 +478,49 @@ async function run() {
     }
   }
 
+  // Legal globals (privacy Eilat bug lives here)
+  for (const slug of ['legal-privacy', 'legal-terms', 'legal-accessibility'] as const) {
+    for (const loc of ['en', 'ru', 'he'] as const) {
+      try {
+        const doc = await payload.findGlobal({ slug, locale: loc, depth: 0, overrideAccess: true })
+        const patched = walkPatch(doc, loc)
+        if (!patched.changed) continue
+        const data: Record<string, any> = { ...patched.value }
+        delete data.id
+        delete data.globalType
+        delete data.createdAt
+        delete data.updatedAt
+        await payload.updateGlobal({
+          slug,
+          locale: loc,
+          data,
+          depth: 0,
+          overrideAccess: true,
+        })
+        changes.push(`${slug}/${loc}`)
+      } catch (err) {
+        console.warn(`[skip] ${slug}/${loc}:`, err instanceof Error ? err.message : err)
+      }
+    }
+  }
+
+  // FAQ answers (keep regulatory text intact; still run HE/EN/RU string hygiene)
+  {
+    for (const loc of ['en', 'ru', 'he'] as const) {
+      const doc = await payload.findGlobal({ slug: 'faq-section', locale: loc, depth: 0, overrideAccess: true })
+      const patched = walkPatch({ items: doc.items, sectionTitle: doc.sectionTitle, sectionSubtitle: doc.sectionSubtitle }, loc)
+      if (!patched.changed) continue
+      await payload.updateGlobal({
+        slug: 'faq-section',
+        locale: loc,
+        data: patched.value,
+        depth: 0,
+        overrideAccess: true,
+      })
+      changes.push(`faq-section/${loc}`)
+    }
+  }
+
   console.log('\nChanged:', changes.length ? changes.join(', ') : '(none)')
 
   console.log('\nBusting site cache…')
@@ -359,9 +530,14 @@ async function run() {
     '/ru',
     '/en',
     '/portfolio',
+    '/privacy',
     '/services/development',
-    '/he/services/development',
+    '/services/ai-automation',
+    '/services/enterprise-engineering',
+    '/services/design-branding',
     '/order/business-automation',
+    '/order/ai-business-card',
+    '/order/ai-smart-card',
     '/order/enterprise-custom',
   ])
 
