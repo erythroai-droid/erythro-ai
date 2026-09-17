@@ -7,11 +7,14 @@
  */
 export interface ConsultantLabels {
   title: string
-  /** Small line under the title — must disclose that this is an AI. */
+  /** Small line under the input — must disclose that this is an AI. */
   disclaimer: string
   openLabel: string
   closeLabel: string
   inputPlaceholder: string
+  footerWhatsApp: string
+  footerContacts: string
+  footerTelegram: string
   send: string
   thinking: string
   retry: string
@@ -62,8 +65,11 @@ export const defaultConsultantLabels: ConsultantLabels = {
   title: 'Erythro assistant',
   disclaimer: 'AI assistant. Answers come from the erythro.ai knowledge base.',
   openLabel: 'Open the AI assistant',
-  closeLabel: 'Close the AI assistant',
+  closeLabel: 'Close',
   inputPlaceholder: 'Ask about packages, prices or your project',
+  footerWhatsApp: 'WhatsApp',
+  footerContacts: 'Contacts',
+  footerTelegram: 'Telegram',
   send: 'Send',
   thinking: 'Typing…',
   retry: 'Try again',
@@ -102,8 +108,8 @@ export const defaultConsultantLabels: ConsultantLabels = {
 
   chipFaq: 'Packages and prices',
   chipBrief: 'Build a brief',
-  chipAudit: 'AI audit',
+  chipAudit: 'Take an audit',
   chipWhatsApp: 'WhatsApp',
   chipForm: 'Contact form',
-  chipOrder: 'Order page',
+  chipOrder: 'Order a site',
 }

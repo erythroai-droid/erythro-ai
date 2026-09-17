@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { Liquid } from 'liquid-gooey'
+import { BorderBeam } from 'border-beam'
 import { useBackdropContrast } from '@/hooks/useBackdropContrast'
 import { useContactModal } from './ContactModal'
 import { useSiteContent } from './SiteContentProvider'
@@ -10,15 +11,17 @@ import ErythroConsultant, { type ConsultantCopy } from './ErythroConsultant'
 import { whatsAppHref as buildWhatsAppHref } from '@/lib/phoneE164'
 
 /**
- * Site-wide contact FAB. Desktop: chat trigger fans mail, Telegram, and
- * WhatsApp (mirrored in RTL). Mobile/tablet: original WhatsApp icon.
+ * Site-wide contact entry.
+ *
+ * When the AI consultant is on: a circular gradient launcher (same glow
+ * language as the header AI Audit CTA) opens a full-screen panel.
+ * When the CMS kill switch is off: the previous mail / Telegram / WhatsApp
+ * fan remains so visitors can still get in touch (PIT-089).
  */
 
 const FAN_RADIUS = 84
-// Four options now: consultant, mail, Telegram, WhatsApp — evenly spread 90°→0°.
-const CONSULT_ANGLE_DEG = 90
-const MAIL_ANGLE_DEG = 60
-const TG_ANGLE_DEG = 30
+const MAIL_ANGLE_DEG = 90
+const TG_ANGLE_DEG = 45
 const WA_ANGLE_DEG = 0
 
 function fanOffset(open: boolean, angleDeg: number, inward: number) {
@@ -37,7 +40,7 @@ const COPY = {
     mail: 'Open contact form',
     whatsapp: 'WhatsApp',
     telegram: 'Telegram',
-    consultant: 'AI assistant',
+    consultant: 'AI consultant',
   },
   ru: {
     trigger: 'Связаться',
@@ -45,7 +48,7 @@ const COPY = {
     mail: 'Открыть контактную форму',
     whatsapp: 'WhatsApp',
     telegram: 'Telegram',
-    consultant: 'ИИ-ассистент',
+    consultant: 'ИИ консультант',
   },
   he: {
     trigger: 'יצירת קשר',
@@ -53,7 +56,7 @@ const COPY = {
     mail: 'פתיחת טופס יצירת קשר',
     whatsapp: 'WhatsApp',
     telegram: 'Telegram',
-    consultant: 'עוזר AI',
+    consultant: 'יועץ AI',
   },
 } as const
 
@@ -66,13 +69,19 @@ function consultLocaleParam(locale: string) {
   return locale === 'ru' || locale === 'he' ? locale : 'en'
 }
 
-function SparkIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M12 2.5l1.7 4.6 4.6 1.7-4.6 1.7-1.7 4.6-1.7-4.6L5.7 8.8l4.6-1.7L12 2.5Zm5.8 11.4l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9.9-2.4Z" />
-    </svg>
-  )
-}
+const SparklesIcon = ({ className = 'h-3.5 w-3.5' }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    aria-hidden
+  >
+    <path d="M9.5 3C9.5 8 5.5 11.5 1 11.5C5.5 11.5 9.5 15 9.5 20C9.5 15 13.5 11.5 18 11.5C13.5 11.5 9.5 8 9.5 3Z" />
+    <path d="M17.5 2C17.5 5 15 6.5 12.5 6.5C15 6.5 17.5 8 17.5 11C17.5 8 20 6.5 22.5 6.5C20 6.5 17.5 5 17.5 2Z" />
+    <path d="M16.5 14C16.5 16.5 14.5 18 12.5 18C14.5 18 16.5 19.5 16.5 22C16.5 19.5 18.5 18 20.5 18C18.5 18 16.5 16.5 16.5 14Z" />
+  </svg>
+)
 
 function ChatIcon({ className }: { className?: string }) {
   return (
@@ -142,8 +151,9 @@ export default function ChatButton({
       .then((res) => (res.ok ? res.json() : null))
       .then((data: ConsultantCopy | null) => {
         if (cancelled || !data) return
-        setConsultantCopy(data)
-        if (data.enabled === false) setConsultOpen(false)
+        const killed = data.enabled === false && Boolean(data.greeting?.trim())
+        setConsultantCopy(killed ? data : { ...data, enabled: true })
+        if (killed) setConsultOpen(false)
       })
       .catch(() => {
         /* keep the launcher visible; built-in copy is the fallback */
@@ -171,180 +181,167 @@ export default function ChatButton({
   }, [])
 
   const inward = locale === 'he' ? 1 : -1
-  const consultPos = fanOffset(open, CONSULT_ANGLE_DEG, inward)
-  const mailPos = fanOffset(open, consultantEnabled ? MAIL_ANGLE_DEG : 90, inward)
-  const tgPos = fanOffset(open, consultantEnabled ? TG_ANGLE_DEG : 45, inward)
+  const mailPos = fanOffset(open, MAIL_ANGLE_DEG, inward)
+  const tgPos = fanOffset(open, TG_ANGLE_DEG, inward)
   const waPos = fanOffset(open, WA_ANGLE_DEG, inward)
+
+  if (consultantEnabled) {
+    return (
+      <>
+        <div
+          className={`pointer-events-auto fixed bottom-[18px] end-[18px] z-[70] overflow-visible lg:end-[32px] ${
+            consultOpen ? 'invisible' : ''
+          }`}
+        >
+          <BorderBeam
+            size="pulse-outside"
+            colorVariant="colorful"
+            duration={2.2}
+            strength={1}
+            className="overflow-visible"
+          >
+            <button
+              type="button"
+              onClick={() => setConsultOpen(true)}
+              aria-label={copy.consultant}
+              className="group relative flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/15 bg-coal-950/80 bg-gradient-to-r from-violet-950/75 via-fuchsia-950/65 to-amber-950/70 text-white backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_1px_2px_rgba(0,0,0,0.08)] transition-all duration-300 hover:from-violet-900/60 hover:via-fuchsia-900/50 hover:to-amber-900/55 hover:border-white/25 hover:scale-105 active:scale-95 cursor-pointer select-none"
+            >
+              <SparklesIcon className="h-5 w-5 shrink-0 text-gold-200 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 group-hover:rotate-12 drop-shadow-[0_0_6px_rgba(255,233,199,0.6)]" />
+            </button>
+          </BorderBeam>
+        </div>
+
+        <ErythroConsultant
+          isOpen={consultOpen}
+          onClose={() => setConsultOpen(false)}
+          locale={locale}
+          copy={consultantCopy}
+        />
+      </>
+    )
+  }
 
   return (
     <>
-    <WhatsAppButton />
+      <WhatsAppButton />
 
-    {/* Mobile entry point: the desktop fan is lg-only, so the assistant needs
-        its own FAB above the WhatsApp button. Hidden when Consultant Settings
-        → enabled is off (PIT-089). */}
-    {consultantEnabled ? (
-    <button
-      type="button"
-      onClick={() => setConsultOpen(true)}
-      aria-label={copy.consultant}
-      title={copy.consultant}
-      className="lg:hidden fixed bottom-[84px] end-[18px] z-50 flex h-[48px] w-[48px] items-center justify-center rounded-full border border-gold-500 bg-coal-900/90 text-gold-500 shadow-lg backdrop-blur transition-transform duration-300 active:scale-95"
-    >
-      <SparkIcon className="h-[20px] w-[20px]" />
-    </button>
-    ) : null}
-
-    {consultantEnabled ? (
-    <ErythroConsultant
-      isOpen={consultOpen}
-      onClose={() => setConsultOpen(false)}
-      locale={locale}
-      copy={consultantCopy}
-    />
-    ) : null}
-
-    <div
-      ref={containerRef}
-      data-contrast-ignore
-      className="pointer-events-auto hidden lg:inline-flex fixed bottom-[18px] end-[32px] z-[70] h-[44px] w-[44px] items-center justify-center select-none"
-    >
-      <Liquid
-        blur={5}
-        contrast={18}
-        fill="transparent"
-        shadow="none"
-        filterPadding={160}
-        className="relative h-[44px] w-[44px] overflow-visible"
+      <div
+        ref={containerRef}
+        data-contrast-ignore
+        className="pointer-events-auto hidden lg:inline-flex fixed bottom-[18px] end-[32px] z-[70] h-[44px] w-[44px] items-center justify-center select-none"
       >
-        {consultantEnabled ? (
-        <Liquid.Item
-          x={consultPos.x}
-          y={consultPos.y}
-          transition="bouncy"
-          className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
+        <Liquid
+          blur={5}
+          contrast={18}
+          fill="transparent"
+          shadow="none"
+          filterPadding={160}
+          className="relative h-[44px] w-[44px] overflow-visible"
         >
-          <button
-            type="button"
-            onClick={() => {
-              setOpen(false)
-              setConsultOpen(true)
-            }}
-            tabIndex={open ? 0 : -1}
-            className={optionClass(open, overDark)}
-            aria-label={copy.consultant}
-            title={copy.consultant}
+          <Liquid.Item
+            x={mailPos.x}
+            y={mailPos.y}
+            transition="bouncy"
+            className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
           >
-            <SparkIcon className="h-[18px] w-[18px]" />
-          </button>
-        </Liquid.Item>
-        ) : null}
-
-        <Liquid.Item
-          x={mailPos.x}
-          y={mailPos.y}
-          transition="bouncy"
-          delay={35}
-          className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
-        >
-          <button
-            type="button"
-            onClick={() => {
-              setOpen(false)
-              openModal()
-            }}
-            tabIndex={open ? 0 : -1}
-            className={optionClass(open, overDark)}
-            aria-label={copy.mail}
-            title={copy.mail}
-          >
-            <MailIcon className="h-[10.5px] w-[14px]" />
-          </button>
-        </Liquid.Item>
-
-        <Liquid.Item
-          x={tgPos.x}
-          y={tgPos.y}
-          transition="bouncy"
-          delay={70}
-          className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
-        >
-          {telegramHref ? (
-            <a
-              href={telegramHref}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false)
+                openModal()
+              }}
               tabIndex={open ? 0 : -1}
-              onClick={() => setOpen(false)}
               className={optionClass(open, overDark)}
-              aria-label={copy.telegram}
-              title={copy.telegram}
+              aria-label={copy.mail}
+              title={copy.mail}
             >
-              <TelegramIcon className="h-[18px] w-[18px]" />
-            </a>
-          ) : (
-            <span className={optionClass(false, overDark)} aria-hidden />
-          )}
-        </Liquid.Item>
+              <MailIcon className="h-[10.5px] w-[14px]" />
+            </button>
+          </Liquid.Item>
 
-        <Liquid.Item
-          x={waPos.x}
-          y={waPos.y}
-          transition="bouncy"
-          delay={105}
-          className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
-        >
-          {whatsAppHref ? (
-            <a
-              href={whatsAppHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              tabIndex={open ? 0 : -1}
-              onClick={() => setOpen(false)}
-              className={optionClass(open, overDark)}
-              aria-label={copy.whatsapp}
-              title={copy.whatsapp}
-            >
-              <WhatsAppIcon className="h-[18px] w-[18px]" />
-            </a>
-          ) : (
-            <span className={optionClass(false, overDark)} aria-hidden />
-          )}
-        </Liquid.Item>
-
-        <Liquid.Item
-          x={0}
-          y={0}
-          className="absolute inset-0 z-10 flex h-[44px] w-[44px] items-center justify-center"
-        >
-          <button
-            type="button"
-            onClick={() => setOpen((prev) => !prev)}
-            aria-expanded={open}
-            aria-haspopup="menu"
-            aria-label={open ? copy.triggerOpen : copy.trigger}
-            className={`group/chat relative flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full border shadow-none transition-all duration-300 ${
-              overDark
-                ? open
-                  ? 'border-gold-500 bg-gold-500 text-coal-900'
-                  : 'border-gold-500 bg-transparent text-gold-500 hover:bg-gold-500 hover:text-coal-900'
-                : open
-                  ? 'border-coal-900 bg-coal-900 text-gold-500'
-                  : 'border-coal-900 bg-transparent text-coal-900 hover:bg-coal-900 hover:text-gold-500'
-            }`}
+          <Liquid.Item
+            x={tgPos.x}
+            y={tgPos.y}
+            transition="bouncy"
+            delay={35}
+            className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
           >
-            {!open && (
-              <span
-                className={`pointer-events-none absolute inset-0 rounded-full animate-ping ${
-                  overDark ? 'bg-gold-500/20' : 'bg-coal-900/20'
-                }`}
-              />
+            {telegramHref ? (
+              <a
+                href={telegramHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                tabIndex={open ? 0 : -1}
+                onClick={() => setOpen(false)}
+                className={optionClass(open, overDark)}
+                aria-label={copy.telegram}
+                title={copy.telegram}
+              >
+                <TelegramIcon className="h-[18px] w-[18px]" />
+              </a>
+            ) : (
+              <span className={optionClass(false, overDark)} aria-hidden />
             )}
-            <ChatIcon className="relative h-[18px] w-[18px] transition-transform duration-200 group-hover/chat:scale-105" />
-          </button>
-        </Liquid.Item>
-      </Liquid>
-    </div>
+          </Liquid.Item>
+
+          <Liquid.Item
+            x={waPos.x}
+            y={waPos.y}
+            transition="bouncy"
+            delay={70}
+            className="absolute inset-0 flex h-[44px] w-[44px] items-center justify-center"
+          >
+            {whatsAppHref ? (
+              <a
+                href={whatsAppHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                tabIndex={open ? 0 : -1}
+                onClick={() => setOpen(false)}
+                className={optionClass(open, overDark)}
+                aria-label={copy.whatsapp}
+                title={copy.whatsapp}
+              >
+                <WhatsAppIcon className="h-[18px] w-[18px]" />
+              </a>
+            ) : (
+              <span className={optionClass(false, overDark)} aria-hidden />
+            )}
+          </Liquid.Item>
+
+          <Liquid.Item
+            x={0}
+            y={0}
+            className="absolute inset-0 z-10 flex h-[44px] w-[44px] items-center justify-center"
+          >
+            <button
+              type="button"
+              onClick={() => setOpen((prev) => !prev)}
+              aria-expanded={open}
+              aria-haspopup="menu"
+              aria-label={open ? copy.triggerOpen : copy.trigger}
+              className={`group/chat relative flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full border shadow-none transition-all duration-300 ${
+                overDark
+                  ? open
+                    ? 'border-gold-500 bg-gold-500 text-coal-900'
+                    : 'border-gold-500 bg-transparent text-gold-500 hover:bg-gold-500 hover:text-coal-900'
+                  : open
+                    ? 'border-coal-900 bg-coal-900 text-gold-500'
+                    : 'border-coal-900 bg-transparent text-coal-900 hover:bg-coal-900 hover:text-gold-500'
+              }`}
+            >
+              {!open && (
+                <span
+                  className={`pointer-events-none absolute inset-0 rounded-full animate-ping ${
+                    overDark ? 'bg-gold-500/20' : 'bg-coal-900/20'
+                  }`}
+                />
+              )}
+              <ChatIcon className="relative h-[18px] w-[18px] transition-transform duration-200 group-hover/chat:scale-105" />
+            </button>
+          </Liquid.Item>
+        </Liquid>
+      </div>
     </>
   )
 }

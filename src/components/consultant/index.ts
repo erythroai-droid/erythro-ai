@@ -20,6 +20,9 @@
  *   labels={{ title: 'Ассистент Erythro' }}
  *   chips={[
  *     { id: 'faq', label: 'Пакеты и цены', action: { kind: 'ask', text: 'Какие есть пакеты?' } },
+ *     { id: 'order', label: 'Заказать сайт', action: { kind: 'escalate', target: 'order' } },
+ *   ]}
+ *   footerActions={[
  *     { id: 'wa', label: 'WhatsApp', action: { kind: 'escalate', target: 'whatsapp' } },
  *   ]}
  *   onEscalate={({ target }) => (target === 'form' ? openContactModal() : router.push('/audit'))}

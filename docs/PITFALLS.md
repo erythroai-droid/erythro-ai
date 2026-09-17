@@ -1567,13 +1567,28 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 **Tags:** `consultant`, `chatbutton`, `cache`, `cms`  
 **Seen:** 2026-09-17 — widget deployed, Consultant Settings unchecked
 
-**Symptom:** Admin unchecks **Consultant enabled**. The spark launcher stays on the site (mobile FAB above WhatsApp, and the desktop contact-fan option). Clicking it flashes the chat window, then it collapses — looks like a cached panel.
+**Symptom:** Admin unchecks **Consultant enabled**. The launcher stays on the site. Clicking it flashes the chat window, then it collapses — looks like a cached panel.
 
-**Cause:** `enabled` was read only inside `ErythroConsultant` **on first open**. `ChatButton` always rendered the spark entry points. The panel mounts from `sessionStorage` draft immediately, then `/api/consult/copy` returns `enabled: false` and unmounts it. `Cache-Control: private, max-age=60` on that GET also delayed the kill switch in the browser.
+**Cause:** `enabled` was read only inside `ErythroConsultant` **on first open**. `ChatButton` always rendered the entry points. The panel mounts from `sessionStorage` draft immediately, then `/api/consult/copy` returns `enabled: false` and unmounts it. `Cache-Control: private, max-age=60` on that GET also delayed the kill switch in the browser.
 
-**Fix:** `ChatButton` fetches `/api/consult/copy` (`no-store`) on mount and omits the spark FABs when `enabled === false`. The panel waits for that read before painting. `POST /api/consult` returns 503 when the CMS flag is off.
+**Fix:** `ChatButton` fetches `/api/consult/copy` (`no-store`) on mount and omits the AI-consultant launcher when `enabled === false` (the contact fan + WhatsApp FAB stay as fallback). `POST /api/consult` returns 503 when the CMS flag is off. Do **not** unmount the overlay while that fetch is in flight — see PIT-090.
 
 **Prevent:** A public kill switch must hide the **launcher**, not only the dialog. Do not HTTP-cache the copy endpoint that carries `enabled`.
+
+---
+
+## PIT-090 — Consultant first open delays / skips the slide
+
+**Tags:** `consultant`, `css-transition`, `transform`  
+**Seen:** 2026-09-17 — first FAB click felt stuck; later open/close were fine
+
+**Symptom:** The first panel open waits, then appears (or fades). The second and later toggles slide like the burger menu.
+
+**Cause:** Two things stacked. (1) `if (isOpen && !copyReady) return null` tore the overlay out of the DOM until `/api/consult/copy` returned. (2) Remount painted with `consult--open` already on the node, so `transform: translateY(100%) → 0` had no from-state and the 850ms transition never ran.
+
+**Fix:** Keep `.consult` mounted closed. Drive `--open` one paint later (`requestAnimationFrame` × 2) so a first mount-while-open still starts at `translateY(100%)`. Prefetch CMS copy on mount; built-in labels cover the first frame.
+
+**Prevent:** A CSS transform transition needs a closed frame in the document. Do not unmount a bottom-sheet while waiting for copy, CMS, or `mounted`. Same pattern as the burger panel: toggle a class on a node that already exists.
 
 ---
 
@@ -1660,5 +1675,6 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 - [ ] Migrations: `pg_advisory_xact_lock`, never `pg_advisory_lock` + `finally` unlock (PIT-086)
 - [ ] R2 media `clientUploads`: CORS on `erythro-media` **and** admin CSP `connect-src` includes `*.r2.cloudflarestorage.com` (PIT-087)
 - [ ] Preview chat/forms: do not require Turnstile hostname `erythro.ai` on `*.vercel.app`; gate is Vercel SSO (PIT-088)
-- [ ] Consultant Settings `enabled: off` must hide ChatButton spark FABs; `/api/consult/copy` is `no-store` (PIT-089)
+- [ ] Consultant Settings `enabled: off` must hide the AI-consultant launcher; `/api/consult/copy` is `no-store` (PIT-089)
+- [ ] Slide overlays: keep mounted closed, add the open class after paint; do not `return null` while copy loads (PIT-090)
 

@@ -1,12 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import './consultant.css'
 import { defaultConsultantLabels, type ConsultantLabels } from './labels'
 import { useConsultTurnstile } from './turnstile'
 import { readConsultStream, type ConsultEscalationTarget } from '@/lib/consultant/stream'
 import type { ConsultMessage, ConsultPart } from '@/lib/consultant/types'
+import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
 
 /**
  * Self-contained consultant widget.
@@ -43,6 +45,8 @@ export type ConsultantWidgetProps = {
   rtl?: boolean
   labels?: Partial<ConsultantLabels>
   chips?: ConsultantChip[]
+  /** Persistent row under the composer (WhatsApp / contacts / Telegram). */
+  footerActions?: ConsultantChip[]
   /** Host decides what a chip does — no `useContactModal` inside the module. */
   onEscalate?: (event: { target: ConsultEscalationTarget; slug?: string }) => void
   turnstileSiteKey?: string
@@ -63,6 +67,41 @@ type Notice =
 type OtpStage = 'none' | 'email' | 'code'
 
 const MAX_STORED = 30
+/** Keep in sync with `.consult` transform duration. */
+const SLIDE_MS = 850
+const TYPE_MS = 48
+
+function FooterGlyph({ chip }: { chip: ConsultantChip }) {
+  const target = chip.action.kind === 'escalate' ? chip.action.target : 'default'
+  if (target === 'whatsapp') {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.247-.694.247-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+      </svg>
+    )
+  }
+  if (target === 'telegram') {
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+      </svg>
+    )
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z" />
+      <path d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z" />
+    </svg>
+  )
+}
+
+function footerVariant(chip: ConsultantChip) {
+  if (chip.action.kind !== 'escalate') return 'default'
+  if (chip.action.target === 'whatsapp') return 'whatsapp'
+  if (chip.action.target === 'telegram') return 'telegram'
+  if (chip.action.target === 'form') return 'contacts'
+  return 'default'
+}
 
 function textOf(parts: ConsultPart[]): string {
   return parts
@@ -92,6 +131,7 @@ export default function ConsultantWidget({
   rtl = false,
   labels: labelOverrides,
   chips = [],
+  footerActions = [],
   onEscalate,
   turnstileSiteKey,
   getTurnstileToken,
@@ -105,18 +145,10 @@ export default function ConsultantWidget({
   )
 
   // Draft transcript survives an accidental close, but only until identification;
-  // after that the server-side session is the record. Restoring here rather than
-  // in an effect avoids a second render, and costs no hydration mismatch because
-  // the panel renders `null` until it is opened.
-  const [messages, setMessages] = useState<ConsultMessage[]>(() => {
-    if (typeof window === 'undefined') return []
-    try {
-      const raw = window.sessionStorage.getItem(storageKey)
-      return raw ? (JSON.parse(raw) as ConsultMessage[]) : []
-    } catch {
-      return [] /* private mode */
-    }
-  })
+  // after that the server-side session is the record. Restore after mount so the
+  // always-present overlay does not hydrate with sessionStorage on the server.
+  const [messages, setMessages] = useState<ConsultMessage[]>([])
+  const [draftReady, setDraftReady] = useState(false)
   const [draft, setDraft] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [notices, setNotices] = useState<Notice[]>([])
@@ -126,8 +158,13 @@ export default function ConsultantWidget({
   const [otpError, setOtpError] = useState('')
   const [otpBusy, setOtpBusy] = useState(false)
   const [verified, setVerified] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [revealed, setRevealed] = useState(false)
+  const [typedCount, setTypedCount] = useState(0)
+  const [slideOpen, setSlideOpen] = useState(false)
 
   const listRef = useRef<HTMLDivElement | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
   const { container: turnstileContainer, getToken } = useConsultTurnstile(
     turnstileSiteKey,
     locale,
@@ -139,17 +176,51 @@ export default function ConsultantWidget({
   }, [getTurnstileToken, getToken])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSlideOpen(false)
+      return
+    }
+    // After paint so a first mount-while-open still runs translateY(100%) → 0.
+    // Double rAF: the overlay may be inserted in this commit; one frame is not
+    // always enough for the closed transform to become the transition start.
+    let inner = 0
+    const outer = window.requestAnimationFrame(() => {
+      inner = window.requestAnimationFrame(() => setSlideOpen(true))
+    })
+    return () => {
+      window.cancelAnimationFrame(outer)
+      window.cancelAnimationFrame(inner)
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem(storageKey)
+      if (raw) setMessages(JSON.parse(raw) as ConsultMessage[])
+    } catch {
+      /* quota / private mode */
+    }
+    setDraftReady(true)
+  }, [storageKey])
+
+  useEffect(() => {
+    if (!draftReady) return
     try {
       window.sessionStorage.setItem(storageKey, JSON.stringify(messages.slice(-MAX_STORED)))
     } catch {
       /* quota / private mode */
     }
-  }, [messages, storageKey])
+  }, [draftReady, messages, storageKey])
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, notices, streaming])
+
+  useLockBodyScroll(isOpen)
 
   useEffect(() => {
     if (!isOpen) return
@@ -159,6 +230,44 @@ export default function ConsultantWidget({
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [isOpen, onClose])
+
+  useEffect(() => {
+    if (!isOpen) {
+      setRevealed(false)
+      return
+    }
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) {
+      setRevealed(true)
+      return
+    }
+    const id = window.setTimeout(() => setRevealed(true), SLIDE_MS)
+    return () => window.clearTimeout(id)
+  }, [isOpen])
+
+  const greetingUnits = useMemo(() => Array.from(labels.greeting), [labels.greeting])
+
+  useEffect(() => {
+    if (!isOpen || !revealed) return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) {
+      setTypedCount(greetingUnits.length)
+      return
+    }
+    setTypedCount(0)
+    let i = 0
+    const id = window.setInterval(() => {
+      i += 1
+      setTypedCount(i)
+      if (i >= greetingUnits.length) window.clearInterval(id)
+    }, TYPE_MS)
+    return () => window.clearInterval(id)
+  }, [greetingUnits, isOpen, revealed])
+
+  useEffect(() => {
+    if (!isOpen || !revealed || otpStage !== 'none') return
+    inputRef.current?.focus()
+  }, [isOpen, otpStage, revealed])
 
   const pushNotice = useCallback((notice: Notice) => {
     setNotices((prev) => [...prev, notice])
@@ -297,190 +406,280 @@ export default function ConsultantWidget({
     }
   }, [labels, otpCode, otpVerifyApi, pushNotice])
 
-  if (!isOpen) return null
+  const activateChip = useCallback(
+    (chip: ConsultantChip) => {
+      if (chip.action.kind === 'ask') {
+        if (chip.action.gate === 'otp') setOtpStage('email')
+        void send(chip.action.text)
+        return
+      }
+      onEscalate?.({ target: chip.action.target })
+    },
+    [onEscalate, send],
+  )
 
+  const idle = messages.length === 0 && notices.length === 0
+  const composing = draft.trim().length > 0 || otpStage !== 'none'
   const dir = rtl ? 'rtl' : 'ltr'
+  const openClass = isOpen && slideOpen ? ' consult--open' : ''
+  const idleClass = idle ? ' consult--idle' : ''
+  const dockEndClass = !idle || composing ? ' consult--dock-end' : ''
+  const revealedClass = revealed ? ' consult--revealed' : ''
+  const typedGreeting = greetingUnits.slice(0, typedCount).join('')
+  const typingDone = typedCount >= greetingUnits.length
 
-  return (
-    <div className="consult" dir={dir} role="dialog" aria-modal="false" aria-label={labels.title}>
-      <header className="consult__header">
-        <div className="consult__titles">
-          <p className="consult__title">{labels.title}</p>
-          <p className="consult__disclaimer">{labels.disclaimer}</p>
-        </div>
+  if (!mounted) return null
+
+  return createPortal(
+    <div
+      className={`consult${openClass}${idleClass}${dockEndClass}${revealedClass}`}
+      dir={dir}
+      role="dialog"
+      aria-modal={isOpen}
+      aria-hidden={!isOpen}
+      aria-label={labels.title}
+      inert={!isOpen}
+    >
+      <div className="consult__topbar">
         <button
           type="button"
           className="consult__close"
           onClick={onClose}
           aria-label={labels.closeLabel}
         >
-          <span aria-hidden>×</span>
-        </button>
-      </header>
-
-      <div className="consult__list" ref={listRef}>
-        <article className="consult__bubble consult__bubble--assistant">
-          {labels.greeting}
-        </article>
-
-        {messages.map((message, index) => (
-          <article
-            key={`${message.role}-${index}`}
-            className={`consult__bubble consult__bubble--${message.role}`}
+          <span className="consult__closeText">{labels.closeLabel}</span>
+          <svg
+            className="consult__closeIcon"
+            width="21"
+            height="12"
+            viewBox="-4 -6 29 24"
+            fill="none"
+            overflow="visible"
+            aria-hidden
           >
-            {formatBubble(textOf(message.parts))}
-          </article>
-        ))}
-
-        {streaming && <p className="consult__typing">{labels.thinking}</p>}
-
-        {notices.map((notice, index) => {
-          if (notice.kind === 'brief') {
-            return (
-              <section className="consult__panel" key={`brief-${index}`}>
-                <h3 className="consult__panelTitle">{labels.briefDraftTitle}</h3>
-                <pre className="consult__brief">{notice.markdown}</pre>
-                <p className="consult__panelHint">{labels.briefDraftHint}</p>
-              </section>
-            )
-          }
-          if (notice.kind === 'sent') {
-            return (
-              <section className="consult__panel" key={`sent-${index}`}>
-                <h3 className="consult__panelTitle">{labels.briefSentTitle}</h3>
-                <p className="consult__panelHint">
-                  {labels.briefSentBody.replace('{number}', notice.projectNumber)}
-                </p>
-                {notice.crmPending && (
-                  <p className="consult__panelHint">{labels.briefCrmPending}</p>
-                )}
-              </section>
-            )
-          }
-          return (
-            <p className="consult__notice" key={`notice-${index}`}>
-              {notice.text}
-            </p>
-          )
-        })}
+            <path
+              d="M5 1C5 0.447715 5.44772 0 6 0H20C20.5523 0 21 0.447715 21 1V1C21 1.55228 20.5523 2 20 2H6C5.44772 2 5 1.55228 5 1V1Z"
+              fill="currentColor"
+            />
+            <path
+              d="M0 6C0 5.44772 0.447715 5 1 5H15C15.5523 5 16 5.44772 16 6V6C16 6.55228 15.5523 7 15 7H1C0.447715 7 0 6.55228 0 6V6Z"
+              fill="currentColor"
+            />
+            <path
+              d="M5 11C5 10.4477 5.44772 10 6 10H20C20.5523 10 21 10.4477 21 11V11C21 11.5523 20.5523 12 20 12H6C5.44772 12 5 11.5523 5 11V11Z"
+              fill="currentColor"
+            />
+          </svg>
+        </button>
       </div>
 
-      {otpStage !== 'none' && (
-        <section className="consult__gate">
-          {otpStage === 'email' ? (
-            <>
-              {labels.savePolicy ? <p className="consult__gateIntro">{labels.savePolicy}</p> : null}
-              <p className="consult__gateIntro">{labels.otpIntro}</p>
-              <div className="consult__gateRow">
-                <input
-                  type="email"
-                  className="consult__input"
-                  inputMode="email"
-                  autoComplete="email"
-                  placeholder={labels.otpEmailPlaceholder}
-                  value={otpEmail}
-                  onChange={(event) => setOtpEmail(event.target.value)}
-                  disabled={otpBusy}
-                />
-                <button
-                  type="button"
-                  className="consult__button"
-                  onClick={requestOtp}
-                  disabled={otpBusy || !otpEmail.trim()}
-                >
-                  {labels.otpEmailSubmit}
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="consult__gateIntro">{labels.otpCodeIntro}</p>
-              <div className="consult__gateRow">
-                {/* Codes stay out of the transcript: a dedicated field, never a chat bubble. */}
-                <input
-                  type="text"
-                  className="consult__input consult__input--code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  placeholder={labels.otpCodePlaceholder}
-                  value={otpCode}
-                  onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, ''))}
-                  disabled={otpBusy}
-                />
-                <button
-                  type="button"
-                  className="consult__button"
-                  onClick={verifyOtp}
-                  disabled={otpBusy || otpCode.length !== 6}
-                >
-                  {labels.otpCodeSubmit}
-                </button>
-              </div>
-              <button
-                type="button"
-                className="consult__link"
-                onClick={requestOtp}
-                disabled={otpBusy}
-              >
-                {labels.otpResend}
-              </button>
-            </>
+      <div className="consult__stage">
+        <div className="consult__list" ref={listRef} data-modal-scroll>
+          {!idle && (
+            <article className="consult__bubble consult__bubble--assistant">
+              {labels.greeting}
+            </article>
           )}
-          {otpError && <p className="consult__error">{otpError}</p>}
-        </section>
-      )}
 
-      {chips.length > 0 && (
-        <div className="consult__chips">
-          {chips.map((chip) => (
+          {messages.map((message, index) => (
+            <article
+              key={`${message.role}-${index}`}
+              className={`consult__bubble consult__bubble--${message.role}`}
+            >
+              {formatBubble(textOf(message.parts))}
+            </article>
+          ))}
+
+          {streaming && <p className="consult__typing">{labels.thinking}</p>}
+
+          {notices.map((notice, index) => {
+            if (notice.kind === 'brief') {
+              return (
+                <section className="consult__panel" key={`brief-${index}`}>
+                  <h3 className="consult__panelTitle">{labels.briefDraftTitle}</h3>
+                  <pre className="consult__brief">{notice.markdown}</pre>
+                  <p className="consult__panelHint">{labels.briefDraftHint}</p>
+                </section>
+              )
+            }
+            if (notice.kind === 'sent') {
+              return (
+                <section className="consult__panel" key={`sent-${index}`}>
+                  <h3 className="consult__panelTitle">{labels.briefSentTitle}</h3>
+                  <p className="consult__panelHint">
+                    {labels.briefSentBody.replace('{number}', notice.projectNumber)}
+                  </p>
+                  {notice.crmPending && (
+                    <p className="consult__panelHint">{labels.briefCrmPending}</p>
+                  )}
+                </section>
+              )
+            }
+            return (
+              <p className="consult__notice" key={`notice-${index}`}>
+                {notice.text}
+              </p>
+            )
+          })}
+        </div>
+
+        {otpStage !== 'none' && (
+          <section className="consult__gate">
+            {otpStage === 'email' ? (
+              <>
+                {labels.savePolicy ? <p className="consult__gateIntro">{labels.savePolicy}</p> : null}
+                <p className="consult__gateIntro">{labels.otpIntro}</p>
+                <div className="consult__gateRow">
+                  <input
+                    type="email"
+                    className="consult__input"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder={labels.otpEmailPlaceholder}
+                    value={otpEmail}
+                    onChange={(event) => setOtpEmail(event.target.value)}
+                    disabled={otpBusy}
+                  />
+                  <button
+                    type="button"
+                    className="consult__button"
+                    onClick={requestOtp}
+                    disabled={otpBusy || !otpEmail.trim()}
+                  >
+                    {labels.otpEmailSubmit}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="consult__gateIntro">{labels.otpCodeIntro}</p>
+                <div className="consult__gateRow">
+                  {/* Codes stay out of the transcript: a dedicated field, never a chat bubble. */}
+                  <input
+                    type="text"
+                    className="consult__input consult__input--code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    placeholder={labels.otpCodePlaceholder}
+                    value={otpCode}
+                    onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, ''))}
+                    disabled={otpBusy}
+                  />
+                  <button
+                    type="button"
+                    className="consult__button"
+                    onClick={verifyOtp}
+                    disabled={otpBusy || otpCode.length !== 6}
+                  >
+                    {labels.otpCodeSubmit}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className="consult__link"
+                  onClick={requestOtp}
+                  disabled={otpBusy}
+                >
+                  {labels.otpResend}
+                </button>
+              </>
+            )}
+            {otpError && <p className="consult__error">{otpError}</p>}
+          </section>
+        )}
+
+        <div className="consult__dock">
+          {idle && (
+            <div className="consult__intro">
+              <p className="consult__greeting" aria-label={labels.greeting}>
+                <span className="consult__greetingGhost" aria-hidden>
+                  {labels.greeting}
+                </span>
+                <span className="consult__greetingLive" aria-hidden>
+                  {typedGreeting}
+                  {revealed && !typingDone ? (
+                    <span className="consult__caret" />
+                  ) : null}
+                </span>
+              </p>
+            </div>
+          )}
+
+          <form
+            className="consult__composer"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void send(draft)
+            }}
+          >
+            {(features.voice || features.files) && renderComposerExtras?.()}
+            <input
+              ref={inputRef}
+              type="text"
+              className="consult__input"
+              placeholder={labels.inputPlaceholder}
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              disabled={streaming || otpStage !== 'none'}
+              aria-label={labels.inputPlaceholder}
+            />
+            <button
+              type="submit"
+              className="consult__send"
+              disabled={streaming || !draft.trim() || otpStage !== 'none'}
+              aria-label={labels.send}
+            >
+              <svg className="consult__sendIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <path d="M3.4 20.6 20.5 12 3.4 3.4l.1 6.6 12 2-12 2z" />
+              </svg>
+            </button>
+          </form>
+
+          {idle && (
+            <p className="consult__disclaimer">{labels.disclaimer}</p>
+          )}
+
+          {chips.length > 0 && (
+            <div className="consult__chips">
+              {chips.map((chip) => (
+                <button
+                  type="button"
+                  key={chip.id}
+                  className="consult__chip"
+                  onClick={() => activateChip(chip)}
+                  disabled={streaming}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {footerActions.length > 0 && (
+        <div className="consult__footer">
+          {footerActions.map((action) => (
             <button
               type="button"
-              key={chip.id}
-              className="consult__chip"
-              onClick={() => {
-                if (chip.action.kind === 'ask') {
-                  if (chip.action.gate === 'otp') setOtpStage('email')
-                  void send(chip.action.text)
-                } else onEscalate?.({ target: chip.action.target })
-              }}
-              disabled={streaming}
+              key={action.id}
+              className={`consult__footerBtn consult__footerBtn--${footerVariant(action)}`}
+              onClick={() => activateChip(action)}
+              disabled={streaming && action.action.kind === 'ask'}
             >
-              {chip.label}
+              <span className="consult__footerIcon">
+                <FooterGlyph chip={action} />
+              </span>
+              {action.label}
             </button>
           ))}
         </div>
       )}
 
-      <form
-        className="consult__composer"
-        onSubmit={(event) => {
-          event.preventDefault()
-          void send(draft)
-        }}
-      >
-        {/* Plugin slot: mic and attachments land here when the flags flip on. */}
-        {(features.voice || features.files) && renderComposerExtras?.()}
-        <input
-          type="text"
-          className="consult__input"
-          placeholder={labels.inputPlaceholder}
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          disabled={streaming || otpStage !== 'none'}
-          aria-label={labels.inputPlaceholder}
-        />
-        <button
-          type="submit"
-          className="consult__button"
-          disabled={streaming || !draft.trim() || otpStage !== 'none'}
-        >
-          {labels.send}
-        </button>
-      </form>
-
       <div ref={turnstileContainer} className="consult__turnstile" aria-hidden />
       {verified && <span className="consult__srOnly">{labels.otpVerified}</span>}
-    </div>
+    </div>,
+    document.body,
   )
 }

@@ -15,7 +15,7 @@ export type ConsultNoticeCode =
   | 'unconfigured'
   | 'rate_limited'
 
-export type ConsultEscalationTarget = 'form' | 'whatsapp' | 'audit' | 'order'
+export type ConsultEscalationTarget = 'form' | 'whatsapp' | 'telegram' | 'audit' | 'order'
 
 export type ConsultAction =
   | { kind: 'escalate'; target: ConsultEscalationTarget; slug?: string }
