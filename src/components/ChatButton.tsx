@@ -151,9 +151,8 @@ export default function ChatButton({
       .then((res) => (res.ok ? res.json() : null))
       .then((data: ConsultantCopy | null) => {
         if (cancelled || !data) return
-        const killed = data.enabled === false && Boolean(data.greeting?.trim())
-        setConsultantCopy(killed ? data : { ...data, enabled: true })
-        if (killed) setConsultOpen(false)
+        setConsultantCopy(data)
+        if (data.enabled === false) setConsultOpen(false)
       })
       .catch(() => {
         /* keep the launcher visible; built-in copy is the fallback */

@@ -23,9 +23,9 @@ import {
   type ConsultMessage,
 } from '@/lib/consultant'
 import {
-  getCachedConsultantCopy,
   getCachedConsultantKnowledge,
   getCachedConsultantRules,
+  fetchConsultantCopy,
 } from '@/lib/consultantKnowledge.server'
 import {
   escalateTech,
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
 
   const payload = (body || {}) as Record<string, unknown>
   const locale: ConsultLocale = consultLocale(payload.locale)
-  const copy = await getCachedConsultantCopy(locale)
+  const copy = await fetchConsultantCopy(locale)
   if (!copy.enabled) {
     return consultNoticeResponse('unconfigured', 503)
   }
