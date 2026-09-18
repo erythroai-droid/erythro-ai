@@ -93,6 +93,7 @@ export async function verifyTurnstileToken(input: {
 
   const { token, action, remoteip } = input
   if (!token || token.length > TURNSTILE_TOKEN_MAX_LEN || hostnames.size === 0) {
+    console.warn('[turnstile] rejected: empty or oversized token', { action })
     return { ok: false, status: 403, message: 'Verification failed' }
   }
 
@@ -116,6 +117,13 @@ export async function verifyTurnstileToken(input: {
 
   const hostname = (result.hostname || '').toLowerCase()
   if (result.success !== true || result.action !== action || !hostnames.has(hostname)) {
+    console.warn('[turnstile] rejected: siteverify', {
+      action,
+      hostname,
+      success: result.success === true,
+      responseAction: result.action,
+      errorCodes: result['error-codes'] ?? [],
+    })
     return { ok: false, status: 403, message: 'Verification failed' }
   }
 

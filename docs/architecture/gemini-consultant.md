@@ -68,6 +68,7 @@ Consultant Settings → **Consultant enabled** = off:
 Не аккаунты и не Payload-пользователи. Заслон до появления авторизации:
 
 - Turnstile action `consult` + собственный IP-лимит (**не** наследует `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA`).
+- Каждый POST чата/OTP создаёт **новый** Turnstile-виджет (`remove` + `render` + `execute`). `reset()` на уже решённом виджете отдаёт пустой token через `expired-callback` → JSON 403 → «ассистент временно недоступен» (PIT-094). Хост не 0×0 (`visibility: hidden`, 300×65).
 - Анонимная квота пользовательских сообщений (дефолт 5 / 24 ч) — signed cookie + hash IP.
 - Дальше `POST /api/consult/request-otp` → 6 цифр на почту (TTL 10 мин, только hash + pepper), `verify-otp` → httpOnly cookie `consult_verified` (HMAC, ~24 ч).
 - После OTP второй потолок: 30 сообщений / сутки на verified email.
