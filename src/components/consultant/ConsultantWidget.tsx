@@ -1,8 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { BorderBeam } from 'border-beam'
 
 import './consultant.css'
 import { defaultConsultantLabels, type ConsultantLabels } from './labels'
@@ -71,12 +70,6 @@ const MAX_STORED = 30
 /** Keep in sync with `.consult` transform duration. */
 const SLIDE_MS = 850
 const TYPE_MS = 48
-
-/** Same beam as the audit form card (`AuditFormShell`). */
-const COMPOSER_BEAM_STYLE = {
-  '--pulse-glow-boost': 1.45,
-  '--beam-glow-brightness': 1.15,
-} as CSSProperties
 
 function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -643,47 +636,35 @@ export default function ConsultantWidget({
             </div>
           )}
 
-          <div className="consult__composerWrap audit-beam-hue">
-            <BorderBeam
-              size="pulse-outside"
-              colorVariant="colorful"
-              strength={0.7}
-              duration={2.2}
-              theme="dark"
-              className="consult__composerBeam"
-              style={COMPOSER_BEAM_STYLE}
+          <form
+            className="consult__composer"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void send(draft)
+            }}
+          >
+            {(features.voice || features.files) && renderComposerExtras?.()}
+            <input
+              ref={inputRef}
+              type="text"
+              className="consult__input"
+              placeholder={labels.inputPlaceholder}
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              disabled={streaming || otpStage !== 'none'}
+              aria-label={labels.inputPlaceholder}
+            />
+            <button
+              type="submit"
+              className="consult__send"
+              disabled={streaming || !draft.trim() || otpStage !== 'none'}
+              aria-label={labels.send}
             >
-              <form
-                className="consult__composer"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  void send(draft)
-                }}
-              >
-                {(features.voice || features.files) && renderComposerExtras?.()}
-                <input
-                  ref={inputRef}
-                  type="text"
-                  className="consult__input"
-                  placeholder={labels.inputPlaceholder}
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  disabled={streaming || otpStage !== 'none'}
-                  aria-label={labels.inputPlaceholder}
-                />
-                <button
-                  type="submit"
-                  className="consult__send"
-                  disabled={streaming || !draft.trim() || otpStage !== 'none'}
-                  aria-label={labels.send}
-                >
-                  <svg className="consult__sendIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                    <path d="M3.4 20.6 20.5 12 3.4 3.4l.1 6.6 12 2-12 2z" />
-                  </svg>
-                </button>
-              </form>
-            </BorderBeam>
-          </div>
+              <svg className="consult__sendIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <path d="M3.4 20.6 20.5 12 3.4 3.4l.1 6.6 12 2-12 2z" />
+              </svg>
+            </button>
+          </form>
 
           {idle && (
             <p className="consult__disclaimer">{labels.disclaimer}</p>
