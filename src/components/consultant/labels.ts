@@ -71,7 +71,7 @@ export const defaultConsultantLabels: ConsultantLabels = {
   footerContacts: 'Contacts',
   footerTelegram: 'Telegram',
   send: 'Send',
-  thinking: 'Typing…',
+  thinking: 'Working',
   retry: 'Try again',
 
   greeting:

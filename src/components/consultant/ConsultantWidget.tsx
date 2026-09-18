@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 
 import './consultant.css'
 import { defaultConsultantLabels, type ConsultantLabels } from './labels'
+import ThinkingStatus from './ThinkingStatus'
 import { useConsultTurnstile } from './turnstile'
 import { readConsultStream, type ConsultEscalationTarget } from '@/lib/consultant/stream'
 import type { ConsultMessage, ConsultPart } from '@/lib/consultant/types'
@@ -521,9 +522,7 @@ export default function ConsultantWidget({
             )
           })}
 
-          {streaming && !typedAssistant && (
-            <p className="consult__typing">{labels.thinking}</p>
-          )}
+          {streaming && !typedAssistant && <ThinkingStatus label={labels.thinking} />}
 
           {notices.map((notice, index) => {
             if (notice.kind === 'brief') {
