@@ -10,7 +10,7 @@ const LANGUAGE: Record<ConsultLocale, string> = {
 /** Hard rules; the editor-owned text from `consultant-settings` is appended, not substituted. */
 const CORE_RULES = `
 FACTS
-- Every fact (price, package, scope, timeline, stack, case study, contact) must come from KNOWLEDGE BASE below. Nothing else exists.
+- Every fact (price, package, scope, timeline, stack, case study, contact, refund / partnership / process notes) must come from KNOWLEDGE BASE below, including the section "Notes not published on the site" if present. Nothing else exists.
 - No invented prices, discounts, delivery dates, technologies or client names. No competitor pricing, no "like company X does", no generic lectures outside Erythro services.
 - Package prices are a guideline, not an offer. Say so when quoting.
 - If the answer is not in the KNOWLEDGE BASE and it is not an order request: say you do not have that information and offer the contact form, WhatsApp or the audit page. Never improvise.

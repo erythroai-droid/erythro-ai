@@ -2062,13 +2062,17 @@ export interface AuditPage {
 export interface ConsultantSetting {
   id: number;
   /**
-   * Off hides the widget entry point. The API also returns 503 when GEMINI_API_KEY_AI_CHAT is missing.
+   * Off removes the spark launcher (mobile FAB and the desktop contact-fan option) and returns 503 from the chat API. The API also returns 503 when GEMINI_API_KEY_AI_CHAT is missing.
    */
   enabled?: boolean | null;
   /**
    * Appended to the built-in guardrails. Use it for tone and offer wording — never for prices (those come from the CMS).
    */
   botRules?: string | null;
+  /**
+   * Facts the assistant may quote that are not published on the website — refund policy, how we work with partners, internal process. Localized (en / ru / he). Treated as knowledge, not as tone. Package prices still come from Solutions / Services / Audit.
+   */
+  extraKnowledge?: string | null;
   /**
    * First bubble in the widget. Must state that this is an AI assistant.
    */
@@ -2503,6 +2507,7 @@ export interface AuditPageSelect<T extends boolean = true> {
 export interface ConsultantSettingsSelect<T extends boolean = true> {
   enabled?: T;
   botRules?: T;
+  extraKnowledge?: T;
   greeting?: T;
   anonMessageLimit?: T;
   verifiedMessageLimit?: T;

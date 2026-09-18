@@ -10,14 +10,14 @@ When the user asks about next steps, security, admin protection, performance, R2
 **Not critical right now.** Prioritize when they have time:
 
 1. **Restore audit intake limits after the payment terminal is connected** — live now: 5-day Free cooldown + `/api/contact` IP window are skipped (`AUDIT_INTAKE_LIMITS_OPEN_FOR_QA`). Set `AUDIT_SKIP_COOLDOWN=0` or flip the flag to `false`.
-2. DMARC `p=reject` after ~7 days of clean reports at `order@erythro.ai` (~2026-09-13) — live now `p=quarantine`
-3. CSP nonce / drop `'unsafe-inline'` (medium, not urgent — see `PLAN-deferred.md`)
-4. Desktop CLS (~1.1) on hero — re-check after PIT-057 deploy
-5. Purge Vercel Blob after R2 uploads verified; remove `BLOB_READ_WRITE_TOKEN` last
-6. `AGENT_REQUIRE_HMAC=1` only after n8n signs bodies
-7. CF-only UFW after n8n/agent-api are Proxied + Origin Cert
-8. ISR remaining frontend pages (services/order/audit still use `getRequestPrefs`); optional `media.erythro.ai`
+2. CSP nonce / drop `'unsafe-inline'` (medium, not urgent — see `PLAN-deferred.md`)
+3. Desktop CLS (~1.1) on hero — re-check after PIT-057 deploy
+4. Purge Vercel Blob after R2 uploads verified; remove `BLOB_READ_WRITE_TOKEN` last
+5. `AGENT_REQUIRE_HMAC=1` only after n8n signs bodies
+6. CF-only UFW after n8n/agent-api are Proxied + Origin Cert
+7. ISR remaining frontend pages (services/order/audit still use `getRequestPrefs`); optional `media.erythro.ai`
+8. Consultant wizard / intent router (v2) — not now; see `PLAN-deferred.md` § Consultant v2. Extra knowledge in admin is already in v1.
 
-Already done: Cloudflare Access `/admin*` (302 to Access login), R2 media cutover on site, UFW baseline + Docker :8080 DROP, audit SSRF/HMAC-ready worker, home + `/portfolio` force-static ISR (no cookies in layout/not-found, middleware without Set-Cookie, `getPayloadLocal`), hero LCP/CLS mitigations (PIT-057), DMARC `p=quarantine`.
+Already done: Cloudflare Access `/admin*` (302 to Access login), R2 media cutover on site, UFW baseline + Docker :8080 DROP, audit SSRF/HMAC-ready worker, home + `/portfolio` force-static ISR (no cookies in layout/not-found, middleware without Set-Cookie, `getPayloadLocal`), hero LCP/CLS mitigations (PIT-057), DMARC `p=quarantine` (2026-09-06) then `p=reject` (2026-09-18).
 
 VPS Docker ports: never publish `0.0.0.0` — see `docs/infrastructure/vps-docker-ports.md` (PIT-053). Access hostname pitfall: PIT-064.

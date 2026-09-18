@@ -5,9 +5,10 @@ import { revalidateGlobal } from '../lib/revalidate'
 
 /**
  * Editor-owned behaviour of the AI consultant widget: guardrails that go into
- * the system prompt, the anti-abuse ceilings, the OTP copy and the brief
- * checklist. Prices and services are *not* here — those come from the same
- * collections the site renders.
+ * the system prompt, unpublished facts (refund policy, process notes), the
+ * anti-abuse ceilings, the OTP copy and the brief checklist. Public prices
+ * and services are *not* here — those come from the same collections the site
+ * renders.
  */
 export const ConsultantSettings: GlobalConfig = {
   slug: 'consultant-settings',
@@ -15,7 +16,7 @@ export const ConsultantSettings: GlobalConfig = {
   admin: {
     group: 'Consultant',
     description:
-      'AI consultant: prompt guardrails, message limits, email-verification copy and the technical-brief checklist (localized en / ru / he).',
+      'AI consultant: prompt guardrails, unpublished extra knowledge, message limits, email-verification copy and the technical-brief checklist (localized en / ru / he).',
   },
   hooks: { afterChange: [revalidateGlobal] },
   fields: [
@@ -41,6 +42,14 @@ export const ConsultantSettings: GlobalConfig = {
                 rows: 10,
                 description:
                   'Appended to the built-in guardrails. Use it for tone and offer wording — never for prices (those come from the CMS).',
+              },
+            }),
+            locTextarea('extraKnowledge', {
+              label: 'Extra knowledge (not on the site)',
+              admin: {
+                rows: 12,
+                description:
+                  'Facts the assistant may quote that are not published on the website — refund policy, how we work with partners, internal process. Localized (en / ru / he). Treated as knowledge, not as tone. Package prices still come from Solutions / Services / Audit.',
               },
             }),
             locTextarea('greeting', {
