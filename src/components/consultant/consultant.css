@@ -310,11 +310,70 @@
   color: var(--consult-accent-contrast);
 }
 
-.consult__typing,
 .consult__notice {
   margin: 0;
   color: var(--consult-text-muted);
   font-size: 13px;
+}
+
+.consult__working {
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding-block: 8px;
+  padding-inline-start: 10px;
+  padding-inline-end: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  background: rgba(22, 22, 22, 0.92);
+  color: rgba(244, 244, 244, 0.82);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+.consult__workingOrb {
+  flex: 0 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 20px;
+  block-size: 20px;
+}
+
+.consult__workingOrb canvas {
+  display: block;
+}
+
+.consult__workingLabel {
+  white-space: nowrap;
+}
+
+.consult__workingDots::after {
+  content: '';
+  animation: consult-working-dots 1.6s steps(1, end) infinite;
+}
+
+@keyframes consult-working-dots {
+  0% {
+    content: '';
+  }
+  20% {
+    content: '.';
+  }
+  40% {
+    content: '..';
+  }
+  60% {
+    content: '...';
+  }
+  80%,
+  100% {
+    content: '....';
+  }
 }
 
 .consult__panel {
@@ -703,5 +762,10 @@
     background:
       linear-gradient(var(--consult-surface-raised), var(--consult-surface-raised)) padding-box,
       linear-gradient(90deg, #6d28d9, #c026d3, #f59e0b) border-box;
+  }
+
+  .consult__workingDots::after {
+    animation: none;
+    content: '....';
   }
 }

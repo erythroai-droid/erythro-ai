@@ -188,26 +188,30 @@ export default function ChatButton({
     return (
       <>
         <div
-          className={`pointer-events-auto fixed bottom-[18px] end-[18px] z-[70] overflow-visible lg:end-[32px] ${
+          className={`pointer-events-auto fixed bottom-[18px] end-[18px] z-[70] overflow-visible p-4 -m-4 lg:end-[32px] ${
             consultOpen ? 'invisible' : ''
           }`}
         >
-          <BorderBeam
-            size="pulse-outside"
-            colorVariant="colorful"
-            duration={2.2}
-            strength={1}
-            className="overflow-visible"
-          >
-            <button
-              type="button"
-              onClick={() => setConsultOpen(true)}
-              aria-label={copy.consultant}
-              className="group relative flex h-[44px] w-[44px] items-center justify-center rounded-full border border-white/15 bg-coal-950/80 bg-gradient-to-r from-violet-950/75 via-fuchsia-950/65 to-amber-950/70 text-white backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_1px_2px_rgba(0,0,0,0.08)] transition-all duration-300 hover:from-violet-900/60 hover:via-fuchsia-900/50 hover:to-amber-900/55 hover:border-white/25 hover:scale-105 active:scale-95 cursor-pointer select-none"
+          <div className="audit-beam-hue overflow-visible">
+            <BorderBeam
+              size="pulse-outside"
+              colorVariant="colorful"
+              duration={2.2}
+              strength={1}
+              brightness={1.35}
+              theme="dark"
+              className="overflow-visible"
             >
-              <SparklesIcon className="h-5 w-5 shrink-0 text-gold-200 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 group-hover:rotate-12 drop-shadow-[0_0_6px_rgba(255,233,199,0.6)]" />
-            </button>
-          </BorderBeam>
+              <button
+                type="button"
+                onClick={() => setConsultOpen(true)}
+                aria-label={copy.consultant}
+                className="chat-launcher group relative flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-coal-950 bg-gradient-to-r from-violet-950 via-fuchsia-950 to-amber-950 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_1px_2px_rgba(0,0,0,0.08)] transition-all duration-300 hover:from-violet-900 hover:via-fuchsia-900 hover:to-amber-900 hover:border-white/25 hover:scale-105 active:scale-95 cursor-pointer select-none lg:h-[44px] lg:w-[44px] lg:bg-coal-950/80 lg:from-violet-950/75 lg:via-fuchsia-950/65 lg:to-amber-950/70 lg:backdrop-blur-md"
+              >
+                <SparklesIcon className="h-6 w-6 shrink-0 text-gold-200 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 group-hover:rotate-12 drop-shadow-[0_0_6px_rgba(255,233,199,0.6)] lg:h-5 lg:w-5" />
+              </button>
+            </BorderBeam>
+          </div>
         </div>
 
         <ErythroConsultant

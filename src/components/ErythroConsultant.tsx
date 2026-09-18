@@ -28,7 +28,7 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
     closeLabel: 'Close',
     inputPlaceholder: 'Ask about packages, prices or your project',
     send: 'Send',
-    thinking: 'Typing…',
+    thinking: 'Working',
     savePolicy:
       'If we prepare a project brief or escalate a technical question, this chat is stored for up to 12 months so the team can see the context.',
     chipFaq: 'Packages and prices',
@@ -47,7 +47,7 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
     closeLabel: 'Закрыть',
     inputPlaceholder: 'Спросите о пакетах, ценах или своём проекте',
     send: 'Отправить',
-    thinking: 'Печатает…',
+    thinking: 'Думает',
     greeting:
       'Здравствуйте, я ИИ-ассистент Erythro. Расскажу про пакеты, цены и ИИ-аудит или помогу собрать ТЗ на проект.',
     savePolicy:
@@ -90,7 +90,7 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
     closeLabel: 'סגירה',
     inputPlaceholder: 'שאלו על חבילות, מחירים או הפרויקט שלכם',
     send: 'שליחה',
-    thinking: 'מקליד…',
+    thinking: 'חושב',
     greeting:
       'שלום, אני עוזר ה-AI של Erythro. אסביר על החבילות, המחירים וביקורת ה-AI, או אעזור לבנות מסמך אפיון.',
     savePolicy:
