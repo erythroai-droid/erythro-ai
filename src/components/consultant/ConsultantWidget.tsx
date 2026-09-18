@@ -61,9 +61,11 @@ export type ConsultantWidgetProps = {
 }
 
 type Notice =
-  | { kind: 'text'; text: string }
+  | { kind: 'text'; text: string; tone?: 'error' | 'success' }
   | { kind: 'brief'; markdown: string }
   | { kind: 'sent'; projectNumber: string; crmPending: boolean }
+
+type ConsultMood = 'listen' | 'think' | 'speak' | 'success' | 'error'
 
 type OtpStage = 'none' | 'email' | 'code'
 
@@ -331,7 +333,7 @@ export default function ConsultantWidget({
 
         const contentType = response.headers.get('content-type') || ''
         if (!response.body || !contentType.includes('text/event-stream')) {
-          pushNotice({ kind: 'text', text: labels.unavailable })
+          pushNotice({ kind: 'text', text: labels.unavailable, tone: 'error' })
           return
         }
 
@@ -342,9 +344,9 @@ export default function ConsultantWidget({
           } else if (event.type === 'notice') {
             if (event.code === 'otp_required') setOtpStage('email')
             else if (event.code === 'daily_quota_exhausted') {
-              pushNotice({ kind: 'text', text: labels.dailyLimitReached })
+              pushNotice({ kind: 'text', text: labels.dailyLimitReached, tone: 'error' })
             } else if (event.code === 'unconfigured' || event.code === 'rate_limited') {
-              pushNotice({ kind: 'text', text: labels.unavailable })
+              pushNotice({ kind: 'text', text: labels.unavailable, tone: 'error' })
             }
           } else if (event.type === 'action') {
             const action = event.action
@@ -362,14 +364,14 @@ export default function ConsultantWidget({
                 crmPending: action.crmStatus === 'pending',
               })
             } else if (action.kind === 'ticket_created') {
-              pushNotice({ kind: 'text', text: labels.ticketCreated })
+              pushNotice({ kind: 'text', text: labels.ticketCreated, tone: 'success' })
             }
           } else if (event.type === 'error') {
-            pushNotice({ kind: 'text', text: labels.streamFailed })
+            pushNotice({ kind: 'text', text: labels.streamFailed, tone: 'error' })
           }
         }
       } catch {
-        pushNotice({ kind: 'text', text: labels.streamFailed })
+        pushNotice({ kind: 'text', text: labels.streamFailed, tone: 'error' })
       } finally {
         setStreaming(false)
       }
@@ -415,7 +417,7 @@ export default function ConsultantWidget({
         setOtpStage('none')
         setOtpCode('')
         setVerified(true)
-        pushNotice({ kind: 'text', text: labels.otpVerified })
+        pushNotice({ kind: 'text', text: labels.otpVerified, tone: 'success' })
         return
       }
       setOtpError(response.status === 429 ? labels.otpTooMany : labels.otpInvalidCode)
@@ -440,11 +442,23 @@ export default function ConsultantWidget({
 
   const idle = messages.length === 0 && notices.length === 0
   const composing = draft.trim().length > 0 || otpStage !== 'none'
+  const lastNotice = notices[notices.length - 1]
+  const noticeTone = lastNotice?.kind === 'text' ? lastNotice.tone : undefined
+  const mood: ConsultMood = otpError || noticeTone === 'error'
+    ? 'error'
+    : (streaming && !typedAssistant) || otpBusy
+      ? 'think'
+      : streaming || liveAnswer
+        ? 'speak'
+        : lastNotice?.kind === 'brief' || lastNotice?.kind === 'sent' || noticeTone === 'success'
+          ? 'success'
+          : 'listen'
   const dir = rtl ? 'rtl' : 'ltr'
   const openClass = isOpen && slideOpen ? ' consult--open' : ''
   const idleClass = idle ? ' consult--idle' : ''
   const dockEndClass = !idle || composing ? ' consult--dock-end' : ''
   const revealedClass = revealed ? ' consult--revealed' : ''
+  const moodClass = ` consult--mood-${mood}`
   const typedGreeting = revealed ? greetingUnits.slice(0, typedCount).join('') : ''
   const typingDone = typedCount >= greetingUnits.length
   const whatsAppAction = footerActions.find(
@@ -455,7 +469,7 @@ export default function ConsultantWidget({
 
   return createPortal(
     <div
-      className={`consult${openClass}${idleClass}${dockEndClass}${revealedClass}`}
+      className={`consult${openClass}${idleClass}${dockEndClass}${revealedClass}${moodClass}`}
       dir={dir}
       role="dialog"
       aria-modal={isOpen}
