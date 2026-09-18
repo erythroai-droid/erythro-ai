@@ -1622,6 +1622,21 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 
 ---
 
+## PIT-095 — Consultant «Заказать сайт» lands in Let’s Talk instead of Solutions
+
+**Tags:** `consultant`, `gsap`, `home`, `solutions`  
+**Seen:** 2026-09-18 — RU home, chip «Заказать сайт»
+
+**Symptom:** Chip / escalate with no plan slug used `location.assign('/#solutions')`. The overlay closed and the viewport showed Let’s Talk (footer CTA), not the Solutions cards.
+
+**Cause:** `#solutions` is GSAP-pinned on desktop (`id: solutions-pin`, `pinSpacing: false`). Native hash / `scrollIntoView` lands at the pin’s end, which is visually FAQ + Let’s Talk. Overlay `useLockBodyScroll` also restores the pre-open `scrollY` after `onClose()`, racing a `setTimeout(0)` jump. Independently, the Services pin **clamps** scroll at the Let’s Talk settle point until the overlay animation completes (`self.scroll(settleAt)`), so a jump to Solutions from the hero is pulled back to the red Let’s Talk block.
+
+**Fix:** Close the overlay, wait until `html.modal-open` is gone (plus two frames), `ScrollTrigger.refresh()`, dispatch `erythro:skip-lets-talk-settle` (same as finishing the Let’s Talk gate), then `scrollToHomeSection('solutions')`: `history.replaceState` + `ScrollTrigger.getById('solutions-pin').start` (retry a few frames). Fallback `scrollIntoView` only when there is no pin (mobile).
+
+**Prevent:** Do not `assign('/#solutions')` from an overlay. Do not `scrollIntoView('#solutions')` on desktop while the pin exists. Wait for body-unlock before any `scrollTo`.
+
+---
+
 ## PIT-091 — AI Smart Card / AI-визитка copy drifts between CMS, menu, and order chrome
 
 **Tags:** `i18n`, `cms`, `solutions`, `order`, `seo`  
@@ -1745,6 +1760,7 @@ Never gate Lexical UI on `isLexicalDoc(localeAllValue)` or `lexicalToPlain` alon
 - [ ] Slide overlays: keep mounted closed, add the open class after paint; do not `return null` while copy loads (PIT-090)
 - [ ] Consultant + Gemini cache: do not send `cachedContent` together with `tools`; Gemini 3.x 400 is swallowed by `textStream` (PIT-093)
 - [ ] Consultant Turnstile: host on `document.body`, remint per request; never `reset()`/`visibility:hidden`/CSS-`transform` ancestor (PIT-094)
+- [ ] Home Solutions jump: pin `start`, not `/#solutions` hash; wait overlay unlock (PIT-095)
 - [ ] Solutions/order i18n: canonical Smart Card names + `copyHygiene`; never hardcode `| Order |` or `Get a start` (PIT-091)
 - [ ] Order Lexical includes: merge per-locale rich text when `locale: 'all'` is an empty shell; keep static `includes` on solution plans (PIT-092)
 
