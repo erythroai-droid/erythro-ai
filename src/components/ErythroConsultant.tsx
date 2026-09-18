@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ConsultantWidget, type ConsultantChip, type ConsultantLabels } from './consultant'
 import { useContactModal } from './ContactModal'
 import { useSiteContent } from './SiteContentProvider'
+import { scrollToHomeSectionAfterOverlay } from '@/lib/homeSectionScroll'
 import { whatsAppHref as buildWhatsAppHref } from '@/lib/phoneE164'
 
 /**
@@ -277,9 +278,17 @@ export default function ErythroConsultant({
         // The chat never places an order: hand off to the existing pages.
         // There is no /order index — plans live at /order/[slug]; the catalog is #solutions.
         onClose()
-        const href =
-          target === 'audit' ? '/audit' : slug ? `/order/${slug}` : '/#solutions'
-        window.location.assign(href)
+        if (target === 'audit') {
+          window.location.assign('/audit')
+          return
+        }
+        if (slug) {
+          window.location.assign(`/order/${slug}`)
+          return
+        }
+        // Wait for overlay body-unlock, then pin-scroll (native /#solutions
+        // lands in Let’s Talk — GSAP pinSpacing: false).
+        scrollToHomeSectionAfterOverlay('solutions')
       }}
     />
   )

@@ -11,7 +11,7 @@ import { useCursorGlow } from '@/hooks/useCursorGlow'
 import StylizedSectionTitle from './StylizedSectionTitle'
 import BidiText from './BidiText'
 import { getServiceSlugById } from '@/lib/servicePages'
-import { LETS_TALK_SCROLL_EVENT } from '@/lib/letsTalkScroll'
+import { LETS_TALK_SCROLL_EVENT, SKIP_LETS_TALK_SETTLE_EVENT } from '@/lib/letsTalkScroll'
 import { loadGsapAfterLcp } from '@/lib/gsapAfterLcp'
 
 interface ServicesSectionProps {
@@ -311,6 +311,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
           }
         }
         window.addEventListener(LETS_TALK_SCROLL_EVENT, onScrollToLetsTalk)
+        window.addEventListener(SKIP_LETS_TALK_SETTLE_EVENT, revealLetsTalkFully)
 
         tl = gsap.timeline({
           scrollTrigger: {
@@ -418,6 +419,7 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
         return () => {
           window.removeEventListener('wheel', blockForwardWhileSettling)
           window.removeEventListener(LETS_TALK_SCROLL_EVENT, onScrollToLetsTalk)
+          window.removeEventListener(SKIP_LETS_TALK_SETTLE_EVENT, revealLetsTalkFully)
         }
       })
 

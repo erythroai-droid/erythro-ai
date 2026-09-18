@@ -3,6 +3,9 @@ import { getSectionElement } from '@/lib/domSection'
 /** Desktop Services pin listens for this to scrub to a fully revealed Let’s Talk. */
 export const LETS_TALK_SCROLL_EVENT = 'erythro:scroll-to-lets-talk'
 
+/** Release the Let’s Talk settle clamp so a later section (Solutions) can be jumped to. */
+export const SKIP_LETS_TALK_SETTLE_EVENT = 'erythro:skip-lets-talk-settle'
+
 export type LetsTalkScrollDetail = {
   behavior?: ScrollBehavior
 }
@@ -31,4 +34,9 @@ export function scrollToLetsTalk(opts?: LetsTalkScrollDetail): boolean {
     }),
   )
   return true
+}
+
+export function skipLetsTalkSettle(): void {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new Event(SKIP_LETS_TALK_SETTLE_EVENT))
 }
