@@ -110,6 +110,6 @@ export const defaultConsultantLabels: ConsultantLabels = {
   chipBrief: 'Build a brief',
   chipAudit: 'Take an audit',
   chipWhatsApp: 'WhatsApp',
-  chipForm: 'Contact form',
+  chipForm: 'Feedback',
   chipOrder: 'Order a site',
 }

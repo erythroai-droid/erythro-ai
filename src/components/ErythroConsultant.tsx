@@ -34,6 +34,7 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
     chipBrief: 'Build a brief',
     chipAudit: 'Take an audit',
     chipOrder: 'Order a site',
+    chipForm: 'Feedback',
     footerWhatsApp: 'WhatsApp',
     footerContacts: 'Contacts',
     footerTelegram: 'Telegram',
@@ -76,6 +77,7 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
     chipBrief: 'Составить ТЗ',
     chipAudit: 'Пройти аудит',
     chipOrder: 'Заказать сайт',
+    chipForm: 'Обратная связь',
     footerWhatsApp: 'WhatsApp',
     footerContacts: 'Контакты',
     footerTelegram: 'Telegram',
@@ -117,6 +119,7 @@ const COPY: Record<Locale, Partial<ConsultantLabels>> = {
     chipBrief: 'בניית אפיון',
     chipAudit: 'לעבור ביקורת',
     chipOrder: 'להזמין אתר',
+    chipForm: 'משוב',
     footerWhatsApp: 'WhatsApp',
     footerContacts: 'יצירת קשר',
     footerTelegram: 'Telegram',
@@ -230,6 +233,11 @@ export default function ErythroConsultant({
         label: COPY[key].chipBrief!,
         action: { kind: 'ask', text: ASK_BRIEF[key], gate: 'otp' },
       },
+      {
+        id: 'form',
+        label: COPY[key].chipForm!,
+        action: { kind: 'escalate', target: 'form' },
+      },
     ]
   }, [key])
 
@@ -267,7 +275,10 @@ export default function ErythroConsultant({
           return
         }
         // The chat never places an order: hand off to the existing pages.
-        const href = target === 'audit' ? '/audit' : slug ? `/order/${slug}` : '/order'
+        // There is no /order index — plans live at /order/[slug]; the catalog is #solutions.
+        onClose()
+        const href =
+          target === 'audit' ? '/audit' : slug ? `/order/${slug}` : '/#solutions'
         window.location.assign(href)
       }}
     />
