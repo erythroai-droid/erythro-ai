@@ -195,7 +195,7 @@
   max-inline-size: min(42rem, 100%);
   margin-inline: auto;
   padding-inline: 8px;
-  padding-block-end: 20px;
+  padding-block-end: 0;
   /* Same thin gold bar as `.faq-accordion-scroll` */
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 233, 199, 0.45) rgba(255, 255, 255, 0.04);
@@ -274,7 +274,7 @@
 
 .consult__bubble {
   margin: 0;
-  padding: 16px 18px;
+  padding: 8px 14px;
   border-radius: 22px;
   line-height: 1.75;
   overflow-wrap: anywhere;
@@ -389,7 +389,7 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding-block-start: 8px;
+  padding-block-start: 50px;
   padding-block-end: max(96px, calc(72px + env(safe-area-inset-bottom)));
   overflow: visible;
 }
