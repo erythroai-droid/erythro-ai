@@ -5,13 +5,13 @@ import { useCallback, useEffect, useRef } from 'react'
 /**
  * Invisible Turnstile for the chat.
  *
- * A visible challenge per chat message would be unusable, and tokens are
- * single-use — so each mint is a fresh widget. `reset()` on a solved widget
- * fires `expired-callback` with an empty string; treating that as the token
- * sent `POST /api/consult` 403 and the unavailable notice (PIT-094).
+ * Tokens are single-use. The host lives on `document.body`, not inside
+ * `.consult`: that panel uses `transform`, and Cloudflare will not mint a
+ * token from a `visibility: hidden` / 0×0 / transformed ancestor (PIT-094).
  */
 
 const SCRIPT_ID = 'cf-turnstile-consult'
+const HOST_ID = 'cf-turnstile-consult-host'
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
 const EXECUTE_TIMEOUT_MS = 12_000
 
@@ -44,28 +44,53 @@ function loadScript(): Promise<void> {
   })
 }
 
+/** Real box, off the overlay, not `display:none` / `visibility:hidden`. */
+function ensureHost(): HTMLDivElement {
+  const found = document.getElementById(HOST_ID)
+  if (found instanceof HTMLDivElement) return found
+
+  const el = document.createElement('div')
+  el.id = HOST_ID
+  el.setAttribute('aria-hidden', 'true')
+  el.style.cssText = [
+    'position:fixed',
+    'left:-9999px',
+    'top:0',
+    'width:300px',
+    'height:65px',
+    'overflow:hidden',
+    'pointer-events:none',
+  ].join(';')
+  document.body.appendChild(el)
+  return el
+}
+
+function destroyWidget(api: TurnstileAPI | undefined, id: string | null) {
+  if (!api || !id) return
+  try {
+    api.remove(id)
+  } catch {
+    /* already gone */
+  }
+}
+
+type TurnstileAPI = NonNullable<Window['turnstile']>
+
 export function useConsultTurnstile(
   siteKey: string | undefined,
   locale: string,
 ): { container: (node: HTMLDivElement | null) => void; getToken: () => Promise<string> } {
-  const nodeRef = useRef<HTMLDivElement | null>(null)
   const widgetIdRef = useRef<string | null>(null)
 
-  const container = useCallback((node: HTMLDivElement | null) => {
-    nodeRef.current = node
+  const container = useCallback((_node: HTMLDivElement | null) => {
+    /* Host is on document.body — the in-panel node is unused (PIT-094). */
   }, [])
 
   useEffect(() => {
     return () => {
-      const id = widgetIdRef.current
+      destroyWidget(window.turnstile, widgetIdRef.current)
       widgetIdRef.current = null
-      if (id && window.turnstile) {
-        try {
-          window.turnstile.remove(id)
-        } catch {
-          /* already gone */
-        }
-      }
+      document.getElementById(HOST_ID)?.remove()
     }
   }, [])
 
@@ -77,18 +102,12 @@ export function useConsultTurnstile(
       return ''
     }
     const api = window.turnstile
-    const node = nodeRef.current
-    if (!api || !node) return ''
+    if (!api) return ''
 
-    if (widgetIdRef.current !== null) {
-      try {
-        api.remove(widgetIdRef.current)
-      } catch {
-        /* already gone */
-      }
-      widgetIdRef.current = null
-      node.replaceChildren()
-    }
+    const node = ensureHost()
+    destroyWidget(api, widgetIdRef.current)
+    widgetIdRef.current = null
+    node.replaceChildren()
 
     return new Promise<string>((resolve) => {
       let settled = false
@@ -101,7 +120,7 @@ export function useConsultTurnstile(
       const timer = window.setTimeout(() => finish(''), EXECUTE_TIMEOUT_MS)
 
       try {
-        widgetIdRef.current = api.render(node, {
+        const widgetId = api.render(node, {
           sitekey: siteKey,
           action: 'consult',
           appearance: 'execute',
@@ -112,11 +131,17 @@ export function useConsultTurnstile(
             window.clearTimeout(timer)
             finish(token)
           },
-          // `reset()` / expiry must not resolve an in-flight mint with ''.
           'expired-callback': () => undefined,
-          'error-callback': () => undefined,
+          'error-callback': () => {
+            if (settled || !widgetIdRef.current) return
+            try {
+              api.execute(widgetIdRef.current, { action: 'consult' })
+            } catch {
+              /* timeout still running */
+            }
+          },
         })
-        const widgetId = widgetIdRef.current
+        widgetIdRef.current = widgetId
         if (!widgetId) {
           window.clearTimeout(timer)
           finish('')
