@@ -85,7 +85,7 @@ export function createConsultHandler(deps: ConsultHandlerDeps) {
     const tools = {
       get_knowledge_base: tool({
         description:
-          'Re-read the Erythro knowledge base (services, packages, prices, FAQ, cases). Call before quoting any number.',
+          'Re-read the Erythro knowledge base (services, packages, prices, FAQ, cases, and unpublished notes such as refund policy). Call before quoting any number.',
         inputSchema: jsonSchema<{ topic?: string }>({
           type: 'object',
           properties: {

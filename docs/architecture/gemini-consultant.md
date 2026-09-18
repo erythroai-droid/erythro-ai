@@ -15,6 +15,8 @@
 
 Цены и пакеты **не** брать из `src/translations` / `src/lib/servicePages.ts` — production CMS их перебивает.
 
+Факты, которых нет на сайте (план возврата, внутренний процесс, партнёрские условия), пишутся вручную в **Consultant Settings → Extra knowledge**. Локализуется en/ru/he, попадает в KB чата как секция «Notes not published on the site», на публичные страницы не выводится. Пакетные цены по-прежнему из Solutions / Services / Audit.
+
 ## 2. Три режима чата
 
 | Режим | Контакты | Что пишем в БД |
@@ -119,3 +121,5 @@ Pipeline живёт в Docker на VPS (`proxy_network` + Caddy, host-порт *
 ## 9. Расширение (не v1)
 
 Контракт заложен, фичи выключены: голос (STT/TTS), вложения (R2/CRM, не в ТЗ), вход инженера в ту же ленту (`handoff: bot | queued | human`).
+
+Wizard / intent router / шаблоны без LLM — отложено: [`PLAN-deferred.md`](../PLAN-deferred.md) § Consultant v2. Extra knowledge в админке уже в v1.

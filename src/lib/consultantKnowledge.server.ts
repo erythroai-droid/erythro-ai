@@ -7,6 +7,9 @@
  * is the fallback snapshot used only when Postgres is unreachable; the model is
  * told to hedge on numbers in that case (`live: false`).
  *
+ * Extra unpublished facts (refund policy, process notes) come from
+ * Consultant Settings → Extra knowledge and are merged into the same markdown.
+ *
  * Nothing from `src/translations` or `servicePages.ts` is used: those statics
  * are stale relative to production.
  */
@@ -136,13 +139,14 @@ export async function assembleConsultantKnowledge(
 ): Promise<ConsultantKnowledge> {
   try {
     const payload = await getPayloadClient()
-    const [plans, services, faq, site, auditPage, portfolio] = await Promise.all([
+    const [plans, services, faq, site, auditPage, portfolio, consultant] = await Promise.all([
       payload.find({ collection: 'solution-plans', locale, limit: 50, sort: 'order', depth: 0 }),
       payload.find({ collection: 'services', locale, limit: 20, sort: 'order', depth: 0 }),
       payload.findGlobal({ slug: 'faq-section', locale, depth: 0 }),
       payload.findGlobal({ slug: 'site-settings', locale, depth: 0 }),
       payload.findGlobal({ slug: 'audit-page', locale, depth: 0 }),
       payload.find({ collection: 'portfolio-projects', locale, limit: 12, depth: 0 }),
+      payload.findGlobal({ slug: 'consultant-settings', locale, depth: 0 }),
     ])
 
     const contacts = [
@@ -173,10 +177,14 @@ export async function assembleConsultantKnowledge(
       line('audit summary', lexicalToPlain(auditPage.heroSubtitle || auditPage.intro).slice(0, 600)),
     ].filter(Boolean)
 
+    const extraNotes = str(consultant.extraKnowledge)
     const markdown = [
       '# Erythro.ai — consultant knowledge base (live CMS)',
       'Prices below are the current CMS values. Present them as a guideline, not an offer.',
       contacts.length ? `## Company\n${contacts.join('\n')}` : '',
+      extraNotes
+        ? `## Notes not published on the site\nThese facts are editor-authored and are not on the public website. Quote them when asked.\n${extraNotes}`
+        : '',
       `## Solution packages\n${renderPlans(arr(plans.docs), 'solution')}`,
       `## AI & Website Audit\n${[...auditIntro, renderPlans(arr(plans.docs), 'audit')]
         .filter(Boolean)
@@ -207,7 +215,7 @@ export function getCachedConsultantKnowledge(
 ): Promise<ConsultantKnowledge> {
   return unstable_cache(
     () => assembleConsultantKnowledge(locale),
-    ['consultant-knowledge-v1', locale],
+    ['consultant-knowledge-v2', locale],
     { tags: [SITE_CONTENT_TAG] },
   )()
 }
