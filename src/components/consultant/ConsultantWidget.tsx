@@ -97,8 +97,11 @@ function formatBubble(text: string) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br />')
-  return <span dangerouslySetInnerHTML={{ __html: escaped }} />
+  const html = escaped
+    .split(/\n{2,}/)
+    .map((para) => `<p>${para.replace(/\n/g, '<br />')}</p>`)
+    .join('')
+  return <span dangerouslySetInnerHTML={{ __html: html }} />
 }
 
 export default function ConsultantWidget({
