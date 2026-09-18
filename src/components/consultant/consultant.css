@@ -566,12 +566,17 @@
   }
 }
 
-/* Invisible Turnstile host: present for `execute()`, never visible. */
+/* Invisible Turnstile host: present for `execute()`, never visible.
+   A 0×0 box (or `display: none`) stops Cloudflare from minting a second token. */
 .consult__turnstile {
   position: absolute;
-  inline-size: 0;
-  block-size: 0;
+  inset-inline-start: 0;
+  inset-block-end: 0;
+  inline-size: 300px;
+  block-size: 65px;
   overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .consult__srOnly {

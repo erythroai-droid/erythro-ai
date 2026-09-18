@@ -1607,6 +1607,21 @@ curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-med
 
 ---
 
+## PIT-094 — Consultant second message shows «Ассистент временно недоступен»
+
+**Tags:** `consultant`, `turnstile`  
+**Seen:** 2026-09-18 — production `POST /api/consult` 200 then, after OTP, 403
+
+**Symptom:** First chat reply streams. The next send (often after email OTP) shows «Ассистент временно недоступен. Контактная форма работает.» Runtime: `POST /api/consult` → 403 JSON, no Gemini call.
+
+**Cause:** Invisible Turnstile tokens are single-use. The widget called `reset()` + `execute()` on the same instance. `reset()` fires `expired-callback` with `''`; that resolved `getToken()` and the client posted an empty `cf-turnstile-response`. Siteverify never ran. The host was also `0×0`, which Cloudflare often cannot remint.
+
+**Fix:** Mint a **new** widget per request (`remove` + `render` + `execute`). Ignore empty `expired-callback` / `error-callback` during a mint. Give the host a real 300×65 box with `visibility: hidden` (not `display: none` / 0×0). Retry `getToken` once before POSTing. Log empty-token vs siteverify mismatch server-side (never the token).
+
+**Prevent:** Do not treat `expired-callback` as a finished mint. Do not hide Turnstile with `width: 0` / `display: none`. A JSON 403 on `/api/consult` is captcha, not Gemini.
+
+---
+
 ## PIT-091 — AI Smart Card / AI-визитка copy drifts between CMS, menu, and order chrome
 
 **Tags:** `i18n`, `cms`, `solutions`, `order`, `seo`  
@@ -1729,6 +1744,7 @@ Never gate Lexical UI on `isLexicalDoc(localeAllValue)` or `lexicalToPlain` alon
 - [ ] Consultant Settings `enabled: off` must hide the AI-consultant launcher; `/api/consult/copy` is `no-store` (PIT-089)
 - [ ] Slide overlays: keep mounted closed, add the open class after paint; do not `return null` while copy loads (PIT-090)
 - [ ] Consultant + Gemini cache: do not send `cachedContent` together with `tools`; Gemini 3.x 400 is swallowed by `textStream` (PIT-093)
+- [ ] Consultant Turnstile: remint per request; do not resolve `getToken` from `reset()`/`expired-callback` empty string (PIT-094)
 - [ ] Solutions/order i18n: canonical Smart Card names + `copyHygiene`; never hardcode `| Order |` or `Get a start` (PIT-091)
 - [ ] Order Lexical includes: merge per-locale rich text when `locale: 'all'` is an empty shell; keep static `includes` on solution plans (PIT-092)
 

@@ -161,6 +161,8 @@ export default function ConsultantWidget({
 
   const resolveToken = useCallback(async () => {
     if (getTurnstileToken) return getTurnstileToken()
+    const first = await getToken()
+    if (first) return first
     return getToken()
   }, [getTurnstileToken, getToken])
 

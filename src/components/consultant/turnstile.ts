@@ -6,9 +6,9 @@ import { useCallback, useEffect, useRef } from 'react'
  * Invisible Turnstile for the chat.
  *
  * A visible challenge per chat message would be unusable, and tokens are
- * single-use — so the widget keeps one managed instance in `execute` mode and
- * mints a fresh token per request. Hosts that already own a token source can
- * pass `getTurnstileToken` instead and skip this entirely.
+ * single-use — so each mint is a fresh widget. `reset()` on a solved widget
+ * fires `expired-callback` with an empty string; treating that as the token
+ * sent `POST /api/consult` 403 and the unavailable notice (PIT-094).
  */
 
 const SCRIPT_ID = 'cf-turnstile-consult'
@@ -22,6 +22,10 @@ function loadScript(): Promise<void> {
   const existing = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null
   if (existing) {
     return new Promise((resolve, reject) => {
+      if (window.turnstile) {
+        resolve()
+        return
+      }
       existing.addEventListener('load', () => resolve(), { once: true })
       existing.addEventListener('error', () => reject(new Error('turnstile failed')), {
         once: true,
@@ -46,7 +50,6 @@ export function useConsultTurnstile(
 ): { container: (node: HTMLDivElement | null) => void; getToken: () => Promise<string> } {
   const nodeRef = useRef<HTMLDivElement | null>(null)
   const widgetIdRef = useRef<string | null>(null)
-  const pendingRef = useRef<((token: string) => void) | null>(null)
 
   const container = useCallback((node: HTMLDivElement | null) => {
     nodeRef.current = node
@@ -77,36 +80,51 @@ export function useConsultTurnstile(
     const node = nodeRef.current
     if (!api || !node) return ''
 
-    if (widgetIdRef.current === null) {
-      widgetIdRef.current = api.render(node, {
-        sitekey: siteKey,
-        action: 'consult',
-        appearance: 'execute',
-        size: 'invisible',
-        language: locale,
-        callback: (token) => pendingRef.current?.(token),
-        'expired-callback': () => pendingRef.current?.(''),
-        'error-callback': () => pendingRef.current?.(''),
-      })
+    if (widgetIdRef.current !== null) {
+      try {
+        api.remove(widgetIdRef.current)
+      } catch {
+        /* already gone */
+      }
+      widgetIdRef.current = null
+      node.replaceChildren()
     }
 
-    const widgetId = widgetIdRef.current
     return new Promise<string>((resolve) => {
       let settled = false
       const finish = (token: string) => {
         if (settled) return
         settled = true
-        pendingRef.current = null
         resolve(token)
       }
-      pendingRef.current = finish
-      // A stuck challenge must not freeze the composer; the server still has
-      // IP limits and the anonymous quota.
-      setTimeout(() => finish(''), EXECUTE_TIMEOUT_MS)
+
+      const timer = window.setTimeout(() => finish(''), EXECUTE_TIMEOUT_MS)
+
       try {
-        api.reset(widgetId)
+        widgetIdRef.current = api.render(node, {
+          sitekey: siteKey,
+          action: 'consult',
+          appearance: 'execute',
+          size: 'invisible',
+          language: locale,
+          callback: (token) => {
+            if (!token) return
+            window.clearTimeout(timer)
+            finish(token)
+          },
+          // `reset()` / expiry must not resolve an in-flight mint with ''.
+          'expired-callback': () => undefined,
+          'error-callback': () => undefined,
+        })
+        const widgetId = widgetIdRef.current
+        if (!widgetId) {
+          window.clearTimeout(timer)
+          finish('')
+          return
+        }
         api.execute(widgetId, { action: 'consult' })
       } catch {
+        window.clearTimeout(timer)
         finish('')
       }
     })
