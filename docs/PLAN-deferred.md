@@ -17,7 +17,7 @@
 | low | Leftover ~4 Blob URL mentions in HTML | Rewrite/cache already mostly on R2 |
 | low | `AGENT_REQUIRE_HMAC=1` | Only after n8n signs bodies |
 | medium | Drop consultant OTP after auth | Chat email verification is a stopgap: set `CONSULT_EMAIL_OTP=0`, delete `/api/consult/request-otp` + `verify-otp` and `src/lib/consultant/otp.ts`, drop the anonymous-quota cookie |
-| medium | Consultant wizard / intent router (v2) | **Not now.** Wizard + grounded facts + engineer in the same thread. See § Consultant v2 below. Do not swap to a smarter model first. |
+| medium | Consultant wizard / intent router (v2) | **Not now.** Dynamic chips + intent router + engineer in the same thread. How-we-work card and reply-language detection are already in v1. See § Consultant v2 below. |
 | low | Purge `consult-sessions` older than 12 months | Retention promised on `/privacy` is manual today; add a cron |
 | later | CF-only UFW 80/443 | Needs orange cloud + Origin Cert for n8n/agent-api |
 | later | ISR remaining frontend pages | services/order/audit still use `getRequestPrefs` / dynamic params (PIT-056) |
@@ -25,16 +25,15 @@
 
 ## Consultant v2 (wizard + grounded facts)
 
-Канон v1: [`docs/architecture/gemini-consultant.md`](architecture/gemini-consultant.md). Сейчас: свободный чат, вся CMS-KB в system prompt, статичные 5 chips, чеклист ТЗ в контексте **всегда**. Extra knowledge в админке уже есть (Consultant Settings) — не путать с этим бэклогом. Техвопрос уходит письмом (`escalate_tech`); инженер в виджет **не** заходит.
+Канон v1: [`docs/architecture/gemini-consultant.md`](architecture/gemini-consultant.md). Сейчас: свободный чат, вся CMS-KB в system prompt, статичные 5 chips, чеклист ТЗ только для кастома. Extra knowledge и карточка **How we work** уже в v1. Язык ответа — по сообщению, не только по локали сайта. Техвопрос уходит письмом (`escalate_tech`); инженер в виджет **не** заходит.
 
 Порядок, когда вернёмся (не делать раньше, чем чат станет основным входом или вранье начнёт стоить сделок):
 
-1. Карточка процесса сотрудничества в KB + в prompt: intent `collaboration_process` **не** спрашивает тип сайта.
-2. Дерево 5–7 шагов; chips шлют `chip_id`, не свободный текст. Динамические 2–4 chips после ответа.
-3. Intent router (правила / enum) → шаблон из CMS без LLM на пакеты, цены, процесс (~80% ходов).
-4. Постобработка: ₪ / имя пакета сверить с whitelist; иначе rewrite / handoff.
-5. Лог `вопрос → intent → источник факта`. Укоротить prompt (1–2 факта); prefix-cache Gemini — только после PIT-093 (tools внутри cache).
-6. Инженер в ту же ленту: `handoff: queued | human`, пузыри `role: engineer`, флаг `features.humanJoin`. Контракт уже в типах/сессии; в v1 клиент ждёт ответ по email.
+1. Дерево 5–7 шагов; chips шлют `chip_id`, не свободный текст. Динамические 2–4 chips после ответа.
+2. Intent router (правила / enum) → шаблон из CMS без LLM на пакеты, цены, процесс (~80% ходов).
+3. Постобработка: ₪ / имя пакета сверить с whitelist; иначе rewrite / handoff.
+4. Лог `вопрос → intent → источник факта`. Укоротить prompt (1–2 факта); prefix-cache Gemini — только после PIT-093 (tools внутри cache).
+5. Инженер в ту же ленту: `handoff: queued | human`, пузыри `role: engineer`, флаг `features.humanJoin`. Контракт уже в типах/сессии; в v1 клиент ждёт ответ по email.
 
 Не делать: кормить модель всем сайтом без дерева; «архитектор 24/7» без handoff; ждать, что RAG сам уберёт путаницу.
 
@@ -52,3 +51,4 @@
 - [x] DMARC `p=quarantine` + `rua=mailto:order@erythro.ai` (2026-09-06)
 - [x] DMARC `p=reject` after clean Google aggregate reports (2026-09-18)
 - [x] Cloudflare Access `/admin*`: empty subdomain + Allow email → `/admin` 302 to Cloudflare Access (2026-09-06)
+- [x] Consultant: How we work card + reply language from last user message (PIT-097)
