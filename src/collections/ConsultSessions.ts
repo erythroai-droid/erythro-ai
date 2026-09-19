@@ -14,7 +14,7 @@ export const ConsultSessions: CollectionConfig = {
   admin: {
     group: 'Consultant',
     useAsTitle: 'email',
-    defaultColumns: ['email', 'phone', 'locale', 'handoff', 'identifiedAt'],
+    defaultColumns: ['email', 'phone', 'locale', 'messages', 'handoff', 'identifiedAt'],
     listSearchableFields: ['email', 'phone'],
     description:
       'Stored chat transcripts. Only conversations that reached a custom project brief (verified email + phone) are here.',
@@ -48,6 +48,10 @@ export const ConsultSessions: CollectionConfig = {
         readOnly: true,
         description:
           'Transcript as an array of { role, parts }. Parts — not plain strings — so voice and attachments can be added later without a migration.',
+        components: {
+          Field: '/components/admin/ConsultTranscriptField#ConsultTranscriptField',
+          Cell: '/components/admin/ConsultTranscriptField#ConsultTranscriptCell',
+        },
       },
     },
     {

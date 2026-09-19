@@ -1,4 +1,4 @@
-# Deferred follow-ups (updated 2026-09-18)
+# Deferred follow-ups (updated 2026-09-19)
 
 Напомнить в следующем сеансе, когда пользователь спросит про безопасность / perf / R2 / admin.
 
@@ -17,7 +17,7 @@
 | low | Leftover ~4 Blob URL mentions in HTML | Rewrite/cache already mostly on R2 |
 | low | `AGENT_REQUIRE_HMAC=1` | Only after n8n signs bodies |
 | medium | Drop consultant OTP after auth | Chat email verification is a stopgap: set `CONSULT_EMAIL_OTP=0`, delete `/api/consult/request-otp` + `verify-otp` and `src/lib/consultant/otp.ts`, drop the anonymous-quota cookie |
-| medium | Consultant wizard / intent router (v2) | **Not now.** Free-form Gemini + full KB in prompt jumps to «какой сайт» on «сотрудничество». See § Consultant v2 below. Do not swap to a smarter model first. |
+| medium | Consultant wizard / intent router (v2) | **Not now.** Wizard + grounded facts + engineer in the same thread. See § Consultant v2 below. Do not swap to a smarter model first. |
 | low | Purge `consult-sessions` older than 12 months | Retention promised on `/privacy` is manual today; add a cron |
 | later | CF-only UFW 80/443 | Needs orange cloud + Origin Cert for n8n/agent-api |
 | later | ISR remaining frontend pages | services/order/audit still use `getRequestPrefs` / dynamic params (PIT-056) |
@@ -25,7 +25,7 @@
 
 ## Consultant v2 (wizard + grounded facts)
 
-Канон v1: [`docs/architecture/gemini-consultant.md`](architecture/gemini-consultant.md). Сейчас: свободный чат, вся CMS-KB в system prompt, статичные 5 chips, чеклист ТЗ в контексте **всегда**. Extra knowledge в админке уже есть (Consultant Settings) — не путать с этим бэклогом.
+Канон v1: [`docs/architecture/gemini-consultant.md`](architecture/gemini-consultant.md). Сейчас: свободный чат, вся CMS-KB в system prompt, статичные 5 chips, чеклист ТЗ в контексте **всегда**. Extra knowledge в админке уже есть (Consultant Settings) — не путать с этим бэклогом. Техвопрос уходит письмом (`escalate_tech`); инженер в виджет **не** заходит.
 
 Порядок, когда вернёмся (не делать раньше, чем чат станет основным входом или вранье начнёт стоить сделок):
 
@@ -34,8 +34,9 @@
 3. Intent router (правила / enum) → шаблон из CMS без LLM на пакеты, цены, процесс (~80% ходов).
 4. Постобработка: ₪ / имя пакета сверить с whitelist; иначе rewrite / handoff.
 5. Лог `вопрос → intent → источник факта`. Укоротить prompt (1–2 факта); prefix-cache Gemini — только после PIT-093 (tools внутри cache).
+6. Инженер в ту же ленту: `handoff: queued | human`, пузыри `role: engineer`, флаг `features.humanJoin`. Контракт уже в типах/сессии; в v1 клиент ждёт ответ по email.
 
-Не делать: кормить модель всем сайтом без дерева; «архитектор 24/7»; ждать, что RAG сам уберёт путаницу.
+Не делать: кормить модель всем сайтом без дерева; «архитектор 24/7» без handoff; ждать, что RAG сам уберёт путаницу.
 
 ## Done
 

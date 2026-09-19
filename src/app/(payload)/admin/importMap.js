@@ -33,6 +33,8 @@ import { CompactTextCell as CompactTextCell_6c75be75af3d474a9a4458997fd0b0d8 } f
 import { SourceBadgeCell as SourceBadgeCell_3472cf698bdf4ced58b0213a911dc07d } from '../../../components/admin/SourceBadgeCell'
 import { AuditStatusCell as AuditStatusCell_90598d21a356610c87f8c97a143ebe3d } from '../../../components/admin/AuditStatusCell'
 import { CompactNumberCell as CompactNumberCell_2b4ba1512b08e2926a6b0339bba30411 } from '../../../components/admin/CompactNumberCell'
+import { ConsultTranscriptField as ConsultTranscriptField_9c3e1a7b2d4f6a8c0e1b3d5f7a9c1e3b } from '../../../components/admin/ConsultTranscriptField'
+import { ConsultTranscriptCell as ConsultTranscriptCell_9c3e1a7b2d4f6a8c0e1b3d5f7a9c1e3b } from '../../../components/admin/ConsultTranscriptField'
 import { SiteEmailSelect as SiteEmailSelect_30db27f8d892d48b69f8e5b1c40f89db } from '../../../components/admin/SiteEmailSelect'
 import { ThemeToggle as ThemeToggle_fc85bd5ac375c29cf24795ab8778bf43 } from '../../../components/admin/ThemeToggle'
 import { SubmissionSourcesNavLinks as SubmissionSourcesNavLinks_5c33d830c42ef071fd813d575880d20e } from '../../../components/admin/SubmissionSourcesNavLinks'
@@ -80,6 +82,8 @@ export const importMap = {
   "/components/admin/SourceBadgeCell#SourceBadgeCell": SourceBadgeCell_3472cf698bdf4ced58b0213a911dc07d,
   "/components/admin/AuditStatusCell#AuditStatusCell": AuditStatusCell_90598d21a356610c87f8c97a143ebe3d,
   "/components/admin/CompactNumberCell#CompactNumberCell": CompactNumberCell_2b4ba1512b08e2926a6b0339bba30411,
+  "/components/admin/ConsultTranscriptField#ConsultTranscriptField": ConsultTranscriptField_9c3e1a7b2d4f6a8c0e1b3d5f7a9c1e3b,
+  "/components/admin/ConsultTranscriptField#ConsultTranscriptCell": ConsultTranscriptCell_9c3e1a7b2d4f6a8c0e1b3d5f7a9c1e3b,
   "/components/admin/SiteEmailSelect#SiteEmailSelect": SiteEmailSelect_30db27f8d892d48b69f8e5b1c40f89db,
   "/components/admin/ThemeToggle#ThemeToggle": ThemeToggle_fc85bd5ac375c29cf24795ab8778bf43,
   "/components/admin/SubmissionSourcesNavLinks#SubmissionSourcesNavLinks": SubmissionSourcesNavLinks_5c33d830c42ef071fd813d575880d20e,
