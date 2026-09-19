@@ -1696,7 +1696,7 @@ Do not put visitor transcripts behind Payload's JSON/Monaco editor. Chat-shaped 
 
 **Cause:** System prompt was `Reply in ${siteLocale} only`. Live CMS KB had no How we work card; the brief checklist sat in every turn, so collaboration leaked into "what kind of site".
 
-**Fix:** `detectReplyLocale` reads the last user message (Hebrew / Cyrillic / long Latin) and loads KB + rules in that locale. Assembler injects `howWeWorkMarkdown`. Prompt intent `collaboration_process` must not start the checklist.
+**Fix:** `detectReplyLocale` reads the last user message (Hebrew / Cyrillic / Latin) and loads KB + rules in that locale. Latin ≥ 2 with no Cyrillic/Hebrew is English — do not require 12 letters (RU UI + “How we work?” used to stay Russian). Assembler injects `howWeWorkMarkdown`. Prompt intent `collaboration_process` must not start the checklist.
 
 **Prevent:**
 Do not lock Gemini to the widget chrome locale. Do not keep the ТЗ checklist in-scope for process/FAQ turns. Contacts SLA ("one business day") belongs in How we work, not only on `/contacts`.
