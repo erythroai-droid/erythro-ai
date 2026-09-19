@@ -106,7 +106,7 @@ Pipeline живёт в Docker на VPS (`proxy_network` + Caddy, host-порт *
 
 ## 7. Данные
 
-- `consult-sessions` — только после OTP + телефона + предупреждения. `messages` хранится как **parts** (не строка), есть `handoff` (`bot` в v1). Срок 12 месяцев.
+- `consult-sessions` — только после OTP + телефона + предупреждения. `messages` хранится как **parts** (не строка), есть `handoff` (`bot` в v1). Срок 12 месяцев. В админке лента — кастомный Field, не Monaco (PIT-096).
 - `project-briefs` — `TZ-{id}`, письмо только на `order@` (копию клиенту не слать), `crmStatus`.
 - `tech-consult-tickets` — `TC-{id}`, ответ клиенту **только email**, треда в виджете нет.
 - В ТЗ и письмах запрещены вложения и любые URL.
@@ -120,6 +120,6 @@ Pipeline живёт в Docker на VPS (`proxy_network` + Caddy, host-порт *
 
 ## 9. Расширение (не v1)
 
-Контракт заложен, фичи выключены: голос (STT/TTS), вложения (R2/CRM, не в ТЗ), вход инженера в ту же ленту (`handoff: bot | queued | human`).
+Контракт заложен, фичи выключены: голос (STT/TTS), вложения (R2/CRM, не в ТЗ).
 
-Wizard / intent router / шаблоны без LLM — отложено: [`PLAN-deferred.md`](../PLAN-deferred.md) § Consultant v2. Extra knowledge в админке уже в v1.
+Wizard / intent router / шаблоны без LLM / вход инженера в ту же ленту (`handoff`, `role: engineer`) — отложено: [`PLAN-deferred.md`](../PLAN-deferred.md) § Consultant v2. Extra knowledge в админке уже в v1.

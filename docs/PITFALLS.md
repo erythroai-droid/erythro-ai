@@ -1673,6 +1673,20 @@ Do not treat CMS strings as already-localized because EN looks fine. After renam
 **Prevent:**
 Never gate Lexical UI on `isLexicalDoc(localeAllValue)` or `lexicalToPlain` alone. After changing an `unstable_cache` key with `revalidate: false`, confirm the first fill is not an empty Lexical shell. Keep a static `includes` fallback on solution plans.
 
+## PIT-096 — Consult Sessions Messages spinner / empty JSON editor
+
+**Tags:** `cms`, `admin`, `consultant`, `csp`  
+**Seen:** 2026-09-19 — Payload admin `consult-sessions` edit view, Messages field.
+
+**Symptom:** Messages never appear (Monaco spinner or blank). Email / phone / locale on the same document load.
+
+**Cause:** `type: 'json'` mounts `@monaco-editor/react`, which loads the editor from `cdn.jsdelivr.net`. Admin CSP `script-src` does not allow that host, so the JSON field never hydrates. A chat transcript is also unreadable as a code editor.
+
+**Fix:** Custom Field/Cell `ConsultTranscriptField` reads `messages` from form/document state and renders the `{ role, parts }` array. Do not open Monaco for this field. `pnpm generate:importmap` after changing the admin component path.
+
+**Prevent:**
+Do not put visitor transcripts behind Payload's JSON/Monaco editor. Chat-shaped jsonb stays `type: 'json'` in the database; admin UI is a custom client Field. If another JSON field (e.g. `auditSummary`) also spins, either give it a custom viewer or allow the Monaco CDN in admin CSP — do not weaken public CSP.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1763,4 +1777,5 @@ Never gate Lexical UI on `isLexicalDoc(localeAllValue)` or `lexicalToPlain` alon
 - [ ] Home Solutions jump: pin `start`, not `/#solutions` hash; wait overlay unlock (PIT-095)
 - [ ] Solutions/order i18n: canonical Smart Card names + `copyHygiene`; never hardcode `| Order |` or `Get a start` (PIT-091)
 - [ ] Order Lexical includes: merge per-locale rich text when `locale: 'all'` is an empty shell; keep static `includes` on solution plans (PIT-092)
+- [ ] Consult Sessions transcript: custom Field/Cell, not Payload JSON/Monaco (PIT-096)
 
