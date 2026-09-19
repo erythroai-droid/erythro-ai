@@ -100,6 +100,7 @@ export {
 } from './sanitize'
 
 export { buildSystemPrompt } from './prompt'
+export { detectReplyLocale } from './replyLocale'
 
 export type {
   BriefSlot,

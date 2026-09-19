@@ -3,6 +3,7 @@ import { jsonSchema, stepCountIs, streamText, tool, type ModelMessage } from 'ai
 
 import { consultModel, geminiApiKey } from './config'
 import { buildSystemPrompt } from './prompt'
+import { detectReplyLocale } from './replyLocale'
 import { sanitizeBriefMarkdown, sanitizeText, stripUrls } from './sanitize'
 import { createConsultStream, CONSULT_STREAM_HEADERS } from './stream'
 import type {
@@ -55,7 +56,8 @@ function refuse(reason: string) {
 
 export function createConsultHandler(deps: ConsultHandlerDeps) {
   const respond = async (input: ConsultRespondInput): Promise<Response> => {
-    const { locale, messages, otpEnabled } = input
+    const { messages, otpEnabled } = input
+    const locale = detectReplyLocale(messages, input.locale)
     const apiKey = geminiApiKey()
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'consultant_unconfigured' }), {

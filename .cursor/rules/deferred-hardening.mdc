@@ -16,7 +16,7 @@ When the user asks about next steps, security, admin protection, performance, R2
 5. `AGENT_REQUIRE_HMAC=1` only after n8n signs bodies
 6. CF-only UFW after n8n/agent-api are Proxied + Origin Cert
 7. ISR remaining frontend pages (services/order/audit still use `getRequestPrefs`); optional `media.erythro.ai`
-8. Consultant wizard / intent router (v2) — not now; see `PLAN-deferred.md` § Consultant v2. Extra knowledge in admin is already in v1. Engineer join is v2, not live.
+8. Consultant wizard / intent router (v2) — not now; see `PLAN-deferred.md` § Consultant v2. Extra knowledge and How we work are already in v1. Engineer join is v2, not live.
 
 Already done: Cloudflare Access `/admin*` (302 to Access login), R2 media cutover on site, UFW baseline + Docker :8080 DROP, audit SSRF/HMAC-ready worker, home + `/portfolio` force-static ISR (no cookies in layout/not-found, middleware without Set-Cookie, `getPayloadLocal`), hero LCP/CLS mitigations (PIT-057), DMARC `p=quarantine` (2026-09-06) then `p=reject` (2026-09-18).
 

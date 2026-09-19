@@ -20,6 +20,7 @@ import { unstable_cache } from 'next/cache'
 import { lexicalToPlain } from './lexical'
 import { SITE_CONTENT_TAG } from './revalidate'
 import type { BriefSlot, ConsultantKnowledge, ConsultantRules, ConsultLocale } from './consultant'
+import { howWeWorkMarkdown } from './consultant/howWeWork'
 
 const CURRENCY_SYMBOL: Record<string, string> = { ILS: '₪', USD: '$', EUR: '€' }
 
@@ -182,6 +183,7 @@ export async function assembleConsultantKnowledge(
       '# Erythro.ai — consultant knowledge base (live CMS)',
       'Prices below are the current CMS values. Present them as a guideline, not an offer.',
       contacts.length ? `## Company\n${contacts.join('\n')}` : '',
+      howWeWorkMarkdown(locale),
       extraNotes
         ? `## Notes not published on the site\nThese facts are editor-authored and are not on the public website. Quote them when asked.\n${extraNotes}`
         : '',
@@ -215,7 +217,7 @@ export function getCachedConsultantKnowledge(
 ): Promise<ConsultantKnowledge> {
   return unstable_cache(
     () => assembleConsultantKnowledge(locale),
-    ['consultant-knowledge-v2', locale],
+    ['consultant-knowledge-v3', locale],
     { tags: [SITE_CONTENT_TAG] },
   )()
 }

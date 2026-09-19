@@ -15,7 +15,11 @@
 
 Цены и пакеты **не** брать из `src/translations` / `src/lib/servicePages.ts` — production CMS их перебивает.
 
+Язык ответа — по **последнему сообщению посетителя** (иврит / кириллица / длинная латиница), не только по локали шапки сайта. KB и правила подтягиваются на этот язык.
+
 Факты, которых нет на сайте (план возврата, внутренний процесс, партнёрские условия), пишутся вручную в **Consultant Settings → Extra knowledge**. Локализуется en/ru/he, попадает в KB чата как секция «Notes not published on the site», на публичные страницы не выводится. Пакетные цены по-прежнему из Solutions / Services / Audit.
+
+Секция **How we work** всегда вставляется в KB (процесс, «один рабочий день», чат не принимает оплату). Вопрос про сотрудничество **не** запускает чеклист ТЗ.
 
 ## 2. Три режима чата
 
@@ -122,4 +126,4 @@ Pipeline живёт в Docker на VPS (`proxy_network` + Caddy, host-порт *
 
 Контракт заложен, фичи выключены: голос (STT/TTS), вложения (R2/CRM, не в ТЗ).
 
-Wizard / intent router / шаблоны без LLM / вход инженера в ту же ленту (`handoff`, `role: engineer`) — отложено: [`PLAN-deferred.md`](../PLAN-deferred.md) § Consultant v2. Extra knowledge в админке уже в v1.
+Wizard / intent router / шаблоны без LLM / вход инженера в ту же ленту (`handoff`, `role: engineer`) — отложено: [`PLAN-deferred.md`](../PLAN-deferred.md) § Consultant v2. Extra knowledge и карточка How we work уже в v1.

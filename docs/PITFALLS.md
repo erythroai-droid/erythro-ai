@@ -1687,6 +1687,20 @@ Never gate Lexical UI on `isLexicalDoc(localeAllValue)` or `lexicalToPlain` alon
 **Prevent:**
 Do not put visitor transcripts behind Payload's JSON/Monaco editor. Chat-shaped jsonb stays `type: 'json'` in the database; admin UI is a custom client Field. If another JSON field (e.g. `auditSummary`) also spins, either give it a custom viewer or allow the Monaco CDN in admin CSP — do not weaken public CSP.
 
+## PIT-097 — Consultant replies in site locale, not the visitor's language
+
+**Tags:** `consultant`, `i18n`, `prompt`  
+**Seen:** 2026-09-19 — EN chrome on erythro.ai; Russian questions answered in English. «Сотрудничество» stayed generic (brief/roadmap) and skipped the Contacts SLA.
+
+**Symptom:** Greeting and chips follow the page locale. Typed RU/HE is answered in that chrome language. "How do we work" does not mention one business day, contract/payment boundary, or refuse the brief checklist.
+
+**Cause:** System prompt was `Reply in ${siteLocale} only`. Live CMS KB had no How we work card; the brief checklist sat in every turn, so collaboration leaked into "what kind of site".
+
+**Fix:** `detectReplyLocale` reads the last user message (Hebrew / Cyrillic / long Latin) and loads KB + rules in that locale. Assembler injects `howWeWorkMarkdown`. Prompt intent `collaboration_process` must not start the checklist.
+
+**Prevent:**
+Do not lock Gemini to the widget chrome locale. Do not keep the ТЗ checklist in-scope for process/FAQ turns. Contacts SLA ("one business day") belongs in How we work, not only on `/contacts`.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1778,4 +1792,5 @@ Do not put visitor transcripts behind Payload's JSON/Monaco editor. Chat-shaped 
 - [ ] Solutions/order i18n: canonical Smart Card names + `copyHygiene`; never hardcode `| Order |` or `Get a start` (PIT-091)
 - [ ] Order Lexical includes: merge per-locale rich text when `locale: 'all'` is an empty shell; keep static `includes` on solution plans (PIT-092)
 - [ ] Consult Sessions transcript: custom Field/Cell, not Payload JSON/Monaco (PIT-096)
+- [ ] Consultant: reply language from last user message; How we work card; do not start ТЗ on collaboration (PIT-097)
 
