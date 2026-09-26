@@ -30,6 +30,8 @@ import * as migration_20260907_010000_audit_page_pricing_features_fk from './202
 import * as migration_20260915_010000_consultant_entities from './20260915_010000_consultant_entities'
 import * as migration_20260916_010000_contact_submissions_payment_fields from './20260916_010000_contact_submissions_payment_fields'
 import * as migration_20260918_120000_consultant_extra_knowledge from './20260918_120000_consultant_extra_knowledge'
+import * as migration_20260927_010000_page_faq_cms from './20260927_010000_page_faq_cms'
+import * as migration_20260927_020000_page_faq_seed_by_title from './20260927_020000_page_faq_seed_by_title'
 
 export const migrations = [
   {
@@ -191,5 +193,15 @@ export const migrations = [
     up: migration_20260918_120000_consultant_extra_knowledge.up,
     down: migration_20260918_120000_consultant_extra_knowledge.down,
     name: '20260918_120000_consultant_extra_knowledge',
+  },
+  {
+    up: migration_20260927_010000_page_faq_cms.up,
+    down: migration_20260927_010000_page_faq_cms.down,
+    name: '20260927_010000_page_faq_cms',
+  },
+  {
+    up: migration_20260927_020000_page_faq_seed_by_title.up,
+    down: migration_20260927_020000_page_faq_seed_by_title.down,
+    name: '20260927_020000_page_faq_seed_by_title',
   },
 ]

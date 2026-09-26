@@ -1,3 +1,5 @@
+import type { PageFaqBlock } from '@/lib/pageFaq'
+
 export type LocaleMap = Record<string, string>
 export type LocaleListMap = Record<string, string[]>
 export type ServiceCurrency = 'USD' | 'ILS' | 'EUR'
@@ -26,6 +28,8 @@ export interface ServicePage {
   currency?: ServiceCurrency
   seoTitle?: LocaleMap
   seoDescription?: LocaleMap
+  /** Accordion on the service page. CMS when filled, otherwise the static page FAQ. */
+  faq?: PageFaqBlock
 }
 
 export const SERVICE_ID_TO_SLUG: Record<string, string> = {

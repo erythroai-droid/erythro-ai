@@ -12,7 +12,7 @@ import {
   getOrderPlanBySlug,
 } from './cmsPages'
 import { tLocale, tLocaleList } from './servicePages'
-import { formatPageFaqMarkdown } from './pageFaq'
+import { formatPageFaqBlock, formatPageFaqMarkdown } from './pageFaq'
 
 export { shouldServeMarkdown } from './markdownAccept'
 
@@ -517,7 +517,10 @@ async function generateServiceDetailMarkdown(
     }
   }
 
-  const faqMarkdown = formatPageFaqMarkdown(service.slug, locale)
+  const faqBlock = service.faq
+  const faqMarkdown = faqBlock
+    ? formatPageFaqBlock(faqBlock, locale)
+    : formatPageFaqMarkdown(service.slug, locale)
   if (faqMarkdown) {
     lines.push(faqMarkdown.trimEnd())
     lines.push('')

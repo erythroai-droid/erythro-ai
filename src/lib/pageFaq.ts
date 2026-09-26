@@ -357,14 +357,75 @@ const PAGE_FAQ: Record<string, PageFaqBlock> = {
 
 PAGE_FAQ['enterprise-engineering'] = PAGE_FAQ.management
 
+export function listPageFaqEntries(): Array<[string, PageFaqBlock]> {
+  return Object.entries(PAGE_FAQ)
+}
+
 export function getPageFaq(key: string): PageFaqBlock | undefined {
   return PAGE_FAQ[key]
 }
 
-export function formatPageFaqMarkdown(key: string, locale: string): string {
-  const block = getPageFaq(key)
-  if (!block) return ''
+const FAQ_LOCALES = ['en', 'ru', 'he'] as const
 
+function asLocaleMap(value: unknown, fallback: LocaleMap): LocaleMap {
+  const out: LocaleMap = { ...fallback }
+  if (typeof value === 'string' && value.trim()) {
+    out.en = value.trim()
+    return out
+  }
+  if (value && typeof value === 'object') {
+    const rec = value as Record<string, unknown>
+    for (const locale of FAQ_LOCALES) {
+      const text = rec[locale]
+      if (typeof text === 'string' && text.trim()) out[locale] = text.trim()
+    }
+  }
+  return out
+}
+
+function asDetailLines(value: unknown): Record<string, string[]> | undefined {
+  const map = asLocaleMap(value, { en: '', ru: '', he: '' })
+  const out: Record<string, string[]> = { en: [], ru: [], he: [] }
+  let any = false
+  for (const locale of FAQ_LOCALES) {
+    out[locale] = map[locale]
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+    if (out[locale].length) any = true
+  }
+  return any ? out : undefined
+}
+
+/** CMS group (`faq.title` + `faq.items`) with a static fallback when the admin list is empty. */
+export function pageFaqFromCms(raw: unknown, fallback?: PageFaqBlock): PageFaqBlock | undefined {
+  if (!raw || typeof raw !== 'object') return fallback
+  const group = raw as { title?: unknown; items?: unknown }
+  if (!Array.isArray(group.items) || group.items.length === 0) return fallback
+
+  const items: PageFaqItem[] = []
+  for (const row of group.items) {
+    if (!row || typeof row !== 'object') continue
+    const item = row as { question?: unknown; answer?: unknown; details?: unknown }
+    const question = asLocaleMap(item.question, { en: '' })
+    const answer = asLocaleMap(item.answer, { en: '' })
+    if (!question.en && !question.ru && !question.he) continue
+    const details = asDetailLines(item.details)
+    items.push({
+      question,
+      answer,
+      ...(details ? { details } : {}),
+    })
+  }
+
+  if (!items.length) return fallback
+  return {
+    title: asLocaleMap(group.title, fallback?.title || TITLE),
+    items,
+  }
+}
+
+export function formatPageFaqBlock(block: PageFaqBlock, locale: string): string {
   const lines = [`## ${tLocale(block.title, locale)}`, '']
   for (const item of block.items) {
     lines.push(`### ${tLocale(item.question, locale)}`)
@@ -377,4 +438,10 @@ export function formatPageFaqMarkdown(key: string, locale: string): string {
     lines.push('')
   }
   return lines.join('\n')
+}
+
+export function formatPageFaqMarkdown(key: string, locale: string): string {
+  const block = getPageFaq(key)
+  if (!block) return ''
+  return formatPageFaqBlock(block, locale)
 }

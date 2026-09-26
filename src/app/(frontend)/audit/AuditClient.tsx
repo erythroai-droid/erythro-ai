@@ -36,6 +36,7 @@ export default function AuditClient({
   auditPageContent,
 }: AuditClientProps) {
   const a11yTranslations = content.accessibility
+  const auditFaq = auditPageContent.faq ?? AUDIT_FAQ
   const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
@@ -67,11 +68,11 @@ export default function AuditClient({
   const a11yTargets = useMemo(
     () => [
       { id: 'audit-page', label: pickA11y(a11yTranslations.screenReaderDetails) },
-      ...(AUDIT_FAQ ? [{ id: 'page-faq', label: tLocale(AUDIT_FAQ.title, locale) }] : []),
+      ...(auditFaq ? [{ id: 'page-faq', label: tLocale(auditFaq.title, locale) }] : []),
       { id: 'contacts', label: pickA11y(a11yTranslations.screenReaderContacts) },
       { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
     ],
-    [locale],
+    [locale, auditFaq],
   )
 
   return (
@@ -100,10 +101,10 @@ export default function AuditClient({
             <AuditBody locale={locale} theme={theme} page={auditPageContent} />
           </div>
 
-          {AUDIT_FAQ ? (
+          {auditFaq ? (
             <div className="relative z-[28] -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
-              <FaqJsonLd items={AUDIT_FAQ.items} locale={locale} id={`${SITE_URL}/audit#faq`} />
-              <PageFaqSection block={AUDIT_FAQ} locale={locale} theme={theme} />
+              <FaqJsonLd items={auditFaq.items} locale={locale} id={`${SITE_URL}/audit#faq`} />
+              <PageFaqSection block={auditFaq} locale={locale} theme={theme} />
             </div>
           ) : null}
 

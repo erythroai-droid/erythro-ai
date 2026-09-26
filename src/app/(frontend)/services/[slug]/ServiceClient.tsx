@@ -30,7 +30,7 @@ interface ServiceClientProps {
 
 export default function ServiceClient({ initialLocale, initialTheme, content, service }: ServiceClientProps) {
   const a11yTranslations = content.accessibility
-  const pageFaq = getPageFaq(service.slug)
+  const pageFaq = service.faq ?? getPageFaq(service.slug)
   const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 

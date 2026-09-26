@@ -20,7 +20,7 @@ export default function PageFaqSection({ block, locale, theme = 'dark' }: PageFa
       id="page-faq"
       aria-labelledby="page-faq-title"
       data-menu-contrast={isLight ? 'light' : 'dark'}
-      className={`relative z-10 w-full shadow-[0_-12px_30px_rgba(0,0,0,0.28)] ${
+      className={`relative z-[28] w-full shadow-[0_-12px_30px_rgba(0,0,0,0.28)] ${
         isLight ? 'bg-gold-100 text-coal-900' : 'dark-gradient-bg text-white'
       }`}
     >
