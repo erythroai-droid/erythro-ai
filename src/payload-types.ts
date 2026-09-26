@@ -766,6 +766,22 @@ export interface ContactSubmission {
    */
   auditLanguage?: ('en' | 'ru' | 'he') | null;
   /**
+   * Payment status from PayPlus gateway
+   */
+  paymentStatus?: ('none' | 'pending' | 'paid' | 'failed' | 'refunded') | null;
+  /**
+   * PayPlus transaction UID
+   */
+  paymentTransactionId?: string | null;
+  /**
+   * Payment gateway provider
+   */
+  paymentProvider?: 'payplus' | null;
+  /**
+   * Payment amount in ILS
+   */
+  paymentAmount?: number | null;
+  /**
    * Pipeline: new → in_progress → report_sent; failed after max retries (manual review)
    */
   auditStatus?: ('new' | 'in_progress' | 'report_sent' | 'failed') | null;
@@ -1313,6 +1329,10 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   planTotal?: T;
   website?: T;
   auditLanguage?: T;
+  paymentStatus?: T;
+  paymentTransactionId?: T;
+  paymentProvider?: T;
+  paymentAmount?: T;
   auditStatus?: T;
   auditScore?: T;
   auditSummary?: T;

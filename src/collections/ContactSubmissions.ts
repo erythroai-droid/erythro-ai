@@ -180,6 +180,58 @@ export const ContactSubmissions: CollectionConfig = {
           ],
         },
         {
+          label: 'Payment',
+          fields: [
+            {
+              name: 'paymentStatus',
+              type: 'select',
+              defaultValue: 'none',
+              options: [
+                { label: 'None', value: 'none' },
+                { label: 'Pending', value: 'pending' },
+                { label: 'Paid', value: 'paid' },
+                { label: 'Failed', value: 'failed' },
+                { label: 'Refunded', value: 'refunded' },
+              ],
+              admin: {
+                description: 'Payment status from PayPlus gateway',
+                condition: orderOrAudit,
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'paymentTransactionId',
+              type: 'text',
+              admin: {
+                description: 'PayPlus transaction UID',
+                condition: orderOrAudit,
+                readOnly: true,
+              },
+            },
+            {
+              name: 'paymentProvider',
+              type: 'select',
+              options: [
+                { label: 'PayPlus', value: 'payplus' },
+              ],
+              admin: {
+                description: 'Payment gateway provider',
+                condition: orderOrAudit,
+                readOnly: true,
+              },
+            },
+            {
+              name: 'paymentAmount',
+              type: 'number',
+              admin: {
+                description: 'Payment amount in ILS',
+                condition: orderOrAudit,
+                readOnly: true,
+              },
+            },
+          ],
+        },
+        {
           label: 'Audit pipeline',
           fields: [
             {

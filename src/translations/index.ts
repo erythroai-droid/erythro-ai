@@ -869,6 +869,11 @@ export const contactForm = {
     ru: 'Не удалось отправить. Попробуйте ещё раз.',
     he: 'אירעה שגיאה. אנא נסו שוב.',
   },
+  paymentUnavailable: {
+    en: 'Payment is temporarily unavailable. Please try again in a few minutes.',
+    ru: 'Оплата временно недоступна. Попробуйте ещё раз через несколько минут.',
+    he: 'התשלום אינו זמין זמנית. נסו שוב בעוד כמה דקות.',
+  },
   rateLimited: {
     en: 'Too many requests. Please wait a minute and try again.',
     ru: 'Слишком много попыток. Подождите минуту и попробуйте снова.',

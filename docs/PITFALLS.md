@@ -1715,6 +1715,20 @@ Do not lock Gemini to the widget chrome locale. Do not keep the ТЗ checklist i
 **Prevent:**
 Do not put `overflow: hidden` on the mobile audit card. `overflow: clip` keeps the rounded top without a scrollport. Do not pin the title and tabs.
 
+## PIT-099 — PayPlus callback is not the payment, and the body is nested
+
+**Tags:** `payplus`, `audit`, `webhook`, `payment`  
+**Seen:** 2026-09-26 — paid-audit checkout prepared for live keys.
+
+**Symptom:** Success page says the audit is paid as soon as the browser returns. A forged or repeated callback marks `paid` and queues the worker again. PayPlus errors fall through to an unpaid contact submission.
+
+**Cause:** `refURL_success` is only a redirect. The charge lives under `transaction.status_code` / `transaction.more_info`, not flat `status_code` on the root. PayPlus documents approval as a follow-up `PaymentPages/ipn-full` call. The old verifier trusted the POST body and treated any lookup `results.status === success` as paid.
+
+**Fix:** `handlePayPlusCallback` approves only when IPN reports code `000`, currency ILS, amount equal to `payment_amount`, and `more_info` `submission:<id>`. The `paid` update is conditional. `/order/success` shows the CMS status behind an HMAC (`PAYLOAD_SECRET`). Provider failures return `503` and stay on the order form.
+
+**Prevent:**
+Do not mark paid from the success redirect or from callback fields alone. Do not send a free-text `items.name` (PayPlus creates a catalog product per charge). Do not set `PAYPLUS_ISSUE_INVOICE` until the invoice module is on. One charge only (`payments_selected: 1`) so the IPN amount matches the order. See `docs/architecture/payplus-audit-checkout.md`.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1807,4 +1821,5 @@ Do not put `overflow: hidden` on the mobile audit card. `overflow: clip` keeps t
 - [ ] Order Lexical includes: merge per-locale rich text when `locale: 'all'` is an empty shell; keep static `includes` on solution plans (PIT-092)
 - [ ] Consult Sessions transcript: custom Field/Cell, not Payload JSON/Monaco (PIT-096)
 - [ ] Consultant: reply language from last user message; How we work card; do not start ТЗ on collaboration (PIT-097)
+- [ ] PayPlus: paid only after IPN amount + `submission:` id; success page is not proof; no unpaid fallback (PIT-099)
 

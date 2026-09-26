@@ -29,7 +29,8 @@ Last updated: 2026-09-14.
 | `docs/AI_VISIBILITY.md` | AI visibility pack (llms.txt, MCP, schema) | One chunk per `##` heading | `ai`, `seo`, `schema`, `robots` |
 | `docs/RAG_INDEX.md` | This map | Single small chunk or skip | `meta`, `rag` |
 | `docs/IMPORT_PROJECT.md` | Pointer to import tool | Skip or one chunk | `portfolio`, `cms`, `import` |
-| `docs/architecture/ai-audit-architecture.md` | AI Audit MVP (R2, worker, no payment) | One chunk per `##` | `audit`, `r2`, `n8n`, `infra` |
+| `docs/architecture/ai-audit-architecture.md` | AI Audit pipeline (R2, worker) | One chunk per `##` | `audit`, `r2`, `n8n`, `infra` |
+| `docs/architecture/payplus-audit-checkout.md` | PayPlus hosted checkout for paid audits | One chunk | `audit`, `payplus`, `payment` |
 | `docs/architecture/r2-audit-storage.md` | R2 bucket + env for audit reports | One chunk | `r2`, `audit`, `storage` |
 | `docs/architecture/audit-rate-limiting.md` | 5-day audit rate limit & IP tracking | One chunk per `##` | `audit`, `rate-limit`, `anti-spam`, `ip` |
 | `docs/infrastructure/n8n-audit-reconcile.md` | Vercel Cron + n8n backup for stuck audits | One chunk | `n8n`, `audit`, `reconcile`, `cron`, `vps` |
@@ -98,6 +99,7 @@ Rules:
 | “Email autoresponder / order@ & team@ / n8n / IMAP & SMTP Hostinger / RFC 3834 / duplicate Hostinger Autoreply / form client ack” | `docs/infrastructure/n8n-email-autoresponder.md`; `infra/n8n/workflows/email-autoresponder.json`; `PIT-037`; `PIT-038`; `PIT-040`; `PIT-044`; `src/lib/contactNotification.ts` |
 | “Audit form website check / DNS / SSRF / no n8n workflow” | `docs/architecture/ai-audit-architecture.md` §3.1; `src/lib/checkWebsite.ts`; `PIT-041` |
 | “Free audit button does nothing / check-website 200 / no /api/contact” | `PIT-067`; `src/components/audit/AuditBody.tsx`; `src/app/(frontend)/order/[slug]/OrderClient.tsx` |
+| “PayPlus / paid audit / webhook / success page” | `docs/architecture/payplus-audit-checkout.md`; `PIT-099`; `src/lib/payments/` |
 | “Funnel review / form only on contacts / modal CTA / chat widget” | `PIT-068`; `AuditCollector` agent browse + Gemini prompt; `A44ReportGenerator` funnel note |
 | “audit cron reconciliation / stuck jobs” | `docs/infrastructure/n8n-audit-reconcile.md`; `vercel.json`; `infra/n8n/workflows/audit-reconcile.json` |
 | “CSP / Cloudflare Insights / beacon.min.js / PageSpeed console” | `next.config.ts` `CONTENT_SECURITY_POLICY`; `PIT-045`; `PIT-043` |

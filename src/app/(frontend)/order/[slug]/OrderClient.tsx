@@ -23,6 +23,7 @@ import {
   calcPlanAmount,
   // calcTaxAmount, // temporarily hidden — taxes included in base price
   formatPrice,
+  parsePrice,
   isSubscriptionFeatureLabel,
   SUBSCRIPTION_ADDON_ID,
   tLocale,
@@ -1053,6 +1054,8 @@ function OrderCheckout({
           locale={locale}
           totalFormatted={money(total)}
           formCopy={formCopy}
+          periodId={periodId}
+          addonIds={selectedAddons}
         />
       )}
     </>
@@ -1109,6 +1112,8 @@ function AuditOrderModal({
   locale,
   totalFormatted,
   formCopy,
+  periodId,
+  addonIds,
 }: {
   isOpen: boolean
   onClose: () => void
@@ -1116,6 +1121,8 @@ function AuditOrderModal({
   locale: string
   totalFormatted: string
   formCopy: AuditPageContent['form']
+  periodId?: string
+  addonIds?: string[]
 }) {
   const isRtl = locale === 'he'
   const titleId = useId()
@@ -1264,6 +1271,51 @@ function AuditOrderModal({
       }
 
       posted = true
+
+      const isPaid = plan.slug !== 'audit-free' && parsePrice(plan.card.price) > 0
+
+      if (isPaid) {
+        const paymentRes = await fetch('/api/payment/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            planSlug: plan.slug,
+            periodId: periodId || '',
+            addonIds: addonIds || [],
+            name: values.name.trim(),
+            email: values.email.trim(),
+            phone: values.phone.trim(),
+            website: values.website.trim(),
+            auditLanguage: values.auditLanguage,
+            locale,
+            message: orderMessage,
+            [CONTACT_HONEYPOT_FIELD]: honeypot,
+            [TURNSTILE_TOKEN_FIELD]: turnstileToken,
+          }),
+          signal: AbortSignal.timeout(30_000),
+        })
+
+        const paymentData = (await paymentRes.json().catch(() => null)) as {
+          ok?: boolean
+          paymentUrl?: string
+          code?: string
+        } | null
+
+        if (paymentRes.ok && paymentData?.ok && paymentData.paymentUrl) {
+          window.location.href = paymentData.paymentUrl
+          return
+        }
+
+        const code = paymentData?.code
+        setSubmitError(
+          code === 'payment_unavailable' || code === 'not_payable'
+            ? tForm(contactForm.paymentUnavailable)
+            : tForm(contactForm.error),
+        )
+        setStatus('error')
+        return
+      }
+
       const res = await postContactForm({
         ...buildAuditContactPayload({
           values,
@@ -1308,6 +1360,7 @@ function AuditOrderModal({
   const isLight = false
   const pillFieldClass = formPillFieldClass(isLight)
   const fieldLabelClass = 'text-white/60'
+  const isPaidPlan = plan.slug !== 'audit-free' && parsePrice(plan.card.price) > 0
 
   const modalTitle =
     locale === 'ru'
@@ -1318,12 +1371,24 @@ function AuditOrderModal({
 
   const submitLabel =
     status === 'sending'
-      ? tForm(contactForm.sending)
-      : locale === 'ru'
-        ? 'Оформить заказ'
-        : locale === 'he'
-          ? 'שליחת הזמנה'
-          : 'Submit Order'
+      ? isPaidPlan
+        ? locale === 'ru'
+          ? 'Перенаправление...'
+          : locale === 'he'
+            ? 'מעביר לתשלום...'
+            : 'Redirecting to payment...'
+        : tForm(contactForm.sending)
+      : isPaidPlan
+        ? locale === 'ru'
+          ? 'Перейти к оплате'
+          : locale === 'he'
+            ? 'מעבר לתשלום'
+            : 'Proceed to Payment'
+        : locale === 'ru'
+          ? 'Оформить заказ'
+          : locale === 'he'
+            ? 'שליחת הזמנה'
+            : 'Submit Order'
 
   return createPortal(
     <div

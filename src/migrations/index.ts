@@ -28,6 +28,7 @@ import * as migration_20260901_010000_audit_page_cms from './20260901_010000_aud
 import * as migration_20260902_010000_contact_submissions_ip from './20260902_010000_contact_submissions_ip'
 import * as migration_20260907_010000_audit_page_pricing_features_fk from './20260907_010000_audit_page_pricing_features_fk'
 import * as migration_20260915_010000_consultant_entities from './20260915_010000_consultant_entities'
+import * as migration_20260916_010000_contact_submissions_payment_fields from './20260916_010000_contact_submissions_payment_fields'
 import * as migration_20260918_120000_consultant_extra_knowledge from './20260918_120000_consultant_extra_knowledge'
 
 export const migrations = [
@@ -180,6 +181,11 @@ export const migrations = [
     up: migration_20260915_010000_consultant_entities.up,
     down: migration_20260915_010000_consultant_entities.down,
     name: '20260915_010000_consultant_entities',
+  },
+  {
+    up: migration_20260916_010000_contact_submissions_payment_fields.up,
+    down: migration_20260916_010000_contact_submissions_payment_fields.down,
+    name: '20260916_010000_contact_submissions_payment_fields',
   },
   {
     up: migration_20260918_120000_consultant_extra_knowledge.up,
