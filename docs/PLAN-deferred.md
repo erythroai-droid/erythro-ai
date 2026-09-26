@@ -4,7 +4,7 @@
 
 **Критичных blocker сейчас нет** — cutover R2 + UFW baseline + home/portfolio ISR сделаны.
 
-**Временно открыто до платёжного терминала (2026-09-13):** `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = true` — нет 5-дневного кулдауна Free и нет IP-окна `POST /api/contact`. Turnstile / honeypot / sanitize на месте. Вернуть лимиты **после подключения платёжного терминала**: `AUDIT_SKIP_COOLDOWN=0` на Vercel **или** `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = false`.
+**Временно открыто до платёжного терминала (2026-09-13):** `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = true` — нет 5-дневного кулдауна Free и нет IP-окна `POST /api/contact`. Turnstile / honeypot / sanitize на месте. Код PayPlus готов (`docs/architecture/payplus-audit-checkout.md`). Вернуть лимиты **после того, как платный терминал реально принимает оплату**: `AUDIT_SKIP_COOLDOWN=0` на Vercel **или** `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = false`.
 
 ## Next when there is time
 
