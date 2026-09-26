@@ -1701,6 +1701,20 @@ Do not put visitor transcripts behind Payload's JSON/Monaco editor. Chat-shaped 
 **Prevent:**
 Do not lock Gemini to the widget chrome locale. Do not keep the ТЗ checklist in-scope for process/FAQ turns. Contacts SLA ("one business day") belongs in How we work, not only on `/contacts`.
 
+## PIT-098 — Mobile audit title and tabs vanish, then return on the next swipe
+
+**Tags:** `audit`, `mobile`, `overflow`, `sticky`  
+**Seen:** 2026-09-26 — `/audit` on a phone. Scrolling hid the heading and tab row; the next swipe brought them back. Repeat.
+
+**Symptom:** The block with the page title and Audit / How / Pricing tabs disappears while scrolling, then reappears on the following gesture.
+
+**Cause:** The mobile card wrapper used `overflow: hidden` (and light theme also set it on `#audit-page` via `.solution-light-bg`). That makes a scrollport. One swipe scrolls inside the clip, so the title and tabs leave the rounded box; the next swipe scrolls the page and they show up again. The fixed navbar then slices whatever is left underneath it.
+
+**Fix:** `max-lg:overflow-clip` on the audit card (clip does not scroll). `#audit-page { overflow: clip }` under 1024px. The title and tabs stay in normal flow.
+
+**Prevent:**
+Do not put `overflow: hidden` on the mobile audit card. `overflow: clip` keeps the rounded top without a scrollport. Do not pin the title and tabs.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
