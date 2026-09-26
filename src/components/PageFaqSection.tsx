@@ -24,7 +24,7 @@ export default function PageFaqSection({ block, locale, theme = 'dark' }: PageFa
         isLight ? 'bg-gold-100 text-coal-900' : 'dark-gradient-bg text-white'
       }`}
     >
-      <div className="mx-auto flex w-full max-w-[1170px] flex-col gap-8 px-[30px] py-12 md:gap-10 md:py-16 lg:py-20">
+      <div className="mx-auto flex w-full max-w-[1170px] flex-col gap-8 px-[30px] pt-12 pb-24 md:gap-10 md:pt-16 md:pb-28 lg:pt-20 lg:pb-32">
         <h2
           id="page-faq-title"
           className="m-0 text-center font-sans text-[28px] font-extralight uppercase leading-tight tracking-[0.08em] md:text-[40px]"
