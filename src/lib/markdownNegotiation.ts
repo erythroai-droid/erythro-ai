@@ -12,7 +12,6 @@ import {
   getOrderPlanBySlug,
 } from './cmsPages'
 import { tLocale, tLocaleList } from './servicePages'
-import { getCachedAuditPage } from './auditPage.server'
 import { formatPageFaqBlock, formatPageFaqMarkdown } from './pageFaq'
 
 export { shouldServeMarkdown } from './markdownAccept'
@@ -114,7 +113,7 @@ export async function generateMarkdownForRoute(
   if (pathname === '/audit') {
     return {
       status: 200,
-      markdown: await generateAuditMarkdownStub(locale),
+      markdown: generateAuditMarkdownStub(locale),
     }
   }
 
@@ -598,11 +597,8 @@ async function generateLegalMarkdown(
   return lines.join('\n').trim() + '\n'
 }
 
-async function generateAuditMarkdownStub(locale: SupportedLocale): Promise<string> {
-  const page = await getCachedAuditPage()
-  const faq = page.faq
-    ? formatPageFaqBlock(page.faq, locale)
-    : formatPageFaqMarkdown('audit', locale)
+function generateAuditMarkdownStub(locale: SupportedLocale): string {
+  const faq = formatPageFaqMarkdown('audit', locale)
   return [
     `# AI & Website Audit — Erythro.ai`,
     '',
