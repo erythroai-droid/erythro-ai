@@ -1,6 +1,7 @@
 import type { Field } from 'payload'
 import { locText, locTextarea } from './localized'
 import { ctaHrefField } from './ctaHref'
+import { pageFaqGroup } from './pageFaqFields'
 
 /**
  * Field schema for the audit-page global.
@@ -208,6 +209,15 @@ export const auditPageFields: Field[] = [
               },
             ],
           },
+        ],
+      },
+
+      {
+        label: 'FAQ',
+        fields: [
+          pageFaqGroup(
+            'Accordion under the audit page. Switch locale in the admin bar to edit translations.',
+          ),
         ],
       },
     ],

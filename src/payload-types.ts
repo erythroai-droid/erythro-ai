@@ -327,6 +327,32 @@ export interface Service {
       }[]
     | null;
   /**
+   * Accordion at the bottom of this service page. Switch locale in the admin bar to edit translations.
+   */
+  faq?: {
+    /**
+     * Heading above the accordion, e.g. "Questions and answers"
+     */
+    title?: string | null;
+    /**
+     * Accordion on the public page. Drag to reorder. Switch locale in the admin bar to edit translations.
+     */
+    items?:
+      | {
+          question: string;
+          /**
+           * Direct answer, 1–2 sentences.
+           */
+          answer: string;
+          /**
+           * Optional bullets, one per line.
+           */
+          details?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
    * Optional. If empty, the page title and intro text are used for search engines and social previews.
    */
   seo?: {
@@ -1156,6 +1182,19 @@ export interface ServicesSelect<T extends boolean = true> {
         price?: T;
         pricePrefix?: T;
         id?: T;
+      };
+  faq?:
+    | T
+    | {
+        title?: T;
+        items?:
+          | T
+          | {
+              question?: T;
+              answer?: T;
+              details?: T;
+              id?: T;
+            };
       };
   seo?:
     | T
@@ -2070,6 +2109,32 @@ export interface AuditPage {
         }[]
       | null;
   };
+  /**
+   * Accordion under the audit page. Switch locale in the admin bar to edit translations.
+   */
+  faq?: {
+    /**
+     * Heading above the accordion, e.g. "Questions and answers"
+     */
+    title?: string | null;
+    /**
+     * Accordion on the public page. Drag to reorder. Switch locale in the admin bar to edit translations.
+     */
+    items?:
+      | {
+          question: string;
+          /**
+           * Direct answer, 1–2 sentences.
+           */
+          answer: string;
+          /**
+           * Optional bullets, one per line.
+           */
+          details?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2513,6 +2578,19 @@ export interface AuditPageSelect<T extends boolean = true> {
                   };
               cta?: T;
               ctaHref?: T;
+              id?: T;
+            };
+      };
+  faq?:
+    | T
+    | {
+        title?: T;
+        items?:
+          | T
+          | {
+              question?: T;
+              answer?: T;
+              details?: T;
               id?: T;
             };
       };

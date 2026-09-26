@@ -47,7 +47,7 @@ API Catalog, OpenAPI, Markdown negotiation, ACP discovery.
 
 ### FAQPage (локаль страницы)
 
-Язык вопросов в JSON-LD совпадает с языком видимого FAQ (`en` / `ru` / `he`). Общий FAQ агентства стоит только на главной (`/#faq`). Страницы услуг и `/audit` отдают свой блок: заголовок вопроса в `<h3>`, прямой ответ, затем список. Тот же текст без HTML уходит в `acceptedAnswer`. Контент: `src/lib/pageFaq.ts`. На сайте нет отдельных URL `/ru` и `/he` — язык берётся из cookie, краулер без cookie получает английский.
+Язык вопросов в JSON-LD совпадает с языком видимого FAQ (`en` / `ru` / `he`). Общий FAQ агентства стоит только на главной (`/#faq`). Страницы услуг и `/audit` отдают свой блок: заголовок вопроса в `<h3>`, прямой ответ, затем список. Тот же текст без HTML уходит в `acceptedAnswer`. Текст редактируется в админке (группа FAQ у услуги и вкладка FAQ у Audit Page); если список пуст, страница берёт запасной текст из `src/lib/pageFaq.ts`. На сайте нет отдельных URL `/ru` и `/he` — язык берётся из cookie, краулер без cookie получает английский.
 
 Тесты: `tests/int/brandSchema.int.spec.ts`, `tests/int/markdownNegotiation.int.spec.ts`,
 `tests/int/acpDiscovery.int.spec.ts`, `tests/int/securityTxt.int.spec.ts`,

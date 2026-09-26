@@ -8,6 +8,7 @@ import { unstable_cache } from 'next/cache'
 import { SITE_CONTENT_TAG } from './revalidate'
 import { auditPage, isStaleAuditHebrew, type Localized, type AuditPageContent } from './auditPage'
 import { normalizeCtaHref } from './ctaNav'
+import { getPageFaq, pageFaqFromCms } from './pageFaq'
 
 export type { AuditPageContent }
 
@@ -291,6 +292,8 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         plans: mapPlans(rawPricing?.plans as unknown[] | undefined, fallback.pricing.plans as any),
       },
+
+      faq: pageFaqFromCms(raw.faq, getPageFaq('audit')),
     } as AuditPageContent
   } catch (err) {
     console.error('[fetchAuditPage] falling back to static:', err)
@@ -303,7 +306,7 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
  * Shares the site-content cache tag so Payload admin saves invalidate automatically.
  */
 export function getCachedAuditPage(): Promise<AuditPageContent> {
-  return unstable_cache(() => fetchAuditPage(), ['audit-page-v6-form-he'], {
+  return unstable_cache(() => fetchAuditPage(), ['audit-page-v7-faq'], {
     tags: [SITE_CONTENT_TAG],
   })()
 }

@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { locText, locTextarea, locRichText } from '../fields/localized'
+import { pageFaqGroup } from '../fields/pageFaqFields'
 import { seoFields } from '../fields/seo'
 import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
 
@@ -85,6 +86,9 @@ export const Services: CollectionConfig = {
         locText('pricePrefix', { admin: { description: 'e.g. "from" / "от"' } }),
       ],
     },
+    pageFaqGroup(
+      'Accordion at the bottom of this service page. Switch locale in the admin bar to edit translations.',
+    ),
     ...seoFields(),
     {
       name: 'order',

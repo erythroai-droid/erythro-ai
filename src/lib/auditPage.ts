@@ -1,3 +1,5 @@
+import type { PageFaqBlock } from '@/lib/pageFaq'
+
 export type Localized = { en: string; ru: string; he: string }
 
 export type AuditTabId = 'audit' | 'how' | 'pricing'
@@ -768,5 +770,6 @@ export type AuditPageContent = {
       featured?: boolean
     }>
   }
+  faq?: PageFaqBlock
 }
 

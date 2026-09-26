@@ -18,6 +18,7 @@ import {
   type LocaleMap,
   type LocaleListMap,
 } from './servicePages'
+import { getPageFaq, pageFaqFromCms } from './pageFaq'
 import {
   lexicalFromParagraphs,
   lexicalFromText,
@@ -489,6 +490,7 @@ function mapServiceDoc(d: any, i: number): ServicePage {
     ...(hasLocalizedSeo(d.seo?.description)
       ? { seoDescription: locMap(d.seo.description, { en: '' }) }
       : {}),
+    faq: pageFaqFromCms(d.faq, getPageFaq(d.slug || fb.slug)),
   }
 }
 
@@ -848,7 +850,7 @@ export async function getAllPortfolioSlugsCms(): Promise<string[]> {
 }
 
 export const getCachedServicePages = () =>
-  unstable_cache(() => fetchServicePages(), ['service-pages-v3-l10n'], {
+  unstable_cache(() => fetchServicePages(), ['service-pages-v4-faq'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
