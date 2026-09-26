@@ -13,7 +13,14 @@ import HeaderChipStrip from '@/components/HeaderChipStrip'
 import AuditBody from '@/components/audit/AuditBody'
 import type { SiteContent } from '@/lib/defaultContent'
 import type { AuditPageContent } from '@/lib/auditPage'
+import { getPageFaq } from '@/lib/pageFaq'
+import FaqJsonLd from '@/components/FaqJsonLd'
+import PageFaqSection from '@/components/PageFaqSection'
+import { tLocale } from '@/lib/servicePages'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
+const AUDIT_FAQ = getPageFaq('audit')
 
 interface AuditClientProps {
   initialLocale: string
@@ -60,6 +67,7 @@ export default function AuditClient({
   const a11yTargets = useMemo(
     () => [
       { id: 'audit-page', label: pickA11y(a11yTranslations.screenReaderDetails) },
+      ...(AUDIT_FAQ ? [{ id: 'page-faq', label: tLocale(AUDIT_FAQ.title, locale) }] : []),
       { id: 'contacts', label: pickA11y(a11yTranslations.screenReaderContacts) },
       { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
     ],
@@ -91,6 +99,13 @@ export default function AuditClient({
           <div className="relative z-20 -mt-8 max-lg:overflow-clip max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
             <AuditBody locale={locale} theme={theme} page={auditPageContent} />
           </div>
+
+          {AUDIT_FAQ ? (
+            <div className="relative z-[28] -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
+              <FaqJsonLd items={AUDIT_FAQ.items} locale={locale} id={`${SITE_URL}/audit#faq`} />
+              <PageFaqSection block={AUDIT_FAQ} locale={locale} theme={theme} />
+            </div>
+          ) : null}
 
           <div className="relative z-30 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
             <LetsTalkSection locale={locale} variant="simple" />

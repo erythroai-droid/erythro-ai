@@ -37,8 +37,28 @@ describe('brandSchema', () => {
   it('builds FAQPage schema from default FAQ items', () => {
     const schema = buildFaqPageSchema(defaultSiteContent.faq.items) as Record<string, unknown>
     expect(schema?.['@type']).toBe('FAQPage')
+    expect(schema.inLanguage).toBe('en')
     expect(Array.isArray(schema?.mainEntity)).toBe(true)
-    expect((schema.mainEntity as unknown[]).length).toBeGreaterThan(0)
+    const entities = schema.mainEntity as Array<{ name: string; acceptedAnswer: { text: string } }>
+    expect(entities.length).toBeGreaterThan(0)
+    expect(entities[0]?.name).toBe(defaultSiteContent.faq.items[0]?.question.en)
+  })
+
+  it('builds FAQPage schema in the requested locale', () => {
+    const schema = buildFaqPageSchema(
+      defaultSiteContent.faq.items,
+      'ru',
+      'https://erythro.ai/#faq',
+    ) as {
+      inLanguage: string
+      mainEntity: Array<{ name: string; acceptedAnswer: { text: string } }>
+    }
+    expect(schema.inLanguage).toBe('ru')
+    expect(schema.mainEntity[0]?.name).toBe(defaultSiteContent.faq.items[0]?.question.ru)
+    expect(schema.mainEntity[0]?.acceptedAnswer.text).toBe(
+      defaultSiteContent.faq.items[0]?.answer.ru,
+    )
+    expect(schema.mainEntity[0]?.name).not.toBe(defaultSiteContent.faq.items[0]?.question.en)
   })
 
   it('builds WebSite schema', () => {

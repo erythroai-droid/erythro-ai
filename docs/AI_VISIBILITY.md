@@ -31,7 +31,7 @@ API Catalog, OpenAPI, Markdown negotiation, ACP discovery.
 | MCP manifest | `src/app/.well-known/mcp/route.ts` | Discovery endpoint `/.well-known/mcp` (SEP-1960 style) |
 | Brand API | `src/app/api/mcp/route.ts` | Read-only JSON с фактами о бренде |
 | About / Brand Facts | `src/app/(frontend)/about/` | Каноническая страница `/about` |
-| Organization schema | `src/lib/brandSchema.ts` + `src/components/StructuredData.tsx` | JSON-LD: Organization (`sameAs`: GitHub, LinkedIn, FB, TG; `founder`: Person), WebSite, FAQPage |
+| Organization schema | `src/lib/brandSchema.ts` + `src/components/StructuredData.tsx` | JSON-LD: Organization (`sameAs`: GitHub, LinkedIn, FB, TG; `founder`: Person), WebSite. FAQPage is per page (`FaqJsonLd`), in the active locale |
 | GA bootstrap | `src/components/AnalyticsBootstrap.tsx` | `dataLayer` + Consent Mode default в `<head>` |
 | AI referral | `src/lib/aiReferral.ts` | Детект referrer ChatGPT/Perplexity и push в dataLayer |
 | Security headers | `next.config.ts` → `headers()` | CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy |
@@ -44,6 +44,10 @@ API Catalog, OpenAPI, Markdown negotiation, ACP discovery.
 | ACP discovery | `src/app/.well-known/acp.json/`, `src/app/.well-known/acp/` | Agentic Commerce Protocol discovery |
 | security.txt | `src/app/.well-known/security.txt/route.ts` | RFC 9116 vulnerability disclosure (`Contact: order@`) |
 | Layout link | `src/app/(frontend)/layout.tsx` | `<link rel="describedby" href="/llms.txt">`, `alternate` markdown |
+
+### FAQPage (локаль страницы)
+
+Язык вопросов в JSON-LD совпадает с языком видимого FAQ (`en` / `ru` / `he`). Общий FAQ агентства стоит только на главной (`/#faq`). Страницы услуг и `/audit` отдают свой блок: заголовок вопроса в `<h3>`, прямой ответ, затем список. Тот же текст без HTML уходит в `acceptedAnswer`. Контент: `src/lib/pageFaq.ts`. На сайте нет отдельных URL `/ru` и `/he` — язык берётся из cookie, краулер без cookie получает английский.
 
 Тесты: `tests/int/brandSchema.int.spec.ts`, `tests/int/markdownNegotiation.int.spec.ts`,
 `tests/int/acpDiscovery.int.spec.ts`, `tests/int/securityTxt.int.spec.ts`,

@@ -1,11 +1,14 @@
 import { getCachedSeoSettings, getCachedShellSiteContent } from '@/lib/getSiteContent'
 import {
   DEFAULT_ORGANIZATION_DESCRIPTION,
-  buildFaqPageSchema,
   buildOrganizationSchema,
   buildWebSiteSchema,
 } from '@/lib/brandSchema'
 
+/**
+ * Organization + WebSite only. FAQPage is rendered on the page that shows the
+ * questions (home, service, audit) so the language matches that page.
+ */
 export default async function StructuredData() {
   const [content, seo] = await Promise.all([getCachedShellSiteContent(), getCachedSeoSettings()])
   const description = seo.description?.en || DEFAULT_ORGANIZATION_DESCRIPTION
@@ -13,7 +16,6 @@ export default async function StructuredData() {
   const graph = [
     buildOrganizationSchema(content, description),
     buildWebSiteSchema(description),
-    buildFaqPageSchema(content.faq.items),
   ].filter(Boolean)
 
   return (
@@ -23,4 +25,3 @@ export default async function StructuredData() {
     />
   )
 }
-
