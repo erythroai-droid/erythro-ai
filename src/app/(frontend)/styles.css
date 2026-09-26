@@ -77,6 +77,15 @@
   animation: audit-beam-hue 2.2s linear infinite;
 }
 
+/* Light audit card sets overflow:hidden (.solution-light-bg). That scrollport
+   clips the title and tabs on one swipe and restores them on the next.
+   clip keeps the rounded card without becoming a scroll container. */
+@media (max-width: 1023px) {
+  #audit-page {
+    overflow: clip;
+  }
+}
+
 /*
   Mobile AI launcher: a 1.5px spinning conic ring so the colorful shimmer
   stays visible when the pulse-outside halo is clipped by the viewport
