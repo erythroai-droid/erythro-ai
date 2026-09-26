@@ -14,7 +14,12 @@ import LetsTalkSection from '@/components/LetsTalkSection'
 import ChatButton from '@/components/ChatButton'
 import type { SiteContent } from '@/lib/defaultContent'
 import { tLocale, type ServicePage } from '@/lib/servicePages'
+import { getPageFaq } from '@/lib/pageFaq'
+import FaqJsonLd from '@/components/FaqJsonLd'
+import PageFaqSection from '@/components/PageFaqSection'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
 interface ServiceClientProps {
   initialLocale: string
@@ -25,6 +30,7 @@ interface ServiceClientProps {
 
 export default function ServiceClient({ initialLocale, initialTheme, content, service }: ServiceClientProps) {
   const a11yTranslations = content.accessibility
+  const pageFaq = getPageFaq(service.slug)
   const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
@@ -58,15 +64,21 @@ export default function ServiceClient({ initialLocale, initialTheme, content, se
     () => [
       { id: 'service-hero', label: serviceTitle },
       { id: 'service-body', label: pickA11y(a11yTranslations.screenReaderDetails) },
+      ...(pageFaq
+        ? [{ id: 'page-faq', label: tLocale(pageFaq.title, locale) }]
+        : []),
       { id: 'contacts', label: pickA11y(a11yTranslations.screenReaderContacts) },
       { id: 'footer', label: pickA11y(a11yTranslations.screenReaderFooter) },
     ],
-    [locale, serviceTitle],
+    [locale, pageFaq, serviceTitle],
   )
 
   const scrollSectionIds = useMemo(
-    () => ['service-hero', 'service-body', 'contacts', 'footer'],
-    [],
+    () =>
+      pageFaq
+        ? ['service-hero', 'service-body', 'page-faq', 'contacts', 'footer']
+        : ['service-hero', 'service-body', 'contacts', 'footer'],
+    [pageFaq],
   )
 
   return (
@@ -94,6 +106,17 @@ export default function ServiceClient({ initialLocale, initialTheme, content, se
           <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
             <ServiceBody service={service} locale={locale} theme={theme} />
           </div>
+
+          {pageFaq ? (
+            <div className="relative z-[28] -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
+              <FaqJsonLd
+                items={pageFaq.items}
+                locale={locale}
+                id={`${SITE_URL}/services/${service.slug}#faq`}
+              />
+              <PageFaqSection block={pageFaq} locale={locale} theme={theme} />
+            </div>
+          ) : null}
 
           <div className="relative z-30 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
             <LetsTalkSection locale={locale} variant="simple" />

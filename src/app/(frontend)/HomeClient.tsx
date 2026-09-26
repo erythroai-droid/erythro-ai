@@ -10,6 +10,9 @@ import type { SiteContent } from '@/lib/defaultContent'
 import { persistHomeScrollY } from '@/lib/splash'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 import { waitForPostLcpMotion } from '@/lib/lcpGate'
+import FaqJsonLd from '@/components/FaqJsonLd'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
 /**
  * Below-fold sections stay in SSR HTML (PIT-062 CLS). GSAP inside them loads
@@ -177,6 +180,7 @@ export default function HomeClient({
           </div>
 
           <div className="relative z-[35] -mt-8 overflow-hidden rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+            <FaqJsonLd items={content.faq.items} locale={locale} id={`${SITE_URL}/#faq`} />
             <FAQSection locale={locale} theme={theme} />
           </div>
 

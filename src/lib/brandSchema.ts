@@ -10,7 +10,22 @@ export const CANONICAL_SAME_AS = [
   'https://www.linkedin.com/in/erythro-ai',
 ]
 
-type FaqItem = SiteContent['faq']['items'][number]
+export type FaqSchemaItem = {
+  question: Record<string, string>
+  answer: Record<string, string>
+  /** Extra sentences shown after the lead answer. Included in JSON-LD as plain text. */
+  details?: Record<string, string[]>
+}
+
+function localeText(field: Record<string, string> | undefined, locale: string): string {
+  if (!field) return ''
+  return (field[locale] || field.en || '').trim()
+}
+
+function schemaLocale(locale: string): 'en' | 'ru' | 'he' {
+  if (locale === 'ru' || locale === 'he') return locale
+  return 'en'
+}
 
 export function buildOrganizationSchema(
   content: SiteContent,
@@ -127,11 +142,30 @@ export function buildWebSiteSchema(description: string = DEFAULT_ORGANIZATION_DE
   }
 }
 
-export function buildFaqPageSchema(items: FaqItem[]) {
+/** Plain-text answer for FAQPage: the lead, then any detail lines, in the page language. */
+export function faqSchemaAnswerText(item: FaqSchemaItem, locale: string): string {
+  const lead = localeText(item.answer, locale)
+  const lang = schemaLocale(locale)
+  const details = (item.details?.[lang] || item.details?.en || [])
+    .map((line) => line.trim())
+    .filter(Boolean)
+  return [lead, ...details].filter(Boolean).join('\n')
+}
+
+/**
+ * FAQPage for the language currently shown on the page.
+ * `id` must match the URL of that page (`/#faq`, `/services/…#faq`, `/audit#faq`).
+ */
+export function buildFaqPageSchema(
+  items: FaqSchemaItem[],
+  locale: string = 'en',
+  id: string = `${SITE_URL}/#faq`,
+) {
+  const lang = schemaLocale(locale)
   const mainEntity = items
     .map((item) => ({
-      question: item.question.en,
-      answer: item.answer.en,
+      question: localeText(item.question, lang),
+      answer: faqSchemaAnswerText(item, lang),
     }))
     .filter((row) => row.question && row.answer)
     .map((row) => ({
@@ -147,7 +181,8 @@ export function buildFaqPageSchema(items: FaqItem[]) {
 
   return {
     '@type': 'FAQPage',
-    '@id': `${SITE_URL}/#faq`,
+    '@id': id,
+    inLanguage: lang,
     mainEntity,
   }
 }

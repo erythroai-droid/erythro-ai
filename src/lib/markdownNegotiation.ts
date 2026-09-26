@@ -12,6 +12,7 @@ import {
   getOrderPlanBySlug,
 } from './cmsPages'
 import { tLocale, tLocaleList } from './servicePages'
+import { formatPageFaqMarkdown } from './pageFaq'
 
 export { shouldServeMarkdown } from './markdownAccept'
 
@@ -109,11 +110,10 @@ export async function generateMarkdownForRoute(
     return { status: 404, markdown: generateNotFoundMarkdown(pathname, locale) }
   }
 
-  // 9. Audit page — stub until /audit ships; avoid importing uncommitted auditPage.
   if (pathname === '/audit') {
     return {
       status: 200,
-      markdown: generateAuditMarkdownStub(),
+      markdown: generateAuditMarkdownStub(locale),
     }
   }
 
@@ -517,6 +517,12 @@ async function generateServiceDetailMarkdown(
     }
   }
 
+  const faqMarkdown = formatPageFaqMarkdown(service.slug, locale)
+  if (faqMarkdown) {
+    lines.push(faqMarkdown.trimEnd())
+    lines.push('')
+  }
+
   lines.push(`## Start a project`)
   lines.push(`Ready to start or need a custom consultation?`)
   lines.push(`- [Contact us](${SITE_URL}/contacts)`)
@@ -588,7 +594,8 @@ async function generateLegalMarkdown(
   return lines.join('\n').trim() + '\n'
 }
 
-function generateAuditMarkdownStub(): string {
+function generateAuditMarkdownStub(locale: SupportedLocale): string {
+  const faq = formatPageFaqMarkdown('audit', locale)
   return [
     `# AI & Website Audit — Erythro.ai`,
     '',
@@ -597,7 +604,11 @@ function generateAuditMarkdownStub(): string {
     `- **Canonical URL:** ${SITE_URL}/audit`,
     `- **Contact:** [order@erythro.ai](mailto:order@erythro.ai) · [Contacts](${SITE_URL}/contacts)`,
     '',
-  ].join('\n')
+    faq,
+  ]
+    .join('\n')
+    .trim()
+    .concat('\n')
 }
 
 async function generateOrderPlanMarkdown(
