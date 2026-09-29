@@ -1729,6 +1729,20 @@ Do not put `overflow: hidden` on the mobile audit card. `overflow: clip` keeps t
 **Prevent:**
 Do not mark paid from the success redirect or from callback fields alone. Do not send a free-text `items.name` (PayPlus creates a catalog product per charge). Do not set `PAYPLUS_ISSUE_INVOICE` until the invoice module is on. One charge only (`payments_selected: 1`) so the IPN amount matches the order. See `docs/architecture/payplus-audit-checkout.md`.
 
+## PIT-100 — Grow notify is unsigned, and the success redirect is empty
+
+**Tags:** `grow`, `meshulam`, `audit`, `webhook`, `payment`  
+**Seen:** 2026-09-29 — checkout moved from PayPlus to Grow Light API.
+
+**Symptom:** The browser lands on `/order/success?response=success` and the audit is treated as paid. A POST to `/api/payment/webhook` with `statusCode=2` marks `paid` and queues the worker. `approveTransaction` is skipped, so Grow's production review fails.
+
+**Cause:** Grow's success URL only appends `response=success` and custom fields. The notify POST is form-data, often under `data[...]`, and has no signature. `approveTransaction` acknowledges the notify; it does not prove the charge. Proof is `getTransactionInfo` for the transaction token, bound to the `processId|processToken` stored at `createPaymentProcess`.
+
+**Fix:** `handleGrowCallback` loads the submission by that process ref, confirms status `2`, shekel amount, and `cField1`, then calls `approveTransaction`. The `paid` update is conditional. A failed ack returns `503` so Grow retries without a second audit run. `/order/success` still shows the CMS status behind an HMAC (`PAYLOAD_SECRET`).
+
+**Prevent:**
+Do not mark paid from `response=success` or from the notify body. Do not log or reuse the process token as a public id. One payment (`paymentNum: 1`, `saveCardToken: 0`). Israeli mobile and a two-word name are required before the row is created. See `docs/architecture/grow-audit-checkout.md`.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1822,4 +1836,5 @@ Do not mark paid from the success redirect or from callback fields alone. Do not
 - [ ] Consult Sessions transcript: custom Field/Cell, not Payload JSON/Monaco (PIT-096)
 - [ ] Consultant: reply language from last user message; How we work card; do not start ТЗ on collaboration (PIT-097)
 - [ ] PayPlus: paid only after IPN amount + `submission:` id; success page is not proof; no unpaid fallback (PIT-099)
+- [ ] Grow: paid only after `getTransactionInfo` status `2` + amount + process token; success `response=success` is not proof; still call `approveTransaction` (PIT-100)
 

@@ -304,7 +304,7 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
       ru: 'Последнее обновление',
       he: 'עודכן לאחרונה',
     },
-    updatedAt: '2026-07-26',
+    updatedAt: '2026-09-29',
     intro: {
       en: 'These Terms of Use (“Terms”) govern access to and use of the erythro.ai website and related online materials. By using the site you agree to these Terms. If you do not agree, please do not use the site. Separate written agreements apply to paid projects and retainers.',
       ru: 'Настоящие Условия использования («Условия») регулируют доступ к сайту erythro.ai и связанным материалам. Используя сайт, вы соглашаетесь с Условиями. Если вы не согласны — не используйте сайт. На платные проекты и сопровождение действуют отдельные письменные договоры.',
@@ -442,12 +442,15 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         paragraphs: {
           en: [
             'Requests submitted through the site or contact forms do not create a contract until we confirm scope, price, and terms in writing. Payment, delivery, refunds, and IP ownership for projects are defined in the applicable proposal or agreement. Published package prices may change and may exclude VAT where applicable.',
+            'A paid audit ordered on this site is a digital service for customers aged 18 or older. After the payment provider confirms the charge, we prepare the report and send it to the email address you entered. Delivery is electronic only, usually within a few business days; nothing is shipped. You may cancel before the report is sent by writing to the contact address on this page. After the report has been sent, cancellation and any refund follow the Consumer Protection Law where it applies, and a captured charge is refunded through the payment provider when the law or our written confirmation requires it. Personal data from the order is handled as described in the Privacy Policy on this site. Erythro.ai and its representatives are not liable for direct or indirect damage from use of a report or other product bought on this site, except liability that Israeli law does not allow to be excluded.',
           ],
           ru: [
             'Заявки через сайт или формы не создают договор, пока мы письменно не подтвердим объём, цену и условия. Оплата, сроки, возвраты и ИС по проектам определяются в предложении или договоре. Указанные пакетные цены могут меняться и могут не включать НДС, где применимо.',
+            'Платный аудит, заказанный на этом сайте, — цифровая услуга для покупателей от 18 лет. После подтверждения списания платёжным провайдером мы готовим отчёт и отправляем его на указанный email. Доставка только электронная, обычно в течение нескольких рабочих дней; ничего не отправляется по почте. Отменить заказ можно до отправки отчёта, написав на контактный адрес на этой странице. После отправки отчёта отмена и возврат идут по Закону о защите прав потребителей, где он применяется, а уже проведённое списание возвращается через платёжного провайдера, если этого требует закон или наше письменное подтверждение. Персональные данные заказа обрабатываются, как описано в Политике конфиденциальности на этом сайте. Erythro.ai и его представители не отвечают за прямой или косвенный ущерб от использования отчёта или другого продукта, купленного на сайте, кроме ответственности, которую израильское право не позволяет исключить.',
           ],
           he: [
             'פניות דרך האתר או טפסים אינן יוצרות חוזה עד לאישור בכתב של היקף, מחיר ותנאים. תשלום, אספקה, החזרים ובעלות בקניין רוחני בפרויקטים יוסדרו בהצעה או בהסכם. מחירי חבילות עשויים להשתנות ועשויים שלא לכלול מע״מ ככל שחל.',
+            'ביקורת בתשלום שמוזמנת באתר זה היא שירות דיגיטלי ללקוחות בני 18 ומעלה. לאחר שהסולק מאשר את החיוב, אנו מכינים את הדוח ושולחים אותו לכתובת הדוא״ל שהוזנה. האספקה אלקטרונית בלבד, בדרך כלל בתוך כמה ימי עסקים; אין משלוח פיזי. ניתן לבטל לפני שליחת הדוח באמצעות פנייה לכתובת הקשר בעמוד זה. לאחר שליחת הדוח, ביטול והחזר כפופים לחוק הגנת הצרכן ככל שהוא חל, וחיוב שכבר נסלק יוחזר דרך סולק התשלומים כאשר הדין או אישורנו בכתב מחייבים זאת. מידע אישי מההזמנה מטופל כמתואר במדיניות הפרטיות באתר. Erythro.ai ונציגיו אינם אחראים לנזק ישיר או עקיף הנובע משימוש בדוח או במוצר אחר שנרכש באתר, למעט אחריות שהדין הישראלי אינו מתיר לשלול.',
           ],
         },
       },

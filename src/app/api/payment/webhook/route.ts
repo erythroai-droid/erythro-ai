@@ -1,15 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { handlePayPlusCallback } from '@/lib/payments/fulfillPayment'
+import { handleGrowCallback, handlePayPlusCallback } from '@/lib/payments/fulfillPayment'
+import { isGrowCallback } from '@/lib/payments/grow'
+import { isPayPlusConfigured } from '@/lib/payments/payplus'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
-function formToRecord(raw: string): Record<string, unknown> {
-  const params = new URLSearchParams(raw)
+function assignBracket(root: Record<string, unknown>, key: string, value: string) {
+  const parts = key
+    .split('[')
+    .map((part) => part.replace(/\]$/, ''))
+    .filter(Boolean)
+  if (parts.length === 0) return
+  let cursor = root
+  for (let i = 0; i < parts.length - 1; i++) {
+    const part = parts[i]
+    const existing = cursor[part]
+    if (!existing || typeof existing !== 'object' || Array.isArray(existing)) {
+      cursor[part] = {}
+    }
+    cursor = cursor[part] as Record<string, unknown>
+  }
+  cursor[parts[parts.length - 1]] = value
+}
+
+function nestEntries(entries: Iterable<[string, string]>): Record<string, unknown> {
   const body: Record<string, unknown> = {}
-  params.forEach((value, key) => {
-    body[key] = value
-  })
+  for (const [key, value] of entries) assignBracket(body, key, value)
   return body
 }
 
@@ -18,17 +35,22 @@ async function readCallback(request: NextRequest): Promise<{
   rawBody: string
 }> {
   if (request.method === 'GET') {
-    const body: Record<string, unknown> = {}
-    request.nextUrl.searchParams.forEach((value, key) => {
-      body[key] = value
+    return { body: nestEntries(request.nextUrl.searchParams.entries()), rawBody: request.nextUrl.searchParams.toString() }
+  }
+
+  const contentType = request.headers.get('content-type') || ''
+  if (contentType.includes('multipart/form-data')) {
+    const form = await request.formData()
+    const entries: Array<[string, string]> = []
+    form.forEach((value, key) => {
+      if (typeof value === 'string') entries.push([key, value])
     })
-    return { body, rawBody: request.nextUrl.searchParams.toString() }
+    return { body: nestEntries(entries), rawBody: '' }
   }
 
   const rawBody = await request.text()
-  const contentType = request.headers.get('content-type') || ''
   if (contentType.includes('application/x-www-form-urlencoded')) {
-    return { body: formToRecord(rawBody), rawBody }
+    return { body: nestEntries(new URLSearchParams(rawBody).entries()), rawBody }
   }
   try {
     const parsed = JSON.parse(rawBody) as unknown
@@ -42,16 +64,20 @@ async function readCallback(request: NextRequest): Promise<{
 }
 
 /**
- * PayPlus IPN. GET and POST: dashboard callback method varies.
- * The charge is accepted only after PaymentPages/ipn-full matches amount and submission.
+ * Grow notifyUrl (form POST) and leftover PayPlus IPN.
+ * Neither body is proof. Grow is confirmed with getTransactionInfo.
  */
 async function receive(request: NextRequest): Promise<NextResponse> {
   const { body, rawBody } = await readCallback(request)
-  const outcome = await handlePayPlusCallback({
-    body,
-    rawBody,
-    hashHeader: request.headers.get('hash'),
-  })
+  const outcome = isGrowCallback(body)
+    ? await handleGrowCallback(body)
+    : isPayPlusConfigured()
+      ? await handlePayPlusCallback({
+          body,
+          rawBody,
+          hashHeader: request.headers.get('hash'),
+        })
+      : await handleGrowCallback(body)
   return NextResponse.json(outcome.body, { status: outcome.httpStatus })
 }
 

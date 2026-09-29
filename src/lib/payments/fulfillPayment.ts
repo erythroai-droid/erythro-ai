@@ -3,6 +3,15 @@ import { sql } from '@payloadcms/db-postgres'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import {
+  approveGrowTransaction,
+  amountsMatchShekels as growAmountsMatch,
+  encodeGrowProcessRef,
+  GROW_PAID_STATUS,
+  isGrowConfigured,
+  lookupGrowTransaction,
+  parseGrowNotice,
+} from '@/lib/payments/grow'
+import {
   amountsMatchShekels,
   getPayPlusConfig,
   isApprovedStatusCode,
@@ -91,7 +100,11 @@ async function claimStatus(
   return sqlRows(result).length > 0
 }
 
-async function fulfillPaid(subId: number, tx: NormalizedPayPlusTx): Promise<void> {
+async function fulfillPaid(
+  subId: number,
+  tx: { transactionUid: string; invoiceUrl: string },
+  provider: string,
+): Promise<void> {
   const payload = await getPayload({ config })
   const updated = await payload.findByID({
     collection: 'contact-submissions',
@@ -116,7 +129,7 @@ async function fulfillPaid(subId: number, tx: NormalizedPayPlusTx): Promise<void
     name,
     email,
     phone: updated.phone || undefined,
-    message: `PAID via PayPlus\n\n${updated.message || ''}${invoiceLine}`,
+    message: `PAID via ${provider}\n\n${updated.message || ''}${invoiceLine}`,
     locale: updated.locale || 'en',
     source,
     website: updated.website || undefined,
@@ -126,7 +139,7 @@ async function fulfillPaid(subId: number, tx: NormalizedPayPlusTx): Promise<void
     submissionId: updated.id,
   })
   if (!mailed.sent) {
-    console.error('[payplus] staff email not sent:', mailed.reason)
+    console.error(`[${provider}] staff email not sent:`, mailed.reason)
   }
 
   const acked = await sendClientAcknowledgement({
@@ -137,7 +150,7 @@ async function fulfillPaid(subId: number, tx: NormalizedPayPlusTx): Promise<void
     submissionId: updated.id,
   })
   if (!acked.sent) {
-    console.error('[payplus] client ack not sent:', acked.reason)
+    console.error(`[${provider}] client ack not sent:`, acked.reason)
   }
 
   if (source === 'audit' && updated.website) {
@@ -151,11 +164,11 @@ async function fulfillPaid(subId: number, tx: NormalizedPayPlusTx): Promise<void
     }
     const triggered = await triggerAuditAgent(triggerInput, { attempts: 1 })
     if (!triggered.ok) {
-      console.error('[payplus] audit worker not queued:', triggered.reason)
+      console.error(`[${provider}] audit worker not queued:`, triggered.reason)
       after(async () => {
         const retry = await triggerAuditAgent(triggerInput, { attempts: 2 })
         if (!retry.ok) {
-          console.error('[payplus] background requeue failed:', retry.reason, 'id=', updated.id)
+          console.error(`[${provider}] background requeue failed:`, retry.reason, 'id=', updated.id)
         }
       })
     }
@@ -305,9 +318,9 @@ export async function handlePayPlusCallback(input: {
   }
 
   try {
-    await fulfillPaid(subId, tx)
+    await fulfillPaid(subId, tx, 'PayPlus')
   } catch (err) {
-    console.error('[payplus] fulfill error:', err instanceof Error ? err.message : 'unknown')
+    console.error('[payment] fulfill error:', err instanceof Error ? err.message : 'unknown')
     const payload = await getPayload({ config })
     await payload.db.drizzle.execute(sql`
       UPDATE "contact_submissions"
@@ -322,5 +335,126 @@ export async function handlePayPlusCallback(input: {
   return {
     httpStatus: 200,
     body: { ok: true, status: 'approved', ticketId: formatSubmissionTicketId('audit', subId) },
+  }
+}
+
+/**
+ * Grow notifyUrl. The POST is not proof. getTransactionInfo is the proof.
+ * approveTransaction is required by Grow and is retried when it fails.
+ */
+export async function handleGrowCallback(body: Record<string, unknown>): Promise<CallbackOutcome> {
+  if (!isGrowConfigured()) {
+    console.error('[grow] callback while gateway is not configured')
+    return { httpStatus: 503, body: { ok: false, reason: 'not_configured' } }
+  }
+
+  const hinted = parseGrowNotice(body)
+  if (!hinted?.processId || !hinted.processToken || !hinted.transactionId || !hinted.transactionToken) {
+    console.warn('[grow] callback missing process or transaction token')
+    return { httpStatus: 400, body: { ok: false, reason: 'missing_uid' } }
+  }
+
+  const payload = await getPayload({ config })
+  const found = await payload.find({
+    collection: 'contact-submissions',
+    where: {
+      and: [
+        { paymentProvider: { equals: 'grow' } },
+        {
+          or: [
+            { paymentTransactionId: { equals: encodeGrowProcessRef(hinted.processId, hinted.processToken) } },
+            { paymentTransactionId: { equals: hinted.transactionId } },
+          ],
+        },
+      ],
+    },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  })
+  const existing = found.docs[0]
+  if (!existing) {
+    console.error('[grow] no submission for process', hinted.processId)
+    return { httpStatus: 200, body: { ok: false, reason: 'unknown_submission' } }
+  }
+
+  const verified = await lookupGrowTransaction(hinted)
+  if (!verified?.transactionId) {
+    console.warn('[grow] transaction lookup not ready', hinted.transactionId)
+    return { httpStatus: 503, body: { ok: false, reason: 'ipn_pending' } }
+  }
+  if (
+    (verified.processId && verified.processId !== hinted.processId) ||
+    verified.transactionId !== hinted.transactionId
+  ) {
+    console.error('[grow] lookup does not match callback', existing.id)
+    return { httpStatus: 200, body: { ok: false, reason: 'request_mismatch' } }
+  }
+
+  const subId = Number(existing.id)
+  if (verified.cField1 && verified.cField1 !== String(subId)) {
+    console.error('[grow] cField mismatch id=', subId)
+    return { httpStatus: 200, body: { ok: false, reason: 'request_mismatch' } }
+  }
+  if (hinted.cField1 && hinted.cField1 !== String(subId)) {
+    console.error('[grow] callback cField mismatch id=', subId)
+    return { httpStatus: 200, body: { ok: false, reason: 'request_mismatch' } }
+  }
+
+  console.info(
+    '[grow] notify',
+    'id=',
+    subId,
+    'status=',
+    verified.statusCode || 'none',
+    'amount=',
+    verified.sum ?? 'n/a',
+  )
+
+  if (verified.statusCode !== GROW_PAID_STATUS) {
+    return { httpStatus: 200, body: { ok: true, status: 'ignored' } }
+  }
+
+  const expectedRaw = existing.paymentAmount
+  const expected = typeof expectedRaw === 'number' ? expectedRaw : Number(expectedRaw)
+  if (verified.sum == null || !growAmountsMatch(expected, verified.sum)) {
+    console.error('[grow] amount mismatch expected=', expected, 'charged=', verified.sum, 'id=', subId)
+    return { httpStatus: 200, body: { ok: false, reason: 'amount_mismatch' } }
+  }
+
+  const approved = await approveGrowTransaction({
+    ...verified,
+    processId: verified.processId || hinted.processId,
+    processToken: verified.processToken || hinted.processToken,
+  })
+
+  const claimed = await claimStatus(subId, 'paid', verified.transactionId)
+  if (claimed) {
+    try {
+      await fulfillPaid(subId, { transactionUid: verified.transactionId, invoiceUrl: '' }, 'Grow')
+    } catch (err) {
+      console.error('[grow] fulfill error:', err instanceof Error ? err.message : 'unknown')
+      await payload.db.drizzle.execute(sql`
+        UPDATE "contact_submissions"
+        SET "payment_status" = 'pending',
+            "updated_at" = now()
+        WHERE "id" = ${subId}
+          AND "payment_status" = 'paid'
+      `)
+      return { httpStatus: 503, body: { ok: false, reason: 'fulfill_failed' } }
+    }
+  }
+
+  if (!approved) {
+    return { httpStatus: 503, body: { ok: false, reason: 'approve_failed' } }
+  }
+
+  return {
+    httpStatus: 200,
+    body: {
+      ok: true,
+      status: claimed ? 'approved' : 'already_paid',
+      ...(claimed ? { ticketId: formatSubmissionTicketId('audit', subId) } : {}),
+    },
   }
 }

@@ -792,17 +792,17 @@ export interface ContactSubmission {
    */
   auditLanguage?: ('en' | 'ru' | 'he') | null;
   /**
-   * Payment status from PayPlus gateway
+   * Payment status from the Grow gateway
    */
   paymentStatus?: ('none' | 'pending' | 'paid' | 'failed' | 'refunded') | null;
   /**
-   * PayPlus transaction UID
+   * Grow process ref, then transaction id after payment
    */
   paymentTransactionId?: string | null;
   /**
    * Payment gateway provider
    */
-  paymentProvider?: 'payplus' | null;
+  paymentProvider?: 'grow' | 'payplus' | null;
   /**
    * Payment amount in ILS
    */

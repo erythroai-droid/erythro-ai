@@ -194,7 +194,7 @@ export const ContactSubmissions: CollectionConfig = {
                 { label: 'Refunded', value: 'refunded' },
               ],
               admin: {
-                description: 'Payment status from PayPlus gateway',
+                description: 'Payment status from the Grow gateway',
                 condition: orderOrAudit,
                 position: 'sidebar',
               },
@@ -203,7 +203,7 @@ export const ContactSubmissions: CollectionConfig = {
               name: 'paymentTransactionId',
               type: 'text',
               admin: {
-                description: 'PayPlus transaction UID',
+                description: 'Grow process ref, then transaction id after payment',
                 condition: orderOrAudit,
                 readOnly: true,
               },
@@ -212,6 +212,7 @@ export const ContactSubmissions: CollectionConfig = {
               name: 'paymentProvider',
               type: 'select',
               options: [
+                { label: 'Grow', value: 'grow' },
                 { label: 'PayPlus', value: 'payplus' },
               ],
               admin: {

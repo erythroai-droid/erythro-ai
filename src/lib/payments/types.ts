@@ -1,9 +1,9 @@
 /**
  * Payment provider abstraction types.
- * Allows swapping PayPlus for another provider (Grow / Meshulam, Tranzila, etc.) in the future.
+ * Grow is the live checkout. PayPlus remains for an old callback only.
  */
 
-export type PaymentProvider = 'payplus'
+export type PaymentProvider = 'grow' | 'payplus'
 
 export type PaymentStatus = 'none' | 'pending' | 'paid' | 'failed' | 'refunded'
 

@@ -874,6 +874,26 @@ export const contactForm = {
     ru: 'Оплата временно недоступна. Попробуйте ещё раз через несколько минут.',
     he: 'התשלום אינו זמין זמנית. נסו שוב בעוד כמה דקות.',
   },
+  paymentName: {
+    en: 'Enter your first and last name. Grow needs both.',
+    ru: 'Укажите имя и фамилию. Grow принимает оба.',
+    he: 'יש להזין שם פרטי ושם משפחה. Grow דורש את שניהם.',
+  },
+  paymentPhone: {
+    en: 'Grow accepts an Israeli mobile number (05…).',
+    ru: 'Grow принимает израильский мобильный номер (05…).',
+    he: 'Grow מקבל מספר נייד ישראלי (05…).',
+  },
+  termsJoiner: {
+    en: ' and the ',
+    ru: ' и ',
+    he: ' ',
+  },
+  termsLink: {
+    en: 'Terms & conditions',
+    ru: 'Условиями использования',
+    he: 'ולתנאי השימוש',
+  },
   rateLimited: {
     en: 'Too many requests. Please wait a minute and try again.',
     ru: 'Слишком много попыток. Подождите минуту и попробуйте снова.',

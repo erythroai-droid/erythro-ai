@@ -21,9 +21,9 @@ const copy = {
     he: 'מאשרים את התשלום',
   },
   pendingBody: {
-    en: 'You are back from the payment page. We are waiting for PayPlus to confirm the charge. This usually takes under a minute.',
-    ru: 'Вы вернулись со страницы оплаты. Ждём подтверждение списания от PayPlus. Обычно это занимает меньше минуты.',
-    he: 'חזרתם מעמוד התשלום. ממתינים לאישור החיוב מ-PayPlus. בדרך כלל זה לוקח פחות מדקה.',
+    en: 'You are back from the payment page. We are waiting for Grow to confirm the charge. This usually takes under a minute.',
+    ru: 'Вы вернулись со страницы оплаты. Ждём подтверждение списания от Grow. Обычно это занимает меньше минуты.',
+    he: 'חזרתם מעמוד התשלום. ממתינים לאישור החיוב מ-Grow. בדרך כלל זה לוקח פחות מדקה.',
   },
   pendingSlow: {
     en: 'Confirmation is still pending. If you completed the payment, check your email in a few minutes or write to us with the order id.',
@@ -36,9 +36,9 @@ const copy = {
     he: 'התשלום לא הושלם',
   },
   failedBody: {
-    en: 'The charge was not confirmed. You can try again. Nothing is prepared until PayPlus confirms the payment.',
-    ru: 'Списание не подтверждено. Можно попробовать ещё раз. Аудит не запускается, пока PayPlus не подтвердит оплату.',
-    he: 'החיוב לא אושר. אפשר לנסות שוב. הביקורת לא מתחילה עד ש-PayPlus מאשר את התשלום.',
+    en: 'The charge was not confirmed. You can try again. Nothing is prepared until Grow confirms the payment.',
+    ru: 'Списание не подтверждено. Можно попробовать ещё раз. Аудит не запускается, пока Grow не подтвердит оплату.',
+    he: 'החיוב לא אושר. אפשר לנסות שוב. הביקורת לא מתחילה עד ש-Grow מאשר את התשלום.',
   },
   refundedTitle: {
     en: 'Payment refunded',

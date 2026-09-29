@@ -12,6 +12,8 @@ interface ContactPrivacyConsentProps {
   onCheckedChange: (checked: boolean) => void
   showRequiredError?: boolean
   disabled?: boolean
+  /** Paid checkout: the same checkbox also accepts /terms. */
+  showTerms?: boolean
 }
 
 function LockIcon({ className = '' }: { className?: string }) {
@@ -48,6 +50,7 @@ export default function ContactPrivacyConsent({
   onCheckedChange,
   showRequiredError = false,
   disabled = false,
+  showTerms = false,
 }: ContactPrivacyConsentProps) {
   const t = (field: Record<string, string>) => field[locale] || field.en
   const form = contactForm
@@ -100,7 +103,15 @@ export default function ContactPrivacyConsent({
           {t(form.consentPrefix)}{' '}
           <Link href="/privacy" className={linkClass} target="_blank" rel="noopener noreferrer">
             {t(form.privacyLink)}
-          </Link>{' '}
+          </Link>
+          {showTerms ? (
+            <>
+              {t(form.termsJoiner)}
+              <Link href="/terms" className={linkClass} target="_blank" rel="noopener noreferrer">
+                {t(form.termsLink)}
+              </Link>
+            </>
+          ) : null}{' '}
           {t(form.consentSuffix)}
         </span>
       </label>

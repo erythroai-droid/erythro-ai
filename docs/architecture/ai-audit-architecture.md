@@ -374,7 +374,7 @@ Erythro_Audit_[AUD-N]_[site]_[YYYY-MM-DD]_[LANG].pdf
 9a. [x] Реальный QA_Auditor (Java/Playwright) в `services/audit-agent/QA_Auditor` вместо stub HTML
 9b. [x] Управление пайплайном аудита в Payload Admin (dashboard, nav «AI Audits», re-queue)
 9c. [x] CMS: global `audit-page` + Plans `kind=audit` для `/audit` и `/order/audit-*`
-10. [x] Оплата PayPlus → тот же trigger, что п.6, после IPN `paid`. Ключи и кабинет: `docs/architecture/payplus-audit-checkout.md`. Лимиты Free вернуть, когда терминал реально принимает оплату.
+10. [x] Оплата Grow → тот же trigger, что п.6, после `getTransactionInfo` со `statusCode` 2. Ключи и кабинет: `docs/architecture/grow-audit-checkout.md`. Лимиты Free вернуть, когда терминал реально принимает оплату.
 11. [ ] (Позже) публичный `R2_PUBLIC_BASE_URL` / custom domain для прямых ссылок на HTML/PDF
 
 ---
