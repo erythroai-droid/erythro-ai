@@ -1308,9 +1308,13 @@ function AuditOrderModal({
 
         const code = paymentData?.code
         setSubmitError(
-          code === 'payment_unavailable' || code === 'not_payable'
-            ? tForm(contactForm.paymentUnavailable)
-            : tForm(contactForm.error),
+          code === 'name_unsupported'
+            ? tForm(contactForm.paymentName)
+            : code === 'phone_unsupported'
+              ? tForm(contactForm.paymentPhone)
+              : code === 'payment_unavailable' || code === 'not_payable'
+                ? tForm(contactForm.paymentUnavailable)
+                : tForm(contactForm.error),
         )
         setStatus('error')
         return
@@ -1707,6 +1711,7 @@ function AuditOrderModal({
                   locale={locale}
                   theme="dark"
                   idPrefix="audit-order-modal"
+                  showTerms
                   checked={privacyConsent}
                   showRequiredError={consentError}
                   disabled={status === 'sending'}

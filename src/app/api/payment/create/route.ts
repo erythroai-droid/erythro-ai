@@ -4,7 +4,7 @@ import config from '@payload-config'
 import { getOrderPlanBySlug } from '@/lib/cmsPages'
 import { calcPlanAmount, calcAddonAmount, addonMonthlyAmount, addonTermDiscount, tLocale, parsePrice } from '@/lib/orderPlans'
 import { normalizeAuditWebsite } from '@/lib/auditFormValidation'
-import { createPaymentLink, isPayPlusConfigured } from '@/lib/payments/payplus'
+import { createGrowPayment, isGrowConfigured, toGrowFullName, toGrowIsraeliMobile } from '@/lib/payments/grow'
 import { signPaymentReturn } from '@/lib/payments/returnSig'
 import { getRequestIp, consumeContactRateLimit } from '@/lib/contactRateLimit'
 import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
@@ -23,7 +23,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
  * POST /api/payment/create
  *
  * Creates a contact-submission with paymentStatus=pending
- * and returns a PayPlus hosted-page URL.
+ * and returns a Grow hosted-page URL.
  * Paid checkout does not fall through to an unpaid contact submission.
  */
 export async function POST(request: NextRequest) {
@@ -117,8 +117,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ code: 'not_payable' }, { status: 409 })
   }
 
-  if (!isPayPlusConfigured()) {
-    console.error('[api/payment/create] PayPlus env is not set')
+  if (!toGrowFullName(name)) {
+    return NextResponse.json({ code: 'name_unsupported' }, { status: 400 })
+  }
+  if (!toGrowIsraeliMobile(phone)) {
+    return NextResponse.json({ code: 'phone_unsupported' }, { status: 400 })
+  }
+
+  if (!isGrowConfigured() || !SITE_URL.startsWith('https://')) {
+    console.error('[api/payment/create] Grow env or public HTTPS site URL is not set')
     return NextResponse.json({ code: 'payment_unavailable' }, { status: 503 })
   }
 
@@ -143,19 +150,18 @@ export async function POST(request: NextRequest) {
         planTotal: `₪${totalAmount}`,
         auditStatus: 'new',
         paymentStatus: 'pending',
-        paymentProvider: 'payplus',
+        paymentProvider: 'grow',
         paymentAmount: totalAmount,
       },
     })
 
     const submissionId = String(created.id)
 
-    // Generate PayPlus payment link
     const sig = signPaymentReturn(submissionId)
-    const result = await createPaymentLink({
+    const result = await createGrowPayment({
       amount: totalMinor,
       currency: 'ILS',
-      description: `${planTitle} — Erythro.ai`,
+      description: `Erythro AI audit ${planSlug}`,
       locale: locale === 'ru' || locale === 'he' || locale === 'en' ? locale : 'en',
       customer: { name, email, phone },
       successUrl: `${SITE_URL}/order/success?id=${submissionId}&sig=${encodeURIComponent(sig)}`,
@@ -168,7 +174,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!result.ok) {
-      console.error('[api/payment/create] PayPlus error:', result.message)
+      console.error('[api/payment/create] Grow error:', result.message)
       await payload.update({
         collection: 'contact-submissions',
         id: created.id,
@@ -177,14 +183,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ code: 'payment_unavailable' }, { status: 503 })
     }
 
-    // Save transaction UID
-    await payload.update({
-      collection: 'contact-submissions',
-      id: created.id,
-      data: { paymentTransactionId: result.transactionUid },
-    }).catch((err) => {
-      console.error('[api/payment/create] failed to save transactionUid:', err)
-    })
+    const saved = await payload
+      .update({
+        collection: 'contact-submissions',
+        id: created.id,
+        data: { paymentTransactionId: result.transactionUid },
+      })
+      .then(() => true)
+      .catch((err) => {
+        console.error('[api/payment/create] failed to save process ref:', err)
+        return false
+      })
+    if (!saved) {
+      await payload
+        .update({
+          collection: 'contact-submissions',
+          id: created.id,
+          data: { paymentStatus: 'failed' },
+        })
+        .catch(() => {})
+      return NextResponse.json({ code: 'payment_unavailable' }, { status: 503 })
+    }
 
     return NextResponse.json({
       ok: true,

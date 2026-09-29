@@ -9,7 +9,7 @@ When the user asks about next steps, security, admin protection, performance, R2
 
 **Not critical right now.** Prioritize when they have time:
 
-1. **Restore audit intake limits after PayPlus is actually charging** — checkout code is ready (`docs/architecture/payplus-audit-checkout.md`). Live now: 5-day Free cooldown + `/api/contact` IP window are skipped (`AUDIT_INTAKE_LIMITS_OPEN_FOR_QA`). Set `AUDIT_SKIP_COOLDOWN=0` or flip the flag to `false` only after sandbox then live payments succeed.
+1. **Restore audit intake limits after Grow is actually charging** — checkout code is ready (`docs/architecture/grow-audit-checkout.md`). Live now: 5-day Free cooldown + `/api/contact` IP window are skipped (`AUDIT_INTAKE_LIMITS_OPEN_FOR_QA`). Set `AUDIT_SKIP_COOLDOWN=0` or flip the flag to `false` only after sandbox then live payments succeed. Account opening is not `GROW_USER_ID` / `GROW_PAGE_CODE`.
 2. CSP nonce / drop `'unsafe-inline'` (medium, not urgent — see `PLAN-deferred.md`)
 3. Desktop CLS (~1.1) on hero — re-check after PIT-057 deploy
 4. Purge Vercel Blob after R2 uploads verified; remove `BLOB_READ_WRITE_TOKEN` last
