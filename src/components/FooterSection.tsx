@@ -6,6 +6,7 @@ import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import { navigateCtaHref } from '@/lib/ctaNav'
 import { openConsentSettings } from '@/lib/privacyConsent'
+import PurchaseTermsNotice from './PurchaseTermsNotice'
 import Button from './Button'
 import { loadGsapAfterLcp } from '@/lib/gsapAfterLcp'
 
@@ -496,6 +497,8 @@ export default function FooterSection({ locale, pinSpacer = true, animate = true
           <div ref={logoRef} className="flex w-full justify-center py-4">
             <FooterBrandLogo />
           </div>
+
+          <PurchaseTermsNotice locale={locale} id="purchase-terms" />
 
           {/* Bottom legal bar */}
           <div

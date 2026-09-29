@@ -761,6 +761,11 @@ export const footer = {
     ru: 'Copyright © 2026. Все права защищены',
     he: 'Copyright © 2026. כל הזכויות שמורות',
   },
+  purchaseTermsNotice: {
+    en: 'Erythro.ai, Eilat, Israel. A purchase on this site is a digital service for customers aged 18 or older. Delivery is by email, usually within a few business days, and nothing is shipped. You may cancel before the report is sent by writing to us. After it is sent, cancellation and any refund follow the Consumer Protection Law where it applies. Erythro.ai and its representatives are not liable for direct or indirect damage from use of a product bought on this site, except liability that Israeli law does not allow to be excluded.',
+    ru: 'Erythro.ai, Эйлат, Израиль. Покупка на этом сайте — цифровая услуга для покупателей от 18 лет. Доставка по email, обычно в течение нескольких рабочих дней, без физической отправки. Отменить заказ можно до отправки отчёта, написав нам. После отправки отмена и возврат идут по Закону о защите прав потребителей, где он применяется. Erythro.ai и его представители не отвечают за прямой или косвенный ущерб от использования купленного на сайте продукта, кроме ответственности, которую израильское право не позволяет исключить.',
+    he: 'Erythro.ai, אילת, ישראל. רכישה באתר זה היא שירות דיגיטלי ללקוחות בני 18 ומעלה. האספקה נעשית בדוא״ל, בדרך כלל בתוך כמה ימי עסקים, ואין משלוח פיזי. ניתן לבטל את העסקה לפני שליחת הדוח בפנייה אלינו. לאחר השליחה, ביטול והחזר כפופים לחוק הגנת הצרכן ככל שהוא חל. Erythro.ai ונציגיו אינם אחראים לנזק ישיר או עקיף הנובע משימוש במוצר שנרכש באתר, למעט אחריות שהדין הישראלי אינו מתיר לשלול.',
+  },
   legalLinks: [
     {
       id: 'privacy',
