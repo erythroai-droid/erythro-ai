@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { locText } from '../fields/localized'
+import { locText, locTextarea } from '../fields/localized'
 import { ctaHrefField } from '../fields/ctaHref'
 import { revalidateGlobal } from '../lib/revalidate'
 
@@ -34,6 +34,13 @@ export const Footer: GlobalConfig = {
     locText('locationLabel'),
     locText('locationValue'),
     locText('copyright'),
+    locTextarea('purchaseTermsNotice', {
+      admin: {
+        description:
+          'Purchase terms on the homepage footer and the order form: delivery, liability, age 18+, cancellation, privacy. Grow checks this text.',
+        rows: 6,
+      },
+    }),
     {
       name: 'legalLinks',
       type: 'array',
