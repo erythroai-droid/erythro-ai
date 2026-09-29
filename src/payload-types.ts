@@ -1710,6 +1710,10 @@ export interface Footer {
   locationLabel?: string | null;
   locationValue?: string | null;
   copyright?: string | null;
+  /**
+   * Purchase terms on the homepage footer and the order form: delivery, liability, age 18+, cancellation, privacy. Grow checks this text.
+   */
+  purchaseTermsNotice?: string | null;
   legalLinks?:
     | {
         /**
@@ -2352,6 +2356,7 @@ export interface FooterSelect<T extends boolean = true> {
   locationLabel?: T;
   locationValue?: T;
   copyright?: T;
+  purchaseTermsNotice?: T;
   legalLinks?:
     | T
     | {

@@ -490,6 +490,10 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.footer.locationLabel = L(footer?.locationLabel, content.footer.locationLabel)
     content.footer.locationValue = L(footer?.locationValue, content.footer.locationValue)
     content.footer.copyright = L(footer?.copyright, content.footer.copyright)
+    content.footer.purchaseTermsNotice = L(
+      footer?.purchaseTermsNotice,
+      content.footer.purchaseTermsNotice,
+    )
     if (Array.isArray(footer?.companyLinks) && footer.companyLinks.length) {
       content.footer.companyLinks = footer.companyLinks.map((n: any, i: number) => ({
         href: n.href ?? defaultSiteContent.footer.companyLinks[i]?.href ?? '#',
@@ -757,6 +761,10 @@ export async function getShellSiteContent(): Promise<SiteContent> {
     content.footer.locationLabel = L(footer?.locationLabel, content.footer.locationLabel)
     content.footer.locationValue = L(footer?.locationValue, content.footer.locationValue)
     content.footer.copyright = L(footer?.copyright, content.footer.copyright)
+    content.footer.purchaseTermsNotice = L(
+      footer?.purchaseTermsNotice,
+      content.footer.purchaseTermsNotice,
+    )
     if (Array.isArray(footer?.companyLinks) && footer.companyLinks.length) {
       content.footer.companyLinks = footer.companyLinks.map((n: any, i: number) => ({
         href: n.href ?? defaultSiteContent.footer.companyLinks[i]?.href ?? '#',

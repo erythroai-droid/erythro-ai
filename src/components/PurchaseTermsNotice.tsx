@@ -1,12 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { footer } from '@/translations'
+import { useSiteContent } from './SiteContentProvider'
 
 /**
  * Grow's site review looks for purchase terms on the homepage and again
  * next to the checkout checkbox: delivery, liability, age, cancellation, privacy.
- * Rendered from code so a CMS footer cannot drop it.
+ * Copy comes from the Footer global (purchase terms notice).
  */
 export default function PurchaseTermsNotice({
   locale,
@@ -15,7 +15,10 @@ export default function PurchaseTermsNotice({
   locale: string
   id?: string
 }) {
-  const t = (field: Record<string, string>) => field[locale] || field.en
+  const footer = useSiteContent().footer
+  const t = (field: Record<string, string> | undefined) => field?.[locale] || field?.en || ''
+  const terms = footer.legalLinks.find((link) => link.id === 'terms') ?? footer.legalLinks[1]
+  const privacy = footer.legalLinks.find((link) => link.id === 'privacy') ?? footer.legalLinks[0]
   const linkClass =
     'font-normal text-gold-500/90 underline underline-offset-2 decoration-gold-500/35 transition-colors hover:text-gold-100 hover:decoration-gold-100'
 
@@ -25,12 +28,16 @@ export default function PurchaseTermsNotice({
         {t(footer.purchaseTermsNotice)}
       </p>
       <p className="m-0 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-normal normal-case leading-relaxed">
-        <Link href="/terms" className={linkClass}>
-          {t(footer.legalLinks[1].label)}
-        </Link>
-        <Link href="/privacy" className={linkClass}>
-          {t(footer.legalLinks[0].label)}
-        </Link>
+        {terms ? (
+          <Link href={terms.href || '/terms'} className={linkClass}>
+            {t(terms.label)}
+          </Link>
+        ) : null}
+        {privacy ? (
+          <Link href={privacy.href || '/privacy'} className={linkClass}>
+            {t(privacy.label)}
+          </Link>
+        ) : null}
       </p>
     </div>
   )

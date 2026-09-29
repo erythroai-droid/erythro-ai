@@ -209,6 +209,7 @@ async function run() {
       locationLabel: footer.locationLabel[loc],
       locationValue: footer.locationValue[loc],
       copyright: footer.copyright[loc],
+      purchaseTermsNotice: footer.purchaseTermsNotice[loc],
       legalLinks: footer.legalLinks.map((l) => ({ key: l.id, label: l.label[loc], href: l.href })),
     })),
   )

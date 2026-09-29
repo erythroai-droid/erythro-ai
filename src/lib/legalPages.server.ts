@@ -108,21 +108,6 @@ export async function fetchLegalPage(id: LegalPageId): Promise<LegalPage> {
       })
     }
 
-    if (id === 'terms') {
-      const checkout = fallback.sections.find((section) => section.heading.en.startsWith('7.'))
-      const live =
-        page.sections.find((section) => section.heading.en.startsWith('7.')) || page.sections[6]
-      if (checkout && live) {
-        for (const l of LOCALES) {
-          const extra = checkout.paragraphs[l][1]
-          const marker = extra?.slice(0, 40)
-          if (!extra || !marker) continue
-          const present = live.paragraphs[l].some((paragraph) => paragraph.includes(marker))
-          if (!present) live.paragraphs[l] = [...live.paragraphs[l], extra]
-        }
-      }
-    }
-
     return page
   } catch (err) {
     console.error(`[fetchLegalPage:${id}] falling back to static:`, err)
@@ -136,7 +121,7 @@ export async function fetchLegalPage(id: LegalPageId): Promise<LegalPage> {
  * automatically invalidate this cache along with all other site content.
  */
 export function getCachedLegalPage(id: LegalPageId): Promise<LegalPage> {
-  return unstable_cache(() => fetchLegalPage(id), [`legal-page-${id}-v3-l10n`], {
+  return unstable_cache(() => fetchLegalPage(id), [`legal-page-${id}-v4-l10n`], {
     tags: [SITE_CONTENT_TAG],
   })()
 }

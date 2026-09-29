@@ -1502,6 +1502,7 @@ export const footer_locales = pgTable(
     locationLabel: varchar('location_label'),
     locationValue: varchar('location_value'),
     copyright: varchar('copyright'),
+    purchaseTermsNotice: varchar('purchase_terms_notice'),
     id: serial('id').primaryKey(),
     _locale: enum__locales('_locale').notNull(),
     _parentID: integer('_parent_id').notNull(),
