@@ -38,6 +38,7 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 import ProjectNav, { type ProjectNavNeighbor } from '@/components/portfolio/ProjectNav'
 import BidiText from '@/components/BidiText'
 import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
+import PurchaseTermsNotice from '@/components/PurchaseTermsNotice'
 import { ContactHoneypotField } from '@/components/ContactHoneypotField'
 import { PhoneE164Field } from '@/components/PhoneE164Field'
 import {
@@ -1706,6 +1707,8 @@ function AuditOrderModal({
                   {' — '}
                   {tForm(contactForm.fieldRequired)}
                 </p>
+
+                <PurchaseTermsNotice locale={locale} />
 
                 <ContactPrivacyConsent
                   locale={locale}
