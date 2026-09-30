@@ -1,0 +1,18 @@
+---
+description: Read docs/context/NOW.md before any work and update it at the end of a stage
+alwaysApply: true
+---
+
+# Session handoff
+
+The first action of every session, before planning or editing, is to read `docs/context/NOW.md` (latest changes).
+
+Then follow `AGENTS.md`. Protocol: `docs/context/HANDOFF.md`.
+
+Do not edit code until `NOW.md` has been read.
+
+When a stage changes code or decisions, or the user asks to hand off, update `NOW.md` before stopping: what changed, what is left, the next step. Keep it short. Do not mirror `NOW.md` to Obsidian.
+
+`CLAUDE.md` and `GEMINI.md` stay short pointers. Do not paste `AGENTS.md` back into them. `.cursorrules` stays the same text as `AGENTS.md`.
+
+Commit only when the user asks.
