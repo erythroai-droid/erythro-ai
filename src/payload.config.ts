@@ -22,6 +22,7 @@ import { PortfolioProjects } from './collections/PortfolioProjects'
 import { Partners } from './collections/Partners'
 import { ContactSubmissions } from './collections/ContactSubmissions'
 import { ConsultSessions } from './collections/ConsultSessions'
+import { ConsultQuestionLog } from './collections/ConsultQuestionLog'
 import { ProjectBriefs } from './collections/ProjectBriefs'
 import { TechConsultTickets } from './collections/TechConsultTickets'
 
@@ -75,6 +76,7 @@ export default buildConfig({
     Partners,
     ContactSubmissions,
     ConsultSessions,
+    ConsultQuestionLog,
     ProjectBriefs,
     TechConsultTickets,
   ],

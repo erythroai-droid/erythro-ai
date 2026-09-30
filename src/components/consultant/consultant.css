@@ -368,6 +368,17 @@
   margin-block-start: 0.9em;
 }
 
+.consult__pageLink {
+  color: var(--consult-gold);
+  text-decoration-line: underline;
+  text-underline-offset: 3px;
+}
+
+.consult__pageLink:hover,
+.consult__pageLink:focus-visible {
+  color: var(--consult-text);
+}
+
 .consult__bubble br {
   display: block;
   content: '';

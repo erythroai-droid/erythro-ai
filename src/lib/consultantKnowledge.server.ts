@@ -133,7 +133,7 @@ function renderServices(docs: Record<string, unknown>[]): string {
 
 /**
  * Builds the markdown handed to Gemini. URLs are intentionally absent — the
- * consultant navigates through widget chips, never by pasting links.
+ * model calls hand_off and the widget prints the link. It does not navigate.
  */
 export async function assembleConsultantKnowledge(
   locale: ConsultLocale,

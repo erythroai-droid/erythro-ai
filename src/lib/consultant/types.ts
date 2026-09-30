@@ -5,10 +5,11 @@
 
 export type ConsultLocale = 'en' | 'ru' | 'he'
 
-/** Text is the only part kind shipped in v1; `file` / `audio` are reserved so
- * that stored transcripts and the widget never assume `message === string`. */
+/** `file` / `audio` are reserved. `link` is a site page the widget shows in
+ * the thread — the consultant does not navigate there itself. */
 export type ConsultPart =
   | { type: 'text'; text: string }
+  | { type: 'link'; href: string; label: string }
   | { type: 'file'; name: string; mediaType: string; ref: string }
   | { type: 'audio'; ref: string; durationMs?: number }
 

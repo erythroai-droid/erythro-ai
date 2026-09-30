@@ -4,6 +4,7 @@ import { jsonSchema, stepCountIs, streamText, tool, type ModelMessage } from 'ai
 import { consultModel, geminiApiKey } from './config'
 import { buildSystemPrompt } from './prompt'
 import { detectReplyLocale } from './replyLocale'
+import { consultLinkLabel, resolveConsultPageHref, type ConsultPageTarget } from './pageLink'
 import { sanitizeBriefMarkdown, sanitizeText, stripUrls } from './sanitize'
 import { createConsultStream, CONSULT_STREAM_HEADERS } from './stream'
 import type {
@@ -142,22 +143,65 @@ export function createConsultHandler(deps: ConsultHandlerDeps) {
 
       hand_off: tool({
         description:
-          'Show a widget chip that sends the visitor to an existing page or channel. Use for ready packages, the AI audit, the contact form or WhatsApp. Never write the URL yourself.',
-        inputSchema: jsonSchema<{ target: 'form' | 'whatsapp' | 'audit' | 'order'; slug?: string }>({
+          'Show one existing site page as a link inside the chat. The chat stays open — never tell the visitor you are redirecting them. Use after explaining a package, service line, or audit. Also opens the contact form or WhatsApp. Never write the URL yourself. label is the link text in the visitor\'s language (the page title).',
+        inputSchema: jsonSchema<{
+          target: 'form' | 'whatsapp' | 'audit' | 'order' | 'service'
+          slug?: string
+          label?: string
+        }>({
           type: 'object',
           properties: {
-            target: { type: 'string', enum: ['form', 'whatsapp', 'audit', 'order'] },
-            slug: { type: 'string', description: 'Plan slug when target is "order".' },
+            target: {
+              type: 'string',
+              enum: ['form', 'whatsapp', 'audit', 'order', 'service'],
+              description:
+                'order = a solution or audit SKU (needs slug). service = a service line (needs slug). audit = the audit landing. form / whatsapp open that channel.',
+            },
+            slug: {
+              type: 'string',
+              description: 'The slug: value from the knowledge base. Required for order and service.',
+            },
+            label: {
+              type: 'string',
+              description: 'Short link text in the visitor\'s language, usually the page title.',
+            },
           },
           required: ['target'],
           additionalProperties: false,
         }),
-        execute: async ({ target, slug }) => {
+        execute: async ({ target, slug, label }) => {
+          if (target === 'form' || target === 'whatsapp') {
+            emitter.emit({ type: 'action', action: { kind: 'escalate', target } })
+            return { ok: true, shown: target }
+          }
+          const pageTarget = target as ConsultPageTarget
+          const href = resolveConsultPageHref(
+            pageTarget,
+            sanitizeText(slug ?? '', 80),
+            knowledge.markdown,
+          )
+          if (!href) {
+            return refuse(
+              'That page is not in the knowledge base. Answer in text, or call hand_off again with the slug from the knowledge base.',
+            )
+          }
+          const fallback =
+            pageTarget === 'audit' && href === '/audit'
+              ? locale === 'ru'
+                ? 'ИИ-аудит'
+                : locale === 'he'
+                  ? 'ביקורת AI'
+                  : 'AI audit'
+              : locale === 'ru'
+                ? 'Подробнее'
+                : locale === 'he'
+                  ? 'לפרטים'
+                  : 'Details'
           emitter.emit({
             type: 'action',
-            action: { kind: 'escalate', target, ...(slug ? { slug: sanitizeText(slug, 80) } : {}) },
+            action: { kind: 'page_link', href, label: consultLinkLabel(label, fallback) },
           })
-          return { ok: true, shown: target }
+          return { ok: true, shown: 'link' }
         },
       }),
 
