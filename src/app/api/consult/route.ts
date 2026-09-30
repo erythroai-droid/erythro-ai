@@ -33,6 +33,7 @@ import {
   persistSession,
   resolveConsultIdentity,
   submitBrief,
+  logAnonymousQuestion,
 } from '@/lib/consultantStore.server'
 import { readTurnstileToken, verifyTurnstileToken } from '@/lib/turnstile'
 
@@ -78,6 +79,20 @@ function parseMessages(raw: unknown): ConsultMessage[] {
       return filled.length ? { role, parts: filled } : null
     })
     .filter((message): message is ConsultMessage => message !== null)
+}
+
+function latestUserQuestion(messages: ConsultMessage[]): string {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const message = messages[i]
+    if (message.role !== 'user') continue
+    const text = message.parts
+      .filter((part): part is { type: 'text'; text: string } => part.type === 'text')
+      .map((part) => part.text)
+      .join('\n')
+      .trim()
+    if (text) return text
+  }
+  return ''
 }
 
 export async function POST(request: NextRequest) {
@@ -131,6 +146,18 @@ export async function POST(request: NextRequest) {
   const otpEnabled = isOtpEnabled()
   const rules = await getCachedConsultantRules(locale)
   const verified = readVerifiedCookie(request.cookies.get(OTP_VERIFIED_COOKIE)?.value)
+
+  if (!verified) {
+    const question = latestUserQuestion(messages)
+    if (question) {
+      await logAnonymousQuestion({
+        locale,
+        question,
+        visitor: hashIp(ip).slice(0, 12),
+      })
+    }
+  }
+
   const cookies: string[] = []
 
   if (verified) {

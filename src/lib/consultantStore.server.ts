@@ -130,6 +130,50 @@ export async function persistSession(input: {
   })
 }
 
+const QUESTION_DEDUPE_MS = 2 * 60 * 1000
+
+/**
+ * Stores one anonymous question before email verification. Failures are
+ * logged and swallowed so a full disk or a missing table cannot break the chat.
+ */
+export async function logAnonymousQuestion(input: {
+  locale: ConsultLocale
+  question: string
+  visitor: string
+}): Promise<void> {
+  const question = sanitizeText(input.question, 4000)
+  const visitor = sanitizeText(input.visitor, 32)
+  if (!question || !visitor) return
+
+  try {
+    const payload = await getPayloadClient()
+    const recent = await payload.find({
+      collection: 'consult-question-log',
+      where: {
+        and: [{ visitor: { equals: visitor } }, { question: { equals: question } }],
+      },
+      sort: '-createdAt',
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const last = recent.docs[0]
+    const createdAt = last ? Date.parse(str(last.createdAt)) : NaN
+    if (Number.isFinite(createdAt) && Date.now() - createdAt < QUESTION_DEDUPE_MS) return
+
+    await payload.create({
+      collection: 'consult-question-log',
+      data: { question, locale: input.locale, visitor },
+      overrideAccess: true,
+    })
+  } catch (err) {
+    console.error(
+      '[consult-question-log] write failed:',
+      err instanceof Error ? err.message : String(err),
+    )
+  }
+}
+
 async function techRecipient(locale: ConsultLocale): Promise<string> {
   try {
     const payload = await getPayloadClient()

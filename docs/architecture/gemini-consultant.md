@@ -25,12 +25,12 @@
 
 | Режим | Контакты | Что пишем в БД |
 |---|---|---|
-| Справка (FAQ, пакеты, цены) | не просим, лимит анонимных сообщений | ничего |
-| Каталог (готовый пакет / аудит) | не просим | ничего, отдаём чип на `/order` или `/audit` |
+| Справка (FAQ, пакеты, цены) | не просим, лимит анонимных сообщений | текст вопроса в `consult-question-log`, без имени и email |
+| Каталог (готовый пакет / услуга / аудит) | не просим | ничего; в чат пишется ссылка на страницу, чат не закрывается |
 | Кастомное ТЗ | OTP-email + телефон | `consult-sessions` + `project-briefs` |
 | Техконсультация | OTP-email | `tech-consult-tickets` |
 
-Чат **не оформляет** заказ и не дублирует `/order/*`, `/audit`, контактную форму и оплату.
+Чат **не оформляет** заказ и не дублирует `/order/*`, `/services/*`, `/audit`, контактную форму и оплату. На пакет, услугу или аудит `hand_off` вставляет ссылку в ответ и не закрывает чат. Контактная форма и WhatsApp открываются по-прежнему. Кнопки панели «Заказать сайт» и «Пройти аудит» сами ведут на страницу.
 
 ## 3. Поток
 
@@ -40,7 +40,7 @@
         ▼
 [Vercel Node route]
   system prompt = KB из Payload + bot rules из consultant-settings
-  tools: get_knowledge_base, translate_terms, request_email_verification, identify_client,
+  tools: get_knowledge_base, translate_terms, hand_off, request_email_verification, identify_client,
          escalate_tech, draft_brief, submit_brief
         │
         ├── GEMINI_API_KEY_AI_CHAT → gemini-3.6-flash
@@ -110,6 +110,7 @@ Pipeline живёт в Docker на VPS (`proxy_network` + Caddy, host-порт *
 
 ## 7. Данные
 
+- `consult-question-log` — каждый анонимный вопрос до OTP: текст, язык, короткий код посетителя (одно подключение, не имя). В админке: Consultant → Chat questions. Полная переписка по-прежнему только в `consult-sessions`.
 - `consult-sessions` — только после OTP + телефона + предупреждения. `messages` хранится как **parts** (не строка), есть `handoff` (`bot` в v1). Срок 12 месяцев. В админке лента — кастомный Field, не Monaco (PIT-096).
 - `project-briefs` — `TZ-{id}`, письмо только на `order@` (копию клиенту не слать), `crmStatus`.
 - `tech-consult-tickets` — `TC-{id}`, ответ клиенту **только email**, треда в виджете нет.

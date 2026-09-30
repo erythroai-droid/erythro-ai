@@ -121,7 +121,7 @@ export async function fetchLegalPage(id: LegalPageId): Promise<LegalPage> {
  * automatically invalidate this cache along with all other site content.
  */
 export function getCachedLegalPage(id: LegalPageId): Promise<LegalPage> {
-  return unstable_cache(() => fetchLegalPage(id), [`legal-page-${id}-v4-l10n`], {
+  return unstable_cache(() => fetchLegalPage(id), [`legal-page-${id}-v5-chat-log`], {
     tags: [SITE_CONTENT_TAG],
   })()
 }

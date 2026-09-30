@@ -19,6 +19,8 @@ export type ConsultEscalationTarget = 'form' | 'whatsapp' | 'telegram' | 'audit'
 
 export type ConsultAction =
   | { kind: 'escalate'; target: ConsultEscalationTarget; slug?: string }
+  /** A site page to show as a link. The widget does not navigate or close. */
+  | { kind: 'page_link'; href: string; label: string }
   | { kind: 'brief_ready'; markdown: string }
   | { kind: 'brief_sent'; projectNumber: string; crmStatus: 'created' | 'pending' }
   | { kind: 'ticket_created'; ticketId: string }

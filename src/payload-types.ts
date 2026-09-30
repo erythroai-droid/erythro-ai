@@ -77,6 +77,7 @@ export interface Config {
     partners: Partner;
     'contact-submissions': ContactSubmission;
     'consult-sessions': ConsultSession;
+    'consult-question-log': ConsultQuestionLog;
     'project-briefs': ProjectBrief;
     'tech-consult-tickets': TechConsultTicket;
     'payload-kv': PayloadKv;
@@ -96,6 +97,7 @@ export interface Config {
     partners: PartnersSelect<false> | PartnersSelect<true>;
     'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     'consult-sessions': ConsultSessionsSelect<false> | ConsultSessionsSelect<true>;
+    'consult-question-log': ConsultQuestionLogSelect<false> | ConsultQuestionLogSelect<true>;
     'project-briefs': ProjectBriefsSelect<false> | ProjectBriefsSelect<true>;
     'tech-consult-tickets': TechConsultTicketsSelect<false> | TechConsultTicketsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -894,6 +896,26 @@ export interface ConsultSession {
   createdAt: string;
 }
 /**
+ * Questions asked before email verification. The visitor code groups one connection; it is not a name or an account.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consult-question-log".
+ */
+export interface ConsultQuestionLog {
+  id: number;
+  question: string;
+  /**
+   * Language of the reply, from the visitor message
+   */
+  locale?: string | null;
+  /**
+   * Same code means the same connection. Shared networks share a code.
+   */
+  visitor?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Briefs collected by the AI consultant. The team is notified at order@erythro.ai; client files live in the CRM card.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1397,6 +1419,17 @@ export interface ConsultSessionsSelect<T extends boolean = true> {
   emailVerifiedAt?: T;
   identifiedAt?: T;
   ip?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consult-question-log_select".
+ */
+export interface ConsultQuestionLogSelect<T extends boolean = true> {
+  question?: T;
+  locale?: T;
+  visitor?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -7,6 +7,7 @@ import './consultant.css'
 import { defaultConsultantLabels, type ConsultantLabels } from './labels'
 import ThinkingStatus from './ThinkingStatus'
 import { useConsultTurnstile } from './turnstile'
+import { safeConsultPageHref } from '@/lib/consultant/pageLink'
 import { readConsultStream, type ConsultEscalationTarget } from '@/lib/consultant/stream'
 import type { ConsultMessage, ConsultPart } from '@/lib/consultant/types'
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
@@ -91,6 +92,20 @@ function textOf(parts: ConsultPart[]): string {
     .map((part) => (part.type === 'text' ? part.text : ''))
     .filter(Boolean)
     .join('\n')
+}
+
+function linksOf(parts: ConsultPart[]): { href: string; label: string }[] {
+  const seen = new Set<string>()
+  const links: { href: string; label: string }[] = []
+  for (const part of parts) {
+    if (part.type !== 'link') continue
+    const href = safeConsultPageHref(part.href)
+    const label = part.label.trim()
+    if (!href || !label || seen.has(href)) continue
+    seen.add(href)
+    links.push({ href, label })
+  }
+  return links
 }
 
 /** Escape + a tiny markdown subset so **bold** and line breaks show as intended. */
@@ -313,9 +328,22 @@ export default function ConsultantWidget({
       const commitAssistant = () => {
         setMessages((prev) => {
           const last = prev[prev.length - 1]
-          const parts: ConsultPart[] = [{ type: 'text', text: assistant }]
+          const links = last?.role === 'assistant' ? last.parts.filter((part) => part.type === 'link') : []
+          const parts: ConsultPart[] = [{ type: 'text', text: assistant }, ...links]
           if (last?.role === 'assistant') return [...prev.slice(0, -1), { role: 'assistant', parts }]
           return [...prev, { role: 'assistant', parts }]
+        })
+      }
+
+      const appendPageLink = (href: string, label: string) => {
+        const link: ConsultPart = { type: 'link', href, label }
+        setMessages((prev) => {
+          const last = prev[prev.length - 1]
+          if (last?.role === 'assistant') {
+            if (last.parts.some((part) => part.type === 'link' && part.href === href)) return prev
+            return [...prev.slice(0, -1), { role: 'assistant', parts: [...last.parts, link] }]
+          }
+          return [...prev, { role: 'assistant', parts: [link] }]
         })
       }
 
@@ -355,6 +383,10 @@ export default function ConsultantWidget({
                 target: action.target,
                 ...(action.slug ? { slug: action.slug } : {}),
               })
+            } else if (action.kind === 'page_link') {
+              const href = safeConsultPageHref(action.href)
+              const label = action.label.trim()
+              if (href && label) appendPageLink(href, label)
             } else if (action.kind === 'brief_ready') {
               pushNotice({ kind: 'brief', markdown: action.markdown })
             } else if (action.kind === 'brief_sent') {
@@ -520,11 +552,12 @@ export default function ConsultantWidget({
 
           {messages.map((message, index) => {
             const full = textOf(message.parts)
+            const links = message.role === 'assistant' ? linksOf(message.parts) : []
             const isLiveAssistant =
               liveAnswer && message.role === 'assistant' && index === messages.length - 1
             const shown = isLiveAssistant ? typedAssistant : full
-            if (isLiveAssistant && !shown) return null
             const stillTyping = isLiveAssistant && shown !== full
+            if (isLiveAssistant && !shown && links.length === 0) return null
             return (
               <article
                 key={`${message.role}-${index}`}
@@ -532,6 +565,14 @@ export default function ConsultantWidget({
               >
                 {shown ? formatBubble(shown) : null}
                 {stillTyping ? <span className="consult__caret" /> : null}
+                {!stillTyping &&
+                  links.map((link) => (
+                    <p key={link.href}>
+                      <a className="consult__pageLink" href={link.href}>
+                        {link.label}
+                      </a>
+                    </p>
+                  ))}
               </article>
             )
           })}
