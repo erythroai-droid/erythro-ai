@@ -3,7 +3,7 @@
 Manifest for building a retrieval corpus from `docs/`. Use this file as the **ingest map**:
 what to chunk, how to tag, and which questions each source answers.
 
-Last updated: 2026-09-14.
+Last updated: 2026-09-30.
 
 ---
 
@@ -45,6 +45,8 @@ Last updated: 2026-09-14.
 | `scripts/create-cloudflare-access-admin.mjs` | Create Access app for `/admin*` via API token | One chunk: purpose + required scopes | `access`, `cloudflare`, `admin` |
 | `docs/consultant/erythro-knowledge-base.md` | Public AI consultant sales KB (live CMS prices) | One chunk per `##` (or whole file for prompt) | `consultant`, `pricing`, `faq`, `audit` |
 | `docs/architecture/gemini-consultant.md` | Site consultant on Gemini Flash + CMS KB, OTP, Translater | One chunk per `##` | `consultant`, `gemini`, `chat`, `otp` |
+| `docs/context/HANDOFF.md` | How agents hand work across Cursor, Claude, Gemini, Grok | One chunk | `agents`, `handoff`, `context` |
+| `docs/context/NOW.md` | Latest session changes (volatile; do not ingest as canon) | Skip | `agents`, `handoff` |
 
 **Optional later (not docs yet):** `scripts/seed.ts` header comments, `payload.config.ts` plugin block, `.github/workflows/test.yml` — only if docs lag behind code.
 
@@ -153,6 +155,7 @@ Rules:
 - [x] `docs/AI_VISIBILITY.md` — llms.txt, MCP, schema, security headers (2026-08-22).
 - [x] Cloudflare Access `/admin*` + DMARC quarantine runbook + PIT-064 (2026-09-06).
 - [x] R2 media storage + VPS docker ports + PLAN-deferred in corpus (2026-09-06).
+- [x] `docs/context/HANDOFF.md` + `NOW.md` — agent handoff across models (2026-09-30). `NOW.md` is volatile and is not ingested.
 - [ ] `docs/ORDER_CMS.md` mirroring portfolio for Solution Plans / order page.
 - [ ] `docs/I18N_RTL.md` consolidating BiDi / HE scrub / phone LTR fixes from commits.
 - [ ] Scalability track (new playbook section when that work starts — not v1).

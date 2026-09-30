@@ -10,6 +10,7 @@ Postgres (Supabase) + Vercel. **v1 is shipped** (2026-08-18). Next track: scalab
 | [`docs/PITFALLS.md`](docs/PITFALLS.md) | Errors to avoid (symptom → fix) |
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Prod infra, CI, mail, Blob |
 | [`docs/RAG_INDEX.md`](docs/RAG_INDEX.md) | Map of the knowledge base |
+| [`docs/context/NOW.md`](docs/context/NOW.md) | Latest changes — read before any agent session |
 
 Local: copy `.env.example` → `.env`, `pnpm install`, `pnpm dev` → `http://localhost:3000`.
 Admin: `/admin`. Tests: `pnpm test:int` then `pnpm test:e2e` (see PIT-022 / PIT-023).
