@@ -204,7 +204,7 @@ DNS (Cloudflare Free, Proxied): `n8n`, `agent-api` → IP VPS. SSL Mode к origi
 ```yaml
 services:
   n8n:
-    image: docker.n8n.io/n8nio/n8n:latest
+    image: docker.n8n.io/n8nio/n8n:2.41.7
     container_name: n8n_app
     restart: unless-stopped
     environment:
