@@ -34,6 +34,7 @@ import * as migration_20260927_010000_page_faq_cms from './20260927_010000_page_
 import * as migration_20260927_020000_page_faq_seed_by_title from './20260927_020000_page_faq_seed_by_title'
 import * as migration_20260929_150000_purchase_terms_cms from './20260929_150000_purchase_terms_cms'
 import * as migration_20261001_021000_consult_question_log from './20261001_021000_consult_question_log'
+import * as migration_20261007_021500_users_reset_password_requested_at from './20261007_021500_users_reset_password_requested_at'
 
 export const migrations = [
   {
@@ -215,5 +216,10 @@ export const migrations = [
     up: migration_20261001_021000_consult_question_log.up,
     down: migration_20261001_021000_consult_question_log.down,
     name: '20261001_021000_consult_question_log',
+  },
+  {
+    up: migration_20261007_021500_users_reset_password_requested_at.up,
+    down: migration_20261007_021500_users_reset_password_requested_at.down,
+    name: '20261007_021500_users_reset_password_requested_at',
   },
 ]

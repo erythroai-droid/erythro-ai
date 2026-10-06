@@ -21,6 +21,7 @@
     "db:fix-audit-pricing": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_DISABLE_PUSH=1 tsx scripts/patch-audit-pricing.ts",
     "db:fix-smart-card-solution": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_DISABLE_PUSH=1 tsx scripts/patch-smart-card-solution.ts",
     "db:fix-contact-submissions-audit-fields": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-contact-submissions-audit-fields.ts",
+    "db:fix-users-reset-password-requested-at": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-users-reset-password-requested-at.ts",
     "db:fix-contact-submissions-audit-pipeline": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/fix-contact-submissions-audit-pipeline.ts",
     "db:fix-contact-submissions-html-result": "node scripts/fix-contact-submissions-html-result.mjs",
     "media:migrate-blob-to-r2": "node scripts/migrate-blob-media-to-r2.mjs",

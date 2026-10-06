@@ -103,6 +103,7 @@ jobs:
           pnpm db:fix-portfolio-richtext
           pnpm db:fix-solution-feature-columns
           pnpm db:fix-contact-submissions-audit-fields
+          pnpm db:fix-users-reset-password-requested-at
 
       - name: Run API integration test
         if: steps.db.outputs.skip != 'true'
