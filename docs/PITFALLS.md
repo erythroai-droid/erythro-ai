@@ -1743,6 +1743,20 @@ Do not mark paid from the success redirect or from callback fields alone. Do not
 **Prevent:**
 Do not mark paid from `response=success` or from the notify body. Do not log or reuse the process token as a public id. One payment (`paymentNum: 1`, `saveCardToken: 0`). Israeli mobile and a two-word name are required before the row is created. See `docs/architecture/grow-audit-checkout.md`.
 
+## PIT-104 — Payload 3.90 storage plugin reads `media._objectkey`; all CMS content falls back
+
+**Tags:** `payload`, `upgrade`, `migrations`, `r2`, `cache`
+**Seen:** 2026-10-07 — after PR #223 (Payload 3.90.2) reached production.
+
+**Symptom:** Images and all CMS content disappear from the site; the admin loads no data. Vercel runtime errors: `[getSiteContent] / [getShellSiteContent] / [getSeoSettings] / [cmsPages] ... fallback`, cause `column "_objectkey" does not exist` (42703) on `select ... from "media"`.
+
+**Cause:** `@payloadcms/plugin-cloud-storage` 3.90 injects a hidden `_objectKey` text field into every storage-backed upload collection. The upgrade PR added a migration only for `users.reset_password_requested_at`. Any query that populates media (every global with an image) failed. The fallbacks then landed in `unstable_cache` with no `revalidate`, so they stay after the DB is fixed until `site-content` is revalidated.
+
+**Fix:** Migration `20261007_031500_media_object_key` (`ALTER TABLE media ADD COLUMN IF NOT EXISTS _objectkey varchar`), the column in `payload-generated-schema.ts`, and the same `ALTER` applied on prod by hand. Existing rows keep `_objectKey = null`; URLs fall back to `prefix/filename`. Then save any global in the admin (or `POST /api/revalidate?secret=…`) to drop the cached fallback.
+
+**Prevent:**
+After a Payload or storage-plugin bump, diff the generated Drizzle schema against prod (`information_schema.columns`) for every collection, not only the one named in the changelog. Smoke one CMS page and `/api/media` on the preview before merging to `main`.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1837,4 +1851,5 @@ Do not mark paid from `response=success` or from the notify body. Do not log or 
 - [ ] Consultant: reply language from last user message; How we work card; do not start ТЗ on collaboration (PIT-097)
 - [ ] PayPlus: paid only after IPN amount + `submission:` id; success page is not proof; no unpaid fallback (PIT-099)
 - [ ] Grow: paid only after `getTransactionInfo` status `2` + amount + process token; success `response=success` is not proof; still call `approveTransaction` (PIT-100)
+- [ ] Payload / storage-plugin bump: compare the generated schema with prod columns for every collection; smoke `/api/media` on the preview; after a DB fix revalidate `site-content` (PIT-104)
 
