@@ -1,9 +1,10 @@
 # Target n8n compose behind Caddy (HTTPS).
 # On VPS: merge with existing /root/n8n data volume; do not wipe n8n_data.
-# Pin a patched stable tag (not :latest). Security floor: 2.37.7 / 2.38.2 / 1.123.76.
+# Pin a patched stable tag (not :latest). Security floor: 2.41.4 / 2.42.1 / 1.123.83.
+# Current stable pin: 2.41.7 (2026-10-07). Do not jump to pre-release 2.43.x.
 services:
   n8n:
-    image: docker.n8n.io/n8nio/n8n:2.39.6
+    image: docker.n8n.io/n8nio/n8n:2.41.7
     container_name: n8n
     restart: unless-stopped
     environment:

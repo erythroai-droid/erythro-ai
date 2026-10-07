@@ -72,6 +72,11 @@ export const users = pgTable(
       withTimezone: true,
       precision: 3,
     }),
+    resetPasswordRequestedAt: timestamp('reset_password_requested_at', {
+      mode: 'string',
+      withTimezone: true,
+      precision: 3,
+    }),
     salt: varchar('salt'),
     hash: varchar('hash'),
     loginAttempts: numeric('login_attempts', { mode: 'number' }).default(0),
