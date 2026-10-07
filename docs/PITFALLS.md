@@ -1757,6 +1757,19 @@ Do not mark paid from `response=success` or from the notify body. Do not log or 
 **Prevent:**
 After a Payload or storage-plugin bump, diff the generated Drizzle schema against prod (`information_schema.columns`) for every collection, not only the one named in the changelog. Smoke one CMS page and `/api/media` on the preview before merging to `main`.
 
+## PIT-106 — Gemini 3.x: `temperature` / `thinking_budget` will 400
+
+**Tags:** `consultant`, `gemini`, `audit-agent`  
+**Seen:** 2026-10-07 — Google AI Studio notice «Update thinking_budget and sampling parameters»
+
+**Symptom:** None yet on `gemini-3.6-flash` (custom sampling is ignored). Upcoming Gemini models will return `400 INVALID_ARGUMENT` for `temperature` / `top_p` / `top_k` and for `thinking_budget`.
+
+**Cause:** Since Gemini 3.6 Flash, sampling params are fixed to model defaults. `thinking_budget` is remapped to `thinking_level` only as a temporary fallback.
+
+**Fix:** Remove `temperature` from consultant `streamText` and from QA_Auditor `generationConfig`. Do not send `thinking_budget`. Consultant sets `thinking_level` by stage: anon `minimal` → OTP `low` → brief/phone `medium` (`consultThinkingLevel`).
+
+**Prevent:** For Gemini 3.x GenerateContent / AI SDK calls, never set `temperature`, `top_p`, `top_k`, or `thinking_budget`. Steer depth with `thinking_level` only.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1852,4 +1865,5 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 - [ ] PayPlus: paid only after IPN amount + `submission:` id; success page is not proof; no unpaid fallback (PIT-099)
 - [ ] Grow: paid only after `getTransactionInfo` status `2` + amount + process token; success `response=success` is not proof; still call `approveTransaction` (PIT-100)
 - [ ] Payload / storage-plugin bump: compare the generated schema with prod columns for every collection; smoke `/api/media` on the preview; after a DB fix revalidate `site-content` (PIT-104)
+- [ ] Gemini 3.x: no `temperature` / `top_p` / `top_k` / `thinking_budget` on GenerateContent or `streamText` (PIT-106)
 

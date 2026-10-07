@@ -34,12 +34,14 @@ export {
   CONSULT_MODEL,
   consultLocale,
   consultModel,
+  consultThinkingLevel,
   geminiApiKey,
   isConsultantConfigured,
   isOtpEnabled,
   isProductionRuntime,
   otpPepper,
   readPositiveInt,
+  type ConsultThinkingLevel,
 } from './config'
 
 export {

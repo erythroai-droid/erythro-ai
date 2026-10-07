@@ -1,7 +1,10 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import {
+  createGoogleGenerativeAI,
+  type GoogleGenerativeAIProviderOptions,
+} from '@ai-sdk/google'
 import { jsonSchema, stepCountIs, streamText, tool, type ModelMessage } from 'ai'
 
-import { consultModel, geminiApiKey } from './config'
+import { consultModel, consultThinkingLevel, geminiApiKey } from './config'
 import { buildSystemPrompt } from './prompt'
 import { detectReplyLocale } from './replyLocale'
 import { consultLinkLabel, resolveConsultPageHref, type ConsultPageTarget } from './pageLink'
@@ -381,13 +384,19 @@ export function createConsultHandler(deps: ConsultHandlerDeps) {
         // along until tool declarations live inside the cache (PIT-093).
         // `textStream` also swallows that 400 — no throw, no tokens — so we
         // must not attach a cache handle at all.
+        // No temperature / top_p / top_k; thinkingLevel by auth stage (PIT-106).
+        const thinkingLevel = consultThinkingLevel({ otpEnabled, identity })
         const result = streamText({
           model: google(modelId),
           system,
           messages: toModelMessages(messages),
           tools,
           stopWhen: stepCountIs(6),
-          temperature: 0.3,
+          providerOptions: {
+            google: {
+              thinkingConfig: { thinkingLevel },
+            } satisfies GoogleGenerativeAIProviderOptions,
+          },
         })
 
         for await (const delta of result.textStream) {

@@ -1,4 +1,4 @@
-import type { ConsultLocale } from './types'
+import type { ConsultIdentity, ConsultLocale } from './types'
 
 /**
  * Model is pinned to match the QA_Auditor Funnel review (`AuditCollector.java`).
@@ -6,6 +6,23 @@ import type { ConsultLocale } from './types'
  * surfaced in the UI.
  */
 export const CONSULT_MODEL = 'gemini-3.6-flash'
+
+/** Gemini 3.x thinking depth — never send `thinking_budget` (PIT-106). */
+export type ConsultThinkingLevel = 'minimal' | 'low' | 'medium'
+
+/**
+ * Anonymous FAQ (≤ anon quota, no OTP): cheapest thinking.
+ * After email verification: one step up.
+ * Custom brief unlocked (phone on file): medium for ТЗ drafting.
+ */
+export function consultThinkingLevel(input: {
+  otpEnabled: boolean
+  identity: Pick<ConsultIdentity, 'verifiedEmail' | 'phone'>
+}): ConsultThinkingLevel {
+  if (input.otpEnabled && !input.identity.verifiedEmail) return 'minimal'
+  if (input.identity.phone) return 'medium'
+  return 'low'
+}
 
 export function consultModel(): string {
   return process.env.GEMINI_CONSULT_MODEL?.trim() || CONSULT_MODEL
