@@ -9,7 +9,8 @@
 Публичный консультант на сайте вызывает `POST /api/consult`. Мозг — **Gemini API** (`generativelanguage.googleapis.com`), ключ `GEMINI_API_KEY_AI_CHAT` только server-side. Браузер ключ не видит и на Google напрямую не ходит (CSP `connect-src 'self'`).
 
 - Модель жёстко `gemini-3.6-flash` (как Funnel review в `AuditCollector.java`). `GEMINI_CONSULT_MODEL` — аварийный override.
-- SDK: `ai` + `@ai-sdk/google`, `streamText` в Node route.
+- SDK: `ai` + `@ai-sdk/google`, `streamText` в Node route. Без `temperature` / `top_p` / `top_k` / `thinking_budget` (PIT-106; Gemini 3.x скоро отдаёт 400).
+- `thinking_level`: анонимный FAQ → `minimal`; после OTP → `low`; ТЗ (телефон в сессии) → `medium`.
 - xAI / Grok Bot / `XAI_API_KEY` **не используются**.
 - Google Search grounding выключен: ответы не должны уезжать за пределы сайта.
 

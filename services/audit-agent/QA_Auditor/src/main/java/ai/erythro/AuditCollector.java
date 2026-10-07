@@ -2827,12 +2827,12 @@ public class AuditCollector {
                 %s
                 """.formatted(targetUrl, answerLang, pagesBlock);
 
+            // Gemini 3.x: no temperature / top_p / top_k (PIT-106).
             Map<String, Object> body = Map.of(
                     "contents", List.of(Map.of(
                             "parts", List.of(Map.of("text", prompt))
                     )),
                     "generationConfig", Map.of(
-                            "temperature", 0.2,
                             "responseMimeType", "application/json"
                     )
             );
