@@ -719,9 +719,30 @@ public final class ReportFindingsCatalog {
         if (urls == null || urls.isEmpty()) {
             return ".";
         }
-        int shown = Math.min(5, urls.size());
-        String joined = String.join("; ", urls.subList(0, shown));
-        String extra = urls.size() > shown ? "…" : "";
-        return ": " + joined + extra + ".";
+        int shown = Math.min(2, urls.size());
+        StringBuilder joined = new StringBuilder();
+        for (int i = 0; i < shown; i++) {
+            if (i > 0) {
+                joined.append("; ");
+            }
+            joined.append(clipUnbrokenSample(urls.get(i)));
+        }
+        if (urls.size() > shown) {
+            joined.append('…');
+        }
+        return ": " + joined + ".";
+    }
+
+    /** Keep a hash or token URL from painting across the fixed finding card. */
+    private static String clipUnbrokenSample(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        String s = raw.trim();
+        int max = 42;
+        if (s.length() <= max) {
+            return s;
+        }
+        return s.substring(0, max - 1) + "…";
     }
 }

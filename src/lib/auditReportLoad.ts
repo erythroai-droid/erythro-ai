@@ -64,6 +64,21 @@ export function rewriteAuditReportAssetUrls(html: string): string {
     .replace(/\/api\/audit\/assets\/figma-assets\//g, `${AUDIT_REPORT_ASSET_BASE}/`)
 }
 
+const FINDING_CLIP_STYLE = `<style data-erythro-finding-clip>
+.findings-grid{overflow:hidden!important}
+.finding-card,.finding-box,.finding-box .issue{box-sizing:border-box!important;max-width:100%!important;overflow:hidden!important;overflow-wrap:anywhere!important;word-break:break-word!important}
+.finding-box{width:auto!important}
+.finding-box .issue{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:6!important}
+</style>`
+
+/** Clip already-stored reports whose cards have no overflow rules. */
+export function clipAuditReportFindingOverflow(html: string): string {
+  if (html.includes('data-erythro-finding-clip')) return html
+  const head = html.lastIndexOf('</head>')
+  if (head >= 0) return html.slice(0, head) + FINDING_CLIP_STYLE + html.slice(head)
+  return FINDING_CLIP_STYLE + html
+}
+
 /** Full report HTML from CMS or R2. */
 export async function resolveAuditReportHtml(
   doc: AuditReportDoc,
@@ -79,5 +94,5 @@ export async function resolveAuditReportHtml(
       if (fromR2) html = fromR2.slice(0, AUDIT_REPORT_HTML_MAX)
     }
   }
-  return html ? rewriteAuditReportAssetUrls(html) : null
+  return html ? clipAuditReportFindingOverflow(rewriteAuditReportAssetUrls(html)) : null
 }
