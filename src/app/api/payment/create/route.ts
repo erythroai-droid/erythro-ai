@@ -9,11 +9,7 @@ import { createMakeGrowPayment, isMakeGrowConfigured } from '@/lib/payments/make
 import { signPaymentReturn } from '@/lib/payments/returnSig'
 import { getRequestIp, consumeContactRateLimit } from '@/lib/contactRateLimit'
 import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
-import {
-  readTurnstileToken,
-  turnstileActionFromBody,
-  verifyTurnstileToken,
-} from '@/lib/turnstile'
+import { readTurnstileToken, verifyTurnstileToken } from '@/lib/turnstile'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -61,10 +57,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
-  // Turnstile verification
+  // The order widget mints the token with action "audit" (OrderClient).
   const turnstile = await verifyTurnstileToken({
     token: readTurnstileToken(body),
-    action: turnstileActionFromBody(body),
+    action: 'audit',
     remoteip: ip === 'unknown' ? undefined : ip,
   })
   if (!turnstile.ok) {
