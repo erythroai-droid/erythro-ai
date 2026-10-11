@@ -142,10 +142,9 @@ function mapFeatures(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapPlans(raw: unknown[] | undefined, fallback: any[]): any[] {
-  // CMS plans are the source of truth when present — do not inject code-only plans/notes.
   if (!Array.isArray(raw) || raw.length === 0) return [...fallback]
 
-  return raw.map((item: unknown, i) => {
+  const mapped = raw.map((item: unknown, i) => {
     const r = item as Record<string, unknown>
     const rawPlanId =
       (typeof r?.planId === 'string' && r.planId.trim()) || ''
@@ -198,6 +197,30 @@ function mapPlans(raw: unknown[] | undefined, fallback: any[]): any[] {
             : planId === 'diagnostic' || fb?.id === 'diagnostic',
     }
   })
+
+  // CMS may still have only Free/Diagnostic/Pro — append code-only plans (Manual).
+  const seen = new Set(
+    mapped.map((p) => (typeof p?.id === 'string' ? p.id : '')).filter(Boolean),
+  )
+  for (const fb of fallback) {
+    const id = typeof fb?.id === 'string' ? fb.id : ''
+    if (!id || seen.has(id)) continue
+    mapped.push({
+      id,
+      badge: fb.badge ?? null,
+      name: fb.name,
+      price: fb.price,
+      ...('priceCompare' in fb && fb.priceCompare ? { priceCompare: fb.priceCompare } : {}),
+      ...('priceNote' in fb && fb.priceNote ? { priceNote: fb.priceNote } : {}),
+      ...('description' in fb && fb.description ? { description: fb.description } : {}),
+      features: Array.isArray(fb.features) ? [...fb.features] : [],
+      cta: fb.cta,
+      ctaHref: normalizeCtaHref(typeof fb.ctaHref === 'string' ? fb.ctaHref : ''),
+      featured: id === 'diagnostic',
+    })
+    seen.add(id)
+  }
+  return mapped
 }
 
 // ── Main fetch ───────────────────────────────────────────────────────────────
@@ -324,7 +347,7 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
  * Shares the site-content cache tag so Payload admin saves invalidate automatically.
  */
 export function getCachedAuditPage(): Promise<AuditPageContent> {
-  return unstable_cache(() => fetchAuditPage(), ['audit-page-v7-faq'], {
+  return unstable_cache(() => fetchAuditPage(), ['audit-page-v8-manual'], {
     tags: [SITE_CONTENT_TAG],
   })()
 }

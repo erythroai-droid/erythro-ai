@@ -14,7 +14,7 @@
 
 ## Сейчас
 
-CMS: `pnpm db:fix-audit-pricing` (delegate→manual + новый CTA). Seed order plans для Manual не нужен. Деплой. Intake-лимиты не возвращать до живого списания Diagnostic/Pro.
+Manual уже в CMS (`pnpm db:fix-audit-pricing` на prod DB, en/ru/he). Локальный `REVALIDATION_TOKEN` ≠ Vercel → кэш `/audit` не сбросился (401). В коде: `mapPlans` дописывает отсутствующие планы + cache key `audit-page-v8-manual` — нужен деплой (или Save в admin Audit Page). Intake-лимиты не возвращать до живого списания.
 
 ## Не делать
 
@@ -25,4 +25,4 @@ CMS: `pnpm db:fix-audit-pricing` (delegate→manual + новый CTA). Seed orde
 
 ## Последняя эстафета
 
-2026-10-11 — Cursor — Manual только через contact modal. Следующий шаг: patch CMS + деплой; на `/audit` Pricing проверить кнопку Manual.
+2026-10-12 — Cursor — карточки не было: в CMS не было Manual, код не дописывал. Патч БД сделан; ждём деплой merge-фикса / Save в admin.
