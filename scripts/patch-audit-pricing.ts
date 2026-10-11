@@ -70,19 +70,26 @@ async function patchAuditPage(payload: any): Promise<number> {
     pricing.agencyCta = auditPage.pricing.agencyCta[loc]
 
     const cmsPlans: any[] = Array.isArray(pricing.plans) ? [...pricing.plans] : []
-    pricing.plans = cmsPlans.map((cms) => {
-      const id = typeof cms?.planId === 'string' ? cms.planId : ''
-      const fb = auditPage.pricing.plans.find((p) => p.id === id)
-      if (!fb) return cms
+    // Source of truth = code fallback. Legacy CMS `delegate` row becomes `manual`.
+    pricing.plans = auditPage.pricing.plans.map((fb) => {
+      const cms =
+        cmsPlans.find((row) => row?.planId === fb.id) ||
+        (fb.id === 'manual' ? cmsPlans.find((row) => row?.planId === 'delegate') : undefined)
       patched += 1
-      const cmsFeatures = Array.isArray(cms.features) ? cms.features : []
+      const cmsFeatures = Array.isArray(cms?.features) ? cms.features : []
       return {
-        ...cms,
+        ...(cms ?? {}),
+        planId: fb.id,
+        featured: fb.id === 'diagnostic',
         name: fb.name[loc],
         price: fb.price[loc],
-        ...('priceCompare' in fb && fb.priceCompare ? { priceCompare: fb.priceCompare[loc] } : {}),
-        ...('priceNote' in fb && fb.priceNote ? { priceNote: fb.priceNote[loc] } : {}),
-        ...('description' in fb && fb.description ? { description: fb.description[loc] } : {}),
+        ...('priceCompare' in fb && fb.priceCompare
+          ? { priceCompare: fb.priceCompare[loc] }
+          : { priceCompare: null }),
+        ...('priceNote' in fb && fb.priceNote ? { priceNote: fb.priceNote[loc] } : { priceNote: null }),
+        ...('description' in fb && fb.description
+          ? { description: fb.description[loc] }
+          : { description: null }),
         cta: fb.cta[loc],
         ctaHref: fb.ctaHref,
         features: fb.features.map((feature, i) => ({

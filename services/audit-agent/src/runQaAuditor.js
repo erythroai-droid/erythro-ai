@@ -13,7 +13,10 @@ const DEFAULT_QA_DIR = '/app/QA_Auditor'
  */
 export function planToTier(planSlug) {
   const slug = String(planSlug || 'audit-free').toLowerCase()
-  if (slug.includes('pro')) return { tier: 'PRO', folder: 'pro', pageCap: 10 }
+  // Manual uses the Pro lab as baseline; expert brief is delivered offline.
+  if (slug.includes('manual') || slug.includes('pro')) {
+    return { tier: 'PRO', folder: 'pro', pageCap: 10 }
+  }
   if (slug.includes('diagnostic')) return { tier: 'DIAGNOSTIC', folder: 'diagnostic', pageCap: 5 }
   return { tier: 'FREE', folder: 'free', pageCap: 1 }
 }

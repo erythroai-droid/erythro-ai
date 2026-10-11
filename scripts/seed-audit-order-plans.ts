@@ -1,6 +1,7 @@
 /**
  * Upsert AI Audit order plans (audit-free / audit-diagnostic / audit-pro)
  * into `solution-plans` without touching Solution plans.
+ * Manual is pricing-card only (contact modal) — no order slug.
  *
  * Usage: pnpm exec tsx scripts/seed-audit-order-plans.ts
  */

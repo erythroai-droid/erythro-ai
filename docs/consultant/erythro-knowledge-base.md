@@ -83,10 +83,12 @@ Landing: https://erythro.ai/audit · orders: `order@erythro.ai`
 - Full 60+ checklist with a fix on every row, AI Visibility + Agent Readiness L1
 - URL: https://erythro.ai/order/audit-pro
 
-### Delegate — from ₪1 990
+### AI Audit: Manual — ₪2 490 (after scoping call, then payment)
 
-- Full Pro audit + 45-minute call, priority roadmap, 30 days implementation support
-- CTA: https://erythro.ai/contacts (scoped with the team; not a self-serve checkout slug)
+- Not self-serve checkout. CTA opens the contact form (“Message an engineer”).
+- Flow: message → scoping call with engineer → client pays → then the audit runs.
+- Scope: everything in Pro + expert UX/conversion (up to 5 journeys), Top-7 brief, backlog 30/60/90, delivery 5–7 business days, one domain / ~15 URLs
+- Landing card: https://erythro.ai/audit (Pricing tab)
 
 ## Service lines (from-prices)
 

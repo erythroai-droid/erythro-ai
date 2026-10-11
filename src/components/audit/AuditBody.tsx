@@ -36,8 +36,16 @@ import {
   type AuditTabId,
 } from '@/lib/auditPage'
 import { currencySymbol } from '@/lib/orderPlans'
-import { normalizeCtaHref } from '@/lib/ctaNav'
+import { isContactModalHref, navigateCtaHref, normalizeCtaHref } from '@/lib/ctaNav'
+import { useContactModal } from '@/components/ContactModal'
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
+
+/** Prefills the contact modal when Manual pricing CTA opens the engineer form. */
+const MANUAL_AUDIT_CONTACT_DRAFT: Record<string, string> = {
+  en: 'I am interested in the Manual AI Audit (₪2,490). Please schedule a scoping call — audit after payment.',
+  ru: 'Интересует ручной AI-аудит (Manual, ₪2 490). Нужен созвон для согласования объёма — аудит после оплаты.',
+  he: 'מתעניין/ת בביקורת AI ידנית (Manual, ₪2,490). אשמח לשיחת היקף — הביקורת אחרי תשלום.',
+}
 
 const AuditPageContext = React.createContext<AuditPageContent>(auditPage as AuditPageContent)
 
@@ -1149,6 +1157,7 @@ function AuditPricingCard({
   isLight: boolean
   onRequestAudit: () => void
 }) {
+  const { open: openContact } = useContactModal()
   const featured = Boolean(plan.featured) || plan.id === 'diagnostic'
   const priceText = tAudit(plan.price, locale)
   const { amount, suffix } = splitAuditPrice(priceText)
@@ -1159,6 +1168,22 @@ function AuditPricingCard({
     'priceNote' in plan && plan.priceNote ? tAudit(plan.priceNote, locale).trim() : ''
   const shekel = currencySymbol('ILS')
   const ctaHref = 'ctaHref' in plan ? normalizeCtaHref(plan.ctaHref) : ''
+  const opensContactModal = isContactModalHref(ctaHref)
+
+  const handleContactCta = () => {
+    if (plan.id === 'manual') {
+      try {
+        sessionStorage.setItem(
+          'erythro_order_draft',
+          MANUAL_AUDIT_CONTACT_DRAFT[locale] || MANUAL_AUDIT_CONTACT_DRAFT.en,
+        )
+      } catch {
+        /* ignore */
+      }
+    }
+    // Ordinary contact intake (not Free audit pipeline): engineer scopes, then paid audit offline.
+    navigateCtaHref(ctaHref || '#contact-modal', { openContact })
+  }
 
   const solutionButtonClassName = featured
     ? 'border-white text-white hover:bg-white hover:text-coal-900 hover:border-white active:bg-white active:text-coal-900 active:border-white aria-busy:bg-white aria-busy:text-coal-900 aria-busy:border-white'
@@ -1240,7 +1265,15 @@ function AuditPricingCard({
         </ul>
 
         <div className="mt-auto flex w-full flex-col items-center">
-          {ctaHref ? (
+          {opensContactModal ? (
+            <Button
+              variant="solution-cta"
+              className={solutionButtonClassName}
+              onClick={handleContactCta}
+            >
+              {tAudit(plan.cta, locale)}
+            </Button>
+          ) : ctaHref ? (
             <Link
               href={ctaHref}
               className={`${SOLUTION_CTA_LINK_CLASS} w-full text-center ${solutionButtonClassName}`}

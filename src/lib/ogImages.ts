@@ -17,6 +17,9 @@ const PLAN_OG_IMAGES: Record<string, string> = {
   'business-automation':
     'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/Business-Automation-4.jpg',
   'audit-free': 'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/Ai-Audit-1200-630-2.jpg',
+  'audit-diagnostic':
+    'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/Ai-Audit-1200-630-2.jpg',
+  'audit-pro': 'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/Ai-Audit-1200-630-2.jpg',
 }
 
 export function ogImageForPlan(slug: string, siteOgImage?: string): string {

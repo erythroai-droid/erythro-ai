@@ -60,7 +60,8 @@
 | Маршрут | Роль |
 |---|---|
 | `/audit` | Лендинг / заказ AI-аудита (существующий) |
-| `/order/audit-free`, `/order/audit-diagnostic`, `/order/audit-pro` | Чекаут по тарифу (без оплаты в MVP — submit заявки) |
+| `/order/audit-free`, `/order/audit-diagnostic`, `/order/audit-pro` | Чекаут по тарифу (платные — Grow) |
+| Pricing card **Manual** on `/audit` | Не чекаут: `#contact-modal` → инженер → созвон → оплата → затем аудит офлайн |
 | **`/audit/report/[id]`** | **Выдача результата** (polling; готовый отчёт → standalone HTML) |
 
 `/audit` и `/audit/report/[id]` не смешивать: лендинг ≠ страница результата.
@@ -82,7 +83,7 @@
 | `locale` | Язык UI сайта |
 | `website` | Проверяемый URL. На blur формы: DNS A/AAAA на публичный IP через `POST /api/audit/check-website` (`src/lib/checkWebsite.ts`). **Не** HTTP-fetch пользовательского URL (SSRF). n8n для этой проверки не используется. |
 | `auditLanguage` | `en` \| `ru` \| `he` — язык отчёта |
-| `planSlug` | `audit-free` \| `audit-diagnostic` \| `audit-pro` |
+| `planSlug` | `audit-free` \| `audit-diagnostic` \| `audit-pro` (Manual без self-serve slug) |
 | `planTotal` | Отображаемая сумма (информативно; оплаты нет) |
 | `auditStatus` | `new` → `in_progress` → `report_sent` |
 
