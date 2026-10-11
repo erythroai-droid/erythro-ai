@@ -29,4 +29,4 @@
 
 ## Последняя эстафета
 
-2026-10-11 — Cursor — кнопку AI-аудита в шапке спрятали флагом. Следующий шаг: задеплоить, чтобы ушла с прода; потом влить `feat/audit-header-cta` и `fix/payment-turnstile-action` в `main` при необходимости.
+2026-10-11 — Cursor — конфликт с `main` по `AI_AUDIT_HEADER_CTA_ENABLED`: оставили `false`. Merge `origin/main` в `fix/gemini-sampling-params`. Следующий шаг: push и проверить PR.

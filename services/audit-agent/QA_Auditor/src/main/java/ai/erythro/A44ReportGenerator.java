@@ -734,6 +734,24 @@ public final class A44ReportGenerator {
             width: auto;
         }
     }
+
+    /* Long tokens (challenge URLs, hashes) must stay inside the top-3 card. */
+    .findings-grid { overflow: hidden; }
+    .finding-card,
+    .finding-box,
+    .finding-box .issue {
+        box-sizing: border-box;
+        max-width: 100%;
+        overflow: hidden;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+    .finding-box { width: 100%; }
+    .finding-box .issue {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 6;
+    }
 """;
 
     /**

@@ -458,3 +458,84 @@ export async function handleGrowCallback(body: Record<string, unknown>): Promise
     },
   }
 }
+
+/**
+ * Make already called Grow Approve Transaction. This only records the paid
+ * order and starts the audit. The shared secret is checked by the route.
+ */
+export async function fulfillMakeGrowPaid(input: {
+  submissionId: number
+  transactionId: string
+  sum: number
+}): Promise<CallbackOutcome> {
+  const payload = await getPayload({ config })
+  let existing: {
+    id: number
+    paymentProvider?: string | null
+    paymentStatus?: string | null
+    paymentAmount?: number | null
+    source?: string | null
+  } | null = null
+  try {
+    existing = await payload.findByID({
+      collection: 'contact-submissions',
+      id: input.submissionId,
+      depth: 0,
+      overrideAccess: true,
+    })
+  } catch {
+    existing = null
+  }
+  if (!existing || existing.paymentProvider !== 'grow') {
+    console.error('[make-grow] no grow submission', input.submissionId)
+    return { httpStatus: 200, body: { ok: false, reason: 'unknown_submission' } }
+  }
+  if (existing.paymentStatus === 'paid' || existing.paymentStatus === 'refunded') {
+    return { httpStatus: 200, body: { ok: true, status: 'already_paid' } }
+  }
+
+  const expectedRaw = existing.paymentAmount
+  const expected = typeof expectedRaw === 'number' ? expectedRaw : Number(expectedRaw)
+  if (!growAmountsMatch(expected, input.sum)) {
+    console.error(
+      '[make-grow] amount mismatch expected=',
+      expected,
+      'charged=',
+      input.sum,
+      'id=',
+      input.submissionId,
+    )
+    return { httpStatus: 200, body: { ok: false, reason: 'amount_mismatch' } }
+  }
+
+  const claimed = await claimStatus(input.submissionId, 'paid', input.transactionId)
+  if (!claimed) {
+    return { httpStatus: 200, body: { ok: true, status: 'already_paid' } }
+  }
+  try {
+    await fulfillPaid(
+      input.submissionId,
+      { transactionUid: input.transactionId, invoiceUrl: '' },
+      'Grow',
+    )
+  } catch (err) {
+    console.error('[make-grow] fulfill error:', err instanceof Error ? err.message : 'unknown')
+    await payload.db.drizzle.execute(sql`
+      UPDATE "contact_submissions"
+      SET "payment_status" = 'pending',
+          "updated_at" = now()
+      WHERE "id" = ${input.submissionId}
+        AND "payment_status" = 'paid'
+    `)
+    return { httpStatus: 503, body: { ok: false, reason: 'fulfill_failed' } }
+  }
+
+  return {
+    httpStatus: 200,
+    body: {
+      ok: true,
+      status: 'approved',
+      ticketId: formatSubmissionTicketId(existing.source || 'audit', input.submissionId),
+    },
+  }
+}

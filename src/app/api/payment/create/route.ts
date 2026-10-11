@@ -5,14 +5,11 @@ import { getOrderPlanBySlug } from '@/lib/cmsPages'
 import { calcPlanAmount, calcAddonAmount, addonMonthlyAmount, addonTermDiscount, tLocale, parsePrice } from '@/lib/orderPlans'
 import { normalizeAuditWebsite } from '@/lib/auditFormValidation'
 import { createGrowPayment, isGrowConfigured, toGrowFullName, toGrowIsraeliMobile } from '@/lib/payments/grow'
+import { createMakeGrowPayment, isMakeGrowConfigured } from '@/lib/payments/makeGrow'
 import { signPaymentReturn } from '@/lib/payments/returnSig'
 import { getRequestIp, consumeContactRateLimit } from '@/lib/contactRateLimit'
 import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
-import {
-  readTurnstileToken,
-  turnstileActionFromBody,
-  verifyTurnstileToken,
-} from '@/lib/turnstile'
+import { readTurnstileToken, verifyTurnstileToken } from '@/lib/turnstile'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -24,6 +21,8 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
  *
  * Creates a contact-submission with paymentStatus=pending
  * and returns a Grow hosted-page URL.
+ * When MAKE_GROW_WEBHOOK_URL is set, the URL comes from Make.
+ * Otherwise the direct Grow API is used.
  * Paid checkout does not fall through to an unpaid contact submission.
  */
 export async function POST(request: NextRequest) {
@@ -58,10 +57,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
-  // Turnstile verification
+  // The order widget mints the token with action "audit" (OrderClient).
   const turnstile = await verifyTurnstileToken({
     token: readTurnstileToken(body),
-    action: turnstileActionFromBody(body),
+    action: 'audit',
     remoteip: ip === 'unknown' ? undefined : ip,
   })
   if (!turnstile.ok) {
@@ -124,8 +123,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ code: 'phone_unsupported' }, { status: 400 })
   }
 
-  if (!isGrowConfigured() || !SITE_URL.startsWith('https://')) {
-    console.error('[api/payment/create] Grow env or public HTTPS site URL is not set')
+  const useMake = isMakeGrowConfigured()
+  if (!SITE_URL.startsWith('https://') || (!useMake && !isGrowConfigured())) {
+    console.error('[api/payment/create] payment gateway or public HTTPS site URL is not set')
     return NextResponse.json({ code: 'payment_unavailable' }, { status: 503 })
   }
 
@@ -158,12 +158,15 @@ export async function POST(request: NextRequest) {
     const submissionId = String(created.id)
 
     const sig = signPaymentReturn(submissionId)
-    const result = await createGrowPayment({
+    const paymentInput = {
       amount: totalMinor,
-      currency: 'ILS',
+      currency: 'ILS' as const,
       description: `Erythro AI audit ${planSlug}`,
-      locale: locale === 'ru' || locale === 'he' || locale === 'en' ? locale : 'en',
-      customer: { name, email, phone },
+      locale: (locale === 'ru' || locale === 'he' || locale === 'en' ? locale : 'en') as
+        | 'en'
+        | 'ru'
+        | 'he',
+      customer: { name: toGrowFullName(name) || name, email, phone: toGrowIsraeliMobile(phone) || phone },
       successUrl: `${SITE_URL}/order/success?id=${submissionId}&sig=${encodeURIComponent(sig)}`,
       cancelUrl: `${SITE_URL}/order/cancel?slug=${encodeURIComponent(planSlug)}`,
       webhookUrl: `${SITE_URL}/api/payment/webhook`,
@@ -171,10 +174,13 @@ export async function POST(request: NextRequest) {
         submissionId,
         planSlug,
       },
-    })
+    }
+    const result = useMake
+      ? await createMakeGrowPayment(paymentInput)
+      : await createGrowPayment(paymentInput)
 
     if (!result.ok) {
-      console.error('[api/payment/create] Grow error:', result.message)
+      console.error('[api/payment/create] payment error:', result.message)
       await payload.update({
         collection: 'contact-submissions',
         id: created.id,

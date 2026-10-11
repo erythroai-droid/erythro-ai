@@ -1315,23 +1315,25 @@ Keep a real file at `/favicon.ico` whenever icons live under `/images/favicon/`.
 
 ## PIT-076 — Audit report finding card text overflow on long URLs (Turnstile/tracking tokens)
 
-**Tags:** `audit`, `qa-auditor`, `report`, `css`, `overflow`, `pdf`
+**Tags:** `audit`, `qa-auditor`, `report`, `css`, `overflow`, `pdf`  
+**Seen:** 2026-10-10 — AUD-160 diagnostic HTML, top-3 card 01.
 
 **Symptom:**
-In the executive summary report (block `01 Уязвимости конверсии` / top-3 conversion vulnerabilities), text overflowed the card boundaries horizontally across the page and pushed down layout in HTML/PDF.
+In the executive summary (block `01 Уязвимости конверсии`), a long string runs out of the card and paints across cards 02 and 03. Those fragments look like random tokens. They are the tail of the same URL.
 
 **Cause:**
-1. Background network requests that returned 4xx (e.g. Cloudflare Turnstile token verification requests) contain long cryptographic hashes in the URL path (1000+ characters with no spaces or break characters).
-2. The auditor concatenated up to 5 raw URL paths without truncation into the card's issue description.
-3. CSS styles on `.finding-card`, `.finding-box`, `.finding-box .issue`, `.finding-body` lacked `word-break: break-word` / `overflow-wrap: anywhere` and `box-sizing: border-box`, causing unbreakable token strings to overflow the fixed card containers.
+1. Playwright recorded Cloudflare Turnstile `401` on `/cdn-cgi/challenge-platform/…`. Each load mints a new path of 1000+ characters with no spaces (PIT-078 skip was not in `recordFailedNetwork`).
+2. `formatFailedNetworkSamples` joined up to 5 full paths into the card.
+3. The generator CSS comes from `templates/audit_template_a4_4.html`. That file still had `.finding-box { width: 230px }` and no `overflow` / `word-break`. `public/samples` already had the clip, so the stored report did not.
 
 **Fix:**
-- Truncate URL paths to a compact length (max 38-40 chars with ellipsis) in `AuditCollector.java` and `ReportFindingsCatalog.java`.
-- Deduplicate sample URLs by prefix and cap samples to at most 2 distinct entries with `…` suffix if more exist.
-- Add `box-sizing: border-box`, `word-break: break-word`, `overflow-wrap: anywhere`, and `overflow: hidden` to `.finding-card`, `.finding-box`, and `.finding-box .issue` across all HTML report templates and generators (`audit_template_a4_4.html`, `A44ReportGenerator.java`, `audit_template_white_*.html`, `audit_template_proposal_*.html`).
+- `recordFailedNetwork` ignores `/cdn-cgi/`, `challenge-platform`, and `challenges.cloudflare.com`.
+- Card samples: at most 2 URLs, each cut at 42 characters.
+- Template + `A44ReportGenerator` EXTRA_CSS: `overflow: hidden` on the grid, card, and box; `.issue` clamped to 6 lines.
+- Stored HTML is clipped on serve (`clipAuditReportFindingOverflow`) so old reports do not wait for an agent rebuild.
 
 **Prevent:**
-Never inject untruncated URL paths or user-supplied unformatted strings into fixed-size summary cards or PDF print blocks. Always enforce `overflow-wrap: anywhere` and `word-break: break-word` on text containers.
+Do not put a raw URL or hash into a fixed summary card. Clip the card even when the string is already short. Ignore Cloudflare challenge URLs in failed-network findings.
 
 ## PIT-077 — Cold audit scores differ from a repeat run
 

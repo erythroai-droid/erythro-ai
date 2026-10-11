@@ -378,9 +378,7 @@ export default function Navbar({
             />
           </a>
           <div className="flex items-center gap-3.5 sm:gap-5 pointer-events-auto">
-            <div className="hidden lg:flex items-center gap-3.5">
-              <AiAuditHeaderButton currentLocale={currentLocale} />
-            </div>
+            <AiAuditHeaderButton currentLocale={currentLocale} />
             <button
               ref={menuBtnRef}
               onClick={() => setMobileOpen(!mobileOpen)}

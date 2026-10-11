@@ -2337,6 +2337,9 @@ public class AuditCollector {
             return;
         }
         String url = normalizeFailedNetworkUrl(response.url());
+        if (isIgnoredFailedNetwork(url)) {
+            return;
+        }
         synchronized (failedRequests) {
             for (Map<String, Object> existing : failedRequests) {
                 if (status == asLong(existing.get("status"), 0)
@@ -2353,6 +2356,17 @@ public class AuditCollector {
             reqError.put("hits", 1);
             failedRequests.add(reqError);
         }
+    }
+
+    /** Cloudflare challenge / Turnstile token URLs are not broken site assets. */
+    private static boolean isIgnoredFailedNetwork(String url) {
+        if (url == null || url.isBlank()) {
+            return true;
+        }
+        String u = url.toLowerCase(Locale.ROOT);
+        return u.contains("/cdn-cgi/")
+                || u.contains("challenge-platform")
+                || u.contains("challenges.cloudflare.com");
     }
 
     private static String normalizeFailedNetworkUrl(String raw) {

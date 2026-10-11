@@ -1,12 +1,71 @@
 # Grow — оплата аудита
 
-Платный заказ на `/order/audit-*` уходит на hosted-страницу Grow (Meshulam Light API). Карта на сайт не попадает. Код PayPlus в репозитории остаётся только для старого callback.
+Платный заказ на `/order/audit-*` уходит на hosted-страницу Grow. Карта на сайт не попадает. Код PayPlus в репозитории остаётся только для старого callback.
 
-Живых списаний нет, пока пустые `GROW_USER_ID` и `GROW_PAGE_CODE`. Без них `POST /api/payment/create` отвечает `503` и заявку не создаёт. Номер счёта из письма Grow — это не `userId`. `userId` и `pageCode` выдаёт Grow после проверки интеграции.
+Живой путь — **Make** (официальное приложение Grow). Прямой Light API (`GROW_USER_ID` / `GROW_PAGE_CODE`) остаётся запасным, если переменные Make не заданы. Номер счёта из письма Grow — это не `userId`.
+
+## Make
+
+Форма сайта не вызывает Meshulam. `POST /api/payment/create` создаёт заявку `pending` и шлёт JSON на сценарий Make, который делает **Create Payment Link** и в том же HTTP-ответе возвращает URL страницы оплаты.
+
+Пока нет `MAKE_GROW_WEBHOOK_URL` и `MAKE_GROW_NOTIFY_URL`, этот путь выключен и используется Light API. Если нет и его ключей, `POST /api/payment/create` отвечает `503` до создания заявки. Если Make или Grow отказал уже после создания, заявка остаётся со статусом `failed`.
+
+### Тело запроса сайта → Make
+
+| Поле | Смысл |
+|---|---|
+| `fullName` | Два слова, уже проверены |
+| `phone` | Израильский мобильный `05XXXXXXXX` |
+| `email` | Email клиента |
+| `title`, `productName` | `Erythro AI audit {slug}` |
+| `price` | Сумма плана в шекелях, как на сайте (`299.00`) |
+| `quantity` | `1` |
+| `successUrl` | `https://erythro.ai/order/success?id=&sig=` |
+| `cancelUrl` | `https://erythro.ai/order/cancel?slug=` |
+| `notifyUrl` | Вебхук сценария `grow-notify`, не адрес сайта |
+| `cField1` | id заявки |
+
+Ответ сценария должен быть JSON с полем `url` (страница Grow, не erythro.ai и не hook.make.com). Модуль **Webhook response**, не мгновенный `Accepted`.
+
+### Сценарий создания ссылки
+
+1. Триггер: **Webhooks → Custom webhook**. URL этого хука — `MAKE_GROW_WEBHOOK_URL`.
+2. **Grow → Create Payment Link**. Поля из шага 1. **Sending Mode** `none`. **Notify URL** = `notifyUrl` из запроса. **Custom Field 1** = `cField1`. **Payment Type** payments, один платёж. Цена продукта = `price`.
+3. **Webhooks → Webhook response**, тело `{"url":"<url из Create Payment Link>"}`.
+4. Сценарий включён.
+
+### Сценарий после оплаты
+
+Уже есть: **Custom webhook `grow-notify` → Approve Transaction**. Его URL — `MAKE_GROW_NOTIFY_URL`.
+
+После успешного Approve (Output `status: 1`) добавь **HTTP → Make a request**:
+
+- `POST https://erythro.ai/api/payment/make-paid`
+- Заголовок `x-make-payment-secret`: значение `MAKE_PAYMENT_SECRET`
+- JSON: `submissionId` = `data.cField1`, `transactionId` = `data.transactionId`, `sum` = `data.sum`, `statusCode` = `data.statusCode`
+- Фильтр: `statusCode` = `2`. Иначе сайт не ставит `paid`.
+
+Сайт сверяет секрет, id заявки, провайдера `grow` и сумму с `paymentAmount`. Повтор того же вызова не ставит аудит в очередь второй раз. Затем письма и `triggerAuditAgent`.
+
+`0` в полях Approve Make считает пустым значением. Маппить только поля из notify.
+
+### Переменные Make
+
+| Переменная | Назначение |
+|---|---|
+| `MAKE_GROW_WEBHOOK_URL` | Хук сценария Create Payment Link |
+| `MAKE_GROW_NOTIFY_URL` | Хук сценария grow-notify |
+| `MAKE_PAYMENT_SECRET` | Секрет заголовка `x-make-payment-secret` |
+
+Те же три ключа на Vercel. Без них форма аудита по-прежнему отвечает `503`, если нет и `GROW_USER_ID` / `GROW_PAGE_CODE`.
+
+## Light API (запасной)
+
+Живых списаний через API нет, пока пустые `GROW_USER_ID` и `GROW_PAGE_CODE`. `userId` и `pageCode` выдаёт Grow после проверки интеграции. Если заданы переменные Make, API не вызывается.
 
 Разрешение morning на приложение и платёжные ссылки не включает торговлю на `https://erythro.ai`. Отдельное разрешение на сайт Grow смотрит до 7 рабочих дней. Боевые идентификаторы — только для утверждённого адреса.
 
-## Поток
+## Поток Light API
 
 1. Форма на `/order/audit-*` (кроме `audit-free`) вызывает `POST /api/payment/create`.
 2. Сумма считается на сервере. Имя — два слова. Телефон — израильский мобильный `05XXXXXXXX`. Иначе `400`, заявка не создаётся.
@@ -67,4 +126,4 @@
 
 Пока этот коммит не на проде, живой сайт этому списку не соответствует: галочка ведёт только на политику конфиденциальности, а на главной нет абзаца о покупке.
 
-Код: `src/lib/payments/grow.ts`, `src/lib/payments/fulfillPayment.ts`, `src/components/PurchaseTermsNotice.tsx`, `src/app/api/payment/`.
+Код: `src/lib/payments/makeGrow.ts`, `src/lib/payments/grow.ts`, `src/lib/payments/fulfillPayment.ts`, `src/components/PurchaseTermsNotice.tsx`, `src/app/api/payment/`.

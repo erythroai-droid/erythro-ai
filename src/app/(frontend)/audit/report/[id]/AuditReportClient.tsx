@@ -404,9 +404,11 @@ function ReportBody({
           <code className="font-mono text-[0.95em] tracking-wide">{orderId}</code>
         </p>
         <p className={`m-0 text-sm ${muted}`}>{tReport(auditReportCopy.orderIdHint, locale)}</p>
-        {data?.website ? (
-          <p className={`m-0 break-all text-sm ${muted}`}>{data.website}</p>
-        ) : null}
+        <p className={`m-0 text-sm ${muted}`}>
+          <a href="mailto:team@erythro.ai" className="underline underline-offset-2">
+            team@erythro.ai
+          </a>
+        </p>
         {showWaiting ? (
           <p className={`m-0 text-base ${muted}`}>{tReport(auditReportCopy.waiting, locale)}</p>
         ) : null}
