@@ -2113,7 +2113,7 @@ export interface AuditPage {
     plans?:
       | {
           /**
-           * Stable plan id, e.g. "free", "diagnostic", "pro", "delegate"
+           * Stable plan id, e.g. "free", "diagnostic", "pro", "manual"
            */
           planId: string;
           featured?: boolean | null;

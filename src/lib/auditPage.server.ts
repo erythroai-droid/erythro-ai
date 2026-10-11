@@ -147,37 +147,55 @@ function mapPlans(raw: unknown[] | undefined, fallback: any[]): any[] {
 
   return raw.map((item: unknown, i) => {
     const r = item as Record<string, unknown>
-    const planId =
+    const rawPlanId =
       (typeof r?.planId === 'string' && r.planId.trim()) || ''
+    // Legacy CMS row `delegate` is Manual now (same slot on the pricing grid).
+    const fromLegacyDelegate = rawPlanId === 'delegate'
+    const planId = fromLegacyDelegate ? 'manual' : rawPlanId
     const fb = (fallback.find((p: { id?: string }) => p?.id === planId) ??
       fallback[i] ??
       {}) as Record<string, unknown>
 
-    const priceCompare = pickAllPresent(r?.priceCompare as RawLocalized)
-    const priceNote = pickAllPresent(r?.priceNote as RawLocalized)
-    const description = pickAllPresent(r?.description as RawLocalized)
+    // Stale Delegate CMS copy must not win over Manual fallback.
+    const cmsName = fromLegacyDelegate ? undefined : (r?.name as RawLocalized)
+    const cmsPrice = fromLegacyDelegate ? undefined : (r?.price as RawLocalized)
+    const cmsCta = fromLegacyDelegate ? undefined : (r?.cta as RawLocalized)
+    const cmsFeatures = fromLegacyDelegate ? undefined : (r?.features as unknown[] | undefined)
+    const cmsCtaHref = fromLegacyDelegate
+      ? undefined
+      : typeof r?.ctaHref === 'string' && r.ctaHref.trim()
+        ? r.ctaHref
+        : undefined
+
+    const priceCompare = fromLegacyDelegate
+      ? undefined
+      : pickAllPresent(r?.priceCompare as RawLocalized)
+    const priceNote = fromLegacyDelegate
+      ? pickAllPresent(fb?.priceNote as RawLocalized)
+      : pickAllPresent(r?.priceNote as RawLocalized)
+    const description = fromLegacyDelegate
+      ? pickAllPresent(fb?.description as RawLocalized)
+      : pickAllPresent(r?.description as RawLocalized)
 
     return {
       id: planId || (typeof fb?.id === 'string' ? fb.id : `plan-${i}`),
       badge: fb?.badge ?? null,
-      name: pickAllOpt(r?.name as RawLocalized, fb?.name as Localized | undefined),
-      price: pickAllOpt(r?.price as RawLocalized, fb?.price as Localized | undefined),
+      name: pickAllOpt(cmsName, fb?.name as Localized | undefined),
+      price: pickAllOpt(cmsPrice, fb?.price as Localized | undefined),
       ...(priceCompare ? { priceCompare } : {}),
       ...(priceNote ? { priceNote } : {}),
       ...(description ? { description } : {}),
-      features: mapFeatures(
-        r?.features as unknown[] | undefined,
-        (fb?.features ?? []) as Localized[],
-      ),
-      cta: pickAllOpt(r?.cta as RawLocalized, fb?.cta as Localized | undefined),
+      features: mapFeatures(cmsFeatures, (fb?.features ?? []) as Localized[]),
+      cta: pickAllOpt(cmsCta, fb?.cta as Localized | undefined),
       ctaHref: normalizeCtaHref(
-        (typeof r?.ctaHref === 'string' && r.ctaHref.trim()) ||
-          (typeof fb?.ctaHref === 'string' ? (fb.ctaHref as string) : ''),
+        cmsCtaHref || (typeof fb?.ctaHref === 'string' ? (fb.ctaHref as string) : ''),
       ),
       featured:
-        typeof r?.featured === 'boolean'
-          ? r.featured
-          : planId === 'diagnostic' || fb?.id === 'diagnostic',
+        fromLegacyDelegate
+          ? false
+          : typeof r?.featured === 'boolean'
+            ? r.featured
+            : planId === 'diagnostic' || fb?.id === 'diagnostic',
     }
   })
 }

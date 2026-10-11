@@ -172,7 +172,7 @@ export const auditPageFields: Field[] = [
                     name: 'planId',
                     type: 'text',
                     required: true,
-                    admin: { description: 'Stable plan id, e.g. "free", "diagnostic", "pro", "delegate"' },
+                    admin: { description: 'Stable plan id, e.g. "free", "diagnostic", "pro", "manual"' },
                   },
                   {
                     name: 'featured',

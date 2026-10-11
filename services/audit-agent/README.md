@@ -31,6 +31,7 @@ Plan → tier / page cap:
 | `audit-free` | FREE | 1 |
 | `audit-diagnostic` | DIAGNOSTIC | 5 |
 | `audit-pro` | PRO | 10 |
+| `audit-manual` (ops / offline after call) | PRO | 10 |
 
 ## Env
 
