@@ -36,6 +36,7 @@ import * as migration_20260929_150000_purchase_terms_cms from './20260929_150000
 import * as migration_20261001_021000_consult_question_log from './20261001_021000_consult_question_log'
 import * as migration_20261007_021500_users_reset_password_requested_at from './20261007_021500_users_reset_password_requested_at'
 import * as migration_20261007_031500_media_object_key from './20261007_031500_media_object_key'
+import * as migration_20261012_010000_audit_plan_checkout_fields from './20261012_010000_audit_plan_checkout_fields'
 
 export const migrations = [
   {
@@ -227,5 +228,10 @@ export const migrations = [
     up: migration_20261007_031500_media_object_key.up,
     down: migration_20261007_031500_media_object_key.down,
     name: '20261007_031500_media_object_key',
+  },
+  {
+    up: migration_20261012_010000_audit_plan_checkout_fields.up,
+    down: migration_20261012_010000_audit_plan_checkout_fields.down,
+    name: '20261012_010000_audit_plan_checkout_fields',
   },
 ]

@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import OrderClient from './OrderClient'
 import { getCachedSeoSettings, getCachedSiteContent } from '@/lib/getSiteContent'
 import { getAllOrderSlugsCms, getCachedOrderPlans, getOrderPlanBySlug } from '@/lib/cmsPages'
@@ -26,7 +26,12 @@ export async function generateStaticParams() {
   } catch {
     /* fall through */
   }
-  return getAllOrderSlugs().map((slug) => ({ slug }))
+  return getAllOrderSlugs()
+    .filter((slug) => {
+      const p = ORDER_PLANS.find((row) => row.slug === slug)
+      return p?.checkoutMode !== 'contact'
+    })
+    .map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: OrderPageProps): Promise<Metadata> {
@@ -78,6 +83,15 @@ export default async function OrderPage({ params }: OrderPageProps) {
   const plan = await getOrderPlanBySlug(slug)
   if (!plan) notFound()
 
+  // Manual / contact-mode plans have no Grow checkout — CTA is #contact-modal on /audit.
+  if (
+    plan.checkoutMode === 'contact' ||
+    plan.planId === 'manual' ||
+    plan.slug === 'audit-manual'
+  ) {
+    redirect('/audit')
+  }
+
   const { initialLocale, initialTheme } = await getRequestPrefs('light')
   const [content, plans, auditPageContent] = await Promise.all([
     getCachedSiteContent(),
@@ -87,11 +101,12 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
   const list = plans.length ? plans : ORDER_PLANS
   const isAuditPlan = plan.kind === 'audit' || plan.slug.startsWith('audit-')
-  const navList = list.filter((p) =>
-    isAuditPlan
+  const navList = list.filter((p) => {
+    if (p.checkoutMode === 'contact') return false
+    return isAuditPlan
       ? p.kind === 'audit' || p.slug.startsWith('audit-')
-      : !p.kind || p.kind === 'solution' || !p.slug.startsWith('audit-'),
-  )
+      : !p.kind || p.kind === 'solution' || !p.slug.startsWith('audit-')
+  })
   const effectiveList = navList.length ? navList : list
   const index = effectiveList.findIndex((p) => p.slug === plan.slug)
   const prevPlan =

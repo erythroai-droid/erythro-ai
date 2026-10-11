@@ -1,6 +1,7 @@
 /**
- * Fix audit pricing CTAs (leading slash) and stale RU/HE tariff copy
- * on the `audit-page` global + audit `solution-plans`.
+ * Sync static AUDIT_ORDER_PLANS → CMS solution-plans (kind=audit).
+ * Does not mirror Pricing cards into the audit-page global (Plans are SoT).
+ * Still refreshes Pricing section intro/agency copy on audit-page when needed.
  *
  * Usage: PAYLOAD_DISABLE_PUSH=1 pnpm db:fix-audit-pricing
  */
@@ -38,7 +39,7 @@ function applyIds(target: any, source: any): void {
   }
 }
 
-async function patchAuditPage(payload: any): Promise<number> {
+async function patchAuditPageIntro(payload: any): Promise<number> {
   if (!NEXT_STEPS) throw new Error('Static auditPage is missing Clear next steps')
   let patched = 0
 
@@ -68,36 +69,11 @@ async function patchAuditPage(payload: any): Promise<number> {
     pricing.intro = auditPage.pricing.intro[loc]
     pricing.agency = auditPage.pricing.agency[loc]
     pricing.agencyCta = auditPage.pricing.agencyCta[loc]
-
-    const cmsPlans: any[] = Array.isArray(pricing.plans) ? [...pricing.plans] : []
-    // Source of truth = code fallback. Legacy CMS `delegate` row becomes `manual`.
-    pricing.plans = auditPage.pricing.plans.map((fb) => {
-      const cms =
-        cmsPlans.find((row) => row?.planId === fb.id) ||
-        (fb.id === 'manual' ? cmsPlans.find((row) => row?.planId === 'delegate') : undefined)
+    // Keep legacy plans array empty/ignored — cards come from solution-plans.
+    if (Array.isArray(pricing.plans) && pricing.plans.length) {
+      pricing.plans = []
       patched += 1
-      const cmsFeatures = Array.isArray(cms?.features) ? cms.features : []
-      return {
-        ...(cms ?? {}),
-        planId: fb.id,
-        featured: fb.id === 'diagnostic',
-        name: fb.name[loc],
-        price: fb.price[loc],
-        ...('priceCompare' in fb && fb.priceCompare
-          ? { priceCompare: fb.priceCompare[loc] }
-          : { priceCompare: null }),
-        ...('priceNote' in fb && fb.priceNote ? { priceNote: fb.priceNote[loc] } : { priceNote: null }),
-        ...('description' in fb && fb.description
-          ? { description: fb.description[loc] }
-          : { description: null }),
-        cta: fb.cta[loc],
-        ctaHref: fb.ctaHref,
-        features: fb.features.map((feature, i) => ({
-          ...(cmsFeatures[i] ?? {}),
-          feature: feature[loc],
-        })),
-      }
-    })
+    }
 
     await payload.updateGlobal({
       slug: 'audit-page',
@@ -106,7 +82,7 @@ async function patchAuditPage(payload: any): Promise<number> {
       depth: 0,
       overrideAccess: true,
     })
-    console.log(`  ✓ audit-page/${loc} pricing + next-steps`)
+    console.log(`  ✓ audit-page/${loc} intro (plans cleared)`)
   }
 
   return patched
@@ -114,8 +90,7 @@ async function patchAuditPage(payload: any): Promise<number> {
 
 async function patchOrderPlans(payload: any): Promise<number> {
   let patched = 0
-  for (let i = 0; i < AUDIT_ORDER_PLANS.length; i++) {
-    const plan = AUDIT_ORDER_PLANS[i]
+  for (const plan of AUDIT_ORDER_PLANS) {
     const found = await payload.find({
       collection: 'solution-plans',
       where: { slug: { equals: plan.slug } },
@@ -123,21 +98,68 @@ async function patchOrderPlans(payload: any): Promise<number> {
       depth: 0,
       overrideAccess: true,
     })
-    const existing = found.docs[0]
-    if (!existing) {
-      console.log(`  · skip missing plan ${plan.slug}`)
-      continue
+    let id = found.docs[0]?.id as string | number | undefined
+
+    const base = {
+      kind: 'audit' as const,
+      planId: plan.planId || plan.slug.replace(/^audit-/, ''),
+      checkoutMode: plan.checkoutMode || (plan.planId === 'manual' ? 'contact' : 'order'),
+      price: plan.card.price,
+      currency: plan.card.currency || 'ILS',
+      ...(plan.card.originalPrice
+        ? { originalPrice: plan.card.originalPrice }
+        : { originalPrice: null }),
+      featured: Boolean(plan.card.featured) || plan.planId === 'diagnostic',
+      ...(plan.ctaHref ? { ctaHref: plan.ctaHref } : {}),
+    }
+
+    if (!id) {
+      const created = await payload.create({
+        collection: 'solution-plans',
+        locale: 'en',
+        data: {
+          ...base,
+          slug: plan.slug,
+          title: plan.card.title.en,
+          subtitle: plan.subtitle?.en || '',
+          cardPriceNote: plan.cardPriceNote?.en || null,
+          ctaLabel: plan.ctaLabel?.en || null,
+          features: plan.card.features.map((f) => ({
+            ...(f.label ? { label: f.label.en } : {}),
+            ...(f.value ? { value: f.value.en } : {}),
+          })),
+          ...(plan.includes ? { includes: lexicalFromText(plan.includes.en) } : {}),
+        },
+        depth: 0,
+        overrideAccess: true,
+      })
+      id = created.id
+      patched += 1
+      console.log(`  + created ${plan.slug}`)
+    } else {
+      await payload.update({
+        collection: 'solution-plans',
+        id,
+        data: base,
+        depth: 0,
+        overrideAccess: true,
+      })
+      patched += 1
     }
 
     for (const loc of LOCALES) {
       const current = await payload.findByID({
         collection: 'solution-plans',
-        id: existing.id,
+        id,
         locale: loc,
         depth: 0,
         overrideAccess: true,
       })
       const data: Record<string, unknown> = {
+        title: plan.card.title[loc] || plan.card.title.en,
+        subtitle: plan.subtitle?.[loc] || plan.subtitle?.en || '',
+        cardPriceNote: plan.cardPriceNote?.[loc] || plan.cardPriceNote?.en || null,
+        ctaLabel: plan.ctaLabel?.[loc] || plan.ctaLabel?.en || null,
         features: plan.card.features.map((f) => ({
           ...(f.label ? { label: f.label[loc] || f.label.en } : {}),
           ...(f.value ? { value: f.value[loc] || f.value.en } : {}),
@@ -149,14 +171,14 @@ async function patchOrderPlans(payload: any): Promise<number> {
       applyIds(data, current)
       await payload.update({
         collection: 'solution-plans',
-        id: existing.id,
+        id,
         locale: loc,
         data,
         depth: 0,
         overrideAccess: true,
       })
       patched += 1
-      console.log(`  ✓ solution-plans/${plan.slug}/${loc} features`)
+      console.log(`  ✓ solution-plans/${plan.slug}/${loc}`)
     }
   }
   return patched
@@ -164,9 +186,9 @@ async function patchOrderPlans(payload: any): Promise<number> {
 
 async function run() {
   const payload = await getPayload({ config })
-  console.log('Patching audit pricing CTAs and tariff copy…')
-  const page = await patchAuditPage(payload)
+  console.log('Syncing AI Audit Plans from static AUDIT_ORDER_PLANS…')
   const plans = await patchOrderPlans(payload)
+  const page = await patchAuditPageIntro(payload)
 
   console.log('Busting site cache…')
   await pingSiteRevalidate([
@@ -176,7 +198,7 @@ async function run() {
     '/order/audit-pro',
   ])
 
-  console.log(`Done. auditPageTouches=${page} orderPlanLocales=${plans}`)
+  console.log(`Done. orderPlanTouches=${plans} auditPageTouches=${page}`)
   process.exit(0)
 }
 

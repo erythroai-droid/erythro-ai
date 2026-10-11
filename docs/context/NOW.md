@@ -1,20 +1,24 @@
 # Latest changes
 
-Обновлено: 2026-10-11  
+Обновлено: 2026-10-12  
 Модель: Cursor  
-Прод сейчас отдаёт `feat/audit-header-cta` `3bfc005` (`dpl_FohCW9mgFmWkEhAzkivFcfwZBrW6`, alias erythro.ai). База — `origin/main` `a530f0c` плюс кнопка в шапке. `fix/payment-turnstile-action` `2ea1ec5` в этот деплой не входит.
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
 ## Сделано в этой сессии
 
-- Тариф **Manual** ₪2 490 на `/audit` (вместо Delegate). **Без** `/order/audit-manual` и Grow.
-- CTA «Написать инженеру» → `#contact-modal` (обычный contact + префилл про Manual). Поток: форма → созвон → оплата → затем аудит. Не `source=audit`, чтобы не дергать Free-пайплайн.
-- Воркер по-прежнему мапит `audit-manual` → PRO на случай ручного запуска после оплаты.
+- **Единый источник тарифов аудита:** Plans `kind: audit` (Free / Diagnostic / Pro / Manual).
+- Поля Plans: `planId`, `checkoutMode`, `cardPriceNote`, `ctaLabel` (+ migration `20261012_010000_audit_plan_checkout_fields`).
+- `/audit` карточки: `getAuditPricingPlans()` → `fetchAuditPage` (global `pricing.plans` игнорируется / hidden в admin).
+- Manual: `checkoutMode: contact`, CTA `#contact-modal`; `/order/audit-manual` → redirect `/audit`; payment create → 400.
+- Скрипты: `pnpm db:migrate-audit-plans-unify` (one-shot upsert), `pnpm db:fix-audit-pricing` (sync Plans only).
+- Тесты: `tests/int/auditPricingPlans.int.spec.ts`. Cache keys: `audit-page-v10-plans-sot`, `order-plans-v7-audit-checkout`.
 
 ## Сейчас
 
-Manual уже в CMS (`pnpm db:fix-audit-pricing` на prod DB, en/ru/he). Локальный `REVALIDATION_TOKEN` ≠ Vercel → кэш `/audit` не сбросился (401). В коде: `mapPlans` дописывает отсутствующие планы + cache key `audit-page-v8-manual` — нужен деплой (или Save в admin Audit Page). Intake-лимиты не возвращать до живого списания.
+1. На проде/локали с БД: `PAYLOAD_DISABLE_PUSH=1 pnpm db:migrate` → `pnpm db:migrate-audit-plans-unify`.
+2. SQL-миграция `20261012_010000_audit_plan_checkout_fields` проверена: только ADD COLUMN IF NOT EXISTS + узкий UPDATE по slug; xact lock (PIT-086). Безопасна для схемы.
+3. Deploy + revalidate.
 
 ## Не делать
 
@@ -22,7 +26,8 @@ Manual уже в CMS (`pnpm db:fix-audit-pricing` на prod DB, en/ru/he). Ло�
 - Не возвращать intake-лимиты, пока нет живого списания.
 - Не зеркалировать этот файл в Obsidian.
 - Не возвращать Delegate и не вешать Manual на Grow checkout.
+- Не править тарифы в Audit Page `pricing.plans` — только Plans.
 
 ## Последняя эстафета
 
-2026-10-12 — Cursor — карточки не было: в CMS не было Manual, код не дописывал. Патч БД сделан; ждём деплой merge-фикса / Save в admin.
+2026-10-12 — Cursor — тарифы аудита SoT = Plans; Audit Page только intro Pricing. После деплоя прогнать migrate-unify.

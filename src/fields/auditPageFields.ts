@@ -155,6 +155,10 @@ export const auditPageFields: Field[] = [
             name: 'pricing',
             type: 'group',
             label: 'Pricing section',
+            admin: {
+              description:
+                'Section intro only. Cards come from Content → Plans (kind: AI Audit) — Free / Diagnostic / Pro / Manual.',
+            },
             fields: [
               locText('kicker'),
               locText('title'),
@@ -165,8 +169,12 @@ export const auditPageFields: Field[] = [
               {
                 name: 'plans',
                 type: 'array',
-                label: 'Audit plans',
-                admin: { initCollapsed: true },
+                label: 'Audit plans (deprecated)',
+                admin: {
+                  hidden: true,
+                  description:
+                    'Deprecated. Cards come from Content → Plans (kind: AI Audit). Edit Free / Diagnostic / Pro / Manual there.',
+                },
                 fields: [
                   {
                     name: 'planId',

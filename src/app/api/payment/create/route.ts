@@ -96,6 +96,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'Plan not found' }, { status: 404 })
   }
 
+  if (
+    plan.checkoutMode === 'contact' ||
+    plan.planId === 'manual' ||
+    plan.slug === 'audit-manual'
+  ) {
+    return NextResponse.json(
+      { message: 'This plan uses contact form, not payment checkout' },
+      { status: 400 },
+    )
+  }
+
   // Calculate amount server-side (trust nothing from client)
   const pricing = calcPlanAmount(plan, periodId)
   let addonTotal = 0

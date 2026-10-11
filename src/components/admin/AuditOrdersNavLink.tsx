@@ -9,7 +9,8 @@ export const AUDIT_ORDERS_LIST_HREF =
   '/admin/collections/solution-plans?where[kind][equals]=audit'
 
 /**
- * Sidebar shortcut to AI Audit order plans (solution-plans with kind=audit).
+ * Sidebar shortcut to AI Audit plans (solution-plans kind=audit) —
+ * single source for /audit Pricing cards and /order/audit-*.
  */
 export const AuditOrdersNavLink: React.FC = () => {
   const pathname = usePathname()
@@ -31,7 +32,7 @@ export const AuditOrdersNavLink: React.FC = () => {
       prefetch={false}
       {...(active ? { 'aria-current': 'page' as const } : {})}
     >
-      <span className="nav__link-label">Audit Order Plans</span>
+      <span className="nav__link-label">AI Audit plans</span>
     </Link>
   )
 }

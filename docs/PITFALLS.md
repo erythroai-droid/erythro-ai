@@ -1473,7 +1473,7 @@ Do not put a raw URL or hash into a fixed summary card. Clip the card even when 
 - HE/RU tariff copy in `auditPage.ts` + `orderPlans.ts`; stale HE needles `60+ אנשים`, `ללא כרטיס`, `או סוכנות?`.
 - `pnpm db:fix-audit-pricing` writes leading-slash hrefs and the new strings into CMS.
 
-**Prevent:** Store internal CTA paths with a leading `/`. Do not put relative paths in a CMS text field that feeds Next `<Link>`. After editing audit pricing copy, run `db:fix-audit-pricing` — a code-only deploy does not overwrite filled CMS.
+**Prevent:** Store internal CTA paths with a leading `/`. Do not put relative paths in a CMS text field that feeds Next `<Link>`. Pricing cards are edited on **Plans** (`kind: AI Audit`), not Audit Page — run `db:fix-audit-pricing` or `db:migrate-audit-plans-unify` to sync static → Plans. A code-only deploy does not overwrite filled CMS.
 
 ---
 

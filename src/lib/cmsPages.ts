@@ -722,14 +722,46 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
     }
   }
 
+  const slug = d.slug || fb.slug
+  const kind: OrderPlan['kind'] =
+    d.kind === 'audit' || d.kind === 'solution'
+      ? d.kind
+      : String(slug).startsWith('audit-')
+        ? 'audit'
+        : fb.kind || 'solution'
+
+  const planIdRaw =
+    typeof d.planId === 'string' && d.planId.trim()
+      ? d.planId.trim()
+      : fb.planId ||
+        (String(slug).startsWith('audit-') ? String(slug).slice('audit-'.length) : undefined)
+
+  const checkoutMode: OrderPlan['checkoutMode'] =
+    d.checkoutMode === 'contact' || d.checkoutMode === 'order'
+      ? d.checkoutMode
+      : fb.checkoutMode ||
+        (planIdRaw === 'manual' || slug === 'audit-manual' ? 'contact' : kind === 'audit' ? 'order' : undefined)
+
   return {
-    slug: d.slug || fb.slug,
-    kind:
-      d.kind === 'audit' || d.kind === 'solution'
-        ? d.kind
-        : String(d.slug || fb.slug).startsWith('audit-')
-          ? 'audit'
-          : fb.kind || 'solution',
+    slug,
+    kind,
+    ...(planIdRaw ? { planId: planIdRaw } : {}),
+    ...(checkoutMode ? { checkoutMode } : {}),
+    ...(hasLocalizedSeo(d.ctaLabel)
+      ? { ctaLabel: locMapCms(d.ctaLabel) }
+      : fb.ctaLabel
+        ? { ctaLabel: fb.ctaLabel }
+        : {}),
+    ...(typeof d.ctaHref === 'string' && d.ctaHref.trim()
+      ? { ctaHref: d.ctaHref.trim() }
+      : fb.ctaHref
+        ? { ctaHref: fb.ctaHref }
+        : {}),
+    ...(hasLocalizedSeo(d.cardPriceNote)
+      ? { cardPriceNote: locMapCms(d.cardPriceNote) }
+      : fb.cardPriceNote
+        ? { cardPriceNote: fb.cardPriceNote }
+        : {}),
     card,
     subtitle: locMapCms(d.subtitle),
     periods,
@@ -867,7 +899,7 @@ export async function getAllServiceSlugsCms(): Promise<string[]> {
 }
 
 export const getCachedOrderPlans = () =>
-  unstable_cache(() => fetchOrderPlans(), ['order-plans-v6-includes-locale-merge'], {
+  unstable_cache(() => fetchOrderPlans(), ['order-plans-v7-audit-checkout'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
@@ -879,6 +911,29 @@ export async function getOrderPlanBySlug(slug: string): Promise<OrderPlan | unde
 
 export async function getAllOrderSlugsCms(): Promise<string[]> {
   const all = await getCachedOrderPlans()
-  const slugs = all.map((p) => p.slug).filter(Boolean)
-  return slugs.length ? slugs : getAllOrderSlugs()
+  // Contact-mode plans (Manual) have no public /order page — keep slug for admin/KB only.
+  const slugs = all
+    .filter((p) => p.checkoutMode !== 'contact')
+    .map((p) => p.slug)
+    .filter(Boolean)
+  if (slugs.length) return slugs
+  return getAllOrderSlugs().filter((slug) => {
+    const p = getStaticOrderPlan(slug)
+    return p?.checkoutMode !== 'contact'
+  })
+}
+
+/** AI Audit Pricing cards for `/audit` — solution-plans kind=audit (static fallback). */
+export async function getAuditPricingPlans() {
+  const { mergeAuditPricingPlans, staticAuditPricingPlans } = await import('./auditPricingPlans')
+  try {
+    const plans = await getCachedOrderPlans()
+    const audit = plans.filter(
+      (p) => p.kind === 'audit' || (p.slug || '').startsWith('audit-'),
+    )
+    return mergeAuditPricingPlans(audit)
+  } catch (err) {
+    console.error('[cmsPages] audit pricing plans fallback:', err)
+    return staticAuditPricingPlans()
+  }
 }
