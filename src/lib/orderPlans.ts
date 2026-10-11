@@ -94,9 +94,21 @@ export function calcAddonAmount(
   return { list, final, savings: Math.max(0, list - final) }
 }
 
+export type AuditCheckoutMode = 'order' | 'contact'
+
 export interface OrderPlan {
   slug: string
   kind?: 'solution' | 'audit'
+  /** /audit Pricing card id: free | diagnostic | pro | manual */
+  planId?: string
+  /** order = Grow /order; contact = engineer modal (Manual) */
+  checkoutMode?: AuditCheckoutMode
+  /** Button label on /audit Pricing card */
+  ctaLabel?: LocaleMap
+  /** Override CTA href; empty → /order/{slug} when checkoutMode is order */
+  ctaHref?: string
+  /** Localized * note under price on /audit card */
+  cardPriceNote?: LocaleMap
   card: SolutionCardItem
   subtitle: LocaleMap
   periods: OrderPeriod[]
@@ -308,6 +320,19 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
   {
     slug: 'audit-free',
     kind: 'audit',
+    planId: 'free',
+    checkoutMode: 'order',
+    ctaHref: '/order/audit-free',
+    cardPriceNote: {
+      en: 'no card required',
+      ru: 'карта не нужна',
+      he: 'ללא צורך באשראי',
+    },
+    ctaLabel: {
+      en: 'Get started',
+      ru: 'Начать сейчас',
+      he: 'להתחיל עכשיו',
+    },
     card: {
       id: 'audit-free',
       currency: 'ILS',
@@ -320,9 +345,9 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       features: [
         {
           value: {
-            en: 'Score 0–100 and grade A+–F across 5 scales (speed, leads, SEO, security, AI Visibility)',
-            ru: 'Оценка 0–100 и грейд A+–F по 5 шкалам (скорость, лиды, SEO, безопасность, AI Visibility)',
-            he: 'ציון 0–100 ודרגה A+–F ב-5 סקאלות (מהירות, לידים, SEO, אבטחה, נראות AI)',
+            en: 'Score 0–100 · grade A+–F · 5 scales',
+            ru: 'Оценка 0–100 · грейд A+–F · 5 шкал',
+            he: 'ציון 0–100 · דרגה A+–F · 5 סקאלות',
           },
         },
         {
@@ -334,23 +359,23 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         },
         {
           value: {
-            en: 'Lighthouse: mobile and desktop',
-            ru: 'Lighthouse: mobile и desktop',
-            he: 'Lighthouse: מובייל ודסקטופ',
+            en: 'Lighthouse mobile + desktop',
+            ru: 'Lighthouse mobile + desktop',
+            he: 'Lighthouse מובייל + דסקטופ',
           },
         },
         {
           value: {
             en: 'Homepage only · one site language',
-            ru: 'Проверяется главная · один язык сайта',
+            ru: 'Только главная · один язык сайта',
             he: 'דף הבית בלבד · שפת אתר אחת',
           },
         },
         {
           value: {
-            en: 'HTML report in the language you choose (EN / RU / HE)',
-            ru: 'HTML-отчёт на выбранном языке (EN / RU / HE)',
-            he: 'דוח HTML בשפה שבחרתם (EN / RU / HE)',
+            en: 'HTML report EN / RU / HE',
+            ru: 'HTML-отчёт EN / RU / HE',
+            he: 'דוח HTML ב-EN / RU / HE',
           },
         },
       ],
@@ -382,6 +407,19 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
   {
     slug: 'audit-diagnostic',
     kind: 'audit',
+    planId: 'diagnostic',
+    checkoutMode: 'order',
+    ctaHref: '/order/audit-diagnostic',
+    cardPriceNote: {
+      en: 'one-time · promo price',
+      ru: 'разово · промо',
+      he: 'חד-פעמי · מחיר מבצע',
+    },
+    ctaLabel: {
+      en: 'Get started',
+      ru: 'Начать сейчас',
+      he: 'להתחיל עכשיו',
+    },
     card: {
       id: 'audit-diagnostic',
       currency: 'ILS',
@@ -398,22 +436,8 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         {
           value: {
             en: 'Everything in Free, plus:',
-            ru: 'Всё из бесплатного, плюс:',
-            he: 'הכל מהחבילה החינמית, ובנוסף:',
-          },
-        },
-        {
-          value: {
-            en: 'Site crawl in EN, RU and HE',
-            ru: 'Сканирование сайта на EN, RU и HE',
-            he: 'בדיקת האתר ב-EN, RU ו-HE',
-          },
-        },
-        {
-          value: {
-            en: 'Funnel crawl — up to 5 URLs',
-            ru: 'Обход воронки — до 5 URL',
-            he: 'סריקת משפך — עד 5 כתובות',
+            ru: 'Всё из Free, плюс:',
+            he: 'הכל מ-Free, ובנוסף:',
           },
         },
         {
@@ -425,16 +449,30 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         },
         {
           value: {
-            en: 'Rollup of forms, HTTPS, layout, and AI Visibility',
-            ru: 'Свод по формам, HTTPS, вёрстке и AI Visibility',
-            he: 'סיכום טפסים, HTTPS, פריסה ונראות AI',
+            en: 'Funnel crawl — up to 5 URLs',
+            ru: 'Обход воронки — до 5 URL',
+            he: 'סריקת המשפך — עד 5 כתובות',
           },
         },
         {
           value: {
-            en: 'HTML report in your language · full checklist is in Pro',
-            ru: 'HTML-отчёт на выбранном языке · полный чеклист — в Pro',
-            he: 'דוח HTML בשפה שבחרתם · הצ׳ק-ליסט המלא ב-Pro',
+            en: 'PageSpeed mobile + desktop details',
+            ru: 'PageSpeed mobile и desktop подробно',
+            he: 'פרטי PageSpeed למובייל ולדסקטופ',
+          },
+        },
+        {
+          value: {
+            en: 'Lab crawl in EN / RU / HE',
+            ru: 'Обход лаборатории на EN / RU / HE',
+            he: 'סריקת מעבדה ב-EN / RU / HE',
+          },
+        },
+        {
+          value: {
+            en: 'PDF report in EN / RU / HE',
+            ru: 'PDF-отчёт на EN / RU / HE',
+            he: 'דוח PDF ב-EN / RU / HE',
           },
         },
       ],
@@ -471,6 +509,19 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
   {
     slug: 'audit-pro',
     kind: 'audit',
+    planId: 'pro',
+    checkoutMode: 'order',
+    ctaHref: '/order/audit-pro',
+    cardPriceNote: {
+      en: 'one-time',
+      ru: 'разово',
+      he: 'חד-פעמי',
+    },
+    ctaLabel: {
+      en: 'Get started',
+      ru: 'Начать сейчас',
+      he: 'להתחיל עכשיו',
+    },
     card: {
       id: 'audit-pro',
       currency: 'ILS',
@@ -484,50 +535,43 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         {
           value: {
             en: 'Everything in Diagnostic, plus:',
-            ru: 'Всё из Диагностики, плюс:',
-            he: 'הכל מחבילת האבחון, ובנוסף:',
+            ru: 'Всё из Diagnostic, плюс:',
+            he: 'הכל מ-Diagnostic, ובנוסף:',
           },
         },
         {
           value: {
-            en: 'Full 60+ checklist and a fix plan on every row',
-            ru: 'Полный чеклист 60+ и план правок по каждой строке',
-            he: 'צ׳ק-ליסט 60+ מלא ותוכנית תיקון לכל שורה',
+            en: 'Full 60+ checklist and fix plan',
+            ru: 'Полный чеклист 60+ и план правок',
+            he: 'צ׳ק-ליסט 60+ מלא ותוכנית תיקון',
           },
         },
         {
           value: {
             en: 'Funnel crawl — up to 10 URLs',
             ru: 'Обход воронки — до 10 URL',
-            he: 'סריקת משפך — עד 10 כתובות',
+            he: 'סריקת המשפך — עד 10 כתובות',
           },
         },
         {
           value: {
-            en: 'Funnel review: AI verdict on the lead path (modal forms and chat count), gaps, and one priority fix',
-            ru: 'Funnel review: AI-вердикт по пути к заявке (модалки и чат считаются), пробелы и приоритетная доработка',
-            he: 'Funnel review: פסק דין AI על דרך הליד (טפסי מודאל וצ׳אט נספרים), פערים ותיקון בעדיפות',
+            en: 'Funnel review + one priority fix',
+            ru: 'Funnel review + одна приоритетная правка',
+            he: 'Funnel review + תיקון אחד בעדיפות',
           },
         },
         {
           value: {
-            en: 'AI Visibility: 7 criteria + Agent Readiness L1',
-            ru: 'AI Visibility: 7 критериев + Agent Readiness L1',
-            he: 'נראות AI: 7 קריטריונים + Agent Readiness L1',
+            en: 'AI Visibility + Agent Readiness L1',
+            ru: 'AI Visibility + Agent Readiness L1',
+            he: 'נראות AI + Agent Readiness L1',
           },
         },
         {
           value: {
-            en: 'In-report recommendations you can copy',
-            ru: 'Рекомендации в отчёте, можно копировать',
-            he: 'המלצות בדוח, עם אפשרות להעתקה',
-          },
-        },
-        {
-          value: {
-            en: 'Full HTML report in the language you choose',
-            ru: 'Полный HTML-отчёт на выбранном языке',
-            he: 'דוח HTML מלא בשפה שבחרתם',
+            en: 'Full HTML + PDF report',
+            ru: 'Полный HTML + PDF отчёт',
+            he: 'דוח HTML + PDF מלא',
           },
         },
       ],
@@ -556,6 +600,100 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       he: 'ביקורת אתר מלאה: צ׳ק-ליסט 60+, Funnel review, תוכנית תיקון, עד 10 כתובות משפך ופירוט נראות AI.',
     },
   },
+  {
+    slug: 'audit-manual',
+    kind: 'audit',
+    planId: 'manual',
+    checkoutMode: 'contact',
+    ctaHref: '#contact-modal',
+    cardPriceNote: {
+      en: 'after call · then payment',
+      ru: 'после созвона · затем оплата',
+      he: 'אחרי שיחה · ואז תשלום',
+    },
+    ctaLabel: {
+      en: 'Message engineer',
+      ru: 'Написать инженеру',
+      he: 'לכתוב למהנדס',
+    },
+    card: {
+      id: 'audit-manual',
+      currency: 'ILS',
+      price: '2490',
+      title: {
+        en: 'AI Audit: Manual',
+        ru: 'AI Аудит: Ручной',
+        he: 'ביקורת AI: ידני',
+      },
+      features: [
+        {
+          value: {
+            en: 'Everything in Pro, plus:',
+            ru: 'Всё из Pro, плюс:',
+            he: 'הכל מ-Pro, ובנוסף:',
+          },
+        },
+        {
+          value: {
+            en: 'Expert UX walkthrough — up to 5 journeys',
+            ru: 'Экспертный UX-проход — до 5 сценариев',
+            he: 'מעבר UX של מומחה — עד 5 מסעות',
+          },
+        },
+        {
+          value: {
+            en: 'Top-7 brief with business context',
+            ru: 'Top-7 brief с бизнес-контекстом',
+            he: 'סיכום Top-7 עם הקשר עסקי',
+          },
+        },
+        {
+          value: {
+            en: 'Backlog 30 / 60 / 90 · effort S/M/L',
+            ru: 'Backlog 30 / 60 / 90 · оценка S/M/L',
+            he: 'Backlog 30 / 60 / 90 · מאמץ S/M/L',
+          },
+        },
+        {
+          value: {
+            en: 'Call first · audit after payment',
+            ru: 'Сначала созвон · аудит после оплаты',
+            he: 'קודם שיחה · ביקורת אחרי תשלום',
+          },
+        },
+        {
+          value: {
+            en: 'One domain · ~15 URLs · 5–7 days',
+            ru: 'Один домен · ~15 URL · 5–7 дней',
+            he: 'דומיין אחד · כ-15 כתובות · 5–7 ימים',
+          },
+        },
+      ],
+    },
+    subtitle: {
+      en: 'Scoped with an engineer; audit after call and payment.',
+      ru: 'С инженером согласуем объём; аудит после созвона и оплаты.',
+      he: 'מגדירים היקף עם מהנדס; הביקורת אחרי שיחה ותשלום.',
+    },
+    periods: [],
+    defaultPeriodId: '',
+    addons: [],
+    includes: {
+      en: 'Everything in Pro, plus an expert UX/conversion walkthrough (up to 5 journeys), Top-7 brief with business context, and a 30/60/90 backlog with S/M/L effort. Flow: message an engineer → scoping call → payment → audit delivery in 5–7 business days. One domain, about 15 meaningful URLs. Not a self-serve Grow checkout.',
+      ru: 'Всё из Pro плюс экспертный UX/conversion проход (до 5 сценариев), Top-7 с бизнес-контекстом и backlog 30/60/90 с оценкой S/M/L. Поток: написать инженеру → созвон → оплата → сдача за 5–7 рабочих дней. Один домен, около 15 значимых URL. Без самостоятельной оплаты Grow.',
+      he: 'הכל מ-Pro בנוסף למעבר UX/המרה של מומחה (עד 5 מסעות), Top-7 עם הקשר עסקי ו-backlog ל-30/60/90 עם S/M/L. תהליך: הודעה למהנדס → שיחת היקף → תשלום → מסירה תוך 5–7 ימי עסקים. דומיין אחד, כ-15 כתובות. ללא קופה עצמית ב-Grow.',
+    },
+    seoTitle: {
+      en: 'Manual AI Audit | Expert review | Erythro.ai',
+      ru: 'Ручной AI Аудит | Экспертный разбор | Erythro.ai',
+      he: 'ביקורת AI ידנית | סקירת מומחה | Erythro.ai',
+    },
+    seoDescription: {
+      en: 'Manual website audit: Pro lab plus expert Top-7, backlog, and a scoping call before payment.',
+      ru: 'Ручной аудит сайта: лаборатория Pro плюс Top-7, backlog и созвон до оплаты.',
+      he: 'ביקורת אתר ידנית: מעבדת Pro בנוסף ל-Top-7, backlog ושיחת היקף לפני תשלום.',
+    },
+  },
 ]
 
 export const ORDER_PLANS: OrderPlan[] = [
@@ -567,6 +705,7 @@ const ORDER_SLUG_ALIASES: Record<string, string> = {
   free: 'audit-free',
   diagnostic: 'audit-diagnostic',
   pro: 'audit-pro',
+  manual: 'audit-manual',
   'ai-business-card': 'ai-smart-card',
 }
 

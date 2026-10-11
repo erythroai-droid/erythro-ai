@@ -180,6 +180,7 @@ export interface User {
   resetPasswordExpiration?: string | null;
   salt?: string | null;
   hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
@@ -199,6 +200,7 @@ export interface User {
 export interface Media {
   id: number;
   alt: string;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -384,9 +386,17 @@ export interface SolutionPlan {
   id: number;
   title: string;
   /**
-   * Solution = homepage Solutions section + /order. AI Audit = /order/audit-* only (hidden from homepage Solutions).
+   * Solution = homepage Solutions + /order. AI Audit = /audit Pricing cards + /order/audit-* (Manual uses contact modal).
    */
   kind: 'solution' | 'audit';
+  /**
+   * AI Audit card id on /audit: free, diagnostic, pro, manual. Leave empty for Solution plans.
+   */
+  planId?: string | null;
+  /**
+   * Manual audit uses Contact modal. Other audit plans use Order.
+   */
+  checkoutMode?: ('order' | 'contact') | null;
   /**
    * Stable id / order URL, e.g. "business-automation" → /order/business-automation
    */
@@ -404,15 +414,19 @@ export interface SolutionPlan {
    */
   pricePrefix?: string | null;
   /**
-   * Optional old/struck-through price
+   * Optional old/struck-through price (also used as compare price on /audit Pricing cards)
    */
   originalPrice?: string | null;
   /**
-   * Show installment note marker (*)
+   * Show installment note marker (*) on solution order pages
    */
   priceNote?: boolean | null;
   /**
-   * Highlight this plan as recommended
+   * AI Audit /audit card: text under the price (e.g. "no card required"). Empty = no note.
+   */
+  cardPriceNote?: string | null;
+  /**
+   * Highlight this plan as recommended (Diagnostic on /audit)
    */
   featured?: boolean | null;
   /**
@@ -427,7 +441,11 @@ export interface SolutionPlan {
     | null;
   disclaimer?: string | null;
   /**
-   * Plan button link. Leave empty for /order/{slug}. Or set #contact-modal / any URL.
+   * Button on /audit Pricing card. Empty → “Get started” or “Message engineer” by checkout mode.
+   */
+  ctaLabel?: string | null;
+  /**
+   * Plan button link. Leave empty for /order/{slug}. Manual audit: #contact-modal.
    */
   ctaHref?: string | null;
   /**
@@ -804,7 +822,7 @@ export interface ContactSubmission {
   /**
    * Payment gateway provider
    */
-  paymentProvider?: 'grow' | 'payplus' | null;
+  paymentProvider?: ('grow' | 'payplus') | null;
   /**
    * Payment amount in ILS
    */
@@ -896,7 +914,7 @@ export interface ConsultSession {
   createdAt: string;
 }
 /**
- * Questions asked before email verification. The visitor code groups one connection; it is not a name or an account.
+ * Questions asked before email verification. The visitor code groups one connection; it is not a name or an account. Full transcripts stay in Consult Sessions.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "consult-question-log".
@@ -1054,6 +1072,10 @@ export interface PayloadLockedDocument {
         value: number | ConsultSession;
       } | null)
     | ({
+        relationTo: 'consult-question-log';
+        value: number | ConsultQuestionLog;
+      } | null)
+    | ({
         relationTo: 'project-briefs';
         value: number | ProjectBrief;
       } | null)
@@ -1115,6 +1137,7 @@ export interface UsersSelect<T extends boolean = true> {
   resetPasswordExpiration?: T;
   salt?: T;
   hash?: T;
+  resetPasswordRequestedAt?: T;
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:
@@ -1131,6 +1154,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1235,12 +1259,15 @@ export interface ServicesSelect<T extends boolean = true> {
 export interface SolutionPlansSelect<T extends boolean = true> {
   title?: T;
   kind?: T;
+  planId?: T;
+  checkoutMode?: T;
   slug?: T;
   price?: T;
   currency?: T;
   pricePrefix?: T;
   originalPrice?: T;
   priceNote?: T;
+  cardPriceNote?: T;
   featured?: T;
   features?:
     | T
@@ -1250,6 +1277,7 @@ export interface SolutionPlansSelect<T extends boolean = true> {
         id?: T;
       };
   disclaimer?: T;
+  ctaLabel?: T;
   ctaHref?: T;
   subtitle?: T;
   promo?: T;
@@ -2176,7 +2204,7 @@ export interface AuditPage {
   createdAt?: string | null;
 }
 /**
- * AI consultant: prompt guardrails, message limits, email-verification copy and the technical-brief checklist (localized en / ru / he).
+ * AI consultant: prompt guardrails, unpublished extra knowledge, message limits, email-verification copy and the technical-brief checklist (localized en / ru / he).
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "consultant-settings".

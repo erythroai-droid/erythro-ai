@@ -7,8 +7,9 @@ import 'server-only'
 import { unstable_cache } from 'next/cache'
 import { SITE_CONTENT_TAG } from './revalidate'
 import { auditPage, isStaleAuditHebrew, type Localized, type AuditPageContent } from './auditPage'
-import { normalizeCtaHref } from './ctaNav'
 import { getPageFaq, pageFaqFromCms } from './pageFaq'
+import { getAuditPricingPlans } from './cmsPages'
+import { staticAuditPricingPlans } from './auditPricingPlans'
 
 export type { AuditPageContent }
 
@@ -33,14 +34,6 @@ function pickAll(
     out[l] = l === 'he' && isStaleAuditHebrew(trimmed) ? fallback.he : trimmed
   }
   return out
-}
-
-/** pickAll with a blank-string fallback — for optional fields. */
-function pickAllOpt(
-  obj: Record<string, unknown> | null | undefined,
-  fallback: Localized = { en: '', ru: '', he: '' },
-): Localized {
-  return pickAll(obj, fallback)
 }
 
 // ── Section-level mapping helpers ────────────────────────────────────────────
@@ -109,120 +102,6 @@ function mapTitleBody(
   return extras.length ? [...mapped, ...extras] : mapped
 }
 
-/** Optional localized field: only return when at least one locale has text (no silent fallback). */
-function pickAllPresent(
-  obj: Record<string, unknown> | null | undefined,
-): Localized | undefined {
-  if (!obj || typeof obj !== 'object') return undefined
-  const out: Localized = { en: '', ru: '', he: '' }
-  let any = false
-  for (const l of LOCALES) {
-    const v = obj[l]
-    if (typeof v === 'string' && v.trim()) {
-      out[l] = v.trim()
-      any = true
-    }
-  }
-  return any ? out : undefined
-}
-
-function mapFeatures(
-  raw: unknown[] | undefined,
-  fallback: readonly Localized[],
-): Localized[] {
-  // undefined → fallback (CMS plan without features key). Empty array → intentional blank.
-  if (!Array.isArray(raw)) return [...fallback]
-  if (raw.length === 0) return []
-  return raw.map((item: unknown, i) => {
-    const r = item as Record<string, unknown>
-    const fb = fallback[i] ?? { en: '', ru: '', he: '' }
-    return pickAll(r?.feature as RawLocalized, fb)
-  })
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapPlans(raw: unknown[] | undefined, fallback: any[]): any[] {
-  if (!Array.isArray(raw) || raw.length === 0) return [...fallback]
-
-  const mapped = raw.map((item: unknown, i) => {
-    const r = item as Record<string, unknown>
-    const rawPlanId =
-      (typeof r?.planId === 'string' && r.planId.trim()) || ''
-    // Legacy CMS row `delegate` is Manual now (same slot on the pricing grid).
-    const fromLegacyDelegate = rawPlanId === 'delegate'
-    const planId = fromLegacyDelegate ? 'manual' : rawPlanId
-    const fb = (fallback.find((p: { id?: string }) => p?.id === planId) ??
-      fallback[i] ??
-      {}) as Record<string, unknown>
-
-    // Stale Delegate CMS copy must not win over Manual fallback.
-    const cmsName = fromLegacyDelegate ? undefined : (r?.name as RawLocalized)
-    const cmsPrice = fromLegacyDelegate ? undefined : (r?.price as RawLocalized)
-    const cmsCta = fromLegacyDelegate ? undefined : (r?.cta as RawLocalized)
-    const cmsFeatures = fromLegacyDelegate ? undefined : (r?.features as unknown[] | undefined)
-    const cmsCtaHref = fromLegacyDelegate
-      ? undefined
-      : typeof r?.ctaHref === 'string' && r.ctaHref.trim()
-        ? r.ctaHref
-        : undefined
-
-    const priceCompare = fromLegacyDelegate
-      ? undefined
-      : pickAllPresent(r?.priceCompare as RawLocalized)
-    const priceNote = fromLegacyDelegate
-      ? pickAllPresent(fb?.priceNote as RawLocalized)
-      : pickAllPresent(r?.priceNote as RawLocalized)
-    const description = fromLegacyDelegate
-      ? pickAllPresent(fb?.description as RawLocalized)
-      : pickAllPresent(r?.description as RawLocalized)
-
-    return {
-      id: planId || (typeof fb?.id === 'string' ? fb.id : `plan-${i}`),
-      badge: fb?.badge ?? null,
-      name: pickAllOpt(cmsName, fb?.name as Localized | undefined),
-      price: pickAllOpt(cmsPrice, fb?.price as Localized | undefined),
-      ...(priceCompare ? { priceCompare } : {}),
-      ...(priceNote ? { priceNote } : {}),
-      ...(description ? { description } : {}),
-      features: mapFeatures(cmsFeatures, (fb?.features ?? []) as Localized[]),
-      cta: pickAllOpt(cmsCta, fb?.cta as Localized | undefined),
-      ctaHref: normalizeCtaHref(
-        cmsCtaHref || (typeof fb?.ctaHref === 'string' ? (fb.ctaHref as string) : ''),
-      ),
-      featured:
-        fromLegacyDelegate
-          ? false
-          : typeof r?.featured === 'boolean'
-            ? r.featured
-            : planId === 'diagnostic' || fb?.id === 'diagnostic',
-    }
-  })
-
-  // CMS may still have only Free/Diagnostic/Pro — append code-only plans (Manual).
-  const seen = new Set(
-    mapped.map((p) => (typeof p?.id === 'string' ? p.id : '')).filter(Boolean),
-  )
-  for (const fb of fallback) {
-    const id = typeof fb?.id === 'string' ? fb.id : ''
-    if (!id || seen.has(id)) continue
-    mapped.push({
-      id,
-      badge: fb.badge ?? null,
-      name: fb.name,
-      price: fb.price,
-      ...('priceCompare' in fb && fb.priceCompare ? { priceCompare: fb.priceCompare } : {}),
-      ...('priceNote' in fb && fb.priceNote ? { priceNote: fb.priceNote } : {}),
-      ...('description' in fb && fb.description ? { description: fb.description } : {}),
-      features: Array.isArray(fb.features) ? [...fb.features] : [],
-      cta: fb.cta,
-      ctaHref: normalizeCtaHref(typeof fb.ctaHref === 'string' ? fb.ctaHref : ''),
-      featured: id === 'diagnostic',
-    })
-    seen.add(id)
-  }
-  return mapped
-}
-
 // ── Main fetch ───────────────────────────────────────────────────────────────
 
 /**
@@ -233,8 +112,22 @@ function mapPlans(raw: unknown[] | undefined, fallback: any[]): any[] {
  * Return type is structurally identical to `auditPage` but mutable (arrays, not tuples)
  * to avoid fighting TypeScript's `as const` literal narrowing.
  */
+function withPricingPlans(
+  page: AuditPageContent,
+  plans: AuditPageContent['pricing']['plans'],
+): AuditPageContent {
+  return {
+    ...page,
+    pricing: {
+      ...page.pricing,
+      plans,
+    },
+  }
+}
+
 export async function fetchAuditPage(): Promise<AuditPageContent> {
-  const fallback = auditPage
+  const staticPlans = staticAuditPricingPlans()
+  const fallback = withPricingPlans(auditPage, staticPlans)
   try {
     const { getPayload } = await import('payload')
     const config = (await import('@payload-config')).default
@@ -247,7 +140,10 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
       depth: 0,
     })) as Record<string, unknown> | null
 
-    if (!raw) return fallback
+    // Pricing cards always from solution-plans (kind=audit); ignore global pricing.plans.
+    const pricingPlans = await getAuditPricingPlans()
+
+    if (!raw) return withPricingPlans(fallback, pricingPlans)
 
     const rawForm = raw.form as Record<string, unknown> | null | undefined
     const rawHow = raw.how as Record<string, unknown> | null | undefined
@@ -330,8 +226,7 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
         footnote: pickAll(rawPricing?.footnote as RawLocalized, fallback.pricing.footnote),
         agency: pickAll(rawPricing?.agency as RawLocalized, fallback.pricing.agency),
         agencyCta: pickAll(rawPricing?.agencyCta as RawLocalized, fallback.pricing.agencyCta),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        plans: mapPlans(rawPricing?.plans as unknown[] | undefined, fallback.pricing.plans as any),
+        plans: pricingPlans,
       },
 
       faq: pageFaqFromCms(raw.faq, getPageFaq('audit')),
@@ -347,7 +242,7 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
  * Shares the site-content cache tag so Payload admin saves invalidate automatically.
  */
 export function getCachedAuditPage(): Promise<AuditPageContent> {
-  return unstable_cache(() => fetchAuditPage(), ['audit-page-v8-manual'], {
+  return unstable_cache(() => fetchAuditPage(), ['audit-page-v10-plans-sot'], {
     tags: [SITE_CONTENT_TAG],
   })()
 }

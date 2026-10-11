@@ -493,6 +493,8 @@ export const solution_plans = pgTable(
   'solution_plans',
   {
     id: serial('id').primaryKey(),
+    planId: varchar('plan_id'),
+    checkoutMode: varchar('checkout_mode').default('order'),
     slug: varchar('slug'),
     price: varchar('price').notNull(),
     currency: enum_solution_plans_currency('currency').notNull().default('ILS'),
@@ -521,6 +523,8 @@ export const solution_plans_locales = pgTable(
     title: varchar('title').notNull(),
     pricePrefix: varchar('price_prefix'),
     disclaimer: varchar('disclaimer'),
+    cardPriceNote: varchar('card_price_note'),
+    ctaLabel: varchar('cta_label'),
     subtitle: varchar('subtitle'),
     promo: varchar('promo'),
     includes: jsonb('includes'),

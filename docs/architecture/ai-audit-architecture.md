@@ -60,8 +60,8 @@
 | Маршрут | Роль |
 |---|---|
 | `/audit` | Лендинг / заказ AI-аудита (существующий) |
-| `/order/audit-free`, `/order/audit-diagnostic`, `/order/audit-pro` | Чекаут по тарифу (платные — Grow) |
-| Pricing card **Manual** on `/audit` | Не чекаут: `#contact-modal` → инженер → созвон → оплата → затем аудит офлайн |
+| `/order/audit-free`, `/order/audit-diagnostic`, `/order/audit-pro` | Чекаут по тарифу (платные — Grow); данные из Plans `kind: audit` |
+| Pricing card **Manual** on `/audit` | Документ Plans `audit-manual`, `checkoutMode: contact` — `#contact-modal` (без `/order` / Grow) |
 | **`/audit/report/[id]`** | **Выдача результата** (polling; готовый отчёт → standalone HTML) |
 
 `/audit` и `/audit/report/[id]` не смешивать: лендинг ≠ страница результата.
@@ -83,7 +83,7 @@
 | `locale` | Язык UI сайта |
 | `website` | Проверяемый URL. На blur формы: DNS A/AAAA на публичный IP через `POST /api/audit/check-website` (`src/lib/checkWebsite.ts`). **Не** HTTP-fetch пользовательского URL (SSRF). n8n для этой проверки не используется. |
 | `auditLanguage` | `en` \| `ru` \| `he` — язык отчёта |
-| `planSlug` | `audit-free` \| `audit-diagnostic` \| `audit-pro` (Manual без self-serve slug) |
+| `planSlug` | `audit-free` \| `audit-diagnostic` \| `audit-pro` (Manual: contact only, не payment create) |
 | `planTotal` | Отображаемая сумма (информативно; оплаты нет) |
 | `auditStatus` | `new` → `in_progress` → `report_sent` |
 
@@ -115,12 +115,12 @@ Access: публичный REST `create` **запрещён**. Создание 
 
 | Элемент | Где |
 |---|---|
-| Тексты `/audit` (форма, How it works, Pricing cards) | Global **Pages → Audit Page** (`audit-page`) |
-| Заказы `/order/audit-*` | Collection **Plans** с `kind: AI Audit` (sidebar **Audit Orders**) |
+| Тексты `/audit` (форма, How it works, Pricing intro/agency) | Global **Pages → Audit Page** (`audit-page`) — **без** массива карточек |
+| Карточки Pricing + заказы `/order/audit-*` | Collection **Plans** (`kind: AI Audit`) — **единый источник** Free / Diagnostic / Pro / Manual (sidebar **AI Audit plans**) |
 | Счётчики pipeline + re-queue | Dashboard + Contact Submissions / AI Audits |
 | Staff re-queue API | `POST /api/audit/admin/requeue` |
 
-Статический фолбэк: `src/lib/auditPage.ts`, `AUDIT_ORDER_PLANS` в `orderPlans.ts`. После seed CMS — источник правды.
+Статический фолбэк карточек: `AUDIT_ORDER_PLANS` → `staticAuditPricingPlans()` (`src/lib/auditPricingPlans.ts`). Чтение: `getAuditPricingPlans()` / `fetchAuditPage`. После seed/migrate CMS Plans — источник правды. Синк из кода: `pnpm db:migrate-audit-plans-unify` (one-shot) или `pnpm db:fix-audit-pricing` (sync Plans only).
 
 ---
 

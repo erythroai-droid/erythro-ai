@@ -12,7 +12,7 @@ export const SolutionPlans: CollectionConfig = {
     defaultColumns: ['title', 'kind', 'slug', 'price', 'featured', 'order'],
     group: 'Content',
     description:
-      'Solution plans (homepage Solutions + /order) and AI Audit plans (/order/audit-*). Use the "Kind" field to separate them.',
+      'Solution packages and AI Audit tariffs. For audits: edit Free / Diagnostic / Pro / Manual here — single source for /audit Pricing cards and /order/audit-* (except Manual contact CTA).',
   },
   hooks: { afterChange: [revalidateOnChange], afterDelete: [revalidateOnDelete] },
   fields: [
@@ -28,8 +28,32 @@ export const SolutionPlans: CollectionConfig = {
       ],
       admin: {
         description:
-          'Solution = homepage Solutions section + /order. AI Audit = /order/audit-* only (hidden from homepage Solutions).',
+          'Solution = homepage Solutions + /order. AI Audit = /audit Pricing cards + /order/audit-* (Manual uses contact modal).',
         position: 'sidebar',
+      },
+    },
+    {
+      name: 'planId',
+      type: 'text',
+      admin: {
+        description:
+          'AI Audit card id on /audit: free, diagnostic, pro, manual. Leave empty for Solution plans.',
+        position: 'sidebar',
+        condition: (_, siblingData) => siblingData?.kind === 'audit',
+      },
+    },
+    {
+      name: 'checkoutMode',
+      type: 'select',
+      defaultValue: 'order',
+      options: [
+        { label: 'Order / Grow checkout', value: 'order' },
+        { label: 'Contact modal (no payment)', value: 'contact' },
+      ],
+      admin: {
+        description: 'Manual audit uses Contact modal. Other audit plans use Order.',
+        position: 'sidebar',
+        condition: (_, siblingData) => siblingData?.kind === 'audit',
       },
     },
     {
@@ -63,19 +87,30 @@ export const SolutionPlans: CollectionConfig = {
     {
       name: 'originalPrice',
       type: 'text',
-      admin: { description: 'Optional old/struck-through price' },
+      admin: {
+        description:
+          'Optional old/struck-through price (also used as compare price on /audit Pricing cards)',
+      },
     },
     {
       name: 'priceNote',
       type: 'checkbox',
       defaultValue: false,
-      admin: { description: 'Show installment note marker (*)' },
+      admin: { description: 'Show installment note marker (*) on solution order pages' },
     },
+    locText('cardPriceNote', {
+      label: 'Card price note (* under price)',
+      admin: {
+        description:
+          'AI Audit /audit card: text under the price (e.g. "no card required"). Empty = no note.',
+        condition: (_, siblingData) => siblingData?.kind === 'audit',
+      },
+    }),
     {
       name: 'featured',
       type: 'checkbox',
       defaultValue: false,
-      admin: { description: 'Highlight this plan as recommended' },
+      admin: { description: 'Highlight this plan as recommended (Diagnostic on /audit)' },
     },
     {
       name: 'features',
@@ -83,7 +118,7 @@ export const SolutionPlans: CollectionConfig = {
       labels: { singular: 'Feature', plural: 'Features' },
       admin: {
         description:
-          'Label + Value show on homepage cards and on the order package accordion. For “Подписка / Subscription” use Label + Value only (homepage); put price details and Full on the Monthly subscription Add-on.',
+          'Value lines show on /audit Pricing cards (AI Audit) and on the order accordion. Label optional. For “Подписка / Subscription” use Label + Value (homepage); details on the Monthly subscription Add-on.',
       },
       fields: [
         locText('label'),
@@ -91,10 +126,18 @@ export const SolutionPlans: CollectionConfig = {
       ],
     },
     locText('disclaimer'),
+    locText('ctaLabel', {
+      label: 'CTA button label',
+      admin: {
+        description:
+          'Button on /audit Pricing card. Empty → “Get started” or “Message engineer” by checkout mode.',
+        condition: (_, siblingData) => siblingData?.kind === 'audit',
+      },
+    }),
     ctaHrefField('ctaHref', {
       admin: {
         description:
-          'Plan button link. Leave empty for /order/{slug}. Or set #contact-modal / any URL.',
+          'Plan button link. Leave empty for /order/{slug}. Manual audit: #contact-modal.',
       },
     }),
     locText('subtitle', {

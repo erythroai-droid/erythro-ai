@@ -47,7 +47,7 @@ const MANUAL_AUDIT_CONTACT_DRAFT: Record<string, string> = {
   he: 'מתעניין/ת בביקורת AI ידנית (Manual, ₪2,490). אשמח לשיחת היקף — הביקורת אחרי תשלום.',
 }
 
-const AuditPageContext = React.createContext<AuditPageContent>(auditPage as AuditPageContent)
+const AuditPageContext = React.createContext<AuditPageContent>(auditPage)
 
 function useAuditPage(): AuditPageContent {
   return React.useContext(AuditPageContext)
@@ -1199,10 +1199,10 @@ function AuditPricingCard({
     <article
       className={`relative flex h-full w-full flex-col items-center gap-2 rounded-[10px] px-4 py-[30px] transition-shadow duration-300 ease-out ${
         featured
-          ? 'max-lg:mb-4 min-h-[560px] h-auto bg-erythro-600 shadow-[0_5px_50px_0_rgba(13,13,13,0.3)] hover:shadow-[0_10px_44px_0_rgba(13,13,13,0.38)] lg:min-h-[540px] xl:min-h-[570px]'
+          ? 'max-lg:mb-4 min-h-[580px] bg-erythro-600 shadow-[0_5px_50px_0_rgba(13,13,13,0.3)] hover:shadow-[0_10px_44px_0_rgba(13,13,13,0.38)] lg:min-h-[560px] xl:min-h-[620px] xl:scale-[1.04] xl:z-[1]'
           : isLight
-            ? 'min-h-[530px] h-auto border border-white bg-white shadow-card-services hover:shadow-[0_8px_26px_0_rgba(13,13,13,0.22)] lg:min-h-[510px] xl:min-h-[530px]'
-            : 'min-h-[530px] h-auto border border-gold-500 bg-[#1E1E1E] hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)] lg:min-h-[510px] xl:min-h-[530px]'
+            ? 'min-h-[520px] border border-white bg-white shadow-card-services hover:shadow-[0_8px_26px_0_rgba(13,13,13,0.22)] lg:min-h-[500px] xl:min-h-[520px]'
+            : 'min-h-[520px] border border-gold-500 bg-[#1E1E1E] hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)] lg:min-h-[500px] xl:min-h-[520px]'
       }`}
     >
         {compareAmount ? (
@@ -1332,12 +1332,17 @@ function AuditPricingPanel({
       </div>
 
       <div
-        className={`grid w-full grid-cols-1 gap-[30px] sm:grid-cols-2 xl:items-center ${
+        className={`grid w-full grid-cols-1 gap-[30px] sm:grid-cols-2 xl:items-stretch ${
           pricing.plans.length >= 4 ? 'xl:grid-cols-4' : 'xl:grid-cols-3'
         }`}
       >
         {pricing.plans.map((plan) => (
-            <div key={plan.id} className="min-w-0 w-full">
+            <div
+              key={plan.id}
+              className={`min-w-0 w-full ${
+                plan.id === 'diagnostic' || plan.featured ? 'xl:flex xl:items-center' : ''
+              }`}
+            >
               <AuditPricingCard
                 plan={plan}
                 locale={locale}
