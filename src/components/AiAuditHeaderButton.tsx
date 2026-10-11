@@ -4,8 +4,8 @@ import React from 'react'
 import Link from 'next/link'
 import { BorderBeam } from 'border-beam'
 
-/** Header CTA to /audit. */
-export const AI_AUDIT_HEADER_CTA_ENABLED = true
+/** Header CTA to /audit. Off until audit header CTA is ready to ship again. */
+export const AI_AUDIT_HEADER_CTA_ENABLED = false
 
 const SparklesIcon = ({ className = 'w-3.5 h-3.5' }: { className?: string }) => (
   <svg

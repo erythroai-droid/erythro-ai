@@ -1,28 +1,32 @@
 # Latest changes
 
-Обновлено: 2026-10-08  
+Обновлено: 2026-10-11  
 Модель: Cursor  
-Ветка: `fix/gemini-sampling-params` (от `origin/main`)
+Прод сейчас отдаёт `feat/audit-header-cta` `3bfc005` (`dpl_FohCW9mgFmWkEhAzkivFcfwZBrW6`, alias erythro.ai). База — `origin/main` `a530f0c` плюс кнопка в шапке. `fix/payment-turnstile-action` `2ea1ec5` в этот деплой не входит.
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
 ## Сделано в этой сессии
 
-- PIT-106: убрали `temperature` (consultant + QA_Auditor Funnel).
-- Consultant `thinking_level` по стадии: anon `minimal` → OTP `low` → phone/ТЗ `medium` (`consultThinkingLevel` в `config.ts`, `providerOptions.google.thinkingConfig` в `handler.ts`).
+- Sandbox «Диагностик»: AUD-160, ₪149, אישור `132104079`.
+- Sandbox «Про»: AUD-162, ₪890, אישור `132104828`. `make-paid` → `PATCH /api/audit/internal/162` → отчёт `tier-pro`.
+- На странице ожидания отчёта вместо URL сайта стоит `mailto:team@erythro.ai` (`a2a8200`).
+- Карточки «Топ-3» обрезают длинный текст (`2ea1ec5`). Причина артефактов AUD-160: полный URL Turnstile `401 /cdn-cgi/challenge-platform/…` без переноса. Обрезка уже сохранённых HTML — при отдаче страницы; агент на VPS подхватит пропуск `/cdn-cgi/` только после пересборки.
+- Make: оба сценария Active на **VADYM’s Grow Live**. Create Payment Link: **VAT Type = VAT Exempt** (עוסק פטור). `Regular VAT` давал HTTP 500. Живого списания ещё не было. Страница Grow для Pro открывается: erythro.ai, ₪890, מע״מ ₪0.
+- Кнопка «AI-аудит» в шапке выключена: `AI_AUDIT_HEADER_CTA_ENABLED = false` в `AiAuditHeaderButton.tsx`. Нужен деплой, чтобы убрать с прода.
 
 ## Сейчас
 
-Ждёт: коммит / PR / деплой консультанта (Vercel). Ребилд QA_Auditor на VPS — только если нужен Funnel без `temperature`.
+План оплаты с нуля (Morning → Grow → Make → сайт) в `docs/architecture/grow-audit-checkout.md` и в базе знаний, ссылка в `index.md`. Intake-лимиты не возвращать до живого списания. После деплоя кнопка в шапке скрыта; снова включить — флаг `AI_AUDIT_HEADER_CTA_ENABLED`.
+
+Оплата проверена по коду: повтор `make-paid` не списывает второй раз и не ставит второй аудит. Второе списание возможно только если клиент отправит форму ещё раз и оплатит вторую ссылку. Расхождение суммы отвечает Make кодом 200, аудит тогда не стартует. Этот ответ менять до живого списания не нужно: застрявших оплат нет, повтор Make сумму не исправит.
 
 ## Не делать
 
-- Не считать пункты `PLAN-deferred.md` текущей задачей.
+- Не печатать `MAKE_PAYMENT_SECRET`.
+- Не возвращать intake-лимиты, пока нет живого списания.
 - Не зеркалировать этот файл в Obsidian.
-- Не запускать тесты и не обращаться к GitHub без прямой просьбы.
-- Не коммитить stash пакетом «заодно» — разбирать по задаче.
-- Не делать `git stash drop` без просьбы пользователя.
 
 ## Последняя эстафета
 
-2026-10-08 — Cursor — thinking levels в консультанте. Следующий шаг — коммит/PR по запросу.
+2026-10-11 — Cursor — конфликт с `main` по `AI_AUDIT_HEADER_CTA_ENABLED`: оставили `false`. Merge `origin/main` в `fix/gemini-sampling-params`. Следующий шаг: push и проверить PR.
