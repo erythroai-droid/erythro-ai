@@ -8,17 +8,17 @@
 ## Сделано в этой сессии
 
 - **Единый источник тарифов аудита:** Plans `kind: audit` (Free / Diagnostic / Pro / Manual).
-- Поля Plans: `planId`, `checkoutMode`, `cardPriceNote`, `ctaLabel` (+ migration `20261012_010000_audit_plan_checkout_fields`).
-- `/audit` карточки: `getAuditPricingPlans()` → `fetchAuditPage` (global `pricing.plans` игнорируется / hidden в admin).
+- Поля Plans: `planId`, `checkoutMode`, `cardPriceNote`, `ctaLabel`, **`cardName`** (+ migrations `20261012_010000_*`, `20261012_020000_audit_plan_card_name`).
+- `/audit` карточки: `getAuditPricingPlans()` → бейдж из **Card name** (не Title); Title = `/order` + список в admin.
 - Manual: `checkoutMode: contact`, CTA `#contact-modal`; `/order/audit-manual` → redirect `/audit`; payment create → 400.
-- Скрипты: `pnpm db:migrate-audit-plans-unify` (one-shot upsert), `pnpm db:fix-audit-pricing` (sync Plans only).
-- Тесты: `tests/int/auditPricingPlans.int.spec.ts`. Cache keys: `audit-page-v10-plans-sot`, `order-plans-v7-audit-checkout`.
+- Скрипты: `pnpm db:migrate-audit-plans-unify`, `pnpm db:fix-audit-pricing` пишут `cardName`.
+- Тесты: `tests/int/auditPricingPlans.int.spec.ts`. Cache: `audit-page-v11-card-name`, `order-plans-v8-card-name`.
 
 ## Сейчас
 
-1. На проде/локали с БД: `PAYLOAD_DISABLE_PUSH=1 pnpm db:migrate` → `pnpm db:migrate-audit-plans-unify`.
-2. SQL-миграция `20261012_010000_audit_plan_checkout_fields` проверена: только ADD COLUMN IF NOT EXISTS + узкий UPDATE по slug; xact lock (PIT-086). Безопасна для схемы.
-3. Deploy + revalidate.
+1. CI: `pnpm db:fix-audit-plan-card-name` до `api.int.spec` (колонка `card_name` — иначе find solution-plans падает).
+2. Локально / после деплоя: `pnpm db:migrate` → при необходимости `pnpm db:migrate-audit-plans-unify` (заполнит Card name).
+3. В admin: Content → Plans → **Card name (Pricing badge)** EN/RU/HE. Title — для order / списка.
 
 ## Не делать
 
@@ -30,4 +30,4 @@
 
 ## Последняя эстафета
 
-2026-10-12 — Cursor — тарифы аудита SoT = Plans; Audit Page только intro Pricing. После деплоя прогнать migrate-unify.
+2026-10-12 — Cursor — CI fix: `db:fix-audit-plan-card-name` (api.int падал без `card_name`).

@@ -116,7 +116,7 @@ Access: публичный REST `create` **запрещён**. Создание 
 | Элемент | Где |
 |---|---|
 | Тексты `/audit` (форма, How it works, Pricing intro/agency) | Global **Pages → Audit Page** (`audit-page`) — **без** массива карточек |
-| Карточки Pricing + заказы `/order/audit-*` | Collection **Plans** (`kind: AI Audit`) — **единый источник** Free / Diagnostic / Pro / Manual (sidebar **AI Audit plans**) |
+| Карточки Pricing + заказы `/order/audit-*` | Collection **Plans** (`kind: AI Audit`) — **единый источник** Free / Diagnostic / Pro / Manual (sidebar **AI Audit plans**). Бейдж на карточке: поле **Card name**; Title — для `/order` и списка в admin |
 | Счётчики pipeline + re-queue | Dashboard + Contact Submissions / AI Audits |
 | Staff re-queue API | `POST /api/audit/admin/requeue` |
 

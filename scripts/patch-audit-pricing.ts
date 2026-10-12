@@ -122,6 +122,7 @@ async function patchOrderPlans(payload: any): Promise<number> {
           slug: plan.slug,
           title: plan.card.title.en,
           subtitle: plan.subtitle?.en || '',
+          cardName: plan.cardName?.en || null,
           cardPriceNote: plan.cardPriceNote?.en || null,
           ctaLabel: plan.ctaLabel?.en || null,
           features: plan.card.features.map((f) => ({
@@ -158,6 +159,7 @@ async function patchOrderPlans(payload: any): Promise<number> {
       const data: Record<string, unknown> = {
         title: plan.card.title[loc] || plan.card.title.en,
         subtitle: plan.subtitle?.[loc] || plan.subtitle?.en || '',
+        cardName: plan.cardName?.[loc] || plan.cardName?.en || null,
         cardPriceNote: plan.cardPriceNote?.[loc] || plan.cardPriceNote?.en || null,
         ctaLabel: plan.ctaLabel?.[loc] || plan.ctaLabel?.en || null,
         features: plan.card.features.map((f) => ({

@@ -1,6 +1,6 @@
 /**
  * One-shot: upsert AI Audit Plans from AUDIT_ORDER_PLANS (incl. audit-manual),
- * set planId / checkoutMode / cardPriceNote / ctaLabel / originalPrice / featured.
+ * set planId / checkoutMode / cardName / cardPriceNote / ctaLabel / originalPrice / featured.
  * Does not write Pricing cards into the audit-page global.
  *
  * Usage: PAYLOAD_DISABLE_PUSH=1 pnpm db:migrate-audit-plans-unify
@@ -65,6 +65,9 @@ function localePlanData(plan: (typeof AUDIT_ORDER_PLANS)[number], loc: Locale) {
   return {
     title: plan.card.title[loc] || plan.card.title.en,
     subtitle: plan.subtitle?.[loc] || plan.subtitle?.en || '',
+    ...(plan.cardName
+      ? { cardName: plan.cardName[loc] || plan.cardName.en }
+      : { cardName: null }),
     ...(plan.cardPriceNote
       ? { cardPriceNote: plan.cardPriceNote[loc] || plan.cardPriceNote.en }
       : { cardPriceNote: null }),

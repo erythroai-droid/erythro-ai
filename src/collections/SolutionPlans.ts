@@ -12,11 +12,17 @@ export const SolutionPlans: CollectionConfig = {
     defaultColumns: ['title', 'kind', 'slug', 'price', 'featured', 'order'],
     group: 'Content',
     description:
-      'Solution packages and AI Audit tariffs. For audits: edit Free / Diagnostic / Pro / Manual here — single source for /audit Pricing cards and /order/audit-* (except Manual contact CTA).',
+      'Solution packages and AI Audit tariffs. For audits: edit Free / Diagnostic / Pro / Manual here — single source for /audit Pricing cards and /order/audit-* (except Manual contact CTA). Card name = Pricing badge; Title = order page / admin list.',
   },
   hooks: { afterChange: [revalidateOnChange], afterDelete: [revalidateOnDelete] },
   fields: [
-    locText('title', { required: true }),
+    locText('title', {
+      required: true,
+      admin: {
+        description:
+          'Admin list + order page title (e.g. "AI Audit: Manual"). Short badge on /audit Pricing uses Card name.',
+      },
+    }),
     {
       name: 'kind',
       type: 'select',
@@ -98,6 +104,14 @@ export const SolutionPlans: CollectionConfig = {
       defaultValue: false,
       admin: { description: 'Show installment note marker (*) on solution order pages' },
     },
+    locText('cardName', {
+      label: 'Card name (Pricing badge)',
+      admin: {
+        description:
+          'Short name on /audit Pricing card badge (e.g. "Manual" / "Ручной"). Empty → built-in short label for Free/Diagnostic/Pro/Manual.',
+        condition: (_, siblingData) => siblingData?.kind === 'audit',
+      },
+    }),
     locText('cardPriceNote', {
       label: 'Card price note (* under price)',
       admin: {

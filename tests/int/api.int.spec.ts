@@ -38,11 +38,11 @@ const REQUIRED_COLUMNS: Record<string, string[]> = {
   ],
   // Localized addon display price (renamed from price to avoid colliding with plan.price)
   solution_plans_addons_locales: ['name', 'price_display', 'full'],
-  solution_plans: ['slug', 'price', 'currency', 'featured'],
+  solution_plans: ['slug', 'price', 'currency', 'featured', 'plan_id', 'checkout_mode'],
   solution_plans_features: ['home_only'],
   // Lexical richtext for order-page feature descriptions (dropped by local push — PIT-028)
   solution_plans_features_locales: ['full'],
-  solution_plans_locales: ['title', 'includes'],
+  solution_plans_locales: ['title', 'includes', 'card_name', 'card_price_note', 'cta_label'],
   portfolio_projects_locales: ['title', 'description', 'summary', 'subtitle'],
 }
 
