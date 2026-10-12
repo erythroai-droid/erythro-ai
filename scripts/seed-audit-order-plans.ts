@@ -52,6 +52,11 @@ function rowForLocale(plan: (typeof AUDIT_ORDER_PLANS)[number], loc: Locale, ind
       ...(f.value ? { value: f.value[loc] || f.value.en } : {}),
     })),
     ...(plan.subtitle ? { subtitle: plan.subtitle[loc] || plan.subtitle.en } : {}),
+    ...(plan.cardName ? { cardName: plan.cardName[loc] || plan.cardName.en } : {}),
+    ...(plan.cardPriceNote
+      ? { cardPriceNote: plan.cardPriceNote[loc] || plan.cardPriceNote.en }
+      : {}),
+    ...(plan.ctaLabel ? { ctaLabel: plan.ctaLabel[loc] || plan.ctaLabel.en } : {}),
     promo: plan.promo ? plan.promo[loc] || plan.promo.en : '',
     ...(plan.includes
       ? { includes: lexicalFromText(plan.includes[loc] || plan.includes.en) }

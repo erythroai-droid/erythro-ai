@@ -757,6 +757,11 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
       : fb.ctaHref
         ? { ctaHref: fb.ctaHref }
         : {}),
+    ...(hasLocalizedSeo(d.cardName)
+      ? { cardName: locMapCms(d.cardName) }
+      : fb.cardName
+        ? { cardName: fb.cardName }
+        : {}),
     ...(hasLocalizedSeo(d.cardPriceNote)
       ? { cardPriceNote: locMapCms(d.cardPriceNote) }
       : fb.cardPriceNote
@@ -899,7 +904,7 @@ export async function getAllServiceSlugsCms(): Promise<string[]> {
 }
 
 export const getCachedOrderPlans = () =>
-  unstable_cache(() => fetchOrderPlans(), ['order-plans-v7-audit-checkout'], {
+  unstable_cache(() => fetchOrderPlans(), ['order-plans-v8-card-name'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

@@ -16,11 +16,24 @@ describe('auditPricingPlans (Plans SoT)', () => {
     expect(manual?.checkoutMode).toBe('contact')
     expect(manual?.ctaHref).toBe('#contact-modal')
     expect(manual?.price.en).toBe('2490')
+    expect(manual?.name.ru).toBe('Ручной')
+    expect(manual?.name.en).toBe('Manual')
 
     const diagnostic = cards.find((c) => c.id === 'diagnostic')
     expect(diagnostic?.featured).toBe(true)
     expect(diagnostic?.ctaHref).toBe('/order/audit-diagnostic')
     expect(diagnostic?.priceCompare?.en).toBe('290')
+  })
+
+  it('uses CMS cardName for Pricing badge (overrides Title)', () => {
+    const base = AUDIT_ORDER_PLANS.find((p) => p.slug === 'audit-manual')!
+    const card = orderPlanToAuditPricingCard({
+      ...base,
+      cardName: { en: 'Expert', ru: 'Эксперт', he: 'מומחה' },
+    })
+    expect(card.name.en).toBe('Expert')
+    expect(card.name.ru).toBe('Эксперт')
+    expect(card.name.he).toBe('מומחה')
   })
 
   it('maps OrderPlan features value lines onto pricing cards', () => {

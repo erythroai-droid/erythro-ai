@@ -377,13 +377,16 @@ export interface Service {
   createdAt: string;
 }
 /**
- * Solution plans (homepage Solutions + /order) and AI Audit plans (/order/audit-*). Use the "Kind" field to separate them.
+ * Solution packages and AI Audit tariffs. For audits: edit Free / Diagnostic / Pro / Manual here — single source for /audit Pricing cards and /order/audit-* (except Manual contact CTA). Card name = Pricing badge; Title = order page / admin list.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "solution-plans".
  */
 export interface SolutionPlan {
   id: number;
+  /**
+   * Admin list + order page title (e.g. "AI Audit: Manual"). Short badge on /audit Pricing uses Card name.
+   */
   title: string;
   /**
    * Solution = homepage Solutions + /order. AI Audit = /audit Pricing cards + /order/audit-* (Manual uses contact modal).
@@ -422,6 +425,10 @@ export interface SolutionPlan {
    */
   priceNote?: boolean | null;
   /**
+   * Short name on /audit Pricing card badge (e.g. "Manual" / "Ручной"). Empty → built-in short label for Free/Diagnostic/Pro/Manual.
+   */
+  cardName?: string | null;
+  /**
    * AI Audit /audit card: text under the price (e.g. "no card required"). Empty = no note.
    */
   cardPriceNote?: string | null;
@@ -430,7 +437,7 @@ export interface SolutionPlan {
    */
   featured?: boolean | null;
   /**
-   * Label + Value show on homepage cards and on the order package accordion. For “Подписка / Subscription” use Label + Value only (homepage); put price details and Full on the Monthly subscription Add-on.
+   * Value lines show on /audit Pricing cards (AI Audit) and on the order accordion. Label optional. For “Подписка / Subscription” use Label + Value (homepage); details on the Monthly subscription Add-on.
    */
   features?:
     | {
@@ -1267,6 +1274,7 @@ export interface SolutionPlansSelect<T extends boolean = true> {
   pricePrefix?: T;
   originalPrice?: T;
   priceNote?: T;
+  cardName?: T;
   cardPriceNote?: T;
   featured?: T;
   features?:
@@ -2131,6 +2139,9 @@ export interface AuditPage {
         }[]
       | null;
   };
+  /**
+   * Section intro only. Cards come from Content → Plans (kind: AI Audit) — Free / Diagnostic / Pro / Manual.
+   */
   pricing?: {
     kicker?: string | null;
     title?: string | null;
@@ -2138,6 +2149,9 @@ export interface AuditPage {
     footnote?: string | null;
     agency?: string | null;
     agencyCta?: string | null;
+    /**
+     * Deprecated. Cards come from Content → Plans (kind: AI Audit). Edit Free / Diagnostic / Pro / Manual there.
+     */
     plans?:
       | {
           /**

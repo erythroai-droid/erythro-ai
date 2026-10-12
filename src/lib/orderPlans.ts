@@ -107,6 +107,8 @@ export interface OrderPlan {
   ctaLabel?: LocaleMap
   /** Override CTA href; empty → /order/{slug} when checkoutMode is order */
   ctaHref?: string
+  /** Short badge name on /audit Pricing card (not the order-page Title) */
+  cardName?: LocaleMap
   /** Localized * note under price on /audit card */
   cardPriceNote?: LocaleMap
   card: SolutionCardItem
@@ -333,6 +335,11 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       ru: 'Начать сейчас',
       he: 'להתחיל עכשיו',
     },
+    cardName: {
+      en: 'Free',
+      ru: 'Бесплатно',
+      he: 'חינם',
+    },
     card: {
       id: 'audit-free',
       currency: 'ILS',
@@ -419,6 +426,11 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       en: 'Get started',
       ru: 'Начать сейчас',
       he: 'להתחיל עכשיו',
+    },
+    cardName: {
+      en: 'Diagnostic',
+      ru: 'Диагностика',
+      he: 'אבחון',
     },
     card: {
       id: 'audit-diagnostic',
@@ -522,6 +534,11 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       ru: 'Начать сейчас',
       he: 'להתחיל עכשיו',
     },
+    cardName: {
+      en: 'Pro',
+      ru: 'Pro',
+      he: 'Pro',
+    },
     card: {
       id: 'audit-pro',
       currency: 'ILS',
@@ -615,6 +632,11 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       en: 'Message engineer',
       ru: 'Написать инженеру',
       he: 'לכתוב למהנדס',
+    },
+    cardName: {
+      en: 'Manual',
+      ru: 'Ручной',
+      he: 'ידני',
     },
     card: {
       id: 'audit-manual',

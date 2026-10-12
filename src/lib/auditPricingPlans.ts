@@ -57,6 +57,16 @@ function planCardId(plan: OrderPlan): string {
   return slug || plan.card.id
 }
 
+/** Built-in short badge labels when CMS Card name is empty. */
+function defaultAuditCardName(id: string, title: LocaleMap | undefined): Localized {
+  const fromTitle = asLocalized(title, { en: id, ru: id, he: id })
+  if (id === 'free') return { en: 'Free', ru: 'Бесплатно', he: 'חינם' }
+  if (id === 'diagnostic') return { en: 'Diagnostic', ru: 'Диагностика', he: 'אבחון' }
+  if (id === 'pro') return { en: 'Pro', ru: 'Pro', he: 'Pro' }
+  if (id === 'manual') return { en: 'Manual', ru: 'Ручной', he: 'ידני' }
+  return fromTitle
+}
+
 /** Map an OrderPlan (CMS or static) to an /audit Pricing card. */
 export function orderPlanToAuditPricingCard(plan: OrderPlan): AuditPricingCard {
   const id = planCardId(plan)
@@ -70,35 +80,8 @@ export function orderPlanToAuditPricingCard(plan: OrderPlan): AuditPricingCard {
     ctaHref = checkoutMode === 'contact' ? '#contact-modal' : `/order/${plan.slug}`
   }
 
-  const name = asLocalized(plan.card.title, {
-    en: id,
-    ru: id,
-    he: id,
-  })
-  // Short display names on cards (Free / Diagnostic / …)
-  const shortName: Localized = {
-    en: id === 'free' ? 'Free' : id === 'diagnostic' ? 'Diagnostic' : id === 'pro' ? 'Pro' : id === 'manual' ? 'Manual' : name.en,
-    ru:
-      id === 'free'
-        ? 'Бесплатно'
-        : id === 'diagnostic'
-          ? 'Диагностика'
-          : id === 'pro'
-            ? 'Pro'
-            : id === 'manual'
-              ? 'Ручной'
-              : name.ru,
-    he:
-      id === 'free'
-        ? 'חינם'
-        : id === 'diagnostic'
-          ? 'אבחון'
-          : id === 'pro'
-            ? 'Pro'
-            : id === 'manual'
-              ? 'ידני'
-              : name.he,
-  }
+  // Card badge: CMS cardName → built-in short labels → Title → planId
+  const name = asLocalized(plan.cardName, defaultAuditCardName(id, plan.card.title))
 
   const priceVal = String(plan.card.price || '0')
   const price: Localized = { en: priceVal, ru: priceVal, he: priceVal }
@@ -120,7 +103,7 @@ export function orderPlanToAuditPricingCard(plan: OrderPlan): AuditPricingCard {
   const card: AuditPricingCard = {
     id,
     badge: null,
-    name: shortName,
+    name,
     price,
     features,
     cta,

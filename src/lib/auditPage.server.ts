@@ -242,7 +242,7 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
  * Shares the site-content cache tag so Payload admin saves invalidate automatically.
  */
 export function getCachedAuditPage(): Promise<AuditPageContent> {
-  return unstable_cache(() => fetchAuditPage(), ['audit-page-v10-plans-sot'], {
+  return unstable_cache(() => fetchAuditPage(), ['audit-page-v11-card-name'], {
     tags: [SITE_CONTENT_TAG],
   })()
 }
