@@ -16,9 +16,9 @@
 
 ## Сейчас
 
-1. Локально / после деплоя: `pnpm db:migrate` → при необходимости `pnpm db:migrate-audit-plans-unify` (заполнит Card name: Free / Diagnostic / Pro / Manual).
-2. В admin: Content → Plans → AI Audit план → **Card name (Pricing badge)** EN/RU/HE — это «РУЧНОЙ» и остальные бейджи.
-3. Title не трогать ради бейджа — он для order page / списка.
+1. CI: `pnpm db:fix-audit-plan-card-name` до `api.int.spec` (колонка `card_name` — иначе find solution-plans падает).
+2. Локально / после деплоя: `pnpm db:migrate` → при необходимости `pnpm db:migrate-audit-plans-unify` (заполнит Card name).
+3. В admin: Content → Plans → **Card name (Pricing badge)** EN/RU/HE. Title — для order / списка.
 
 ## Не делать
 
@@ -30,4 +30,4 @@
 
 ## Последняя эстафета
 
-2026-10-12 — Cursor — бейдж карточки = Plans.`cardName`; хардкод shortName убран (fallback остаётся). После деплоя migrate + unify.
+2026-10-12 — Cursor — CI fix: `db:fix-audit-plan-card-name` (api.int падал без `card_name`).
