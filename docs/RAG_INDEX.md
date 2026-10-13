@@ -33,7 +33,7 @@ Last updated: 2026-09-30.
 | `docs/architecture/grow-audit-checkout.md` | Grow hosted checkout for paid audits | One chunk | `audit`, `grow`, `payment` |
 | `docs/architecture/payplus-audit-checkout.md` | Legacy PayPlus adapter; checkout uses Grow | One chunk | `audit`, `payplus`, `payment` |
 | `docs/architecture/r2-audit-storage.md` | R2 bucket + env for audit reports | One chunk | `r2`, `audit`, `storage` |
-| `docs/architecture/audit-rate-limiting.md` | 5-day audit rate limit & IP tracking | One chunk per `##` | `audit`, `rate-limit`, `anti-spam`, `ip` |
+| `docs/architecture/audit-rate-limiting.md` | 7-day audit rate limit & IP tracking | One chunk per `##` | `audit`, `rate-limit`, `anti-spam`, `ip` |
 | `docs/infrastructure/n8n-audit-reconcile.md` | Vercel Cron + n8n backup for stuck audits | One chunk | `n8n`, `audit`, `reconcile`, `cron`, `vps` |
 | `docs/infrastructure/n8n-email-autoresponder.md` | n8n email autoresponder for order@ & team@ | One chunk per `##` | `n8n`, `email`, `autoresponder`, `imap`, `smtp` |
 | `docs/infrastructure/vps-firewall-cloudflare-access.md` | VPS UFW + Cloudflare Access `/admin*` + DMARC quarantine→reject | One chunk per `##` | `security`, `access`, `zero-trust`, `dmarc`, `ufw`, `admin` |
@@ -98,7 +98,7 @@ Rules:
 | “AI visibility / llms.txt / MCP / Organization schema” | `AI_VISIBILITY.md`; `DEPLOYMENT.md` §15; `PLAYBOOK.md` §9.18–9.20 |
 | “Middleware Edge / node:console / markdown negotiation build” | `PIT-024`; `PLAYBOOK.md` §9.20 |
 | “Unit CI green tests but exit 1 / unhandled rejection / order slug 404” | `PIT-025`, `PIT-026`; `vitest.setup.ts` |
-| “Free AI Audit rate limiting / 1 domain per user / 5 days / IP tracking” | `docs/architecture/audit-rate-limiting.md`; `src/lib/auditRateLimit.ts` |
+| “Free AI Audit rate limiting / 1 domain per user / 7 days / IP tracking” | `docs/architecture/audit-rate-limiting.md`; `src/lib/auditRateLimit.ts` |
 | “Email autoresponder / order@ & team@ / n8n / IMAP & SMTP Hostinger / RFC 3834 / duplicate Hostinger Autoreply / form client ack” | `docs/infrastructure/n8n-email-autoresponder.md`; `infra/n8n/workflows/email-autoresponder.json`; `PIT-037`; `PIT-038`; `PIT-040`; `PIT-044`; `src/lib/contactNotification.ts` |
 | “Audit form website check / DNS / SSRF / no n8n workflow” | `docs/architecture/ai-audit-architecture.md` §3.1; `src/lib/checkWebsite.ts`; `PIT-041` |
 | “Free audit button does nothing / check-website 200 / no /api/contact” | `PIT-067`; `src/components/audit/AuditBody.tsx`; `src/app/(frontend)/order/[slug]/OrderClient.tsx` |

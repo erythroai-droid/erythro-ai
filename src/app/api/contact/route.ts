@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await getPayload({ config })
 
-    // Free audit rate limit: 1 domain per user per 5 days (off while QA skip is on)
+    // Free audit rate limit: 1 domain per user per 7 days
     if (!skipIntakeLimits && source === 'audit' && (!planSlug || planSlug === 'audit-free')) {
       const cooldown = await checkFreeAuditCooldown(payload, {
         website: website || '',
@@ -112,6 +112,8 @@ export async function POST(request: NextRequest) {
             ok: false,
             message: cooldown.message,
             reason: cooldown.reason,
+            retryAfterSec: cooldown.retryAfterSec,
+            retryAfterLabel: cooldown.retryAfterLabel,
           },
           {
             status: 429,

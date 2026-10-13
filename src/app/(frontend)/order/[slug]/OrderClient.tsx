@@ -55,6 +55,7 @@ import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import { TURNSTILE_TOKEN_FIELD } from '@/lib/turnstile'
 import {
   contactSubmitErrorMessage,
+  isFreeAuditCooldownError,
   postContactForm,
   readContactSubmitErrorBody,
 } from '@/lib/contactSubmit'
@@ -1104,7 +1105,7 @@ function OrderAccordionPlus({
   )
 }
 
-type ModalStatus = 'idle' | 'sending' | 'success' | 'error'
+type ModalStatus = 'idle' | 'sending' | 'success' | 'error' | 'cooldown'
 
 function AuditOrderModal({
   isOpen,
@@ -1133,6 +1134,10 @@ function AuditOrderModal({
   const defaultAuditLanguage = (['en', 'ru', 'he'].includes(locale) ? locale : 'en') as AuditReportLanguage
   const [status, setStatus] = useState<ModalStatus>('idle')
   const [submitError, setSubmitError] = useState('')
+  const [cooldownNotice, setCooldownNotice] = useState<{
+    message: string
+    remainingLabel: string
+  } | null>(null)
   const [orderId, setOrderId] = useState<string | null>(null)
   const [reportHref, setReportHref] = useState<string | null>(null)
   const [values, setValues] = useState<AuditFormValues>({
@@ -1263,6 +1268,7 @@ function AuditOrderModal({
     submittingRef.current = true
     setStatus('sending')
     setSubmitError('')
+    setCooldownNotice(null)
     let posted = false
     try {
       const websiteOk = await ensureWebsiteOk()
@@ -1334,6 +1340,18 @@ function AuditOrderModal({
       })
       if (!res.ok) {
         const errPayload = await readContactSubmitErrorBody(res)
+        if (isFreeAuditCooldownError(res.status, errPayload)) {
+          setCooldownNotice({
+            message: errPayload.message.trim(),
+            remainingLabel:
+              errPayload.retryAfterLabel?.trim() ||
+              (typeof errPayload.retryAfterSec === 'number' && errPayload.retryAfterSec > 0
+                ? `${Math.max(1, Math.ceil(errPayload.retryAfterSec / 60))} min`
+                : ''),
+          })
+          setStatus('cooldown')
+          return
+        }
         setSubmitError(
           contactSubmitErrorMessage(res.status, errPayload, {
             error: tForm(contactForm.error),
@@ -1468,6 +1486,50 @@ function AuditOrderModal({
                   setOrderId(null)
                   setReportHref(null)
                   onClose()
+                }}
+                className="inline-flex items-center justify-center rounded-[40px] border border-white/20 px-8 py-3 text-sm uppercase tracking-widest text-white/80 transition-colors hover:border-white/40 hover:text-white"
+              >
+                {tForm(contactForm.close)}
+              </button>
+            </div>
+          </div>
+        ) : status === 'cooldown' && cooldownNotice ? (
+          <div className="py-8 text-center" role="alertdialog" aria-live="assertive">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-erythro-500/20 text-erythro-500">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M12 8v5m0 3h.01M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <h2 className="mb-3 font-sans text-xl font-bold uppercase tracking-[0.04em] text-white">
+              {locale === 'ru'
+                ? 'Лимит бесплатного аудита'
+                : locale === 'he'
+                  ? 'מגבלת בדיקה חינמית'
+                  : 'Free audit limit'}
+            </h2>
+            <p className="mx-auto mb-2 max-w-[420px] text-sm text-white/60 leading-6">
+              {locale === 'ru'
+                ? 'Следующая бесплатная проверка через'
+                : locale === 'he'
+                  ? 'הבדיקה החינמית הבאה בעוד'
+                  : 'Next free check available in'}
+            </p>
+            <p className="mx-auto mb-4 max-w-[420px] font-sans text-2xl font-semibold tracking-wide text-gold-500 sm:text-3xl">
+              {cooldownNotice.remainingLabel}
+            </p>
+            <p className="mx-auto max-w-[420px] text-sm text-white/80 leading-6">{cooldownNotice.message}</p>
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setCooldownNotice(null)
+                  setStatus('idle')
                 }}
                 className="inline-flex items-center justify-center rounded-[40px] border border-white/20 px-8 py-3 text-sm uppercase tracking-widest text-white/80 transition-colors hover:border-white/40 hover:text-white"
               >

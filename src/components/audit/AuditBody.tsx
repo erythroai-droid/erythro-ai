@@ -25,9 +25,11 @@ import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import { TURNSTILE_TOKEN_FIELD } from '@/lib/turnstile'
 import {
   contactSubmitErrorMessage,
+  isFreeAuditCooldownError,
   postContactForm,
   readContactSubmitErrorBody,
 } from '@/lib/contactSubmit'
+import AuditCooldownModal from '@/components/audit/AuditCooldownModal'
 import {
   auditPage,
   tAudit,
@@ -476,6 +478,10 @@ function AuditFormPanel({
   const defaultAuditLanguage = (['en', 'ru', 'he'].includes(locale) ? locale : 'en') as AuditReportLanguage
   const [status, setStatus] = useState<Status>('idle')
   const [submitError, setSubmitError] = useState('')
+  const [cooldownNotice, setCooldownNotice] = useState<{
+    message: string
+    remainingLabel: string
+  } | null>(null)
   const [reportHref, setReportHref] = useState<string | null>(null)
   const [orderId, setOrderId] = useState<string | null>(null)
   const [values, setValues] = useState<AuditFormValues>({
@@ -594,6 +600,7 @@ function AuditFormPanel({
     submittingRef.current = true
     setStatus('sending')
     setSubmitError('')
+    setCooldownNotice(null)
     let posted = false
     try {
       const websiteOk = await ensureWebsiteOk()
@@ -615,6 +622,18 @@ function AuditFormPanel({
       })
       if (!res.ok) {
         const errPayload = await readContactSubmitErrorBody(res)
+        if (isFreeAuditCooldownError(res.status, errPayload)) {
+          setCooldownNotice({
+            message: errPayload.message.trim(),
+            remainingLabel:
+              errPayload.retryAfterLabel?.trim() ||
+              (typeof errPayload.retryAfterSec === 'number' && errPayload.retryAfterSec > 0
+                ? `${Math.max(1, Math.ceil(errPayload.retryAfterSec / 60))} min`
+                : ''),
+          })
+          setStatus('idle')
+          return
+        }
         setSubmitError(
           contactSubmitErrorMessage(res.status, errPayload, {
             error: tForm(contactForm.error),
@@ -907,6 +926,15 @@ function AuditFormPanel({
             setReportHref(null)
             setOrderId(null)
           }}
+        />
+      ) : null}
+      {portalReady && cooldownNotice ? (
+        <AuditCooldownModal
+          locale={locale}
+          message={cooldownNotice.message}
+          remainingLabel={cooldownNotice.remainingLabel}
+          closeLabel={tForm(contactForm.close)}
+          onClose={() => setCooldownNotice(null)}
         />
       ) : null}
     </div>
