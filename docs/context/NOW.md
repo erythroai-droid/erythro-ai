@@ -1,33 +1,29 @@
 # Latest changes
 
-Обновлено: 2026-10-12  
+Обновлено: 2026-10-13  
 Модель: Cursor  
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
 ## Сделано в этой сессии
 
-- **Единый источник тарифов аудита:** Plans `kind: audit` (Free / Diagnostic / Pro / Manual).
-- Поля Plans: `planId`, `checkoutMode`, `cardPriceNote`, `ctaLabel`, **`cardName`** (+ migrations `20261012_010000_*`, `20261012_020000_audit_plan_card_name`).
-- `/audit` карточки: `getAuditPricingPlans()` → бейдж из **Card name** (не Title); Title = `/order` + список в admin.
-- Manual: `checkoutMode: contact`, CTA `#contact-modal`; `/order/audit-manual` → redirect `/audit`; payment create → 400.
-- Скрипты: `pnpm db:migrate-audit-plans-unify`, `pnpm db:fix-audit-pricing` пишут `cardName`.
-- Тесты: `tests/int/auditPricingPlans.int.spec.ts`. Cache: `audit-page-v11-card-name`, `order-plans-v8-card-name`.
+- **Free-audit intake limits restored:** `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = false`, cooldown **7 days** (IP / email / domain).
+- API 429: `retryAfterSec` + `retryAfterLabel` (дни / часы / минуты) + локализованный текст.
+- Модалка остатка: `AuditCooldownModal` на `/audit` и cooldown-view в order modal.
+- Копирайт introNote 5→7; docs: `audit-rate-limiting.md`, `PLAN-deferred.md`, RAG_INDEX; тесты обновлены.
 
 ## Сейчас
 
-1. CI: `pnpm db:fix-audit-plan-card-name` до `api.int.spec` (колонка `card_name` — иначе find solution-plans падает).
-2. Локально / после деплоя: `pnpm db:migrate` → при необходимости `pnpm db:migrate-audit-plans-unify` (заполнит Card name).
-3. В admin: Content → Plans → **Card name (Pricing badge)** EN/RU/HE. Title — для order / списка.
+1. Задеплоить и проверить повторную заявку Free: модалка с точным остатком.
+2. На Vercel убедиться, что нет `AUDIT_SKIP_COOLDOWN=1` (иначе лимиты снова выключены).
 
 ## Не делать
 
 - Не печатать `MAKE_PAYMENT_SECRET`.
-- Не возвращать intake-лимиты, пока нет живого списания.
 - Не зеркалировать этот файл в Obsidian.
 - Не возвращать Delegate и не вешать Manual на Grow checkout.
 - Не править тарифы в Audit Page `pricing.plans` — только Plans.
 
 ## Последняя эстафета
 
-2026-10-12 — Cursor — CI fix: `db:fix-audit-plan-card-name` (api.int падал без `card_name`).
+2026-10-13 — Cursor — free-audit 7d cooldown + remaining-time modal.

@@ -4,6 +4,23 @@ export const WEBSITE_CHECK_TIMEOUT_MS = 8_000
 export type ContactSubmitErrorBody = {
   message?: string
   reason?: string
+  retryAfterSec?: number
+  retryAfterLabel?: string
+}
+
+export function isFreeAuditCooldownError(
+  status: number,
+  body: ContactSubmitErrorBody | null,
+): body is ContactSubmitErrorBody & {
+  reason: 'domain_recent' | 'user_recent'
+  message: string
+} {
+  return (
+    status === 429 &&
+    (body?.reason === 'domain_recent' || body?.reason === 'user_recent') &&
+    typeof body.message === 'string' &&
+    body.message.trim().length > 0
+  )
 }
 
 export type ContactSubmitCopy = {

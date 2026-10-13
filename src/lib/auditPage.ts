@@ -89,9 +89,9 @@ export const auditPage = {
       he: 'הזינו כתובת אתר, פרטי קשר ושפת דוח. המעבדה מחשבת חמש סקאלות — מהירות ו-UX למובייל, לידים וטפסים, SEO ונראות, אבטחה ויציבות, נראות AI וגילוי מותג — ונשלח דוח עם הציון, 3 הסיכונים העיקריים ומה שהחבילה שלכם פותחת.',
     } satisfies Localized,
     introNote: {
-      en: 'Free preview audit: one domain per user every 5 days.',
-      ru: 'Бесплатный превью-аудит: один домен на пользователя раз в 5 дней.',
-      he: 'ביקורת תצוגה מקדימה חינמית: דומיין אחד למשתמש פעם ב-5 ימים.',
+      en: 'Free preview audit: one domain per user every 7 days.',
+      ru: 'Бесплатный превью-аудит: один домен на пользователя раз в 7 дней.',
+      he: 'ביקורת תצוגה מקדימה חינמית: דומיין אחד למשתמש פעם ב-7 ימים.',
     } satisfies Localized,
     requiredNote: {
       en: 'Required field',

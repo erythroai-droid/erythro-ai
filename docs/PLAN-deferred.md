@@ -4,13 +4,12 @@
 
 **Критичных blocker сейчас нет** — cutover R2 + UFW baseline + home/portfolio ISR сделаны.
 
-**Временно открыто до платёжного терминала (2026-09-29):** `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = true` — нет 5-дневного кулдауна Free и нет IP-окна `POST /api/contact`. Turnstile / honeypot / sanitize на месте. Код Grow готов (`docs/architecture/grow-audit-checkout.md`). Вернуть лимиты **после того, как платный терминал реально принимает оплату**: `AUDIT_SKIP_COOLDOWN=0` на Vercel **или** `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = false`. Боевые `GROW_USER_ID` / `GROW_PAGE_CODE` Grow выдаёт отдельно от открытия счёта.
+**Intake limits restored (2026-10-13):** free-audit cooldown = **7 days** (IP / email / domain); IP window on `POST /api/contact` is on (`AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = false`). Override only via `AUDIT_SKIP_COOLDOWN=1` if needed for QA.
 
 ## Next when there is time
 
 | Priority | Item | Notes |
 |---|---|---|
-| high | Restore audit intake limits | After payment terminal is connected: `AUDIT_SKIP_COOLDOWN=0` or `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = false` in `src/lib/auditRateLimit.ts` |
 | medium | CSP nonce (drop `'unsafe-inline'`) | **Not critical now** — defense-in-depth only; public prod already without `'unsafe-eval'` (`next.config.ts` adds `'unsafe-eval'` only when `NODE_ENV===development'` — see PIT-066). Needs middleware nonce + wire GA consent / JSON-LD / Turnstile / `next/script`; `style-src` still hard with `experimental.inlineCss`. Admin keeps `'unsafe-eval'` for Payload. |
 | medium | Desktop CLS (~1.1) | Partially addressed: poster LCP without isLg gate, heading min-height + cross-locale slot, useLayoutEffect locale — re-measure after deploy |
 | low | Purge Vercel Blob copies | After admin upload→R2 verified; then drop `BLOB_READ_WRITE_TOKEN` |
@@ -52,3 +51,4 @@
 - [x] DMARC `p=reject` after clean Google aggregate reports (2026-09-18)
 - [x] Cloudflare Access `/admin*`: empty subdomain + Allow email → `/admin` 302 to Cloudflare Access (2026-09-06)
 - [x] Consultant: How we work card + reply language from last user message (PIT-097)
+- [x] Restore free-audit intake limits: 7-day cooldown + remaining-time modal (2026-10-13)

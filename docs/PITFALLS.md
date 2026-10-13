@@ -1425,7 +1425,7 @@ Do not put a raw URL or hash into a fixed summary card. Clip the card even when 
 - `sanitizeAuditWebsite`: `http:`/`https:` only, reject userinfo, parse via `URL`.
 - n8n autoresponder: escape sender name in HTML greeting (repo JSON; import to n8n to apply live).
 
-**Prevent:** Do not add ClamAV for text-only forms. Do not persist IMAP bodies into CMS. Do not treat client `message` URLs as malware — clients send links; this is not URL reputation. Re-enable IP/cooldown limits after the payment terminal is connected (`AUDIT_INTAKE_LIMITS_OPEN_FOR_QA`, `docs/PLAN-deferred.md`). Never concatenate user strings into SQL.
+**Prevent:** Do not add ClamAV for text-only forms. Do not persist IMAP bodies into CMS. Do not treat client `message` URLs as malware — clients send links; this is not URL reputation. Free-audit cooldown is live (7 days; `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = false` — QA override only via `AUDIT_SKIP_COOLDOWN=1`). Never concatenate user strings into SQL.
 
 ---
 

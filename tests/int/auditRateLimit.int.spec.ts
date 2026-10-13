@@ -2,8 +2,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
   extractAuditDomain,
   checkFreeAuditCooldown,
+  formatFreeAuditRemaining,
+  FREE_AUDIT_COOLDOWN_DAYS,
   FREE_AUDIT_COOLDOWN_MS,
-  AUDIT_RATE_LIMIT_MESSAGES,
 } from '@/lib/auditRateLimit'
 import type { Payload } from 'payload'
 
@@ -26,6 +27,21 @@ describe('extractAuditDomain', () => {
     expect(extractAuditDomain('')).toBe('')
     expect(extractAuditDomain('   ')).toBe('')
     expect(extractAuditDomain(null as unknown as string)).toBe('')
+  })
+})
+
+describe('formatFreeAuditRemaining', () => {
+  it('formats days, hours, and minutes in RU/EN/HE', () => {
+    const ms = (2 * 24 + 3) * 60 * 60 * 1000 + 15 * 60 * 1000
+    expect(formatFreeAuditRemaining(ms, 'ru')).toBe('2 дня 3 часа 15 минут')
+    expect(formatFreeAuditRemaining(ms, 'en')).toBe('2 days 3 hours 15 minutes')
+    expect(formatFreeAuditRemaining(ms, 'he')).toBe('2 ימים 3 שעות 15 דקות')
+  })
+
+  it('omits zero units and ceils sub-minute leftovers', () => {
+    expect(formatFreeAuditRemaining(45_000, 'ru')).toBe('1 минута')
+    expect(formatFreeAuditRemaining(3 * 60 * 60 * 1000, 'en')).toBe('3 hours')
+    expect(FREE_AUDIT_COOLDOWN_DAYS).toBe(7)
   })
 })
 
@@ -71,7 +87,7 @@ describe('checkFreeAuditCooldown', () => {
     expect(result.allowed).toBe(true)
   })
 
-  it('blocks submission if the same domain was audited within 5 days', async () => {
+  it('blocks submission if the same domain was audited within 7 days', async () => {
     const twoDaysAgo = new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString()
     const payload = createMockPayload([
       {
@@ -96,12 +112,13 @@ describe('checkFreeAuditCooldown', () => {
     expect(result.allowed).toBe(false)
     if (!result.allowed) {
       expect(result.reason).toBe('domain_recent')
-      expect(result.message).toBe(AUDIT_RATE_LIMIT_MESSAGES.domainRecent.ru)
+      expect(result.retryAfterLabel).toBe('5 дней')
+      expect(result.message).toContain('5 дней')
       expect(result.retryAfterSec).toBeGreaterThan(0)
     }
   })
 
-  it('blocks submission if the same IP requested a free audit within 5 days', async () => {
+  it('blocks submission if the same IP requested a free audit within 7 days', async () => {
     const oneDayAgo = new Date(now - 1 * 24 * 60 * 60 * 1000).toISOString()
     const payload = createMockPayload([
       {
@@ -126,11 +143,12 @@ describe('checkFreeAuditCooldown', () => {
     expect(result.allowed).toBe(false)
     if (!result.allowed) {
       expect(result.reason).toBe('user_recent')
-      expect(result.message).toBe(AUDIT_RATE_LIMIT_MESSAGES.userRecent.en)
+      expect(result.retryAfterLabel).toBe('6 days')
+      expect(result.message).toContain('6 days')
     }
   })
 
-  it('blocks submission if the same email requested a free audit within 5 days', async () => {
+  it('blocks submission if the same email requested a free audit within 7 days', async () => {
     const threeDaysAgo = new Date(now - 3 * 24 * 60 * 60 * 1000).toISOString()
     const payload = createMockPayload([
       {
@@ -155,19 +173,20 @@ describe('checkFreeAuditCooldown', () => {
     expect(result.allowed).toBe(false)
     if (!result.allowed) {
       expect(result.reason).toBe('user_recent')
-      expect(result.message).toBe(AUDIT_RATE_LIMIT_MESSAGES.userRecent.he)
+      expect(result.retryAfterLabel).toBe('4 ימים')
+      expect(result.message).toContain('4 ימים')
     }
   })
 
-  it('allows submission if previous audit for same domain is older than 5 days', async () => {
-    const sixDaysAgo = new Date(now - 6 * 24 * 60 * 60 * 1000).toISOString()
+  it('allows submission if previous audit for same domain is older than 7 days', async () => {
+    const eightDaysAgo = new Date(now - 8 * 24 * 60 * 60 * 1000).toISOString()
     const payload = createMockPayload([
       {
         id: 4,
         website: 'https://old-domain.com',
         email: 'old@example.com',
         ip: '192.168.1.1',
-        createdAt: sixDaysAgo,
+        createdAt: eightDaysAgo,
         auditStatus: 'report_sent',
         planSlug: 'audit-free',
       },
@@ -205,5 +224,9 @@ describe('checkFreeAuditCooldown', () => {
     })
     expect(result.allowed).toBe(true)
     process.env.AUDIT_SKIP_COOLDOWN = '0'
+  })
+
+  it('exposes FREE_AUDIT_COOLDOWN_MS for 7 days', () => {
+    expect(FREE_AUDIT_COOLDOWN_MS).toBe(7 * 24 * 60 * 60 * 1000)
   })
 })
