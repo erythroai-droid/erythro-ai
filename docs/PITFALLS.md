@@ -1782,7 +1782,7 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Fix:** Store `reportAccessToken` on each audit submission; require `?k=` on `/audit/report/[id]`, `/api/audit/report/[id]`, and `/api/audit/report/[id]/html` (404 on missing/wrong token). Hook generates token on create; migration backfills existing audit rows and rewrites status-page `reportUrl` values. Worker emails `/audit/report/[id]?k=…` only.
 
-**Prevent:** Do not link or email report pages without `k`. Admin "Open status page" must use the token from CMS. Old bare-id links stop working after deploy (re-send from admin if needed).
+**Prevent:** Do not link or email report pages without `k`. Admin links must use `reportAccessToken` (not a stale bare `reportUrl`). After changing token gating, **redeploy `audit-agent` on VPS** — an old worker overwrites `reportUrl` and emails `/audit/report/[id]` without `k`. Repair: migration rewrite + internal PATCH injects `k` when worker omits it.
 
 ## Checklist before merging CMS / schema PRs
 

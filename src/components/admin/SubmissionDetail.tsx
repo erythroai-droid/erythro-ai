@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useDocumentInfo, useFormFields } from '@payloadcms/ui'
+import { resolveClientReportHref } from '@/lib/auditReport'
 import { submissionSourceDef } from '@/lib/contactSubmissionSources'
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
 import { whatsAppHref } from '@/lib/phoneE164'
@@ -91,10 +92,19 @@ export const SubmissionDetail: React.FC = () => {
       : null
 
   const statusPage =
-    id && source === 'audit' && typeof reportAccessToken === 'string' && reportAccessToken.trim()
-      ? `/audit/report/${id}?k=${encodeURIComponent(reportAccessToken.trim())}`
+    id && source === 'audit'
+      ? resolveClientReportHref(id, typeof reportAccessToken === 'string' ? reportAccessToken : null, null)
       : null
-  const reportHref = typeof reportUrl === 'string' && reportUrl.trim() ? reportUrl.trim() : null
+  const reportHref =
+    id && source === 'audit'
+      ? resolveClientReportHref(
+          id,
+          typeof reportAccessToken === 'string' ? reportAccessToken : null,
+          typeof reportUrl === 'string' ? reportUrl : null,
+        )
+      : typeof reportUrl === 'string' && reportUrl.trim()
+        ? reportUrl.trim()
+        : null
   const websiteHref = typeof website === 'string' && website.trim() ? website.trim() : null
   const emailHref = typeof email === 'string' && email.trim() ? `mailto:${email.trim()}` : null
   const phoneHref = typeof phone === 'string' && phone.trim() ? `tel:${phone.trim()}` : null

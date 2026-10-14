@@ -7,26 +7,22 @@
 
 ## Сделано в этой сессии
 
-- Закрыт IDOR отчётов аудита: поле `reportAccessToken`, ссылка `/audit/report/[id]?k=…`.
-- Проверка `k` на page + `/api/audit/report/[id]` + `/html`; без/неверный токен → 404.
-- Hook на create, миграция `20261014_210000_…` (backfill + rewrite status `reportUrl`).
-- Contact/order UI, worker email, admin links, e2e/smoke, PIT-107.
+- PIT-107: site требует `?k=`; письмо #175 без `k` → 404 (старый worker на VPS).
+- Фикс: admin/API подставляют `k`; миграция rewrite `report_url`; деплой audit-agent.
 
 ## Сейчас
 
-1. Задеплоить (миграция на Vercel + редеплой `audit-agent` на VPS).
-2. Smoke: без `k` → 404; с `k` из ответа `/api/contact` → waiting/HTML.
-3. Старые письма без `k` не откроются — при необходимости переслать из admin (Status с токеном).
+1. Задеплоить Next (миграция rewrite + admin).
+2. Для #175: в admin — **Status page** / поле `reportAccessToken` (не stale Open report URL до деплоя).
+3. Переслать клиенту ссылку с `?k=` из admin после деплоя.
 
 ## Не делать
 
 - Не печатать `MAKE_PAYMENT_SECRET`.
 - Не зеркалировать этот файл в Obsidian.
-- Не возвращать Delegate и не вешать Manual на Grow checkout.
-- Не править тарифы в Audit Page `pricing.plans` — только Plans.
-- Не встраивать форму аудита на главную — только ссылка на `/audit`.
 - Не слать `/audit/report/[id]` без `?k=` (PIT-107).
+- После смены gating всегда редеплоить `audit-agent` на VPS.
 
 ## Последняя эстафета
 
-2026-10-14 — Cursor — Audit reportAccessToken + `?k=` gate (PIT-107).
+2026-10-14 — Cursor — Fix bare report URLs (worker redeploy + admin/API inject k).
