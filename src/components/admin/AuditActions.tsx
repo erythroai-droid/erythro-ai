@@ -2,6 +2,7 @@
 
 import React, { useCallback, useState } from 'react'
 import { useDocumentInfo, useFormFields } from '@payloadcms/ui'
+import { resolveClientReportHref } from '@/lib/auditReport'
 
 type Row = {
   id?: unknown
@@ -12,11 +13,6 @@ type Row = {
   reportAccessToken?: unknown
   retryCount?: unknown
   errorLast?: unknown
-}
-
-function auditStatusPageHref(id: string | number, token: unknown): string | null {
-  if (typeof token !== 'string' || !token.trim()) return null
-  return `/audit/report/${id}?k=${encodeURIComponent(token.trim())}`
 }
 
 async function requeueAudit(id: string | number, resetRetries = true) {
@@ -82,7 +78,12 @@ export const AuditActions: React.FC = () => {
 
   if (source !== 'audit') return null
 
-  const statusPage = id ? auditStatusPageHref(id, reportAccessToken) : null
+  const statusPage = id
+    ? resolveClientReportHref(id, reportAccessToken, null)
+    : null
+  const reportHref = id
+    ? resolveClientReportHref(id, reportAccessToken, reportUrl)
+    : null
   const canRequeue = Boolean(id && website?.trim())
 
   return (
@@ -139,10 +140,10 @@ export const AuditActions: React.FC = () => {
             Open status page
           </a>
         ) : null}
-        {typeof reportUrl === 'string' && reportUrl.trim() ? (
+        {reportHref ? (
           <a
             className="btn btn--size-small btn--style-secondary"
-            href={reportUrl}
+            href={reportHref}
             target="_blank"
             rel="noreferrer"
             style={btnStyle}
@@ -203,8 +204,13 @@ export const AuditActionsCell: React.FC<{ rowData?: Row }> = ({ rowData }) => {
   const id = rowData.id
   if (typeof id !== 'string' && typeof id !== 'number') return <span>—</span>
 
-  const statusPage = auditStatusPageHref(id, rowData.reportAccessToken)
-  const reportUrl = typeof rowData.reportUrl === 'string' ? rowData.reportUrl.trim() : ''
+  const statusPage = resolveClientReportHref(id, rowData.reportAccessToken, null)
+  const reportUrl =
+    resolveClientReportHref(
+      id,
+      rowData.reportAccessToken,
+      typeof rowData.reportUrl === 'string' ? rowData.reportUrl : null,
+    ) || ''
   const website = typeof rowData.website === 'string' ? rowData.website.trim() : ''
 
   const onRequeue = async () => {

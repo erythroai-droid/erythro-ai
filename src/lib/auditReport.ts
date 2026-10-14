@@ -228,6 +228,59 @@ export function buildAuditReportHtmlPath(id: number | string, token: string): st
   return `/api/audit/report/${id}/html?k=${encodeURIComponent(token)}`
 }
 
+/** True when URL points at our waiting/report page (with or without ?k=). */
+export function isAuditReportStatusUrl(url: string | null | undefined): boolean {
+  if (!url) return false
+  try {
+    const path = url.startsWith('/') ? url.split('?')[0] : new URL(url).pathname
+    return /^\/audit\/report\/\d+$/i.test(path || '')
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Attach `?k=` to a status-page report URL. Leaves external (e.g. public PDF) URLs unchanged.
+ * Used when an old worker PATCHes / emails a bare `/audit/report/[id]`.
+ */
+export function ensureAuditReportUrlHasToken(
+  url: string,
+  id: number | string,
+  token: string | null | undefined,
+): string {
+  const trimmed = url.trim()
+  const access = typeof token === 'string' ? token.trim() : ''
+  if (!trimmed || !access || !isAuditReportStatusUrl(trimmed)) return trimmed
+  const pathWithKey = buildAuditReportPath(id, access)
+  if (trimmed.startsWith('/')) return pathWithKey
+  try {
+    return `${new URL(trimmed).origin}${pathWithKey}`
+  } catch {
+    return pathWithKey
+  }
+}
+
+/**
+ * Prefer token-gated status page; keep a distinct public PDF/CDN URL if present.
+ */
+export function resolveClientReportHref(
+  id: number | string,
+  token: string | null | undefined,
+  reportUrl?: string | null,
+): string | null {
+  const access = typeof token === 'string' ? token.trim() : ''
+  const raw = typeof reportUrl === 'string' ? reportUrl.trim() : ''
+  if (raw && isPublicReportUrl(raw) && !isAuditReportStatusUrl(raw)) return raw
+  if (access) {
+    if (raw && isAuditReportStatusUrl(raw) && raw.startsWith('http')) {
+      return ensureAuditReportUrlHasToken(raw, id, access)
+    }
+    return buildAuditReportPath(id, access)
+  }
+  if (raw && isPublicReportUrl(raw)) return raw
+  return null
+}
+
 /** Private S3/R2 API endpoints are not openable in the browser without signed URLs. */
 export function isPublicReportUrl(url: string | null | undefined): boolean {
   if (!url || !/^https?:\/\//i.test(url)) return false

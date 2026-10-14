@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { sql } from '@payloadcms/db-postgres'
 import { agentSecretAuthorized } from '@/lib/agentAuth'
-import { parseAuditReportId } from '@/lib/auditReport'
+import { ensureAuditReportUrlHasToken, parseAuditReportId } from '@/lib/auditReport'
 
 export const runtime = 'nodejs'
 
@@ -127,8 +127,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (data.auditSummary !== undefined) {
       sets.push(sql`audit_summary = ${JSON.stringify(data.auditSummary)}::jsonb`)
     }
-    if (typeof data.reportUrl === 'string' || data.reportUrl === null) {
-      sets.push(sql`report_url = ${data.reportUrl}`)
+    if (typeof data.reportUrl === 'string') {
+      const token =
+        typeof existing.reportAccessToken === 'string' ? existing.reportAccessToken : null
+      const reportUrl = ensureAuditReportUrlHasToken(data.reportUrl, id, token)
+      sets.push(sql`report_url = ${reportUrl}`)
+    } else if (data.reportUrl === null) {
+      sets.push(sql`report_url = null`)
     }
     if (typeof data.htmlResult === 'string') {
       sets.push(sql`html_result = ${data.htmlResult.replace(/\u0000/g, '')}`)
