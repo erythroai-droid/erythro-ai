@@ -859,6 +859,10 @@ export interface ContactSubmission {
    */
   reportUrl?: string | null;
   /**
+   * Unguessable token for /audit/report/[id]?k=… (required; do not share without the link)
+   */
+  reportAccessToken?: string | null;
+  /**
    * Inline HTML report for typical sizes (≤ ~2MB); larger reports stay in R2 only
    */
   htmlResult?: string | null;
@@ -1434,6 +1438,7 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   auditScore?: T;
   auditSummary?: T;
   reportUrl?: T;
+  reportAccessToken?: T;
   htmlResult?: T;
   retryCount?: T;
   errorLast?: T;

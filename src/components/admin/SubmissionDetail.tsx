@@ -66,6 +66,7 @@ export const SubmissionDetail: React.FC = () => {
   const auditStatus = useFormFields(([f]) => f?.auditStatus?.value)
   const auditScore = useFormFields(([f]) => f?.auditScore?.value)
   const reportUrl = useFormFields(([f]) => f?.reportUrl?.value)
+  const reportAccessToken = useFormFields(([f]) => f?.reportAccessToken?.value)
   const ip = useFormFields(([f]) => f?.ip?.value)
   const errorLast = useFormFields(([f]) => f?.errorLast?.value)
   const retryCount = useFormFields(([f]) => f?.retryCount?.value)
@@ -89,7 +90,10 @@ export const SubmissionDetail: React.FC = () => {
         }).format(new Date(createdRaw))
       : null
 
-  const statusPage = id && source === 'audit' ? `/audit/report/${id}` : null
+  const statusPage =
+    id && source === 'audit' && typeof reportAccessToken === 'string' && reportAccessToken.trim()
+      ? `/audit/report/${id}?k=${encodeURIComponent(reportAccessToken.trim())}`
+      : null
   const reportHref = typeof reportUrl === 'string' && reportUrl.trim() ? reportUrl.trim() : null
   const websiteHref = typeof website === 'string' && website.trim() ? website.trim() : null
   const emailHref = typeof email === 'string' && email.trim() ? `mailto:${email.trim()}` : null

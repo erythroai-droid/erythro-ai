@@ -14,6 +14,7 @@ import type { SiteContent } from '@/lib/defaultContent'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 import {
   auditReportCopy,
+  buildAuditReportApiPath,
   estimateAuditProgressPercent,
   estimateAuditRemainingMinutes,
   formatAuditOrderId,
@@ -29,6 +30,7 @@ import {
 
 interface AuditReportClientProps {
   reportId: string
+  accessKey: string
   initialLocale: string
   initialTheme?: 'light' | 'dark'
   content: SiteContent
@@ -36,6 +38,7 @@ interface AuditReportClientProps {
 
 export default function AuditReportClient({
   reportId,
+  accessKey,
   initialLocale,
   initialTheme,
   content,
@@ -75,7 +78,9 @@ export default function AuditReportClient({
     { action: 'stop' } | { action: 'retry'; delayMs: number }
   > => {
     try {
-      const res = await fetch(`/api/audit/report/${reportId}`, { cache: 'no-store' })
+      const res = await fetch(buildAuditReportApiPath(reportId, accessKey), {
+        cache: 'no-store',
+      })
       if (res.status === 404 || res.status === 400) {
         setError('not_found')
         setData(null)
@@ -106,7 +111,7 @@ export default function AuditReportClient({
       setError('network')
       return { action: 'retry', delayMs: AUDIT_REPORT_POLL_MS }
     }
-  }, [reportId])
+  }, [reportId, accessKey])
 
   useEffect(() => {
     let cancelled = false

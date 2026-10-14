@@ -17,6 +17,7 @@ export type AuditReportDoc = {
   auditStatus?: string | null
   auditScore?: number | null
   reportUrl?: string | null
+  reportAccessToken?: string | null
   htmlResult?: string | null
   auditSummary?: unknown
   website?: string | null

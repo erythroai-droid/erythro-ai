@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { generateReportAccessToken } from '@/lib/auditReportAccess'
 import { CONTACT_SUBMISSION_SOURCES } from '@/lib/contactSubmissionSources'
 
 const auditOnly = (_: unknown, siblingData: { source?: string | null }) =>
@@ -31,6 +32,23 @@ export const ContactSubmissions: CollectionConfig = {
     read: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user),
+  },
+  hooks: {
+    beforeChange: [
+      ({ data, originalDoc }) => {
+        const source = (data?.source ?? originalDoc?.source) as string | undefined
+        const fromData =
+          typeof data?.reportAccessToken === 'string' ? data.reportAccessToken.trim() : ''
+        const fromDoc =
+          typeof originalDoc?.reportAccessToken === 'string'
+            ? originalDoc.reportAccessToken.trim()
+            : ''
+        if (source === 'audit' && !fromData && !fromDoc) {
+          return { ...data, reportAccessToken: generateReportAccessToken() }
+        }
+        return data
+      },
+    ],
   },
   fields: [
     {
@@ -282,6 +300,17 @@ export const ContactSubmissions: CollectionConfig = {
                 description: 'PDF / HTML object URL in Cloudflare R2',
                 condition: auditOnly,
                 readOnly: true,
+              },
+            },
+            {
+              name: 'reportAccessToken',
+              type: 'text',
+              admin: {
+                description:
+                  'Unguessable token for /audit/report/[id]?k=… (required; do not share without the link)',
+                condition: auditOnly,
+                readOnly: true,
+                position: 'sidebar',
               },
             },
             {

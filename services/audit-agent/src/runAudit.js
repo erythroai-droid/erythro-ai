@@ -33,11 +33,20 @@ export async function runAuditJob(job) {
   let clientEmail = job.clientEmail?.trim() || ''
   let clientName = job.clientName?.trim() || ''
 
+  /** @type {string} */
+  let reportAccessToken = ''
+
   try {
-    if (!clientEmail) {
-      const doc = await getContactSubmission(submissionId)
-      if (doc?.email) clientEmail = String(doc.email).trim()
-      if (!clientName && doc?.name) clientName = String(doc.name).trim()
+    const doc = await getContactSubmission(submissionId)
+    if (doc) {
+      if (!clientEmail && doc.email) clientEmail = String(doc.email).trim()
+      if (!clientName && doc.name) clientName = String(doc.name).trim()
+      if (typeof doc.reportAccessToken === 'string') {
+        reportAccessToken = doc.reportAccessToken.trim()
+      }
+    }
+    if (!reportAccessToken) {
+      throw new Error('Missing reportAccessToken on submission — refuse unscoped report URL')
     }
 
     await updateContactSubmission(submissionId, {
@@ -77,7 +86,7 @@ export async function runAuditJob(job) {
       console.warn(`[audit] submission=${submissionId} Diagnostic/Pro PDF missing — email HTML link only`)
     }
 
-    const statusPageUrl = `${siteBase()}/audit/report/${submissionId}`
+    const statusPageUrl = `${siteBase()}/audit/report/${submissionId}?k=${encodeURIComponent(reportAccessToken)}`
     const publicReportUrl = uploaded.url.includes('.r2.cloudflarestorage.com/')
       ? statusPageUrl
       : uploaded.url

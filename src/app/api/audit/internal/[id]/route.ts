@@ -46,6 +46,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       auditStatus: doc.auditStatus,
       auditScore: doc.auditScore ?? null,
       reportUrl: doc.reportUrl,
+      reportAccessToken:
+        typeof doc.reportAccessToken === 'string' ? doc.reportAccessToken : null,
       retryCount: doc.retryCount ?? 0,
       storageKey:
         doc.auditSummary &&
