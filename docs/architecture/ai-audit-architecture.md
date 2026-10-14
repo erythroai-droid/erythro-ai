@@ -14,7 +14,7 @@
 | Генерация HTML/PDF-отчёта | Идемпотентность платёжных вебхуков |
 | Хранение отчёта в **Cloudflare R2** | Telegram DLQ/алерты |
 | Письмо клиенту с `order@erythro.ai` | Отдельная коллекция `KnowledgeBase` + pgvector |
-| Страница выдачи `/audit/report/[id]` | Cloudflare Pro/Enterprise |
+| Страница выдачи `/audit/report/[id]?k=…` | Cloudflare Pro/Enterprise |
 | Vercel Cron reconciliation (n8n optional) | Отдельная коллекция `audits` (пока расширяем `contact-submissions`) |
 
 ---
@@ -62,9 +62,9 @@
 | `/audit` | Лендинг / заказ AI-аудита (существующий) |
 | `/order/audit-free`, `/order/audit-diagnostic`, `/order/audit-pro` | Чекаут по тарифу (платные — Grow); данные из Plans `kind: audit` |
 | Pricing card **Manual** on `/audit` | Документ Plans `audit-manual`, `checkoutMode: contact` — `#contact-modal` (без `/order` / Grow) |
-| **`/audit/report/[id]`** | **Выдача результата** (polling; готовый отчёт → standalone HTML) |
+| **`/audit/report/[id]?k=…`** | **Выдача результата** (polling; готовый отчёт → standalone HTML; без `k` → 404) |
 
-`/audit` и `/audit/report/[id]` не смешивать: лендинг ≠ страница результата.
+`/audit` и `/audit/report/[id]?k=…` не смешивать: лендинг ≠ страница результата.
 
 ---
 
@@ -94,6 +94,7 @@
 | `auditScore` | `number` | Итоговая оценка 0–100 |
 | `auditSummary` | `json` | Структурированные выводы LLM |
 | `reportUrl` | `text` | Публичный/signed URL объекта в R2 |
+| `reportAccessToken` | `text` | Неугадываемый токен для `/audit/report/[id]?k=…` (обязателен для выдачи) |
 | `htmlResult` | `textarea` (опц.) | Компактный HTML до ~2MB; крупные — только R2 |
 | `retryCount` | `number`, default `0` | Счётчик авто-перезапусков |
 | `errorLast` | `textarea` (опц.) | Последняя ошибка worker (без Telegram в MVP — смотреть в CMS) |
@@ -138,7 +139,7 @@ Access: публичный REST `create` **запрещён**. Создание 
 
 - Bucket: например `erythro-audit-reports` (и при полной миграции — `erythro-media`)
 - Доступ worker: R2 Access Key ID + Secret (S3-compatible endpoint)
-- Публичная выдача: R2 custom domain **или** short-lived signed URL на `/audit/report/[id]`
+- Публичная выдача: `/audit/report/[id]?k=[reportAccessToken]` (токен в submission; без `k` → 404). Опционально R2 custom domain для прямых объектов.
 - Env (Vercel + VPS worker): `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_PUBLIC_BASE_URL` (если есть)
 
 Payload: заменить/добавить S3-compatible storage adapter под R2 вместо (или параллельно с выключением) Vercel Blob — см. `@payloadcms/storage-s3` + endpoint R2.
@@ -303,7 +304,7 @@ networks:
         │
         ▼ (5) Выдача
   Email с ссылкой / вложением
-  Страница /audit/report/[id] (polling → redirect на /api/audit/report/[id]/html)
+  Страница /audit/report/[id]?k=… (polling → redirect на /api/audit/report/[id]/html?k=…)
 ```
 
 Когда подключат оплату: между шагами (1) и (2) встанет шлюз + webhook; шаг (2) станет «после paid». Контракт worker **не меняется**.
@@ -369,8 +370,8 @@ Erythro_Audit_[AUD-N]_[site]_[YYYY-MM-DD]_[LANG].pdf
 4. [x] Caddy + DNS `n8n` / `agent-api` на VPS — Caddy/n8n/worker подняты; DNS A (DNS only) + Let's Encrypt OK
 5. [x] Worker `/api/run-audit` + секрет — `services/audit-agent` на VPS; секрет в `AGENT_SECRET_TOKEN`
 6. [x] Триггер из `/api/contact` после create (`source=audit`) — `src/lib/auditAgentTrigger.ts` (нужен `AGENT_SECRET_TOKEN` + `AUDIT_AGENT_URL` на Vercel)
-7. [x] Страница `/audit/report/[id]` — polling; готовый отчёт как standalone HTML (`GET /api/audit/report/[id]/html`)
-8. [x] Письмо клиенту через существующий SMTP (`order@erythro.ai`) — worker `mail.js` + `SMTP_PASS` на VPS; email/name из `/api/contact` (fallback: CMS internal GET); ссылка в письме = `/audit/report/[id]` (не private R2)
+7. [x] Страница `/audit/report/[id]?k=…` — polling; готовый отчёт как standalone HTML (`GET /api/audit/report/[id]/html?k=…`); без токена → 404
+8. [x] Письмо клиенту через существующий SMTP (`order@erythro.ai`) — worker `mail.js` + `SMTP_PASS` на VPS; email/name из `/api/contact` (fallback: CMS internal GET); ссылка в письме = `/audit/report/[id]?k=…` (не private R2)
 9. [x] Reconcile stuck jobs — Vercel Cron `GET /api/audit/reconcile` every 2 min (`vercel.json`) + optional n8n (`n8n-audit-reconcile.md`). `new` stale 2 min; `in_progress` 20 min. Contact `after()` retries a missed trigger.
 9a. [x] Реальный QA_Auditor (Java/Playwright) в `services/audit-agent/QA_Auditor` вместо stub HTML
 9b. [x] Управление пайплайном аудита в Payload Admin (dashboard, nav «AI Audits», re-queue)

@@ -529,9 +529,9 @@ CI runs the fix script before API tests.
 
 **Cause:** Worker stored/emailed the private S3 API URL (`*.r2.cloudflarestorage.com/...`) because `R2_PUBLIC_BASE_URL` was unset. That endpoint requires signed auth — browsers cannot open it.
 
-**Fix:** Email and client-facing `reportUrl` use `https://erythro.ai/audit/report/[id]`, which redirects to `/api/audit/report/[id]/html` (standalone A44 document, not an iframe). Private storage URL stays only in `auditSummary.storageUrl`. Optionally set a public R2 custom domain / r2.dev as `R2_PUBLIC_BASE_URL` later.
+**Fix:** Email and client-facing `reportUrl` use `https://erythro.ai/audit/report/[id]?k=[reportAccessToken]`, which redirects to `/api/audit/report/[id]/html?k=…` (standalone A44 document, not an iframe). Private storage URL stays only in `auditSummary.storageUrl`. Optionally set a public R2 custom domain / r2.dev as `R2_PUBLIC_BASE_URL` later.
 
-**Prevent:** Never put `r2.cloudflarestorage.com` URLs in customer emails or external CTAs. Gate UI with `isPublicReportUrl()`.
+**Prevent:** Never put `r2.cloudflarestorage.com` URLs in customer emails or external CTAs. Gate UI with `isPublicReportUrl()`. Never email `/audit/report/[id]` without `?k=`.
 
 ---
 
@@ -1772,6 +1772,18 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Prevent:** For Gemini 3.x GenerateContent / AI SDK calls, never set `temperature`, `top_p`, `top_k`, or `thinking_budget`. Steer depth with `thinking_level` only.
 
+---
+
+## PIT-107 — Audit report URLs without `?k=` are enumerable by id
+
+**Symptom:** Changing `/audit/report/173` → `/audit/report/174` (or calling `/api/audit/report/[id]`) lets anyone open another client's status/HTML.
+
+**Cause:** Status and HTML routes were public unlisted links keyed only by sequential `contact-submissions.id`.
+
+**Fix:** Store `reportAccessToken` on each audit submission; require `?k=` on `/audit/report/[id]`, `/api/audit/report/[id]`, and `/api/audit/report/[id]/html` (404 on missing/wrong token). Hook generates token on create; migration backfills existing audit rows and rewrites status-page `reportUrl` values. Worker emails `/audit/report/[id]?k=…` only.
+
+**Prevent:** Do not link or email report pages without `k`. Admin "Open status page" must use the token from CMS. Old bare-id links stop working after deploy (re-send from admin if needed).
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1868,4 +1880,5 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 - [ ] Grow: paid only after `getTransactionInfo` status `2` + amount + process token; success `response=success` is not proof; still call `approveTransaction` (PIT-100)
 - [ ] Payload / storage-plugin bump: compare the generated schema with prod columns for every collection; smoke `/api/media` on the preview; after a DB fix revalidate `site-content` (PIT-104)
 - [ ] Gemini 3.x: no `temperature` / `top_p` / `top_k` / `thinking_budget` on GenerateContent or `streamText` (PIT-106)
+- [ ] Audit report links: always `/audit/report/[id]?k=…`; never bare id (PIT-107)
 

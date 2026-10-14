@@ -1365,9 +1365,16 @@ function AuditOrderModal({
       const payload = (await res.json().catch(() => null)) as {
         submissionId?: number | string
         orderId?: string
+        reportPath?: string
+        reportAccessToken?: string
       } | null
       const sid = payload?.submissionId
-      const href = sid != null ? `/audit/report/${sid}` : null
+      const href =
+        typeof payload?.reportPath === 'string' && payload.reportPath.startsWith('/')
+          ? payload.reportPath
+          : sid != null && typeof payload?.reportAccessToken === 'string'
+            ? `/audit/report/${sid}?k=${encodeURIComponent(payload.reportAccessToken)}`
+            : null
       setOrderId(payload?.orderId || (sid != null ? `AUD-${sid}` : null))
       setReportHref(href)
       setStatus('success')

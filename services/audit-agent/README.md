@@ -1,6 +1,6 @@
 # AI Audit Worker (Node + Java QA_Auditor)
 
-Accepts `POST /api/run-audit`, runs **QA_Auditor** (Playwright/Java), uploads HTML to Cloudflare R2, updates CMS via `/api/audit/internal/[id]`, emails the client from `order@erythro.ai` with a link to `/audit/report/[id]`.
+Accepts `POST /api/run-audit`, runs **QA_Auditor** (Playwright/Java), uploads HTML to Cloudflare R2, updates CMS via `/api/audit/internal/[id]`, emails the client from `order@erythro.ai` with a link to `/audit/report/[id]?k=…` (`reportAccessToken` from CMS).
 
 ## Endpoints
 

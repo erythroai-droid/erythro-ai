@@ -844,6 +844,7 @@ export const contact_submissions = pgTable(
     auditScore: numeric('audit_score', { mode: 'number' }),
     auditSummary: jsonb('audit_summary'),
     reportUrl: varchar('report_url'),
+    reportAccessToken: varchar('report_access_token'),
     htmlResult: varchar('html_result'),
     retryCount: numeric('retry_count', { mode: 'number' }).default(0),
     errorLast: varchar('error_last'),

@@ -5,11 +5,16 @@ import {
   auditReportRateLimitConfig,
 } from '@/lib/contactRateLimit'
 import {
+  buildAuditReportHtmlPath,
   isPublicReportUrl,
   formatAuditOrderId,
   parseAuditReportId,
   type AuditReportPublicPayload,
 } from '@/lib/auditReport'
+import {
+  parseReportAccessToken,
+  reportAccessTokenMatches,
+} from '@/lib/auditReportAccess'
 import {
   findAuditSubmission,
   normalizeAuditStatus,
@@ -20,8 +25,8 @@ export const runtime = 'nodejs'
 type RouteParams = { params: Promise<{ id: string }> }
 
 /**
- * Public, non-PII status endpoint for /audit/report/[id] polling.
- * Ready reports are opened via GET /api/audit/report/[id]/html (full page).
+ * Status endpoint for /audit/report/[id]?k=… polling.
+ * Requires matching reportAccessToken. Ready reports open via …/html?k=…
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const ip = getRequestIp(request)
@@ -51,9 +56,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ message: 'Invalid id' }, { status: 400 })
   }
 
+  const accessKey = parseReportAccessToken(request.nextUrl.searchParams.get('k'))
+  if (!accessKey) {
+    return NextResponse.json({ message: 'Not found' }, { status: 404 })
+  }
+
   try {
     const doc = await findAuditSubmission(id)
-    if (!doc) {
+    if (!doc || !reportAccessTokenMatches(doc.reportAccessToken, accessKey)) {
       return NextResponse.json({ message: 'Not found' }, { status: 404 })
     }
 
@@ -69,7 +79,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           ? doc.reportUrl
           : null,
       htmlPreview: null,
-      readyHtmlUrl: status === 'report_sent' ? `/api/audit/report/${id}/html` : null,
+      readyHtmlUrl: status === 'report_sent' ? buildAuditReportHtmlPath(id, accessKey) : null,
       website: typeof doc.website === 'string' ? doc.website : null,
       updatedAt: typeof doc.updatedAt === 'string' ? doc.updatedAt : null,
       createdAt: typeof doc.createdAt === 'string' ? doc.createdAt : null,

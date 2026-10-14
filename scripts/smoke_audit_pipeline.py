@@ -93,7 +93,10 @@ def main() -> None:
         raise SystemExit("contact create failed")
 
     submission_id = body["submissionId"]
-    report_url = f"https://erythro.ai/api/audit/report/{submission_id}"
+    access_token = body.get("reportAccessToken") or ""
+    if not access_token:
+        raise SystemExit("contact response missing reportAccessToken")
+    report_url = f"https://erythro.ai/api/audit/report/{submission_id}?k={access_token}"
 
     final = None
     for i in range(24):

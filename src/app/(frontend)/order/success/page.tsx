@@ -6,6 +6,7 @@ import PaymentReturn from '@/components/payment/PaymentReturn'
 import { paymentCopy, type PaymentViewStatus } from '@/lib/payments/returnCopy'
 import { verifyPaymentReturn } from '@/lib/payments/returnSig'
 import { getRequestPrefs } from '@/lib/requestPrefs'
+import { buildAuditReportPath } from '@/lib/auditReport'
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
 import type { SiteLocale } from '@/lib/sitePrefs'
 
@@ -55,7 +56,9 @@ export default async function PaymentSuccessPage({ searchParams }: SuccessPagePr
       if (doc) {
         status = viewStatus(doc.paymentStatus)
         ticketId = formatSubmissionTicketId(doc.source, doc.id) || ''
-        reportHref = `/audit/report/${doc.id}`
+        const token =
+          typeof doc.reportAccessToken === 'string' ? doc.reportAccessToken.trim() : ''
+        reportHref = token ? buildAuditReportPath(doc.id, token) : ''
         retryHref = doc.planSlug ? `/order/${doc.planSlug}` : ''
       }
     } catch (err) {

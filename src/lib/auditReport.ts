@@ -213,6 +213,21 @@ export function parseAuditReportId(raw: string): number | null {
   return Number.isSafeInteger(n) && n > 0 ? n : null
 }
 
+/** Client status / waiting page with access token. */
+export function buildAuditReportPath(id: number | string, token: string): string {
+  return `/audit/report/${id}?k=${encodeURIComponent(token)}`
+}
+
+/** Polling JSON endpoint. */
+export function buildAuditReportApiPath(id: number | string, token: string): string {
+  return `/api/audit/report/${id}?k=${encodeURIComponent(token)}`
+}
+
+/** Standalone HTML document. */
+export function buildAuditReportHtmlPath(id: number | string, token: string): string {
+  return `/api/audit/report/${id}/html?k=${encodeURIComponent(token)}`
+}
+
 /** Private S3/R2 API endpoints are not openable in the browser without signed URLs. */
 export function isPublicReportUrl(url: string | null | undefined): boolean {
   if (!url || !/^https?:\/\//i.test(url)) return false

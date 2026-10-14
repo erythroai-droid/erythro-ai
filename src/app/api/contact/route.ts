@@ -16,6 +16,7 @@ import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
 import { checkFreeAuditCooldown, isAuditIntakeLimitsDisabled } from '@/lib/auditRateLimit'
+import { buildAuditReportPath } from '@/lib/auditReport'
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
 import {
   readTurnstileToken,
@@ -211,6 +212,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const reportAccessToken =
+      source === 'audit' &&
+      typeof (created as { reportAccessToken?: unknown }).reportAccessToken === 'string'
+        ? (created as { reportAccessToken: string }).reportAccessToken.trim()
+        : ''
+    const reportPath =
+      source === 'audit' && reportAccessToken
+        ? buildAuditReportPath(created.id, reportAccessToken)
+        : null
+
     return NextResponse.json(
       {
         ok: true,
@@ -220,6 +231,8 @@ export async function POST(request: NextRequest) {
           ? {
               orderId: ticketId || `AUD-${created.id}`,
               auditQueued: Boolean(auditQueued),
+              ...(reportAccessToken ? { reportAccessToken } : {}),
+              ...(reportPath ? { reportPath } : {}),
             }
           : {}),
       },

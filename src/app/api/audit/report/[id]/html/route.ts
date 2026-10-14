@@ -4,7 +4,11 @@ import {
   getRequestIp,
   auditReportRateLimitConfig,
 } from '@/lib/contactRateLimit'
-import { parseAuditReportId } from '@/lib/auditReport'
+import { buildAuditReportPath, parseAuditReportId } from '@/lib/auditReport'
+import {
+  parseReportAccessToken,
+  reportAccessTokenMatches,
+} from '@/lib/auditReportAccess'
 import {
   findAuditSubmission,
   normalizeAuditStatus,
@@ -17,6 +21,7 @@ type RouteParams = { params: Promise<{ id: string }> }
 
 /**
  * Serves the A44 report as a standalone HTML document (full browser page).
+ * Requires matching reportAccessToken (`?k=`).
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const ip = getRequestIp(request)
@@ -42,15 +47,23 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return new NextResponse('Invalid id', { status: 400 })
   }
 
+  const accessKey = parseReportAccessToken(request.nextUrl.searchParams.get('k'))
+  if (!accessKey) {
+    return new NextResponse('Not found', { status: 404 })
+  }
+
   try {
     const doc = await findAuditSubmission(id)
-    if (!doc) {
+    if (!doc || !reportAccessTokenMatches(doc.reportAccessToken, accessKey)) {
       return new NextResponse('Not found', { status: 404 })
     }
 
     const status = normalizeAuditStatus(doc.auditStatus)
     if (status !== 'report_sent') {
-      return NextResponse.redirect(new URL(`/audit/report/${id}`, request.url), 302)
+      return NextResponse.redirect(
+        new URL(buildAuditReportPath(id, accessKey), request.url),
+        302,
+      )
     }
 
     const html = await resolveAuditReportHtml(doc, status)

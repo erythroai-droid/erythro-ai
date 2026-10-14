@@ -9,8 +9,14 @@ type Row = {
   website?: unknown
   auditStatus?: unknown
   reportUrl?: unknown
+  reportAccessToken?: unknown
   retryCount?: unknown
   errorLast?: unknown
+}
+
+function auditStatusPageHref(id: string | number, token: unknown): string | null {
+  if (typeof token !== 'string' || !token.trim()) return null
+  return `/audit/report/${id}?k=${encodeURIComponent(token.trim())}`
 }
 
 async function requeueAudit(id: string | number, resetRetries = true) {
@@ -49,6 +55,9 @@ export const AuditActions: React.FC = () => {
   const website = useFormFields(([fields]) => fields?.website?.value as string | undefined)
   const auditStatus = useFormFields(([fields]) => fields?.auditStatus?.value as string | undefined)
   const reportUrl = useFormFields(([fields]) => fields?.reportUrl?.value as string | undefined)
+  const reportAccessToken = useFormFields(
+    ([fields]) => fields?.reportAccessToken?.value as string | undefined,
+  )
   const retryCount = useFormFields(([fields]) => fields?.retryCount?.value as number | undefined)
   const errorLast = useFormFields(([fields]) => fields?.errorLast?.value as string | undefined)
 
@@ -73,7 +82,7 @@ export const AuditActions: React.FC = () => {
 
   if (source !== 'audit') return null
 
-  const statusPage = id ? `/audit/report/${id}` : null
+  const statusPage = id ? auditStatusPageHref(id, reportAccessToken) : null
   const canRequeue = Boolean(id && website?.trim())
 
   return (
@@ -194,7 +203,7 @@ export const AuditActionsCell: React.FC<{ rowData?: Row }> = ({ rowData }) => {
   const id = rowData.id
   if (typeof id !== 'string' && typeof id !== 'number') return <span>—</span>
 
-  const statusPage = `/audit/report/${id}`
+  const statusPage = auditStatusPageHref(id, rowData.reportAccessToken)
   const reportUrl = typeof rowData.reportUrl === 'string' ? rowData.reportUrl.trim() : ''
   const website = typeof rowData.website === 'string' ? rowData.website.trim() : ''
 
@@ -213,9 +222,11 @@ export const AuditActionsCell: React.FC<{ rowData?: Row }> = ({ rowData }) => {
 
   return (
     <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 4, alignItems: 'center', maxWidth: 132 }}>
-      <a href={statusPage} target="_blank" rel="noreferrer" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
-        Status
-      </a>
+      {statusPage ? (
+        <a href={statusPage} target="_blank" rel="noreferrer" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
+          Status
+        </a>
+      ) : null}
       {reportUrl ? (
         <a href={reportUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>
           PDF

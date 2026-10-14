@@ -38,6 +38,7 @@ import * as migration_20261007_021500_users_reset_password_requested_at from './
 import * as migration_20261007_031500_media_object_key from './20261007_031500_media_object_key'
 import * as migration_20261012_010000_audit_plan_checkout_fields from './20261012_010000_audit_plan_checkout_fields'
 import * as migration_20261012_020000_audit_plan_card_name from './20261012_020000_audit_plan_card_name'
+import * as migration_20261014_210000_contact_submissions_report_access_token from './20261014_210000_contact_submissions_report_access_token'
 
 export const migrations = [
   {
@@ -239,5 +240,10 @@ export const migrations = [
     up: migration_20261012_020000_audit_plan_card_name.up,
     down: migration_20261012_020000_audit_plan_card_name.down,
     name: '20261012_020000_audit_plan_card_name',
+  },
+  {
+    up: migration_20261014_210000_contact_submissions_report_access_token.up,
+    down: migration_20261014_210000_contact_submissions_report_access_token.down,
+    name: '20261014_210000_contact_submissions_report_access_token',
   },
 ]

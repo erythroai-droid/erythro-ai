@@ -5,7 +5,16 @@ import { notFound, redirect } from 'next/navigation'
 import AuditReportClient from './AuditReportClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getRequestPrefs } from '@/lib/requestPrefs'
-import { auditReportCopy, parseAuditReportId, tReport } from '@/lib/auditReport'
+import {
+  auditReportCopy,
+  buildAuditReportHtmlPath,
+  parseAuditReportId,
+  tReport,
+} from '@/lib/auditReport'
+import {
+  parseReportAccessToken,
+  reportAccessTokenMatches,
+} from '@/lib/auditReportAccess'
 import {
   findAuditSubmission,
   normalizeAuditStatus,
@@ -18,6 +27,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
 interface PageProps {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ k?: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -45,28 +55,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function AuditReportPage({ params }: PageProps) {
+export default async function AuditReportPage({ params, searchParams }: PageProps) {
   const { id } = await params
+  const { k: rawKey } = await searchParams
   const reportId = parseAuditReportId(id)
-  if (!reportId) {
+  const accessKey = parseReportAccessToken(rawKey)
+  if (!reportId || !accessKey) {
     notFound()
   }
 
   let ready = false
   try {
     const doc = await findAuditSubmission(reportId)
-    if (doc) {
-      const status = normalizeAuditStatus(doc.auditStatus)
-      if (status === 'report_sent') {
-        const html = await resolveAuditReportHtml(doc, status)
-        ready = Boolean(html)
-      }
+    if (!doc || !reportAccessTokenMatches(doc.reportAccessToken, accessKey)) {
+      notFound()
+    }
+    const status = normalizeAuditStatus(doc.auditStatus)
+    if (status === 'report_sent') {
+      const html = await resolveAuditReportHtml(doc, status)
+      ready = Boolean(html)
     }
   } catch {
     // Fall through to status UI if CMS/R2 is briefly unavailable
   }
   if (ready) {
-    redirect(`/api/audit/report/${reportId}/html`)
+    redirect(buildAuditReportHtmlPath(reportId, accessKey))
   }
 
   const { initialLocale, initialTheme } = await getRequestPrefs()
@@ -75,6 +88,7 @@ export default async function AuditReportPage({ params }: PageProps) {
   return (
     <AuditReportClient
       reportId={id}
+      accessKey={accessKey}
       initialLocale={initialLocale}
       initialTheme={initialTheme}
       content={content}

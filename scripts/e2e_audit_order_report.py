@@ -79,21 +79,23 @@ CONTACT=$(curl -sS -X POST https://erythro.ai/api/contact \
 echo "$CONTACT"
 SID=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("submissionId",""))' <<<"$CONTACT")
 QUEUED=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("auditQueued",False))' <<<"$CONTACT")
+K=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("reportAccessToken",""))' <<<"$CONTACT")
 test -n "$SID"
+test -n "$K"
 test "$QUEUED" = "True" -o "$QUEUED" = "true"
-echo "submissionId=$SID auditQueued=$QUEUED"
+echo "submissionId=$SID auditQueued=$QUEUED hasToken=yes"
 
 echo "=== 3) poll report API ==="
 STATUS=""
 REPORT=""
 for i in $(seq 1 30); do
   sleep 2
-  curl -sS "https://erythro.ai/api/audit/report/$SID" >/tmp/e2e-report.json
+  curl -sS "https://erythro.ai/api/audit/report/$SID?k=$K" >/tmp/e2e-report.json
   STATUS=$(python3 -c 'import json; print(json.load(open("/tmp/e2e-report.json")).get("status",""))')
   REPORT=$(python3 -c 'import json; print(json.load(open("/tmp/e2e-report.json")).get("reportUrl") or "")')
-  HTML=$(python3 -c 'import json; print("yes" if json.load(open("/tmp/e2e-report.json")).get("htmlPreview") else "no")')
+  HTML=$(python3 -c 'import json; print("yes" if json.load(open("/tmp/e2e-report.json")).get("readyHtmlUrl") else "no")')
   if [ -n "$REPORT" ]; then RU=yes; else RU=no; fi
-  echo "poll#$i status=$STATUS reportUrl=$RU html=$HTML"
+  echo "poll#$i status=$STATUS reportUrl=$RU readyHtml=$HTML"
   if [ "$STATUS" = "report_sent" ] || [ "$STATUS" = "failed" ]; then
     break
   fi
@@ -104,16 +106,16 @@ import json
 d=json.load(open("/tmp/e2e-report.json"))
 assert d.get("status")=="report_sent"
 assert d.get("website")
-assert d.get("htmlPreview") and "example.com" in d["htmlPreview"]
+assert d.get("readyHtmlUrl") and "k=" in d["readyHtmlUrl"]
 assert d.get("reportUrl")
-print("api_ok website=", d.get("website"), "html_bytes=", len(d.get("htmlPreview") or ""), "score=", d.get("auditScore"))
+print("api_ok website=", d.get("website"), "readyHtmlUrl=", d.get("readyHtmlUrl"), "score=", d.get("auditScore"))
 open("/tmp/e2e-report-url.txt","w").write(d["reportUrl"])
 PY
 
-echo "=== 4) public report page /audit/report/$SID ==="
-PAGE_CODE=$(curl -sS -o /tmp/audit-report-page.html -w "%{http_code}" "https://erythro.ai/audit/report/$SID")
+echo "=== 4) public report page /audit/report/$SID?k=… ==="
+PAGE_CODE=$(curl -sS -o /tmp/audit-report-page.html -w "%{http_code}" "https://erythro.ai/audit/report/$SID?k=$K")
 echo "page_http=$PAGE_CODE"
-test "$PAGE_CODE" = "200"
+test "$PAGE_CODE" = "200" -o "$PAGE_CODE" = "302"
 python3 - <<'PY'
 from pathlib import Path
 html=Path("/tmp/audit-report-page.html").read_text(encoding="utf-8", errors="replace")
@@ -166,8 +168,8 @@ curl -sS -X POST https://erythro.ai/api/audit/reconcile \
 echo "=== E2E PASS ==="
 echo "submissionId=$SID"
 echo "clientEmail=__EMAIL__"
-echo "reportPage=https://erythro.ai/audit/report/$SID"
-echo "reportApi=https://erythro.ai/api/audit/report/$SID"
+echo "reportPage=https://erythro.ai/audit/report/$SID?k=$K"
+echo "reportApi=https://erythro.ai/api/audit/report/$SID?k=$K"
 """.replace("__SECRET__", json.dumps(secret)).replace(
         "__PAYLOAD__", json.dumps(payload, ensure_ascii=False, indent=2)
     ).replace("__EMAIL__", email)
