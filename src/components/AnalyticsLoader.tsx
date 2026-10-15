@@ -14,13 +14,13 @@ import {
 } from '@/lib/privacyConsent'
 
 const GA_ID = 'G-F3BTVWGDRS'
-const AW_ID = 'AW-18453652197'
 
 declare global {
   interface Window {
     dataLayer?: unknown[]
     gtag?: (...args: unknown[]) => void
     __ERYTHRO_GA_ID__?: string
+    __ERYTHRO_AW_ID__?: string
   }
 }
 
@@ -70,25 +70,17 @@ export default function AnalyticsLoader() {
   return (
     <>
       <Analytics />
-      <Script
-        id="google-analytics-src"
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
+      {/* gtag.js already loaded in AnalyticsBootstrap (AW-…); do not load a second copy */}
+      <Script id="google-analytics-config" strategy="afterInteractive">
         {`
-          window.dataLayer = window.dataLayer || [];
-          if (typeof window.gtag !== 'function') {
-            function gtag(){dataLayer.push(arguments);}
-            window.gtag = gtag;
+          if (typeof window.gtag === 'function') {
+            gtag('config', '${GA_ID}', {
+              anonymize_ip: true,
+              allow_google_signals: false,
+              allow_ad_personalization_signals: false,
+              send_page_view: true
+            });
           }
-          gtag('config', '${GA_ID}', {
-            anonymize_ip: true,
-            allow_google_signals: false,
-            allow_ad_personalization_signals: false,
-            send_page_view: true
-          });
-          gtag('config', '${AW_ID}');
         `}
       </Script>
     </>

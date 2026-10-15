@@ -166,6 +166,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       suppressHydrationWarning
     >
       <head>
+        <AnalyticsBootstrap />
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
         <link rel="describedby" href="/llms.txt" type="text/plain" />
         <link rel="alternate" type="text/markdown" href="/" />
@@ -180,7 +181,6 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           id="locale-bootstrap"
           dangerouslySetInnerHTML={{ __html: LOCALE_BOOTSTRAP_SCRIPT }}
         />
-        <AnalyticsBootstrap />
         <AnalyticsLoader />
         <SkipToContent locale={locale} />
         <SplashHost />
