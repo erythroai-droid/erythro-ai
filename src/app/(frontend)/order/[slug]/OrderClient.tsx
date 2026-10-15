@@ -32,6 +32,7 @@ import {
   type OrderPlan,
 } from '@/lib/orderPlans'
 import { auditSampleReportHref, auditSampleReportLabel } from '@/lib/auditSampleReports'
+import { trackAdsLead } from '@/lib/adsConversion'
 import { isLexicalDoc, lexicalHasContent, resolveLexical } from '@/lib/lexical'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
@@ -1378,6 +1379,7 @@ function AuditOrderModal({
       setOrderId(payload?.orderId || (sid != null ? `AUD-${sid}` : null))
       setReportHref(href)
       setStatus('success')
+      if (plan.slug === 'audit-free' && sid != null) trackAdsLead(String(sid))
     } catch {
       setSubmitError(tForm(contactForm.error))
       setStatus('error')
