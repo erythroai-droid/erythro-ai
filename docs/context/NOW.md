@@ -10,11 +10,13 @@
 - Ads «не находит тег»: AW был только после Accept → Google не видел в HTML.
 - Фикс: один Google tag в `<head>` (`AnalyticsBootstrap`) — `gtag/js?id=AW-18453652197` + `config`, Consent Mode denied.
 - `AnalyticsLoader` больше не грузит второй gtag.js; после Accept — consent grant + GA4 config.
+- Конверсия «Покупка» (`AW-18453652197/-mcPCMys6Z0dEOXFsd9E`): `src/lib/adsConversion.ts`, вызов в `PaymentReturn`, когда статус = `paid`; `transaction_id` = id заявки, `value` = `paymentAmount` (ILS), один раз на браузер.
 
 ## Сейчас
 
-1. Deploy / push — затем в Google Ads «Проверить тег» (без Accept; тег в View Source).
-2. Tag Assistant: после Accept — ad_storage granted + GA4.
+1. Commit/deploy — затем тестовая оплата → Tag Assistant: событие `conversion` на `/order/success`.
+2. Если покупатель не возвращается с Grow — офлайн-конверсия через Make (не сделано).
+3. Старая TS-ошибка: `order/success/page.tsx:59` (`doc.source` может быть `null`).
 
 ## Не делать
 

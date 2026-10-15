@@ -7,6 +7,7 @@ import {
   type PaymentViewStatus,
 } from '@/lib/payments/returnCopy'
 import type { SiteLocale } from '@/lib/sitePrefs'
+import { trackAdsPurchase } from '@/lib/adsConversion'
 
 type Props = {
   locale: SiteLocale
@@ -16,6 +17,7 @@ type Props = {
   ticketId: string
   reportHref: string
   retryHref: string
+  amount: number | null
 }
 
 function Mark({ status }: { status: PaymentViewStatus }) {
@@ -52,9 +54,14 @@ export default function PaymentReturn({
   ticketId,
   reportHref,
   retryHref,
+  amount,
 }: Props) {
   const [status, setStatus] = useState<PaymentViewStatus>(initialStatus)
   const [slow, setSlow] = useState(false)
+
+  useEffect(() => {
+    if (status === 'paid' && submissionId) trackAdsPurchase(submissionId, amount)
+  }, [status, submissionId, amount])
 
   useEffect(() => {
     if (initialStatus !== 'pending' || !submissionId || !signature) return
