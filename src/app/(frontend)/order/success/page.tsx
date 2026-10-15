@@ -43,6 +43,7 @@ export default async function PaymentSuccessPage({ searchParams }: SuccessPagePr
   let ticketId = ''
   let reportHref = ''
   let retryHref = ''
+  let amount: number | null = null
 
   if (verifyPaymentReturn(id, sig)) {
     try {
@@ -60,6 +61,7 @@ export default async function PaymentSuccessPage({ searchParams }: SuccessPagePr
           typeof doc.reportAccessToken === 'string' ? doc.reportAccessToken.trim() : ''
         reportHref = token ? buildAuditReportPath(doc.id, token) : ''
         retryHref = doc.planSlug ? `/order/${doc.planSlug}` : ''
+        amount = typeof doc.paymentAmount === 'number' ? doc.paymentAmount : null
       }
     } catch (err) {
       console.error('[order/success]', err instanceof Error ? err.message : 'error')
@@ -76,6 +78,7 @@ export default async function PaymentSuccessPage({ searchParams }: SuccessPagePr
       ticketId={ticketId}
       reportHref={reportHref}
       retryHref={retryHref}
+      amount={amount}
     />
   )
 }
