@@ -145,7 +145,7 @@ function localeData(
   toLexical: (text: string) => unknown,
 ): Record<string, unknown> {
   const data: Record<string, unknown> = {
-    slug: project.slug,
+    slug: project.slug.trim(),
     title: project.title[loc],
     description: project.description[loc],
     summary: toLexical(project.summary[loc] || ''),

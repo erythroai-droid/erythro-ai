@@ -7,18 +7,17 @@
 
 ## Сделано в этой сессии
 
-- Портфолио через `pnpm import:project`: **AI Website Auditor** (`ai-audit-agent`, #5) и **AI Consultant** (`ai-consultant`, #6), категория `ai` создана.
-- Брифы: `content/imports/<slug>/brief.yaml`; кейсы: `docs/cases/ai-*.md` (+ Obsidian `cases/`).
-- PIT-109: `fetchPortfolioProjects` без `overrideAccess` → 404 на `/portfolio/[slug]`; фикс в `cmsPages.ts` (cache key v9).
-- Ads: один Google tag в head + конверсии Purchase / Lead (PIT-108).
+- Портфолио: импорт AI Auditor (#5) + AI Consultant (#6).
+- PIT-109: 404 на `/portfolio/[slug]` — у импортированных slug был **хвостовой пробел** (`"ai-audit-agent "`); карточки жили, детальные URL — нет. В CMS пробелы сняты (`scripts/fix-portfolio-slugs.ts`).
+- Код: trim slug в `mapPortfolioDoc`, per-doc map, cache v10/v3, `slug.trim()` в import, beforeValidate на коллекции.
 
 ## Сейчас
 
-1. **Задеплоить** фикс PIT-109, затем Save в admin или revalidate `/portfolio` + `/portfolio/ai-audit-agent` + `/portfolio/ai-consultant`.
-2. Добавить card/hero в `content/imports/<slug>/` и import без `--skip-media`.
-3. Для import-скриптов: `--env-file=.env` (у `.env.production.local` битый short `DATABASE_URL` после vercel pull).
-4. Ads «Неактивно» может смениться через несколько часов; Grow→Make offline — не сделано.
-5. TS: `order/success/page.tsx:59` (`doc.source` null).
+1. **Задеплоить** этот коммит (без деплоя Data Cache на Vercel всё ещё держит старые slug с пробелом → 404).
+2. После деплоя проверить `/portfolio/ai-audit-agent` и `/portfolio/ai-consultant`.
+3. Card/hero медиа — по желанию.
+4. Ads «Неактивно» / Grow→Make offline — не сейчас.
+5. TS: `order/success/page.tsx:59`.
 
 ## Не делать
 
@@ -29,4 +28,4 @@
 
 ## Последняя эстафета
 
-2026-10-15 — Cursor — portfolio import AI Auditor + Consultant; PIT-109 overrideAccess fix (needs deploy).
+2026-10-15 — Cursor — PIT-109: trailing-space slugs fixed in CMS; deploy cache v10 needed.

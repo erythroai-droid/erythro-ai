@@ -25,6 +25,19 @@ export const PortfolioProjects: CollectionConfig = {
       required: true,
       unique: true,
       admin: { description: 'URL segment, e.g. "ai-lead-qualifier" → /portfolio/ai-lead-qualifier' },
+      hooks: {
+        beforeValidate: [
+          ({ value }) => (typeof value === 'string' ? value.trim() : value),
+        ],
+      },
+      validate: (val: unknown) => {
+        if (typeof val !== 'string' || !val.trim()) return 'Slug is required'
+        if (val !== val.trim()) return 'Slug must not have leading/trailing spaces'
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(val)) {
+          return 'Use lowercase letters, numbers, and hyphens only'
+        }
+        return true
+      },
     },
     locText('title', { required: true }),
     {

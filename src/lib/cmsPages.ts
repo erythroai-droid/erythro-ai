@@ -195,13 +195,15 @@ function mapPortfolioRichField(
   return { plain, rich }
 }
 
-function mapPortfolioDoc(d: any): PortfolioProject {
+export function mapPortfolioDoc(d: any): PortfolioProject {
   // Prefer slug match so CMS docs never inherit unrelated seed project fields by index.
+  // Trim slug — trailing spaces from import/YAML break /portfolio/[slug] lookups (PIT-109).
+  const slug = typeof d.slug === 'string' ? d.slug.trim() : ''
   const fb: PortfolioProject =
-    PORTFOLIO_PROJECTS.find((p) => p.slug === d.slug) ||
+    PORTFOLIO_PROJECTS.find((p) => p.slug === slug) ||
     {
       id: String(d.id ?? ''),
-      slug: d.slug || 'project',
+      slug: slug || 'project',
       title: { en: 'Project' },
       category: 'other',
       categoryLabel: { en: 'Other' },
@@ -274,7 +276,7 @@ function mapPortfolioDoc(d: any): PortfolioProject {
 
   return {
     id: String(d.id ?? fb.id),
-    slug: d.slug || fb.slug,
+    slug: slug || fb.slug,
     title: locMap(d.title, fb.title),
     category: categoryValue as Exclude<PortfolioCategory, 'all'>,
     categoryLabel,
@@ -322,7 +324,17 @@ async function fetchPortfolioProjects(): Promise<PortfolioProject[]> {
       overrideAccess: true,
     })
     if (!res.docs?.length) return PORTFOLIO_PROJECTS
-    return res.docs.map((d: any) => mapPortfolioDoc(d))
+    // Map per-doc so one bad Lexical/body row cannot wipe the whole CMS list
+    // (that fallback hid new slugs and 404'd /portfolio/[slug] — PIT-109).
+    const mapped: PortfolioProject[] = []
+    for (const d of res.docs as any[]) {
+      try {
+        mapped.push(mapPortfolioDoc(d))
+      } catch (err) {
+        console.error(`[cmsPages] portfolio map failed for slug=${d?.slug}:`, err)
+      }
+    }
+    return mapped.length ? mapped : PORTFOLIO_PROJECTS
   } catch (err) {
     console.error('[cmsPages] portfolio fallback:', err)
     return PORTFOLIO_PROJECTS
@@ -858,15 +870,15 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
-  // v9: overrideAccess so staff-only collection read works on public ISR
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v9-r2'], {
+  // v10: trim slugs + per-doc map (trailing-space slugs 404'd detail pages)
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v10-r2'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
 
 /** Lean list for `/portfolio` index — avoids shipping every project body Lexical tree. */
 export const getCachedPortfolioProjectCards = () =>
-  unstable_cache(() => fetchPortfolioProjectCards(), ['portfolio-project-cards-v2-r2'], {
+  unstable_cache(() => fetchPortfolioProjectCards(), ['portfolio-project-cards-v3-r2'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
