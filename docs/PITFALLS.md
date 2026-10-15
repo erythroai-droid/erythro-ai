@@ -1817,6 +1817,25 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Prevent:** Always trim portfolio slugs on write and read. After import, revalidate live (`REVALIDATION_TOKEN` + real `NEXT_PUBLIC_SITE_URL`) or Save in admin — local `revalidateTag` does not reach Vercel.
 
+---
+
+## PIT-110 — Supabase default grants expose Payload `public` to `anon` (hash/salt landmine)
+
+**Tags:** `supabase`, `security`, `postgrest`, `payload`, `rls`  
+**Seen:** 2026-10-15 — after pool-exhaustion alert; REST probe `/rest/v1/users`
+
+**Symptom:** Monitoring can hit `/rest/v1/users`. Even with PostgREST exposed schemas empty (`pgrst_no_exposed_schemas` → 404), `anon`/`authenticated` still had full table grants on Payload tables and `USAGE` via `PUBLIC` on schema `public`. `users` had RLS off and columns `email`/`hash`/`salt`/reset tokens — re-enabling exposed schema `public` would leak admin credentials.
+
+**Cause:** Supabase defaults (`GRANT` to `anon`/`authenticated` + schema `USAGE` for `PUBLIC`). App never uses PostgREST — only Payload via `DATABASE_URL` as `postgres`.
+
+**Fix (applied):** Migrations `revoke_anon_authenticated_public_privileges` + `revoke_public_schema_usage_from_public`:
+- `REVOKE ALL ON ALL TABLES/SEQUENCES/FUNCTIONS IN SCHEMA public FROM anon, authenticated`
+- `ALTER DEFAULT PRIVILEGES FOR ROLE postgres … REVOKE … FROM anon, authenticated`
+- `REVOKE USAGE ON SCHEMA public FROM PUBLIC` (keep explicit `USAGE` for `postgres`, `service_role`, `authenticator`)
+- Do **not** touch `storage` / `auth` / `service_role`
+
+**Prevent:** Keep PostgREST exposed schemas empty. After new Payload tables, confirm `has_table_privilege('anon','public.<table>','SELECT')` is false. Never enable schema `public` in API settings without RLS.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1914,4 +1933,5 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 - [ ] Payload / storage-plugin bump: compare the generated schema with prod columns for every collection; smoke `/api/media` on the preview; after a DB fix revalidate `site-content` (PIT-104)
 - [ ] Gemini 3.x: no `temperature` / `top_p` / `top_k` / `thinking_budget` on GenerateContent or `streamText` (PIT-106)
 - [ ] Audit report links: always `/audit/report/[id]?k=…`; never bare id (PIT-107)
+- [ ] Supabase: `anon` must not SELECT Payload `public` tables; keep REST schemas empty (PIT-110)
 
