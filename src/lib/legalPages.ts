@@ -144,13 +144,13 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         },
         paragraphs: {
           en: [
-            'Necessary cookies support basic site functions such as language preference (en/ru/he), accessibility settings, theme, and storing your cookie consent choice. Analytics tools (Google Analytics and Vercel Web Analytics) load only after you press Accept on the cookie banner. If you Decline, non-essential analytics scripts should not load; necessary cookies may still be set. You can reopen cookie settings from the site footer at any time.',
+            'Necessary cookies support basic site functions such as language preference (en/ru/he), accessibility settings, theme, and storing your cookie consent choice. Analytics and advertising measurement tools (Google Analytics, Google Ads, and Vercel Web Analytics) load only after you press Accept on the cookie banner. If you Decline, non-essential analytics and ads scripts should not load; necessary cookies may still be set. You can reopen cookie settings from the site footer at any time.',
           ],
           ru: [
-            'Обязательные cookie обеспечивают базовую работу сайта: язык (en/ru/he), настройки доступности, тему и сохранение выбора согласия на cookie. Аналитические инструменты (Google Analytics и Vercel Web Analytics) загружаются только после нажатия «Accept» в баннере. При отказе необязательные скрипты аналитики не должны загружаться; обязательные cookie могут сохраняться. Настройки cookie можно снова открыть из футера сайта.',
+            'Обязательные cookie обеспечивают базовую работу сайта: язык (en/ru/he), настройки доступности, тему и сохранение выбора согласия на cookie. Аналитика и измерение рекламы (Google Analytics, Google Ads и Vercel Web Analytics) загружаются только после нажатия «Accept» в баннере. При отказе необязательные скрипты аналитики и рекламы не должны загружаться; обязательные cookie могут сохраняться. Настройки cookie можно снова открыть из футера сайта.',
           ],
           he: [
-            'Cookie חיוניים תומכים בתפקוד בסיסי של האתר: העדפת שפה (en/ru/he), הגדרות נגישות, ערכת נושא ושמירת בחירת ההסכמה ל־Cookie. כלי אנליטיקה (Google Analytics ו־Vercel Web Analytics) נטענים רק לאחר לחיצה על Accept בבאנר. אם תבחרו Decline, סקריפטי אנליטיקה שאינם חיוניים לא אמורים להיטען; Cookie חיוניים עשויים להישמר. ניתן לפתוח מחדש את הגדרות ה־Cookie מכותרת התחתונה של האתר בכל עת.',
+            'Cookie חיוניים תומכים בתפקוד בסיסי של האתר: העדפת שפה (en/ru/he), הגדרות נגישות, ערכת נושא ושמירת בחירת ההסכמה ל־Cookie. כלי אנליטיקה ומדידת פרסום (Google Analytics, Google Ads ו־Vercel Web Analytics) נטענים רק לאחר לחיצה על Accept בבאנר. אם תבחרו Decline, סקריפטי אנליטיקה ופרסום שאינם חיוניים לא אמורים להיטען; Cookie חיוניים עשויים להישמר. ניתן לפתוח מחדש את הגדרות ה־Cookie מכותרת התחתונה של האתר בכל עת.',
           ],
         },
       },
@@ -178,7 +178,7 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
             'Supabase / managed PostgreSQL — database storage for CMS content and contact submissions.',
             'Payload CMS — content management and storage of form submissions.',
             'n8n — workflow automation that may receive inquiry data to notify our team.',
-            'Google LLC — Google Analytics, only after you accept analytics cookies.',
+            'Google LLC — Google Analytics and Google Ads measurement, only after you accept analytics cookies.',
           ],
           ru: [
             'Vercel Inc. — хостинг сайта, CDN, serverless-функции и Vercel Web Analytics (только после согласия на аналитические cookie).',
@@ -186,7 +186,7 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
             'Supabase / управляемый PostgreSQL — хранение данных CMS и заявок из форм.',
             'Payload CMS — управление контентом и хранение заявок.',
             'n8n — автоматизация процессов, которая может получать данные обращений для уведомления команды.',
-            'Google LLC — Google Analytics только после согласия на аналитические cookie.',
+            'Google LLC — Google Analytics и измерение Google Ads только после согласия на аналитические cookie.',
           ],
           he: [
             'Vercel Inc. — אחסון האתר, CDN, פונקציות serverless ו־Vercel Web Analytics (רק לאחר אישור Cookie אנליטיים).',
@@ -194,7 +194,7 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
             'Supabase / PostgreSQL מנוהל — אחסון מסד נתונים לתוכן ה־CMS ולפניות מטפסים.',
             'Payload CMS — ניהול תוכן ושמירת פניות.',
             'n8n — אוטומציה של תהליכים שעשויה לקבל נתוני פנייה כדי לעדכן את הצוות.',
-            'Google LLC — Google Analytics, רק לאחר אישור Cookie אנליטיים.',
+            'Google LLC — Google Analytics ומדידת Google Ads, רק לאחר אישור Cookie אנליטיים.',
           ],
         },
       },
