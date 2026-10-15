@@ -11,12 +11,12 @@
 - Фикс: один Google tag в `<head>` (`AnalyticsBootstrap`) — `gtag/js?id=AW-18453652197` + `config`, Consent Mode denied.
 - `AnalyticsLoader` больше не грузит второй gtag.js; после Accept — consent grant + GA4 config.
 - Конверсия «Покупка» (`AW-18453652197/-mcPCMys6Z0dEOXFsd9E`): `src/lib/adsConversion.ts`, вызов в `PaymentReturn`, когда статус = `paid`; `transaction_id` = id заявки, `value` = `paymentAmount` (ILS), один раз на браузер.
-- Конверсия «Отправка формы» (`AW-18453652197/L4VgCMWPhZ4dEOXFsd9E`): `trackAdsLead` после успешной заявки `audit-free`, value 1 ILS, один раз на заявку.
+- Конверсия «Отправка формы» (`AW-18453652197/L4VgCMWPhZ4dEOXFsd9E`): `trackAdsLead` после успешной заявки `audit-free` на `/audit` и `/order/audit-free`, value 1 ILS, один раз на заявку.
 - CSP пропускает конверсию Ads: `script-src` `googleads.g.doubleclick.net` + `googleadservices.com`; `connect-src` `ad.doubleclick.net`.
 
 ## Сейчас
 
-1. Commit/deploy CSP — повторить заявку на `/order/audit-free` с Accept. В Tag Assistant не должно быть блокировок `viewthroughconversion` и `ad.doubleclick.net/ccm/s/collect`.
+1. CSP на проде чистая (консоль Tag Assistant 0). Лид с `/audit` ещё не в проде — задеплоить и повторить заявку с другого IP/email/домена: в «Отправленные обращения» должна появиться конверсия, не только «Просмотр страницы».
 2. Если покупатель не возвращается с Grow — офлайн-конверсия через Make (не сделано).
 3. Старая TS-ошибка: `order/success/page.tsx:59` (`doc.source` может быть `null`).
 
