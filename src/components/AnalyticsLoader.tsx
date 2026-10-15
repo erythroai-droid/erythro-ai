@@ -14,6 +14,7 @@ import {
 } from '@/lib/privacyConsent'
 
 const GA_ID = 'G-F3BTVWGDRS'
+const AW_ID = 'AW-18453652197'
 
 declare global {
   interface Window {
@@ -25,11 +26,12 @@ declare global {
 
 function updateAnalyticsConsent(consent: ConsentValue) {
   if (typeof window === 'undefined' || typeof window.gtag !== 'function') return
+  const granted = consent === CONSENT_ACCEPTED ? 'granted' : 'denied'
   window.gtag('consent', 'update', {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: consent === CONSENT_ACCEPTED ? 'granted' : 'denied',
+    ad_storage: granted,
+    ad_user_data: granted,
+    ad_personalization: granted,
+    analytics_storage: granted,
     functionality_storage: 'granted',
     security_storage: 'granted',
   })
@@ -39,7 +41,9 @@ export default function AnalyticsLoader() {
   const [enabled, setEnabled] = useState(false)
 
   useEffect(() => {
-    setEnabled(hasAcceptedConsent())
+    const accepted = hasAcceptedConsent()
+    setEnabled(accepted)
+    if (accepted) updateAnalyticsConsent(CONSENT_ACCEPTED)
 
     const onConsentChanged = (event: Event) => {
       const value = (event as CustomEvent<ConsentValue>).detail
@@ -84,6 +88,7 @@ export default function AnalyticsLoader() {
             allow_ad_personalization_signals: false,
             send_page_view: true
           });
+          gtag('config', '${AW_ID}');
         `}
       </Script>
     </>

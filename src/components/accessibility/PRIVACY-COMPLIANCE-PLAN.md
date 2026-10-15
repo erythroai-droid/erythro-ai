@@ -22,7 +22,7 @@
 | Clear analytics cookies on Decline | `clearAnalyticsCookies()` in `privacyConsent.ts` |
 | Cookie consent banner (accept / decline) | `CookieConsent.tsx` |
 | Revoke consent via footer | `openConsentSettings()` → footer button |
-| GA Consent Mode v2 — ad signals denied | `AnalyticsLoader.tsx` — `ad_storage: denied`, `ad_personalization: denied` |
+| GA Consent Mode v2 — ads + analytics after Accept | `AnalyticsLoader.tsx` — default denied; on Accept grants `analytics_storage` + `ad_*` (GA4 + Google Ads `AW-18453652197`) |
 | Accessibility statement (IS 5568) | `/accessibility` page |
 
 ---

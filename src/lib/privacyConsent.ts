@@ -58,5 +58,9 @@ export function clearAnalyticsCookies() {
     expireCookie('_gid', domain)
     expireCookie('_gat', domain)
     expireCookie('_ga_F3BTVWGDRS', domain)
+    expireCookie('_gcl_au', domain)
+    expireCookie('_gcl_aw', domain)
+    expireCookie('_gcl_dc', domain)
+    expireCookie('_gcl_gb', domain)
   }
 }

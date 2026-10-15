@@ -1,28 +1,27 @@
 # Latest changes
 
-Обновлено: 2026-10-14  
+Обновлено: 2026-10-15  
 Модель: Cursor  
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
 ## Сделано в этой сессии
 
-- PIT-107: site требует `?k=`; письмо #175 без `k` → 404 (старый worker на VPS).
-- Фикс: admin/API подставляют `k`; миграция rewrite `report_url`; деплой audit-agent.
+- Google Ads gtag `AW-18453652197` в `AnalyticsLoader` (после Accept, вместе с GA4).
+- Consent Mode: на Accept выдаются `ad_storage` / `ad_user_data` / `ad_personalization`.
+- CSP `connect-src` для Ads; очистка `_gcl_*` при Decline; privacy copy обновлена.
 
 ## Сейчас
 
-1. Задеплоить Next (миграция rewrite + admin).
-2. Для #175: в admin — **Status page** / поле `reportAccessToken` (не stale Open report URL до деплоя).
-3. Переслать клиенту ссылку с `?k=` из admin после деплоя.
+1. Merge/deploy Next — чтобы Ads-тег появился на проде.
+2. В Google Ads: проверить тег / conversion (Tag Assistant после Accept на cookie).
 
 ## Не делать
 
 - Не печатать `MAKE_PAYMENT_SECRET`.
 - Не зеркалировать этот файл в Obsidian.
 - Не слать `/audit/report/[id]` без `?k=` (PIT-107).
-- После смены gating всегда редеплоить `audit-agent` на VPS.
 
 ## Последняя эстафета
 
-2026-10-14 — Cursor — Fix bare report URLs (worker redeploy + admin/API inject k).
+2026-10-15 — Cursor — Google Ads AW-18453652197 wired through AnalyticsLoader + consent.
