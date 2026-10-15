@@ -11,10 +11,11 @@
 - Фикс: один Google tag в `<head>` (`AnalyticsBootstrap`) — `gtag/js?id=AW-18453652197` + `config`, Consent Mode denied.
 - `AnalyticsLoader` больше не грузит второй gtag.js; после Accept — consent grant + GA4 config.
 - Конверсия «Покупка» (`AW-18453652197/-mcPCMys6Z0dEOXFsd9E`): `src/lib/adsConversion.ts`, вызов в `PaymentReturn`, когда статус = `paid`; `transaction_id` = id заявки, `value` = `paymentAmount` (ILS), один раз на браузер.
+- Конверсия «Отправка формы» (`AW-18453652197/L4VgCMWPhZ4dEOXFsd9E`): `trackAdsLead` после успешной заявки `audit-free`, value 1 ILS, один раз на заявку.
 
 ## Сейчас
 
-1. Commit/deploy — затем тестовая оплата → Tag Assistant: событие `conversion` на `/order/success`.
+1. Commit/deploy — затем тестовая заявка на `/order/audit-free` → Tag Assistant: `conversion` с меткой `L4VgCMWPhZ4dEOXFsd9E`. Покупка — тестовая оплата на `/order/success`.
 2. Если покупатель не возвращается с Grow — офлайн-конверсия через Make (не сделано).
 3. Старая TS-ошибка: `order/success/page.tsx:59` (`doc.source` может быть `null`).
 
