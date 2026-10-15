@@ -144,13 +144,13 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         },
         paragraphs: {
           en: [
-            'Necessary cookies support basic site functions such as language preference (en/ru/he), accessibility settings, theme, and storing your cookie consent choice. Analytics and advertising measurement tools (Google Analytics, Google Ads, and Vercel Web Analytics) load only after you press Accept on the cookie banner. If you Decline, non-essential analytics and ads scripts should not load; necessary cookies may still be set. You can reopen cookie settings from the site footer at any time.',
+            'Necessary cookies support basic site functions such as language preference (en/ru/he), accessibility settings, theme, and storing your cookie consent choice. The Google tag is present site-wide with Consent Mode (ad and analytics storage denied by default). Measurement cookies for Google Analytics / Google Ads, and Vercel Web Analytics, activate only after you press Accept. If you Decline, non-essential measurement cookies should not be set; necessary cookies may still be set. You can reopen cookie settings from the site footer at any time.',
           ],
           ru: [
-            'Обязательные cookie обеспечивают базовую работу сайта: язык (en/ru/he), настройки доступности, тему и сохранение выбора согласия на cookie. Аналитика и измерение рекламы (Google Analytics, Google Ads и Vercel Web Analytics) загружаются только после нажатия «Accept» в баннере. При отказе необязательные скрипты аналитики и рекламы не должны загружаться; обязательные cookie могут сохраняться. Настройки cookie можно снова открыть из футера сайта.',
+            'Обязательные cookie обеспечивают базовую работу сайта: язык (en/ru/he), настройки доступности, тему и сохранение выбора согласия на cookie. Google-тег присутствует на сайте с Consent Mode (хранилище рекламы и аналитики по умолчанию запрещено). Измерительные cookie Google Analytics / Google Ads и Vercel Web Analytics включаются только после «Accept». При отказе необязательные измерительные cookie не должны устанавливаться; обязательные cookie могут сохраняться. Настройки cookie можно снова открыть из футера сайта.',
           ],
           he: [
-            'Cookie חיוניים תומכים בתפקוד בסיסי של האתר: העדפת שפה (en/ru/he), הגדרות נגישות, ערכת נושא ושמירת בחירת ההסכמה ל־Cookie. כלי אנליטיקה ומדידת פרסום (Google Analytics, Google Ads ו־Vercel Web Analytics) נטענים רק לאחר לחיצה על Accept בבאנר. אם תבחרו Decline, סקריפטי אנליטיקה ופרסום שאינם חיוניים לא אמורים להיטען; Cookie חיוניים עשויים להישמר. ניתן לפתוח מחדש את הגדרות ה־Cookie מכותרת התחתונה של האתר בכל עת.',
+            'Cookie חיוניים תומכים בתפקוד בסיסי של האתר: העדפת שפה (en/ru/he), הגדרות נגישות, ערכת נושא ושמירת בחירת ההסכמה ל־Cookie. תג Google קיים באתר עם Consent Mode (אחסון פרסום ואנליטיקה חסום כברירת מחדל). Cookie למדידה של Google Analytics / Google Ads ו־Vercel Web Analytics מופעלים רק לאחר Accept. אם תבחרו Decline, Cookie מדידה שאינם חיוניים לא אמורים להישמר; Cookie חיוניים עשויים להישמר. ניתן לפתוח מחדש את הגדרות ה־Cookie מכותרת התחתונה של האתר בכל עת.',
           ],
         },
       },

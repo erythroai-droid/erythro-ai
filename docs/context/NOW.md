@@ -7,21 +7,22 @@
 
 ## Сделано в этой сессии
 
-- Google Ads gtag `AW-18453652197` в `AnalyticsLoader` (после Accept, вместе с GA4).
-- Consent Mode: на Accept выдаются `ad_storage` / `ad_user_data` / `ad_personalization`.
-- CSP `connect-src` для Ads; очистка `_gcl_*` при Decline; privacy copy обновлена.
+- Ads «не находит тег»: AW был только после Accept → Google не видел в HTML.
+- Фикс: один Google tag в `<head>` (`AnalyticsBootstrap`) — `gtag/js?id=AW-18453652197` + `config`, Consent Mode denied.
+- `AnalyticsLoader` больше не грузит второй gtag.js; после Accept — consent grant + GA4 config.
 
 ## Сейчас
 
-1. Merge/deploy Next — чтобы Ads-тег появился на проде.
-2. В Google Ads: проверить тег / conversion (Tag Assistant после Accept на cookie).
+1. Deploy / push — затем в Google Ads «Проверить тег» (без Accept; тег в View Source).
+2. Tag Assistant: после Accept — ad_storage granted + GA4.
 
 ## Не делать
 
 - Не печатать `MAKE_PAYMENT_SECRET`.
 - Не зеркалировать этот файл в Obsidian.
 - Не слать `/audit/report/[id]` без `?k=` (PIT-107).
+- Не добавлять второй `gtag/js` на страницу.
 
 ## Последняя эстафета
 
-2026-10-15 — Cursor — Google Ads AW-18453652197 wired through AnalyticsLoader + consent.
+2026-10-15 — Cursor — Google Ads tag always in head (Consent Mode); fix verification miss.
