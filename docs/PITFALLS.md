@@ -1784,6 +1784,36 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Prevent:** Do not link or email report pages without `k`. Admin links must use `reportAccessToken` (not a stale bare `reportUrl`). After changing token gating, **redeploy `audit-agent` on VPS** — an old worker overwrites `reportUrl` and emails `/audit/report/[id]` without `k`. Repair: migration rewrite + internal PATCH injects `k` when worker omits it.
 
+---
+
+## PIT-108 — Google Ads tag is on the page but conversions stay inactive
+
+**Tags:** `google-ads`, `gtag`, `csp`, `consent`  
+**Seen:** 2026-10-15 — erythro.ai, `AW-18453652197`
+
+**Symptom:** Ads says the tag is missing, or the conversion stays «Неактивно» / «Неверная конфигурация». Tag Assistant shows page views and remarketing, or a CSP block on `www.google.com/pagead/1p-conversion`.
+
+**Cause:** The base tag loaded only after cookie Accept, so the Ads crawler never saw `AW-…` in HTML. The conversion event was bound to the wrong page (`/order/…` instead of the campaign landing `/audit`). CSP allowed `www.google.com` but not the redirect hop (`www.google.co.il` and other `*.google.com`); Chrome reports the first URL, not the blocked hop. A second primary action (GA4 import or a page-load «purchase» on the landing) marks the goal misconfigured.
+
+**Fix:** One raw gtag in `<head>` with Consent Mode denied by default; grant `ad_*` and `analytics_storage` on Accept. Fire `gtag('event','conversion')` only after a successful submit or paid return, with `transaction_id`. Allow the Ads redirect hosts in `script-src` and `connect-src`. Keep one primary action per goal.
+
+**Prevent:** Follow `docs/architecture/google-ads-conversions.md`. Do not paste a second Google tag. Do not count a landing-page view as a purchase. Confirm in Tag Assistant: a «Конверсия» hit and an empty console, then wait hours before treating «Неактивно» as a code bug.
+
+---
+
+## PIT-109 — Portfolio CMS projects 404 on `/portfolio/[slug]` while cards may load
+
+**Tags:** `portfolio`, `payload`, `access`, `isr`  
+**Seen:** 2026-10-15 — after `pnpm import:project` for `ai-audit-agent` / `ai-consultant`
+
+**Symptom:** Projects exist in Payload admin, but `https://erythro.ai/portfolio/<slug>` returns 404. The grid may still show CMS cards (or only the static seed list).
+
+**Cause:** `portfolio-projects` `access.read` requires `req.user`. `fetchPortfolioProjectCards` used `overrideAccess: true`, but `fetchPortfolioProjects` (detail + slug list) did not — Local API returned empty / threw, and the app fell back to `PORTFOLIO_PROJECTS` seed slugs.
+
+**Fix:** In `src/lib/cmsPages.ts`, `fetchPortfolioProjects` uses `getPayloadLocal()` + `overrideAccess: true`. Cache key bumped to `portfolio-projects-v9-r2`. Deploy, then Save in admin or `POST /api/revalidate` for `/portfolio` and each slug.
+
+**Prevent:** Any public `payload.find` on a staff-only collection must set `overrideAccess: true` (or open read for published fields). After import scripts, revalidate the live site — local `revalidateTag` does not reach Vercel.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)

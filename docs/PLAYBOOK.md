@@ -16,6 +16,7 @@ CMS, внутренние страницы, почта форм, CI/деплой
 | [`PITFALLS.md`](./PITFALLS.md) | Каталог граблей (симптом → причина → фикс → профилактика) |
 | [`PORTFOLIO_CMS.md`](./PORTFOLIO_CMS.md) | Контракт CMS/UI для `/portfolio` |
 | [`DEPLOYMENT.md`](./DEPLOYMENT.md) | Инфра, Blob, CI, миграции |
+| [`architecture/google-ads-conversions.md`](./architecture/google-ads-conversions.md) | Порядок Google Ads: тег, конверсии, CSP, проверка |
 | [`HERO_MOTION.md`](./HERO_MOTION.md) | Кинематографический Hero |
 | [`IMPORT_PROJECT.md`](./IMPORT_PROJECT.md) | Указатель на `scripts/import-project/` |
 | [`scripts/import-project/README.md`](../scripts/import-project/README.md) | Импорт кейса в Portfolio CMS |

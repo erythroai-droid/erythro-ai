@@ -311,13 +311,15 @@ function mapPortfolioDoc(d: any): PortfolioProject {
 
 async function fetchPortfolioProjects(): Promise<PortfolioProject[]> {
   try {
-    const payload = await getPayload({ config })
+    // Collection `read` requires a user — public ISR must overrideAccess (same as cards).
+    const payload = await getPayloadLocal()
     const res = await payload.find({
       collection: 'portfolio-projects',
       locale: 'all',
       depth: 1,
       limit: 100,
       sort: 'order',
+      overrideAccess: true,
     })
     if (!res.docs?.length) return PORTFOLIO_PROJECTS
     return res.docs.map((d: any) => mapPortfolioDoc(d))
@@ -856,7 +858,8 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v8-r2'], {
+  // v9: overrideAccess so staff-only collection read works on public ISR
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v9-r2'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

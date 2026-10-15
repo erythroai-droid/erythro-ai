@@ -7,18 +7,18 @@
 
 ## Сделано в этой сессии
 
-- Ads «не находит тег»: AW был только после Accept → Google не видел в HTML.
-- Фикс: один Google tag в `<head>` (`AnalyticsBootstrap`) — `gtag/js?id=AW-18453652197` + `config`, Consent Mode denied.
-- `AnalyticsLoader` больше не грузит второй gtag.js; после Accept — consent grant + GA4 config.
-- Конверсия «Покупка» (`AW-18453652197/-mcPCMys6Z0dEOXFsd9E`): `src/lib/adsConversion.ts`, вызов в `PaymentReturn`, когда статус = `paid`; `transaction_id` = id заявки, `value` = `paymentAmount` (ILS), один раз на браузер.
-- Конверсия «Отправка формы» (`AW-18453652197/L4VgCMWPhZ4dEOXFsd9E`): `trackAdsLead` после успешной заявки `audit-free` на `/audit` и `/order/audit-free`, value 1 ILS, один раз на заявку.
-- CSP пропускает конверсию Ads: `script-src` `googleads.g.doubleclick.net` + `googleadservices.com`; `connect-src` `ad.doubleclick.net`.
+- Портфолио через `pnpm import:project`: **AI Website Auditor** (`ai-audit-agent`, #5) и **AI Consultant** (`ai-consultant`, #6), категория `ai` создана.
+- Брифы: `content/imports/<slug>/brief.yaml`; кейсы: `docs/cases/ai-*.md` (+ Obsidian `cases/`).
+- PIT-109: `fetchPortfolioProjects` без `overrideAccess` → 404 на `/portfolio/[slug]`; фикс в `cmsPages.ts` (cache key v9).
+- Ads: один Google tag в head + конверсии Purchase / Lead (PIT-108).
 
 ## Сейчас
 
-1. Tag Assistant: событие `conversion` есть, запрос `www.google.com/pagead/1p-conversion` режется редиректом (часто `google.co.il`). CSP расширен. После деплоя — ещё одна заявка с другого IP/email/домена; в консоли не должно быть этой блокировки.
-2. Если покупатель не возвращается с Grow — офлайн-конверсия через Make (не сделано).
-3. Старая TS-ошибка: `order/success/page.tsx:59` (`doc.source` может быть `null`).
+1. **Задеплоить** фикс PIT-109, затем Save в admin или revalidate `/portfolio` + `/portfolio/ai-audit-agent` + `/portfolio/ai-consultant`.
+2. Добавить card/hero в `content/imports/<slug>/` и import без `--skip-media`.
+3. Для import-скриптов: `--env-file=.env` (у `.env.production.local` битый short `DATABASE_URL` после vercel pull).
+4. Ads «Неактивно» может смениться через несколько часов; Grow→Make offline — не сделано.
+5. TS: `order/success/page.tsx:59` (`doc.source` null).
 
 ## Не делать
 
@@ -29,4 +29,4 @@
 
 ## Последняя эстафета
 
-2026-10-15 — Cursor — Google Ads tag always in head (Consent Mode); fix verification miss.
+2026-10-15 — Cursor — portfolio import AI Auditor + Consultant; PIT-109 overrideAccess fix (needs deploy).
