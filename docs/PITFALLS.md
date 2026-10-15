@@ -1803,16 +1803,19 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 ## PIT-109 — Portfolio CMS projects 404 on `/portfolio/[slug]` while cards may load
 
-**Tags:** `portfolio`, `payload`, `access`, `isr`  
+**Tags:** `portfolio`, `payload`, `access`, `isr`, `slug`  
 **Seen:** 2026-10-15 — after `pnpm import:project` for `ai-audit-agent` / `ai-consultant`
 
-**Symptom:** Projects exist in Payload admin, but `https://erythro.ai/portfolio/<slug>` returns 404. The grid may still show CMS cards (or only the static seed list).
+**Symptom:** Projects exist in Payload admin and appear on `/portfolio` cards, but `https://erythro.ai/portfolio/<slug>` returns 404. Older CMS projects (e.g. `montblanc`) still open.
 
-**Cause:** `portfolio-projects` `access.read` requires `req.user`. `fetchPortfolioProjectCards` used `overrideAccess: true`, but `fetchPortfolioProjects` (detail + slug list) did not — Local API returned empty / threw, and the app fell back to `PORTFOLIO_PROJECTS` seed slugs.
+**Cause (stack):**
+1. `portfolio-projects` `access.read` requires `req.user` — detail fetch must use `overrideAccess: true` (cards already did).
+2. Imported slugs had a **trailing space** (`"ai-audit-agent "`), so URL `/portfolio/ai-audit-agent` never matched. Cards linked with the spaced slug from CMS; typed/canonical URLs 404'd. `unstable_cache` kept the bad list until the cache key bumped.
+3. A thrown `mapPortfolioDoc` on one row used to replace the **entire** CMS list with the static seed.
 
-**Fix:** In `src/lib/cmsPages.ts`, `fetchPortfolioProjects` uses `getPayloadLocal()` + `overrideAccess: true`. Cache key bumped to `portfolio-projects-v9-r2`. Deploy, then Save in admin or `POST /api/revalidate` for `/portfolio` and each slug.
+**Fix:** `getPayloadLocal()` + `overrideAccess`; trim `slug` in `mapPortfolioDoc`; map per-doc with isolated try/catch; cache keys `portfolio-projects-v10-r2` / cards `v3`. Repair rows: `pnpm exec tsx scripts/fix-portfolio-slugs.ts`. Import writes `slug.trim()`.
 
-**Prevent:** Any public `payload.find` on a staff-only collection must set `overrideAccess: true` (or open read for published fields). After import scripts, revalidate the live site — local `revalidateTag` does not reach Vercel.
+**Prevent:** Always trim portfolio slugs on write and read. After import, revalidate live (`REVALIDATION_TOKEN` + real `NEXT_PUBLIC_SITE_URL`) or Save in admin — local `revalidateTag` does not reach Vercel.
 
 ## Checklist before merging CMS / schema PRs
 
