@@ -18,7 +18,7 @@ const SCRIPT_SRC_EVAL = isDev ? " 'unsafe-eval'" : ''
 
 const PUBLIC_CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${SCRIPT_SRC_EVAL} blob: https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://va.vercel-scripts.com https://challenges.cloudflare.com https://static.cloudflareinsights.com`,
+  `script-src 'self' 'unsafe-inline'${SCRIPT_SRC_EVAL} blob: https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.google.co.il https://www.googleadservices.com https://googleads.g.doubleclick.net https://va.vercel-scripts.com https://challenges.cloudflare.com https://static.cloudflareinsights.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
@@ -26,7 +26,7 @@ const PUBLIC_CONTENT_SECURITY_POLICY = [
   "child-src https://challenges.cloudflare.com blob:",
   "worker-src 'self' blob:",
   // Public pages only talk to the r2.dev CDN for media; S3 API host is admin-only.
-  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://ad.doubleclick.net https://vitals.vercel-insights.com https://*.public.blob.vercel-storage.com https://*.r2.dev https://challenges.cloudflare.com https://cloudflareinsights.com",
+  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://www.google.com https://*.google.com https://www.google.co.il https://www.google.ru https://www.googleadservices.com https://googleads.g.doubleclick.net https://*.g.doubleclick.net https://stats.g.doubleclick.net https://pagead2.googlesyndication.com https://ad.doubleclick.net https://vitals.vercel-insights.com https://*.public.blob.vercel-storage.com https://*.r2.dev https://challenges.cloudflare.com https://cloudflareinsights.com",
   "media-src 'self' blob: https:",
   "frame-ancestors 'self'",
   "base-uri 'self'",
@@ -35,7 +35,7 @@ const PUBLIC_CONTENT_SECURITY_POLICY = [
 
 const ADMIN_CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://va.vercel-scripts.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://www.google-analytics.com https://www.google.com https://www.google.co.il https://www.googleadservices.com https://googleads.g.doubleclick.net https://va.vercel-scripts.com https://challenges.cloudflare.com https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
@@ -44,7 +44,7 @@ const ADMIN_CONTENT_SECURITY_POLICY = [
   "worker-src 'self' blob:",
   // Payload `clientUploads` PUTs straight to the R2 S3 API (not r2.dev). Without
   // this host, Chrome blocks the request and Payload shows "Failed to fetch".
-  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.google.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://ad.doubleclick.net https://vitals.vercel-insights.com https://*.public.blob.vercel-storage.com https://*.r2.dev https://*.r2.cloudflarestorage.com https://challenges.cloudflare.com https://cloudflareinsights.com",
+  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://www.google.com https://*.google.com https://www.google.co.il https://www.google.ru https://www.googleadservices.com https://googleads.g.doubleclick.net https://*.g.doubleclick.net https://stats.g.doubleclick.net https://pagead2.googlesyndication.com https://ad.doubleclick.net https://vitals.vercel-insights.com https://*.public.blob.vercel-storage.com https://*.r2.dev https://*.r2.cloudflarestorage.com https://challenges.cloudflare.com https://cloudflareinsights.com",
   "media-src 'self' blob: https:",
   "frame-ancestors 'self'",
   "base-uri 'self'",
