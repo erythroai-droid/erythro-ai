@@ -148,17 +148,27 @@ export async function getSiteContent(): Promise<SiteContent> {
   try {
     const payload = await getPayloadLocal()
 
-    const [header, hero, servicesIntro, caseStudiesG, solutionsIntro, faqG, footer, settings] =
-      await Promise.all([
-        payload.findGlobal({ slug: 'header', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
-        payload.findGlobal({ slug: 'hero', locale: 'all', depth: 1, overrideAccess: true }) as Promise<any>,
-        payload.findGlobal({ slug: 'services-section', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
-        payload.findGlobal({ slug: 'case-studies', locale: 'all', depth: 1, overrideAccess: true }) as Promise<any>,
-        payload.findGlobal({ slug: 'solutions-section', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
-        payload.findGlobal({ slug: 'faq-section', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
-        payload.findGlobal({ slug: 'footer', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
-        payload.findGlobal({ slug: 'site-settings', locale: 'all', depth: 1, overrideAccess: true }) as Promise<any>,
-      ])
+    const [
+      header,
+      hero,
+      homeAiAuditG,
+      servicesIntro,
+      caseStudiesG,
+      solutionsIntro,
+      faqG,
+      footer,
+      settings,
+    ] = await Promise.all([
+      payload.findGlobal({ slug: 'header', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+      payload.findGlobal({ slug: 'hero', locale: 'all', depth: 1, overrideAccess: true }) as Promise<any>,
+      payload.findGlobal({ slug: 'home-ai-audit', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+      payload.findGlobal({ slug: 'services-section', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+      payload.findGlobal({ slug: 'case-studies', locale: 'all', depth: 1, overrideAccess: true }) as Promise<any>,
+      payload.findGlobal({ slug: 'solutions-section', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+      payload.findGlobal({ slug: 'faq-section', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+      payload.findGlobal({ slug: 'footer', locale: 'all', depth: 0, overrideAccess: true }) as Promise<any>,
+      payload.findGlobal({ slug: 'site-settings', locale: 'all', depth: 1, overrideAccess: true }) as Promise<any>,
+    ])
 
     const [servicesRes, plansRes] = await Promise.all([
       payload.find({
@@ -298,6 +308,47 @@ export async function getSiteContent(): Promise<SiteContent> {
           ...(isVideo && url
             ? { video: url, videoPoster: fb?.videoPoster || fb?.image || '' }
             : {}),
+        }
+      })
+    }
+
+    // --- Home AI Audit (under Hero) ---
+    content.homeAiAudit.sectionTitle = L(homeAiAuditG?.sectionTitle, content.homeAiAudit.sectionTitle)
+    content.homeAiAudit.sectionSubtitle = L(
+      homeAiAuditG?.sectionSubtitle,
+      content.homeAiAudit.sectionSubtitle,
+    )
+    content.homeAiAudit.headlineMuted = L(
+      homeAiAuditG?.headlineMuted,
+      content.homeAiAudit.headlineMuted,
+    )
+    content.homeAiAudit.headlineEmph = L(
+      homeAiAuditG?.headlineEmph,
+      content.homeAiAudit.headlineEmph,
+    )
+    content.homeAiAudit.body = L(homeAiAuditG?.body, content.homeAiAudit.body)
+    content.homeAiAudit.bodyAccent = L(homeAiAuditG?.bodyAccent, content.homeAiAudit.bodyAccent)
+    content.homeAiAudit.ctaLabel = L(homeAiAuditG?.ctaLabel, content.homeAiAudit.ctaLabel)
+    content.homeAiAudit.ctaMicro = L(homeAiAuditG?.ctaMicro, content.homeAiAudit.ctaMicro)
+    content.homeAiAudit.proofLabel = L(homeAiAuditG?.proofLabel, content.homeAiAudit.proofLabel)
+    content.homeAiAudit.pricingKicker = L(
+      homeAiAuditG?.pricingKicker,
+      content.homeAiAudit.pricingKicker,
+    )
+    content.homeAiAudit.pricingAll = L(homeAiAuditG?.pricingAll, content.homeAiAudit.pricingAll)
+    if (typeof homeAiAuditG?.ctaHref === 'string' && homeAiAuditG.ctaHref.trim()) {
+      content.homeAiAudit.ctaHref = normalizeCtaHref(homeAiAuditG.ctaHref)
+    }
+    if (Array.isArray(homeAiAuditG?.proofSlides) && homeAiAuditG.proofSlides.length) {
+      content.homeAiAudit.proofSlides = homeAiAuditG.proofSlides.map((slide: any, i: number) => {
+        const fb = content.homeAiAudit.proofSlides[i] ?? defaultSiteContent.homeAiAudit.proofSlides[0]
+        const valueRaw = typeof slide?.value === 'number' ? slide.value : Number(slide?.value)
+        return {
+          value: Number.isFinite(valueRaw) ? valueRaw : fb.value,
+          suffix: L(slide?.suffix, fb.suffix),
+          support: L(slide?.support, fb.support),
+          impact: L(slide?.impact, fb.impact),
+          ask: L(slide?.ask, fb.ask),
         }
       })
     }
@@ -588,6 +639,14 @@ export async function getSiteContent(): Promise<SiteContent> {
     ...defaultSiteContent.cookieConsent,
     ...content.cookieConsent,
   }
+  content.homeAiAudit = {
+    ...defaultSiteContent.homeAiAudit,
+    ...content.homeAiAudit,
+    proofSlides:
+      content.homeAiAudit.proofSlides?.length
+        ? content.homeAiAudit.proofSlides
+        : defaultSiteContent.homeAiAudit.proofSlides,
+  }
 
   return applySiteContentCopyHygiene(content)
 }
@@ -854,6 +913,14 @@ export async function getShellSiteContent(): Promise<SiteContent> {
     ...defaultSiteContent.cookieConsent,
     ...content.cookieConsent,
   }
+  content.homeAiAudit = {
+    ...defaultSiteContent.homeAiAudit,
+    ...content.homeAiAudit,
+    proofSlides:
+      content.homeAiAudit.proofSlides?.length
+        ? content.homeAiAudit.proofSlides
+        : defaultSiteContent.homeAiAudit.proofSlides,
+  }
 
   return applySiteContentCopyHygiene(content)
 }
@@ -863,7 +930,7 @@ export async function getShellSiteContent(): Promise<SiteContent> {
  * Invalidated via `SITE_CONTENT_TAG` when content is edited in Payload admin.
  * Prefer {@link getCachedShellSiteContent} on chrome-only routes.
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v14-smart-card-i18n'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v17-home-ai-audit'], {
   tags: [SITE_CONTENT_TAG],
 })
 

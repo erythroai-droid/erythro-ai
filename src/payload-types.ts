@@ -112,6 +112,7 @@ export interface Config {
   globals: {
     header: Header;
     hero: Hero;
+    'home-ai-audit': HomeAiAudit;
     'services-section': ServicesSection;
     'case-studies': CaseStudy;
     'solutions-section': SolutionsSection;
@@ -127,6 +128,7 @@ export interface Config {
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     hero: HeroSelect<false> | HeroSelect<true>;
+    'home-ai-audit': HomeAiAuditSelect<false> | HomeAiAuditSelect<true>;
     'services-section': ServicesSectionSelect<false> | ServicesSectionSelect<true>;
     'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
     'solutions-section': SolutionsSectionSelect<false> | SolutionsSectionSelect<true>;
@@ -1644,6 +1646,81 @@ export interface Hero {
   createdAt?: string | null;
 }
 /**
+ * Homepage lead-magnet under Hero: headline, body, CTA, Lab protocol carousel slides, pricing strip labels.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-ai-audit".
+ */
+export interface HomeAiAudit {
+  id: number;
+  /**
+   * e.g. AI AUDIT
+   */
+  sectionTitle?: string | null;
+  /**
+   * e.g. commercial QA audit
+   */
+  sectionSubtitle?: string | null;
+  /**
+   * e.g. Your site looks great.
+   */
+  headlineMuted?: string | null;
+  /**
+   * e.g. AI вас видит?
+   */
+  headlineEmph?: string | null;
+  body?: string | null;
+  /**
+   * Substring of Body highlighted in gold (must match exactly).
+   */
+  bodyAccent?: string | null;
+  ctaLabel?: string | null;
+  /**
+   * Primary CTA target. Default /audit.
+   */
+  ctaHref?: string | null;
+  /**
+   * Line under the button, e.g. Free · no card · 1 domain / 7 days
+   */
+  ctaMicro?: string | null;
+  /**
+   * Card eyebrow, e.g. Lab protocol
+   */
+  proofLabel?: string | null;
+  /**
+   * Carousel lead-magnet slides. Drag to reorder. Digits animate on change.
+   */
+  proofSlides?:
+    | {
+        /**
+         * Animated count-up target (e.g. 50, 0, 5).
+         */
+        value: number;
+        /**
+         * Optional, e.g. %. Leave empty for bare digits.
+         */
+        suffix?: string | null;
+        /**
+         * Grey line under the number.
+         */
+        support?: string | null;
+        /**
+         * Bold white punchline.
+         */
+        impact?: string | null;
+        /**
+         * Question with red bullet, e.g. Do you know why?
+         */
+        ask?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  pricingKicker?: string | null;
+  pricingAll?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "services-section".
  */
@@ -2344,6 +2421,37 @@ export interface HeroSelect<T extends boolean = true> {
         outline?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-ai-audit_select".
+ */
+export interface HomeAiAuditSelect<T extends boolean = true> {
+  sectionTitle?: T;
+  sectionSubtitle?: T;
+  headlineMuted?: T;
+  headlineEmph?: T;
+  body?: T;
+  bodyAccent?: T;
+  ctaLabel?: T;
+  ctaHref?: T;
+  ctaMicro?: T;
+  proofLabel?: T;
+  proofSlides?:
+    | T
+    | {
+        value?: T;
+        suffix?: T;
+        support?: T;
+        impact?: T;
+        ask?: T;
+        id?: T;
+      };
+  pricingKicker?: T;
+  pricingAll?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

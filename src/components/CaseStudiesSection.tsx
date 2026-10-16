@@ -306,15 +306,19 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
   }, [])
 
   return (
-    <div
-      ref={wrapperRef}
-      className="relative w-full bg-white max-lg:rounded-t-[28px] max-lg:pb-16 lg:flex lg:h-screen lg:flex-col lg:overflow-hidden"
-    >
+    <div className="relative z-[15] w-full lg:pointer-events-none">
+      {/* Lead-in while AI Audit finishes clip-open + settle (pinSpacing: false). */}
+      <div className="hidden lg:block h-[160vh] w-full pointer-events-none" aria-hidden />
+
+      <div
+        ref={wrapperRef}
+        className="relative w-full bg-white max-lg:rounded-t-[28px] max-lg:pb-16 pointer-events-auto lg:flex lg:h-screen lg:flex-col lg:overflow-hidden"
+      >
       <section
         id="cases"
         ref={sectionRef}
         data-menu-contrast="light"
-        className="pt-20 pb-0 lg:py-0 lg:pt-16 lg:pb-0 lg:flex lg:flex-1 lg:min-h-0 lg:flex-col w-full transition-colors duration-500 bg-white border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 select-none"
+        className="pt-20 pb-0 lg:py-0 lg:pt-16 lg:pb-0 lg:flex lg:flex-1 lg:min-h-0 lg:flex-col w-full transition-colors duration-500 bg-white border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 select-none max-lg:rounded-t-[28px]"
       >
       <div className="max-w-[1170px] mx-auto px-[30px] w-full lg:flex lg:flex-1 lg:min-h-0 lg:flex-col">
         {/* Headings */}
@@ -475,6 +479,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
             ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

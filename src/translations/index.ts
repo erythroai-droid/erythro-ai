@@ -373,7 +373,139 @@ export const page = {
   },
 }
 
-// 5. Case Studies translations
+// 5. Home AI Audit CTA (under Hero)
+export const homeAiAudit = {
+  sectionTitle: {
+    en: 'AI AUDIT',
+    ru: 'AI AUDIT',
+    he: 'AI AUDIT',
+  },
+  sectionSubtitle: {
+    en: 'commercial QA audit',
+    ru: 'коммерческий QA-аудит',
+    he: 'ביקורת QA מסחרית',
+  },
+  headlineMuted: {
+    en: 'Your site looks great.',
+    ru: 'Сайт выглядит хорошо.',
+    he: 'האתר נראה מעולה.',
+  },
+  headlineEmph: {
+    en: 'Does AI see you?',
+    ru: 'AI вас видит?',
+    he: 'AI רואה אתכם?',
+  },
+  body: {
+    en: 'About half of Google searches end with an AI answer — and zero clicks to your site. ChatGPT, Perplexity, and AI Overviews cite who they can read. Our lab scores five commercial QA scales and shows where you are invisible.',
+    ru: 'Около половины поисков в Google заканчиваются AI-ответом — без клика на сайт. ChatGPT, Perplexity и AI Overviews цитируют тех, кого могут прочитать. Лаборатория снимает пять шкал коммерческого QA и показывает, где вы невидимы.',
+    he: 'כמחצית מחיפושי Google מסתיימים בתשובת AI — בלי קליק לאתר. ChatGPT, Perplexity ו-AI Overviews מצטטים את מי שהם יכולים לקרוא. המעבדה מודדת חמש סקאלות QA מסחריות ומראה איפה אתם בלתי נראים.',
+  },
+  bodyAccent: {
+    en: 'ChatGPT, Perplexity, and AI Overviews',
+    ru: 'ChatGPT, Perplexity и AI Overviews',
+    he: 'ChatGPT, Perplexity ו-AI Overviews',
+  },
+  ctaLabel: {
+    en: 'Run free audit',
+    ru: 'Запустить бесплатный аудит',
+    he: 'להריץ ביקורת חינם',
+  },
+  ctaHref: '/audit',
+  ctaMicro: {
+    en: 'Free · no card · 1 domain / 7 days',
+    ru: 'Free · без карты · 1 домен / 7 дней',
+    he: 'Free · ללא כרטיס · דומיין אחד / 7 ימים',
+  },
+  proofLabel: {
+    en: 'Lab protocol',
+    ru: 'Lab protocol',
+    he: 'Lab protocol',
+  },
+  /** Problem → lab lead-magnet slides (right card carousel). */
+  proofSlides: [
+    {
+      value: 50,
+      suffix: {
+        en: '%',
+        ru: '%',
+        he: '%',
+      },
+      support: {
+        en: 'of Google searches end with AI summaries.',
+        ru: 'поисков в Google заканчиваются AI-сводкой.',
+        he: 'מחיפושי Google מסתיימים בסיכום AI.',
+      },
+      impact: {
+        en: 'Zero clicks to your website.',
+        ru: 'Ноль кликов на ваш сайт.',
+        he: 'אפס קליקים לאתר שלכם.',
+      },
+      ask: {
+        en: 'Do you know why?',
+        ru: 'Знаете, почему?',
+        he: 'אתם יודעים למה?',
+      },
+    },
+    {
+      value: 0,
+      suffix: {
+        en: '',
+        ru: '',
+        he: '',
+      },
+      support: {
+        en: 'citations in ChatGPT if the crawler can’t read you.',
+        ru: 'цитат в ChatGPT, если краулер вас не читает.',
+        he: 'ציטוטים ב-ChatGPT אם הזוחל לא יכול לקרוא אתכם.',
+      },
+      impact: {
+        en: 'Your competitor shows up instead.',
+        ru: 'Вместо вас появляется конкурент.',
+        he: 'במקומכם מופיע המתחרה.',
+      },
+      ask: {
+        en: 'Are you invisible to AI?',
+        ru: 'Вы невидимы для AI?',
+        he: 'האם אתם בלתי נראים ל-AI?',
+      },
+    },
+    {
+      value: 5,
+      suffix: {
+        en: '',
+        ru: '',
+        he: '',
+      },
+      support: {
+        en: 'commercial QA scales. One score 0–100.',
+        ru: 'шкал коммерческого QA. Одна оценка 0–100.',
+        he: 'סקאלות QA מסחריות. ציון אחד 0–100.',
+      },
+      impact: {
+        en: 'Speed · Forms · SEO · Security · AI Visibility',
+        ru: 'Speed · Forms · SEO · Security · AI Visibility',
+        he: 'Speed · Forms · SEO · Security · AI Visibility',
+      },
+      ask: {
+        en: 'What’s your score?',
+        ru: 'Какой у вас балл?',
+        he: 'מה הציון שלכם?',
+      },
+    },
+  ],
+  pricingKicker: {
+    en: 'Plans & pricing',
+    ru: 'Тарифы и цены',
+    he: 'חבילות ומחירים',
+  },
+  pricingAll: {
+    en: 'Compare all plans',
+    ru: 'Сравнить все тарифы',
+    he: 'להשוות את כל החבילות',
+  },
+}
+
+// 5b. Case Studies translations
 export const caseStudies = {
   preTitle: {
     en: 'CASE STUDIES',
@@ -1064,6 +1196,11 @@ export const accessibility = {
     en: 'Screen reader mode enabled. Click or focus text on the page to hear it read aloud.',
     ru: 'Режим экранного диктора включён. Нажмите или сфокусируйте текст на странице, чтобы услышать озвучку.',
     he: 'מצב קורא מסך הופעל. לחצו או התמקדו בטקסט בעמוד כדי לשמוע הקראה.',
+  },
+  screenReaderAiAudit: {
+    en: 'AI Audit section',
+    ru: 'Раздел AI Audit',
+    he: 'אזור ביקורת AI',
   },
   screenReaderServices: {
     en: 'Services section',

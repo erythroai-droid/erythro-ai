@@ -3,6 +3,7 @@ import {
   cookieConsent,
   hero,
   services,
+  homeAiAudit,
   caseStudies,
   solutions,
   faq,
@@ -45,6 +46,7 @@ export interface SiteContent {
   cookieConsent: typeof cookieConsent
   hero: typeof hero & { backgroundImage?: string; backgroundImageMobile?: string }
   services: typeof services
+  homeAiAudit: typeof homeAiAudit
   caseStudies: typeof caseStudies
   solutions: typeof solutions
   faq: typeof faq
@@ -66,6 +68,7 @@ export const defaultSiteContent: SiteContent = {
   cookieConsent,
   hero,
   services,
+  homeAiAudit,
   caseStudies,
   solutions,
   faq,
