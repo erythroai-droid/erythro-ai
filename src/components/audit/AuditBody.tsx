@@ -37,9 +37,61 @@ import {
   type AuditTabId,
 } from '@/lib/auditPage'
 import { currencySymbol } from '@/lib/orderPlans'
+import { auditSampleReportHref, auditSampleReportLabel } from '@/lib/auditSampleReports'
 import { isContactModalHref, navigateCtaHref, normalizeCtaHref } from '@/lib/ctaNav'
 import { useContactModal } from '@/components/ContactModal'
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
+
+function AuditSampleReportLink({
+  planSlug,
+  locale,
+  isLight,
+  className = '',
+}: {
+  planSlug: string
+  locale: string
+  isLight: boolean
+  className?: string
+}) {
+  const href = auditSampleReportHref(planSlug, locale)
+  if (!href) return null
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`inline-flex max-w-full items-center gap-1.5 font-medium underline decoration-from-font underline-offset-4 transition-colors ${
+        isLight
+          ? 'text-erythro-500 hover:text-erythro-600'
+          : 'text-gold-500 hover:text-gold-400'
+      } ${className}`}
+    >
+      <span className="min-w-0 break-words">{auditSampleReportLabel(locale)}</span>
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden className="size-3.5 shrink-0">
+        <path
+          d="M5 3.5h7.5V11M12.5 3.5 3.5 12.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </a>
+  )
+}
+
+function auditPricingSampleSlug(plan: { id: string; ctaHref?: string; slug?: string }): string | null {
+  if (typeof plan.slug === 'string' && plan.slug.startsWith('audit-')) return plan.slug
+  const fromCta =
+    typeof plan.ctaHref === 'string'
+      ? plan.ctaHref.match(/\/order\/(audit-[a-z0-9-]+)/)?.[1]
+      : undefined
+  if (fromCta) return fromCta
+  if (plan.id === 'free' || plan.id === 'diagnostic' || plan.id === 'pro') {
+    return `audit-${plan.id}`
+  }
+  return null
+}
 
 /** Prefills the contact modal when Manual pricing CTA opens the engineer form. */
 const MANUAL_AUDIT_CONTACT_DRAFT: Record<string, string> = {
@@ -698,6 +750,13 @@ function AuditFormPanel({
                     <p className="m-0 font-sans text-[14px] font-light leading-6 text-gold-800">
                       {tAudit(auditPage.form.introNote, locale)}
                     </p>
+                    <p className="m-0 text-sm leading-6">
+                      <AuditSampleReportLink
+                        planSlug="audit-free"
+                        locale={locale}
+                        isLight={isLight}
+                      />
+                    </p>
                   </div>
                 </div>
 
@@ -799,14 +858,6 @@ function AuditFormPanel({
                       {renderFieldError('auditLanguage', 'audit-page-audit-language-error')}
                     </div>
 
-                    <p className={`m-0 px-1 text-xs ${fieldLabelClass}`}>
-                      <span className="text-erythro-500" aria-hidden="true">
-                        *
-                      </span>
-                      {' — '}
-                      {tAudit(auditPage.form.requiredNote, locale)}
-                    </p>
-
                     {status === 'error' ? (
                       <p id="audit-page-error" role="alert" className="m-0 text-sm text-erythro-500">
                         {submitError || tForm(contactForm.error)}
@@ -817,13 +868,7 @@ function AuditFormPanel({
                       locale={locale}
                       theme={theme}
                       idPrefix="audit-page"
-                      checked={privacyConsent}
-                      showRequiredError={consentError}
-                      disabled={status === 'sending'}
-                      onCheckedChange={(next) => {
-                        setPrivacyConsent(next)
-                        if (next) setConsentError(false)
-                      }}
+                      parts="notice"
                     />
 
                     <TurnstileField
@@ -834,11 +879,8 @@ function AuditFormPanel({
                       onToken={setTurnstileToken}
                     />
 
-                    <div className="pt-1">
-                      <button
-                        type="submit"
-                        className={FORM_SUBMIT_CLASS}
-                      >
+                    <div className="flex flex-col gap-3 pt-1">
+                      <button type="submit" className={FORM_SUBMIT_CLASS}>
                         {status === 'sending' ? (
                           <>
                             <ContactSendSpinner className="h-[18px] w-[18px] shrink-0" />
@@ -848,6 +890,28 @@ function AuditFormPanel({
                           tAudit(auditPage.form.submit, locale)
                         )}
                       </button>
+
+                      <ContactPrivacyConsent
+                        locale={locale}
+                        theme={theme}
+                        idPrefix="audit-page"
+                        parts="consent"
+                        checked={privacyConsent}
+                        showRequiredError={consentError}
+                        disabled={status === 'sending'}
+                        onCheckedChange={(next) => {
+                          setPrivacyConsent(next)
+                          if (next) setConsentError(false)
+                        }}
+                      />
+
+                      <p className={`m-0 px-1 text-xs ${fieldLabelClass}`}>
+                        <span className="text-erythro-500" aria-hidden="true">
+                          *
+                        </span>
+                        {' — '}
+                        {tAudit(auditPage.form.requiredNote, locale)}
+                      </p>
                     </div>
                   </fieldset>
                   {status === 'sending' ? (
@@ -1141,6 +1205,11 @@ function AuditPricingCard({
   const shekel = currencySymbol('ILS')
   const ctaHref = 'ctaHref' in plan ? normalizeCtaHref(plan.ctaHref) : ''
   const opensContactModal = isContactModalHref(ctaHref)
+  const sampleSlug = auditPricingSampleSlug({
+    id: plan.id,
+    ctaHref,
+    slug: 'slug' in plan && typeof plan.slug === 'string' ? plan.slug : undefined,
+  })
 
   const handleContactCta = () => {
     if (plan.id === 'manual') {
@@ -1236,7 +1305,17 @@ function AuditPricingCard({
           ))}
         </ul>
 
-        <div className="mt-auto flex w-full flex-col items-center">
+        <div className="mt-auto flex w-full flex-col items-center gap-3">
+          {sampleSlug ? (
+            <p className="m-0 text-center text-sm leading-6">
+              <AuditSampleReportLink
+                planSlug={sampleSlug}
+                locale={locale}
+                // Featured card is always dark red — use gold link, not light-theme erythro.
+                isLight={featured ? false : isLight}
+              />
+            </p>
+          ) : null}
           {opensContactModal ? (
             <Button
               variant="solution-cta"

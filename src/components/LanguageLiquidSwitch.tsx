@@ -12,7 +12,10 @@ interface LanguageLiquidSwitchProps {
   className?: string
 }
 
-const UKFlag = ({ className = 'w-[14px] h-[9.5px]' }: { className?: string }) => (
+/** 20% larger than the original 14×9.5 flag. */
+const FLAG_CLASS = 'h-[11.4px] w-[16.8px] shrink-0'
+
+const UKFlag = ({ className = FLAG_CLASS }: { className?: string }) => (
   <svg
     viewBox="0 0 60 40"
     className={`${className} overflow-hidden rounded-[1.5px] shadow-[0_1px_2px_rgba(0,0,0,0.35)]`}
@@ -29,7 +32,7 @@ const UKFlag = ({ className = 'w-[14px] h-[9.5px]' }: { className?: string }) =>
   </svg>
 )
 
-const RUFlag = ({ className = 'w-[14px] h-[9.5px]' }: { className?: string }) => (
+const RUFlag = ({ className = FLAG_CLASS }: { className?: string }) => (
   <svg
     viewBox="0 0 60 40"
     className={`${className} overflow-hidden rounded-[1.5px] shadow-[0_1px_2px_rgba(0,0,0,0.35)]`}
@@ -44,7 +47,7 @@ const RUFlag = ({ className = 'w-[14px] h-[9.5px]' }: { className?: string }) =>
   </svg>
 )
 
-const ILFlag = ({ className = 'w-[14px] h-[9.5px]' }: { className?: string }) => (
+const ILFlag = ({ className = FLAG_CLASS }: { className?: string }) => (
   <svg
     viewBox="0 0 60 40"
     className={`${className} overflow-hidden rounded-[1.5px] shadow-[0_1px_2px_rgba(0,0,0,0.35)]`}
@@ -75,18 +78,39 @@ const ILFlag = ({ className = 'w-[14px] h-[9.5px]' }: { className?: string }) =>
 
 const LOCALE_CONFIG: Record<
   LocaleCode,
-  { label: string; name: string; Flag: React.FC<{ className?: string }> }
+  { code: string; name: string; Flag: React.FC<{ className?: string }> }
 > = {
-  en: { label: 'English', name: 'English', Flag: UKFlag },
-  ru: { label: 'Русский', name: 'Русский', Flag: RUFlag },
-  he: { label: 'עברית', name: 'עברית', Flag: ILFlag },
+  en: { code: 'en', name: 'English', Flag: UKFlag },
+  ru: { code: 'ru', name: 'Русский', Flag: RUFlag },
+  he: { code: 'he', name: 'עברית', Flag: ILFlag },
 }
 
 const ALL_LOCALES: LocaleCode[] = ['en', 'ru', 'he']
 
+/** Flag + code chip size (wider than the old 30px circle). */
+const CHIP = 'h-[30px] w-[52px]'
+
+function chipClass(open: boolean, isDark: boolean, kind: 'trigger' | 'option') {
+  const visibility =
+    kind === 'option'
+      ? open
+        ? 'pointer-events-auto opacity-100 scale-100'
+        : 'pointer-events-none opacity-0 scale-50'
+      : ''
+  const tone = isDark
+    ? open && kind === 'trigger'
+      ? 'text-gold-500'
+      : 'text-white hover:text-gold-500'
+    : open && kind === 'trigger'
+      ? 'text-erythro-500'
+      : 'text-coal-900 hover:text-erythro-500'
+  return `inline-flex ${CHIP} items-center justify-center gap-1.5 bg-transparent shadow-none transition-all duration-300 cursor-pointer ${tone} ${visibility}`
+}
+
 export default function LanguageLiquidSwitch({
   currentLocale,
   setLocale,
+  isDark = true,
   className = '',
 }: LanguageLiquidSwitchProps) {
   const [open, setOpen] = useState(false)
@@ -119,27 +143,24 @@ export default function LanguageLiquidSwitch({
     }
   }, [])
 
-  const liquidFill = '#0d0d0d'
-  const liquidShadow = '0 4px 14px rgba(0, 0, 0, 0.5)'
-
   return (
     <div
       ref={containerRef}
-      className={`relative inline-flex h-[30px] w-[30px] items-center justify-center select-none pointer-events-auto ${className}`}
+      className={`relative inline-flex ${CHIP} items-center justify-center select-none pointer-events-auto ${className}`}
     >
       <Liquid
         blur={5}
         contrast={18}
-        fill={liquidFill}
-        shadow={liquidShadow}
-        className="relative h-[30px] w-[30px] overflow-visible"
+        fill="transparent"
+        shadow="none"
+        className={`relative ${CHIP} overflow-visible`}
       >
         {/* Left-Down Language Option */}
         <Liquid.Item
-          x={open ? -22 : 0}
-          y={open ? 32 : 0}
+          x={open ? -36 : 0}
+          y={open ? 34 : 0}
           transition="bouncy"
-          className="absolute inset-0 flex h-[30px] w-[30px] items-center justify-center"
+          className={`absolute inset-0 flex ${CHIP} items-center justify-center`}
         >
           {(() => {
             const loc = otherLocales[0]
@@ -153,15 +174,14 @@ export default function LanguageLiquidSwitch({
                   setOpen(false)
                 }}
                 tabIndex={open ? 0 : -1}
-                className={`flex h-[30px] w-[30px] items-center justify-center rounded-full bg-coal-900 shadow-md transition-all duration-300 cursor-pointer hover:bg-coal-500 ${
-                  open
-                    ? 'pointer-events-auto opacity-100 scale-100'
-                    : 'pointer-events-none opacity-0 scale-50'
-                }`}
+                className={chipClass(open, isDark, 'option')}
                 aria-label={`Switch to ${config.name}`}
                 title={config.name}
               >
-                <Flag className="h-[9.5px] w-[14px] shrink-0" />
+                <Flag className={FLAG_CLASS} />
+                <span className="font-sans text-[11px] font-medium uppercase tracking-[0.12em]">
+                  {config.code}
+                </span>
               </button>
             )
           })()}
@@ -169,11 +189,11 @@ export default function LanguageLiquidSwitch({
 
         {/* Right-Down Language Option */}
         <Liquid.Item
-          x={open ? 22 : 0}
-          y={open ? 32 : 0}
+          x={open ? 36 : 0}
+          y={open ? 34 : 0}
           transition="bouncy"
           delay={35}
-          className="absolute inset-0 flex h-[30px] w-[30px] items-center justify-center"
+          className={`absolute inset-0 flex ${CHIP} items-center justify-center`}
         >
           {(() => {
             const loc = otherLocales[1]
@@ -187,15 +207,14 @@ export default function LanguageLiquidSwitch({
                   setOpen(false)
                 }}
                 tabIndex={open ? 0 : -1}
-                className={`flex h-[30px] w-[30px] items-center justify-center rounded-full bg-coal-900 shadow-md transition-all duration-300 cursor-pointer hover:bg-coal-500 ${
-                  open
-                    ? 'pointer-events-auto opacity-100 scale-100'
-                    : 'pointer-events-none opacity-0 scale-50'
-                }`}
+                className={chipClass(open, isDark, 'option')}
                 aria-label={`Switch to ${config.name}`}
                 title={config.name}
               >
-                <Flag className="h-[9.5px] w-[14px] shrink-0" />
+                <Flag className={FLAG_CLASS} />
+                <span className="font-sans text-[11px] font-medium uppercase tracking-[0.12em]">
+                  {config.code}
+                </span>
               </button>
             )
           })()}
@@ -205,7 +224,7 @@ export default function LanguageLiquidSwitch({
         <Liquid.Item
           x={0}
           y={0}
-          className="absolute inset-0 z-10 flex h-[30px] w-[30px] items-center justify-center"
+          className={`absolute inset-0 z-10 flex ${CHIP} items-center justify-center`}
         >
           <button
             type="button"
@@ -219,13 +238,12 @@ export default function LanguageLiquidSwitch({
                   ? 'בחירת שפה'
                   : 'Select language'
             }
-            className={`group/lang relative flex h-[30px] w-[30px] items-center justify-center rounded-full shadow-md transition-all duration-300 cursor-pointer ${
-              open
-                ? 'bg-coal-500'
-                : 'bg-coal-900 hover:bg-coal-500'
-            }`}
+            className={`group/lang ${chipClass(open, isDark, 'trigger')}`}
           >
-            <ActiveFlag className="h-[9.5px] w-[14px] shrink-0 transition-transform duration-200 group-hover/lang:scale-105" />
+            <ActiveFlag className={`${FLAG_CLASS} transition-transform duration-200 group-hover/lang:scale-105`} />
+            <span className="font-sans text-[11px] font-medium uppercase tracking-[0.12em]">
+              {LOCALE_CONFIG[activeLocale].code}
+            </span>
           </button>
         </Liquid.Item>
       </Liquid>
