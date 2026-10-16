@@ -3,6 +3,7 @@ import { loadGsapAfterLcp } from '@/lib/gsapAfterLcp'
 import { skipLetsTalkSettle } from '@/lib/letsTalkScroll'
 
 const PIN_IDS: Record<string, string> = {
+  'ai-audit': 'ai-audit-pin',
   cases: 'cases-pin',
   services: 'services-pin',
   solutions: 'solutions-pin',

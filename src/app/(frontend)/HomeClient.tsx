@@ -18,6 +18,9 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
  * Below-fold sections stay in SSR HTML (PIT-062 CLS). GSAP inside them loads
  * after LCP via loadGsapAfterLcp. Floating chrome mounts after the same gate.
  */
+const AiAuditHomeSection = dynamic(() => import('@/components/AiAuditHomeSection'), {
+  ssr: true,
+})
 const CaseStudiesSection = dynamic(() => import('@/components/CaseStudiesSection'), {
   ssr: true,
 })
@@ -128,6 +131,7 @@ export default function HomeClient({
 
   const a11yTargets = useMemo(
     () => [
+      { id: 'ai-audit', label: pickA11y(a11yTranslations.screenReaderAiAudit) },
       { id: 'services', label: pickA11y(a11yTranslations.screenReaderServices) },
       { id: 'solutions', label: pickA11y(a11yTranslations.screenReaderSolutions) },
       { id: 'faq', label: faqA11yLabel },
@@ -140,7 +144,7 @@ export default function HomeClient({
   )
 
   const scrollSectionIds = useMemo(
-    () => ['cases', 'services', 'contacts', 'solutions', 'faq', 'footer'],
+    () => ['ai-audit', 'cases', 'services', 'contacts', 'solutions', 'faq', 'footer'],
     [],
   )
 
@@ -167,7 +171,11 @@ export default function HomeClient({
             }}
           />
 
-          <div className="relative z-10 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+          <div className="relative z-10 -mt-8 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
+            <AiAuditHomeSection locale={locale} />
+          </div>
+
+          <div className="relative z-[15] -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
             <CaseStudiesSection locale={locale} />
           </div>
 

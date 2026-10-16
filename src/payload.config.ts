@@ -30,6 +30,7 @@ import { Header } from './globals/Header'
 import { Hero } from './globals/Hero'
 import { ServicesIntro } from './globals/ServicesIntro'
 import { CaseStudies } from './globals/CaseStudies'
+import { HomeAiAudit } from './globals/HomeAiAudit'
 import { SolutionsIntro } from './globals/SolutionsIntro'
 import { FAQ } from './globals/FAQ'
 import { Footer } from './globals/Footer'
@@ -80,7 +81,7 @@ export default buildConfig({
     ProjectBriefs,
     TechConsultTickets,
   ],
-  globals: [Header, Hero, ServicesIntro, CaseStudies, SolutionsIntro, FAQ, Footer, SiteSettings, LegalPrivacy, LegalTerms, LegalAccessibility, AuditPage, ConsultantSettings],
+  globals: [Header, Hero, HomeAiAudit, ServicesIntro, CaseStudies, SolutionsIntro, FAQ, Footer, SiteSettings, LegalPrivacy, LegalTerms, LegalAccessibility, AuditPage, ConsultantSettings],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, EXPERIMENTAL_TableFeature()],
   }),
