@@ -342,7 +342,7 @@ export default function AiAuditHomeSection({ locale }: AiAuditHomeSectionProps) 
       id="ai-audit"
       ref={wrapperRef}
       data-menu-contrast="dark"
-      className="relative z-10 flex min-h-[100svh] w-full flex-col overflow-hidden dark-gradient-bg py-14 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:rounded-t-[28px] lg:h-screen lg:justify-center lg:overflow-y-auto lg:py-12"
+      className="relative z-10 flex min-h-[100svh] w-full flex-col overflow-hidden dark-gradient-bg pt-14 pb-28 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:rounded-t-[28px] max-lg:pb-36 lg:h-screen lg:justify-center lg:overflow-y-auto lg:py-12"
     >
       <div className="solution-section-noise absolute inset-0 z-[1] pointer-events-none" aria-hidden />
 
