@@ -47,11 +47,14 @@ function AuditSampleReportLink({
   locale,
   isLight,
   className = '',
+  compact = false,
 }: {
   planSlug: string
   locale: string
   isLight: boolean
   className?: string
+  /** Smaller single-line label for pricing cards. */
+  compact?: boolean
 }) {
   const href = auditSampleReportHref(planSlug, locale)
   if (!href) return null
@@ -60,14 +63,23 @@ function AuditSampleReportLink({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex max-w-full items-center gap-1.5 font-medium underline decoration-from-font underline-offset-4 transition-colors ${
+      className={`inline-flex max-w-full items-center font-medium underline decoration-from-font underline-offset-4 transition-colors ${
+        compact ? 'gap-1 text-[11px] leading-4 tracking-[0.01em]' : 'gap-1.5 text-sm leading-6'
+      } ${
         isLight
           ? 'text-erythro-500 hover:text-erythro-600'
           : 'text-gold-500 hover:text-gold-400'
       } ${className}`}
     >
-      <span className="min-w-0 break-words">{auditSampleReportLabel(locale)}</span>
-      <svg viewBox="0 0 16 16" fill="none" aria-hidden className="size-3.5 shrink-0">
+      <span className={compact ? 'whitespace-nowrap' : 'min-w-0 break-words'}>
+        {auditSampleReportLabel(locale)}
+      </span>
+      <svg
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden
+        className={`shrink-0 ${compact ? 'size-3' : 'size-3.5'}`}
+      >
         <path
           d="M5 3.5h7.5V11M12.5 3.5 3.5 12.5"
           stroke="currentColor"
@@ -1307,12 +1319,13 @@ function AuditPricingCard({
 
         <div className="mt-auto flex w-full flex-col items-center gap-3">
           {sampleSlug ? (
-            <p className="m-0 text-center text-sm leading-6">
+            <p className="m-0 text-center">
               <AuditSampleReportLink
                 planSlug={sampleSlug}
                 locale={locale}
                 // Featured card is always dark red — use gold link, not light-theme erythro.
                 isLight={featured ? false : isLight}
+                compact
               />
             </p>
           ) : null}

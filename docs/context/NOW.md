@@ -14,7 +14,7 @@
 - Алерт `gemini_api_outage` 22:05 UTC: пустой `{'error': ''}`, внешний probe. Google/StatusGator up; Vercel без ошибок consult; `/api/consult` 204. Ложный/транзиентный — не трогать.
 - **Free audit form:** убраны поля Имя и Телефон на `/audit` и `/order/audit-free`. API guard + валидация: name/phone обязательны только для платных планов. CMS `contact-submissions.name` — optional. Тесты обновлены.
 - **Navbar:** `LanguageLiquidSwitch` рядом с бургером — флаг + `en`/`ru`/`he`, без обводки/заливки; цвет текста от `menuOnDark`; флаги +20%.
-- **/audit:** ссылка на пример HTML-отчёта в free-форме и на карточках Free/Diagnostic/Pro (locale-matched `/samples/audit/…`).
+- **/audit:** ссылка на пример HTML-отчёта в free-форме и на карточках Free/Diagnostic/Pro (locale-matched `/samples/audit/…`); на карточках — compact `11px` в одну строку.
 - **/audit form:** текст про защиту данных под полями над Turnstile; под кнопкой — чекбокс → «* обязательное поле».
 
 ## Сейчас
