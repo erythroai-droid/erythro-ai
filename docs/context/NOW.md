@@ -10,6 +10,7 @@
 - **Home AI Audit** под Hero + CMS global `home-ai-audit` (Sections), миграция `20261016_180000_home_ai_audit_cms` с сидом EN/RU/HE.
 - `getSiteContent` мержит global; cache key `site-content-v17-home-ai-audit`.
 - UI: dark-gradient, clip-open, BorderBeam carousel, «AI вас видит?», цифры gold-500.
+- Mobile: больший нижний отступ после «Сравнить все тарифы» перед Cases (`pb-36`).
 
 ## Сейчас
 
