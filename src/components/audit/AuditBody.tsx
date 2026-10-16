@@ -10,11 +10,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { contactForm } from '@/translations'
 import ContactPrivacyConsent from '@/components/ContactPrivacyConsent'
 import { ContactHoneypotField } from '@/components/ContactHoneypotField'
-import { PhoneE164Field } from '@/components/PhoneE164Field'
 import { FieldOkCheck } from '@/components/FieldOkCheck'
 import {
   FORM_SUBMIT_CLASS,
-  FormPillDivider,
   FormPillShell,
   formPillFieldClass,
   requiredPlaceholder,
@@ -503,9 +501,7 @@ function AuditFormPanel({
     ok: fieldOk,
     checkingWebsite,
     onValueChange,
-    blurName,
     blurEmail,
-    blurPhone,
     blurWebsite,
     ensureWebsiteOk,
     resetChecks,
@@ -530,7 +526,6 @@ function AuditFormPanel({
       return tAuditWebsiteUnreachable(auditPage.form.websiteUnreachable, locale)
     }
     if (field === 'email' && err === 'invalid') return tForm(contactForm.emailInvalid)
-    if (field === 'phone' && err === 'invalid') return tForm(contactForm.phoneInvalid)
     return tForm(contactForm.fieldRequired)
   }
 
@@ -547,15 +542,6 @@ function AuditFormPanel({
     const name = e.target.name as AuditField
     setValues((v) => ({ ...v, [name]: e.target.value }))
     onValueChange(name)
-    if (status === 'error') {
-      setStatus('idle')
-      setSubmitError('')
-    }
-  }
-
-  const handlePhoneChange = (phone: string) => {
-    setValues((v) => ({ ...v, phone }))
-    onValueChange('phone')
     if (status === 'error') {
       setStatus('idle')
       setSubmitError('')
@@ -581,7 +567,7 @@ function AuditFormPanel({
     e.preventDefault()
     if (submittingRef.current || status === 'sending') return
 
-    const nextFieldErrors = validateAuditForm(values)
+    const nextFieldErrors = validateAuditForm(values, { requireNamePhone: false })
     setFieldErrors(nextFieldErrors)
     if (!privacyConsent) setConsentError(true)
     else setConsentError(false)
@@ -730,39 +716,8 @@ function AuditFormPanel({
                     <ContactHoneypotField idPrefix="audit-page" />
 
                     <div className="flex flex-col gap-1.5">
-                      <FormPillShell
-                        isLight={isLight}
-                        clip
-                        hasError={Boolean(fieldErrors.name || fieldErrors.email)}
-                      >
+                      <FormPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.email)}>
                         <div className="relative min-w-0 flex-1">
-                          <label htmlFor="audit-page-name" className="sr-only">
-                            {tForm(contactForm.name)}
-                          </label>
-                          <input
-                            id="audit-page-name"
-                            name="name"
-                            type="text"
-                            required
-                            value={values.name}
-                            onChange={handleChange}
-                            onBlur={blurName}
-                            placeholder={requiredPlaceholder(tForm(contactForm.name))}
-                            className={`${pillFieldClass} ${fieldOk.name ? 'pe-10' : 'pe-4'}`}
-                            autoComplete="name"
-                            autoCapitalize="words"
-                            aria-required="true"
-                            aria-invalid={Boolean(fieldErrors.name) || undefined}
-                            aria-describedby={fieldErrors.name ? 'audit-page-name-error' : undefined}
-                          />
-                          <FieldOkCheck show={Boolean(fieldOk.name)} isLight={isLight} />
-                        </div>
-                        <FormPillDivider isLight={isLight} />
-                        <div
-                          className={`relative min-w-0 flex-1 border-t sm:border-t-0 ${
-                            isLight ? 'border-coal-900/15' : 'border-white/15'
-                          }`}
-                        >
                           <label htmlFor="audit-page-email" className="sr-only">
                             {tForm(contactForm.email)}
                           </label>
@@ -788,7 +743,6 @@ function AuditFormPanel({
                           <FieldOkCheck show={Boolean(fieldOk.email)} isLight={isLight} />
                         </div>
                       </FormPillShell>
-                      {fieldErrors.name ? renderFieldError('name', 'audit-page-name-error') : null}
                       {fieldErrors.email ? renderFieldError('email', 'audit-page-email-error') : null}
                     </div>
 
@@ -829,10 +783,7 @@ function AuditFormPanel({
                     </div>
 
                     <div className="relative z-20 flex flex-col gap-1.5">
-                      <FormPillShell
-                        isLight={isLight}
-                        hasError={Boolean(fieldErrors.auditLanguage || fieldErrors.phone)}
-                      >
+                      <FormPillShell isLight={isLight} hasError={Boolean(fieldErrors.auditLanguage)}>
                         <AuditLanguageSelect
                           id="audit-page-audit-language"
                           locale={locale}
@@ -844,24 +795,8 @@ function AuditFormPanel({
                           }
                           onChange={handleLanguageChange}
                         />
-                        <FormPillDivider isLight={isLight} />
-                        <PhoneE164Field
-                          id="audit-page-phone"
-                          locale={locale}
-                          value={values.phone}
-                          onChange={handlePhoneChange}
-                          onBlur={blurPhone}
-                          showOk={Boolean(fieldOk.phone)}
-                          invalid={Boolean(fieldErrors.phone)}
-                          describedBy={fieldErrors.phone ? 'audit-page-phone-error' : undefined}
-                          placeholder={requiredPlaceholder(tForm(contactForm.phone))}
-                          variant="pill"
-                          split
-                          isLight={isLight}
-                        />
                       </FormPillShell>
                       {renderFieldError('auditLanguage', 'audit-page-audit-language-error')}
-                      {renderFieldError('phone', 'audit-page-phone-error')}
                     </div>
 
                     <p className={`m-0 px-1 text-xs ${fieldLabelClass}`}>

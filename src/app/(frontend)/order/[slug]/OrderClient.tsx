@@ -1167,6 +1167,7 @@ function AuditOrderModal({
     ensureWebsiteOk,
   } = useAuditFieldChecks(values, setFieldErrors)
 
+  const isFreePlan = plan.slug === 'audit-free'
   const planTitle = tLocale(plan.card.title, locale)
   const tForm = (field: Record<string, string>) => field[locale] || field.en
 
@@ -1235,7 +1236,8 @@ function AuditOrderModal({
     }
   }
 
-  const validateForm = (): AuditFieldErrors => validateAuditForm(values)
+  const validateForm = (): AuditFieldErrors =>
+    validateAuditForm(values, { requireNamePhone: !isFreePlan })
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -1392,7 +1394,7 @@ function AuditOrderModal({
   const isLight = false
   const pillFieldClass = formPillFieldClass(isLight)
   const fieldLabelClass = 'text-white/60'
-  const isPaidPlan = plan.slug !== 'audit-free' && parsePrice(plan.card.price) > 0
+  const isPaidPlan = !isFreePlan && parsePrice(plan.card.price) > 0
 
   const modalTitle =
     locale === 'ru'
@@ -1573,40 +1575,47 @@ function AuditOrderModal({
                   <FormPillShell
                     isLight={isLight}
                     clip
-                    hasError={Boolean(fieldErrors.name || fieldErrors.email)}
+                    hasError={Boolean((!isFreePlan && fieldErrors.name) || fieldErrors.email)}
                   >
-                    <div className="relative min-w-0 flex-1">
-                      <label htmlFor="audit-order-name" className="sr-only">
-                        {tForm(contactForm.name)}
-                      </label>
-                      <input
-                        ref={firstFieldRef}
-                        id="audit-order-name"
-                        name="name"
-                        type="text"
-                        required
-                        value={values.name}
-                        onChange={handleChange}
-                        onBlur={blurName}
-                        placeholder={requiredPlaceholder(tForm(contactForm.name))}
-                        className={`${pillFieldClass} ${fieldOk.name ? 'pe-10' : 'pe-4'}`}
-                        autoComplete="name"
-                        autoCapitalize="words"
-                        aria-required="true"
-                        aria-invalid={Boolean(fieldErrors.name) || undefined}
-                      />
-                      <FieldOkCheck show={Boolean(fieldOk.name)} />
-                    </div>
-                    <FormPillDivider isLight={isLight} />
+                    {!isFreePlan ? (
+                      <>
+                        <div className="relative min-w-0 flex-1">
+                          <label htmlFor="audit-order-name" className="sr-only">
+                            {tForm(contactForm.name)}
+                          </label>
+                          <input
+                            ref={firstFieldRef}
+                            id="audit-order-name"
+                            name="name"
+                            type="text"
+                            required
+                            value={values.name}
+                            onChange={handleChange}
+                            onBlur={blurName}
+                            placeholder={requiredPlaceholder(tForm(contactForm.name))}
+                            className={`${pillFieldClass} ${fieldOk.name ? 'pe-10' : 'pe-4'}`}
+                            autoComplete="name"
+                            autoCapitalize="words"
+                            aria-required="true"
+                            aria-invalid={Boolean(fieldErrors.name) || undefined}
+                          />
+                          <FieldOkCheck show={Boolean(fieldOk.name)} />
+                        </div>
+                        <FormPillDivider isLight={isLight} />
+                      </>
+                    ) : null}
                     <div
-                      className={`relative min-w-0 flex-1 border-t sm:border-t-0 ${
-                        isLight ? 'border-coal-900/15' : 'border-white/15'
+                      className={`relative min-w-0 flex-1 ${
+                        isFreePlan
+                          ? ''
+                          : `border-t sm:border-t-0 ${isLight ? 'border-coal-900/15' : 'border-white/15'}`
                       }`}
                     >
                       <label htmlFor="audit-order-email" className="sr-only">
                         {tForm(contactForm.email)}
                       </label>
                       <input
+                        ref={isFreePlan ? firstFieldRef : undefined}
                         id="audit-order-email"
                         name="email"
                         type="email"
@@ -1627,7 +1636,7 @@ function AuditOrderModal({
                       <FieldOkCheck show={Boolean(fieldOk.email)} />
                     </div>
                   </FormPillShell>
-                  {fieldErrors.name ? (
+                  {!isFreePlan && fieldErrors.name ? (
                     <p role="alert" className="m-0 text-sm text-erythro-500">
                       {tForm(contactForm.fieldRequired)}
                     </p>
@@ -1683,7 +1692,7 @@ function AuditOrderModal({
                 <div className="relative z-20 flex flex-col gap-1.5">
                   <FormPillShell
                     isLight={isLight}
-                    hasError={Boolean(fieldErrors.auditLanguage || fieldErrors.phone)}
+                    hasError={Boolean(fieldErrors.auditLanguage || (!isFreePlan && fieldErrors.phone))}
                   >
                     <div ref={langSelectRef} className="relative min-w-0 flex-1">
                       <label htmlFor="audit-order-language" className="sr-only">
@@ -1741,28 +1750,32 @@ function AuditOrderModal({
                         </ul>
                       ) : null}
                     </div>
-                    <FormPillDivider isLight={isLight} />
-                    <PhoneE164Field
-                      id="audit-order-phone"
-                      locale={locale}
-                      value={values.phone}
-                      onChange={handlePhoneChange}
-                      onBlur={blurPhone}
-                      showOk={Boolean(fieldOk.phone)}
-                      invalid={Boolean(fieldErrors.phone)}
-                      describedBy={fieldErrors.phone ? 'audit-order-phone-error' : undefined}
-                      placeholder={requiredPlaceholder(tForm(contactForm.phone))}
-                      variant="pill"
-                      split
-                      isLight={isLight}
-                    />
+                    {!isFreePlan ? (
+                      <>
+                        <FormPillDivider isLight={isLight} />
+                        <PhoneE164Field
+                          id="audit-order-phone"
+                          locale={locale}
+                          value={values.phone}
+                          onChange={handlePhoneChange}
+                          onBlur={blurPhone}
+                          showOk={Boolean(fieldOk.phone)}
+                          invalid={Boolean(fieldErrors.phone)}
+                          describedBy={fieldErrors.phone ? 'audit-order-phone-error' : undefined}
+                          placeholder={requiredPlaceholder(tForm(contactForm.phone))}
+                          variant="pill"
+                          split
+                          isLight={isLight}
+                        />
+                      </>
+                    ) : null}
                   </FormPillShell>
                   {fieldErrors.auditLanguage ? (
                     <p role="alert" className="m-0 text-sm text-erythro-500">
                       {tForm(contactForm.fieldRequired)}
                     </p>
                   ) : null}
-                  {fieldErrors.phone ? (
+                  {!isFreePlan && fieldErrors.phone ? (
                     <p id="audit-order-phone-error" role="alert" className="m-0 text-sm text-erythro-500">
                       {fieldErrors.phone === 'invalid'
                         ? tForm(contactForm.phoneInvalid)

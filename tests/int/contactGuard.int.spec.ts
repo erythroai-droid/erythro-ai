@@ -120,6 +120,7 @@ describe('guardContactSubmission', () => {
         source: 'audit',
         website: 'example.com',
         auditLanguage: 'ru',
+        planSlug: 'audit-diagnostic',
       }).ok,
     ).toBe(false)
 
@@ -144,6 +145,54 @@ describe('guardContactSubmission', () => {
       expect(result.data.auditStatus).toBe('new')
       expect(result.data.phone).toBe('+972501234567')
     }
+  })
+
+  it('allows free audit without name or phone', () => {
+    const result = guardContactSubmission({
+      name: '',
+      email: 'ada@example.com',
+      phone: '',
+      message: 'AI Audit request',
+      privacyConsent: true,
+      source: 'audit',
+      website: 'example.com',
+      auditLanguage: 'en',
+      planSlug: 'audit-free',
+    })
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.name).toBe('')
+      expect(result.data.phone).toBe('')
+      expect(result.data.website).toBe('https://example.com')
+      expect(result.data.planSlug).toBe('audit-free')
+    }
+
+    // /audit form omits planSlug — still treated as free intake
+    expect(
+      guardContactSubmission({
+        email: 'ada@example.com',
+        message: 'AI Audit request',
+        privacyConsent: true,
+        source: 'audit',
+        website: 'example.com',
+        auditLanguage: 'ru',
+      }).ok,
+    ).toBe(true)
+
+    // Paid plans still require name + phone
+    expect(
+      guardContactSubmission({
+        name: '',
+        email: 'ada@example.com',
+        phone: '+972501234567',
+        message: 'AI Audit Order',
+        privacyConsent: true,
+        source: 'audit',
+        website: 'example.com',
+        auditLanguage: 'en',
+        planSlug: 'audit-diagnostic',
+      }).ok,
+    ).toBe(false)
   })
 
   it('rejects audit websites with credentials or non-http protocols', () => {

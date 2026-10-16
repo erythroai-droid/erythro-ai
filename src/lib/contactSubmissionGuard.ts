@@ -87,11 +87,15 @@ export function guardContactSubmission(body: unknown): ContactGuardResult {
   const locale = sanitizeLocale(raw.locale)
   const source = parseSource(raw.source)
   const privacyConsent = raw.privacyConsent === true
+  const planSlugRaw = sanitizePlainText(raw.planSlug, CONTACT_LIMITS.planSlug).toLowerCase()
+  /** Free audit (`/audit` or `/order/audit-free`) — name/phone not collected. */
+  const isFreeAudit =
+    source === 'audit' && (!planSlugRaw || planSlugRaw === 'audit-free')
 
   if (!privacyConsent) {
     return { ok: false, status: 400, message: 'Privacy consent is required' }
   }
-  if (!name || !email || !message) {
+  if (!email || !message || (!isFreeAudit && !name)) {
     return { ok: false, status: 400, message: 'Missing required fields' }
   }
   if (!EMAIL_RE.test(email)) {
@@ -119,7 +123,7 @@ export function guardContactSubmission(body: unknown): ContactGuardResult {
     const websiteRaw = sanitizeWebsiteInput(raw.website, CONTACT_LIMITS.website)
     const website = sanitizeAuditWebsite(websiteRaw)
     const auditLanguage = parseAuditLanguage(raw.auditLanguage)
-    const planSlug = sanitizePlainText(raw.planSlug, CONTACT_LIMITS.planSlug).toLowerCase()
+    const planSlug = planSlugRaw
     const planTotal = sanitizePlainText(raw.planTotal, CONTACT_LIMITS.planTotal)
 
     if (!website || !isAuditWebsiteFormat(websiteRaw)) {
@@ -128,11 +132,19 @@ export function guardContactSubmission(body: unknown): ContactGuardResult {
     if (!auditLanguage) {
       return { ok: false, status: 400, message: 'Audit report language is required' }
     }
-    const e164 = toE164Phone(phone)
-    if (!e164) {
-      return { ok: false, status: 400, message: 'Valid phone with country code is required for audit' }
+    if (!isFreeAudit) {
+      const e164 = toE164Phone(phone)
+      if (!e164) {
+        return {
+          ok: false,
+          status: 400,
+          message: 'Valid phone with country code is required for audit',
+        }
+      }
+      data.phone = e164
+    } else {
+      data.phone = toE164Phone(phone) || ''
     }
-    data.phone = e164
     if (planSlug && !PLAN_SLUG_RE.test(planSlug)) {
       return { ok: false, status: 400, message: 'Invalid plan' }
     }
