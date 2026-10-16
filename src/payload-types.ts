@@ -786,7 +786,7 @@ export interface Partner {
  */
 export interface ContactSubmission {
   id: number;
-  name: string;
+  name?: string | null;
   email: string;
   phone?: string | null;
   message: string;

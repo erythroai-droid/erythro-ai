@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Button from './Button'
 import AiAuditHeaderButton from './AiAuditHeaderButton'
+import LanguageLiquidSwitch from './LanguageLiquidSwitch'
 import { useSiteContent } from './SiteContentProvider'
 import { navigateHomeWithFullSplash } from '@/lib/splash'
 import { getSectionElement } from '@/lib/domSection'
@@ -379,6 +380,12 @@ export default function Navbar({
           </a>
           <div className="flex items-center gap-3.5 sm:gap-5 pointer-events-auto">
             <AiAuditHeaderButton currentLocale={currentLocale} />
+            <LanguageLiquidSwitch
+              currentLocale={currentLocale}
+              setLocale={setLocale}
+              isDark={menuOnDark}
+              className="relative z-[70]"
+            />
             <button
               ref={menuBtnRef}
               onClick={() => setMobileOpen(!mobileOpen)}
