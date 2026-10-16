@@ -78,7 +78,7 @@
 
 | Поле | Назначение |
 |---|---|
-| `name`, `email`, `phone`, `message` | Контакт клиента |
+| `name`, `email`, `phone`, `message` | Контакт клиента. Для free (`audit-free` / `/audit`): только `email` (+ website / report language); `name` и `phone` не собираем |
 | `source` | `audit` для заявок аудита |
 | `locale` | Язык UI сайта |
 | `website` | Проверяемый URL. На blur формы: DNS A/AAAA на публичный IP через `POST /api/audit/check-website` (`src/lib/checkWebsite.ts`). **Не** HTTP-fetch пользовательского URL (SSRF). n8n для этой проверки не используется. |

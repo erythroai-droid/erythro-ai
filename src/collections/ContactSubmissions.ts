@@ -94,7 +94,8 @@ export const ContactSubmissions: CollectionConfig = {
             {
               name: 'name',
               type: 'text',
-              required: true,
+              // Optional for free AI audit (email + website only).
+              required: false,
               admin: {
                 readOnly: true,
                 components: { Cell: '/components/admin/SubmissionNameCell#SubmissionNameCell' },

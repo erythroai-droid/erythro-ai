@@ -52,6 +52,37 @@ describe('auditFormValidation', () => {
     ).toEqual({})
   })
 
+  it('skips name and phone for free audit intake', () => {
+    expect(
+      validateAuditForm(
+        {
+          website: 'example.com',
+          name: '',
+          email: 'ada@example.com',
+          phone: '',
+          auditLanguage: 'en',
+        },
+        { requireNamePhone: false },
+      ),
+    ).toEqual({})
+
+    expect(
+      validateAuditForm(
+        {
+          website: '',
+          name: '',
+          email: '',
+          phone: '',
+          auditLanguage: 'en',
+        },
+        { requireNamePhone: false },
+      ),
+    ).toEqual({
+      website: 'required',
+      email: 'required',
+    })
+  })
+
   it('normalizes website and builds submission message', () => {
     expect(normalizeAuditWebsite('example.com')).toBe('https://example.com')
     expect(normalizeAuditWebsite('https://example.com/path')).toBe('https://example.com/path')

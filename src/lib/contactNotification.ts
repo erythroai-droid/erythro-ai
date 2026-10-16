@@ -212,16 +212,18 @@ export function buildContactEmail(input: ContactNotificationInput): { subject: s
   const source = input.source === 'order' ? 'order' : input.source === 'audit' ? 'audit' : 'contact'
   const ticket = formatSubmissionTicketId(source, input.submissionId)
   const ticketSuffix = ticket ? ` ${ticket}` : ''
+  const displayName = input.name.trim() || input.email
+  const nameLine = input.name.trim() || '—'
   const subject =
     source === 'order'
-      ? `Erythro.ai order inquiry${ticketSuffix}: ${input.name}`
+      ? `Erythro.ai order inquiry${ticketSuffix}: ${displayName}`
       : source === 'audit'
-        ? `Erythro.ai AI audit${ticketSuffix}: ${input.name}`
-        : `Erythro.ai contact${ticketSuffix}: ${input.name}`
+        ? `Erythro.ai AI audit${ticketSuffix}: ${displayName}`
+        : `Erythro.ai contact${ticketSuffix}: ${displayName}`
   const lines = [
     `Source: ${source}`,
     ...(ticket ? [`Ticket: ${ticket}`] : []),
-    `Name: ${input.name}`,
+    `Name: ${nameLine}`,
     `Email: ${input.email}`,
     `Phone: ${input.phone?.trim() || '—'}`,
     `Locale: ${input.locale || '—'}`,
@@ -246,7 +248,7 @@ export function buildContactEmail(input: ContactNotificationInput): { subject: s
   const html = `
     <p><strong>Source:</strong> ${escapeHtml(source)}</p>
     ${ticket ? `<p><strong>Ticket:</strong> <code dir="ltr">${escapeHtml(ticket)}</code></p>` : ''}
-    <p><strong>Name:</strong> ${escapeHtml(input.name)}</p>
+    <p><strong>Name:</strong> ${escapeHtml(nameLine)}</p>
     <p><strong>Email:</strong> ${escapeHtml(input.email)}</p>
     <p><strong>Phone:</strong> ${escapeHtml(input.phone?.trim() || '—')}</p>
     <p><strong>Locale:</strong> ${escapeHtml(input.locale || '—')}</p>

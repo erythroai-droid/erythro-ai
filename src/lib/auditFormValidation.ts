@@ -53,19 +53,30 @@ export function normalizeAuditWebsite(raw: string): string {
   return sanitizeAuditWebsite(raw)
 }
 
-export function validateAuditForm(values: AuditFormValues): AuditFieldErrors {
+export type ValidateAuditFormOptions = {
+  /** Default true. Free audit intake does not collect name/phone. */
+  requireNamePhone?: boolean
+}
+
+export function validateAuditForm(
+  values: AuditFormValues,
+  options?: ValidateAuditFormOptions,
+): AuditFieldErrors {
   const errors: AuditFieldErrors = {}
   const website = values.website.trim()
+  const requireNamePhone = options?.requireNamePhone !== false
 
   if (!website) errors.website = 'required'
   else if (!isAuditWebsiteFormat(website)) errors.website = 'invalid'
 
-  if (!values.name.trim()) errors.name = 'required'
+  if (requireNamePhone && !values.name.trim()) errors.name = 'required'
   if (!values.email.trim()) errors.email = 'required'
   else if (!isAuditEmailFormat(values.email)) errors.email = 'invalid'
 
-  if (!values.phone.trim()) errors.phone = 'required'
-  else if (!toE164Phone(values.phone)) errors.phone = 'invalid'
+  if (requireNamePhone) {
+    if (!values.phone.trim()) errors.phone = 'required'
+    else if (!toE164Phone(values.phone)) errors.phone = 'invalid'
+  }
 
   if (!values.auditLanguage || !AUDIT_REPORT_LANGUAGES.includes(values.auditLanguage)) {
     errors.auditLanguage = 'required'
