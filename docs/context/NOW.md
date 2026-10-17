@@ -1,23 +1,20 @@
 # Latest changes
 
-Обновлено: 2026-10-16  
+Обновлено: 2026-10-17  
 Модель: Cursor  
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
 ## Сделано в этой сессии
 
-- **Home AI Audit** под Hero + CMS global `home-ai-audit` (Sections), миграция `20261016_180000_home_ai_audit_cms` с сидом EN/RU/HE.
-- `getSiteContent` мержит global; cache key `site-content-v17-home-ai-audit`.
-- UI: dark-gradient, clip-open, BorderBeam carousel, «AI вас видит?», цифры gold-500.
-- Mobile: больший нижний отступ после «Сравнить все тарифы» перед Cases (`pb-36`).
+- Meta Pixel `2395401914532727`: базовый код в `<head>` (`AnalyticsBootstrap`), consent revoke→grant в `AnalyticsLoader`, Lead на успех free-audit (`trackFreeAuditLead` в `/audit` и `/order/audit-free`).
+- CSP: `connect.facebook.net` + Facebook connect hosts; очистка `_fbp`/`_fbc` при Decline; тексты cookie/privacy; docs `architecture/meta-pixel.md` (+ Obsidian).
 
 ## Сейчас
 
-1. После деплоя: `payload migrate` → Admin → Sections → Home AI Audit.
-2. Проверить главную EN/RU/HE + карусель.
-3. **Задеплоить** PIT-109.
-4. Ads / Grow→Make — не сейчас.
+1. Задеплоить → в Events Manager / Pixel Helper: PageView после Accept; Lead после тестовой отправки аудита.
+2. В Meta настроить событие Lead на отправку формы (стандартное событие уже шлётся с сайта).
+3. CORS Media / Home AI Audit migrate — по необходимости (с прошлой сессии).
 
 ## Не делать
 
@@ -29,4 +26,4 @@
 
 ## Последняя эстафета
 
-2026-10-16 — Cursor — Home AI Audit CMS global + migrate seed; commit/push.
+2026-10-17 — Cursor — Meta Pixel base + Lead на free-audit; деплой и проверка в Events Manager.

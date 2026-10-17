@@ -28,7 +28,7 @@ import {
   readContactSubmitErrorBody,
 } from '@/lib/contactSubmit'
 import AuditCooldownModal from '@/components/audit/AuditCooldownModal'
-import { trackAdsLead } from '@/lib/adsConversion'
+import { trackFreeAuditLead } from '@/lib/adsConversion'
 import {
   auditPage,
   tAudit,
@@ -714,7 +714,7 @@ function AuditFormPanel({
           (sid != null ? `AUD-${sid}` : null),
       )
       setStatus('success')
-      if (sid != null) trackAdsLead(String(sid))
+      if (sid != null) trackFreeAuditLead(String(sid))
       setValues({
         website: '',
         name: '',
