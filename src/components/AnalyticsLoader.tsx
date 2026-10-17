@@ -19,22 +19,37 @@ declare global {
   interface Window {
     dataLayer?: unknown[]
     gtag?: (...args: unknown[]) => void
+    fbq?: (
+      command: string,
+      eventOrAction?: string,
+      params?: Record<string, unknown>,
+      options?: { eventID?: string },
+    ) => void
     __ERYTHRO_GA_ID__?: string
     __ERYTHRO_AW_ID__?: string
+    __ERYTHRO_META_PIXEL_ID__?: string
   }
 }
 
 function updateAnalyticsConsent(consent: ConsentValue) {
-  if (typeof window === 'undefined' || typeof window.gtag !== 'function') return
-  const granted = consent === CONSENT_ACCEPTED ? 'granted' : 'denied'
-  window.gtag('consent', 'update', {
-    ad_storage: granted,
-    ad_user_data: granted,
-    ad_personalization: granted,
-    analytics_storage: granted,
-    functionality_storage: 'granted',
-    security_storage: 'granted',
-  })
+  if (typeof window === 'undefined') return
+  const accepted = consent === CONSENT_ACCEPTED
+
+  if (typeof window.gtag === 'function') {
+    const granted = accepted ? 'granted' : 'denied'
+    window.gtag('consent', 'update', {
+      ad_storage: granted,
+      ad_user_data: granted,
+      ad_personalization: granted,
+      analytics_storage: granted,
+      functionality_storage: 'granted',
+      security_storage: 'granted',
+    })
+  }
+
+  if (typeof window.fbq === 'function') {
+    window.fbq('consent', accepted ? 'grant' : 'revoke')
+  }
 }
 
 export default function AnalyticsLoader() {
