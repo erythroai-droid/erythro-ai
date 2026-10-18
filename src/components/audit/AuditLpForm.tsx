@@ -442,6 +442,8 @@ export default function AuditLpForm({
             theme={theme}
             idPrefix="audit-lp"
             parts="notice"
+            privacyHref={mainSiteUrl('/privacy')}
+            termsHref={mainSiteUrl('/terms')}
           />
 
           <TurnstileField
@@ -470,6 +472,8 @@ export default function AuditLpForm({
               theme={theme}
               idPrefix="audit-lp"
               parts="consent"
+              privacyHref={mainSiteUrl('/privacy')}
+              termsHref={mainSiteUrl('/terms')}
               checked={privacyConsent}
               showRequiredError={consentError}
               disabled={status === 'sending'}

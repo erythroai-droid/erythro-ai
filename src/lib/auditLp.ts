@@ -226,6 +226,16 @@ export const auditLpCopy = {
     ru: 'erythro.ai',
     he: 'erythro.ai',
   } satisfies Localized,
+  themeToLight: {
+    en: 'Switch to light theme',
+    ru: 'Включить светлую тему',
+    he: 'מעבר לערכת נושא בהירה',
+  } satisfies Localized,
+  themeToDark: {
+    en: 'Switch to dark theme',
+    ru: 'Включить тёмную тему',
+    he: 'מעבר לערכת נושא כהה',
+  } satisfies Localized,
   privacy: {
     en: 'Privacy',
     ru: 'Конфиденциальность',

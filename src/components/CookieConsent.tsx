@@ -15,9 +15,14 @@ import {
 interface CookieConsentProps {
   locale: string
   theme: 'light' | 'dark'
+  /**
+   * Absolute URL (e.g. https://erythro.ai/privacy) on ads LPs — avoids Next.js
+   * soft-nav / RSC prefetch on the LP host and CSP connect-src issues.
+   */
+  privacyHref?: string
 }
 
-export default function CookieConsent({ locale, theme }: CookieConsentProps) {
+export default function CookieConsent({ locale, theme, privacyHref = '/privacy' }: CookieConsentProps) {
   const translations = useSiteContent().cookieConsent
   const [visible, setVisible] = useState(false)
 
@@ -74,9 +79,20 @@ export default function CookieConsent({ locale, theme }: CookieConsentProps) {
           }`}
         >
           {t(translations.message)}{' '}
-          <Link href="/privacy" className={linkClass}>
-            {t(translations.privacyLink || { en: 'Privacy Policy', ru: 'Конфиденциальность', he: 'מדיניות פרטיות' })}
-          </Link>
+          {/^https?:\/\//i.test(privacyHref) ? (
+            <a
+              href={privacyHref}
+              className={linkClass}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t(translations.privacyLink || { en: 'Privacy Policy', ru: 'Конфиденциальность', he: 'מדיניות פרטיות' })}
+            </a>
+          ) : (
+            <Link href={privacyHref} className={linkClass}>
+              {t(translations.privacyLink || { en: 'Privacy Policy', ru: 'Конфиденциальность', he: 'מדיניות פרטיות' })}
+            </Link>
+          )}
         </p>
         <div className="flex items-center gap-3 shrink-0">
           <button
