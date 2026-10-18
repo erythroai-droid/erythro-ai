@@ -219,7 +219,7 @@ export async function POST(request: NextRequest) {
         : ''
     const reportPath =
       source === 'audit' && reportAccessToken
-        ? buildAuditReportPath(created.id, reportAccessToken)
+        ? buildAuditReportPath(created.id, reportAccessToken, locale || auditLanguage || null)
         : null
 
     return NextResponse.json(

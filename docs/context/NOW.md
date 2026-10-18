@@ -34,12 +34,13 @@
 
 ## Формы LP
 
-- API `/api/contact` на субдоменах жив. Блокер: Turnstile hostname — `audit-*` не в widget Domains / раньше не в siteverify allowlist.
-- Код: `turnstileHostnames()` всегда мержит LP hosts. Нужно: CF Turnstile Domains + redeploy.
+- CF Turnstile Domains: `audit-en|rus|he` добавлены.
+- `turnstileHostnames()` мержит LP hosts — задеплоено в production.
+- Waiting page: `?lang=` с LP (cookie не пересекает субдомен → erythro.ai).
 
 ## Сейчас
 
-1. Добавить LP hosts в Cloudflare Turnstile widget Domains; задеплоить фикс siteverify.
+1. Задеплоить `?lang=` на report waiting; smoke HE → waiting на he.
 2. Ads Final URL на субдомены.
 
 ## Не делать

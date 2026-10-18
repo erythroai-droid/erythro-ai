@@ -5,6 +5,7 @@ import { notFound, redirect } from 'next/navigation'
 import AuditReportClient from './AuditReportClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getRequestPrefs } from '@/lib/requestPrefs'
+import { isSiteLocale } from '@/lib/sitePrefs'
 import {
   auditReportCopy,
   buildAuditReportHtmlPath,
@@ -27,15 +28,19 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
 interface PageProps {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ k?: string }>
+  searchParams: Promise<{ k?: string; lang?: string }>
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { id } = await params
+  const { lang: langParam } = await searchParams
   const cookieStore = await cookies()
   const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
-  const locale =
-    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+  const locale = isSiteLocale(langParam)
+    ? langParam
+    : cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale)
+      ? cookieLocale
+      : DEFAULT_LOCALE
 
   const title = `${tReport(auditReportCopy.title, locale)} | Erythro.ai`
   const description = tReport(auditReportCopy.waiting, locale)
@@ -57,7 +62,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function AuditReportPage({ params, searchParams }: PageProps) {
   const { id } = await params
-  const { k: rawKey } = await searchParams
+  const { k: rawKey, lang: langParam } = await searchParams
   const reportId = parseAuditReportId(id)
   const accessKey = parseReportAccessToken(rawKey)
   if (!reportId || !accessKey) {
@@ -82,7 +87,9 @@ export default async function AuditReportPage({ params, searchParams }: PageProp
     redirect(buildAuditReportHtmlPath(reportId, accessKey))
   }
 
-  const { initialLocale, initialTheme } = await getRequestPrefs()
+  const prefs = await getRequestPrefs()
+  // Prefer ?lang= from ads LP (cross-subdomain; cookie on audit-* does not apply here).
+  const initialLocale = isSiteLocale(langParam) ? langParam : prefs.initialLocale
   const content = await getCachedSiteContent()
 
   return (
@@ -90,7 +97,7 @@ export default async function AuditReportPage({ params, searchParams }: PageProp
       reportId={id}
       accessKey={accessKey}
       initialLocale={initialLocale}
-      initialTheme={initialTheme}
+      initialTheme={prefs.initialTheme}
       content={content}
     />
   )

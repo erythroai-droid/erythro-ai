@@ -27,7 +27,7 @@ DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → D
 
 Отдельный UI (`AuditLpClient`): бренд, короткий hero, 3 буллета, форма free-audit, cookie banner, ссылки privacy/terms на `erythro.ai`. Без полного Navbar, FAQ, табов pricing, splash.
 
-Форма → тот же `POST /api/contact` + `trackFreeAuditLead`. Ссылка на отчёт после успеха — абсолютный URL на `https://erythro.ai/...`.
+Форма → тот же `POST /api/contact` + `trackFreeAuditLead`. Ссылка на отчёт после успеха — абсолютный URL на `https://erythro.ai/audit/report/…?k=…&lang={locale}` (`lang` обязателен: cookie/localStorage LP-хоста не видны на apex).
 
 ## SEO / robots
 
