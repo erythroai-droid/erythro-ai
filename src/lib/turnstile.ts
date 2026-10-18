@@ -1,8 +1,15 @@
+import { AUDIT_LP_HOST_BY_LOCALE } from '@/lib/auditLp'
 import type { ContactFormSource } from '@/lib/contactNotification'
 
 export const TURNSTILE_TOKEN_FIELD = 'cf-turnstile-response' as const
 export const TURNSTILE_TOKEN_MAX_LEN = 2048
 export const TURNSTILE_SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+
+/** Always allow ads LP hosts even if TURNSTILE_HOSTNAMES omits them. */
+const AUDIT_LP_TURNSTILE_HOSTS = [
+  ...Object.values(AUDIT_LP_HOST_BY_LOCALE),
+  'audit-ru.erythro.ai', // legacy Hotnet alias
+] as const
 
 /** `consult` covers the AI consultant widget (chat + OTP request). */
 export type TurnstileAction = ContactFormSource | 'consult'
@@ -29,19 +36,30 @@ export function turnstileHostnames(): Set<string> {
     .split(',')
     .map((h) => h.trim().toLowerCase())
     .filter(Boolean)
-  if (fromEnv.length) return new Set(fromEnv)
 
-  if (process.env.NODE_ENV !== 'production') {
-    return new Set(['localhost', '127.0.0.1'])
+  const hosts = new Set<string>(fromEnv)
+
+  if (hosts.size === 0) {
+    if (process.env.NODE_ENV !== 'production') {
+      hosts.add('localhost')
+      hosts.add('127.0.0.1')
+    } else {
+      const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
+      try {
+        const host = new URL(site).hostname.toLowerCase().replace(/^www\./, '')
+        hosts.add(host)
+        hosts.add(`www.${host}`)
+      } catch {
+        hosts.add('erythro.ai')
+        hosts.add('www.erythro.ai')
+      }
+    }
   }
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
-  try {
-    const host = new URL(site).hostname.toLowerCase().replace(/^www\./, '')
-    return new Set([host, `www.${host}`])
-  } catch {
-    return new Set(['erythro.ai', 'www.erythro.ai'])
-  }
+  // Ads LPs post /api/contact from audit-*.erythro.ai — siteverify hostname must match.
+  for (const h of AUDIT_LP_TURNSTILE_HOSTS) hosts.add(h)
+
+  return hosts
 }
 
 export function turnstileActionFromBody(body: unknown): TurnstileAction {

@@ -71,7 +71,7 @@ DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-1-...pooler.supabase.com
 | `SMTP_PASS` | пароль ящика Hostinger `order@erythro.ai` | форма шлёт с `order@erythro.ai` на email из Site Settings → Contacts |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | sitekey виджета (публичный). Алиас: `TURNSTILE_SITE_KEY` | Cloudflare Turnstile на формах |
 | `TURNSTILE_SECRET` | secret виджета. Алиас: `TURNSTILE_SECRET_KEY` | server-side siteverify, не в браузер |
-| `TURNSTILE_HOSTNAMES` | `erythro.ai,www.erythro.ai` (prod) | allowlist hostname из siteverify; **без** localhost на проде |
+| `TURNSTILE_HOSTNAMES` | `erythro.ai,www.erythro.ai` (prod) | allowlist hostname из siteverify; **без** localhost на проде. Ads LP hosts (`audit-en|rus|he.erythro.ai`) подмешиваются в коде. В Cloudflare Turnstile widget Domains — те же хосты. |
 | `GEMINI_API_KEY_AI_CHAT` | ключ [Google AI Studio](https://aistudio.google.com/app/apikey) | ИИ-консультант `POST /api/consult`; **не** `NEXT_PUBLIC_*`. Отдельный от аудиторского `GEMINI_API_KEY`, чтобы публичный чат не выедал квоту воронки. Локально можно обойтись общим `GEMINI_API_KEY` |
 | `GEMINI_CONSULT_MODEL` | (опционально) `gemini-3.6-flash` | модель консультанта |
 | `CONSULT_EMAIL_OTP` | `1` (v1), `0` после авторизации | временное подтверждение email в чате |

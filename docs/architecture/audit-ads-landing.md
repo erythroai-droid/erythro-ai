@@ -40,7 +40,9 @@ DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → D
 ## Деплой checklist
 
 1. Domains в Vercel + DNS.
-2. Ads Final URL = нужный субдомен.
-3. Tag Assistant на субдомене после «Принять» cookie.
-4. HE: RTL, шрифт Heebo.
-5. Не ставить второй `gtag/js` (см. `google-ads-conversions.md`).
+2. **Cloudflare Turnstile → Widget → Domains:** добавить `audit-en.erythro.ai`, `audit-rus.erythro.ai`, `audit-he.erythro.ai` (и alias `audit-ru` при необходимости). Без этого виджет не выдаёт токен / siteverify падает — форма «не работает».
+3. `TURNSTILE_HOSTNAMES` на Vercel: код сам подмешивает LP-хосты; в env достаточно apex + www.
+4. Ads Final URL = нужный субдомен.
+5. Tag Assistant на субдомене после «Принять» cookie.
+6. HE: RTL, шрифт Heebo.
+7. Не ставить второй `gtag/js` (см. `google-ads-conversions.md`).

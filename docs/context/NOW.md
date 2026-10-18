@@ -32,9 +32,14 @@
 - LP: переключатель light/dark в шапке (справа от лого); страница и форма реагируют на тему.
 - Light LP: flat `bg-gold-100`, красные круги шагов; лого всегда белое (chip тёмный).
 
+## Формы LP
+
+- API `/api/contact` на субдоменах жив. Блокер: Turnstile hostname — `audit-*` не в widget Domains / раньше не в siteverify allowlist.
+- Код: `turnstileHostnames()` всегда мержит LP hosts. Нужно: CF Turnstile Domains + redeploy.
+
 ## Сейчас
 
-1. Smoke light/dark на LP; задеплоить.
+1. Добавить LP hosts в Cloudflare Turnstile widget Domains; задеплоить фикс siteverify.
 2. Ads Final URL на субдомены.
 
 ## Не делать
