@@ -213,9 +213,36 @@ export function parseAuditReportId(raw: string): number | null {
   return Number.isSafeInteger(n) && n > 0 ? n : null
 }
 
-/** Client status / waiting page with access token. */
-export function buildAuditReportPath(id: number | string, token: string): string {
-  return `/audit/report/${id}?k=${encodeURIComponent(token)}`
+/**
+ * Client status / waiting page with access token.
+ * Optional `lang` so ads LPs (separate host → cookie/storage do not carry over
+ * to erythro.ai) open the waiting UI in the LP locale.
+ */
+export function buildAuditReportPath(
+  id: number | string,
+  token: string,
+  lang?: string | null,
+): string {
+  const base = `/audit/report/${id}?k=${encodeURIComponent(token)}`
+  if (lang === 'en' || lang === 'ru' || lang === 'he') {
+    return `${base}&lang=${lang}`
+  }
+  return base
+}
+
+/** Append or replace `lang=` on a same-origin `/audit/report/…` path. */
+export function withAuditReportLang(pathOrUrl: string, lang: string): string {
+  if (lang !== 'en' && lang !== 'ru' && lang !== 'he') return pathOrUrl
+  try {
+    const abs = pathOrUrl.startsWith('http')
+    const u = abs ? new URL(pathOrUrl) : new URL(pathOrUrl, 'https://erythro.ai')
+    if (!/^\/audit\/report\/\d+$/i.test(u.pathname)) return pathOrUrl
+    u.searchParams.set('lang', lang)
+    if (abs) return u.toString()
+    return `${u.pathname}${u.search}`
+  } catch {
+    return pathOrUrl
+  }
 }
 
 /** Polling JSON endpoint. */

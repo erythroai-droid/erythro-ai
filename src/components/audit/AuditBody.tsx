@@ -37,6 +37,7 @@ import {
   type AuditTabId,
 } from '@/lib/auditPage'
 import { currencySymbol } from '@/lib/orderPlans'
+import { buildAuditReportPath, withAuditReportLang } from '@/lib/auditReport'
 import { auditSampleReportHref, auditSampleReportLabel } from '@/lib/auditSampleReports'
 import { isContactModalHref, navigateCtaHref, normalizeCtaHref } from '@/lib/ctaNav'
 import { useContactModal } from '@/components/ContactModal'
@@ -702,11 +703,12 @@ function AuditFormPanel({
         reportAccessToken?: string
       } | null
       const sid = payload?.submissionId
+      const reportLang = values.auditLanguage || locale
       const href =
         typeof payload?.reportPath === 'string' && payload.reportPath.startsWith('/')
-          ? payload.reportPath
+          ? withAuditReportLang(payload.reportPath, reportLang)
           : sid != null && typeof payload?.reportAccessToken === 'string'
-            ? `/audit/report/${sid}?k=${encodeURIComponent(payload.reportAccessToken)}`
+            ? buildAuditReportPath(sid, payload.reportAccessToken, reportLang)
             : null
       setReportHref(href)
       setOrderId(

@@ -32,6 +32,7 @@ import {
   type AuditPageContent,
 } from '@/lib/auditPage'
 import { mainSiteUrl, tAuditLp, auditLpCopy } from '@/lib/auditLp'
+import { buildAuditReportPath, withAuditReportLang } from '@/lib/auditReport'
 import {
   buildAuditContactPayload,
   buildAuditSubmissionMessage,
@@ -306,11 +307,12 @@ export default function AuditLpForm({
       const sid = payload?.submissionId
       const path =
         typeof payload?.reportPath === 'string' && payload.reportPath.startsWith('/')
-          ? payload.reportPath
+          ? withAuditReportLang(payload.reportPath, reportLanguage)
           : sid != null && typeof payload?.reportAccessToken === 'string'
-            ? `/audit/report/${sid}?k=${encodeURIComponent(payload.reportAccessToken)}`
+            ? buildAuditReportPath(sid, payload.reportAccessToken, reportLanguage)
             : null
       // Always open report on the main domain (LP hosts redirect non-root paths).
+      // `?lang=` carries LP locale — cookies/localStorage do not cross audit-*. → erythro.ai.
       setReportHref(path ? mainSiteUrl(path) : null)
       setOrderId(payload?.orderId || (sid != null ? `AUD-${sid}` : null))
       setStatus('success')
