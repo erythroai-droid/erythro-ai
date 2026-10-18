@@ -141,29 +141,21 @@ function AuditLpHeader({
 }) {
   const logoAlt = tAuditLp(auditLpCopy.homeLink, locale)
 
-  const isLight = theme === 'light'
-  const logoSrc = isLight
-    ? '/images/logo/Logo_digital-on-light.svg'
-    : '/images/logo/Logo_digital.svg'
-
   return (
     <div className="relative z-20 w-full">
       <HeaderChipStrip page="legal" pin={false} />
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex w-full items-center justify-between gap-4 px-[30px] py-5 lg:px-[50px] lg:py-8">
         <a
           href={mainSiteUrl('/')}
-          className={`pointer-events-auto flex items-center transition-opacity hover:opacity-80 ${
-            isLight ? 'text-coal-900' : 'text-white'
-          }`}
+          className="pointer-events-auto flex items-center text-white transition-opacity hover:opacity-80"
           aria-label={logoAlt}
         >
-          {/* Inline SVG on small screens — avoid preloading desktop wordmark on mobile. */}
-          <BrandLogo className="h-[30px] w-auto lg:hidden" />
+          {/* Always white mark — sits on dark chip strip in both themes. */}
+          <BrandLogo className="h-[30px] w-auto text-white lg:hidden" />
           <span
             role="img"
             aria-hidden
-            className="hidden h-[52px] w-[235px] bg-contain bg-left bg-no-repeat lg:block"
-            style={{ backgroundImage: `url('${logoSrc}')` }}
+            className="hidden h-[52px] w-[235px] bg-[url('/images/logo/Logo_digital.svg')] bg-contain bg-left bg-no-repeat lg:block"
           />
         </a>
         <ThemeToggleButton locale={locale} theme={theme} setTheme={setTheme} />
@@ -238,34 +230,30 @@ export default function AuditLpClient({
   const isRtl = locale === 'he'
   const isLight = theme === 'light'
   const sampleHref = auditSampleReportHref('audit-free', locale)
-  // Light tokens match /audit (`AuditBody`): solution-light-bg + gold-900 accents.
   const ink = isLight ? 'text-coal-900' : 'text-white'
   const muted = isLight ? 'text-coal-900/85' : 'text-white/75'
   const mutedSoft = isLight ? 'text-coal-900/70' : 'text-white/65'
   const listText = isLight ? 'text-coal-900/85' : 'text-white/80'
   const accent = isLight ? 'text-gold-900' : 'text-gold-500'
   const accentBorder = isLight ? 'border-coal-900/10' : 'border-gold-500'
-  const shell = isLight ? 'bg-gold-100' : 'bg-coal-900'
-  const plate = isLight ? 'solution-light-bg text-coal-900' : 'dark-gradient-bg text-white'
+  const plate = isLight ? 'bg-gold-100' : 'bg-coal-900'
   const cardClass = isLight
-    ? 'border border-white bg-white shadow-card-services hover:shadow-[0_8px_26px_0_rgba(13,13,13,0.22)]'
+    ? 'border border-coal-900/10 bg-white shadow-[0_4px_24px_0_rgba(13,13,13,0.08)] hover:shadow-[0_8px_26px_0_rgba(13,13,13,0.16)]'
     : 'border border-gold-500 bg-coal-900 hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)]'
 
   return (
     <SiteContentProvider value={content}>
       <div
         dir={isRtl ? 'rtl' : 'ltr'}
-        className={`relative min-h-screen overflow-x-clip font-sans transition-colors duration-500 ${shell} ${ink}`}
+        className={`relative min-h-screen overflow-x-clip font-sans transition-colors duration-500 ${plate} ${ink}`}
       >
         <AuditLpHeader locale={locale} theme={theme} setTheme={setTheme} />
 
         <section
           id="audit-lp"
           data-menu-contrast={isLight ? 'light' : 'dark'}
-          className={`relative z-20 w-full shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:-mt-8 max-lg:overflow-clip max-lg:rounded-t-[28px] ${plate}`}
+          className={`relative z-20 mx-auto flex w-full max-w-[1170px] flex-col gap-10 px-[30px] pb-16 pt-6 max-lg:-mt-8 max-lg:overflow-clip max-lg:rounded-t-[28px] max-lg:pt-10 max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:gap-12 lg:pb-20 lg:pt-10 ${plate}`}
         >
-          <div className="solution-section-noise absolute inset-0 z-[1] pointer-events-none" aria-hidden />
-          <div className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col gap-10 px-[30px] pb-16 pt-6 max-lg:pt-10 lg:gap-12 lg:pb-20 lg:pt-10">
           <div className="flex w-full flex-col items-center gap-4 text-center">
             <div className="flex flex-col items-center gap-[5px]">
               <h1
@@ -302,10 +290,8 @@ export default function AuditLpClient({
                   href={sampleHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`text-sm font-medium underline decoration-from-font underline-offset-4 transition-colors ${
-                    isLight
-                      ? 'text-gold-900 hover:text-coal-900'
-                      : 'text-gold-500 hover:text-gold-400'
+                  className={`text-sm font-medium underline decoration-from-font underline-offset-4 transition-colors hover:text-erythro-500 ${
+                    isLight ? 'text-gold-900' : 'text-gold-500'
                   }`}
                 >
                   {auditSampleReportLabel(locale)}
@@ -385,11 +371,7 @@ export default function AuditLpClient({
                   <li key={index} className="flex justify-center">
                     <span
                       dir="ltr"
-                      className={`relative z-[1] flex size-11 items-center justify-center rounded-full border text-sm font-bold tracking-[0.06em] shadow-[0_3px_16px_0_rgba(229,36,33,0.35)] ${
-                        isLight
-                          ? 'border-coal-900 bg-coal-900 text-white'
-                          : 'border-gold-500 bg-erythro-500 text-white'
-                      }`}
+                      className="relative z-[1] flex size-11 items-center justify-center rounded-full border border-erythro-500 bg-erythro-500 text-sm font-bold tracking-[0.06em] text-white shadow-[0_3px_16px_0_rgba(229,36,33,0.35)]"
                     >
                       {String(index + 1).padStart(2, '0')}
                     </span>
@@ -420,7 +402,6 @@ export default function AuditLpClient({
                 </li>
               ))}
             </ol>
-          </div>
           </div>
         </section>
 

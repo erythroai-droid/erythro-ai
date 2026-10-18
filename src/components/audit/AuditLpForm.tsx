@@ -338,7 +338,7 @@ export default function AuditLpForm({
     <div
       className={`relative z-[1] rounded-[20px] border p-5 sm:p-8 ${
         isLight
-          ? 'bg-white [border-color:color-mix(in_oklab,var(--color-coal-900)_10%,transparent)]'
+          ? 'bg-white shadow-[0_4px_24px_0_rgba(13,13,13,0.08)] [border-color:color-mix(in_oklab,var(--color-coal-900)_10%,transparent)]'
           : 'border-white/10 bg-coal-500'
       }`}
     >
