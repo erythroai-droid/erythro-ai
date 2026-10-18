@@ -715,6 +715,8 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 **Prevent:** Never call siteverify from the browser. Reset the widget in `finally` after every submit (tokens are single-use). Mirror Vercel env for Production + Preview.
 
+**Also (ads LP, 2026-10-18):** Forms on `audit-*.erythro.ai` look fine but submit fails / Turnstile empty if those hosts are missing from the **Cloudflare Turnstile widget Domains** list. Server allowlist: `turnstileHostnames()` merges LP hosts; dashboard Domains must still list them or the widget never mints a token.
+
 ---
 
 ## PIT-044 — Form “thank you” is API SMTP, not n8n IMAP
