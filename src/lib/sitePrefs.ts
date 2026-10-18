@@ -78,8 +78,10 @@ export function readLocaleCookieClient(): SiteLocale | null {
 export const THEME_BOOTSTRAP_SCRIPT = `(function(){try{var k='${THEME_STORAGE_KEY}';var t=localStorage.getItem(k);if(!t){var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=([^;]*)/);t=m?decodeURIComponent(m[1]):null}var r=document.documentElement;if(t==='light'){r.classList.remove('dark')}else if(t==='dark'){r.classList.add('dark')}}catch(e){}})();`
 
 /**
- * Apply lang/dir from cookie/localStorage before paint (ISR pages SSR as `en`).
+ * Apply lang/dir before paint (ISR pages SSR as `en`).
+ * Ads audit LPs (`audit-{locale}.erythro.ai` or `/lp/audit/{locale}`) lock
+ * locale from host/path and ignore cookie/localStorage so the UI cannot jump.
  * Font CSS variables still settle in `useSitePrefs` after mount.
  */
-export const LOCALE_BOOTSTRAP_SCRIPT = `(function(){try{var k='${LOCALE_STORAGE_KEY}';var loc=null;try{loc=localStorage.getItem(k)}catch(e){}if(!loc){var m=document.cookie.match(/(?:^|; )${LOCALE_COOKIE}=([^;]*)/);loc=m?decodeURIComponent(m[1]):null}if(loc!=='en'&&loc!=='ru'&&loc!=='he')return;var r=document.documentElement;r.lang=loc;r.dir=loc==='he'?'rtl':'ltr'}catch(e){}})();`
+export const LOCALE_BOOTSTRAP_SCRIPT = `(function(){try{var h=(location.hostname||'').toLowerCase();var path=location.pathname||'/';var lock=null;if(h==='audit-ru.erythro.ai')lock='ru';else if(h==='audit-en.erythro.ai')lock='en';else if(h==='audit-he.erythro.ai')lock='he';else{var pm=path.match(/^\\/lp\\/audit\\/(en|ru|he)(?:\\/|$)/);if(pm)lock=pm[1]}var loc=lock;if(!loc){var k='${LOCALE_STORAGE_KEY}';try{loc=localStorage.getItem(k)}catch(e){}if(!loc){var m=document.cookie.match(/(?:^|; )${LOCALE_COOKIE}=([^;]*)/);loc=m?decodeURIComponent(m[1]):null}}if(loc!=='en'&&loc!=='ru'&&loc!=='he')return;var r=document.documentElement;r.lang=loc;r.dir=loc==='he'?'rtl':'ltr';if(lock)r.setAttribute('data-locale-lock',lock)}catch(e){}})();`
 

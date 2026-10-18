@@ -22,6 +22,15 @@ interface NavbarProps {
    * `auto` samples the backdrop (home / service & project heroes).
    */
   headerContrast?: 'auto' | 'light' | 'dark'
+  /** Ads LPs: hide EN/RU/HE switch (locale is host-locked). */
+  hideLocaleSwitch?: boolean
+  /** Override logo home target (e.g. absolute `https://erythro.ai/` on LP hosts). */
+  homeHref?: string
+  /**
+   * Default `fixed` (site chrome). `static` scrolls away with the page
+   * (ads LPs — no sticky header).
+   */
+  position?: 'fixed' | 'static'
 }
 
 // Accessibility (person) glyph used in the burger menu CTA
@@ -126,6 +135,9 @@ export default function Navbar({
   onOpenAccessibility,
   forceBurger = false,
   headerContrast = 'auto',
+  hideLocaleSwitch = false,
+  homeHref,
+  position = 'fixed',
 }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   // Desktop: logo only at page top — hides on scroll and stays hidden until top
@@ -141,9 +153,10 @@ export default function Navbar({
     const handleScroll = () => {
       const y = window.scrollY
       // Desktop only: hide logo after a short scroll. Mobile keeps logo + Menu.
+      // Static headers (ads LPs) keep the logo — the bar scrolls away with the page.
       const desktop = window.matchMedia('(min-width: 1024px)').matches
       setIsDesktop(desktop)
-      setLogoHidden(desktop && y > 24)
+      setLogoHidden(position === 'fixed' && desktop && y > 24)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('resize', handleScroll)
@@ -152,7 +165,7 @@ export default function Navbar({
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', handleScroll)
     }
-  }, [])
+  }, [position])
 
   useEffect(() => {
     if (!mobileOpen) return
@@ -333,7 +346,13 @@ export default function Navbar({
   }
 
   return (
-    <header className="fixed top-0 start-0 end-0 z-[110] w-full max-w-none select-none pointer-events-none overflow-x-clip overflow-y-visible px-0 lg:z-[110]">
+    <header
+      className={`${
+        position === 'static'
+          ? 'relative z-[110]'
+          : 'fixed top-0 start-0 end-0 z-[110] lg:z-[110]'
+      } w-full max-w-none select-none pointer-events-none overflow-x-clip overflow-y-visible px-0`}
+    >
       {/* ===== Burger header: logo + Menu on all breakpoints (home + inner) ===== */}
       <div
         className={`relative z-[70] flex w-full pointer-events-none items-center justify-between overflow-visible px-[30px] py-5 lg:border-transparent lg:bg-transparent lg:px-[50px] lg:py-8 lg:backdrop-blur-none transition-colors duration-300 ${
@@ -345,11 +364,12 @@ export default function Navbar({
         }`}
       >
           <a
-            href="/"
+            href={homeHref || '/'}
             aria-label={logoAlt}
             onClick={(e) => {
-              e.preventDefault()
               setMobileOpen(false)
+              if (homeHref) return
+              e.preventDefault()
               navigateHomeWithFullSplash()
             }}
             className={`relative z-10 flex items-center select-none cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
@@ -380,12 +400,14 @@ export default function Navbar({
           </a>
           <div className="flex items-center gap-3.5 sm:gap-5 pointer-events-auto">
             <AiAuditHeaderButton currentLocale={currentLocale} />
-            <LanguageLiquidSwitch
-              currentLocale={currentLocale}
-              setLocale={setLocale}
-              isDark={menuOnDark}
-              className="relative z-[70]"
-            />
+            {hideLocaleSwitch ? null : (
+              <LanguageLiquidSwitch
+                currentLocale={currentLocale}
+                setLocale={setLocale}
+                isDark={menuOnDark}
+                className="relative z-[70]"
+              />
+            )}
             <button
               ref={menuBtnRef}
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -618,21 +640,24 @@ export default function Navbar({
                 {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
               </button>
 
-              <div className="w-px h-4 bg-white/20" />
-
-              <div className="flex gap-2">
-                {['en', 'ru', 'he'].map((lang) => (
-                  <button
-                    key={lang}
-                    onClick={() => setLocale(lang)}
-                    className={`cursor-pointer px-3 py-1 rounded-full text-xs font-black uppercase ${
-                      currentLocale === lang ? 'bg-erythro-500 text-white' : 'text-gray-400'
-                    }`}
-                  >
-                    {lang}
-                  </button>
-                ))}
-              </div>
+              {hideLocaleSwitch ? null : (
+                <>
+                  <div className="w-px h-4 bg-white/20" />
+                  <div className="flex gap-2">
+                    {['en', 'ru', 'he'].map((lang) => (
+                      <button
+                        key={lang}
+                        onClick={() => setLocale(lang)}
+                        className={`cursor-pointer px-3 py-1 rounded-full text-xs font-black uppercase ${
+                          currentLocale === lang ? 'bg-erythro-500 text-white' : 'text-gray-400'
+                        }`}
+                      >
+                        {lang}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="flex w-full max-w-[280px] flex-col gap-3">
