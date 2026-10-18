@@ -30,10 +30,11 @@
 ## Сделано (theme)
 
 - LP: переключатель light/dark в шапке (справа от лого); страница и форма реагируют на тему.
+- Light LP выровнен с `/audit`: `solution-light-bg`, gold-900 accents, logo on-light, `cursor-pointer` на toggle.
 
 ## Сейчас
 
-1. Задеплоить CSP/legal + theme toggle; smoke light/dark на LP.
+1. Smoke light/dark на LP; задеплоить.
 2. Ads Final URL на субдомены.
 
 ## Не делать
