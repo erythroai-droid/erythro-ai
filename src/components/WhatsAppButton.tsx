@@ -3,11 +3,10 @@
 import { useSiteContent } from './SiteContentProvider'
 
 /**
- * Floating WhatsApp contact button for mobile/tablet (hidden on lg+, where the
- * desktop ChatButton widget already exposes contact options). Always visible and
- * gently pulsing to draw attention. Opens a WhatsApp chat with the site phone.
+ * Floating WhatsApp contact button. By default hidden on lg+ (desktop ChatButton
+ * covers contact). Pass `alwaysVisible` on ads LPs that skip ChatButton.
  */
-export default function WhatsAppButton() {
+export default function WhatsAppButton({ alwaysVisible = false }: { alwaysVisible?: boolean }) {
   const site = useSiteContent().siteSettings
   const number = (site.phone || '').replace(/[^0-9]/g, '')
   const href = number ? `https://wa.me/${number}` : '#'
@@ -18,7 +17,7 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="WhatsApp"
-      className="lg:hidden fixed bottom-[18px] end-[18px] z-50 flex h-[54px] w-[54px] items-center justify-center"
+      className={`${alwaysVisible ? '' : 'lg:hidden '}fixed bottom-[18px] end-[18px] z-50 flex h-[54px] w-[54px] items-center justify-center`}
     >
       <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-70 animate-ping" />
 

@@ -1521,31 +1521,36 @@ The tables are in fact created and `payload migrate:status` says `Yes`, but the 
 ## PIT-087 — Admin Media upload “Failed to fetch” (R2 CORS + CSP)
 
 **Tags:** `media`, `r2`, `cors`, `csp`, `payload`, `admin`  
-**Seen:** 2026-09-15 — `/admin/collections/media/create`
+**Seen:** 2026-09-15 — `/admin/collections/media/create`  
+**Regression:** 2026-10-16 — same symptom after `@payloadcms/storage-s3` 3.90.x (see cause #3)
 
-**Symptom:** Choosing a file in Payload Media shows **Failed to fetch**. Vercel may also log `POST /api/media` → `No files were uploaded.` Signed-URL route `/api/storage-s3-generate-signed-url` still returns 200. Chrome console may show a CSP `connect-src` violation to `*.r2.cloudflarestorage.com`.
+**Symptom:** Choosing a file in Payload Media shows **Failed to fetch**. Vercel may also log `POST /api/media` → `No files were uploaded.` Signed-URL route `/api/storage-s3-generate-signed-url` still returns 200. Chrome console may show a CSP `connect-src` violation to `*.r2.cloudflarestorage.com`, or a CORS preflight **403** on `*.r2.cloudflarestorage.com`.
 
-**Cause (two layers):**
+**Cause (three layers):**
 1. `s3Storage({ clientUploads: true })` has the browser `PUT` the file straight to `*.r2.cloudflarestorage.com`. Bucket `erythro-media` had **no CORS policy** (`wrangler … cors list` → code `10059`).
 2. Even with CORS fixed, admin CSP `connect-src` allowed `*.r2.dev` (CDN reads) but **not** the S3 API host, so the browser blocked the PUT and Payload surfaced a generic network error.
+3. **Payload 3.90+** signs PUTs with `If-None-Match: *`. CORS that only allows `Content-Type` + `Content-Length` makes OPTIONS return **403**; the admin UI shows **Failed to fetch**. Probe: request headers `content-type,content-length,if-none-match` → 403; without `if-none-match` → 204.
 
 **Fix:**
-1. Apply CORS from `infra/r2-media-cors.json`:
+1. Apply CORS from `infra/r2-media-cors.json` (must include `If-None-Match`):
 ```bash
+# Needs Cloudflare API token with R2 Edit (Object Read/Write S3 keys cannot PutBucketCors)
 npx wrangler r2 bucket cors set erythro-media --file infra/r2-media-cors.json --force
 ```
+   Or Dashboard → R2 → `erythro-media` → Settings → CORS → Allowed Headers: `Content-Type`, `Content-Length`, `If-None-Match`.
 2. Add `https://*.r2.cloudflarestorage.com` to **admin** CSP `connect-src` in `next.config.ts`, redeploy.
 3. Verify CORS:
 ```bash
 curl -sI -X OPTIONS "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/erythro-media/cors-probe" \
   -H "Origin: https://erythro.ai" \
   -H "Access-Control-Request-Method: PUT" \
-  -H "Access-Control-Request-Headers: content-type,content-length"
+  -H "Access-Control-Request-Headers: content-type,content-length,if-none-match"
 # expect 204 + Access-Control-Allow-Origin: https://erythro.ai
+# + Access-Control-Allow-Headers including if-none-match
 ```
 4. After deploy, `curl -sI https://erythro.ai/admin/login` CSP must include `*.r2.cloudflarestorage.com` in `connect-src`.
 
-**Prevent:** After enabling R2 client uploads, ship CORS + admin CSP in the same change. Keep `infra/r2-media-cors.json` in repo; see `docs/architecture/r2-media-storage.md`. Do not put the S3 API host on the **public** CSP unless a public page truly needs it.
+**Prevent:** After enabling R2 client uploads, ship CORS + admin CSP in the same change. When upgrading `@payloadcms/storage-s3`, re-check signed PUT headers vs `infra/r2-media-cors.json`. Do not put the S3 API host on the **public** CSP unless a public page truly needs it.
 
 ---
 
@@ -1819,6 +1824,36 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 ---
 
+## PIT-112 — Ads audit LP language jumps from cookie / localStorage
+
+**Tags:** `ads`, `i18n`, `audit`, `landing`, `cdn`  
+**Seen:** 2026-10-18 — campaign Final URL on shared `/audit`
+
+**Symptom:** User from an EN campaign lands on the audit page and sees RU (or HE), because `NEXT_LOCALE` / `erythro-locale` from a previous visit wins. Ads Quality Score and form labels mismatch the campaign language.
+
+**Cause:** Main site locale is cookie/storage-driven (and middleware must not `Set-Cookie` — PIT-056). One URL cannot be a hard language lock.
+
+**Fix:** Separate LPs on `audit-{en|ru|he}.erythro.ai` → rewrite to `/lp/audit/{locale}` with host/path lock in `LOCALE_BOOTSTRAP_SCRIPT` + `useSitePrefs({ lockedLocale })`. No language switcher. See `docs/architecture/audit-ads-landing.md`.
+
+**Prevent:** Do not point Ads Final URL at `/audit`. Do not “fix” locale by setting `NEXT_LOCALE` in middleware.
+
+---
+
+## PIT-111 — `vercel env pull` writes `[SENSITIVE]` and breaks import / revalidate
+
+**Tags:** `vercel`, `env`, `import-project`, `portfolio`  
+**Seen:** 2026-10-17 — `pnpm import:project -- content/imports/rosso-garage --create`
+
+**Symptom:** CLI prints `Database host: (unparseable DATABASE_URL)` / `getaddrinfo ENOTFOUND base`, or revalidate fails with `Failed to parse URL from [SENSITIVE]/api/revalidate…`. Project may still be written if secrets were later filled from `.env`.
+
+**Cause:** Vercel CLI 64+ cannot pull many Production secrets and writes the literal placeholder `[SENSITIVE]` into `.env.production.local`. `dotenv` loads that file first; later `.env` does not override. Hostname `"base"` is the failed parse of `[SENSITIVE]`.
+
+**Fix:** `scripts/import-project/lib/load-env.ts` fills `[SENSITIVE]` from `.env` / `.env.local`, then deletes leftover placeholders so `NEXT_PUBLIC_SITE_URL` falls back to `https://erythro.ai`. Keep real `DATABASE_URL` / `PAYLOAD_SECRET` / R2 keys in `.env`. For live page cache: real `REVALIDATION_TOKEN` or **Save once** in production admin (PIT-109).
+
+**Prevent:** After `vercel env pull`, never trust Production-only secrets in that file alone. Do not commit `.env*`.
+
+---
+
 ## PIT-110 — Supabase default grants expose Payload `public` to `anon` (hash/salt landmine)
 
 **Tags:** `supabase`, `security`, `postgrest`, `payload`, `rls`  
@@ -1934,4 +1969,6 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 - [ ] Gemini 3.x: no `temperature` / `top_p` / `top_k` / `thinking_budget` on GenerateContent or `streamText` (PIT-106)
 - [ ] Audit report links: always `/audit/report/[id]?k=…`; never bare id (PIT-107)
 - [ ] Supabase: `anon` must not SELECT Payload `public` tables; keep REST schemas empty (PIT-110)
+- [ ] After `vercel env pull`: `[SENSITIVE]` placeholders — fill from `.env` or Save in admin to revalidate (PIT-111)
+- [ ] Ads free-audit Final URL: `audit-{locale}.erythro.ai`, not `/audit` (cookie locale jump — PIT-112)
 

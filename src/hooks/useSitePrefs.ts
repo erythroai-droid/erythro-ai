@@ -36,6 +36,11 @@ export type UseSitePrefsOptions = {
    * locale + theme from cookie/localStorage so the first paint can stay cacheable.
    */
   clientHydratePrefs?: boolean
+  /**
+   * Hard-lock UI language (ads LPs). Ignores cookie/localStorage and no-ops
+   * `setLocale`. Theme may still hydrate from storage.
+   */
+  lockedLocale?: string
 }
 
 /**
@@ -51,12 +56,23 @@ export function useSitePrefs(
   options?: UseSitePrefsOptions,
 ) {
   const clientHydratePrefs = options?.clientHydratePrefs === true
-  const [locale, setLocaleState] = useState(initialLocale)
+  const lockedLocale =
+    options?.lockedLocale && isSiteLocale(options.lockedLocale) ? options.lockedLocale : null
+  const [locale, setLocaleState] = useState(lockedLocale ?? initialLocale)
   const [theme, setThemeState] = useState<SiteTheme>(initialTheme ?? defaultTheme)
 
   // useLayoutEffect: apply stored locale before paint to cut CLS from EN→RU/HE swap
-  // after ISR HTML (always SSR as `en`).
+  // after ISR HTML (always SSR as `en`). Locked LPs never adopt cookie locale.
   useLayoutEffect(() => {
+    if (lockedLocale) {
+      applyDocumentLocale(lockedLocale)
+      setLocaleState(lockedLocale)
+      const storedTheme = readStoredTheme()
+      if (storedTheme) setThemeState(storedTheme)
+      else if (!initialTheme) persistTheme(defaultTheme)
+      return
+    }
+
     if (!clientHydratePrefs) return
 
     const storedTheme = readStoredTheme()
@@ -71,10 +87,10 @@ export function useSitePrefs(
     } else if (isSiteLocale(initialLocale)) {
       persistLocale(initialLocale)
     }
-  }, [clientHydratePrefs, initialLocale, defaultTheme])
+  }, [clientHydratePrefs, initialLocale, defaultTheme, lockedLocale, initialTheme])
 
   useEffect(() => {
-    if (clientHydratePrefs) return
+    if (lockedLocale || clientHydratePrefs) return
 
     if (initialTheme) {
       persistTheme(initialTheme)
@@ -84,7 +100,7 @@ export function useSitePrefs(
       else persistTheme(defaultTheme)
     }
     if (isSiteLocale(initialLocale)) persistLocale(initialLocale)
-  }, [clientHydratePrefs, initialLocale, initialTheme, defaultTheme])
+  }, [clientHydratePrefs, initialLocale, initialTheme, defaultTheme, lockedLocale])
 
   useEffect(() => {
     const root = document.documentElement
@@ -97,6 +113,7 @@ export function useSitePrefs(
   }, [locale])
 
   const setLocale = (next: string) => {
+    if (lockedLocale) return
     if (!isSiteLocale(next)) return
     // Apply dir/lang/fonts before React re-renders motion/layout-sensitive UI.
     applyDocumentLocale(next)
@@ -109,5 +126,5 @@ export function useSitePrefs(
     persistTheme(next)
   }
 
-  return { locale, setLocale, theme, setTheme }
+  return { locale, setLocale, theme, setTheme, localeLocked: Boolean(lockedLocale) }
 }

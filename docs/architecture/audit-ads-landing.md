@@ -1,0 +1,44 @@
+# Ads landing: AI Audit (fixed locale subdomains)
+
+Отдельные посадочные для Google Ads / Meta с **жёстко зафиксированным** языком UI. Не путать с `/audit` (там язык из cookie / переключателя).
+
+## Хосты (Final URL)
+
+| Host | Locale | Internal route |
+|------|--------|----------------|
+| `https://audit-en.erythro.ai/` | `en` | `/lp/audit/en` |
+| `https://audit-ru.erythro.ai/` | `ru` | `/lp/audit/ru` |
+| `https://audit-he.erythro.ai/` | `he` | `/lp/audit/he` |
+
+DNS: Cloudflare CNAME → Vercel. Vercel Project → Domains: добавить все три.
+
+## Почему не cookie
+
+На основном сайте `NEXT_LOCALE` / `localStorage` могут переключить RU→EN (или наоборот) у пользователя с другой кампании. Middleware **не** пишет `Set-Cookie` (PIT-056 — CDN HTML). Локаль LP:
+
+1. Middleware: host → rewrite на `/lp/audit/{locale}` (URL в браузере остаётся субдоменом).
+2. `LOCALE_BOOTSTRAP_SCRIPT`: host/path lock → `html[lang]` / `dir` до paint, **игнор** cookie.
+3. `useSitePrefs({ lockedLocale })`: не читает storage, `setLocale` — no-op.
+4. Язык отчёта в форме = локаль страницы (селектор скрыт).
+
+## Что на LP
+
+Отдельный UI (`AuditLpClient`): бренд, короткий hero, 3 буллета, форма free-audit, cookie banner, ссылки privacy/terms на `erythro.ai`. Без полного Navbar, FAQ, табов pricing, splash.
+
+Форма → тот же `POST /api/contact` + `trackFreeAuditLead`. Ссылка на отчёт после успеха — абсолютный URL на `https://erythro.ai/...`.
+
+## SEO / robots
+
+`noindex, nofollow` (middleware `X-Robots-Tag` + metadata). Каноникал — свой субдомен. Органика остаётся на `/audit`.
+
+## Локальная проверка без DNS
+
+`https://localhost:3000/lp/audit/ru` (и `en` / `he`) — path lock в bootstrap + `lockedLocale`.
+
+## Деплой checklist
+
+1. Domains в Vercel + DNS.
+2. Ads Final URL = нужный субдомен.
+3. Tag Assistant на субдомене после «Принять» cookie.
+4. HE: RTL, шрифт Heebo.
+5. Не ставить второй `gtag/js` (см. `google-ads-conversions.md`).

@@ -99,6 +99,7 @@ Rules:
 | “Middleware Edge / node:console / markdown negotiation build” | `PIT-024`; `PLAYBOOK.md` §9.20 |
 | “Unit CI green tests but exit 1 / unhandled rejection / order slug 404” | `PIT-025`, `PIT-026`; `vitest.setup.ts` |
 | “Free AI Audit rate limiting / 1 domain per user / 7 days / IP tracking” | `docs/architecture/audit-rate-limiting.md`; `src/lib/auditRateLimit.ts` |
+| “Ads audit LP / fixed locale subdomain / cookie language jump” | `docs/architecture/audit-ads-landing.md`; `PIT-112`; `src/lib/auditLp.ts`; `src/middleware.ts` |
 | “Email autoresponder / order@ & team@ / n8n / IMAP & SMTP Hostinger / RFC 3834 / duplicate Hostinger Autoreply / form client ack” | `docs/infrastructure/n8n-email-autoresponder.md`; `infra/n8n/workflows/email-autoresponder.json`; `PIT-037`; `PIT-038`; `PIT-040`; `PIT-044`; `src/lib/contactNotification.ts` |
 | “Audit form website check / DNS / SSRF / no n8n workflow” | `docs/architecture/ai-audit-architecture.md` §3.1; `src/lib/checkWebsite.ts`; `PIT-041` |
 | “Free audit button does nothing / check-website 200 / no /api/contact” | `PIT-067`; `src/components/audit/AuditBody.tsx`; `src/app/(frontend)/order/[slug]/OrderClient.tsx` |

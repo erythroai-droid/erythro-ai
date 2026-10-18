@@ -16,9 +16,11 @@ if (typeof window !== 'undefined') {
 interface HeaderChipStripProps {
   /** Which Site Settings → Page Heroes upload to use. */
   page: PageHeroKey
+  /** Desktop pin under the fixed navbar. Off for scroll-away chrome (ads LPs). */
+  pin?: boolean
 }
 
-export default function HeaderChipStrip({ page }: HeaderChipStripProps) {
+export default function HeaderChipStrip({ page, pin = true }: HeaderChipStripProps) {
   const sectionRef = useRef<HTMLElement | null>(null)
   const { siteSettings } = useSiteContent()
   const hero = siteSettings.pageHeroes?.[page]
@@ -26,7 +28,7 @@ export default function HeaderChipStrip({ page }: HeaderChipStripProps) {
   const type = hero?.type || 'image'
 
   useEffect(() => {
-    if (!sectionRef.current) return
+    if (!sectionRef.current || !pin) return
 
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia()
@@ -45,7 +47,7 @@ export default function HeaderChipStrip({ page }: HeaderChipStripProps) {
     }, sectionRef)
 
     return () => ctx.revert()
-  }, [page])
+  }, [page, pin])
 
   return (
     <section
