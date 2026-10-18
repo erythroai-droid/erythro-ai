@@ -7,10 +7,12 @@
 | Host | Locale | Internal route |
 |------|--------|----------------|
 | `https://audit-en.erythro.ai/` | `en` | `/lp/audit/en` |
-| `https://audit-ru.erythro.ai/` | `ru` | `/lp/audit/ru` |
+| `https://audit-rus.erythro.ai/` | `ru` | `/lp/audit/ru` |
 | `https://audit-he.erythro.ai/` | `he` | `/lp/audit/he` |
 
-DNS: Cloudflare CNAME → Vercel. Vercel Project → Domains: добавить все три.
+DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → Domains: все три.
+
+`audit-ru.erythro.ai` остаётся alias в middleware (если DNS оживёт), но Final URL для Ads — **`audit-rus`**: Hotnet и др. ISP иногда кэшируют NXDOMAIN на `audit-ru` после первого lookup до появления записи.
 
 ## Почему не cookie
 

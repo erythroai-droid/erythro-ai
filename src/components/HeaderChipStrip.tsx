@@ -2,16 +2,10 @@
 
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useSiteContent } from '@/components/SiteContentProvider'
 import type { PageHeroKey } from '@/lib/defaultContent'
 
 const FALLBACK_SRC = '/images/small_chip.jpg'
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
-}
 
 interface HeaderChipStripProps {
   /** Which Site Settings → Page Heroes upload to use. */
@@ -20,6 +14,10 @@ interface HeaderChipStripProps {
   pin?: boolean
 }
 
+/**
+ * Page-top chip image. GSAP pin is loaded only when `pin` is true so ads LPs
+ * (pin=false) do not pull gsap/ScrollTrigger into the critical path.
+ */
 export default function HeaderChipStrip({ page, pin = true }: HeaderChipStripProps) {
   const sectionRef = useRef<HTMLElement | null>(null)
   const { siteSettings } = useSiteContent()
@@ -30,23 +28,41 @@ export default function HeaderChipStrip({ page, pin = true }: HeaderChipStripPro
   useEffect(() => {
     if (!sectionRef.current || !pin) return
 
-    const ctx = gsap.context(() => {
-      const mm = gsap.matchMedia()
+    let cancelled = false
+    let revert: (() => void) | undefined
 
-      mm.add('(min-width: 1024px)', () => {
-        ScrollTrigger.create({
-          id: `page-hero-pin-${page}`,
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: '+=100%',
-          pin: true,
-          pinSpacing: false,
-          invalidateOnRefresh: true,
+    void (async () => {
+      const [{ gsap }, { ScrollTrigger }] = await Promise.all([
+        import('gsap'),
+        import('gsap/ScrollTrigger'),
+      ])
+      if (cancelled || !sectionRef.current) return
+
+      gsap.registerPlugin(ScrollTrigger)
+
+      const ctx = gsap.context(() => {
+        const mm = gsap.matchMedia()
+
+        mm.add('(min-width: 1024px)', () => {
+          ScrollTrigger.create({
+            id: `page-hero-pin-${page}`,
+            trigger: sectionRef.current,
+            start: 'top top',
+            end: '+=100%',
+            pin: true,
+            pinSpacing: false,
+            invalidateOnRefresh: true,
+          })
         })
-      })
-    }, sectionRef)
+      }, sectionRef)
 
-    return () => ctx.revert()
+      revert = () => ctx.revert()
+    })()
+
+    return () => {
+      cancelled = true
+      revert?.()
+    }
   }, [page, pin])
 
   return (

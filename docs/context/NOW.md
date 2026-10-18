@@ -7,16 +7,25 @@
 
 ## Сделано в этой сессии
 
-- Ads LP AI Audit с жёсткой локалью (без cookie): `audit-{en|ru|he}.erythro.ai` → rewrite `/lp/audit/{locale}`.
-- Ads LP AI Audit (locale lock, PIT-112): UI зафиксирован — text|form, how below, списки, sample под Free-бейджем.
-- Docs: `docs/architecture/audit-ads-landing.md`; тест `tests/int/auditLp.int.spec.ts`.
+- Ads LP (PIT-112) задеплоен в production (`main` merge #255, READY).
+- UI/docs/тест: host lock, text|form, how below.
+
+## Сделано (домены)
+
+- Vercel Domains: `audit-en|ru|he.erythro.ai` verified.
+- CF CNAME Proxied → `cname.vercel-dns.com` (все три в UI).
+- Hotnet NXDOMAIN на `audit-ru` → публичный RU-хост сменён на `audit-rus.erythro.ai` (код + Vercel domain). Alias `audit-ru` оставлен.
+
+## Сделано (perf LP)
+
+- Chip: GSAP только при `pin` (dynamic import) — LP `pin={false}` без gsap.
+- Turnstile LP: `deferUntilInteraction` (скрипт после focus/pointer в форме).
+- Desktop logo: CSS `bg-[url]` вместо `<img>` — без preload SVG на mobile.
 
 ## Сейчас
 
-1. Закоммитить LP (по просьбе) → деплой.
-2. Vercel Domains + Cloudflare DNS: `audit-en|ru|he.erythro.ai`.
-3. Ads Final URL → субдомены (не `/audit`); Tag Assistant после cookie Accept.
-4. Smoke: форма, sample report, WhatsApp, locale не прыгает.
+1. Задеплоить perf-правки; перемерить PSI mobile.
+2. Ads Final URL на субдомены.
 
 ## Не делать
 
@@ -29,4 +38,4 @@
 
 ## Последняя эстафета
 
-2026-10-18 — Cursor — LP UI ок; дальше коммит/деплой + DNS/domains + Ads Final URL.
+2026-10-18 — Cursor — LP mobile trim готов; нужен деплой + PSI recheck.

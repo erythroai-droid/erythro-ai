@@ -101,13 +101,12 @@ function AuditLpHeader({ locale }: { locale: string }) {
           className="pointer-events-auto flex items-center text-white transition-opacity hover:opacity-80"
           aria-label={logoAlt}
         >
+          {/* Inline SVG on small screens — avoid preloading desktop wordmark on mobile. */}
           <BrandLogo className="h-[30px] w-auto lg:hidden" />
-          <img
-            src="/images/logo/Logo_digital.svg"
-            alt={logoAlt}
-            width={235}
-            height={74}
-            className="hidden h-[52px] w-auto lg:block"
+          <span
+            role="img"
+            aria-hidden
+            className="hidden h-[52px] w-[235px] bg-[url('/images/logo/Logo_digital.svg')] bg-contain bg-left bg-no-repeat lg:block"
           />
         </a>
       </header>
