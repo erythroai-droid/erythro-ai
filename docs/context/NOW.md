@@ -30,7 +30,7 @@
 ## Сделано (theme)
 
 - LP: переключатель light/dark в шапке (справа от лого); страница и форма реагируют на тему.
-- Light LP выровнен с `/audit`: `solution-light-bg`, gold-900 accents, logo on-light, `cursor-pointer` на toggle.
+- Light LP: flat `bg-gold-100`, красные круги шагов; лого всегда белое (chip тёмный).
 
 ## Сейчас
 
