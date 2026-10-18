@@ -98,6 +98,7 @@ function ThemeToggleButton({
   setTheme: (next: 'light' | 'dark') => void
 }) {
   const next = theme === 'dark' ? 'light' : 'dark'
+  const isLight = theme === 'light'
   const label =
     next === 'light'
       ? tAuditLp(auditLpCopy.themeToLight, locale)
@@ -107,7 +108,11 @@ function ThemeToggleButton({
     <button
       type="button"
       onClick={() => setTheme(next)}
-      className="pointer-events-auto flex size-11 items-center justify-center rounded-full border border-white/20 bg-coal-900/40 text-white backdrop-blur-sm transition-colors hover:border-gold-500 hover:bg-gold-500 hover:text-coal-900"
+      className={`pointer-events-auto flex size-11 cursor-pointer items-center justify-center rounded-full border backdrop-blur-sm transition-colors hover:border-gold-500 hover:bg-gold-500 hover:text-coal-900 ${
+        isLight
+          ? 'border-coal-900/15 bg-white/70 text-coal-900'
+          : 'border-white/20 bg-coal-900/40 text-white'
+      }`}
       aria-label={label}
       title={label}
     >
@@ -136,13 +141,20 @@ function AuditLpHeader({
 }) {
   const logoAlt = tAuditLp(auditLpCopy.homeLink, locale)
 
+  const isLight = theme === 'light'
+  const logoSrc = isLight
+    ? '/images/logo/Logo_digital-on-light.svg'
+    : '/images/logo/Logo_digital.svg'
+
   return (
     <div className="relative z-20 w-full">
       <HeaderChipStrip page="legal" pin={false} />
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex w-full items-center justify-between gap-4 px-[30px] py-5 lg:px-[50px] lg:py-8">
         <a
           href={mainSiteUrl('/')}
-          className="pointer-events-auto flex items-center text-white transition-opacity hover:opacity-80"
+          className={`pointer-events-auto flex items-center transition-opacity hover:opacity-80 ${
+            isLight ? 'text-coal-900' : 'text-white'
+          }`}
           aria-label={logoAlt}
         >
           {/* Inline SVG on small screens — avoid preloading desktop wordmark on mobile. */}
@@ -150,7 +162,8 @@ function AuditLpHeader({
           <span
             role="img"
             aria-hidden
-            className="hidden h-[52px] w-[235px] bg-[url('/images/logo/Logo_digital.svg')] bg-contain bg-left bg-no-repeat lg:block"
+            className="hidden h-[52px] w-[235px] bg-contain bg-left bg-no-repeat lg:block"
+            style={{ backgroundImage: `url('${logoSrc}')` }}
           />
         </a>
         <ThemeToggleButton locale={locale} theme={theme} setTheme={setTheme} />
@@ -199,7 +212,7 @@ function AuditLpFooter({ locale, theme }: { locale: string; theme: 'light' | 'da
           <button
             type="button"
             onClick={openConsentSettings}
-            className={`text-xs uppercase leading-[1.5] transition-colors hover:text-gold-500 ${
+            className={`cursor-pointer text-xs uppercase leading-[1.5] transition-colors hover:text-gold-500 ${
               isLight ? 'text-coal-900' : 'text-white'
             }`}
           >
@@ -225,27 +238,34 @@ export default function AuditLpClient({
   const isRtl = locale === 'he'
   const isLight = theme === 'light'
   const sampleHref = auditSampleReportHref('audit-free', locale)
+  // Light tokens match /audit (`AuditBody`): solution-light-bg + gold-900 accents.
   const ink = isLight ? 'text-coal-900' : 'text-white'
-  const muted = isLight ? 'text-coal-900/70' : 'text-white/75'
-  const mutedSoft = isLight ? 'text-coal-900/65' : 'text-white/65'
-  const listText = isLight ? 'text-coal-900/80' : 'text-white/80'
-  const accent = isLight ? 'text-erythro-500' : 'text-gold-500'
-  const accentBorder = isLight ? 'border-erythro-500' : 'border-gold-500'
-  const plate = isLight ? 'bg-gold-100' : 'bg-coal-900'
-  const cardBg = isLight ? 'bg-white' : 'bg-coal-900'
+  const muted = isLight ? 'text-coal-900/85' : 'text-white/75'
+  const mutedSoft = isLight ? 'text-coal-900/70' : 'text-white/65'
+  const listText = isLight ? 'text-coal-900/85' : 'text-white/80'
+  const accent = isLight ? 'text-gold-900' : 'text-gold-500'
+  const accentBorder = isLight ? 'border-coal-900/10' : 'border-gold-500'
+  const shell = isLight ? 'bg-gold-100' : 'bg-coal-900'
+  const plate = isLight ? 'solution-light-bg text-coal-900' : 'dark-gradient-bg text-white'
+  const cardClass = isLight
+    ? 'border border-white bg-white shadow-card-services hover:shadow-[0_8px_26px_0_rgba(13,13,13,0.22)]'
+    : 'border border-gold-500 bg-coal-900 hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)]'
 
   return (
     <SiteContentProvider value={content}>
       <div
         dir={isRtl ? 'rtl' : 'ltr'}
-        className={`relative min-h-screen overflow-x-clip font-sans transition-colors duration-500 ${plate} ${ink}`}
+        className={`relative min-h-screen overflow-x-clip font-sans transition-colors duration-500 ${shell} ${ink}`}
       >
         <AuditLpHeader locale={locale} theme={theme} setTheme={setTheme} />
 
         <section
           id="audit-lp"
-          className={`relative z-20 mx-auto flex w-full max-w-[1170px] flex-col gap-10 px-[30px] pb-16 pt-6 max-lg:-mt-8 max-lg:overflow-clip max-lg:rounded-t-[28px] max-lg:pt-10 max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:gap-12 lg:pb-20 lg:pt-10 ${plate}`}
+          data-menu-contrast={isLight ? 'light' : 'dark'}
+          className={`relative z-20 w-full shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:-mt-8 max-lg:overflow-clip max-lg:rounded-t-[28px] ${plate}`}
         >
+          <div className="solution-section-noise absolute inset-0 z-[1] pointer-events-none" aria-hidden />
+          <div className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col gap-10 px-[30px] pb-16 pt-6 max-lg:pt-10 lg:gap-12 lg:pb-20 lg:pt-10">
           <div className="flex w-full flex-col items-center gap-4 text-center">
             <div className="flex flex-col items-center gap-[5px]">
               <h1
@@ -258,7 +278,7 @@ export default function AuditLpClient({
               </h1>
               <p
                 className={`m-0 max-w-2xl font-sans text-base font-light leading-8 tracking-[3.2px] ${
-                  isLight ? 'text-erythro-500' : 'text-gold-800'
+                  isLight ? 'text-gold-900' : 'text-gold-800'
                 }`}
               >
                 {tAuditLp(auditLpCopy.headline, locale)}
@@ -270,7 +290,9 @@ export default function AuditLpClient({
               </p>
             </div>
             <p
-              className={`m-0 rounded-[40px] border bg-transparent px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] ${accentBorder} ${accent}`}
+              className={`m-0 rounded-[40px] border bg-transparent px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] ${
+                isLight ? 'border-coal-900/15 text-gold-900' : `${accentBorder} ${accent}`
+              }`}
             >
               {tAuditLp(auditLpCopy.freeBadge, locale)}
             </p>
@@ -282,7 +304,7 @@ export default function AuditLpClient({
                   rel="noopener noreferrer"
                   className={`text-sm font-medium underline decoration-from-font underline-offset-4 transition-colors ${
                     isLight
-                      ? 'text-erythro-500 hover:text-erythro-500/80'
+                      ? 'text-gold-900 hover:text-coal-900'
                       : 'text-gold-500 hover:text-gold-400'
                   }`}
                 >
@@ -357,17 +379,17 @@ export default function AuditLpClient({
             </div>
 
             <div className="relative w-full py-1" aria-hidden>
-              <div
-                className={`pointer-events-none absolute start-[16.666%] end-[16.666%] top-1/2 hidden h-px -translate-y-1/2 md:block ${
-                  isLight ? 'bg-erythro-500' : 'bg-gold-500'
-                }`}
-              />
+              <div className="pointer-events-none absolute start-[16.666%] end-[16.666%] top-1/2 hidden h-px -translate-y-1/2 bg-gold-500 md:block" />
               <ol className="relative m-0 grid list-none grid-cols-3 justify-items-center p-0">
                 {auditLpCopy.benefits.map((_, index) => (
                   <li key={index} className="flex justify-center">
                     <span
                       dir="ltr"
-                      className={`relative z-[1] flex size-11 items-center justify-center rounded-full border bg-erythro-500 text-sm font-bold tracking-[0.06em] text-white shadow-[0_3px_16px_0_rgba(229,36,33,0.35)] ${accentBorder}`}
+                      className={`relative z-[1] flex size-11 items-center justify-center rounded-full border text-sm font-bold tracking-[0.06em] shadow-[0_3px_16px_0_rgba(229,36,33,0.35)] ${
+                        isLight
+                          ? 'border-coal-900 bg-coal-900 text-white'
+                          : 'border-gold-500 bg-erythro-500 text-white'
+                      }`}
                     >
                       {String(index + 1).padStart(2, '0')}
                     </span>
@@ -380,7 +402,7 @@ export default function AuditLpClient({
               {auditLpCopy.benefits.map((step, index) => (
                 <li
                   key={step.title.en}
-                  className={`rounded-[10px] border p-6 pb-11 transition-shadow duration-300 hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)] md:p-8 md:pb-[52px] ${accentBorder} ${cardBg}`}
+                  className={`rounded-[10px] p-6 pb-11 transition-shadow duration-300 md:p-8 md:pb-[52px] ${cardClass}`}
                 >
                   <p
                     className={`m-0 mb-2 text-[11px] font-bold uppercase tracking-[0.14em] md:hidden ${accent}`}
@@ -398,6 +420,7 @@ export default function AuditLpClient({
                 </li>
               ))}
             </ol>
+          </div>
           </div>
         </section>
 

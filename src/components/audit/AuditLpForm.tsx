@@ -344,7 +344,7 @@ export default function AuditLpForm({
     >
       <p
         className={`m-0 mb-5 font-sans text-lg font-semibold uppercase leading-snug tracking-[0.08em] sm:text-xl ${
-          isLight ? 'text-erythro-500' : 'text-gold-500'
+          isLight ? 'text-coal-900' : 'text-gold-500'
         }`}
       >
         {tAuditLp(auditLpCopy.formKicker, locale)}
