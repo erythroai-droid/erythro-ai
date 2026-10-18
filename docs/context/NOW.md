@@ -22,9 +22,18 @@
 - Turnstile LP: `deferUntilInteraction` (скрипт после focus/pointer в форме).
 - Desktop logo: CSS `bg-[url]` вместо `<img>` — без preload SVG на mobile.
 
+## Сделано (CSP / legal links)
+
+- LP: privacy/terms → абсолютные `erythro.ai` (`<a>`, не Next Link soft-nav).
+- CSP `connect-src`: `https://erythro.ai` + `https://*.erythro.ai` (PSI console CSP на `/privacy`).
+
+## Сделано (theme)
+
+- LP: переключатель light/dark в шапке (справа от лого); страница и форма реагируют на тему.
+
 ## Сейчас
 
-1. Задеплоить perf-правки; перемерить PSI mobile.
+1. Задеплоить CSP/legal + theme toggle; smoke light/dark на LP.
 2. Ads Final URL на субдомены.
 
 ## Не делать
@@ -38,4 +47,4 @@
 
 ## Последняя эстафета
 
-2026-10-18 — Cursor — LP mobile trim готов; нужен деплой + PSI recheck.
+2026-10-18 — Cursor — LP perf на production (#256); дальше PSI + Ads Final URL.

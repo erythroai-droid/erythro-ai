@@ -26,7 +26,8 @@ const PUBLIC_CONTENT_SECURITY_POLICY = [
   "child-src https://challenges.cloudflare.com blob:",
   "worker-src 'self' blob:",
   // Public pages only talk to the r2.dev CDN for media; S3 API host is admin-only.
-  "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://www.google.com https://*.google.com https://www.google.co.il https://www.google.ru https://www.googleadservices.com https://googleads.g.doubleclick.net https://*.g.doubleclick.net https://stats.g.doubleclick.net https://pagead2.googlesyndication.com https://ad.doubleclick.net https://www.facebook.com https://connect.facebook.net https://*.facebook.com https://vitals.vercel-insights.com https://*.public.blob.vercel-storage.com https://*.r2.dev https://challenges.cloudflare.com https://cloudflareinsights.com",
+  // Apex + *.erythro.ai: ads LPs (audit-*.erythro.ai) open legal links / reports on the main host.
+  "connect-src 'self' https://erythro.ai https://*.erythro.ai https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://www.google.com https://*.google.com https://www.google.co.il https://www.google.ru https://www.googleadservices.com https://googleads.g.doubleclick.net https://*.g.doubleclick.net https://stats.g.doubleclick.net https://pagead2.googlesyndication.com https://ad.doubleclick.net https://www.facebook.com https://connect.facebook.net https://*.facebook.com https://vitals.vercel-insights.com https://*.public.blob.vercel-storage.com https://*.r2.dev https://challenges.cloudflare.com https://cloudflareinsights.com",
   "media-src 'self' blob: https:",
   "frame-ancestors 'self'",
   "base-uri 'self'",

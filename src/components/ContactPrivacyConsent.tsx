@@ -21,6 +21,38 @@ interface ContactPrivacyConsentProps {
    * - `consent`: checkbox only
    */
   parts?: 'all' | 'notice' | 'consent'
+  /** Absolute legal URLs on ads LPs (avoid soft-nav on LP host). */
+  privacyHref?: string
+  termsHref?: string
+}
+
+function LegalAnchor({
+  href,
+  className,
+  children,
+  openInNewTab,
+}: {
+  href: string
+  className: string
+  children: React.ReactNode
+  openInNewTab?: boolean
+}) {
+  if (/^https?:\/\//i.test(href)) {
+    return (
+      <a href={href} className={className} target="_blank" rel="noopener noreferrer">
+        {children}
+      </a>
+    )
+  }
+  return (
+    <Link
+      href={href}
+      className={className}
+      {...(openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+    >
+      {children}
+    </Link>
+  )
 }
 
 function LockIcon({ className = '' }: { className?: string }) {
@@ -59,6 +91,8 @@ export default function ContactPrivacyConsent({
   disabled = false,
   showTerms = false,
   parts = 'all',
+  privacyHref = '/privacy',
+  termsHref = '/terms',
 }: ContactPrivacyConsentProps) {
   const t = (field: Record<string, string>) => field[locale] || field.en
   const form = contactForm
@@ -107,15 +141,15 @@ export default function ContactPrivacyConsent({
           />
           <span>
             {t(form.consentPrefix)}{' '}
-            <Link href="/privacy" className={linkClass} target="_blank" rel="noopener noreferrer">
+            <LegalAnchor href={privacyHref} className={linkClass} openInNewTab>
               {t(form.privacyLink)}
-            </Link>
+            </LegalAnchor>
             {showTerms ? (
               <>
                 {t(form.termsJoiner)}
-                <Link href="/terms" className={linkClass} target="_blank" rel="noopener noreferrer">
+                <LegalAnchor href={termsHref} className={linkClass} openInNewTab>
                   {t(form.termsLink)}
-                </Link>
+                </LegalAnchor>
               </>
             ) : null}{' '}
             {t(form.consentSuffix)}

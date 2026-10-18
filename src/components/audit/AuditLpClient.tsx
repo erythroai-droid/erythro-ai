@@ -88,14 +88,58 @@ function BrandLogo({ className = '' }: { className?: string }) {
   )
 }
 
-/** Chip strip + logo only (no burger / lang / a11y). Scrolls with the page. */
-function AuditLpHeader({ locale }: { locale: string }) {
+function ThemeToggleButton({
+  locale,
+  theme,
+  setTheme,
+}: {
+  locale: string
+  theme: 'light' | 'dark'
+  setTheme: (next: 'light' | 'dark') => void
+}) {
+  const next = theme === 'dark' ? 'light' : 'dark'
+  const label =
+    next === 'light'
+      ? tAuditLp(auditLpCopy.themeToLight, locale)
+      : tAuditLp(auditLpCopy.themeToDark, locale)
+
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(next)}
+      className="pointer-events-auto flex size-11 items-center justify-center rounded-full border border-white/20 bg-coal-900/40 text-white backdrop-blur-sm transition-colors hover:border-gold-500 hover:bg-gold-500 hover:text-coal-900"
+      aria-label={label}
+      title={label}
+    >
+      {theme === 'dark' ? (
+        <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm-12.37 1.06l-1.06 1.06c-.39.39-.39 1.03 0 1.41.39.39 1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0zm12.37-13.43a.996.996 0 000-1.41l-1.06-1.06c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.38.39 1.02.39 1.41 0z" />
+        </svg>
+      ) : (
+        <svg className="size-[15px]" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+          <path d="M12.3 22h-.1c-5.4 0-9.8-4.4-9.8-9.8 0-5.1 3.9-9.3 9-9.8.6-.1 1.1.4 1 1-.5 2.5.2 5.1 1.9 6.8 1.7 1.7 4.3 2.4 6.8 1.9.6-.1 1.1.4 1 1-.9 5.2-5.3 9-10.8 8.9z" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
+/** Chip strip + logo + theme toggle. Scrolls with the page. */
+function AuditLpHeader({
+  locale,
+  theme,
+  setTheme,
+}: {
+  locale: string
+  theme: 'light' | 'dark'
+  setTheme: (next: 'light' | 'dark') => void
+}) {
   const logoAlt = tAuditLp(auditLpCopy.homeLink, locale)
 
   return (
     <div className="relative z-20 w-full">
       <HeaderChipStrip page="legal" pin={false} />
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex w-full items-center px-[30px] py-5 lg:px-[50px] lg:py-8">
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex w-full items-center justify-between gap-4 px-[30px] py-5 lg:px-[50px] lg:py-8">
         <a
           href={mainSiteUrl('/')}
           className="pointer-events-auto flex items-center text-white transition-opacity hover:opacity-80"
@@ -109,13 +153,14 @@ function AuditLpHeader({ locale }: { locale: string }) {
             className="hidden h-[52px] w-[235px] bg-[url('/images/logo/Logo_digital.svg')] bg-contain bg-left bg-no-repeat lg:block"
           />
         </a>
+        <ThemeToggleButton locale={locale} theme={theme} setTheme={setTheme} />
       </header>
     </div>
   )
 }
 
 /** Slim LP footer: copyright + legal only. */
-function AuditLpFooter({ locale }: { locale: string }) {
+function AuditLpFooter({ locale, theme }: { locale: string; theme: 'light' | 'dark' }) {
   const content = useSiteContent()
   const footer = content.footer
   const cookieConsent = content.cookieConsent
@@ -123,17 +168,30 @@ function AuditLpFooter({ locale }: { locale: string }) {
   const cookieSettingsLabel =
     t(cookieConsent.manage) ||
     (locale === 'ru' ? 'Настройки Cookie' : locale === 'he' ? 'הגדרות Cookie' : 'Cookie Settings')
+  const isLight = theme === 'light'
 
   return (
     <footer className="relative z-10 mx-auto w-full max-w-[1170px] px-[30px] pb-10 pt-2">
-      <div className="flex w-full flex-col items-start justify-between gap-6 border-t border-white/10 pt-6 lg:flex-row lg:items-center lg:gap-4">
-        <p className="m-0 text-xs uppercase leading-[1.5] text-white">{t(footer.copyright)}</p>
+      <div
+        className={`flex w-full flex-col items-start justify-between gap-6 border-t pt-6 lg:flex-row lg:items-center lg:gap-4 ${
+          isLight ? 'border-coal-900/10' : 'border-white/10'
+        }`}
+      >
+        <p
+          className={`m-0 text-xs uppercase leading-[1.5] ${
+            isLight ? 'text-coal-900' : 'text-white'
+          }`}
+        >
+          {t(footer.copyright)}
+        </p>
         <div className="flex flex-wrap items-center gap-x-[30px] gap-y-3">
           {footer.legalLinks.map((link) => (
             <a
               key={link.id}
               href={mainSiteUrl(link.href)}
-              className="text-xs uppercase leading-[1.5] text-white transition-colors hover:text-gold-500"
+              className={`text-xs uppercase leading-[1.5] transition-colors hover:text-gold-500 ${
+                isLight ? 'text-coal-900' : 'text-white'
+              }`}
             >
               {t(link.label)}
             </a>
@@ -141,7 +199,9 @@ function AuditLpFooter({ locale }: { locale: string }) {
           <button
             type="button"
             onClick={openConsentSettings}
-            className="text-xs uppercase leading-[1.5] text-white transition-colors hover:text-gold-500"
+            className={`text-xs uppercase leading-[1.5] transition-colors hover:text-gold-500 ${
+              isLight ? 'text-coal-900' : 'text-white'
+            }`}
           >
             {cookieSettingsLabel}
           </button>
@@ -159,40 +219,59 @@ export default function AuditLpClient({
   content,
   auditPageContent,
 }: AuditLpClientProps) {
-  const { locale, theme } = useSitePrefs(lockedLocale, 'dark', undefined, {
+  const { locale, theme, setTheme } = useSitePrefs(lockedLocale, 'dark', undefined, {
     lockedLocale,
   })
   const isRtl = locale === 'he'
+  const isLight = theme === 'light'
   const sampleHref = auditSampleReportHref('audit-free', locale)
+  const ink = isLight ? 'text-coal-900' : 'text-white'
+  const muted = isLight ? 'text-coal-900/70' : 'text-white/75'
+  const mutedSoft = isLight ? 'text-coal-900/65' : 'text-white/65'
+  const listText = isLight ? 'text-coal-900/80' : 'text-white/80'
+  const accent = isLight ? 'text-erythro-500' : 'text-gold-500'
+  const accentBorder = isLight ? 'border-erythro-500' : 'border-gold-500'
+  const plate = isLight ? 'bg-gold-100' : 'bg-coal-900'
+  const cardBg = isLight ? 'bg-white' : 'bg-coal-900'
 
   return (
     <SiteContentProvider value={content}>
       <div
         dir={isRtl ? 'rtl' : 'ltr'}
-        className="relative min-h-screen overflow-x-clip bg-coal-900 font-sans text-white"
+        className={`relative min-h-screen overflow-x-clip font-sans transition-colors duration-500 ${plate} ${ink}`}
       >
-        <AuditLpHeader locale={locale} />
+        <AuditLpHeader locale={locale} theme={theme} setTheme={setTheme} />
 
         <section
           id="audit-lp"
-          className="relative z-20 mx-auto flex w-full max-w-[1170px] flex-col gap-10 px-[30px] pb-16 pt-6 max-lg:-mt-8 max-lg:overflow-clip max-lg:rounded-t-[28px] max-lg:bg-coal-900 max-lg:pt-10 max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:gap-12 lg:pb-20 lg:pt-10"
+          className={`relative z-20 mx-auto flex w-full max-w-[1170px] flex-col gap-10 px-[30px] pb-16 pt-6 max-lg:-mt-8 max-lg:overflow-clip max-lg:rounded-t-[28px] max-lg:pt-10 max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:gap-12 lg:pb-20 lg:pt-10 ${plate}`}
         >
           <div className="flex w-full flex-col items-center gap-4 text-center">
             <div className="flex flex-col items-center gap-[5px]">
-              <h1 className="m-0 font-sans text-[32px] font-extralight uppercase leading-tight tracking-[9.6px] text-white lg:text-[48px] lg:leading-[60px]">
+              <h1
+                className={`m-0 font-sans text-[32px] font-extralight uppercase leading-tight tracking-[9.6px] lg:text-[48px] lg:leading-[60px] ${ink}`}
+              >
                 <StylizedSectionTitle
                   text={tAuditLp(auditLpCopy.sectionTitle, locale)}
-                  restClassName="text-white"
+                  restClassName={ink}
                 />
               </h1>
-              <p className="m-0 max-w-2xl font-sans text-base font-light leading-8 tracking-[3.2px] text-gold-800">
+              <p
+                className={`m-0 max-w-2xl font-sans text-base font-light leading-8 tracking-[3.2px] ${
+                  isLight ? 'text-erythro-500' : 'text-gold-800'
+                }`}
+              >
                 {tAuditLp(auditLpCopy.headline, locale)}
               </p>
-              <p className="m-0 max-w-xl font-sans text-sm font-light leading-7 text-white/65 sm:text-base sm:leading-8">
+              <p
+                className={`m-0 max-w-xl font-sans text-sm font-light leading-7 sm:text-base sm:leading-8 ${mutedSoft}`}
+              >
                 {tAuditLp(auditLpCopy.subhead, locale)}
               </p>
             </div>
-            <p className="m-0 rounded-[40px] border border-gold-500 bg-transparent px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-gold-500">
+            <p
+              className={`m-0 rounded-[40px] border bg-transparent px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] ${accentBorder} ${accent}`}
+            >
               {tAuditLp(auditLpCopy.freeBadge, locale)}
             </p>
             {sampleHref ? (
@@ -201,7 +280,11 @@ export default function AuditLpClient({
                   href={sampleHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-gold-500 underline decoration-from-font underline-offset-4 transition-colors hover:text-gold-400"
+                  className={`text-sm font-medium underline decoration-from-font underline-offset-4 transition-colors ${
+                    isLight
+                      ? 'text-erythro-500 hover:text-erythro-500/80'
+                      : 'text-gold-500 hover:text-gold-400'
+                  }`}
                 >
                   {auditSampleReportLabel(locale)}
                 </a>
@@ -211,19 +294,19 @@ export default function AuditLpClient({
 
           <div className="grid w-full grid-cols-1 items-start gap-10 lg:grid-cols-2 lg:gap-14">
             <div className="flex min-w-0 flex-col gap-6 text-start">
-              <p className="m-0 w-full text-sm font-light leading-7 text-white/75 sm:text-base sm:leading-8">
+              <p className={`m-0 w-full text-sm font-light leading-7 sm:text-base sm:leading-8 ${muted}`}>
                 {tAuditLp(auditLpCopy.about, locale)}
               </p>
 
               <div className="flex flex-col gap-3">
-                <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-gold-500">
+                <p className={`m-0 text-[11px] font-bold uppercase tracking-[0.14em] ${accent}`}>
                   {tAuditLp(auditLpCopy.scalesHeading, locale)}
                 </p>
                 <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
                   {auditLpCopy.scales.map((scale) => (
                     <li
                       key={scale.en}
-                      className="flex items-start gap-2 text-[13px] font-light leading-[1.7] text-white/80"
+                      className={`flex items-start gap-2 text-[13px] font-light leading-[1.7] ${listText}`}
                     >
                       <span
                         aria-hidden
@@ -236,14 +319,14 @@ export default function AuditLpClient({
               </div>
 
               <div className="flex flex-col gap-3">
-                <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-gold-500">
+                <p className={`m-0 text-[11px] font-bold uppercase tracking-[0.14em] ${accent}`}>
                   {tAuditLp(auditLpCopy.deliverablesHeading, locale)}
                 </p>
                 <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
                   {auditLpCopy.deliverables.map((item) => (
                     <li
                       key={item.en}
-                      className="flex items-start gap-2 text-[13px] font-light leading-[1.7] text-white/80"
+                      className={`flex items-start gap-2 text-[13px] font-light leading-[1.7] ${listText}`}
                     >
                       <span
                         aria-hidden
@@ -254,7 +337,6 @@ export default function AuditLpClient({
                   ))}
                 </ul>
               </div>
-
             </div>
 
             <div className="min-w-0 w-full">
@@ -264,22 +346,28 @@ export default function AuditLpClient({
 
           <div className="flex w-full flex-col gap-6">
             <div className="flex flex-col items-center gap-2 text-center">
-              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.18em] text-gold-500">
+              <p className={`m-0 text-[11px] font-bold uppercase tracking-[0.18em] ${accent}`}>
                 {tAuditLp(auditLpCopy.benefitsKicker, locale)}
               </p>
-              <h2 className="m-0 font-sans text-xl font-normal leading-[1.5] tracking-[0.04em] text-white md:text-2xl">
+              <h2
+                className={`m-0 font-sans text-xl font-normal leading-[1.5] tracking-[0.04em] md:text-2xl ${ink}`}
+              >
                 {tAuditLp(auditLpCopy.benefitsHeading, locale)}
               </h2>
             </div>
 
             <div className="relative w-full py-1" aria-hidden>
-              <div className="pointer-events-none absolute start-[16.666%] end-[16.666%] top-1/2 hidden h-px -translate-y-1/2 bg-gold-500 md:block" />
+              <div
+                className={`pointer-events-none absolute start-[16.666%] end-[16.666%] top-1/2 hidden h-px -translate-y-1/2 md:block ${
+                  isLight ? 'bg-erythro-500' : 'bg-gold-500'
+                }`}
+              />
               <ol className="relative m-0 grid list-none grid-cols-3 justify-items-center p-0">
                 {auditLpCopy.benefits.map((_, index) => (
                   <li key={index} className="flex justify-center">
                     <span
                       dir="ltr"
-                      className="relative z-[1] flex size-11 items-center justify-center rounded-full border border-gold-500 bg-erythro-500 text-sm font-bold tracking-[0.06em] text-white shadow-[0_3px_16px_0_rgba(229,36,33,0.35)]"
+                      className={`relative z-[1] flex size-11 items-center justify-center rounded-full border bg-erythro-500 text-sm font-bold tracking-[0.06em] text-white shadow-[0_3px_16px_0_rgba(229,36,33,0.35)] ${accentBorder}`}
                     >
                       {String(index + 1).padStart(2, '0')}
                     </span>
@@ -292,15 +380,19 @@ export default function AuditLpClient({
               {auditLpCopy.benefits.map((step, index) => (
                 <li
                   key={step.title.en}
-                  className="rounded-[10px] border border-gold-500 bg-coal-900 p-6 pb-11 transition-shadow duration-300 hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)] md:p-8 md:pb-[52px]"
+                  className={`rounded-[10px] border p-6 pb-11 transition-shadow duration-300 hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)] md:p-8 md:pb-[52px] ${accentBorder} ${cardBg}`}
                 >
-                  <p className="m-0 mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-gold-500 md:hidden">
+                  <p
+                    className={`m-0 mb-2 text-[11px] font-bold uppercase tracking-[0.14em] md:hidden ${accent}`}
+                  >
                     {String(index + 1).padStart(2, '0')}
                   </p>
-                  <h3 className="m-0 mb-3 font-sans text-[22px] font-semibold leading-[1.4] tracking-normal text-gold-500 sm:text-[24px] sm:leading-[1.5]">
+                  <h3
+                    className={`m-0 mb-3 font-sans text-[22px] font-semibold leading-[1.4] tracking-normal sm:text-[24px] sm:leading-[1.5] ${accent}`}
+                  >
                     {tAuditLp(step.title, locale)}
                   </h3>
-                  <p className="m-0 text-base font-light leading-7 text-white/80">
+                  <p className={`m-0 text-base font-light leading-7 ${listText}`}>
                     {tAuditLp(step.body, locale)}
                   </p>
                 </li>
@@ -310,11 +402,15 @@ export default function AuditLpClient({
         </section>
 
         <div id="footer">
-          <AuditLpFooter locale={locale} />
+          <AuditLpFooter locale={locale} theme={theme} />
         </div>
 
         <WhatsAppButton alwaysVisible />
-        <CookieConsent locale={locale} theme={theme} />
+        <CookieConsent
+          locale={locale}
+          theme={theme}
+          privacyHref={mainSiteUrl('/privacy')}
+        />
       </div>
     </SiteContentProvider>
   )
