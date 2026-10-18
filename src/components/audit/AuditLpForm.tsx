@@ -450,6 +450,7 @@ export default function AuditLpForm({
             theme={isLight ? 'light' : 'dark'}
             locale={locale}
             onToken={setTurnstileToken}
+            deferUntilInteraction
           />
 
           <div className="flex flex-col gap-3 pt-1">

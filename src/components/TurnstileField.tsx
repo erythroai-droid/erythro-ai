@@ -1,7 +1,7 @@
 'use client'
 
 import Script from 'next/script'
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { TurnstileAction } from '@/lib/turnstile'
 
 const SITE_KEY = (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '').trim()
@@ -32,13 +32,38 @@ export const TurnstileField = forwardRef<
     locale: string
     onToken: (token: string) => void
     className?: string
+    /**
+     * Wait for focus/pointer inside the parent form before loading the
+     * Turnstile script (ads LP — keep api.js off the first paint).
+     */
+    deferUntilInteraction?: boolean
   }
->(function TurnstileField({ action, theme, locale, onToken, className }, ref) {
+>(function TurnstileField(
+  { action, theme, locale, onToken, className, deferUntilInteraction = false },
+  ref,
+) {
+  const shellRef = useRef<HTMLDivElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const widgetIdRef = useRef<TurnstileWidgetId | null>(null)
   const onTokenRef = useRef(onToken)
   onTokenRef.current = onToken
   const language = turnstileLanguage(locale)
+  const [armed, setArmed] = useState(!deferUntilInteraction)
+
+  useEffect(() => {
+    if (armed || !deferUntilInteraction) return
+    const shell = shellRef.current
+    const target = shell?.closest('form') ?? shell
+    if (!target) return
+
+    const arm = () => setArmed(true)
+    target.addEventListener('focusin', arm)
+    target.addEventListener('pointerdown', arm)
+    return () => {
+      target.removeEventListener('focusin', arm)
+      target.removeEventListener('pointerdown', arm)
+    }
+  }, [armed, deferUntilInteraction])
 
   const renderWidget = useCallback(() => {
     const api = window.turnstile
@@ -67,6 +92,7 @@ export const TurnstileField = forwardRef<
   }))
 
   useEffect(() => {
+    if (!armed) return
     renderWidget()
     return () => {
       const id = widgetIdRef.current
@@ -79,7 +105,7 @@ export const TurnstileField = forwardRef<
         }
       }
     }
-  }, [renderWidget])
+  }, [armed, renderWidget])
 
   if (!SITE_KEY) return null
 
@@ -88,17 +114,21 @@ export const TurnstileField = forwardRef<
 
   return (
     <>
-      <Script
-        id="cf-turnstile"
-        src={SCRIPT_SRC}
-        strategy="afterInteractive"
-        onReady={renderWidget}
-      />
+      {armed ? (
+        <Script
+          id="cf-turnstile"
+          src={SCRIPT_SRC}
+          strategy="afterInteractive"
+          onReady={renderWidget}
+        />
+      ) : null}
       <div
+        ref={shellRef}
         className={`turnstile-field w-full overflow-hidden border ps-4 pe-4 py-3 ${
           isLight ? 'turnstile-field--light border-coal-900/15' : 'border-white/15'
         } ${className ?? 'rounded-[80px]'}`}
         style={{ backgroundColor: shell }}
+        aria-hidden={!armed}
       >
         {/*
           Widget chrome lives in a closed-shadow iframe (65px). Overlay CSS
