@@ -1,0 +1,69 @@
+{
+  "id": "erythro-ai-audit-pro-offer-walker",
+  "name": "AI Audit Pro Offer Walker",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "schedule-pro-offer-walker",
+      "name": "Every 5 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erythro.ai/api/audit/reconcile",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"newStaleMinutes\": 2,\n  \"inProgressStaleMinutes\": 20\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "http-pro-offer-walker",
+      "name": "POST reconcile (Pro Walker)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [280, 0],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "AGENT_SECRET_CRED_ID",
+          "name": "Agent Secret"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 5 minutes": {
+      "main": [
+        [
+          {
+            "node": "POST reconcile (Pro Walker)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
