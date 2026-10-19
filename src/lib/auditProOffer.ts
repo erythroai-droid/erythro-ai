@@ -488,24 +488,17 @@ function shellHtml(input: {
   const fontStack = isRtl
     ? "'Heebo',Arial,Helvetica,sans-serif"
     : "Arial,Helvetica,sans-serif"
-  // Full wordmark + tagline (same asset as design/letterheads/logo.svg).
-  const logoUrl = `${SITE_URL}/images/logo/letterhead-full.svg`
+  // Email logo has a baked-in white plate (CSS bgcolor is inverted in Gmail dark mode).
+  const logoUrl = `${SITE_URL}/images/logo/letterhead-full-email.svg?v=2`
   const footerLine = letterheadFooterLine(input.locale)
   const unsubLabel = unsubscribeCopy(input.locale).linkLabel
   // Header: logo at inline-start, contacts at inline-end (dir flips cells in RTL).
-  // White plate under logo: Gmail dark mode keeps SVG #0d0d0d wordmark readable.
   const headerRow = `
         <tr>
           <td style="padding:0 0 16px;vertical-align:middle;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="background-color:#ffffff;border-collapse:collapse;">
-              <tr>
-                <td bgcolor="#ffffff" style="background-color:#ffffff;padding:8px 10px;">
-                  <a href="${escapeHtml(SITE_URL)}" style="text-decoration:none;">
-                    <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(input.brand)}" width="177" height="56" style="display:block;border:0;outline:none;width:177px;height:auto;max-width:177px;"/>
-                  </a>
-                </td>
-              </tr>
-            </table>
+            <a href="${escapeHtml(SITE_URL)}" style="text-decoration:none;">
+              <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(input.brand)}" width="189" height="68" style="display:block;border:0;outline:none;width:189px;height:auto;max-width:189px;"/>
+            </a>
           </td>
           <td dir="ltr" align="${contactsAlign}" style="padding:0 0 16px;vertical-align:middle;font-size:11px;line-height:16px;color:#686868;">
             <a href="${escapeHtml(SITE_URL)}" style="color:#686868;text-decoration:none;">erythro.ai</a><br/>
@@ -519,7 +512,12 @@ function shellHtml(input: {
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width"/>
+<meta name="color-scheme" content="light only"/>
+<meta name="supported-color-schemes" content="light"/>
 <title>${escapeHtml(input.subject)}</title>
+<style type="text/css">
+:root { color-scheme: light only; }
+</style>
 </head>
 <body style="margin:0;padding:0;background:#e9e6e1;font-family:${fontStack};color:#1e1e1e;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(input.preheader)}</div>
