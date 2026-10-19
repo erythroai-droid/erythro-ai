@@ -31,19 +31,22 @@ Sends happen only when `AUDIT_PRO_OFFER_ENABLED=1` **and** Pro/Diagnostic unpaid
 set VPS_PASSWORD=...
 set AGENT_SECRET_TOKEN=...   # or services/audit-agent/.env.deployed.secret
 py -3 scripts/deploy_n8n_audit_pro_offer_walker.py
+# after AUDIT_PRO_OFFER_ENABLED=1:
+py -3 scripts/deploy_n8n_audit_pro_offer_walker.py --activate
 ```
 
-Script imports credential `Agent Secret` + workflow `AI Audit Pro Offer Walker` with **`active: false`**. It does **not** auto-activate.
+Default import: credential `Agent Secret` + workflow `AI Audit Pro Offer Walker` with **`active: false`**.  
+`--activate` re-imports with `active: true`.
 
 Manual: import [`infra/n8n/workflows/audit-pro-offer-walker.json`](../../infra/n8n/workflows/audit-pro-offer-walker.json), attach Header Auth `Agent Secret` (`X-Agent-Secret-Key`).
 
-## Activate only after
+## Go-live checklist
 
 1. Merge/deploy Pro funnel code + nudge migrate.
-2. Explicit `AUDIT_PRO_OFFER_ENABLED=1` on Vercel (and audit-agent if needed).
-3. Explicit go to turn mailing on → Activate in https://n8n.erythro.ai.
+2. `AUDIT_PRO_OFFER_ENABLED=1` on Vercel Production (+ redeploy).
+3. Import Walker, then `--activate` (or Activate in https://n8n.erythro.ai).
 
-Until then: leave Inactive. Even if Activated with the flag off, reconcile will not send commercial mail.
+With the flag off, reconcile/Walker do not send commercial mail even if Active.
 
 ## Manual smoke
 

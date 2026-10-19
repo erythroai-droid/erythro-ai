@@ -1,17 +1,15 @@
 """
 Import AI Audit Pro Offer Walker workflow + Agent Secret credential into VPS n8n.
 
-Leaves the workflow inactive (active=false). Activate only after:
-  - merge/deploy of Pro funnel code + nudge migrate
-  - explicit AUDIT_PRO_OFFER_ENABLED=1
-  - explicit user go to turn mailing on
+By default leaves the workflow inactive (active=false).
 
 Usage:
   set VPS_PASSWORD=...
   set AGENT_SECRET_TOKEN=...   # or services/audit-agent/.env.deployed.secret
   py -3 scripts/deploy_n8n_audit_pro_offer_walker.py
+  py -3 scripts/deploy_n8n_audit_pro_offer_walker.py --activate
 
-Does not print secret values. Does not auto-activate the workflow.
+Does not print secret values. Pass --activate only after AUDIT_PRO_OFFER_ENABLED=1.
 """
 from __future__ import annotations
 
@@ -36,6 +34,7 @@ WORKFLOW_SRC = ROOT / "infra/n8n/workflows/audit-pro-offer-walker.json"
 CRED_NAME = "Agent Secret"
 WF_NAME = "AI Audit Pro Offer Walker"
 WF_ID = "erythro-ai-audit-pro-offer-walker"
+ACTIVATE = "--activate" in sys.argv
 
 
 def load_agent_secret() -> str:
@@ -146,7 +145,6 @@ def main() -> None:
             header["name"] = CRED_NAME
     workflow["id"] = wf_id
     workflow["name"] = WF_NAME
-    # Never auto-activate — mailing stays off until explicit go
     workflow["active"] = False
 
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False, suffix=".json") as f:
@@ -169,6 +167,62 @@ def main() -> None:
     listing = exec_checked(client, "docker exec -u node n8n n8n list:workflow")
     print(listing.strip() or "(empty list output)")
 
+    if ACTIVATE:
+        print("[n8n] activate requested")
+        try:
+            exec_checked(
+                client,
+                "docker exec -u node n8n n8n export:workflow --all "
+                "--output=/tmp/wf-all-walker.json",
+            )
+            exec_checked(
+                client,
+                "docker cp n8n:/tmp/wf-all-walker.json "
+                f"{remote_dir}/wf-all.json",
+            )
+            with sftp.open(f"{remote_dir}/wf-all.json", "r") as rf:
+                all_wf = json.loads(rf.read().decode("utf-8"))
+            if not isinstance(all_wf, list):
+                all_wf = [all_wf]
+            target = None
+            for item in all_wf:
+                if item.get("name") == WF_NAME or str(item.get("id")) == wf_id:
+                    target = item
+            if target and target.get("id"):
+                target["active"] = True
+                for node in target.get("nodes", []):
+                    creds = node.get("credentials", {})
+                    header = creds.get("httpHeaderAuth")
+                    if header:
+                        header["id"] = cred_id
+                        header["name"] = CRED_NAME
+                with tempfile.NamedTemporaryFile(
+                    "w", encoding="utf-8", delete=False, suffix=".json"
+                ) as f:
+                    json.dump([target], f, ensure_ascii=False, indent=2)
+                    act_local = Path(f.name)
+                try:
+                    sftp.put(str(act_local), f"{remote_dir}/workflow-active.json")
+                finally:
+                    act_local.unlink(missing_ok=True)
+                exec_checked(
+                    client,
+                    "docker cp /tmp/erythro-n8n-import-walker/workflow-active.json "
+                    "n8n:/tmp/workflow-walker-active.json && "
+                    "docker exec -u node n8n n8n import:workflow "
+                    "--input=/tmp/workflow-walker-active.json",
+                )
+                exec_checked(
+                    client,
+                    "docker exec n8n rm -f /tmp/workflow-walker-active.json || true",
+                )
+                print(f"[n8n] re-imported active=true id={target.get('id')}")
+            else:
+                print("[n8n] WARN: could not find workflow id to activate — turn on in UI")
+        except Exception as err:  # noqa: BLE001
+            print(f"[n8n] WARN: activate step skipped: {err}")
+        exec_checked(client, "docker exec n8n rm -f /tmp/wf-all-walker.json || true")
+
     exec_checked(client, f"rm -rf {remote_dir}")
     exec_checked(
         client,
@@ -177,11 +231,16 @@ def main() -> None:
 
     sftp.close()
     client.close()
-    print(
-        f"[n8n] done — '{WF_NAME}' imported inactive. "
-        "Activate in UI only after AUDIT_PRO_OFFER_ENABLED=1 and explicit go. "
-        "https://n8n.erythro.ai"
-    )
+    if ACTIVATE:
+        print(
+            f"[n8n] done — confirm '{WF_NAME}' is Active at https://n8n.erythro.ai"
+        )
+    else:
+        print(
+            f"[n8n] done — '{WF_NAME}' imported inactive. "
+            "Re-run with --activate after AUDIT_PRO_OFFER_ENABLED=1. "
+            "https://n8n.erythro.ai"
+        )
 
 
 if __name__ == "__main__":
