@@ -904,9 +904,25 @@ async function sendViaTeamSmtp(
   } catch (firstErr) {
     if (port === 465) {
       await sendWith(587, false)
-      return
+    } else {
+      throw firstErr
     }
-    throw firstErr
+  }
+
+  // SMTP does not populate Hostinger Sent — copy via IMAP APPEND (best-effort).
+  // Await so Vercel does not freeze the isolate before APPEND finishes.
+  try {
+    const { appendTeamMailToSent } = await import('@/lib/teamMailSentAppend')
+    await appendTeamMailToSent({
+      to,
+      subject: content.subject,
+      text: content.text,
+      html: content.html,
+      listUnsubscribeUrl: listUnsub,
+    })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.warn('[pro-offer] IMAP Sent append failed:', msg.slice(0, 240))
   }
 }
 

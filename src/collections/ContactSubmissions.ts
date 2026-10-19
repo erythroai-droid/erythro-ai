@@ -19,7 +19,16 @@ export const ContactSubmissions: CollectionConfig = {
      * `group: false` hides only the unfiltered entry from the default nav / dashboard.
      */
     group: false,
-    defaultColumns: ['open', 'name', 'email', 'planSlug', 'website', 'auditStatus', 'createdAt'],
+    defaultColumns: [
+      'open',
+      'name',
+      'email',
+      'planSlug',
+      'website',
+      'auditStatus',
+      'proOfferStatus',
+      'createdAt',
+    ],
     listSearchableFields: ['name', 'email', 'website', 'planSlug', 'ip'],
     description:
       'Click Open or the name to view the full order / inquiry. Use sidebar filters: Solution Orders, AI Audit Orders, Contact Inquiries.',

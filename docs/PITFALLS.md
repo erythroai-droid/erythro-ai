@@ -1905,6 +1905,21 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Prevent:** Never auto-queue or serve reports with `paymentStatus` in `pending|failed|refunded`, or with `paymentAmount > 0` unless `paid`. Paid plans only via `/api/payment/create`.
 
+---
+
+## PIT-115 — Hostinger Sent empty after team@ Pro emails (SMTP only)
+
+**Tags:** `email`, `hostinger`, `smtp`, `imap`, `pro-offer`  
+**Seen:** 2026-10-20 — Pro/nudge/reminder sent via `TEAM_SMTP_PASS`, webmail Sent empty
+
+**Symptom:** Clients receive Pro funnel mail from `team@erythro.ai`, but Hostinger **Sent** shows nothing.
+
+**Cause:** Nodemailer SMTP delivers mail; Hostinger does not auto-file SMTP traffic into Sent. Sent fills only from webmail compose or IMAP `APPEND`.
+
+**Fix:** After SMTP success, `appendTeamMailToSent` (`src/lib/teamMailSentAppend.ts`) appends the MIME to `INBOX.Sent` (or `\Sent` special-use). Errors are logged; they must not fail the send.
+
+**Prevent:** Do not look for funnel copies in Sent until IMAP APPEND is deployed. Status of record remains Payload `proOfferStatus` / `proOfferSentAt`.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)

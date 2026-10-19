@@ -31,8 +31,11 @@
 
 | Переменная | Назначение |
 |---|---|
-| `TEAM_SMTP_PASS` | Пароль Hostinger **team@** (не `SMTP_PASS`) |
+| `TEAM_SMTP_PASS` | Пароль Hostinger **team@** (не `SMTP_PASS`); тот же пароль для SMTP и IMAP Sent APPEND |
+| `IMAP_HOST` / `IMAP_PORT` | Опционально; по умолчанию `imap.hostinger.com:993` |
 | `AUDIT_PRO_OFFER_ENABLED` | `1` / `true` — включить commercial team@ (Pro + nudge + 72h). **По умолчанию выкл.** до утверждения письма |
+
+После успешного SMTP копия письма кладётся в Hostinger **Sent** (`IMAP APPEND`, `src/lib/teamMailSentAppend.ts`). Сбой APPEND только логируется — доставка клиенту уже прошла.
 
 Миграции: `20261019_140000_…`, `20261019_190000_…` (reminder), `20261019_233000_…` (nudge).  
 Seed: `audit-pro-ads`. Redeploy site + **audit-agent**.

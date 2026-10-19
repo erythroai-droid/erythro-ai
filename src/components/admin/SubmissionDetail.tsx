@@ -71,6 +71,10 @@ export const SubmissionDetail: React.FC = () => {
   const ip = useFormFields(([f]) => f?.ip?.value)
   const errorLast = useFormFields(([f]) => f?.errorLast?.value)
   const retryCount = useFormFields(([f]) => f?.retryCount?.value)
+  const proOfferStatus = useFormFields(([f]) => f?.proOfferStatus?.value)
+  const proOfferSentAt = useFormFields(([f]) => f?.proOfferSentAt?.value)
+  const proOfferExpiresAt = useFormFields(([f]) => f?.proOfferExpiresAt?.value)
+  const leadChannel = useFormFields(([f]) => f?.leadChannel?.value)
 
   const channel = source ? submissionSourceDef(source as 'contact' | 'order' | 'audit') : undefined
   const title =
@@ -109,6 +113,16 @@ export const SubmissionDetail: React.FC = () => {
   const emailHref = typeof email === 'string' && email.trim() ? `mailto:${email.trim()}` : null
   const phoneHref = typeof phone === 'string' && phone.trim() ? `tel:${phone.trim()}` : null
   const waHref = typeof phone === 'string' ? whatsAppHref(phone) : null
+
+  const formatWhen = (raw: unknown): string | null => {
+    if (typeof raw !== 'string' || Number.isNaN(new Date(raw).getTime())) return null
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(new Date(raw))
+  }
+  const proSentLabel = formatWhen(proOfferSentAt)
+  const proExpiresLabel = formatWhen(proOfferExpiresAt)
 
   return (
     <div
@@ -200,6 +214,18 @@ export const SubmissionDetail: React.FC = () => {
       </Row>
       <Row label="Report lang">{asText(auditLanguage) || null}</Row>
       <Row label="Audit status">{asText(auditStatus) || null}</Row>
+      <Row label="Lead channel">{source === 'audit' ? asText(leadChannel) || '—' : null}</Row>
+      <Row label="Pro offer">
+        {source === 'audit'
+          ? [
+              asText(proOfferStatus) || 'none',
+              proSentLabel ? `sent ${proSentLabel}` : null,
+              proExpiresLabel ? `expires ${proExpiresLabel}` : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')
+          : null}
+      </Row>
       <Row label="Score">{auditScore == null || auditScore === '' ? null : asText(auditScore)}</Row>
       <Row label="Retries">{retryCount == null || retryCount === '' ? null : asText(retryCount)}</Row>
 
