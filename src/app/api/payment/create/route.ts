@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@payloadcms/db-postgres'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { getOrderPlanBySlug } from '@/lib/cmsPages'
@@ -160,8 +161,8 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await getPayload({ config })
 
-    // Pending checkout: paymentStatus=pending. Default auditStatus is still `new`,
-    // but reconcile must skip unpaid (PIT-114) — worker runs only after make-paid/fulfill.
+    // Pending checkout only. Clear auditStatus so reconcile / admin "new" queue
+    // cannot treat unpaid Grow orders like free audits (PIT-114). Worker starts after paid.
     const planTitle = tLocale(plan.card.title, locale)
     // Grow/Make hosted page shows this as product title — never the raw slug.
     const paymentDescription = `${planTitle} · Erythro.ai`
@@ -179,12 +180,19 @@ export async function POST(request: NextRequest) {
         ...(auditLanguage ? { auditLanguage } : {}),
         planSlug,
         planTotal: `₪${totalAmount}`,
-        auditStatus: 'new',
         paymentStatus: 'pending',
         paymentProvider: 'grow',
         paymentAmount: totalAmount,
       },
     })
+
+    // Payload default for auditStatus is `new` — wipe so unpaid never looks queueable.
+    await payload.db.drizzle.execute(sql`
+      UPDATE "contact_submissions"
+      SET "audit_status" = NULL,
+          "updated_at" = now()
+      WHERE "id" = ${created.id}
+    `)
 
     const submissionId = String(created.id)
 

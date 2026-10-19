@@ -154,6 +154,14 @@ async function fulfillPaid(
   }
 
   if (source === 'audit' && updated.website) {
+    // Unpaid create clears audit_status; mark new only after paid so cron can see it.
+    await payload.db.drizzle.execute(sql`
+      UPDATE "contact_submissions"
+      SET "audit_status" = 'new',
+          "updated_at" = now()
+      WHERE "id" = ${subId}
+        AND "payment_status" = 'paid'
+    `)
     const triggerInput = {
       submissionId: updated.id,
       targetUrl: updated.website,

@@ -13,6 +13,7 @@ import {
   sanitizePlainText,
   sanitizeWebsiteInput,
 } from '@/lib/contactSanitize'
+import { isFreeAuditPlanSlug } from '@/lib/orderPlans'
 import { toE164Phone } from '@/lib/phoneE164'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -147,6 +148,14 @@ export function guardContactSubmission(body: unknown): ContactGuardResult {
     }
     if (planSlug && !PLAN_SLUG_RE.test(planSlug)) {
       return { ok: false, status: 400, message: 'Invalid plan' }
+    }
+    // Paid Grow plans must use /api/payment/create — never start the worker via /api/contact.
+    if (planSlug && !isFreeAuditPlanSlug(planSlug)) {
+      return {
+        ok: false,
+        status: 400,
+        message: 'Paid audit plans must use checkout payment',
+      }
     }
 
     data.website = website

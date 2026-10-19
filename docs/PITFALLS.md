@@ -1901,9 +1901,9 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Cause:** Reconcile filtered only by `auditStatus` / `updatedAt`, not by payment. Paid checkout looks like a stuck free lead.
 
-**Fix:** `isUnpaidAuditCheckout` in `src/lib/auditPaymentGate.ts`; reconcile where-clause + in-loop skip; admin requeue returns 409 for unpaid.
+**Fix:** `isUnpaidAuditCheckout` + `assertAuditMayRun` in `src/lib/auditPaymentGate.ts`; reconcile skip; `triggerAuditAgent` refuses unpaid; `/api/contact` rejects paid plan slugs; payment create clears `audit_status` until paid; public report 404 while unpaid; admin requeue 409.
 
-**Prevent:** Never auto-queue audits with `paymentStatus` in `pending|failed|refunded`, or with `paymentAmount > 0` unless `paid`.
+**Prevent:** Never auto-queue or serve reports with `paymentStatus` in `pending|failed|refunded`, or with `paymentAmount > 0` unless `paid`. Paid plans only via `/api/payment/create`.
 
 ## Checklist before merging CMS / schema PRs
 

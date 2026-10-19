@@ -124,7 +124,8 @@ describe('guardContactSubmission', () => {
       }).ok,
     ).toBe(false)
 
-    const result = guardContactSubmission({
+    // Paid Grow plans must not start via /api/contact (PIT-114).
+    const paid = guardContactSubmission({
       name: 'Ada',
       email: 'ada@example.com',
       phone: '+972501234567',
@@ -136,14 +137,9 @@ describe('guardContactSubmission', () => {
       planSlug: 'audit-diagnostic',
       planTotal: '99 ₪',
     })
-    expect(result.ok).toBe(true)
-    if (result.ok) {
-      expect(result.data.website).toBe('https://example.com')
-      expect(result.data.auditLanguage).toBe('ru')
-      expect(result.data.planSlug).toBe('audit-diagnostic')
-      expect(result.data.planTotal).toBe('99 ₪')
-      expect(result.data.auditStatus).toBe('new')
-      expect(result.data.phone).toBe('+972501234567')
+    expect(paid.ok).toBe(false)
+    if (!paid.ok) {
+      expect(paid.message).toMatch(/checkout payment/i)
     }
   })
 

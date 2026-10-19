@@ -7,21 +7,18 @@
 
 ## Сделано в этой сессии
 
-- **PIT-114:** unpaid Grow checkout больше не уходит в audit via reconcile (`isUnpaidAuditCheckout`).
-- Pro commercial paused on prod; gating/arrows still on branch until merge.
+- PIT-114 harden v2: trigger отказывает unpaid; contact блокирует paid slugs; create чистит `audit_status`; report 404 пока не paid.
 
 ## Сейчас
 
-1. **Срочно:** commit/push/merge PIT-114 на prod (иначе pending Pro → отчёт через ~2 мин).
-2. Merge остального `fix/pro-offer-sql-status` (gate `?t=`, no arrows).
-3. После утверждения письма: `AUDIT_PRO_OFFER_ENABLED=1`.
+1. **Срочно:** commit/push/merge harden v2 на prod.
+2. Проверка: diagnostic/pro/ads → submit → запись pending без auditStatus new → без отчёта до Grow paid.
 
 ## Не делать
 
 - Не печатать SMTP / AGENT / VPS `.env`.
-- Не включать Pro-offer без утверждения письма.
 - Не зеркалировать этот файл в Obsidian.
 
 ## Последняя эстафета
 
-2026-10-19 — Cursor — PIT-114 fix ready; needs deploy ASAP.
+2026-10-19 — Cursor — PIT-114 harden v2 ready for deploy.
