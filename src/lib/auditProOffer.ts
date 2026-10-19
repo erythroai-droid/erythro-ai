@@ -488,22 +488,34 @@ function shellHtml(input: {
   const fontStack = isRtl
     ? "'Heebo',Arial,Helvetica,sans-serif"
     : "Arial,Helvetica,sans-serif"
-  // Email logo has a baked-in white plate (CSS bgcolor is inverted in Gmail dark mode).
-  const logoUrl = `${SITE_URL}/images/logo/letterhead-full-email.svg?v=2`
+  // Wordmark without plate; full header sits on a white pixel plate (Gmail inverts CSS bgcolor).
+  const logoUrl = `${SITE_URL}/images/logo/letterhead-full.svg`
+  const headerPlateUrl = `${SITE_URL}/images/logo/email-header-plate.svg?v=1`
   const footerLine = letterheadFooterLine(input.locale)
   const unsubLabel = unsubscribeCopy(input.locale).linkLabel
-  // Header: logo at inline-start, contacts at inline-end (dir flips cells in RTL).
-  const headerRow = `
+  // Header: full-bleed white plate image + logo / contacts on top (dir flips cells in RTL).
+  const headerBlock = `
         <tr>
-          <td style="padding:0 0 16px;vertical-align:middle;">
-            <a href="${escapeHtml(SITE_URL)}" style="text-decoration:none;">
-              <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(input.brand)}" width="189" height="68" style="display:block;border:0;outline:none;width:189px;height:auto;max-width:189px;"/>
-            </a>
+          <td background="${escapeHtml(headerPlateUrl)}" bgcolor="#ffffff" width="100%" style="background-color:#ffffff;background-image:url('${escapeHtml(headerPlateUrl)}');background-size:100% 100%;background-repeat:no-repeat;padding:18px 28px 16px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" dir="${input.dir}" style="border-collapse:collapse;">
+              <tr>
+                <td style="padding:0;vertical-align:middle;">
+                  <a href="${escapeHtml(SITE_URL)}" style="text-decoration:none;">
+                    <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(input.brand)}" width="177" height="56" style="display:block;border:0;outline:none;width:177px;height:auto;max-width:177px;"/>
+                  </a>
+                </td>
+                <td dir="ltr" align="${contactsAlign}" style="padding:0;vertical-align:middle;font-size:11px;line-height:16px;color:#686868 !important;">
+                  <a href="${escapeHtml(SITE_URL)}" style="color:#686868 !important;text-decoration:none;">erythro.ai</a><br/>
+                  <a href="mailto:${TEAM_MAILBOX}" style="color:#686868 !important;text-decoration:none;">${TEAM_MAILBOX}</a><br/>
+                  <span style="white-space:nowrap;color:#686868 !important;">+972 50 530 83 05</span>
+                </td>
+              </tr>
+            </table>
           </td>
-          <td dir="ltr" align="${contactsAlign}" style="padding:0 0 16px;vertical-align:middle;font-size:11px;line-height:16px;color:#686868;">
-            <a href="${escapeHtml(SITE_URL)}" style="color:#686868;text-decoration:none;">erythro.ai</a><br/>
-            <a href="mailto:${TEAM_MAILBOX}" style="color:#686868;text-decoration:none;">${TEAM_MAILBOX}</a><br/>
-            <span style="white-space:nowrap;">+972 50 530 83 05</span>
+        </tr>
+        <tr>
+          <td style="padding:0 28px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="height:1px;line-height:1px;font-size:0;background:#b5a58d;">&nbsp;</td></tr></table>
           </td>
         </tr>`
 
@@ -524,12 +536,7 @@ function shellHtml(input: {
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#e9e6e1;padding:24px 12px;">
     <tr><td align="center">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" dir="${input.dir}" style="max-width:600px;background:#ffffff;border-radius:0;">
-        <tr><td style="padding:28px 28px 0;">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" dir="${input.dir}">
-            ${headerRow}
-          </table>
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="height:1px;line-height:1px;font-size:0;background:#b5a58d;">&nbsp;</td></tr></table>
-        </td></tr>
+        ${headerBlock}
         <tr><td dir="${input.dir}" align="${align}" style="padding:22px 28px 8px;text-align:${align};">
           <h1 style="margin:0 0 18px;color:#0d0d0d;font-size:22px;line-height:1.35;font-weight:700;text-align:${align};">${escapeHtml(input.headline)}</h1>
           ${input.bodyInner}
