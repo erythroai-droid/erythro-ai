@@ -7,17 +7,12 @@
 
 ## Сделано в этой сессии
 
-- HE «отчёт готов» RTL — audit-agent **задеплоен**.
-- RTL audit всех клиентских писем:
-  - OK: Pro/nudge/reminder (`auditProOffer` shellHtml)
-  - Fixed: report-ready (`mail.js`) — live
-  - Fixed (local): contact ack + consult OTP — нужен **Vercel** deploy
-  - N/A: n8n autoresponder (только EN), внутренние staff-письма
+- HE RTL + Pro funnel live; agent flag fixed.
+- Pro email logo: белая подложка под `letterhead-full.svg` (dark mode Gmail) — local в `auditProOffer.ts`.
 
 ## Сейчас
 
-1. Commit/push RTL fixes (mail.js + contactNotification + request-otp) — по команде.
-2. Vercel deploy для ack/OTP.
+1. Commit/push/deploy site — по команде (следующие Pro/nudge/reminder подхватят подложку).
 
 ## Не делать
 
@@ -26,4 +21,4 @@
 
 ## Последняя эстафета
 
-2026-10-20 — Cursor — HE RTL: agent live; site ack+OTP fixed locally, need deploy.
+2026-10-20 — Cursor — white plate under Pro letterhead logo; awaiting deploy.
