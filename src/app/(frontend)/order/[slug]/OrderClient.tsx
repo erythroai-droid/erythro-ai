@@ -1043,16 +1043,18 @@ function OrderCheckout({
           </aside>
         </div>
 
-        <div className="mt-12 md:mt-16">
-          <ProjectNav
-            locale={locale}
-            theme={theme}
-            kind={isAudit ? 'audit' : 'solutions'}
-            prev={prev}
-            next={next}
-            showListLink={false}
-          />
-        </div>
+        {prev || next ? (
+          <div className="mt-12 md:mt-16">
+            <ProjectNav
+              locale={locale}
+              theme={theme}
+              kind={isAudit ? 'audit' : 'solutions'}
+              prev={prev}
+              next={next}
+              showListLink={false}
+            />
+          </div>
+        ) : null}
       </main>
 
       {isAudit && (
