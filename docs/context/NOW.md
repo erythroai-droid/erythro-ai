@@ -7,15 +7,14 @@
 
 ## Сделано в этой сессии
 
-- Pro commercial paused (на prod: merge #267).
-- Letterhead / gating / Make productName — в ветке `fix/pro-offer-sql-status` (`ee5bd4c`), **ещё не на main/prod**.
-- Ads order: не рендерить ProjectNav, если нет prev/next (серые стрелки убраны).
+- **PIT-114:** unpaid Grow checkout больше не уходит в audit via reconcile (`isUnpaidAuditCheckout`).
+- Pro commercial paused on prod; gating/arrows still on branch until merge.
 
 ## Сейчас
 
-1. Commit/push + PR/merge ветки (gate `?t=` + no arrows) → prod.
-2. Seed `seed-audit-order-plans.ts` после merge.
-3. После утверждения письма: `AUDIT_PRO_OFFER_ENABLED=1` на Vercel + worker.
+1. **Срочно:** commit/push/merge PIT-114 на prod (иначе pending Pro → отчёт через ~2 мин).
+2. Merge остального `fix/pro-offer-sql-status` (gate `?t=`, no arrows).
+3. После утверждения письма: `AUDIT_PRO_OFFER_ENABLED=1`.
 
 ## Не делать
 
@@ -25,4 +24,4 @@
 
 ## Последняя эстафета
 
-2026-10-19 — Cursor — hide ProjectNav on ads when no neighbors; still needs commit/merge.
+2026-10-19 — Cursor — PIT-114 fix ready; needs deploy ASAP.

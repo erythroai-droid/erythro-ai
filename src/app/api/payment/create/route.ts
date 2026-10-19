@@ -160,7 +160,8 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await getPayload({ config })
 
-    // Create contact-submission with pending payment status
+    // Pending checkout: paymentStatus=pending. Default auditStatus is still `new`,
+    // but reconcile must skip unpaid (PIT-114) — worker runs only after make-paid/fulfill.
     const planTitle = tLocale(plan.card.title, locale)
     // Grow/Make hosted page shows this as product title — never the raw slug.
     const paymentDescription = `${planTitle} · Erythro.ai`
