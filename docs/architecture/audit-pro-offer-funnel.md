@@ -21,4 +21,5 @@
 Миграции: `20261019_140000_…`, `20261019_190000_…` (reminder fields).  
 Seed: `audit-pro-ads`. Redeploy site + **audit-agent**.
 
-Код: `src/lib/auditProOffer.ts`, worker `scheduleProOfferEmail`, reconcile.
+Код: `src/lib/auditProOffer.ts`, worker `scheduleProOfferEmail`, reconcile.  
+Статусы воронки писать **SQL** (`patchProOfferFieldsSql`) — `payload.update` ломается на существующем `html_result` (PIT-113 / PIT-035).

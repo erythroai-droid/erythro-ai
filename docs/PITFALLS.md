@@ -1875,6 +1875,21 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Prevent:** Keep PostgREST exposed schemas empty. After new Payload tables, confirm `has_table_privilege('anon','public.<table>','SELECT')` is false. Never enable schema `public` in API settings without RLS.
 
+---
+
+## PIT-113 — Ads Pro-offer email sends but status stays `scheduled` (`Html Result` invalid)
+
+**Tags:** `audit`, `payload`, `html_result`, `team-smtp`, `meta-ads`  
+**Seen:** 2026-10-19 — `POST /api/audit/internal/[id]/pro-offer` and reconcile sweep
+
+**Symptom:** `team@` Pro ₪390 mail arrives (sometimes twice), Vercel logs `The following field is invalid: Audit pipeline > Html Result`, API returns 500. `pro_offer_status` never becomes `sent`.
+
+**Cause:** Same as PIT-035: `payload.update` on `contact-submissions` re-validates existing large `html_result`. Mail is sent first; status write fails afterward → reconcile retries.
+
+**Fix:** Write pro-offer columns via SQL (`patchProOfferFieldsSql` in `src/lib/auditProOffer.ts`), same pattern as `/api/audit/internal/[id]` PATCH. If a row already mailed but stuck on `scheduled`, SQL-set `pro_offer_status='sent'` (+ sent/expires/reminder timestamps).
+
+**Prevent:** Never `payload.update` any field on an audit submission that may already hold HTML; use drizzle SQL for pipeline and funnel status fields.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
