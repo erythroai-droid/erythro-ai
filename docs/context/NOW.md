@@ -7,21 +7,21 @@
 
 ## Сделано в этой сессии
 
-- Seed `audit-pro-ads` (#9); `/order/audit-pro-ads` 200.
-- audit-agent redeployed (`scheduleProOfferEmail`); health ok.
-- Smoke: `team@` Pro mail to webmechanik@ (HE); TEAM_SMTP ok.
-- Fix PIT-113: pro-offer status via SQL (html_result blocked payload.update).
+- Pro commercial paused until approval: `AUDIT_PRO_OFFER_ENABLED` default off.
+- DB: cancelled scheduled #187 (`skipped`).
+- Worker: schedule paused (redeploy). Site send gate needs deploy.
 
 ## Сейчас
 
-1. Commit + push PIT-113 fix → Vercel deploy (stop duplicate mails / 500).
-2. Optional: full LP free→+15m after cooldown (IP/email 7d blocked smoke submit).
+1. Commit/push + merge/deploy site (send/reconcile kill switch).
+2. After letterhead approved: set `AUDIT_PRO_OFFER_ENABLED=1` on Vercel + worker `.env`, redeploy both.
 
 ## Не делать
 
 - Не печатать SMTP / AGENT / VPS `.env`.
+- Не включать Pro-offer без утверждения письма.
 - Не зеркалировать этот файл в Obsidian.
 
 ## Последняя эстафета
 
-2026-10-19 — Cursor — seed/worker/SMTP ok; PIT-113 fix local, needs deploy.
+2026-10-19 — Cursor — Pro emails paused (DB + worker); site deploy of kill switch still required.
