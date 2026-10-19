@@ -11,6 +11,7 @@ describe('auditPricingPlans (Plans SoT)', () => {
   it('static fallback has four cards with Manual contact CTA', () => {
     const cards = staticAuditPricingPlans()
     expect(cards.map((c) => c.id)).toEqual(['free', 'diagnostic', 'pro', 'manual'])
+    expect(cards.some((c) => c.slug === 'audit-pro-ads')).toBe(false)
 
     const manual = cards.find((c) => c.id === 'manual')
     expect(manual?.checkoutMode).toBe('contact')

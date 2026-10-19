@@ -61,6 +61,7 @@
 |---|---|
 | `/audit` | Лендинг / заказ AI-аудита (существующий) |
 | `/order/audit-free`, `/order/audit-diagnostic`, `/order/audit-pro` | Чекаут по тарифу (платные — Grow); данные из Plans `kind: audit` |
+| `/order/audit-pro-ads` | Meta / ads promo Pro ₪390 (скрыт из pricing; email CTA). См. [`audit-pro-offer-funnel.md`](./audit-pro-offer-funnel.md) |
 | Pricing card **Manual** on `/audit` | Документ Plans `audit-manual`, `checkoutMode: contact` — `#contact-modal` (без `/order` / Grow) |
 | **`/audit/report/[id]?k=…`** | **Выдача результата** (polling; готовый отчёт → standalone HTML; без `k` → 404) |
 

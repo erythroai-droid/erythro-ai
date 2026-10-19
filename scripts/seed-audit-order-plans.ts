@@ -132,6 +132,7 @@ async function run() {
     '/order/audit-free',
     '/order/audit-diagnostic',
     '/order/audit-pro',
+    '/order/audit-pro-ads',
     '/audit',
   ])
 

@@ -43,12 +43,19 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       auditLanguage: doc.auditLanguage,
       locale: doc.locale,
       planSlug: doc.planSlug,
+      leadChannel: doc.leadChannel ?? null,
       auditStatus: doc.auditStatus,
       auditScore: doc.auditScore ?? null,
       reportUrl: doc.reportUrl,
       reportAccessToken:
         typeof doc.reportAccessToken === 'string' ? doc.reportAccessToken : null,
       retryCount: doc.retryCount ?? 0,
+      proOfferStatus: doc.proOfferStatus ?? null,
+      proOfferDueAt: doc.proOfferDueAt ?? null,
+      proOfferSentAt: doc.proOfferSentAt ?? null,
+      proOfferExpiresAt: doc.proOfferExpiresAt ?? null,
+      proOfferReminderDueAt: doc.proOfferReminderDueAt ?? null,
+      proOfferReminderSentAt: doc.proOfferReminderSentAt ?? null,
       storageKey:
         doc.auditSummary &&
         typeof doc.auditSummary === 'object' &&
@@ -93,6 +100,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     'htmlResult',
     'retryCount',
     'errorLast',
+    'proOfferStatus',
+    'proOfferDueAt',
+    'proOfferSentAt',
+    'proOfferExpiresAt',
+    'proOfferReminderDueAt',
+    'proOfferReminderSentAt',
   ] as const
 
   const data: Record<string, unknown> = {}
@@ -145,6 +158,34 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
     if (typeof data.errorLast === 'string' || data.errorLast === null) {
       sets.push(sql`error_last = ${data.errorLast}`)
+    }
+    if (typeof data.proOfferStatus === 'string') {
+      sets.push(sql`pro_offer_status = ${data.proOfferStatus}`)
+    }
+    if (typeof data.proOfferDueAt === 'string') {
+      sets.push(sql`pro_offer_due_at = ${data.proOfferDueAt}::timestamptz`)
+    } else if (data.proOfferDueAt === null) {
+      sets.push(sql`pro_offer_due_at = null`)
+    }
+    if (typeof data.proOfferSentAt === 'string') {
+      sets.push(sql`pro_offer_sent_at = ${data.proOfferSentAt}::timestamptz`)
+    } else if (data.proOfferSentAt === null) {
+      sets.push(sql`pro_offer_sent_at = null`)
+    }
+    if (typeof data.proOfferExpiresAt === 'string') {
+      sets.push(sql`pro_offer_expires_at = ${data.proOfferExpiresAt}::timestamptz`)
+    } else if (data.proOfferExpiresAt === null) {
+      sets.push(sql`pro_offer_expires_at = null`)
+    }
+    if (typeof data.proOfferReminderDueAt === 'string') {
+      sets.push(sql`pro_offer_reminder_due_at = ${data.proOfferReminderDueAt}::timestamptz`)
+    } else if (data.proOfferReminderDueAt === null) {
+      sets.push(sql`pro_offer_reminder_due_at = null`)
+    }
+    if (typeof data.proOfferReminderSentAt === 'string') {
+      sets.push(sql`pro_offer_reminder_sent_at = ${data.proOfferReminderSentAt}::timestamptz`)
+    } else if (data.proOfferReminderSentAt === null) {
+      sets.push(sql`pro_offer_reminder_sent_at = null`)
     }
     sets.push(sql`updated_at = now()`)
 

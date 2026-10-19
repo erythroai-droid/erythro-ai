@@ -5,6 +5,7 @@
 import type { Localized } from '@/lib/auditPage'
 import {
   AUDIT_ORDER_PLANS,
+  isHiddenAuditOrderSlug,
   type AuditCheckoutMode,
   type LocaleMap,
   type OrderPlan,
@@ -126,14 +127,20 @@ export function orderPlanToAuditPricingCard(plan: OrderPlan): AuditPricingCard {
   return card
 }
 
+function isPublicAuditPricingPlan(plan: OrderPlan): boolean {
+  return plan.kind === 'audit' && !isHiddenAuditOrderSlug(plan.slug)
+}
+
 export function staticAuditPricingPlans(): AuditPricingCard[] {
-  return AUDIT_ORDER_PLANS.filter((p) => p.kind === 'audit').map(orderPlanToAuditPricingCard)
+  return AUDIT_ORDER_PLANS.filter(isPublicAuditPricingPlan).map(orderPlanToAuditPricingCard)
 }
 
 /** Prefer CMS audit plans; fall back to static when empty. */
 export function mergeAuditPricingPlans(cmsPlans: OrderPlan[]): AuditPricingCard[] {
   const audit = cmsPlans.filter(
-    (p) => p.kind === 'audit' || (p.slug || '').startsWith('audit-'),
+    (p) =>
+      (p.kind === 'audit' || (p.slug || '').startsWith('audit-')) &&
+      !isHiddenAuditOrderSlug(p.slug),
   )
   if (!audit.length) return staticAuditPricingPlans()
 

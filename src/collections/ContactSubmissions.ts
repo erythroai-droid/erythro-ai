@@ -134,6 +134,21 @@ export const ContactSubmissions: CollectionConfig = {
               },
             },
             {
+              name: 'leadChannel',
+              type: 'select',
+              defaultValue: 'organic',
+              options: [
+                { label: 'Organic', value: 'organic' },
+                { label: 'Meta ads LP', value: 'meta_ads' },
+              ],
+              admin: {
+                description:
+                  'Traffic attribution: meta_ads when submitted from audit-*.erythro.ai ads LP',
+                condition: auditOnly,
+                readOnly: true,
+              },
+            },
+            {
               name: 'locale',
               type: 'text',
               admin: { description: 'Site language the visitor used', readOnly: true },
@@ -344,6 +359,76 @@ export const ContactSubmissions: CollectionConfig = {
                 condition: auditOnly,
                 readOnly: true,
                 rows: 6,
+              },
+            },
+            {
+              name: 'proOfferStatus',
+              type: 'select',
+              defaultValue: 'none',
+              options: [
+                { label: 'None', value: 'none' },
+                { label: 'Scheduled', value: 'scheduled' },
+                { label: 'Sent', value: 'sent' },
+                { label: 'Reminder sent', value: 'reminder_sent' },
+                { label: 'Skipped', value: 'skipped' },
+              ],
+              admin: {
+                description:
+                  'Ads LP free→Pro funnel (team@): scheduled (+15m) → sent → reminder_sent (72h) / skipped',
+                condition: auditOnly,
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'proOfferDueAt',
+              type: 'date',
+              admin: {
+                description: 'First commercial email due (report_sent + 15 min)',
+                condition: auditOnly,
+                date: { pickerAppearance: 'dayAndTime' },
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'proOfferSentAt',
+              type: 'date',
+              admin: {
+                description: 'When the first Pro promo email was sent',
+                condition: auditOnly,
+                date: { pickerAppearance: 'dayAndTime' },
+                readOnly: true,
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'proOfferExpiresAt',
+              type: 'date',
+              admin: {
+                description: 'Promo ends (sent + 72h) — ₪390 ads special',
+                condition: auditOnly,
+                date: { pickerAppearance: 'dayAndTime' },
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'proOfferReminderDueAt',
+              type: 'date',
+              admin: {
+                description: 'When to send the “promo ending” reminder',
+                condition: auditOnly,
+                date: { pickerAppearance: 'dayAndTime' },
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'proOfferReminderSentAt',
+              type: 'date',
+              admin: {
+                description: 'When the 72h reminder email was sent',
+                condition: auditOnly,
+                date: { pickerAppearance: 'dayAndTime' },
+                readOnly: true,
+                position: 'sidebar',
               },
             },
           ],
