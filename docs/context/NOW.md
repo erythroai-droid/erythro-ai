@@ -14,8 +14,9 @@
 
 ## Сейчас
 
-1. После merge: `payload migrate` на prod (`mail_unsubscribes`).
-2. Проверка: письмо → футер unsubscribe → confirm → повторный send skipped `unsubscribed`.
+1. Vercel: client не должен импортить `mailUnsubscribe` (Payload) — copy в `mailUnsubscribeCopy`.
+2. После merge: migrate уже прошла на preview; prod ok.
+3. Проверка: письмо → футер → confirm → skip `unsubscribed`.
 
 ## Не делать
 

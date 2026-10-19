@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { unsubscribeCopy } from '@/lib/mailUnsubscribe'
+import { unsubscribeCopy } from '@/lib/mailUnsubscribeCopy'
 
 type Props = {
   locale: string

@@ -1,10 +1,8 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import UnsubscribeClient from './UnsubscribeClient'
-import {
-  unsubscribeCopy,
-  verifyMailUnsubscribeToken,
-} from '@/lib/mailUnsubscribe'
+import { unsubscribeCopy } from '@/lib/mailUnsubscribeCopy'
+import { verifyMailUnsubscribeToken } from '@/lib/mailUnsubscribe'
 import { isSiteLocale } from '@/lib/sitePrefs'
 
 export const dynamic = 'force-dynamic'

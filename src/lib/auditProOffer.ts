@@ -10,8 +10,8 @@ import { buildAuditReportPath } from '@/lib/auditReport'
 import {
   buildMailUnsubscribeUrl,
   isMailUnsubscribed,
-  unsubscribeCopy,
 } from '@/lib/mailUnsubscribe'
+import { unsubscribeCopy } from '@/lib/mailUnsubscribeCopy'
 import { isFreeAuditPlanSlug } from '@/lib/orderPlans'
 import { signProOfferCheckoutAccess } from '@/lib/proOfferCheckoutAccess'
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
