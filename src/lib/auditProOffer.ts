@@ -8,6 +8,7 @@ import { sql } from '@payloadcms/db-postgres'
 import config from '@payload-config'
 import { buildAuditReportPath } from '@/lib/auditReport'
 import { isFreeAuditPlanSlug } from '@/lib/orderPlans'
+import { signProOfferCheckoutAccess } from '@/lib/proOfferCheckoutAccess'
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
 
 export const PRO_OFFER_DELAY_MS = 15 * 60 * 1000
@@ -85,14 +86,24 @@ function isUsableEmail(value: string | null | undefined): value is string {
   return Boolean(value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()))
 }
 
-export function buildProOfferCheckoutUrl(locale: string | null | undefined): string {
+/**
+ * Email-only checkout URL. Requires HMAC `t` (free-audit submission id + 72h expiry).
+ * Bare `/order/audit-pro-ads` returns 404 without a valid token.
+ */
+export function buildProOfferCheckoutUrl(
+  locale: string | null | undefined,
+  submissionId: string | number,
+  expiresAtMs?: number,
+): string {
   const lang = offerLocale(locale)
+  const t = signProOfferCheckoutAccess(submissionId, expiresAtMs)
   try {
     const u = new URL(`${SITE_URL}/order/audit-pro-ads`)
     u.searchParams.set('lang', lang)
+    u.searchParams.set('t', t)
     return u.toString()
   } catch {
-    return `${SITE_URL}/order/audit-pro-ads?lang=${lang}`
+    return `${SITE_URL}/order/audit-pro-ads?lang=${lang}&t=${encodeURIComponent(t)}`
   }
 }
 
@@ -243,7 +254,7 @@ function proCopy(locale: OfferLocale): ProMailCopy {
         'Полный HTML + PDF отчёт на выбранном языке',
       ],
       priceBadge: `₪${PRO_ADS_PRICE}`,
-      priceNote: `вместо ₪${PRO_LIST_PRICE} · разово`,
+      priceNote: 'разово',
       validity: 'Спецпредложение действует 72 часа с момента этого письма.',
       cta: `Оплатить Pro — ₪${PRO_ADS_PRICE}`,
     }
@@ -265,7 +276,7 @@ function proCopy(locale: OfferLocale): ProMailCopy {
         'דוח HTML + PDF מלא בשפה שבחרתם',
       ],
       priceBadge: `₪${PRO_ADS_PRICE}`,
-      priceNote: `במקום ₪${PRO_LIST_PRICE} · חד-פעמי`,
+      priceNote: 'חד-פעמי',
       validity: 'ההצעה תקפה ל-72 שעות מרגע המייל הזה.',
       cta: `לתשלום Pro — ₪${PRO_ADS_PRICE}`,
     }
@@ -286,7 +297,7 @@ function proCopy(locale: OfferLocale): ProMailCopy {
       'Full HTML + PDF report in your language',
     ],
     priceBadge: `₪${PRO_ADS_PRICE}`,
-    priceNote: `instead of ₪${PRO_LIST_PRICE} · one-time`,
+    priceNote: 'one-time',
     validity: 'This special offer is valid for 72 hours from this email.',
     cta: `Pay for Pro — ₪${PRO_ADS_PRICE}`,
   }
@@ -553,7 +564,11 @@ export function buildProOfferEmail(input: {
     copy.proTitle,
     ...copy.proBullets.map((b) => `• ${b}`),
     '',
-    `${copy.priceBadge} ${copy.priceNote}`,
+    locale === 'ru'
+      ? `${copy.priceBadge} вместо ₪${PRO_LIST_PRICE} · ${copy.priceNote}`
+      : locale === 'he'
+        ? `${copy.priceBadge} במקום ₪${PRO_LIST_PRICE} · ${copy.priceNote}`
+        : `${copy.priceBadge} instead of ₪${PRO_LIST_PRICE} · ${copy.priceNote}`,
     `${copy.cta}: ${input.checkoutUrl}`,
   ]
   if (input.reportUrl) textParts.push('', `${copy.reportCta}: ${input.reportUrl}`)
@@ -569,7 +584,8 @@ export function buildProOfferEmail(input: {
     <p style="margin:0 0 16px;color:#333;font-size:15px;line-height:1.55;">${escapeHtml(copy.intro)}</p>
     <table role="presentation" width="100%" style="background:#fff5f6;border:1px solid #f0c9cf;border-radius:12px;margin:0 0 20px;">
       <tr><td style="padding:16px 18px;">
-        <p style="margin:0 0 4px;color:#c41e3a;font-size:28px;font-weight:800;line-height:1;">${escapeHtml(copy.priceBadge)}</p>
+        <p style="margin:0 0 2px;color:#9a9a9a;font-size:13px;font-weight:600;line-height:1.2;text-decoration:line-through;">₪${PRO_LIST_PRICE}</p>
+        <p style="margin:0 0 4px;color:#c41e3a;font-size:28px;font-weight:800;line-height:1.1;">${escapeHtml(copy.priceBadge)}</p>
         <p style="margin:0 0 8px;color:#555;font-size:14px;">${escapeHtml(copy.priceNote)}</p>
         <p style="margin:0;color:#7a1f2b;font-size:13px;font-weight:600;">${escapeHtml(copy.validity)}</p>
       </td></tr>
@@ -832,7 +848,10 @@ export async function trySendAuditProOffer(
   }
 
   const locale = resolveDocLocale(doc)
-  const checkoutUrl = buildProOfferCheckoutUrl(locale)
+  const now = Date.now()
+  const expiresAt = computeProOfferExpiresAt(now)
+  const expiresAtMs = new Date(expiresAt).getTime()
+  const checkoutUrl = buildProOfferCheckoutUrl(locale, submissionId, expiresAtMs)
   const token =
     typeof doc.reportAccessToken === 'string' ? doc.reportAccessToken.trim() : ''
   const reportPath = token ? buildAuditReportPath(submissionId, token, locale) : null
@@ -857,8 +876,6 @@ export async function trySendAuditProOffer(
     return { ok: false, reason: message.slice(0, 300) }
   }
 
-  const now = Date.now()
-  const expiresAt = computeProOfferExpiresAt(now)
   await patchProOfferFieldsSql(payload, submissionId, {
     proOfferStatus: 'sent',
     proOfferSentAt: new Date(now).toISOString(),
@@ -929,7 +946,12 @@ export async function trySendAuditProOfferReminder(
   }
 
   const locale = resolveDocLocale(doc)
-  const checkoutUrl = buildProOfferCheckoutUrl(locale)
+  const expiresAtRaw =
+    typeof doc.proOfferExpiresAt === 'string' ? Date.parse(doc.proOfferExpiresAt) : NaN
+  const expiresAtMs = Number.isFinite(expiresAtRaw)
+    ? expiresAtRaw
+    : Date.now() + PRO_OFFER_PROMO_MS
+  const checkoutUrl = buildProOfferCheckoutUrl(locale, submissionId, expiresAtMs)
   const token =
     typeof doc.reportAccessToken === 'string' ? doc.reportAccessToken.trim() : ''
   const reportPath = token ? buildAuditReportPath(submissionId, token, locale) : null

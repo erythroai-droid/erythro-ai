@@ -2,11 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { getOrderPlanBySlug } from '@/lib/cmsPages'
-import { calcPlanAmount, calcAddonAmount, addonMonthlyAmount, addonTermDiscount, tLocale, parsePrice } from '@/lib/orderPlans'
+import {
+  calcPlanAmount,
+  calcAddonAmount,
+  addonMonthlyAmount,
+  addonTermDiscount,
+  isHiddenAuditOrderSlug,
+  tLocale,
+  parsePrice,
+} from '@/lib/orderPlans'
 import { normalizeAuditWebsite } from '@/lib/auditFormValidation'
 import { createGrowPayment, isGrowConfigured, toGrowFullName, toGrowIsraeliMobile } from '@/lib/payments/grow'
 import { createMakeGrowPayment, isMakeGrowConfigured } from '@/lib/payments/makeGrow'
 import { signPaymentReturn } from '@/lib/payments/returnSig'
+import { verifyProOfferCheckoutAccess } from '@/lib/proOfferCheckoutAccess'
 import { getRequestIp, consumeContactRateLimit } from '@/lib/contactRateLimit'
 import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 import { readTurnstileToken, verifyTurnstileToken } from '@/lib/turnstile'
@@ -107,6 +116,14 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // Promo plans (audit-pro-ads): require the same signed email token as the page gate.
+  if (isHiddenAuditOrderSlug(plan.slug)) {
+    const proOfferToken = String(body.proOfferToken || '').trim()
+    if (!verifyProOfferCheckoutAccess(proOfferToken)) {
+      return NextResponse.json({ code: 'promo_access_denied' }, { status: 403 })
+    }
+  }
+
   // Calculate amount server-side (trust nothing from client)
   const pricing = calcPlanAmount(plan, periodId)
   let addonTotal = 0
@@ -145,6 +162,8 @@ export async function POST(request: NextRequest) {
 
     // Create contact-submission with pending payment status
     const planTitle = tLocale(plan.card.title, locale)
+    // Grow/Make hosted page shows this as product title — never the raw slug.
+    const paymentDescription = `${planTitle} · Erythro.ai`
     const created = await payload.create({
       collection: 'contact-submissions',
       data: {
@@ -172,7 +191,7 @@ export async function POST(request: NextRequest) {
     const paymentInput = {
       amount: totalMinor,
       currency: 'ILS' as const,
-      description: `Erythro AI audit ${planSlug}`,
+      description: paymentDescription,
       locale: (locale === 'ru' || locale === 'he' || locale === 'en' ? locale : 'en') as
         | 'en'
         | 'ru'

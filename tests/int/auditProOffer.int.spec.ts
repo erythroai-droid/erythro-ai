@@ -4,15 +4,32 @@ import {
   buildProOfferEmail,
   isAuditProOfferEnabled,
   PRO_ADS_PRICE,
+  PRO_LIST_PRICE,
   resolveProOfferLocale,
 } from '@/lib/auditProOffer'
+import {
+  signProOfferCheckoutAccess,
+  verifyProOfferCheckoutAccess,
+} from '@/lib/proOfferCheckoutAccess'
 import { isFreeAuditPlanSlug, isHiddenAuditOrderSlug, getOrderPlan } from '@/lib/orderPlans'
 
 describe('auditProOffer', () => {
-  it('ads checkout is always audit-pro-ads at 390', () => {
-    expect(buildProOfferCheckoutUrl('ru')).toContain('/order/audit-pro-ads')
-    expect(buildProOfferCheckoutUrl('ru')).toContain('lang=ru')
+  it('ads checkout URL is signed (email-only gate)', () => {
+    const prev = process.env.PAYLOAD_SECRET
+    process.env.PAYLOAD_SECRET = 'test-pro-offer-secret'
+    const url = buildProOfferCheckoutUrl('ru', 42)
+    expect(url).toContain('/order/audit-pro-ads')
+    expect(url).toContain('lang=ru')
+    expect(url).toContain('t=')
+    const t = new URL(url).searchParams.get('t')
+    expect(verifyProOfferCheckoutAccess(t)?.submissionId).toBe('42')
+    expect(verifyProOfferCheckoutAccess(undefined)).toBeNull()
+    expect(verifyProOfferCheckoutAccess('42.9999999999.bad')).toBeNull()
+    const expired = signProOfferCheckoutAccess(7, Date.now() - 60_000)
+    expect(verifyProOfferCheckoutAccess(expired)).toBeNull()
     expect(PRO_ADS_PRICE).toBe(390)
+    if (prev === undefined) delete process.env.PAYLOAD_SECRET
+    else process.env.PAYLOAD_SECRET = prev
   })
 
   it('commercial Pro emails stay off until AUDIT_PRO_OFFER_ENABLED', () => {
@@ -48,6 +65,8 @@ describe('auditProOffer', () => {
     expect(mail.html).toContain('#b5a58d')
     expect(mail.html).toContain('Эйлат, Израиль')
     expect(mail.html).toContain('audit-pro-ads')
+    expect(mail.html).toContain('text-decoration:line-through')
+    expect(mail.html).toContain(`₪${PRO_LIST_PRICE}`)
     expect(mail.html).not.toContain('WhatsApp')
     expect(mail.html).not.toContain('linear-gradient')
   })

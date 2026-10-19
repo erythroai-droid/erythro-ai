@@ -92,6 +92,8 @@ interface OrderClientProps {
   next?: ProjectNavNeighbor | null
   /** CMS form copy for audit checkout fields (website / report language). */
   auditForm?: AuditPageContent['form']
+  /** Signed email token for gated promo plans (audit-pro-ads). */
+  proOfferToken?: string
 }
 
 export default function OrderClient({
@@ -102,6 +104,7 @@ export default function OrderClient({
   prev = null,
   next = null,
   auditForm,
+  proOfferToken,
 }: OrderClientProps) {
   const a11yTranslations = content.accessibility
   const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'light', initialTheme)
@@ -168,6 +171,7 @@ export default function OrderClient({
                 prev={prev}
                 next={next}
                 formCopy={formCopy}
+                proOfferToken={proOfferToken}
               />
             </div>
           </div>
@@ -205,6 +209,7 @@ function OrderCheckout({
   prev,
   next,
   formCopy,
+  proOfferToken,
 }: {
   plan: OrderPlan
   locale: string
@@ -212,6 +217,7 @@ function OrderCheckout({
   prev: ProjectNavNeighbor | null
   next: ProjectNavNeighbor | null
   formCopy: AuditPageContent['form']
+  proOfferToken?: string
 }) {
   const { open: openContact } = useContactModal()
   const isLight = theme === 'light'
@@ -1059,6 +1065,7 @@ function OrderCheckout({
           formCopy={formCopy}
           periodId={periodId}
           addonIds={selectedAddons}
+          proOfferToken={proOfferToken}
         />
       )}
     </>
@@ -1117,6 +1124,7 @@ function AuditOrderModal({
   formCopy,
   periodId,
   addonIds,
+  proOfferToken,
 }: {
   isOpen: boolean
   onClose: () => void
@@ -1126,6 +1134,7 @@ function AuditOrderModal({
   formCopy: AuditPageContent['form']
   periodId?: string
   addonIds?: string[]
+  proOfferToken?: string
 }) {
   const isRtl = locale === 'he'
   const titleId = useId()
@@ -1299,6 +1308,7 @@ function AuditOrderModal({
             auditLanguage: values.auditLanguage,
             locale,
             message: orderMessage,
+            ...(proOfferToken ? { proOfferToken } : {}),
             [CONTACT_HONEYPOT_FIELD]: honeypot,
             [TURNSTILE_TOKEN_FIELD]: turnstileToken,
           }),

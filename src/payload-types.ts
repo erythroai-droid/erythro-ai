@@ -881,22 +881,28 @@ export interface ContactSubmission {
    */
   errorLast?: string | null;
   /**
-   * Delayed PRO upsell email after free report (team@); scheduled → sent/skipped
+   * Ads LP free→Pro funnel (team@): scheduled (+15m) → sent → reminder_sent (72h) / skipped
    */
   proOfferStatus?: ('none' | 'scheduled' | 'sent' | 'reminder_sent' | 'skipped') | null;
   /**
-   * When the PRO upsell email may be sent (report_sent + 15 min)
+   * First commercial email due (report_sent + 15 min)
    */
   proOfferDueAt?: string | null;
   /**
-   * When the PRO upsell email was actually sent
+   * When the first Pro promo email was sent
    */
   proOfferSentAt?: string | null;
-  /** Promo window end (sent + 72h) */
+  /**
+   * Promo ends (sent + 72h) — ₪390 ads special
+   */
   proOfferExpiresAt?: string | null;
-  /** When to send the ending reminder */
+  /**
+   * When to send the “promo ending” reminder
+   */
   proOfferReminderDueAt?: string | null;
-  /** When the 72h reminder was sent */
+  /**
+   * When the 72h reminder email was sent
+   */
   proOfferReminderSentAt?: string | null;
   updatedAt: string;
   createdAt: string;
