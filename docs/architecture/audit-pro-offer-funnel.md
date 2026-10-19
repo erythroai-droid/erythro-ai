@@ -17,9 +17,10 @@
 | Переменная | Назначение |
 |---|---|
 | `TEAM_SMTP_PASS` | Пароль Hostinger **team@** (не `SMTP_PASS`) |
+| `AUDIT_PRO_OFFER_ENABLED` | `1` / `true` — включить commercial team@ (Pro + 72h). **По умолчанию выкл.** до утверждения письма |
 
 Миграции: `20261019_140000_…`, `20261019_190000_…` (reminder fields).  
 Seed: `audit-pro-ads`. Redeploy site + **audit-agent**.
 
-Код: `src/lib/auditProOffer.ts`, worker `scheduleProOfferEmail`, reconcile.  
+Код: `src/lib/auditProOffer.ts` (`isAuditProOfferEnabled`), worker `scheduleProOfferEmail`, reconcile.  
 Статусы воронки писать **SQL** (`patchProOfferFieldsSql`) — `payload.update` ломается на существующем `html_result` (PIT-113 / PIT-035).

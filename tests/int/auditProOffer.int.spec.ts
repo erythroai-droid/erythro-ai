@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildProOfferCheckoutUrl,
   buildProOfferEmail,
+  isAuditProOfferEnabled,
   PRO_ADS_PRICE,
   resolveProOfferLocale,
 } from '@/lib/auditProOffer'
@@ -12,6 +13,18 @@ describe('auditProOffer', () => {
     expect(buildProOfferCheckoutUrl('ru')).toContain('/order/audit-pro-ads')
     expect(buildProOfferCheckoutUrl('ru')).toContain('lang=ru')
     expect(PRO_ADS_PRICE).toBe(390)
+  })
+
+  it('commercial Pro emails stay off until AUDIT_PRO_OFFER_ENABLED', () => {
+    const prev = process.env.AUDIT_PRO_OFFER_ENABLED
+    delete process.env.AUDIT_PRO_OFFER_ENABLED
+    expect(isAuditProOfferEnabled()).toBe(false)
+    process.env.AUDIT_PRO_OFFER_ENABLED = '1'
+    expect(isAuditProOfferEnabled()).toBe(true)
+    process.env.AUDIT_PRO_OFFER_ENABLED = '0'
+    expect(isAuditProOfferEnabled()).toBe(false)
+    if (prev === undefined) delete process.env.AUDIT_PRO_OFFER_ENABLED
+    else process.env.AUDIT_PRO_OFFER_ENABLED = prev
   })
 
   it('RU offer is Pro-only (no modernization block)', () => {
@@ -31,8 +44,27 @@ describe('auditProOffer', () => {
     expect(mail.text).toContain('чеклист 60+')
     expect(mail.text).not.toContain('модернизац')
     expect(mail.text).not.toContain('AI-агент')
-    expect(mail.html).toContain('linear-gradient')
+    expect(mail.html).toContain('letterhead-full.svg')
+    expect(mail.html).toContain('#b5a58d')
+    expect(mail.html).toContain('Эйлат, Израиль')
     expect(mail.html).toContain('audit-pro-ads')
+    expect(mail.html).not.toContain('WhatsApp')
+    expect(mail.html).not.toContain('linear-gradient')
+  })
+
+  it('HE offer shell is RTL letterhead', () => {
+    const mail = buildProOfferEmail({
+      email: 'ada@example.com',
+      locale: 'he',
+      checkoutUrl: 'https://erythro.ai/order/audit-pro-ads?lang=he',
+      kind: 'offer',
+    })
+    expect(mail.html).toContain('dir="rtl"')
+    expect(mail.html).toContain('text-align:right')
+    expect(mail.html).toContain('אילת, ישראל')
+    expect(mail.html).toContain('הצעה מיוחדת עבור ada@example.com')
+    expect(mail.html).not.toContain('WhatsApp')
+    expect(mail.html).not.toContain('טל.')
   })
 
   it('RU +72h letter is modernization / AI (not Pro promo)', () => {

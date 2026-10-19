@@ -16,7 +16,28 @@ export const TEAM_MAILBOX = 'team@erythro.ai'
 export const PRO_ADS_PRICE = 390 as const
 export const PRO_LIST_PRICE = 490 as const
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai').replace(/\/+$/, '')
+/**
+ * team@ Pro/reminder commercial emails. Off until letterhead is approved.
+ * Turn on with Vercel (+ audit-agent) env `AUDIT_PRO_OFFER_ENABLED=1`.
+ */
+export const AUDIT_PRO_OFFER_ENABLED_DEFAULT = false
+
+export function isAuditProOfferEnabled(): boolean {
+  const v = process.env.AUDIT_PRO_OFFER_ENABLED?.trim().toLowerCase()
+  if (v === '1' || v === 'true' || v === 'on') return true
+  if (v === '0' || v === 'false' || v === 'off') return false
+  return AUDIT_PRO_OFFER_ENABLED_DEFAULT
+}
+
+function resolveSiteUrl(): string {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+  if (!raw || raw === '[SENSITIVE]' || raw.startsWith('YOUR_')) {
+    return 'https://erythro.ai'
+  }
+  return raw.replace(/\/+$/, '')
+}
+
+const SITE_URL = resolveSiteUrl()
 
 /** Paid funnel plans that mean “already bought / started checkout” — skip promo. */
 export const PAID_AUDIT_FUNNEL_SLUGS = [
@@ -363,6 +384,13 @@ function bulletRows(items: string[]): string {
     .join('')
 }
 
+/** Letterhead chrome (matches `design/letterheads/*-blank.html`). */
+function letterheadFooterLine(locale: OfferLocale): string {
+  if (locale === 'he') return 'Erythro.ai · אילת, ישראל · erythro.ai'
+  if (locale === 'ru') return 'Erythro.ai · Эйлат, Израиль · erythro.ai'
+  return 'Erythro.ai · Eilat, Israel · erythro.ai'
+}
+
 function shellHtml(input: {
   locale: OfferLocale
   dir: string
@@ -371,24 +399,63 @@ function shellHtml(input: {
   brand: string
   headline: string
   bodyInner: string
-  support: string
 }): string {
+  const isRtl = input.dir === 'rtl'
+  const align = isRtl ? 'right' : 'left'
+  const contactsAlign = isRtl ? 'left' : 'right'
+  const fontStack = isRtl
+    ? "'Heebo',Arial,Helvetica,sans-serif"
+    : "Arial,Helvetica,sans-serif"
+  // Full wordmark + tagline (same asset as design/letterheads/logo.svg).
+  const logoUrl = `${SITE_URL}/images/logo/letterhead-full.svg`
+  const footerLine = letterheadFooterLine(input.locale)
+  // Header: logo at inline-start, contacts at inline-end (dir flips cells in RTL).
+  const headerRow = `
+        <tr>
+          <td style="padding:0 0 16px;vertical-align:middle;">
+            <a href="${escapeHtml(SITE_URL)}" style="text-decoration:none;">
+              <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(input.brand)}" width="177" height="56" style="display:block;border:0;outline:none;width:177px;height:auto;max-width:177px;"/>
+            </a>
+          </td>
+          <td dir="ltr" align="${contactsAlign}" style="padding:0 0 16px;vertical-align:middle;font-size:11px;line-height:16px;color:#686868;">
+            <a href="${escapeHtml(SITE_URL)}" style="color:#686868;text-decoration:none;">erythro.ai</a><br/>
+            <a href="mailto:${TEAM_MAILBOX}" style="color:#686868;text-decoration:none;">${TEAM_MAILBOX}</a><br/>
+            <span style="white-space:nowrap;">+972 50 530 83 05</span>
+          </td>
+        </tr>`
+
   return `<!DOCTYPE html>
 <html lang="${input.locale}" dir="${input.dir}">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>${escapeHtml(input.subject)}</title></head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width"/>
+<title>${escapeHtml(input.subject)}</title>
+</head>
+<body style="margin:0;padding:0;background:#e9e6e1;font-family:${fontStack};color:#1e1e1e;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(input.preheader)}</div>
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f4f5;padding:24px 12px;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#e9e6e1;padding:24px 12px;">
     <tr><td align="center">
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08);">
-        <tr><td style="background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 60%,#c41e3a 160%);padding:28px 28px 24px;">
-          <p style="margin:0;color:#ffffff;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.85;">${escapeHtml(input.brand)}</p>
-          <h1 style="margin:10px 0 0;color:#ffffff;font-size:22px;line-height:1.35;font-weight:700;">${escapeHtml(input.headline)}</h1>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" dir="${input.dir}" style="max-width:600px;background:#ffffff;border-radius:0;">
+        <tr><td style="padding:28px 28px 0;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" dir="${input.dir}">
+            ${headerRow}
+          </table>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="height:1px;line-height:1px;font-size:0;background:#b5a58d;">&nbsp;</td></tr></table>
         </td></tr>
-        <tr><td style="padding:28px 28px 8px;">${input.bodyInner}</td></tr>
-        <tr><td style="padding:20px 28px 28px;border-top:1px solid #eee;">
-          <p style="margin:0 0 6px;color:#666;font-size:13px;">${escapeHtml(input.support)}</p>
-          <p style="margin:0;color:#1a1a1a;font-size:14px;font-weight:700;">${escapeHtml(input.brand)}</p>
+        <tr><td dir="${input.dir}" align="${align}" style="padding:22px 28px 8px;text-align:${align};">
+          <h1 style="margin:0 0 18px;color:#0d0d0d;font-size:22px;line-height:1.35;font-weight:700;text-align:${align};">${escapeHtml(input.headline)}</h1>
+          ${input.bodyInner}
+        </td></tr>
+        <tr><td style="padding:16px 28px 28px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="height:1px;line-height:1px;font-size:0;background:#b5a58d;">&nbsp;</td></tr></table>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" dir="${input.dir}" style="margin-top:10px;">
+            <tr>
+              <td align="${align}" style="font-size:11px;line-height:16px;color:#686868;text-align:${align};">${escapeHtml(footerLine)}</td>
+              <td dir="ltr" align="${contactsAlign}" style="font-size:11px;line-height:16px;color:#686868;white-space:nowrap;">
+                <a href="mailto:${TEAM_MAILBOX}" style="color:#686868;text-decoration:none;">${TEAM_MAILBOX}</a>
+              </td>
+            </tr>
+          </table>
         </td></tr>
       </table>
     </td></tr>
@@ -470,7 +537,6 @@ export function buildProOfferEmail(input: {
         brand: copy.brand,
         headline: copy.headline,
         bodyInner,
-        support: copy.support,
       }),
     }
   }
@@ -537,7 +603,6 @@ export function buildProOfferEmail(input: {
       brand: copy.brand,
       headline: subject,
       bodyInner,
-      support: copy.support,
     }),
   }
 }
@@ -704,6 +769,10 @@ export async function trySendAuditProOffer(
   submissionId: number | string,
   options: { force?: boolean } = {},
 ): Promise<SendProOfferResult> {
+  if (!isAuditProOfferEnabled()) {
+    return { ok: true, status: 'skipped', reason: 'paused_pending_approval' }
+  }
+
   if (!process.env.TEAM_SMTP_PASS?.trim()) {
     return { ok: false, reason: 'TEAM_SMTP_PASS not set' }
   }
@@ -807,6 +876,10 @@ export async function trySendAuditProOfferReminder(
   submissionId: number | string,
   options: { force?: boolean } = {},
 ): Promise<SendProOfferResult> {
+  if (!isAuditProOfferEnabled()) {
+    return { ok: true, status: 'skipped', reason: 'paused_pending_approval' }
+  }
+
   if (!process.env.TEAM_SMTP_PASS?.trim()) {
     return { ok: false, reason: 'TEAM_SMTP_PASS not set' }
   }
@@ -893,6 +966,10 @@ export async function sendDueAuditProOffers(limit = 20): Promise<{
   scanned: number
   results: Array<{ id: number | string; result: SendProOfferResult }>
 }> {
+  if (!isAuditProOfferEnabled()) {
+    return { scanned: 0, results: [] }
+  }
+
   const payload = await getPayload({ config })
   const nowIso = new Date().toISOString()
   const found = await payload.find({
@@ -923,6 +1000,10 @@ export async function sendDueAuditProOfferReminders(limit = 20): Promise<{
   scanned: number
   results: Array<{ id: number | string; result: SendProOfferResult }>
 }> {
+  if (!isAuditProOfferEnabled()) {
+    return { scanned: 0, results: [] }
+  }
+
   const payload = await getPayload({ config })
   const nowIso = new Date().toISOString()
   const found = await payload.find({

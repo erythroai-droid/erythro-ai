@@ -84,6 +84,17 @@ const PRO_OFFER_DELAY_MS = 15 * 60 * 1000
 export function scheduleProOfferEmail(submissionId, planSlug, meta = {}) {
   if (!isFreeAuditPlanSlug(planSlug)) return
 
+  // Off until letterhead approved (mirror site `isAuditProOfferEnabled`).
+  const offerOn = String(process.env.AUDIT_PRO_OFFER_ENABLED || '')
+    .trim()
+    .toLowerCase()
+  if (offerOn !== '1' && offerOn !== 'true' && offerOn !== 'on') {
+    console.log(
+      `[payload] pro-offer schedule paused id=${submissionId} (AUDIT_PRO_OFFER_ENABLED off)`,
+    )
+    return
+  }
+
   const secret = agentSecret()
   if (!secret) {
     console.warn('[payload] skip pro-offer schedule — AGENT_SECRET_TOKEN not set')
