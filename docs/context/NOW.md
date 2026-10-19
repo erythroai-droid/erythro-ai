@@ -8,15 +8,13 @@
 ## Сделано в этой сессии
 
 - Ads LP funnel: +15m Pro-only KP (₪390 / 72h) → +72h modernization/AI if no paid order.
-- User: site deployed (Vercel).
+- Fix sitemap test: hide `audit-pro-ads` (expected out of sitemap).
 
 ## Сейчас (ops — добить)
 
-1. Подтвердить `TEAM_SMTP_PASS` на Production (+ Preview).
-2. Миграции `20261019_140000` + `20261019_190000` на прод DB (если ещё не накатились с деплоем).
-3. Seed `audit-pro-ads`: `pnpm exec tsx scripts/seed-audit-order-plans.ts`
-4. Redeploy **audit-agent** на VPS (schedule +15m).
-5. Smoke: free с `audit-ru` → ~15м письмо Pro → (опц.) 72ч services letter.
+1. Push test fix; merge PR.
+2. `TEAM_SMTP_PASS`; миграции; seed `audit-pro-ads`; redeploy audit-agent.
+3. Smoke с `audit-ru`.
 
 ## Не делать
 
