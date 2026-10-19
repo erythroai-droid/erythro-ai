@@ -3,6 +3,7 @@ import {
   AGENT_SIGNATURE_HEADER,
   signAgentBody,
 } from '@/lib/agentAuth'
+import { assertAuditMayRun } from '@/lib/auditPaymentGate'
 import { checkWebsiteReachable } from '@/lib/checkWebsite'
 
 /**
@@ -116,6 +117,14 @@ export async function triggerAuditAgent(
   const targetUrl = input.targetUrl?.trim()
   if (!targetUrl) {
     return { ok: false, reason: 'missing_target_url' }
+  }
+
+  const mayRun = await assertAuditMayRun(input.submissionId)
+  if (!mayRun.ok) {
+    console.error(
+      `[audit-agent] refuse trigger id=${input.submissionId} reason=${mayRun.reason}`,
+    )
+    return { ok: false, reason: mayRun.reason }
   }
 
   const reachable = await checkWebsiteReachable(targetUrl)

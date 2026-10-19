@@ -16,6 +16,7 @@ import {
   parseReportAccessToken,
   reportAccessTokenMatches,
 } from '@/lib/auditReportAccess'
+import { isUnpaidAuditCheckout } from '@/lib/auditPaymentGate'
 import {
   findAuditSubmission,
   normalizeAuditStatus,
@@ -73,6 +74,14 @@ export default async function AuditReportPage({ params, searchParams }: PageProp
   try {
     const doc = await findAuditSubmission(reportId)
     if (!doc || !reportAccessTokenMatches(doc.reportAccessToken, accessKey)) {
+      notFound()
+    }
+    if (
+      isUnpaidAuditCheckout({
+        paymentStatus: doc.paymentStatus,
+        paymentAmount: doc.paymentAmount,
+      })
+    ) {
       notFound()
     }
     const status = normalizeAuditStatus(doc.auditStatus)

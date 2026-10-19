@@ -21,6 +21,8 @@ export type AuditReportDoc = {
   htmlResult?: string | null
   auditSummary?: unknown
   website?: string | null
+  paymentStatus?: string | null
+  paymentAmount?: number | null
   updatedAt?: string | null
   createdAt?: string | null
 }

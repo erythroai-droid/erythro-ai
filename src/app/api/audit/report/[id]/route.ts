@@ -15,6 +15,7 @@ import {
   parseReportAccessToken,
   reportAccessTokenMatches,
 } from '@/lib/auditReportAccess'
+import { isUnpaidAuditCheckout } from '@/lib/auditPaymentGate'
 import {
   findAuditSubmission,
   normalizeAuditStatus,
@@ -64,6 +65,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const doc = await findAuditSubmission(id)
     if (!doc || !reportAccessTokenMatches(doc.reportAccessToken, accessKey)) {
+      return NextResponse.json({ message: 'Not found' }, { status: 404 })
+    }
+    if (
+      isUnpaidAuditCheckout({
+        paymentStatus: doc.paymentStatus,
+        paymentAmount: doc.paymentAmount,
+      })
+    ) {
       return NextResponse.json({ message: 'Not found' }, { status: 404 })
     }
 

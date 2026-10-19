@@ -7,6 +7,11 @@ import { getPayload, type Payload } from 'payload'
 import { sql } from '@payloadcms/db-postgres'
 import config from '@payload-config'
 import { buildAuditReportPath } from '@/lib/auditReport'
+import {
+  buildMailUnsubscribeUrl,
+  isMailUnsubscribed,
+} from '@/lib/mailUnsubscribe'
+import { unsubscribeCopy } from '@/lib/mailUnsubscribeCopy'
 import { isFreeAuditPlanSlug } from '@/lib/orderPlans'
 import { signProOfferCheckoutAccess } from '@/lib/proOfferCheckoutAccess'
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
@@ -410,6 +415,7 @@ function shellHtml(input: {
   brand: string
   headline: string
   bodyInner: string
+  unsubscribeUrl: string
 }): string {
   const isRtl = input.dir === 'rtl'
   const align = isRtl ? 'right' : 'left'
@@ -420,6 +426,7 @@ function shellHtml(input: {
   // Full wordmark + tagline (same asset as design/letterheads/logo.svg).
   const logoUrl = `${SITE_URL}/images/logo/letterhead-full.svg`
   const footerLine = letterheadFooterLine(input.locale)
+  const unsubLabel = unsubscribeCopy(input.locale).linkLabel
   // Header: logo at inline-start, contacts at inline-end (dir flips cells in RTL).
   const headerRow = `
         <tr>
@@ -462,8 +469,8 @@ function shellHtml(input: {
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" dir="${input.dir}" style="margin-top:10px;">
             <tr>
               <td align="${align}" style="font-size:11px;line-height:16px;color:#686868;text-align:${align};">${escapeHtml(footerLine)}</td>
-              <td dir="ltr" align="${contactsAlign}" style="font-size:11px;line-height:16px;color:#686868;white-space:nowrap;">
-                <a href="mailto:${TEAM_MAILBOX}" style="color:#686868;text-decoration:none;">${TEAM_MAILBOX}</a>
+              <td align="${contactsAlign}" style="font-size:11px;line-height:16px;color:#686868;text-align:${contactsAlign};">
+                <a href="${escapeHtml(input.unsubscribeUrl)}" style="color:#686868;text-decoration:underline;">${escapeHtml(unsubLabel)}</a>
               </td>
             </tr>
           </table>
@@ -484,12 +491,14 @@ export function buildProOfferEmail(input: {
   reportUrl?: string | null
   orderId?: string | null
   kind?: OfferKind
-}): { subject: string; text: string; html: string } {
+}): { subject: string; text: string; html: string; unsubscribeUrl: string } {
   const locale = offerLocale(input.locale)
   const dir = locale === 'he' ? 'rtl' : 'ltr'
   const kind = input.kind || 'offer'
   const safeName = (input.name || '').replace(/[\r\n"<>]/g, '').trim().slice(0, 80)
   const email = input.email.trim()
+  const unsubscribeUrl = buildMailUnsubscribeUrl(email, locale)
+  const unsubLabel = unsubscribeCopy(locale).linkLabel
   const servicesDevUrl = siteUrlWithLang('/services/development', locale)
   const servicesAiUrl = siteUrlWithLang('/services/ai-automation', locale)
   const homeUrl = siteUrlWithLang('/', locale)
@@ -513,7 +522,7 @@ export function buildProOfferEmail(input: {
     ]
     if (input.reportUrl) textParts.push('', `${copy.reportCta}: ${input.reportUrl}`)
     if (input.orderId) textParts.push('', `Order: ${input.orderId}`)
-    textParts.push('', copy.close, copy.support, '', copy.brand)
+    textParts.push('', copy.close, `${unsubLabel}: ${unsubscribeUrl}`, '', copy.brand)
 
     const reportBlock = input.reportUrl
       ? `<p style="margin:0 0 16px;"><a href="${escapeHtml(input.reportUrl)}" style="color:#c41e3a;font-size:14px;font-weight:600;">${escapeHtml(copy.reportCta)} →</a></p>`
@@ -548,7 +557,9 @@ export function buildProOfferEmail(input: {
         brand: copy.brand,
         headline: copy.headline,
         bodyInner,
+        unsubscribeUrl,
       }),
+      unsubscribeUrl,
     }
   }
 
@@ -573,7 +584,7 @@ export function buildProOfferEmail(input: {
   ]
   if (input.reportUrl) textParts.push('', `${copy.reportCta}: ${input.reportUrl}`)
   if (input.orderId) textParts.push('', `Order: ${input.orderId}`)
-  textParts.push('', copy.close, copy.support, '', copy.brand)
+  textParts.push('', copy.close, `${unsubLabel}: ${unsubscribeUrl}`, '', copy.brand)
 
   const reportBlock = input.reportUrl
     ? `<p style="margin:0 0 16px;"><a href="${escapeHtml(input.reportUrl)}" style="color:#c41e3a;font-size:14px;font-weight:600;">${escapeHtml(copy.reportCta)} →</a></p>`
@@ -619,7 +630,9 @@ export function buildProOfferEmail(input: {
       brand: copy.brand,
       headline: subject,
       bodyInner,
+      unsubscribeUrl,
     }),
+    unsubscribeUrl,
   }
 }
 
@@ -699,6 +712,7 @@ async function patchProOfferFieldsSql(
 async function sendViaTeamSmtp(
   to: string,
   content: { subject: string; text: string; html: string },
+  options: { listUnsubscribeUrl?: string } = {},
 ): Promise<void> {
   const pass = process.env.TEAM_SMTP_PASS?.trim()
   if (!pass) {
@@ -709,6 +723,7 @@ async function sendViaTeamSmtp(
   const port = portRaw && Number.isFinite(Number(portRaw)) ? Number(portRaw) : 465
   const nodemailer = await import('nodemailer')
   const createTransport = nodemailer.createTransport ?? nodemailer.default.createTransport
+  const listUnsub = options.listUnsubscribeUrl?.trim()
 
   const sendWith = async (usePort: number, secure: boolean) => {
     const transporter = createTransport({
@@ -732,6 +747,7 @@ async function sendViaTeamSmtp(
         'Auto-Submitted': 'auto-generated',
         'X-Auto-Response-Suppress': 'All',
         'X-Mailer': 'Erythro.ai ads funnel',
+        ...(listUnsub ? { 'List-Unsubscribe': `<${listUnsub}>` } : {}),
       },
     })
   }
@@ -847,6 +863,11 @@ export async function trySendAuditProOffer(
     return { ok: true, status: 'skipped', reason: 'already_ordered_paid_audit' }
   }
 
+  if (await isMailUnsubscribed(email)) {
+    await patchProOfferFieldsSql(payload, submissionId, { proOfferStatus: 'skipped' })
+    return { ok: true, status: 'skipped', reason: 'unsubscribed' }
+  }
+
   const locale = resolveDocLocale(doc)
   const now = Date.now()
   const expiresAt = computeProOfferExpiresAt(now)
@@ -869,7 +890,7 @@ export async function trySendAuditProOffer(
   })
 
   try {
-    await sendViaTeamSmtp(email, mail)
+    await sendViaTeamSmtp(email, mail, { listUnsubscribeUrl: mail.unsubscribeUrl })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('[auditProOffer] send failed id=', submissionId, message)
@@ -945,6 +966,11 @@ export async function trySendAuditProOfferReminder(
     return { ok: true, status: 'skipped', reason: 'already_ordered_paid_audit' }
   }
 
+  if (await isMailUnsubscribed(email)) {
+    await patchProOfferFieldsSql(payload, submissionId, { proOfferStatus: 'skipped' })
+    return { ok: true, status: 'skipped', reason: 'unsubscribed' }
+  }
+
   const locale = resolveDocLocale(doc)
   const expiresAtRaw =
     typeof doc.proOfferExpiresAt === 'string' ? Date.parse(doc.proOfferExpiresAt) : NaN
@@ -969,7 +995,7 @@ export async function trySendAuditProOfferReminder(
   })
 
   try {
-    await sendViaTeamSmtp(email, mail)
+    await sendViaTeamSmtp(email, mail, { listUnsubscribeUrl: mail.unsubscribeUrl })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     console.error('[auditProOffer] reminder failed id=', submissionId, message)
