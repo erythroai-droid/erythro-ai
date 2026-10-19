@@ -22,7 +22,7 @@ const PUBLIC_CONTENT_SECURITY_POLICY = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "frame-src https://challenges.cloudflare.com",
+  "frame-src https://challenges.cloudflare.com https://www.facebook.com https://*.facebook.com",
   "child-src https://challenges.cloudflare.com blob:",
   "worker-src 'self' blob:",
   // Public pages only talk to the r2.dev CDN for media; S3 API host is admin-only.
@@ -31,7 +31,7 @@ const PUBLIC_CONTENT_SECURITY_POLICY = [
   "media-src 'self' blob: https:",
   "frame-ancestors 'self'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://www.facebook.com https://*.facebook.com",
 ].join('; ')
 
 const ADMIN_CONTENT_SECURITY_POLICY = [
@@ -40,7 +40,7 @@ const ADMIN_CONTENT_SECURITY_POLICY = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "frame-src https://challenges.cloudflare.com",
+  "frame-src https://challenges.cloudflare.com https://www.facebook.com https://*.facebook.com",
   "child-src https://challenges.cloudflare.com blob:",
   "worker-src 'self' blob:",
   // Payload `clientUploads` PUTs straight to the R2 S3 API (not r2.dev). Without
@@ -49,7 +49,7 @@ const ADMIN_CONTENT_SECURITY_POLICY = [
   "media-src 'self' blob: https:",
   "frame-ancestors 'self'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://www.facebook.com https://*.facebook.com",
 ].join('; ')
 
 /** Sample A44 HTML reports load Inter from Google Fonts + inline copy/filter scripts. */

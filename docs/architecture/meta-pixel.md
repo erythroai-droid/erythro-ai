@@ -27,6 +27,10 @@ Pixel ID: `2395401914532727`.
 
 `connect-src`: `www.facebook.com`, `connect.facebook.net`, `*.facebook.com`.
 
+`form-action`: `'self'`, `https://www.facebook.com`, `https://*.facebook.com` (Meta Pixel submits telemetry / fallback data via dynamic form POST).
+
+`frame-src`: `https://challenges.cloudflare.com`, `https://www.facebook.com`, `https://*.facebook.com` (Meta Pixel hidden iframe transport).
+
 `img-src https:` уже закрывает noscript-пиксель.
 
 ## 4. Проверка
