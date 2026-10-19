@@ -1,6 +1,10 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
+import {
+  sendDueAuditProOfferReminders,
+  sendDueAuditProOffers,
+} from '@/lib/auditProOffer'
 
 export const DEFAULT_NEW_STALE_MINUTES = 2
 export const DEFAULT_IN_PROGRESS_STALE_MINUTES = 20
@@ -21,6 +25,10 @@ export type ReconcileRunResult = {
   inProgressStaleMinutes: number
   scanned: number
   results: ReconcileResultRow[]
+  proOffers?: {
+    scanned: number
+    results: ReconcileResultRow[]
+  }
 }
 
 function clampStaleMinutes(value: number | undefined, fallback: number): number {
@@ -144,11 +152,41 @@ export async function reconcileStuckAudits(
     })
   }
 
+  let proOffers: ReconcileRunResult['proOffers']
+  try {
+    const due = await sendDueAuditProOffers(25)
+    const reminders = await sendDueAuditProOfferReminders(25)
+    proOffers = {
+      scanned: due.scanned + reminders.scanned,
+      results: [
+        ...due.results.map((row) => ({
+          id: row.id,
+          action: 'pro_offer',
+          ok: row.result.ok,
+          status: row.result.ok ? row.result.status : undefined,
+          reason: row.result.reason,
+        })),
+        ...reminders.results.map((row) => ({
+          id: row.id,
+          action: 'pro_offer_reminder',
+          ok: row.result.ok,
+          status: row.result.ok ? row.result.status : undefined,
+          reason: row.result.reason,
+        })),
+      ],
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[auditReconcile] pro offer sweep failed:', message)
+    proOffers = { scanned: 0, results: [{ action: 'pro_offer_error', reason: message }] }
+  }
+
   return {
     ok: true,
     newStaleMinutes,
     inProgressStaleMinutes,
     scanned: docs.length,
     results,
+    proOffers,
   }
 }

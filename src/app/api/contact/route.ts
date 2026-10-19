@@ -136,6 +136,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const leadChannel =
+      source === 'audit' && requestFromAuditLp ? ('meta_ads' as const) : ('organic' as const)
+
     const created = await payload.create({
       collection: 'contact-submissions',
       data: {
@@ -150,7 +153,13 @@ export async function POST(request: NextRequest) {
         ...(auditLanguage ? { auditLanguage } : {}),
         ...(planSlug ? { planSlug } : {}),
         ...(planTotal ? { planTotal } : {}),
-        ...(source === 'audit' ? { auditStatus: auditStatus || 'new' } : {}),
+        ...(source === 'audit'
+          ? {
+              auditStatus: auditStatus || 'new',
+              leadChannel,
+              proOfferStatus: 'none',
+            }
+          : {}),
       },
     })
 

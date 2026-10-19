@@ -4,6 +4,8 @@
 
 Живой путь — **Make** (официальное приложение Grow). Прямой Light API (`GROW_USER_ID` / `GROW_PAGE_CODE`) остаётся запасным, если переменные Make не заданы. Номер счёта из письма Grow — это не `userId`.
 
+Промо Meta ₪390: план `audit-pro-ads` / `/order/audit-pro-ads` — тот же webhook Create Payment Link, другая цена в теле. Delayed email после free: [`audit-pro-offer-funnel.md`](./audit-pro-offer-funnel.md).
+
 ## Make
 
 Форма сайта не вызывает Meshulam. `POST /api/payment/create` создаёт заявку `pending` и шлёт JSON на сценарий Make, который делает **Create Payment Link** и в том же HTTP-ответе возвращает URL страницы оплаты.

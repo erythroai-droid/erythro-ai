@@ -61,3 +61,105 @@ export async function getContactSubmission(id) {
   }
   return res.json()
 }
+
+/** Free express audit — delayed PRO upsell email from the site. */
+export function isFreeAuditPlanSlug(planSlug) {
+  const s = String(planSlug || '')
+    .trim()
+    .toLowerCase()
+  return !s || s === 'audit-free' || s === 'free'
+}
+
+const PRO_OFFER_DELAY_MS = 15 * 60 * 1000
+
+/**
+ * Ads LP free audits only: schedule PRO commercial email (+15m).
+ * Site also checks DB for Pro/Diagnostic orders before sending.
+ * Reconcile cron is the safety net if this process restarts.
+ *
+ * @param {number|string} submissionId
+ * @param {string} [planSlug]
+ * @param {{ leadChannel?: string|null }} [meta]
+ */
+export function scheduleProOfferEmail(submissionId, planSlug, meta = {}) {
+  if (!isFreeAuditPlanSlug(planSlug)) return
+
+  const secret = agentSecret()
+  if (!secret) {
+    console.warn('[payload] skip pro-offer schedule — AGENT_SECRET_TOKEN not set')
+    return
+  }
+
+  const run = async () => {
+    let leadChannel = meta.leadChannel
+    if (leadChannel == null) {
+      try {
+        const doc = await getContactSubmission(submissionId)
+        leadChannel = doc?.leadChannel || null
+      } catch (err) {
+        console.warn(
+          `[payload] pro-offer leadChannel GET failed id=${submissionId}:`,
+          err instanceof Error ? err.message : err,
+        )
+      }
+    }
+    if (leadChannel !== 'meta_ads') {
+      console.log(
+        `[payload] pro-offer skip id=${submissionId} (not ads LP leadChannel=${leadChannel || 'none'})`,
+      )
+      return
+    }
+
+    const dueAt = new Date(Date.now() + PRO_OFFER_DELAY_MS).toISOString()
+    try {
+      await updateContactSubmission(submissionId, {
+        proOfferStatus: 'scheduled',
+        proOfferDueAt: dueAt,
+      })
+    } catch (err) {
+      console.warn(
+        `[payload] pro-offer schedule PATCH failed id=${submissionId}:`,
+        err instanceof Error ? err.message : err,
+      )
+      return
+    }
+
+    console.log(
+      `[payload] pro-offer scheduled id=${submissionId} due=${dueAt} (delay ${Math.round(PRO_OFFER_DELAY_MS / 60000)}m)`,
+    )
+
+    setTimeout(() => {
+      fetch(`${siteBase()}/api/audit/internal/${submissionId}/pro-offer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Agent-Secret-Key': secret,
+        },
+        body: JSON.stringify({ kind: 'offer' }),
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const text = await res.text().catch(() => '')
+            console.warn(
+              `[payload] pro-offer POST id=${submissionId} status=${res.status} ${text.slice(0, 200)}`,
+            )
+            return
+          }
+          console.log(`[payload] pro-offer triggered id=${submissionId}`)
+        })
+        .catch((err) => {
+          console.warn(
+            `[payload] pro-offer POST failed id=${submissionId}:`,
+            err instanceof Error ? err.message : err,
+          )
+        })
+    }, PRO_OFFER_DELAY_MS)
+  }
+
+  run().catch((err) => {
+    console.warn(
+      `[payload] pro-offer schedule error id=${submissionId}:`,
+      err instanceof Error ? err.message : err,
+    )
+  })
+}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import sitemap from '@/app/sitemap'
 import { getAllServiceSlugs } from '@/lib/servicePages'
-import { getAllOrderSlugs } from '@/lib/orderPlans'
+import { getAllOrderSlugs, isHiddenAuditOrderSlug } from '@/lib/orderPlans'
 import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
 import { getPortfolioSitemapEntries } from '@/lib/sitemapEntries'
 
@@ -31,8 +31,12 @@ describe('sitemap()', () => {
         expect(urls.has(`https://erythro.ai/services/${slug}`)).toBe(true)
       }
 
-      // All order slugs (solutions + audit plans) must be included
+      // Public order slugs (solutions + audit). Promo-only plans stay out of sitemap.
       for (const slug of getAllOrderSlugs()) {
+        if (isHiddenAuditOrderSlug(slug)) {
+          expect(urls.has(`https://erythro.ai/order/${slug}`)).toBe(false)
+          continue
+        }
         expect(urls.has(`https://erythro.ai/order/${slug}`)).toBe(true)
       }
 

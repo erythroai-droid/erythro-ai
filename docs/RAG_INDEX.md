@@ -31,6 +31,7 @@ Last updated: 2026-09-30.
 | `docs/IMPORT_PROJECT.md` | Pointer to import tool | Skip or one chunk | `portfolio`, `cms`, `import` |
 | `docs/architecture/ai-audit-architecture.md` | AI Audit pipeline (R2, worker) | One chunk per `##` | `audit`, `r2`, `n8n`, `infra` |
 | `docs/architecture/grow-audit-checkout.md` | Grow hosted checkout for paid audits | One chunk | `audit`, `grow`, `payment` |
+| `docs/architecture/audit-pro-offer-funnel.md` | Free→PRO email + Meta ads ₪390 checkout | One chunk | `audit`, `meta`, `email`, `funnel`, `team@` |
 | `docs/architecture/payplus-audit-checkout.md` | Legacy PayPlus adapter; checkout uses Grow | One chunk | `audit`, `payplus`, `payment` |
 | `docs/architecture/r2-audit-storage.md` | R2 bucket + env for audit reports | One chunk | `r2`, `audit`, `storage` |
 | `docs/architecture/audit-rate-limiting.md` | 7-day audit rate limit & IP tracking | One chunk per `##` | `audit`, `rate-limit`, `anti-spam`, `ip` |

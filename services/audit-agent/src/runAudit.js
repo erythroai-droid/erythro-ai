@@ -1,5 +1,9 @@
 import { uploadReportObject } from './r2Upload.js'
-import { getContactSubmission, updateContactSubmission } from './payload.js'
+import {
+  getContactSubmission,
+  scheduleProOfferEmail,
+  updateContactSubmission,
+} from './payload.js'
 import { sendClientAuditEmail } from './mail.js'
 import { buildAuditPdfFilename, formatAuditOrderId } from './pdfFilename.js'
 import { planAttachesPdf, runQaAuditor } from './runQaAuditor.js'
@@ -35,6 +39,8 @@ export async function runAuditJob(job) {
 
   /** @type {string} */
   let reportAccessToken = ''
+  /** @type {string|null} */
+  let leadChannel = null
 
   try {
     const doc = await getContactSubmission(submissionId)
@@ -44,6 +50,7 @@ export async function runAuditJob(job) {
       if (typeof doc.reportAccessToken === 'string') {
         reportAccessToken = doc.reportAccessToken.trim()
       }
+      if (typeof doc.leadChannel === 'string') leadChannel = doc.leadChannel
     }
     if (!reportAccessToken) {
       throw new Error('Missing reportAccessToken on submission — refuse unscoped report URL')
@@ -143,6 +150,8 @@ export async function runAuditJob(job) {
         console.log(
           `[audit] submission=${submissionId} email sent to client orderId=${mailed.orderId || formatAuditOrderId(submissionId)}`,
         )
+        // Ads LP free → delayed commercial Pro offer (site checks DB + sends).
+        scheduleProOfferEmail(submissionId, planSlug, { leadChannel })
       }
     } else {
       console.warn(`[audit] submission=${submissionId} no clientEmail — skip mail`)

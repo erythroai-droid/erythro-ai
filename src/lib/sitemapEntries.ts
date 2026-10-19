@@ -1,4 +1,4 @@
-import { getAllOrderSlugs } from '@/lib/orderPlans'
+import { getAllOrderSlugs, isHiddenAuditOrderSlug } from '@/lib/orderPlans'
 import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
 import { getAllServiceSlugs } from '@/lib/servicePages'
 import { getCachedLegalPage } from '@/lib/legalPages.server'
@@ -92,15 +92,16 @@ export async function getPortfolioSitemapEntries(): Promise<SitemapSlugEntry[]> 
 }
 
 export async function getOrderSitemapEntries(): Promise<SitemapSlugEntry[]> {
-  const staticSlugs = getAllOrderSlugs()
+  const staticSlugs = getAllOrderSlugs().filter((slug) => !isHiddenAuditOrderSlug(slug))
   try {
     const rows = await fetchCollectionSitemap('solution-plans')
     if (rows.length) {
-      const existing = new Set(rows.map((r) => r.slug))
+      const publicRows = rows.filter((r) => !isHiddenAuditOrderSlug(r.slug))
+      const existing = new Set(publicRows.map((r) => r.slug))
       const missing = staticSlugs
         .filter((slug) => !existing.has(slug))
         .map((slug) => ({ slug }))
-      return [...rows, ...missing]
+      return [...publicRows, ...missing]
     }
   } catch (err) {
     console.error('[sitemap] order plans CMS failed:', err)

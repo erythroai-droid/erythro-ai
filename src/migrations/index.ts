@@ -41,6 +41,8 @@ import * as migration_20261012_020000_audit_plan_card_name from './20261012_0200
 import * as migration_20261014_210000_contact_submissions_report_access_token from './20261014_210000_contact_submissions_report_access_token'
 import * as migration_20261014_221500_rewrite_audit_report_urls_with_token from './20261014_221500_rewrite_audit_report_urls_with_token'
 import * as migration_20261016_180000_home_ai_audit_cms from './20261016_180000_home_ai_audit_cms'
+import * as migration_20261019_140000_contact_submissions_pro_offer from './20261019_140000_contact_submissions_pro_offer'
+import * as migration_20261019_190000_contact_submissions_pro_offer_reminder from './20261019_190000_contact_submissions_pro_offer_reminder'
 
 export const migrations = [
   {
@@ -257,5 +259,15 @@ export const migrations = [
     up: migration_20261016_180000_home_ai_audit_cms.up,
     down: migration_20261016_180000_home_ai_audit_cms.down,
     name: '20261016_180000_home_ai_audit_cms',
+  },
+  {
+    up: migration_20261019_140000_contact_submissions_pro_offer.up,
+    down: migration_20261019_140000_contact_submissions_pro_offer.down,
+    name: '20261019_140000_contact_submissions_pro_offer',
+  },
+  {
+    up: migration_20261019_190000_contact_submissions_pro_offer_reminder.up,
+    down: migration_20261019_190000_contact_submissions_pro_offer_reminder.down,
+    name: '20261019_190000_contact_submissions_pro_offer_reminder',
   },
 ]

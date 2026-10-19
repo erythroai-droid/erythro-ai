@@ -1,0 +1,916 @@
+/**
+ * Ads LP free-audit funnel (team@erythro.ai):
+ * report → +15m check DB for Pro/Diagnostic order → commercial email ₪390 (72h)
+ * → +72h reminder if still no Pro.
+ */
+import { getPayload } from 'payload'
+import config from '@payload-config'
+import { buildAuditReportPath } from '@/lib/auditReport'
+import { isFreeAuditPlanSlug } from '@/lib/orderPlans'
+import { formatSubmissionTicketId } from '@/lib/submissionTicket'
+
+export const PRO_OFFER_DELAY_MS = 15 * 60 * 1000
+export const PRO_OFFER_PROMO_MS = 72 * 60 * 60 * 1000
+export const TEAM_MAILBOX = 'team@erythro.ai'
+export const PRO_ADS_PRICE = 390 as const
+export const PRO_LIST_PRICE = 490 as const
+
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai').replace(/\/+$/, '')
+
+/** Paid funnel plans that mean “already bought / started checkout” — skip promo. */
+export const PAID_AUDIT_FUNNEL_SLUGS = [
+  'audit-pro',
+  'audit-pro-ads',
+  'audit-diagnostic',
+] as const
+
+export type ProOfferLeadChannel = 'organic' | 'meta_ads'
+export type ProOfferStatus = 'none' | 'scheduled' | 'sent' | 'reminder_sent' | 'skipped'
+
+type OfferLocale = 'en' | 'ru' | 'he'
+type OfferKind = 'offer' | 'reminder'
+
+/**
+ * Same language as the client report email / HTML report.
+ */
+export function resolveProOfferLocale(input: {
+  reportLang?: string | null
+  auditLanguage?: string | null
+  locale?: string | null
+}): OfferLocale {
+  for (const raw of [input.reportLang, input.auditLanguage, input.locale]) {
+    const v = String(raw || '')
+      .trim()
+      .toLowerCase()
+    if (v === 'ru' || v === 'he' || v === 'en') return v
+  }
+  return 'en'
+}
+
+function offerLocale(raw: string | null | undefined): OfferLocale {
+  return resolveProOfferLocale({ locale: raw })
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function isUsableEmail(value: string | null | undefined): value is string {
+  return Boolean(value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()))
+}
+
+export function buildProOfferCheckoutUrl(locale: string | null | undefined): string {
+  const lang = offerLocale(locale)
+  try {
+    const u = new URL(`${SITE_URL}/order/audit-pro-ads`)
+    u.searchParams.set('lang', lang)
+    return u.toString()
+  } catch {
+    return `${SITE_URL}/order/audit-pro-ads?lang=${lang}`
+  }
+}
+
+function siteUrlWithLang(path: string, locale: OfferLocale): string {
+  try {
+    const u = new URL(
+      path.startsWith('http') ? path : `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`,
+    )
+    u.searchParams.set('lang', locale)
+    return u.toString()
+  } catch {
+    return `${SITE_URL}${path}?lang=${locale}`
+  }
+}
+
+export function computeProOfferDueAt(fromMs = Date.now()): string {
+  return new Date(fromMs + PRO_OFFER_DELAY_MS).toISOString()
+}
+
+export function computeProOfferExpiresAt(fromMs = Date.now()): string {
+  return new Date(fromMs + PRO_OFFER_PROMO_MS).toISOString()
+}
+
+/** True if this email already started/paid Diagnostic or Pro. */
+export async function emailHasPaidAuditFunnelOrder(
+  email: string,
+  excludeSubmissionId?: number | string,
+): Promise<boolean> {
+  const raw = email.trim()
+  if (!raw) return false
+
+  const payload = await getPayload({ config })
+  const found = await payload.find({
+    collection: 'contact-submissions',
+    depth: 0,
+    limit: 10,
+    overrideAccess: true,
+    where: {
+      and: [
+        { source: { equals: 'audit' } },
+        { email: { equals: raw } },
+        { planSlug: { in: [...PAID_AUDIT_FUNNEL_SLUGS] } },
+        { paymentStatus: { in: ['pending', 'paid'] } },
+        ...(excludeSubmissionId != null
+          ? [{ id: { not_equals: excludeSubmissionId } }]
+          : []),
+      ],
+    },
+  })
+  if (found.docs.length > 0) return true
+
+  // Case-insensitive fallback (same mailbox, different casing).
+  const lower = raw.toLowerCase()
+  if (lower === raw) return false
+  const again = await payload.find({
+    collection: 'contact-submissions',
+    depth: 0,
+    limit: 10,
+    overrideAccess: true,
+    where: {
+      and: [
+        { source: { equals: 'audit' } },
+        { email: { equals: lower } },
+        { planSlug: { in: [...PAID_AUDIT_FUNNEL_SLUGS] } },
+        { paymentStatus: { in: ['pending', 'paid'] } },
+        ...(excludeSubmissionId != null
+          ? [{ id: { not_equals: excludeSubmissionId } }]
+          : []),
+      ],
+    },
+  })
+  return again.docs.length > 0
+}
+
+type SharedMail = {
+  greeting: (name: string) => string
+  reportCta: string
+  close: string
+  support: string
+  brand: string
+}
+
+type ProMailCopy = SharedMail & {
+  kind: 'offer'
+  subject: (email: string) => string
+  preheader: string
+  intro: string
+  proTitle: string
+  proBullets: string[]
+  priceBadge: string
+  priceNote: string
+  validity: string
+  cta: string
+}
+
+type ServicesMailCopy = SharedMail & {
+  kind: 'reminder'
+  subject: (email: string) => string
+  preheader: string
+  headline: string
+  intro: string
+  title: string
+  bullets: string[]
+  cta: string
+  servicesDev: string
+  servicesAi: string
+  home: string
+}
+
+function proCopy(locale: OfferLocale): ProMailCopy {
+  const shared: SharedMail = {
+    greeting: (name) =>
+      locale === 'ru'
+        ? name
+          ? `Здравствуйте, ${name}!`
+          : 'Здравствуйте!'
+        : locale === 'he'
+          ? name
+            ? `שלום ${name},`
+            : 'שלום,'
+          : name
+            ? `Hello, ${name},`
+            : 'Hello,',
+    reportCta:
+      locale === 'ru' ? 'Открыть отчёт' : locale === 'he' ? 'פתחו את הדוח' : 'Open report',
+    close:
+      locale === 'ru'
+        ? 'Erythro.ai — hi-load веб, AI и автоматизация.'
+        : locale === 'he'
+          ? 'Erythro.ai — ווב hi-load, AI ואוטומציה.'
+          : 'Erythro.ai — hi-load web, AI, and automation.',
+    support: 'WhatsApp / тел.: +972 50-530-8305 · team@erythro.ai',
+    brand: 'Erythro.ai',
+  }
+  if (locale === 'ru') {
+    return {
+      kind: 'offer',
+      ...shared,
+      subject: (email) => `Специальное предложение для ${email}`,
+      preheader: `AI Аудит Pro за ₪${PRO_ADS_PRICE} вместо ₪${PRO_LIST_PRICE} — 72 часа`,
+      intro:
+        'Вы прошли бесплатный экспресс-аудит на нашем лендинге. Отчёт уже у вас — ниже персональное спецпредложение на полный AI Аудит Pro.',
+      proTitle: 'AI Аудит: Pro — что вы получаете',
+      proBullets: [
+        'Полный чеклист 60+ и план правок под ключ',
+        'Обход воронки до 10 URL + Funnel review',
+        'AI Visibility + Agent Readiness L1',
+        'Полный HTML + PDF отчёт на выбранном языке',
+      ],
+      priceBadge: `₪${PRO_ADS_PRICE}`,
+      priceNote: `вместо ₪${PRO_LIST_PRICE} · разово`,
+      validity: 'Спецпредложение действует 72 часа с момента этого письма.',
+      cta: `Оплатить Pro — ₪${PRO_ADS_PRICE}`,
+    }
+  }
+  if (locale === 'he') {
+    return {
+      kind: 'offer',
+      ...shared,
+      support: 'WhatsApp / טל.: +972 50-530-8305 · team@erythro.ai',
+      subject: (email) => `הצעה מיוחדת עבור ${email}`,
+      preheader: `AI Audit Pro ב-₪${PRO_ADS_PRICE} במקום ₪${PRO_LIST_PRICE} — 72 שעות`,
+      intro:
+        'עברתם ביקורת אקספרס חינמית בדף הנחיתה. הדוח כבר אצלכם — להלן הצעה אישית ל-AI Audit Pro המלא.',
+      proTitle: 'AI Audit: Pro — מה תקבלו',
+      proBullets: [
+        'צ׳ק-ליסט 60+ מלא ותוכנית תיקון',
+        'סריקת משפך עד 10 כתובות + Funnel review',
+        'AI Visibility + Agent Readiness L1',
+        'דוח HTML + PDF מלא בשפה שבחרתם',
+      ],
+      priceBadge: `₪${PRO_ADS_PRICE}`,
+      priceNote: `במקום ₪${PRO_LIST_PRICE} · חד-פעמי`,
+      validity: 'ההצעה תקפה ל-72 שעות מרגע המייל הזה.',
+      cta: `לתשלום Pro — ₪${PRO_ADS_PRICE}`,
+    }
+  }
+  return {
+    kind: 'offer',
+    ...shared,
+    support: 'WhatsApp / tel.: +972 50-530-8305 · team@erythro.ai',
+    subject: (email) => `Special offer for ${email}`,
+    preheader: `AI Audit Pro for ₪${PRO_ADS_PRICE} instead of ₪${PRO_LIST_PRICE} — 72 hours`,
+    intro:
+      'You completed the free express audit on our landing page. Your report is ready — here is a personal offer for full AI Audit Pro.',
+    proTitle: 'AI Audit: Pro — what you get',
+    proBullets: [
+      'Full 60+ checklist and turnkey fix plan',
+      'Funnel crawl up to 10 URLs + Funnel review',
+      'AI Visibility + Agent Readiness L1',
+      'Full HTML + PDF report in your language',
+    ],
+    priceBadge: `₪${PRO_ADS_PRICE}`,
+    priceNote: `instead of ₪${PRO_LIST_PRICE} · one-time`,
+    validity: 'This special offer is valid for 72 hours from this email.',
+    cta: `Pay for Pro — ₪${PRO_ADS_PRICE}`,
+  }
+}
+
+/** +72h: modernization / AI (only if still no paid audit order). */
+function servicesCopy(locale: OfferLocale): ServicesMailCopy {
+  const shared = proCopy(locale)
+  if (locale === 'ru') {
+    return {
+      kind: 'reminder',
+      greeting: shared.greeting,
+      reportCta: shared.reportCta,
+      support: shared.support,
+      brand: shared.brand,
+      subject: (email) => `Следующий шаг для ${email}: сайт, AI и автоматизация`,
+      preheader: 'Модернизация, AI-агенты и автоматизация процессов под ключ',
+      headline: 'Если аудита Pro не хватает — модернизируем продукт',
+      intro:
+        'Спецпредложение на Pro уже завершилось (или вам нужен другой путь). Если сайт устарел технологически или процессы вручную — мы внедряем современные решения на базе AI:',
+      title: 'Что можем сделать под ключ',
+      bullets: [
+        'Дизайн и разработка сайта / лендинга / корпоративного портала',
+        'AI-агенты, чат-боты и автоматизация процессов (n8n, CRM, заявки)',
+        'Enterprise-инженерия: интеграции, админки, безопасность, высокая нагрузка',
+        'AI-маркетинг и реклама под ключ — когда воронка готова масштабироваться',
+      ],
+      cta: 'Ответьте на письмо: «новый сайт», «автоматизация» или «созвон» — пришлём короткое ТЗ и ориентир по срокам.',
+      close: shared.close,
+      servicesDev: 'Разработка',
+      servicesAi: 'AI и автоматизация',
+      home: 'Все услуги',
+    }
+  }
+  if (locale === 'he') {
+    return {
+      kind: 'reminder',
+      greeting: shared.greeting,
+      reportCta: shared.reportCta,
+      support: 'WhatsApp / טל.: +972 50-530-8305 · team@erythro.ai',
+      brand: shared.brand,
+      subject: (email) => `הצעד הבא עבור ${email}: אתר, AI ואוטומציה`,
+      preheader: 'מודרניזציה, סוכני AI ואוטומציה turnkey',
+      headline: 'אם Pro לא מתאים — נבנה מחדש עם AI',
+      intro:
+        'מבצע ה-Pro הסתיים (או שצריך מסלול אחר). אם האתר מיושן או התהליכים ידניים — נטמיע פתרונות AI מודרניים:',
+      title: 'מה אפשר לעשות turnkey',
+      bullets: [
+        'עיצוב ופיתוח אתר / נחיתה / פורטל ארגוני',
+        'סוכני AI, צ׳אטבוטים ואוטומציה (n8n, CRM)',
+        'הנדסת Enterprise: אינטגרציות, אדמין, אבטחה',
+        'שיווק AI ופרסום — כשהמשפך מוכן לצמיחה',
+      ],
+      cta: 'השיבו: «אתר חדש», «אוטומציה» או «שיחה» — נשלח אפיון קצר.',
+      close: shared.close,
+      servicesDev: 'פיתוח',
+      servicesAi: 'AI ואוטומציה',
+      home: 'כל השירותים',
+    }
+  }
+  return {
+    kind: 'reminder',
+    greeting: shared.greeting,
+    reportCta: shared.reportCta,
+    support: 'WhatsApp / tel.: +972 50-530-8305 · team@erythro.ai',
+    brand: shared.brand,
+    subject: (email) => `Next step for ${email}: site, AI & automation`,
+    preheader: 'Modernization, AI agents, and turnkey process automation',
+    headline: 'If Pro is not the fit — we modernize with AI',
+    intro:
+      'The Pro special has ended (or you need another path). If the stack is outdated or processes are manual — we implement modern AI solutions:',
+    title: 'What we deliver turnkey',
+    bullets: [
+      'Design and development of site / landing / corporate portal',
+      'AI agents, chatbots, and process automation (n8n, CRM)',
+      'Enterprise engineering: integrations, admin, security, high load',
+      'Turnkey AI marketing and ads when the funnel is ready to scale',
+    ],
+    cta: 'Reply with “new site”, “automation”, or “call” — we will send a short brief.',
+    close: shared.close,
+    servicesDev: 'Development',
+    servicesAi: 'AI & automation',
+    home: 'All services',
+  }
+}
+
+function bulletRows(items: string[]): string {
+  return items
+    .map(
+      (b) =>
+        `<tr><td style="padding:0 0 10px 0;color:#1a1a1a;font-size:15px;line-height:1.45;">
+            <span style="color:#c41e3a;font-weight:700;">✓</span>&nbsp;&nbsp;${escapeHtml(b)}
+          </td></tr>`,
+    )
+    .join('')
+}
+
+function shellHtml(input: {
+  locale: OfferLocale
+  dir: string
+  subject: string
+  preheader: string
+  brand: string
+  headline: string
+  bodyInner: string
+  support: string
+}): string {
+  return `<!DOCTYPE html>
+<html lang="${input.locale}" dir="${input.dir}">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>${escapeHtml(input.subject)}</title></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(input.preheader)}</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f4f5;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08);">
+        <tr><td style="background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 60%,#c41e3a 160%);padding:28px 28px 24px;">
+          <p style="margin:0;color:#ffffff;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.85;">${escapeHtml(input.brand)}</p>
+          <h1 style="margin:10px 0 0;color:#ffffff;font-size:22px;line-height:1.35;font-weight:700;">${escapeHtml(input.headline)}</h1>
+        </td></tr>
+        <tr><td style="padding:28px 28px 8px;">${input.bodyInner}</td></tr>
+        <tr><td style="padding:20px 28px 28px;border-top:1px solid #eee;">
+          <p style="margin:0 0 6px;color:#666;font-size:13px;">${escapeHtml(input.support)}</p>
+          <p style="margin:0;color:#1a1a1a;font-size:14px;font-weight:700;">${escapeHtml(input.brand)}</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+/** Brand HTML email (table layout). Offer = Pro only; reminder = modernization/AI. */
+export function buildProOfferEmail(input: {
+  name?: string | null
+  email: string
+  locale?: string | null
+  checkoutUrl: string
+  reportUrl?: string | null
+  orderId?: string | null
+  kind?: OfferKind
+}): { subject: string; text: string; html: string } {
+  const locale = offerLocale(input.locale)
+  const dir = locale === 'he' ? 'rtl' : 'ltr'
+  const kind = input.kind || 'offer'
+  const safeName = (input.name || '').replace(/[\r\n"<>]/g, '').trim().slice(0, 80)
+  const email = input.email.trim()
+  const servicesDevUrl = siteUrlWithLang('/services/development', locale)
+  const servicesAiUrl = siteUrlWithLang('/services/ai-automation', locale)
+  const homeUrl = siteUrlWithLang('/', locale)
+
+  if (kind === 'reminder') {
+    const copy = servicesCopy(locale)
+    const greeting = copy.greeting(safeName)
+    const subject = copy.subject(email)
+    const textParts = [
+      greeting,
+      '',
+      copy.intro,
+      '',
+      copy.title,
+      ...copy.bullets.map((b) => `• ${b}`),
+      '',
+      copy.cta,
+      `${copy.servicesDev}: ${servicesDevUrl}`,
+      `${copy.servicesAi}: ${servicesAiUrl}`,
+      `${copy.home}: ${homeUrl}`,
+    ]
+    if (input.reportUrl) textParts.push('', `${copy.reportCta}: ${input.reportUrl}`)
+    if (input.orderId) textParts.push('', `Order: ${input.orderId}`)
+    textParts.push('', copy.close, copy.support, '', copy.brand)
+
+    const reportBlock = input.reportUrl
+      ? `<p style="margin:0 0 16px;"><a href="${escapeHtml(input.reportUrl)}" style="color:#c41e3a;font-size:14px;font-weight:600;">${escapeHtml(copy.reportCta)} →</a></p>`
+      : ''
+
+    const bodyInner = `
+      <p style="margin:0 0 14px;color:#1a1a1a;font-size:16px;line-height:1.5;">${escapeHtml(greeting)}</p>
+      <p style="margin:0 0 16px;color:#333;font-size:15px;line-height:1.55;">${escapeHtml(copy.intro)}</p>
+      ${reportBlock}
+      <p style="margin:0 0 12px;color:#1a1a1a;font-size:17px;font-weight:700;">${escapeHtml(copy.title)}</p>
+      <table role="presentation" width="100%" style="margin:0 0 18px;">${bulletRows(copy.bullets)}</table>
+      <p style="margin:0 0 14px;color:#333;font-size:15px;line-height:1.5;">${escapeHtml(copy.cta)}</p>
+      <p style="margin:0 0 18px;font-size:13px;">
+        <a href="${escapeHtml(servicesDevUrl)}" style="color:#c41e3a;text-decoration:none;font-weight:600;">${escapeHtml(copy.servicesDev)}</a>
+        &nbsp;·&nbsp;
+        <a href="${escapeHtml(servicesAiUrl)}" style="color:#c41e3a;text-decoration:none;font-weight:600;">${escapeHtml(copy.servicesAi)}</a>
+        &nbsp;·&nbsp;
+        <a href="${escapeHtml(homeUrl)}" style="color:#c41e3a;text-decoration:none;font-weight:600;">${escapeHtml(copy.home)}</a>
+      </p>
+      <p style="margin:0;color:#555;font-size:14px;">${escapeHtml(copy.close)}</p>
+      ${input.orderId ? `<p style="margin:12px 0 0;color:#999;font-size:12px;"><code dir="ltr">${escapeHtml(input.orderId)}</code></p>` : ''}
+    `
+
+    return {
+      subject,
+      text: textParts.join('\n'),
+      html: shellHtml({
+        locale,
+        dir,
+        subject,
+        preheader: copy.preheader,
+        brand: copy.brand,
+        headline: copy.headline,
+        bodyInner,
+        support: copy.support,
+      }),
+    }
+  }
+
+  const copy = proCopy(locale)
+  const greeting = copy.greeting(safeName)
+  const subject = copy.subject(email)
+  const textParts = [
+    greeting,
+    '',
+    copy.intro,
+    copy.validity,
+    '',
+    copy.proTitle,
+    ...copy.proBullets.map((b) => `• ${b}`),
+    '',
+    `${copy.priceBadge} ${copy.priceNote}`,
+    `${copy.cta}: ${input.checkoutUrl}`,
+  ]
+  if (input.reportUrl) textParts.push('', `${copy.reportCta}: ${input.reportUrl}`)
+  if (input.orderId) textParts.push('', `Order: ${input.orderId}`)
+  textParts.push('', copy.close, copy.support, '', copy.brand)
+
+  const reportBlock = input.reportUrl
+    ? `<p style="margin:0 0 16px;"><a href="${escapeHtml(input.reportUrl)}" style="color:#c41e3a;font-size:14px;font-weight:600;">${escapeHtml(copy.reportCta)} →</a></p>`
+    : ''
+
+  const bodyInner = `
+    <p style="margin:0 0 14px;color:#1a1a1a;font-size:16px;line-height:1.5;">${escapeHtml(greeting)}</p>
+    <p style="margin:0 0 16px;color:#333;font-size:15px;line-height:1.55;">${escapeHtml(copy.intro)}</p>
+    <table role="presentation" width="100%" style="background:#fff5f6;border:1px solid #f0c9cf;border-radius:12px;margin:0 0 20px;">
+      <tr><td style="padding:16px 18px;">
+        <p style="margin:0 0 4px;color:#c41e3a;font-size:28px;font-weight:800;line-height:1;">${escapeHtml(copy.priceBadge)}</p>
+        <p style="margin:0 0 8px;color:#555;font-size:14px;">${escapeHtml(copy.priceNote)}</p>
+        <p style="margin:0;color:#7a1f2b;font-size:13px;font-weight:600;">${escapeHtml(copy.validity)}</p>
+      </td></tr>
+    </table>
+    ${reportBlock}
+    <p style="margin:0 0 12px;color:#1a1a1a;font-size:17px;font-weight:700;">${escapeHtml(copy.proTitle)}</p>
+    <table role="presentation" width="100%" style="margin:0 0 22px;">${bulletRows(copy.proBullets)}</table>
+    <table role="presentation" width="100%" style="margin:0 0 20px;">
+      <tr><td align="center">
+        <a href="${escapeHtml(input.checkoutUrl)}"
+           style="display:inline-block;background:#c41e3a;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-size:16px;font-weight:700;">
+          ${escapeHtml(copy.cta)}
+        </a>
+      </td></tr>
+      <tr><td align="center" style="padding-top:10px;">
+        <a href="${escapeHtml(input.checkoutUrl)}" style="color:#888;font-size:12px;word-break:break-all;">${escapeHtml(input.checkoutUrl)}</a>
+      </td></tr>
+    </table>
+    <p style="margin:0;color:#555;font-size:14px;">${escapeHtml(copy.close)}</p>
+    ${input.orderId ? `<p style="margin:12px 0 0;color:#999;font-size:12px;"><code dir="ltr">${escapeHtml(input.orderId)}</code></p>` : ''}
+  `
+
+  return {
+    subject,
+    text: textParts.join('\n'),
+    html: shellHtml({
+      locale,
+      dir,
+      subject,
+      preheader: copy.preheader,
+      brand: copy.brand,
+      headline: subject,
+      bodyInner,
+      support: copy.support,
+    }),
+  }
+}
+
+async function sendViaTeamSmtp(
+  to: string,
+  content: { subject: string; text: string; html: string },
+): Promise<void> {
+  const pass = process.env.TEAM_SMTP_PASS?.trim()
+  if (!pass) {
+    throw new Error('TEAM_SMTP_PASS is not set (Hostinger password for team@erythro.ai)')
+  }
+  const host = process.env.SMTP_HOST?.trim() || 'smtp.hostinger.com'
+  const portRaw = process.env.SMTP_PORT?.trim()
+  const port = portRaw && Number.isFinite(Number(portRaw)) ? Number(portRaw) : 465
+  const nodemailer = await import('nodemailer')
+  const createTransport = nodemailer.createTransport ?? nodemailer.default.createTransport
+
+  const sendWith = async (usePort: number, secure: boolean) => {
+    const transporter = createTransport({
+      host,
+      port: usePort,
+      secure,
+      auth: { user: TEAM_MAILBOX, pass },
+      connectionTimeout: 10_000,
+      greetingTimeout: 8_000,
+      socketTimeout: 15_000,
+    })
+    await transporter.sendMail({
+      from: `"Erythro.ai" <${TEAM_MAILBOX}>`,
+      to,
+      replyTo: TEAM_MAILBOX,
+      subject: content.subject,
+      text: content.text,
+      html: content.html,
+      envelope: { from: TEAM_MAILBOX, to: [to] },
+      headers: {
+        'Auto-Submitted': 'auto-generated',
+        'X-Auto-Response-Suppress': 'All',
+        'X-Mailer': 'Erythro.ai ads funnel',
+      },
+    })
+  }
+
+  try {
+    await sendWith(port, port === 465)
+  } catch (firstErr) {
+    if (port === 465) {
+      await sendWith(587, false)
+      return
+    }
+    throw firstErr
+  }
+}
+
+function resolveDocLocale(doc: {
+  auditSummary?: unknown
+  auditLanguage?: string | null
+  locale?: string | null
+}): OfferLocale {
+  const summary =
+    doc.auditSummary && typeof doc.auditSummary === 'object' && !Array.isArray(doc.auditSummary)
+      ? (doc.auditSummary as { reportLang?: unknown; locale?: unknown })
+      : null
+  const reportLangFromSummary =
+    typeof summary?.reportLang === 'string'
+      ? summary.reportLang
+      : typeof summary?.locale === 'string'
+        ? summary.locale
+        : null
+  return resolveProOfferLocale({
+    reportLang: reportLangFromSummary,
+    auditLanguage: typeof doc.auditLanguage === 'string' ? doc.auditLanguage : null,
+    locale: typeof doc.locale === 'string' ? doc.locale : null,
+  })
+}
+
+export type SendProOfferResult =
+  | {
+      ok: true
+      status: 'sent' | 'reminder_sent' | 'already_sent' | 'skipped'
+      reason?: string
+    }
+  | { ok: false; reason: string }
+
+/**
+ * First commercial email (+15m). Ads LP free audits only.
+ * Skips if email already has Pro / Diagnostic pending|paid.
+ */
+export async function trySendAuditProOffer(
+  submissionId: number | string,
+  options: { force?: boolean } = {},
+): Promise<SendProOfferResult> {
+  if (!process.env.TEAM_SMTP_PASS?.trim()) {
+    return { ok: false, reason: 'TEAM_SMTP_PASS not set' }
+  }
+
+  const payload = await getPayload({ config })
+  const doc = await payload.findByID({
+    collection: 'contact-submissions',
+    id: submissionId,
+    depth: 0,
+    overrideAccess: true,
+  })
+
+  if (!doc || doc.source !== 'audit') {
+    return { ok: false, reason: 'not_found' }
+  }
+
+  const status = (doc.proOfferStatus as ProOfferStatus | null) || 'none'
+  if (status === 'sent' || status === 'reminder_sent') {
+    return { ok: true, status: 'already_sent' }
+  }
+
+  if (doc.leadChannel !== 'meta_ads') {
+    await payload.update({
+      collection: 'contact-submissions',
+      id: submissionId,
+      data: { proOfferStatus: 'skipped' },
+      overrideAccess: true,
+    })
+    return { ok: true, status: 'skipped', reason: 'not_ads_lp' }
+  }
+
+  const planSlug = typeof doc.planSlug === 'string' ? doc.planSlug : ''
+  if (!isFreeAuditPlanSlug(planSlug)) {
+    await payload.update({
+      collection: 'contact-submissions',
+      id: submissionId,
+      data: { proOfferStatus: 'skipped' },
+      overrideAccess: true,
+    })
+    return { ok: true, status: 'skipped', reason: 'not_free_plan' }
+  }
+
+  if (doc.auditStatus !== 'report_sent') {
+    return { ok: false, reason: 'report_not_ready' }
+  }
+
+  if (!options.force && status === 'scheduled' && doc.proOfferDueAt) {
+    const due = new Date(doc.proOfferDueAt).getTime()
+    if (Number.isFinite(due) && due > Date.now()) {
+      return { ok: false, reason: 'not_due_yet' }
+    }
+  }
+
+  if (status !== 'scheduled' && status !== 'none' && !options.force) {
+    return { ok: true, status: 'skipped', reason: `status_${status}` }
+  }
+
+  const email = typeof doc.email === 'string' ? doc.email.trim() : ''
+  if (!isUsableEmail(email)) {
+    await payload.update({
+      collection: 'contact-submissions',
+      id: submissionId,
+      data: { proOfferStatus: 'skipped' },
+      overrideAccess: true,
+    })
+    return { ok: true, status: 'skipped', reason: 'no_email' }
+  }
+
+  if (await emailHasPaidAuditFunnelOrder(email, submissionId)) {
+    await payload.update({
+      collection: 'contact-submissions',
+      id: submissionId,
+      data: { proOfferStatus: 'skipped' },
+      overrideAccess: true,
+    })
+    return { ok: true, status: 'skipped', reason: 'already_ordered_paid_audit' }
+  }
+
+  const locale = resolveDocLocale(doc)
+  const checkoutUrl = buildProOfferCheckoutUrl(locale)
+  const token =
+    typeof doc.reportAccessToken === 'string' ? doc.reportAccessToken.trim() : ''
+  const reportPath = token ? buildAuditReportPath(submissionId, token, locale) : null
+  const reportUrl = reportPath ? `${SITE_URL}${reportPath}` : null
+  const orderId = formatSubmissionTicketId('audit', submissionId)
+
+  const mail = buildProOfferEmail({
+    name: typeof doc.name === 'string' ? doc.name : '',
+    email,
+    locale,
+    checkoutUrl,
+    reportUrl,
+    orderId,
+    kind: 'offer',
+  })
+
+  try {
+    await sendViaTeamSmtp(email, mail)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[auditProOffer] send failed id=', submissionId, message)
+    return { ok: false, reason: message.slice(0, 300) }
+  }
+
+  const now = Date.now()
+  const expiresAt = computeProOfferExpiresAt(now)
+  await payload.update({
+    collection: 'contact-submissions',
+    id: submissionId,
+    data: {
+      proOfferStatus: 'sent',
+      proOfferSentAt: new Date(now).toISOString(),
+      proOfferExpiresAt: expiresAt,
+      proOfferReminderDueAt: expiresAt,
+    },
+    overrideAccess: true,
+  })
+
+  return { ok: true, status: 'sent' }
+}
+
+/**
+ * 72h reminder: promo ending. Ads LP only; skip if Pro/Diagnostic ordered.
+ */
+export async function trySendAuditProOfferReminder(
+  submissionId: number | string,
+  options: { force?: boolean } = {},
+): Promise<SendProOfferResult> {
+  if (!process.env.TEAM_SMTP_PASS?.trim()) {
+    return { ok: false, reason: 'TEAM_SMTP_PASS not set' }
+  }
+
+  const payload = await getPayload({ config })
+  const doc = await payload.findByID({
+    collection: 'contact-submissions',
+    id: submissionId,
+    depth: 0,
+    overrideAccess: true,
+  })
+
+  if (!doc || doc.source !== 'audit') {
+    return { ok: false, reason: 'not_found' }
+  }
+
+  const status = (doc.proOfferStatus as ProOfferStatus | null) || 'none'
+  if (status === 'reminder_sent') {
+    return { ok: true, status: 'already_sent' }
+  }
+  if (status === 'skipped') {
+    return { ok: true, status: 'skipped', reason: 'skipped' }
+  }
+  if (status !== 'sent' && !options.force) {
+    return { ok: false, reason: 'offer_not_sent_yet' }
+  }
+
+  if (doc.proOfferReminderSentAt && !options.force) {
+    return { ok: true, status: 'already_sent' }
+  }
+
+  if (!options.force && doc.proOfferReminderDueAt) {
+    const due = new Date(doc.proOfferReminderDueAt).getTime()
+    if (Number.isFinite(due) && due > Date.now()) {
+      return { ok: false, reason: 'not_due_yet' }
+    }
+  }
+
+  const email = typeof doc.email === 'string' ? doc.email.trim() : ''
+  if (!isUsableEmail(email)) {
+    return { ok: true, status: 'skipped', reason: 'no_email' }
+  }
+
+  if (await emailHasPaidAuditFunnelOrder(email, submissionId)) {
+    await payload.update({
+      collection: 'contact-submissions',
+      id: submissionId,
+      data: { proOfferStatus: 'skipped' },
+      overrideAccess: true,
+    })
+    return { ok: true, status: 'skipped', reason: 'already_ordered_paid_audit' }
+  }
+
+  const locale = resolveDocLocale(doc)
+  const checkoutUrl = buildProOfferCheckoutUrl(locale)
+  const token =
+    typeof doc.reportAccessToken === 'string' ? doc.reportAccessToken.trim() : ''
+  const reportPath = token ? buildAuditReportPath(submissionId, token, locale) : null
+  const reportUrl = reportPath ? `${SITE_URL}${reportPath}` : null
+  const orderId = formatSubmissionTicketId('audit', submissionId)
+
+  const mail = buildProOfferEmail({
+    name: typeof doc.name === 'string' ? doc.name : '',
+    email,
+    locale,
+    checkoutUrl,
+    reportUrl,
+    orderId,
+    kind: 'reminder',
+  })
+
+  try {
+    await sendViaTeamSmtp(email, mail)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[auditProOffer] reminder failed id=', submissionId, message)
+    return { ok: false, reason: message.slice(0, 300) }
+  }
+
+  await payload.update({
+    collection: 'contact-submissions',
+    id: submissionId,
+    data: {
+      proOfferStatus: 'reminder_sent',
+      proOfferReminderSentAt: new Date().toISOString(),
+    },
+    overrideAccess: true,
+  })
+
+  return { ok: true, status: 'reminder_sent' }
+}
+
+export async function sendDueAuditProOffers(limit = 20): Promise<{
+  scanned: number
+  results: Array<{ id: number | string; result: SendProOfferResult }>
+}> {
+  const payload = await getPayload({ config })
+  const nowIso = new Date().toISOString()
+  const found = await payload.find({
+    collection: 'contact-submissions',
+    depth: 0,
+    limit,
+    overrideAccess: true,
+    where: {
+      and: [
+        { source: { equals: 'audit' } },
+        { leadChannel: { equals: 'meta_ads' } },
+        { proOfferStatus: { equals: 'scheduled' } },
+        { proOfferDueAt: { less_than_equal: nowIso } },
+        { auditStatus: { equals: 'report_sent' } },
+      ],
+    },
+    sort: 'proOfferDueAt',
+  })
+
+  const results: Array<{ id: number | string; result: SendProOfferResult }> = []
+  for (const doc of found.docs) {
+    results.push({ id: doc.id, result: await trySendAuditProOffer(doc.id) })
+  }
+  return { scanned: found.docs.length, results }
+}
+
+export async function sendDueAuditProOfferReminders(limit = 20): Promise<{
+  scanned: number
+  results: Array<{ id: number | string; result: SendProOfferResult }>
+}> {
+  const payload = await getPayload({ config })
+  const nowIso = new Date().toISOString()
+  const found = await payload.find({
+    collection: 'contact-submissions',
+    depth: 0,
+    limit,
+    overrideAccess: true,
+    where: {
+      and: [
+        { source: { equals: 'audit' } },
+        { leadChannel: { equals: 'meta_ads' } },
+        { proOfferStatus: { equals: 'sent' } },
+        { proOfferReminderDueAt: { less_than_equal: nowIso } },
+        {
+          or: [
+            { proOfferReminderSentAt: { equals: null } },
+            { proOfferReminderSentAt: { exists: false } },
+          ],
+        },
+      ],
+    },
+    sort: 'proOfferReminderDueAt',
+  })
+
+  const results: Array<{ id: number | string; result: SendProOfferResult }> = []
+  for (const doc of found.docs) {
+    results.push({ id: doc.id, result: await trySendAuditProOfferReminder(doc.id) })
+  }
+  return { scanned: found.docs.length, results }
+}

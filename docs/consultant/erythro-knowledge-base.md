@@ -77,11 +77,12 @@ Landing: https://erythro.ai/audit · orders: `order@erythro.ai`
 - Summary checklist cards; full 60+ checklist is in Pro
 - URL: https://erythro.ai/order/audit-diagnostic
 
-### AI Audit: Pro — ₪890 (one-time)
+### AI Audit: Pro — ₪490 (one-time)
 
 - Everything in Diagnostic + up to 10 funnel URLs + Funnel review
 - Full 60+ checklist with a fix on every row, AI Visibility + Agent Readiness L1
 - URL: https://erythro.ai/order/audit-pro
+- Ads / Meta LP special (email offer only): ₪390 → https://erythro.ai/order/audit-pro-ads
 
 ### AI Audit: Manual — ₪2 490 (after scoping call, then payment)
 

@@ -617,6 +617,117 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       he: 'ביקורת אתר מלאה: צ׳ק-ליסט 60+, Funnel review, תוכנית תיקון, עד 10 כתובות משפך ופירוט נראות AI.',
     },
   },
+  /**
+   * Meta / ads LP promo checkout only (email CTA). Same Pro lab as audit-pro.
+   * Hidden from /audit pricing grid and sitemap.
+   */
+  {
+    slug: 'audit-pro-ads',
+    kind: 'audit',
+    planId: 'pro-ads',
+    checkoutMode: 'order',
+    ctaHref: '/order/audit-pro-ads',
+    cardPriceNote: {
+      en: 'one-time · ads special',
+      ru: 'разово · спецпредложение',
+      he: 'חד-פעמי · מבצע מודעות',
+    },
+    ctaLabel: {
+      en: 'Get Pro for ₪390',
+      ru: 'Взять Pro за ₪390',
+      he: 'לקחת Pro ב-₪390',
+    },
+    cardName: {
+      en: 'Pro (ads)',
+      ru: 'Pro (реклама)',
+      he: 'Pro (מודעות)',
+    },
+    card: {
+      id: 'audit-pro-ads',
+      currency: 'ILS',
+      price: '390',
+      originalPrice: '490',
+      featured: true,
+      priceNote: true,
+      title: {
+        en: 'AI Audit: Pro — ads special',
+        ru: 'AI Аудит: Pro — спецпредложение',
+        he: 'ביקורת AI: Pro — מבצע מודעות',
+      },
+      features: [
+        {
+          value: {
+            en: 'Everything in Diagnostic, plus:',
+            ru: 'Всё из Diagnostic, плюс:',
+            he: 'הכל מ-Diagnostic, ובנוסף:',
+          },
+        },
+        {
+          value: {
+            en: 'Full 60+ checklist and fix plan',
+            ru: 'Полный чеклист 60+ и план правок',
+            he: 'צ׳ק-ליסט 60+ מלא ותוכנית תיקון',
+          },
+        },
+        {
+          value: {
+            en: 'Funnel crawl — up to 10 URLs',
+            ru: 'Обход воронки — до 10 URL',
+            he: 'סריקת המשפך — עד 10 כתובות',
+          },
+        },
+        {
+          value: {
+            en: 'Funnel review + one priority fix',
+            ru: 'Funnel review + одна приоритетная правка',
+            he: 'Funnel review + תיקון אחד בעדיפות',
+          },
+        },
+        {
+          value: {
+            en: 'AI Visibility + Agent Readiness L1',
+            ru: 'AI Visibility + Agent Readiness L1',
+            he: 'נראות AI + Agent Readiness L1',
+          },
+        },
+        {
+          value: {
+            en: 'Full HTML + PDF report',
+            ru: 'Полный HTML + PDF отчёт',
+            he: 'דוח HTML + PDF מלא',
+          },
+        },
+      ],
+    },
+    subtitle: {
+      en: 'Same Pro audit as ₪490 — special price for ads visitors.',
+      ru: 'Тот же Pro-аудит, что за ₪490 — спеццена для пришедших с рекламы.',
+      he: 'אותה ביקורת Pro כמו ב-₪490 — מחיר מיוחד למבקרים מהמודעות.',
+    },
+    promo: {
+      en: 'Ads special · ₪100 off',
+      ru: 'Спецпредложение · скидка ₪100',
+      he: 'מבצע מודעות · הנחה של ₪100',
+    },
+    periods: [],
+    defaultPeriodId: '',
+    addons: [],
+    includes: {
+      en: 'Everything in Diagnostic, plus up to 10 funnel pages and Funnel review (AI verdict on the path to a lead, including modal forms and chat widgets). Unlocks the full 60+ checklist with a fix on every row — including 7 AI Visibility criteria and Agent Readiness L1. HTML report in the language you choose; recommendations can be copied. Promo checkout for Meta / ads landing visitors.',
+      ru: 'Как Диагностика, плюс до 10 страниц воронки и Funnel review (AI-вердикт по пути к заявке, включая модальные формы и чат). Открыт полный чеклист 60+ с рекомендациями по каждой строке — включая 7 критериев AI Visibility и Agent Readiness L1. HTML-отчёт на выбранном языке, рекомендации можно копировать. Промо-чекаут для посетителей рекламных лендингов.',
+      he: 'הכל מחבילת האבחון, ובנוסף עד 10 עמודי משפך ו-Funnel review (פסק דין AI על הדרך לליד, כולל טפסי מודאל וצ׳אט). נפתח צ׳ק-ליסט 60+ מלא עם המלצה לכל שורה — כולל 7 קריטריוני נראות AI ו-Agent Readiness L1. דוח HTML בשפה שבחרתם; אפשר להעתיק את ההמלצות. קופה מבצעית למבקרים מדפי נחיתה של מודעות.',
+    },
+    seoTitle: {
+      en: 'Pro AI Audit — ads special ₪390 | Erythro.ai',
+      ru: 'AI Аудит Pro — спецпредложение ₪390 | Erythro.ai',
+      he: 'ביקורת AI Pro — מבצע מודעות ₪390 | Erythro.ai',
+    },
+    seoDescription: {
+      en: 'Ads special: full Pro audit for ₪390 (was ₪490). 60+ checklist, Funnel review, up to 10 funnel URLs.',
+      ru: 'Спецпредложение: полный Pro-аудит за ₪390 (было ₪490). Чеклист 60+, Funnel review, до 10 URL воронки.',
+      he: 'מבצע מודעות: ביקורת Pro מלאה ב-₪390 (במקום ₪490). צ׳ק-ליסט 60+, Funnel review, עד 10 כתובות משפך.',
+    },
+  },
   {
     slug: 'audit-manual',
     kind: 'audit',
@@ -727,8 +838,22 @@ const ORDER_SLUG_ALIASES: Record<string, string> = {
   free: 'audit-free',
   diagnostic: 'audit-diagnostic',
   pro: 'audit-pro',
+  'pro-ads': 'audit-pro-ads',
   manual: 'audit-manual',
   'ai-business-card': 'ai-smart-card',
+}
+
+/** Checkout-only promo plans — not listed on /audit pricing or sitemap. */
+export const HIDDEN_AUDIT_ORDER_SLUGS = new Set(['audit-pro-ads'])
+
+export function isHiddenAuditOrderSlug(slug: string | null | undefined): boolean {
+  return Boolean(slug && HIDDEN_AUDIT_ORDER_SLUGS.has(slug))
+}
+
+/** Free express audit (scorecard) — triggers delayed PRO upsell email. */
+export function isFreeAuditPlanSlug(slug: string | null | undefined): boolean {
+  const s = (slug || '').trim().toLowerCase()
+  return !s || s === 'audit-free' || s === 'free'
 }
 
 export function getOrderPlan(slug: string): OrderPlan | undefined {

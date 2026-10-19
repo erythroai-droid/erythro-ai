@@ -797,6 +797,10 @@ export interface ContactSubmission {
    */
   source?: ('order' | 'audit' | 'contact') | null;
   /**
+   * Traffic attribution: meta_ads when submitted from audit-*.erythro.ai ads LP
+   */
+  leadChannel?: ('organic' | 'meta_ads') | null;
+  /**
    * Site language the visitor used
    */
   locale?: string | null;
@@ -876,6 +880,24 @@ export interface ContactSubmission {
    * Last worker error (no Telegram in MVP — inspect in admin)
    */
   errorLast?: string | null;
+  /**
+   * Delayed PRO upsell email after free report (team@); scheduled → sent/skipped
+   */
+  proOfferStatus?: ('none' | 'scheduled' | 'sent' | 'reminder_sent' | 'skipped') | null;
+  /**
+   * When the PRO upsell email may be sent (report_sent + 15 min)
+   */
+  proOfferDueAt?: string | null;
+  /**
+   * When the PRO upsell email was actually sent
+   */
+  proOfferSentAt?: string | null;
+  /** Promo window end (sent + 72h) */
+  proOfferExpiresAt?: string | null;
+  /** When to send the ending reminder */
+  proOfferReminderDueAt?: string | null;
+  /** When the 72h reminder was sent */
+  proOfferReminderSentAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1426,6 +1448,7 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   phone?: T;
   message?: T;
   source?: T;
+  leadChannel?: T;
   locale?: T;
   ip?: T;
   planSlug?: T;
@@ -1444,6 +1467,12 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   htmlResult?: T;
   retryCount?: T;
   errorLast?: T;
+  proOfferStatus?: T;
+  proOfferDueAt?: T;
+  proOfferSentAt?: T;
+  proOfferExpiresAt?: T;
+  proOfferReminderDueAt?: T;
+  proOfferReminderSentAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

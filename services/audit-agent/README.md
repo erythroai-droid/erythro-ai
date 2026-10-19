@@ -31,7 +31,10 @@ Plan → tier / page cap:
 | `audit-free` | FREE | 1 |
 | `audit-diagnostic` | DIAGNOSTIC | 5 |
 | `audit-pro` | PRO | 10 |
+| `audit-pro-ads` (Meta promo checkout) | PRO | 10 |
 | `audit-manual` (ops / offline after call) | PRO | 10 |
+
+After a **free** report email succeeds, the worker schedules a PRO upsell (`+15 min`) via `POST /api/audit/internal/[id]/pro-offer` (site sends from `team@`). See `docs/architecture/audit-pro-offer-funnel.md`.
 
 ## Env
 
