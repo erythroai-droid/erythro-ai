@@ -3,6 +3,7 @@ import { agentSecretAuthorized } from '@/lib/agentAuth'
 import { parseAuditReportId } from '@/lib/auditReport'
 import {
   trySendAuditProOffer,
+  trySendAuditProOfferNudge,
   trySendAuditProOfferReminder,
 } from '@/lib/auditProOffer'
 
@@ -13,7 +14,7 @@ type RouteParams = { params: Promise<{ id: string }> }
 
 /**
  * POST /api/audit/internal/[id]/pro-offer
- * Body: { force?: boolean, kind?: 'offer' | 'reminder' }
+ * Body: { force?: boolean, kind?: 'offer' | 'nudge' | 'reminder' }
  * Auth: X-Agent-Secret-Key.
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   if (!id) return NextResponse.json({ message: 'Invalid id' }, { status: 400 })
 
   let force = false
-  let kind: 'offer' | 'reminder' = 'offer'
+  let kind: 'offer' | 'nudge' | 'reminder' = 'offer'
   try {
     const body = (await request.json().catch(() => null)) as {
       force?: unknown
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     } | null
     force = Boolean(body?.force)
     if (body?.kind === 'reminder') kind = 'reminder'
+    else if (body?.kind === 'nudge') kind = 'nudge'
   } catch {
     force = false
   }
@@ -42,7 +44,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const result =
       kind === 'reminder'
         ? await trySendAuditProOfferReminder(id, { force })
-        : await trySendAuditProOffer(id, { force })
+        : kind === 'nudge'
+          ? await trySendAuditProOfferNudge(id, { force })
+          : await trySendAuditProOffer(id, { force })
     if (!result.ok) {
       const status =
         result.reason === 'not_found'

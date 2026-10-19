@@ -369,12 +369,13 @@ export const ContactSubmissions: CollectionConfig = {
                 { label: 'None', value: 'none' },
                 { label: 'Scheduled', value: 'scheduled' },
                 { label: 'Sent', value: 'sent' },
+                { label: 'Nudge sent', value: 'nudge_sent' },
                 { label: 'Reminder sent', value: 'reminder_sent' },
                 { label: 'Skipped', value: 'skipped' },
               ],
               admin: {
                 description:
-                  'Ads LP free→Pro funnel (team@): scheduled (+15m) → sent → reminder_sent (72h) / skipped',
+                  'Ads LP free→Pro: scheduled (+15m) → sent → nudge_sent (−24h) → reminder_sent (72h development) / skipped',
                 condition: auditOnly,
                 position: 'sidebar',
               },
@@ -411,10 +412,31 @@ export const ContactSubmissions: CollectionConfig = {
               },
             },
             {
+              name: 'proOfferNudgeDueAt',
+              type: 'date',
+              admin: {
+                description: '24h-left Pro urgency email due (expires − 24h)',
+                condition: auditOnly,
+                date: { pickerAppearance: 'dayAndTime' },
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'proOfferNudgeSentAt',
+              type: 'date',
+              admin: {
+                description: 'When the 24h-left nudge email was sent',
+                condition: auditOnly,
+                date: { pickerAppearance: 'dayAndTime' },
+                readOnly: true,
+                position: 'sidebar',
+              },
+            },
+            {
               name: 'proOfferReminderDueAt',
               type: 'date',
               admin: {
-                description: 'When to send the “promo ending” reminder',
+                description: 'Development offer due (promo expiry / +72h)',
                 condition: auditOnly,
                 date: { pickerAppearance: 'dayAndTime' },
                 position: 'sidebar',
@@ -424,7 +446,7 @@ export const ContactSubmissions: CollectionConfig = {
               name: 'proOfferReminderSentAt',
               type: 'date',
               admin: {
-                description: 'When the 72h reminder email was sent',
+                description: 'When the +72h development offer email was sent',
                 condition: auditOnly,
                 date: { pickerAppearance: 'dayAndTime' },
                 readOnly: true,

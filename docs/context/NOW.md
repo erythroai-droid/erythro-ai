@@ -7,16 +7,14 @@
 
 ## Сделано в этой сессии
 
-- Unsubscribe для КП/Pro: футер письма → «Отписаться от рассылки» → `/unsubscribe` confirm → `mail_unsubscribes` → skip offer+reminder.
-- Миграция `20261019_220000_mail_unsubscribes` (deploy: migrate).
-- PIT-114 harden v2 уже в ветке (trigger/contact/create/report).
-- Fix CI: `auditAgentTrigger` мокает `assertAuditMayRun` (раньше `lookup_failed` без Payload).
+- Письма воронки (локально): Pro без имени; −24h nudge; +72h разработка (RU/EN/HE).
+- Миграция `20261019_233000_…_nudge` + reconcile/API `kind=nudge`.
+- Unsubscribe + PIT-114 уже в prod.
 
 ## Сейчас
 
-1. Vercel: client не должен импортить `mailUnsubscribe` (Payload) — copy в `mailUnsubscribeCopy`.
-2. После merge: migrate уже прошла на preview; prod ok.
-3. Проверка: письмо → футер → confirm → skip `unsubscribed`.
+1. Утвердить copy → commit/push/deploy (+ migrate nudge).
+2. Включить `AUDIT_PRO_OFFER_ENABLED=1` после OK письма.
 
 ## Не делать
 
@@ -25,4 +23,4 @@
 
 ## Последняя эстафета
 
-2026-10-19 — Cursor — commercial mail unsubscribe ready (page + gate + footer).
+2026-10-19 — Cursor — 24h Pro nudge + copy updates ready (not deployed).

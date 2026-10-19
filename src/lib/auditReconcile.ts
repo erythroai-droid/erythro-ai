@@ -3,6 +3,7 @@ import config from '@payload-config'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
 import { isUnpaidAuditCheckout } from '@/lib/auditPaymentGate'
 import {
+  sendDueAuditProOfferNudges,
   sendDueAuditProOfferReminders,
   sendDueAuditProOffers,
 } from '@/lib/auditProOffer'
@@ -190,13 +191,21 @@ export async function reconcileStuckAudits(
   let proOffers: ReconcileRunResult['proOffers']
   try {
     const due = await sendDueAuditProOffers(25)
+    const nudges = await sendDueAuditProOfferNudges(25)
     const reminders = await sendDueAuditProOfferReminders(25)
     proOffers = {
-      scanned: due.scanned + reminders.scanned,
+      scanned: due.scanned + nudges.scanned + reminders.scanned,
       results: [
         ...due.results.map((row) => ({
           id: row.id,
           action: 'pro_offer',
+          ok: row.result.ok,
+          status: row.result.ok ? row.result.status : undefined,
+          reason: row.result.reason,
+        })),
+        ...nudges.results.map((row) => ({
+          id: row.id,
+          action: 'pro_offer_nudge',
           ok: row.result.ok,
           status: row.result.ok ? row.result.status : undefined,
           reason: row.result.reason,

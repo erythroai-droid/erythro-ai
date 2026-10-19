@@ -54,6 +54,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       proOfferDueAt: doc.proOfferDueAt ?? null,
       proOfferSentAt: doc.proOfferSentAt ?? null,
       proOfferExpiresAt: doc.proOfferExpiresAt ?? null,
+      proOfferNudgeDueAt: doc.proOfferNudgeDueAt ?? null,
+      proOfferNudgeSentAt: doc.proOfferNudgeSentAt ?? null,
       proOfferReminderDueAt: doc.proOfferReminderDueAt ?? null,
       proOfferReminderSentAt: doc.proOfferReminderSentAt ?? null,
       storageKey:
@@ -104,6 +106,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     'proOfferDueAt',
     'proOfferSentAt',
     'proOfferExpiresAt',
+    'proOfferNudgeDueAt',
+    'proOfferNudgeSentAt',
     'proOfferReminderDueAt',
     'proOfferReminderSentAt',
   ] as const
@@ -176,6 +180,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       sets.push(sql`pro_offer_expires_at = ${data.proOfferExpiresAt}::timestamptz`)
     } else if (data.proOfferExpiresAt === null) {
       sets.push(sql`pro_offer_expires_at = null`)
+    }
+    if (typeof data.proOfferNudgeDueAt === 'string') {
+      sets.push(sql`pro_offer_nudge_due_at = ${data.proOfferNudgeDueAt}::timestamptz`)
+    } else if (data.proOfferNudgeDueAt === null) {
+      sets.push(sql`pro_offer_nudge_due_at = null`)
+    }
+    if (typeof data.proOfferNudgeSentAt === 'string') {
+      sets.push(sql`pro_offer_nudge_sent_at = ${data.proOfferNudgeSentAt}::timestamptz`)
+    } else if (data.proOfferNudgeSentAt === null) {
+      sets.push(sql`pro_offer_nudge_sent_at = null`)
     }
     if (typeof data.proOfferReminderDueAt === 'string') {
       sets.push(sql`pro_offer_reminder_due_at = ${data.proOfferReminderDueAt}::timestamptz`)

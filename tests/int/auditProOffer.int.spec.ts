@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest'
 import {
   buildProOfferCheckoutUrl,
   buildProOfferEmail,
+  computeProOfferExpiresAt,
+  computeProOfferNudgeDueAt,
   isAuditProOfferEnabled,
   PRO_ADS_PRICE,
   PRO_LIST_PRICE,
+  PRO_OFFER_NUDGE_BEFORE_MS,
   resolveProOfferLocale,
 } from '@/lib/auditProOffer'
 import {
@@ -48,7 +51,7 @@ describe('auditProOffer', () => {
     else process.env.AUDIT_PRO_OFFER_ENABLED = prev
   })
 
-  it('RU offer is Pro-only (no modernization block)', () => {
+  it('RU offer is Pro-only (no name, no modernization block)', () => {
     const prev = process.env.PAYLOAD_SECRET
     process.env.PAYLOAD_SECRET = 'test-pro-offer-secret'
     const mail = buildProOfferEmail({
@@ -65,6 +68,8 @@ describe('auditProOffer', () => {
     expect(mail.text).toContain('вместо ₪490')
     expect(mail.text).toContain('72 часа')
     expect(mail.text).toContain('чеклист 60+')
+    expect(mail.text).not.toContain('Иван')
+    expect(mail.text).not.toContain('Здравствуйте')
     expect(mail.text).not.toContain('модернизац')
     expect(mail.text).not.toContain('AI-агент')
     expect(mail.html).toContain('letterhead-full.svg')
@@ -79,6 +84,33 @@ describe('auditProOffer', () => {
     expect(mail.html).toContain('/unsubscribe')
     expect(mail.html).toContain('t=')
     expect(mail.unsubscribeUrl).toContain('/unsubscribe')
+    if (prev === undefined) delete process.env.PAYLOAD_SECRET
+    else process.env.PAYLOAD_SECRET = prev
+  })
+
+  it('EN / HE offers have locale copy without personal greeting', () => {
+    const prev = process.env.PAYLOAD_SECRET
+    process.env.PAYLOAD_SECRET = 'test-pro-offer-secret'
+    const en = buildProOfferEmail({
+      email: 'ada@example.com',
+      locale: 'en',
+      checkoutUrl: 'https://erythro.ai/order/audit-pro-ads?lang=en',
+      kind: 'offer',
+    })
+    const he = buildProOfferEmail({
+      email: 'ada@example.com',
+      locale: 'he',
+      checkoutUrl: 'https://erythro.ai/order/audit-pro-ads?lang=he',
+      kind: 'offer',
+    })
+    expect(en.subject).toBe('Special offer for ada@example.com')
+    expect(en.text).toContain('Pay for Pro')
+    expect(en.text).not.toMatch(/^Hello/m)
+    expect(en.html).toContain('Unsubscribe from mailing')
+    expect(he.subject).toBe('הצעה מיוחדת עבור ada@example.com')
+    expect(he.html).toContain('dir="rtl"')
+    expect(he.html).toContain('ביטול הרשמה לדיוור')
+    expect(he.text).not.toMatch(/^שלום/m)
     if (prev === undefined) delete process.env.PAYLOAD_SECRET
     else process.env.PAYLOAD_SECRET = prev
   })
@@ -113,20 +145,49 @@ describe('auditProOffer', () => {
     else process.env.PAYLOAD_SECRET = prev
   })
 
-  it('RU +72h letter is modernization / AI (not Pro promo)', () => {
+  it('RU 24h nudge is urgency Pro (not development)', () => {
     const prev = process.env.PAYLOAD_SECRET
     process.env.PAYLOAD_SECRET = 'test-pro-offer-secret'
     const mail = buildProOfferEmail({
       email: 'ivan@example.com',
       locale: 'ru',
       checkoutUrl: 'https://erythro.ai/order/audit-pro-ads?lang=ru',
+      kind: 'nudge',
+    })
+    expect(mail.subject).toBe('Осталось 24 часа до завершения специального предложения!')
+    expect(mail.text).toContain('24 часа')
+    expect(mail.text).toContain('₪390')
+    expect(mail.text).toContain('Оплатить Pro')
+    expect(mail.text).not.toContain('разработк')
+    expect(mail.html).toContain('text-decoration:line-through')
+    expect(mail.html).toContain('Отписаться от рассылки')
+    const expiresMs = Date.parse(computeProOfferExpiresAt(1_000_000))
+    const nudgeMs = Date.parse(computeProOfferNudgeDueAt(expiresMs))
+    expect(expiresMs - nudgeMs).toBe(PRO_OFFER_NUDGE_BEFORE_MS)
+    if (prev === undefined) delete process.env.PAYLOAD_SECRET
+    else process.env.PAYLOAD_SECRET = prev
+  })
+
+  it('RU +72h letter is development offer (not Pro promo)', () => {
+    const prev = process.env.PAYLOAD_SECRET
+    process.env.PAYLOAD_SECRET = 'test-pro-offer-secret'
+    const mail = buildProOfferEmail({
+      name: 'Иван',
+      email: 'ivan@example.com',
+      locale: 'ru',
+      checkoutUrl: 'https://erythro.ai/order/audit-pro-ads?lang=ru',
+      reportUrl: 'https://erythro.ai/audit/report/1?k=abc',
       kind: 'reminder',
     })
-    expect(mail.subject).toContain('ivan@example.com')
-    expect(mail.subject).toMatch(/сайт|AI|автоматизац/)
-    expect(mail.text).toContain('AI-агент')
-    expect(mail.text).toMatch(/устарел|модерниз/)
+    expect(mail.subject).toBe('Предложение о разработке для ivan@example.com')
+    expect(mail.html).toContain('Предложение о разработке для ivan@example.com')
+    expect(mail.text).toContain('Спецпредложение на Pro уже завершилось')
+    expect(mail.text).toContain('другой путь')
+    expect(mail.text).toContain('консультация')
+    expect(mail.text).toContain('высокопроизводительных: сайта')
+    expect(mail.text).not.toContain('Иван')
     expect(mail.text).not.toContain('Оплатить Pro')
+    expect(mail.html).not.toContain('Открыть отчёт')
     expect(mail.html).toContain('services/ai-automation')
     expect(mail.html).toContain('Отписаться от рассылки')
     if (prev === undefined) delete process.env.PAYLOAD_SECRET

@@ -883,7 +883,7 @@ export interface ContactSubmission {
   /**
    * Ads LP free→Pro funnel (team@): scheduled (+15m) → sent → reminder_sent (72h) / skipped
    */
-  proOfferStatus?: ('none' | 'scheduled' | 'sent' | 'reminder_sent' | 'skipped') | null;
+  proOfferStatus?: ('none' | 'scheduled' | 'sent' | 'nudge_sent' | 'reminder_sent' | 'skipped') | null;
   /**
    * First commercial email due (report_sent + 15 min)
    */
@@ -897,11 +897,19 @@ export interface ContactSubmission {
    */
   proOfferExpiresAt?: string | null;
   /**
-   * When to send the “promo ending” reminder
+   * 24h-left Pro urgency email due (expires − 24h)
+   */
+  proOfferNudgeDueAt?: string | null;
+  /**
+   * When the 24h-left nudge email was sent
+   */
+  proOfferNudgeSentAt?: string | null;
+  /**
+   * Development offer due (promo expiry / +72h)
    */
   proOfferReminderDueAt?: string | null;
   /**
-   * When the 72h reminder email was sent
+   * When the +72h development offer email was sent
    */
   proOfferReminderSentAt?: string | null;
   updatedAt: string;
@@ -1477,6 +1485,8 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   proOfferDueAt?: T;
   proOfferSentAt?: T;
   proOfferExpiresAt?: T;
+  proOfferNudgeDueAt?: T;
+  proOfferNudgeSentAt?: T;
   proOfferReminderDueAt?: T;
   proOfferReminderSentAt?: T;
   updatedAt?: T;
