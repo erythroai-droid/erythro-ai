@@ -1,3 +1,5 @@
+import { setConsentValue, CONSENT_ACCEPTED } from '@/lib/privacyConsent'
+
 const PURCHASE_SEND_TO = 'AW-18453652197/-mcPCMys6Z0dEOXFsd9E'
 const LEAD_SEND_TO = 'AW-18453652197/L4VgCMWPhZ4dEOXFsd9E'
 const SENT_KEY_PREFIX = 'erythro:ads-purchase:'
@@ -66,11 +68,24 @@ export function trackMetaLead(transactionId: string) {
     // Storage blocked: fire once per call site success path.
   }
 
+  // Ensure Meta Pixel is unblocked/granted upon successful lead submission
+  try {
+    window.fbq('consent', 'grant')
+  } catch {
+    // Storage blocked or fbq error
+  }
+
   window.fbq('track', 'Lead', { content_name: 'free_audit' }, { eventID: transactionId })
 }
 
 /** Free-audit success: Google Ads + Meta Lead (same transaction id). */
 export function trackFreeAuditLead(transactionId: string) {
+  try {
+    setConsentValue(CONSENT_ACCEPTED)
+  } catch {
+    // ignore
+  }
   trackAdsLead(transactionId)
   trackMetaLead(transactionId)
 }
+

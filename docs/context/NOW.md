@@ -17,7 +17,7 @@
 
 ## Сейчас
 
-1. Задеплоить RU host fix; smoke EN→RU switch.
+1. HE LP: website input `text-right` (dir=ltr остаётся для URL).
 2. Ads Final URL: `audit-en` / `audit-ru` / `audit-he` (не `audit-rus`).
 
 ## Не делать

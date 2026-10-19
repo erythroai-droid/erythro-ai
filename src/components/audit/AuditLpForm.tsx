@@ -470,7 +470,9 @@ export default function AuditLpForm({
                         onChange={handleChange}
                         onBlur={blurWebsite}
                         placeholder={requiredPlaceholder(tAudit(page.form.website, locale))}
-                        className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'}`}
+                        className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'} ${
+                          locale === 'he' ? 'text-right placeholder:text-right' : ''
+                        }`}
                         autoComplete="url"
                         autoCapitalize="off"
                         autoCorrect="off"
