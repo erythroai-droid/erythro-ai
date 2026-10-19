@@ -129,11 +129,13 @@ export async function POST(request: NextRequest) {
 
   const minutes = Math.round(OTP_LIMITS.ttlMs / 60_000)
   const text = BODY[locale](code, minutes)
+  const dir = locale === 'he' ? 'rtl' : 'ltr'
+  const align = locale === 'he' ? 'right' : 'left'
   const sent = await sendConsultantMail({
     to: email,
     subject: SUBJECT[locale],
     text,
-    html: `<pre style="white-space:pre-wrap;font-family:inherit;font-size:16px">${escapeHtml(text)}</pre>`,
+    html: `<div dir="${dir}" style="direction:${dir};text-align:${align};font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;white-space:pre-wrap;">${escapeHtml(text)}</div>`,
   })
 
   if (!sent.sent) {

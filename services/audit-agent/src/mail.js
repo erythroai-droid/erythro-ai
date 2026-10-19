@@ -107,14 +107,27 @@ export async function sendClientAuditEmail(input) {
     copy.footer,
   ].join('\n')
 
-  const html = `
-    <p>${escapeHtml(copy.greeting(input.clientName))}</p>
-    <p><strong>${escapeHtml(copy.orderIdLabel)}:</strong> <code>${escapeHtml(orderId)}</code></p>
-    <p>${escapeHtml(copy.body)}</p>
-    <p><a href="${escapeHtml(pageUrl)}">${escapeHtml(pageUrl)}</a></p>
-    <p>${escapeHtml(copy.support)}<br/><a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a></p>
-    <p>${escapeHtml(copy.footer)}</p>
-  `
+  const isRtl = locale === 'he'
+  const dir = isRtl ? 'rtl' : 'ltr'
+  const align = isRtl ? 'right' : 'left'
+  // Table + inline styles: many clients ignore dir on bare <p>; URLs/IDs stay LTR.
+  const html = `<!DOCTYPE html>
+<html lang="${escapeHtml(locale)}" dir="${dir}">
+<body style="margin:0;padding:0;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" dir="${dir}" style="direction:${dir};text-align:${align};">
+    <tr>
+      <td dir="${dir}" align="${align}" style="direction:${dir};text-align:${align};font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#111111;padding:16px;">
+        <p style="margin:0 0 12px;text-align:${align};direction:${dir};">${escapeHtml(copy.greeting(input.clientName))}</p>
+        <p style="margin:0 0 12px;text-align:${align};direction:${dir};"><strong>${escapeHtml(copy.orderIdLabel)}:</strong> <code dir="ltr" style="direction:ltr;unicode-bidi:isolate;">${escapeHtml(orderId)}</code></p>
+        <p style="margin:0 0 12px;text-align:${align};direction:${dir};">${escapeHtml(copy.body)}</p>
+        <p style="margin:0 0 12px;text-align:${align};"><a dir="ltr" style="direction:ltr;unicode-bidi:isolate;word-break:break-all;" href="${escapeHtml(pageUrl)}">${escapeHtml(pageUrl)}</a></p>
+        <p style="margin:0 0 12px;text-align:${align};direction:${dir};">${escapeHtml(copy.support)}<br/><a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a></p>
+        <p style="margin:0;text-align:${align};direction:${dir};color:#666666;">${escapeHtml(copy.footer)}</p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
 
   const transporter = nodemailer.createTransport({
     host,
@@ -150,6 +163,7 @@ export async function sendClientAuditEmail(input) {
       'X-Auto-Response-Suppress': 'All',
       'X-Mailer': 'Erythro.ai audit agent',
       'X-Erythro-Audit-Order-Id': orderId,
+      ...(isRtl ? { 'Content-Language': 'he' } : {}),
     },
   })
 
