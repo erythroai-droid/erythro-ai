@@ -190,18 +190,19 @@ export function buildClientAckEmail(
   const text = ticketLine
     ? [hello, '', body, ticketLine, '', signoff, ACK_SIGNATURE_TEXT].join('\n')
     : [hello, '', body, '', signoff, ACK_SIGNATURE_TEXT].join('\n')
+  const align = locale === 'he' ? 'right' : 'left'
   const ticketHtml = ticket
-    ? `<p style="color:#000000;margin:0 0 16px 0;">${escapeHtml(ticketLine).replace(
+    ? `<p style="color:#000000;margin:0 0 16px 0;text-align:${align};direction:${dir};">${escapeHtml(ticketLine).replace(
         escapeHtml(`#${ticket}`),
-        `<span dir="ltr">#${escapeHtml(ticket)}</span>`,
+        `<span dir="ltr" style="direction:ltr;unicode-bidi:isolate;">#${escapeHtml(ticket)}</span>`,
       )}</p>`
     : ''
   const html = `
-    <div dir="${dir}" style="color:#000000;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;">
-      <p style="color:#000000;margin:0 0 12px 0;">${helloHtml}</p>
-      <p style="color:#000000;margin:0 0 16px 0;">${escapeHtml(body)}</p>
+    <div dir="${dir}" style="direction:${dir};text-align:${align};color:#000000;background-color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;">
+      <p style="color:#000000;margin:0 0 12px 0;text-align:${align};direction:${dir};">${helloHtml}</p>
+      <p style="color:#000000;margin:0 0 16px 0;text-align:${align};direction:${dir};">${escapeHtml(body)}</p>
       ${ticketHtml}
-      <p style="color:#000000;margin:0 0 4px 0;">${escapeHtml(signoff)}</p>
+      <p style="color:#000000;margin:0 0 4px 0;text-align:${align};direction:${dir};">${escapeHtml(signoff)}</p>
       ${ACK_SIGNATURE_HTML}
     </div>
   `.trim()
