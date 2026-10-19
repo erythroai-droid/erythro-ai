@@ -3,7 +3,8 @@
  * report → +15m check DB for Pro/Diagnostic order → commercial email ₪390 (72h)
  * → +72h reminder if still no Pro.
  */
-import { getPayload } from 'payload'
+import { getPayload, type Payload } from 'payload'
+import { sql } from '@payloadcms/db-postgres'
 import config from '@payload-config'
 import { buildAuditReportPath } from '@/lib/auditReport'
 import { isFreeAuditPlanSlug } from '@/lib/orderPlans'
@@ -541,6 +542,79 @@ export function buildProOfferEmail(input: {
   }
 }
 
+/**
+ * Pro-offer field writes must bypass Payload `update` — existing large
+ * `html_result` fails textarea re-validation (PIT-035 / audit internal PATCH).
+ */
+async function patchProOfferFieldsSql(
+  payload: Payload,
+  submissionId: number | string,
+  fields: {
+    proOfferStatus?: ProOfferStatus
+    proOfferDueAt?: string | null
+    proOfferSentAt?: string | null
+    proOfferExpiresAt?: string | null
+    proOfferReminderDueAt?: string | null
+    proOfferReminderSentAt?: string | null
+  },
+): Promise<void> {
+  const id = typeof submissionId === 'string' ? Number(submissionId) : submissionId
+  if (!Number.isFinite(id)) {
+    throw new Error(`Invalid submission id for pro-offer SQL patch: ${submissionId}`)
+  }
+
+  const sets: ReturnType<typeof sql>[] = []
+  if (typeof fields.proOfferStatus === 'string') {
+    sets.push(sql`pro_offer_status = ${fields.proOfferStatus}`)
+  }
+  if (fields.proOfferDueAt !== undefined) {
+    sets.push(
+      fields.proOfferDueAt === null
+        ? sql`pro_offer_due_at = null`
+        : sql`pro_offer_due_at = ${fields.proOfferDueAt}::timestamptz`,
+    )
+  }
+  if (fields.proOfferSentAt !== undefined) {
+    sets.push(
+      fields.proOfferSentAt === null
+        ? sql`pro_offer_sent_at = null`
+        : sql`pro_offer_sent_at = ${fields.proOfferSentAt}::timestamptz`,
+    )
+  }
+  if (fields.proOfferExpiresAt !== undefined) {
+    sets.push(
+      fields.proOfferExpiresAt === null
+        ? sql`pro_offer_expires_at = null`
+        : sql`pro_offer_expires_at = ${fields.proOfferExpiresAt}::timestamptz`,
+    )
+  }
+  if (fields.proOfferReminderDueAt !== undefined) {
+    sets.push(
+      fields.proOfferReminderDueAt === null
+        ? sql`pro_offer_reminder_due_at = null`
+        : sql`pro_offer_reminder_due_at = ${fields.proOfferReminderDueAt}::timestamptz`,
+    )
+  }
+  if (fields.proOfferReminderSentAt !== undefined) {
+    sets.push(
+      fields.proOfferReminderSentAt === null
+        ? sql`pro_offer_reminder_sent_at = null`
+        : sql`pro_offer_reminder_sent_at = ${fields.proOfferReminderSentAt}::timestamptz`,
+    )
+  }
+  if (!sets.length) return
+
+  sets.push(sql`updated_at = now()`)
+  let setSql = sets[0]!
+  for (let i = 1; i < sets.length; i++) {
+    setSql = sql`${setSql}, ${sets[i]!}`
+  }
+
+  await payload.db.drizzle.execute(
+    sql`update contact_submissions set ${setSql} where id = ${id}`,
+  )
+}
+
 async function sendViaTeamSmtp(
   to: string,
   content: { subject: string; text: string; html: string },
@@ -652,23 +726,13 @@ export async function trySendAuditProOffer(
   }
 
   if (doc.leadChannel !== 'meta_ads') {
-    await payload.update({
-      collection: 'contact-submissions',
-      id: submissionId,
-      data: { proOfferStatus: 'skipped' },
-      overrideAccess: true,
-    })
+    await patchProOfferFieldsSql(payload, submissionId, { proOfferStatus: 'skipped' })
     return { ok: true, status: 'skipped', reason: 'not_ads_lp' }
   }
 
   const planSlug = typeof doc.planSlug === 'string' ? doc.planSlug : ''
   if (!isFreeAuditPlanSlug(planSlug)) {
-    await payload.update({
-      collection: 'contact-submissions',
-      id: submissionId,
-      data: { proOfferStatus: 'skipped' },
-      overrideAccess: true,
-    })
+    await patchProOfferFieldsSql(payload, submissionId, { proOfferStatus: 'skipped' })
     return { ok: true, status: 'skipped', reason: 'not_free_plan' }
   }
 
@@ -689,22 +753,12 @@ export async function trySendAuditProOffer(
 
   const email = typeof doc.email === 'string' ? doc.email.trim() : ''
   if (!isUsableEmail(email)) {
-    await payload.update({
-      collection: 'contact-submissions',
-      id: submissionId,
-      data: { proOfferStatus: 'skipped' },
-      overrideAccess: true,
-    })
+    await patchProOfferFieldsSql(payload, submissionId, { proOfferStatus: 'skipped' })
     return { ok: true, status: 'skipped', reason: 'no_email' }
   }
 
   if (await emailHasPaidAuditFunnelOrder(email, submissionId)) {
-    await payload.update({
-      collection: 'contact-submissions',
-      id: submissionId,
-      data: { proOfferStatus: 'skipped' },
-      overrideAccess: true,
-    })
+    await patchProOfferFieldsSql(payload, submissionId, { proOfferStatus: 'skipped' })
     return { ok: true, status: 'skipped', reason: 'already_ordered_paid_audit' }
   }
 
@@ -736,16 +790,11 @@ export async function trySendAuditProOffer(
 
   const now = Date.now()
   const expiresAt = computeProOfferExpiresAt(now)
-  await payload.update({
-    collection: 'contact-submissions',
-    id: submissionId,
-    data: {
-      proOfferStatus: 'sent',
-      proOfferSentAt: new Date(now).toISOString(),
-      proOfferExpiresAt: expiresAt,
-      proOfferReminderDueAt: expiresAt,
-    },
-    overrideAccess: true,
+  await patchProOfferFieldsSql(payload, submissionId, {
+    proOfferStatus: 'sent',
+    proOfferSentAt: new Date(now).toISOString(),
+    proOfferExpiresAt: expiresAt,
+    proOfferReminderDueAt: expiresAt,
   })
 
   return { ok: true, status: 'sent' }
@@ -802,12 +851,7 @@ export async function trySendAuditProOfferReminder(
   }
 
   if (await emailHasPaidAuditFunnelOrder(email, submissionId)) {
-    await payload.update({
-      collection: 'contact-submissions',
-      id: submissionId,
-      data: { proOfferStatus: 'skipped' },
-      overrideAccess: true,
-    })
+    await patchProOfferFieldsSql(payload, submissionId, { proOfferStatus: 'skipped' })
     return { ok: true, status: 'skipped', reason: 'already_ordered_paid_audit' }
   }
 
@@ -837,14 +881,9 @@ export async function trySendAuditProOfferReminder(
     return { ok: false, reason: message.slice(0, 300) }
   }
 
-  await payload.update({
-    collection: 'contact-submissions',
-    id: submissionId,
-    data: {
-      proOfferStatus: 'reminder_sent',
-      proOfferReminderSentAt: new Date().toISOString(),
-    },
-    overrideAccess: true,
+  await patchProOfferFieldsSql(payload, submissionId, {
+    proOfferStatus: 'reminder_sent',
+    proOfferReminderSentAt: new Date().toISOString(),
   })
 
   return { ok: true, status: 'reminder_sent' }

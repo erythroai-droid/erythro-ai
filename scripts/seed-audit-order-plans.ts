@@ -1,13 +1,15 @@
 /**
- * Upsert AI Audit order plans (audit-free / audit-diagnostic / audit-pro)
+ * Upsert AI Audit order plans (audit-free / audit-diagnostic / audit-pro / audit-pro-ads)
  * into `solution-plans` without touching Solution plans.
  * Manual is pricing-card only (contact modal) — no order slug.
  *
- * Usage: pnpm exec tsx scripts/seed-audit-order-plans.ts
+ * Usage:
+ *   npx vercel env pull .env.production.local --environment=production
+ *   pnpm exec tsx scripts/seed-audit-order-plans.ts
+ *
+ * Fills Vercel `[SENSITIVE]` placeholders from `.env` / `.env.local` (see load-env).
  */
-import 'dotenv/config'
-
-process.env.PAYLOAD_DISABLE_PUSH = '1'
+import './import-project/lib/load-env'
 
 import { getPayload } from 'payload'
 import config from '../src/payload.config'

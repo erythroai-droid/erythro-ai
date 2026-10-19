@@ -7,20 +7,21 @@
 
 ## Сделано в этой сессии
 
-- Ads LP funnel: +15m Pro-only KP (₪390 / 72h) → +72h modernization/AI if no paid order.
-- Fix sitemap test: hide `audit-pro-ads` (expected out of sitemap).
+- Seed `audit-pro-ads` (#9); `/order/audit-pro-ads` 200.
+- audit-agent redeployed (`scheduleProOfferEmail`); health ok.
+- Smoke: `team@` Pro mail to webmechanik@ (HE); TEAM_SMTP ok.
+- Fix PIT-113: pro-offer status via SQL (html_result blocked payload.update).
 
-## Сейчас (ops — добить)
+## Сейчас
 
-1. Push test fix; merge PR.
-2. `TEAM_SMTP_PASS`; миграции; seed `audit-pro-ads`; redeploy audit-agent.
-3. Smoke с `audit-ru`.
+1. Commit + push PIT-113 fix → Vercel deploy (stop duplicate mails / 500).
+2. Optional: full LP free→+15m after cooldown (IP/email 7d blocked smoke submit).
 
 ## Не делать
 
-- Не печатать `TEAM_SMTP_PASS` / `SMTP_PASS` / `MAKE_PAYMENT_SECRET`.
+- Не печатать SMTP / AGENT / VPS `.env`.
 - Не зеркалировать этот файл в Obsidian.
 
 ## Последняя эстафета
 
-2026-10-19 — Cursor — сайт задеплоен. Дальше: env/migrate/seed/worker smoke.
+2026-10-19 — Cursor — seed/worker/SMTP ok; PIT-113 fix local, needs deploy.
