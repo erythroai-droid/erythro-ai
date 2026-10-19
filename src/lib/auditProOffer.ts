@@ -1,7 +1,6 @@
 /**
  * Ads LP free-audit funnel (team@erythro.ai):
- * report → +15m check DB for Pro/Diagnostic order → commercial email ₪390 (72h)
- * → +72h reminder if still no Pro.
+ * report → +15m Pro ₪390 (72h) → +48h (24h left nudge) → +72h development offer.
  */
 import { getPayload, type Payload } from 'payload'
 import { sql } from '@payloadcms/db-postgres'
@@ -18,12 +17,14 @@ import { formatSubmissionTicketId } from '@/lib/submissionTicket'
 
 export const PRO_OFFER_DELAY_MS = 15 * 60 * 1000
 export const PRO_OFFER_PROMO_MS = 72 * 60 * 60 * 1000
+/** Send urgency nudge this long before promo expires. */
+export const PRO_OFFER_NUDGE_BEFORE_MS = 24 * 60 * 60 * 1000
 export const TEAM_MAILBOX = 'team@erythro.ai'
 export const PRO_ADS_PRICE = 390 as const
 export const PRO_LIST_PRICE = 490 as const
 
 /**
- * team@ Pro/reminder commercial emails. Off until letterhead is approved.
+ * team@ Pro / 24h nudge / development commercial emails.
  * Turn on with Vercel (+ audit-agent) env `AUDIT_PRO_OFFER_ENABLED=1`.
  */
 export const AUDIT_PRO_OFFER_ENABLED_DEFAULT = false
@@ -53,10 +54,16 @@ export const PAID_AUDIT_FUNNEL_SLUGS = [
 ] as const
 
 export type ProOfferLeadChannel = 'organic' | 'meta_ads'
-export type ProOfferStatus = 'none' | 'scheduled' | 'sent' | 'reminder_sent' | 'skipped'
+export type ProOfferStatus =
+  | 'none'
+  | 'scheduled'
+  | 'sent'
+  | 'nudge_sent'
+  | 'reminder_sent'
+  | 'skipped'
 
 type OfferLocale = 'en' | 'ru' | 'he'
-type OfferKind = 'offer' | 'reminder'
+type OfferKind = 'offer' | 'nudge' | 'reminder'
 
 /**
  * Same language as the client report email / HTML report.
@@ -132,6 +139,10 @@ export function computeProOfferExpiresAt(fromMs = Date.now()): string {
   return new Date(fromMs + PRO_OFFER_PROMO_MS).toISOString()
 }
 
+export function computeProOfferNudgeDueAt(expiresAtMs: number): string {
+  return new Date(expiresAtMs - PRO_OFFER_NUDGE_BEFORE_MS).toISOString()
+}
+
 /** True if this email already started/paid Diagnostic or Pro. */
 export async function emailHasPaidAuditFunnelOrder(
   email: string,
@@ -184,7 +195,6 @@ export async function emailHasPaidAuditFunnelOrder(
 }
 
 type SharedMail = {
-  greeting: (name: string) => string
   reportCta: string
   close: string
   support: string
@@ -204,12 +214,24 @@ type ProMailCopy = SharedMail & {
   cta: string
 }
 
+type NudgeMailCopy = SharedMail & {
+  kind: 'nudge'
+  subject: string
+  preheader: string
+  intro: string
+  priceBadge: string
+  priceNote: string
+  validity: string
+  cta: string
+}
+
 type ServicesMailCopy = SharedMail & {
   kind: 'reminder'
   subject: (email: string) => string
   preheader: string
   headline: string
   intro: string
+  bridge: string
   title: string
   bullets: string[]
   cta: string
@@ -220,18 +242,6 @@ type ServicesMailCopy = SharedMail & {
 
 function proCopy(locale: OfferLocale): ProMailCopy {
   const shared: SharedMail = {
-    greeting: (name) =>
-      locale === 'ru'
-        ? name
-          ? `Здравствуйте, ${name}!`
-          : 'Здравствуйте!'
-        : locale === 'he'
-          ? name
-            ? `שלום ${name},`
-            : 'שלום,'
-          : name
-            ? `Hello, ${name},`
-            : 'Hello,',
     reportCta:
       locale === 'ru' ? 'Открыть отчёт' : locale === 'he' ? 'פתחו את הדוח' : 'Open report',
     close:
@@ -308,29 +318,84 @@ function proCopy(locale: OfferLocale): ProMailCopy {
   }
 }
 
+/** −24h before promo ends: urgency nudge. */
+function nudgeCopy(locale: OfferLocale): NudgeMailCopy {
+  const shared = proCopy(locale)
+  if (locale === 'ru') {
+    return {
+      kind: 'nudge',
+      reportCta: shared.reportCta,
+      support: shared.support,
+      brand: shared.brand,
+      close: shared.close,
+      subject: 'Осталось 24 часа до завершения специального предложения!',
+      preheader: `AI Аудит Pro ₪${PRO_ADS_PRICE} — осталось 24 часа`,
+      intro:
+        'Специальное предложение на полный AI Аудит Pro скоро закончится. Успейте зафиксировать цену ₪390 вместо ₪490.',
+      priceBadge: `₪${PRO_ADS_PRICE}`,
+      priceNote: 'разово',
+      validity: 'До конца спецпредложения осталось 24 часа.',
+      cta: `Оплатить Pro — ₪${PRO_ADS_PRICE}`,
+    }
+  }
+  if (locale === 'he') {
+    return {
+      kind: 'nudge',
+      reportCta: shared.reportCta,
+      support: 'WhatsApp / טל.: +972 50-530-8305 · team@erythro.ai',
+      brand: shared.brand,
+      close: shared.close,
+      subject: 'נותרו 24 שעות לסיום ההצעה המיוחדת!',
+      preheader: `AI Audit Pro ₪${PRO_ADS_PRICE} — נותרו 24 שעות`,
+      intro:
+        'ההצעה המיוחדת ל-AI Audit Pro המלא עומדת להסתיים. קבעו את המחיר ₪390 במקום ₪490 לפני שייגמר.',
+      priceBadge: `₪${PRO_ADS_PRICE}`,
+      priceNote: 'חד-פעמי',
+      validity: 'נותרו 24 שעות לסיום ההצעה המיוחדת.',
+      cta: `לתשלום Pro — ₪${PRO_ADS_PRICE}`,
+    }
+  }
+  return {
+    kind: 'nudge',
+    reportCta: shared.reportCta,
+    support: 'WhatsApp / tel.: +972 50-530-8305 · team@erythro.ai',
+    brand: shared.brand,
+    close: shared.close,
+    subject: '24 hours left until the special offer ends!',
+    preheader: `AI Audit Pro ₪${PRO_ADS_PRICE} — 24 hours left`,
+    intro:
+      'The special offer for full AI Audit Pro is about to end. Lock in ₪390 instead of ₪490 while it lasts.',
+    priceBadge: `₪${PRO_ADS_PRICE}`,
+    priceNote: 'one-time',
+    validity: '24 hours left until the special offer ends.',
+    cta: `Pay for Pro — ₪${PRO_ADS_PRICE}`,
+  }
+}
+
 /** +72h: modernization / AI (only if still no paid audit order). */
 function servicesCopy(locale: OfferLocale): ServicesMailCopy {
   const shared = proCopy(locale)
   if (locale === 'ru') {
     return {
       kind: 'reminder',
-      greeting: shared.greeting,
       reportCta: shared.reportCta,
       support: shared.support,
       brand: shared.brand,
-      subject: (email) => `Следующий шаг для ${email}: сайт, AI и автоматизация`,
-      preheader: 'Модернизация, AI-агенты и автоматизация процессов под ключ',
-      headline: 'Если аудита Pro не хватает — модернизируем продукт',
+      subject: (email) => `Предложение о разработке для ${email}`,
+      preheader: 'Сайт, AI-агенты и автоматизация под ключ',
+      headline: 'Предложение о разработке',
       intro:
-        'Спецпредложение на Pro уже завершилось (или вам нужен другой путь). Если сайт устарел технологически или процессы вручную — мы внедряем современные решения на базе AI:',
+        'Спецпредложение на Pro уже завершилось. Возможно вам нужен другой путь?',
+      bridge:
+        'Если сайт устарел технологически или процессы происходят вручную — мы внедряем современные решения на базе AI:',
       title: 'Что можем сделать под ключ',
       bullets: [
-        'Дизайн и разработка сайта / лендинга / корпоративного портала',
+        'Дизайн и разработка высокопроизводительных: сайта / лендинга / корпоративного портала',
         'AI-агенты, чат-боты и автоматизация процессов (n8n, CRM, заявки)',
         'Enterprise-инженерия: интеграции, админки, безопасность, высокая нагрузка',
         'AI-маркетинг и реклама под ключ — когда воронка готова масштабироваться',
       ],
-      cta: 'Ответьте на письмо: «новый сайт», «автоматизация» или «созвон» — пришлём короткое ТЗ и ориентир по срокам.',
+      cta: 'Ответьте на письмо: «новый сайт», «автоматизация» или «консультация» — пришлём короткое ТЗ и ориентир по срокам.',
       close: shared.close,
       servicesDev: 'Разработка',
       servicesAi: 'AI и автоматизация',
@@ -340,23 +405,23 @@ function servicesCopy(locale: OfferLocale): ServicesMailCopy {
   if (locale === 'he') {
     return {
       kind: 'reminder',
-      greeting: shared.greeting,
       reportCta: shared.reportCta,
       support: 'WhatsApp / טל.: +972 50-530-8305 · team@erythro.ai',
       brand: shared.brand,
-      subject: (email) => `הצעד הבא עבור ${email}: אתר, AI ואוטומציה`,
-      preheader: 'מודרניזציה, סוכני AI ואוטומציה turnkey',
-      headline: 'אם Pro לא מתאים — נבנה מחדש עם AI',
-      intro:
-        'מבצע ה-Pro הסתיים (או שצריך מסלול אחר). אם האתר מיושן או התהליכים ידניים — נטמיע פתרונות AI מודרניים:',
+      subject: (email) => `הצעה לפיתוח עבור ${email}`,
+      preheader: 'אתר, סוכני AI ואוטומציה turnkey',
+      headline: 'הצעה לפיתוח',
+      intro: 'מבצע ה-Pro הסתיים. אולי מתאים לכם מסלול אחר?',
+      bridge:
+        'אם האתר מיושן טכנולוגית או שהתהליכים עדיין ידניים — אנחנו מיישמים פתרונות מודרניים מבוססי AI:',
       title: 'מה אפשר לעשות turnkey',
       bullets: [
-        'עיצוב ופיתוח אתר / נחיתה / פורטל ארגוני',
-        'סוכני AI, צ׳אטבוטים ואוטומציה (n8n, CRM)',
-        'הנדסת Enterprise: אינטגרציות, אדמין, אבטחה',
-        'שיווק AI ופרסום — כשהמשפך מוכן לצמיחה',
+        'עיצוב ופיתוח בעלי ביצועים גבוהים: אתר / דף נחיתה / פורטל ארגוני',
+        'סוכני AI, צ׳אטבוטים ואוטומציה של תהליכים (n8n, CRM, לידים)',
+        'הנדסת Enterprise: אינטגרציות, אדמין, אבטחה, עומס גבוה',
+        'שיווק AI ופרסום turnkey — כשהמשפך מוכן לצמיחה',
       ],
-      cta: 'השיבו: «אתר חדש», «אוטומציה» או «שיחה» — נשלח אפיון קצר.',
+      cta: 'השיבו למייל: «אתר חדש», «אוטומציה» או «ייעוץ» — נשלח אפיון קצר ואומדן לוחות זמנים.',
       close: shared.close,
       servicesDev: 'פיתוח',
       servicesAi: 'AI ואוטומציה',
@@ -365,23 +430,23 @@ function servicesCopy(locale: OfferLocale): ServicesMailCopy {
   }
   return {
     kind: 'reminder',
-    greeting: shared.greeting,
     reportCta: shared.reportCta,
     support: 'WhatsApp / tel.: +972 50-530-8305 · team@erythro.ai',
     brand: shared.brand,
-    subject: (email) => `Next step for ${email}: site, AI & automation`,
-    preheader: 'Modernization, AI agents, and turnkey process automation',
-    headline: 'If Pro is not the fit — we modernize with AI',
-    intro:
-      'The Pro special has ended (or you need another path). If the stack is outdated or processes are manual — we implement modern AI solutions:',
-    title: 'What we deliver turnkey',
+    subject: (email) => `Development offer for ${email}`,
+    preheader: 'Site, AI agents, and turnkey automation',
+    headline: 'A development offer',
+    intro: 'The Pro special offer has ended. Maybe you need a different path?',
+    bridge:
+      'If the site is technologically outdated or processes still run manually — we implement modern AI-based solutions:',
+    title: 'What we can deliver turnkey',
     bullets: [
-      'Design and development of site / landing / corporate portal',
-      'AI agents, chatbots, and process automation (n8n, CRM)',
-      'Enterprise engineering: integrations, admin, security, high load',
-      'Turnkey AI marketing and ads when the funnel is ready to scale',
+      'Design and development of high-performance: site / landing / corporate portal',
+      'AI agents, chatbots, and process automation (n8n, CRM, leads)',
+      'Enterprise engineering: integrations, admin panels, security, high load',
+      'Turnkey AI marketing and ads — when the funnel is ready to scale',
     ],
-    cta: 'Reply with “new site”, “automation”, or “call” — we will send a short brief.',
+    cta: 'Reply to this email: “new site”, “automation”, or “consultation” — we will send a short brief and timeline estimate.',
     close: shared.close,
     servicesDev: 'Development',
     servicesAi: 'AI & automation',
@@ -495,7 +560,6 @@ export function buildProOfferEmail(input: {
   const locale = offerLocale(input.locale)
   const dir = locale === 'he' ? 'rtl' : 'ltr'
   const kind = input.kind || 'offer'
-  const safeName = (input.name || '').replace(/[\r\n"<>]/g, '').trim().slice(0, 80)
   const email = input.email.trim()
   const unsubscribeUrl = buildMailUnsubscribeUrl(email, locale)
   const unsubLabel = unsubscribeCopy(locale).linkLabel
@@ -503,22 +567,21 @@ export function buildProOfferEmail(input: {
   const servicesAiUrl = siteUrlWithLang('/services/ai-automation', locale)
   const homeUrl = siteUrlWithLang('/', locale)
 
-  if (kind === 'reminder') {
-    const copy = servicesCopy(locale)
-    const greeting = copy.greeting(safeName)
-    const subject = copy.subject(email)
+  if (kind === 'nudge') {
+    const copy = nudgeCopy(locale)
+    const subject = copy.subject
     const textParts = [
-      greeting,
+      subject,
       '',
       copy.intro,
+      copy.validity,
       '',
-      copy.title,
-      ...copy.bullets.map((b) => `• ${b}`),
-      '',
-      copy.cta,
-      `${copy.servicesDev}: ${servicesDevUrl}`,
-      `${copy.servicesAi}: ${servicesAiUrl}`,
-      `${copy.home}: ${homeUrl}`,
+      locale === 'ru'
+        ? `${copy.priceBadge} вместо ₪${PRO_LIST_PRICE} · ${copy.priceNote}`
+        : locale === 'he'
+          ? `${copy.priceBadge} במקום ₪${PRO_LIST_PRICE} · ${copy.priceNote}`
+          : `${copy.priceBadge} instead of ₪${PRO_LIST_PRICE} · ${copy.priceNote}`,
+      `${copy.cta}: ${input.checkoutUrl}`,
     ]
     if (input.reportUrl) textParts.push('', `${copy.reportCta}: ${input.reportUrl}`)
     if (input.orderId) textParts.push('', `Order: ${input.orderId}`)
@@ -529,19 +592,27 @@ export function buildProOfferEmail(input: {
       : ''
 
     const bodyInner = `
-      <p style="margin:0 0 14px;color:#1a1a1a;font-size:16px;line-height:1.5;">${escapeHtml(greeting)}</p>
       <p style="margin:0 0 16px;color:#333;font-size:15px;line-height:1.55;">${escapeHtml(copy.intro)}</p>
+      <table role="presentation" width="100%" style="background:#fff5f6;border:1px solid #f0c9cf;border-radius:12px;margin:0 0 20px;">
+        <tr><td style="padding:16px 18px;">
+          <p style="margin:0 0 2px;color:#9a9a9a;font-size:13px;font-weight:600;line-height:1.2;text-decoration:line-through;">₪${PRO_LIST_PRICE}</p>
+          <p style="margin:0 0 4px;color:#c41e3a;font-size:28px;font-weight:800;line-height:1.1;">${escapeHtml(copy.priceBadge)}</p>
+          <p style="margin:0 0 8px;color:#555;font-size:14px;">${escapeHtml(copy.priceNote)}</p>
+          <p style="margin:0;color:#7a1f2b;font-size:13px;font-weight:600;">${escapeHtml(copy.validity)}</p>
+        </td></tr>
+      </table>
       ${reportBlock}
-      <p style="margin:0 0 12px;color:#1a1a1a;font-size:17px;font-weight:700;">${escapeHtml(copy.title)}</p>
-      <table role="presentation" width="100%" style="margin:0 0 18px;">${bulletRows(copy.bullets)}</table>
-      <p style="margin:0 0 14px;color:#333;font-size:15px;line-height:1.5;">${escapeHtml(copy.cta)}</p>
-      <p style="margin:0 0 18px;font-size:13px;">
-        <a href="${escapeHtml(servicesDevUrl)}" style="color:#c41e3a;text-decoration:none;font-weight:600;">${escapeHtml(copy.servicesDev)}</a>
-        &nbsp;·&nbsp;
-        <a href="${escapeHtml(servicesAiUrl)}" style="color:#c41e3a;text-decoration:none;font-weight:600;">${escapeHtml(copy.servicesAi)}</a>
-        &nbsp;·&nbsp;
-        <a href="${escapeHtml(homeUrl)}" style="color:#c41e3a;text-decoration:none;font-weight:600;">${escapeHtml(copy.home)}</a>
-      </p>
+      <table role="presentation" width="100%" style="margin:0 0 20px;">
+        <tr><td align="center">
+          <a href="${escapeHtml(input.checkoutUrl)}"
+             style="display:inline-block;background:#c41e3a;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-size:16px;font-weight:700;">
+            ${escapeHtml(copy.cta)}
+          </a>
+        </td></tr>
+        <tr><td align="center" style="padding-top:10px;">
+          <a href="${escapeHtml(input.checkoutUrl)}" style="color:#888;font-size:12px;word-break:break-all;">${escapeHtml(input.checkoutUrl)}</a>
+        </td></tr>
+      </table>
       <p style="margin:0;color:#555;font-size:14px;">${escapeHtml(copy.close)}</p>
       ${input.orderId ? `<p style="margin:12px 0 0;color:#999;font-size:12px;"><code dir="ltr">${escapeHtml(input.orderId)}</code></p>` : ''}
     `
@@ -555,7 +626,59 @@ export function buildProOfferEmail(input: {
         subject,
         preheader: copy.preheader,
         brand: copy.brand,
-        headline: copy.headline,
+        headline: subject,
+        bodyInner,
+        unsubscribeUrl,
+      }),
+      unsubscribeUrl,
+    }
+  }
+
+  if (kind === 'reminder') {
+    const copy = servicesCopy(locale)
+    const subject = copy.subject(email)
+    const textParts = [
+      subject,
+      copy.intro,
+      '',
+      copy.bridge,
+      '',
+      copy.title,
+      ...copy.bullets.map((b) => `✓  ${b}`),
+      copy.cta,
+      '',
+      `${copy.servicesDev}  ·  ${copy.servicesAi}  ·  ${copy.home}`,
+      `${servicesDevUrl}`,
+      `${servicesAiUrl}`,
+      `${homeUrl}`,
+    ]
+    textParts.push('', `${unsubLabel}: ${unsubscribeUrl}`, '', copy.brand)
+
+    const bodyInner = `
+      <p style="margin:0 0 14px;color:#333;font-size:15px;line-height:1.55;">${escapeHtml(copy.intro)}</p>
+      <p style="margin:0 0 16px;color:#333;font-size:15px;line-height:1.55;">${escapeHtml(copy.bridge)}</p>
+      <p style="margin:0 0 12px;color:#1a1a1a;font-size:17px;font-weight:700;">${escapeHtml(copy.title)}</p>
+      <table role="presentation" width="100%" style="margin:0 0 18px;">${bulletRows(copy.bullets)}</table>
+      <p style="margin:0 0 18px;color:#333;font-size:15px;line-height:1.5;">${escapeHtml(copy.cta)}</p>
+      <p style="margin:0;font-size:13px;">
+        <a href="${escapeHtml(servicesDevUrl)}" style="color:#c41e3a;text-decoration:none;font-weight:600;">${escapeHtml(copy.servicesDev)}</a>
+        &nbsp;·&nbsp;
+        <a href="${escapeHtml(servicesAiUrl)}" style="color:#c41e3a;text-decoration:none;font-weight:600;">${escapeHtml(copy.servicesAi)}</a>
+        &nbsp;·&nbsp;
+        <a href="${escapeHtml(homeUrl)}" style="color:#c41e3a;text-decoration:none;font-weight:600;">${escapeHtml(copy.home)}</a>
+      </p>
+    `
+
+    return {
+      subject,
+      text: textParts.join('\n'),
+      html: shellHtml({
+        locale,
+        dir,
+        subject,
+        preheader: copy.preheader,
+        brand: copy.brand,
+        headline: subject,
         bodyInner,
         unsubscribeUrl,
       }),
@@ -564,11 +687,8 @@ export function buildProOfferEmail(input: {
   }
 
   const copy = proCopy(locale)
-  const greeting = copy.greeting(safeName)
   const subject = copy.subject(email)
   const textParts = [
-    greeting,
-    '',
     copy.intro,
     copy.validity,
     '',
@@ -591,7 +711,6 @@ export function buildProOfferEmail(input: {
     : ''
 
   const bodyInner = `
-    <p style="margin:0 0 14px;color:#1a1a1a;font-size:16px;line-height:1.5;">${escapeHtml(greeting)}</p>
     <p style="margin:0 0 16px;color:#333;font-size:15px;line-height:1.55;">${escapeHtml(copy.intro)}</p>
     <table role="presentation" width="100%" style="background:#fff5f6;border:1px solid #f0c9cf;border-radius:12px;margin:0 0 20px;">
       <tr><td style="padding:16px 18px;">
@@ -648,6 +767,8 @@ async function patchProOfferFieldsSql(
     proOfferDueAt?: string | null
     proOfferSentAt?: string | null
     proOfferExpiresAt?: string | null
+    proOfferNudgeDueAt?: string | null
+    proOfferNudgeSentAt?: string | null
     proOfferReminderDueAt?: string | null
     proOfferReminderSentAt?: string | null
   },
@@ -680,6 +801,20 @@ async function patchProOfferFieldsSql(
       fields.proOfferExpiresAt === null
         ? sql`pro_offer_expires_at = null`
         : sql`pro_offer_expires_at = ${fields.proOfferExpiresAt}::timestamptz`,
+    )
+  }
+  if (fields.proOfferNudgeDueAt !== undefined) {
+    sets.push(
+      fields.proOfferNudgeDueAt === null
+        ? sql`pro_offer_nudge_due_at = null`
+        : sql`pro_offer_nudge_due_at = ${fields.proOfferNudgeDueAt}::timestamptz`,
+    )
+  }
+  if (fields.proOfferNudgeSentAt !== undefined) {
+    sets.push(
+      fields.proOfferNudgeSentAt === null
+        ? sql`pro_offer_nudge_sent_at = null`
+        : sql`pro_offer_nudge_sent_at = ${fields.proOfferNudgeSentAt}::timestamptz`,
     )
   }
   if (fields.proOfferReminderDueAt !== undefined) {
@@ -788,7 +923,7 @@ function resolveDocLocale(doc: {
 export type SendProOfferResult =
   | {
       ok: true
-      status: 'sent' | 'reminder_sent' | 'already_sent' | 'skipped'
+      status: 'sent' | 'nudge_sent' | 'reminder_sent' | 'already_sent' | 'skipped'
       reason?: string
     }
   | { ok: false; reason: string }
@@ -822,7 +957,7 @@ export async function trySendAuditProOffer(
   }
 
   const status = (doc.proOfferStatus as ProOfferStatus | null) || 'none'
-  if (status === 'sent' || status === 'reminder_sent') {
+  if (status === 'sent' || status === 'nudge_sent' || status === 'reminder_sent') {
     return { ok: true, status: 'already_sent' }
   }
 
@@ -901,6 +1036,7 @@ export async function trySendAuditProOffer(
     proOfferStatus: 'sent',
     proOfferSentAt: new Date(now).toISOString(),
     proOfferExpiresAt: expiresAt,
+    proOfferNudgeDueAt: computeProOfferNudgeDueAt(expiresAtMs),
     proOfferReminderDueAt: expiresAt,
   })
 
@@ -908,7 +1044,110 @@ export async function trySendAuditProOffer(
 }
 
 /**
- * 72h reminder: promo ending. Ads LP only; skip if Pro/Diagnostic ordered.
+ * −24h before promo ends: urgency nudge. Ads LP only; skip if Pro/Diagnostic ordered.
+ */
+export async function trySendAuditProOfferNudge(
+  submissionId: number | string,
+  options: { force?: boolean } = {},
+): Promise<SendProOfferResult> {
+  if (!isAuditProOfferEnabled()) {
+    return { ok: true, status: 'skipped', reason: 'paused_pending_approval' }
+  }
+
+  if (!process.env.TEAM_SMTP_PASS?.trim()) {
+    return { ok: false, reason: 'TEAM_SMTP_PASS not set' }
+  }
+
+  const payload = await getPayload({ config })
+  const doc = await payload.findByID({
+    collection: 'contact-submissions',
+    id: submissionId,
+    depth: 0,
+    overrideAccess: true,
+  })
+
+  if (!doc || doc.source !== 'audit') {
+    return { ok: false, reason: 'not_found' }
+  }
+
+  const status = (doc.proOfferStatus as ProOfferStatus | null) || 'none'
+  if (status === 'nudge_sent' || status === 'reminder_sent') {
+    return { ok: true, status: 'already_sent' }
+  }
+  if (status === 'skipped') {
+    return { ok: true, status: 'skipped', reason: 'skipped' }
+  }
+  if (status !== 'sent' && !options.force) {
+    return { ok: false, reason: 'offer_not_sent_yet' }
+  }
+
+  if (doc.proOfferNudgeSentAt && !options.force) {
+    return { ok: true, status: 'already_sent' }
+  }
+
+  if (!options.force && doc.proOfferNudgeDueAt) {
+    const due = new Date(doc.proOfferNudgeDueAt).getTime()
+    if (Number.isFinite(due) && due > Date.now()) {
+      return { ok: false, reason: 'not_due_yet' }
+    }
+  }
+
+  const email = typeof doc.email === 'string' ? doc.email.trim() : ''
+  if (!isUsableEmail(email)) {
+    return { ok: true, status: 'skipped', reason: 'no_email' }
+  }
+
+  if (await emailHasPaidAuditFunnelOrder(email, submissionId)) {
+    await patchProOfferFieldsSql(payload, submissionId, { proOfferStatus: 'skipped' })
+    return { ok: true, status: 'skipped', reason: 'already_ordered_paid_audit' }
+  }
+
+  if (await isMailUnsubscribed(email)) {
+    await patchProOfferFieldsSql(payload, submissionId, { proOfferStatus: 'skipped' })
+    return { ok: true, status: 'skipped', reason: 'unsubscribed' }
+  }
+
+  const locale = resolveDocLocale(doc)
+  const expiresAtRaw =
+    typeof doc.proOfferExpiresAt === 'string' ? Date.parse(doc.proOfferExpiresAt) : NaN
+  const expiresAtMs = Number.isFinite(expiresAtRaw)
+    ? expiresAtRaw
+    : Date.now() + PRO_OFFER_NUDGE_BEFORE_MS
+  const checkoutUrl = buildProOfferCheckoutUrl(locale, submissionId, expiresAtMs)
+  const token =
+    typeof doc.reportAccessToken === 'string' ? doc.reportAccessToken.trim() : ''
+  const reportPath = token ? buildAuditReportPath(submissionId, token, locale) : null
+  const reportUrl = reportPath ? `${SITE_URL}${reportPath}` : null
+  const orderId = formatSubmissionTicketId('audit', submissionId)
+
+  const mail = buildProOfferEmail({
+    name: typeof doc.name === 'string' ? doc.name : '',
+    email,
+    locale,
+    checkoutUrl,
+    reportUrl,
+    orderId,
+    kind: 'nudge',
+  })
+
+  try {
+    await sendViaTeamSmtp(email, mail, { listUnsubscribeUrl: mail.unsubscribeUrl })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('[auditProOffer] nudge failed id=', submissionId, message)
+    return { ok: false, reason: message.slice(0, 300) }
+  }
+
+  await patchProOfferFieldsSql(payload, submissionId, {
+    proOfferStatus: 'nudge_sent',
+    proOfferNudgeSentAt: new Date().toISOString(),
+  })
+
+  return { ok: true, status: 'nudge_sent' }
+}
+
+/**
+ * +72h: development offer after promo ends. Ads LP only; skip if Pro/Diagnostic ordered.
  */
 export async function trySendAuditProOfferReminder(
   submissionId: number | string,
@@ -941,7 +1180,7 @@ export async function trySendAuditProOfferReminder(
   if (status === 'skipped') {
     return { ok: true, status: 'skipped', reason: 'skipped' }
   }
-  if (status !== 'sent' && !options.force) {
+  if (status !== 'sent' && status !== 'nudge_sent' && !options.force) {
     return { ok: false, reason: 'offer_not_sent_yet' }
   }
 
@@ -1044,7 +1283,7 @@ export async function sendDueAuditProOffers(limit = 20): Promise<{
   return { scanned: found.docs.length, results }
 }
 
-export async function sendDueAuditProOfferReminders(limit = 20): Promise<{
+export async function sendDueAuditProOfferNudges(limit = 20): Promise<{
   scanned: number
   results: Array<{ id: number | string; result: SendProOfferResult }>
 }> {
@@ -1064,6 +1303,45 @@ export async function sendDueAuditProOfferReminders(limit = 20): Promise<{
         { source: { equals: 'audit' } },
         { leadChannel: { equals: 'meta_ads' } },
         { proOfferStatus: { equals: 'sent' } },
+        { proOfferNudgeDueAt: { less_than_equal: nowIso } },
+        {
+          or: [
+            { proOfferNudgeSentAt: { equals: null } },
+            { proOfferNudgeSentAt: { exists: false } },
+          ],
+        },
+      ],
+    },
+    sort: 'proOfferNudgeDueAt',
+  })
+
+  const results: Array<{ id: number | string; result: SendProOfferResult }> = []
+  for (const doc of found.docs) {
+    results.push({ id: doc.id, result: await trySendAuditProOfferNudge(doc.id) })
+  }
+  return { scanned: found.docs.length, results }
+}
+
+export async function sendDueAuditProOfferReminders(limit = 20): Promise<{
+  scanned: number
+  results: Array<{ id: number | string; result: SendProOfferResult }>
+}> {
+  if (!isAuditProOfferEnabled()) {
+    return { scanned: 0, results: [] }
+  }
+
+  const payload = await getPayload({ config })
+  const nowIso = new Date().toISOString()
+  const found = await payload.find({
+    collection: 'contact-submissions',
+    depth: 0,
+    limit,
+    overrideAccess: true,
+    where: {
+      and: [
+        { source: { equals: 'audit' } },
+        { leadChannel: { equals: 'meta_ads' } },
+        { proOfferStatus: { in: ['sent', 'nudge_sent'] } },
         { proOfferReminderDueAt: { less_than_equal: nowIso } },
         {
           or: [
