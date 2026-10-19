@@ -1890,6 +1890,21 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Prevent:** Never `payload.update` any field on an audit submission that may already hold HTML; use drizzle SQL for pipeline and funnel status fields.
 
+---
+
+## PIT-114 — Unpaid Pro checkout still gets a report (reconcile queues `pending`)
+
+**Tags:** `audit`, `grow`, `make`, `reconcile`, `payment`  
+**Seen:** 2026-10-19 — customer opens Grow, aborts payment, returns to site; Pro report arrives anyway
+
+**Symptom:** `POST /api/payment/create` makes `paymentStatus=pending` + `auditStatus=new`. Customer never pays. Within ~2 minutes Vercel cron `/api/audit/reconcile` re-queues every stale `new` audit and the worker sends the report.
+
+**Cause:** Reconcile filtered only by `auditStatus` / `updatedAt`, not by payment. Paid checkout looks like a stuck free lead.
+
+**Fix:** `isUnpaidAuditCheckout` in `src/lib/auditPaymentGate.ts`; reconcile where-clause + in-loop skip; admin requeue returns 409 for unpaid.
+
+**Prevent:** Never auto-queue audits with `paymentStatus` in `pending|failed|refunded`, or with `paymentAmount > 0` unless `paid`.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -1983,6 +1998,7 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 - [ ] Consult Sessions transcript: custom Field/Cell, not Payload JSON/Monaco (PIT-096)
 - [ ] Consultant: reply language from last user message; How we work card; do not start ТЗ on collaboration (PIT-097)
 - [ ] PayPlus: paid only after IPN amount + `submission:` id; success page is not proof; no unpaid fallback (PIT-099)
+- [ ] Audit reconcile: never queue `paymentStatus` pending/failed or amount>0 unless paid (PIT-114)
 - [ ] Grow: paid only after `getTransactionInfo` status `2` + amount + process token; success `response=success` is not proof; still call `approveTransaction` (PIT-100)
 - [ ] Payload / storage-plugin bump: compare the generated schema with prod columns for every collection; smoke `/api/media` on the preview; after a DB fix revalidate `site-content` (PIT-104)
 - [ ] Gemini 3.x: no `temperature` / `top_p` / `top_k` / `thinking_budget` on GenerateContent or `streamText` (PIT-106)

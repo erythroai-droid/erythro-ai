@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
+import { isUnpaidAuditCheckout } from '@/lib/auditPaymentGate'
 import { parseAuditReportId } from '@/lib/auditReport'
 
 export const runtime = 'nodejs'
@@ -44,6 +45,21 @@ export async function POST(request: NextRequest) {
     const website = typeof doc.website === 'string' ? doc.website.trim() : ''
     if (!website) {
       return NextResponse.json({ message: 'Missing website URL' }, { status: 400 })
+    }
+
+    if (
+      isUnpaidAuditCheckout({
+        paymentStatus: typeof doc.paymentStatus === 'string' ? doc.paymentStatus : null,
+        paymentAmount: typeof doc.paymentAmount === 'number' ? doc.paymentAmount : null,
+      })
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            'Cannot re-queue unpaid checkout (paymentStatus pending/failed). Wait for Grow paid or mark paid first.',
+        },
+        { status: 409 },
+      )
     }
 
     await payload.update({

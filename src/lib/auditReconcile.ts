@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
+import { isUnpaidAuditCheckout } from '@/lib/auditPaymentGate'
 import {
   sendDueAuditProOfferReminders,
   sendDueAuditProOffers,
@@ -68,6 +69,8 @@ export async function reconcileStuckAudits(
     planSlug?: unknown
     email?: unknown
     name?: unknown
+    paymentStatus?: unknown
+    paymentAmount?: unknown
   }
   const docs: AuditDoc[] = []
 
@@ -85,6 +88,28 @@ export async function reconcileStuckAudits(
           { source: { equals: 'audit' } },
           { auditStatus: { equals: status } },
           { updatedAt: { less_than: cutoffIso(minutes) } },
+          // Exclude Grow pending/failed at query time (PIT-114). Free = none / no amount.
+          {
+            or: [
+              { paymentStatus: { equals: 'paid' } },
+              {
+                and: [
+                  {
+                    or: [
+                      { paymentStatus: { equals: 'none' } },
+                      { paymentStatus: { exists: false } },
+                    ],
+                  },
+                  {
+                    or: [
+                      { paymentAmount: { exists: false } },
+                      { paymentAmount: { equals: 0 } },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
         ],
       },
       sort: 'updatedAt',
@@ -99,6 +124,16 @@ export async function reconcileStuckAudits(
   const results: ReconcileResultRow[] = []
 
   for (const doc of docs) {
+    if (
+      isUnpaidAuditCheckout({
+        paymentStatus: typeof doc.paymentStatus === 'string' ? doc.paymentStatus : null,
+        paymentAmount: typeof doc.paymentAmount === 'number' ? doc.paymentAmount : null,
+      })
+    ) {
+      results.push({ id: doc.id, action: 'skip', reason: 'unpaid_checkout' })
+      continue
+    }
+
     const website = typeof doc.website === 'string' ? doc.website.trim() : ''
     if (!website) {
       results.push({ id: doc.id, action: 'skip', reason: 'no_website' })
