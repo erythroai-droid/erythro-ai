@@ -1835,11 +1835,11 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Cause:** Main site locale is cookie/storage-driven (and middleware must not `Set-Cookie` — PIT-056). One URL cannot be a hard language lock.
 
-**Fix:** Separate LPs on `audit-en` / `audit-rus` / `audit-he`.erythro.ai → rewrite to `/lp/audit/{locale}` with host/path lock in `LOCALE_BOOTSTRAP_SCRIPT` + `useSitePrefs({ lockedLocale })`. No language switcher. See `docs/architecture/audit-ads-landing.md`.
+**Fix:** Separate LPs on `audit-en` / `audit-ru` / `audit-he`.erythro.ai → rewrite to `/lp/audit/{locale}` with host/path lock in `LOCALE_BOOTSTRAP_SCRIPT` + `useSitePrefs({ lockedLocale })`. See `docs/architecture/audit-ads-landing.md`.
 
-**Also (2026-10-18):** Hotnet ISP cached NXDOMAIN for label `audit-ru` after a lookup before the CF CNAME existed — EN/HE worked, RU did not. Public RU host is **`audit-rus.erythro.ai`**; `audit-ru` remains a middleware alias only.
+**Also (2026-10-18 / 2026-10-19):** Brief Hotnet NXDOMAIN on `audit-ru` led to a planned `audit-rus` label — but **`audit-rus` was never published in CF DNS**. Public RU host is **`audit-ru.erythro.ai`** (live). `audit-rus` is middleware alias only. Language switcher must use `AUDIT_LP_HOST_BY_LOCALE` (not invent `rus` in the path).
 
-**Prevent:** Do not point Ads Final URL at `/audit`. Do not “fix” locale by setting `NEXT_LOCALE` in middleware. Prefer `audit-rus` (not `audit-ru`) in Ads.
+**Prevent:** Do not point Ads Final URL at `/audit`. Do not “fix” locale by setting `NEXT_LOCALE` in middleware. Prefer `audit-ru` (not `audit-rus`) in Ads.
 
 ---
 
@@ -1974,5 +1974,5 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 - [ ] Audit report links: always `/audit/report/[id]?k=…`; never bare id (PIT-107)
 - [ ] Supabase: `anon` must not SELECT Payload `public` tables; keep REST schemas empty (PIT-110)
 - [ ] After `vercel env pull`: `[SENSITIVE]` placeholders — fill from `.env` or Save in admin to revalidate (PIT-111)
-- [ ] Ads free-audit Final URL: `audit-en` / `audit-rus` / `audit-he`.erythro.ai, not `/audit` (PIT-112; not `audit-ru`)
+- [ ] Ads free-audit Final URL: `audit-en` / `audit-ru` / `audit-he`.erythro.ai, not `/audit` (PIT-112; not `audit-rus` — NXDOMAIN)
 

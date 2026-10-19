@@ -7,12 +7,12 @@
 | Host | Locale | Internal route |
 |------|--------|----------------|
 | `https://audit-en.erythro.ai/` | `en` | `/lp/audit/en` |
-| `https://audit-rus.erythro.ai/` | `ru` | `/lp/audit/ru` |
+| `https://audit-ru.erythro.ai/` | `ru` | `/lp/audit/ru` |
 | `https://audit-he.erythro.ai/` | `he` | `/lp/audit/he` |
 
 DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → Domains: все три.
 
-`audit-ru.erythro.ai` остаётся alias в middleware (если DNS оживёт), но Final URL для Ads — **`audit-rus`**: Hotnet и др. ISP иногда кэшируют NXDOMAIN на `audit-ru` после первого lookup до появления записи.
+Публичный RU-хост — **`audit-ru`**. Label `audit-rus` в коде только как alias middleware (DNS на него не публиковался → NXDOMAIN; переключатель RU на `audit-rus` давал пустую страницу).
 
 ## Почему не cookie
 
@@ -43,7 +43,7 @@ DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → D
 ## Деплой checklist
 
 1. Domains в Vercel + DNS.
-2. **Cloudflare Turnstile → Widget → Domains:** добавить `audit-en.erythro.ai`, `audit-rus.erythro.ai`, `audit-he.erythro.ai` (и alias `audit-ru` при необходимости). Без этого виджет не выдаёт токен / siteverify падает — форма «не работает».
+2. **Cloudflare Turnstile → Widget → Domains:** добавить `audit-en.erythro.ai`, `audit-ru.erythro.ai`, `audit-he.erythro.ai`. Без этого виджет не выдаёт токен / siteverify падает — форма «не работает».
 3. `TURNSTILE_HOSTNAMES` на Vercel: код сам подмешивает LP-хосты; в env достаточно apex + www.
 4. Ads Final URL = нужный субдомен.
 5. Tag Assistant на субдомене после «Принять» cookie.
