@@ -1,46 +1,24 @@
 # Latest changes
 
-Обновлено: 2026-10-18  
+Обновлено: 2026-10-19  
 Модель: Cursor  
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
 ## Сделано в этой сессии
 
-- Ads LP (PIT-112) задеплоен в production (`main` merge #255, READY).
-- UI/docs/тест: host lock, text|form, how below.
+- RLS docs → KB (`docs/architecture/supabase-rls.md` + Obsidian); grants doc восстановлен в репо.
+- Supabase RLS/grants hardening отложен в `PLAN-deferred` (**later**, не срочно).
 
-## Сделано (домены)
+## LP polish
 
-- Vercel Domains: `audit-en|ru|he.erythro.ai` verified.
-- CF CNAME Proxied → `cname.vercel-dns.com` (все три в UI).
-- Hotnet NXDOMAIN на `audit-ru` → публичный RU-хост сменён на `audit-rus.erythro.ai` (код + Vercel domain). Alias `audit-ru` оставлен.
-
-## Сделано (perf LP)
-
-- Chip: GSAP только при `pin` (dynamic import) — LP `pin={false}` без gsap.
-- Turnstile LP: `deferUntilInteraction` (скрипт после focus/pointer в форме).
-- Desktop logo: CSS `bg-[url]` вместо `<img>` — без preload SVG на mobile.
-
-## Сделано (CSP / legal links)
-
-- LP: privacy/terms → абсолютные `erythro.ai` (`<a>`, не Next Link soft-nav).
-- CSP `connect-src`: `https://erythro.ai` + `https://*.erythro.ai` (PSI console CSP на `/privacy`).
-
-## Сделано (theme)
-
-- LP: переключатель light/dark в шапке (справа от лого); страница и форма реагируют на тему.
-- Light LP: flat `bg-gold-100`, красные круги шагов; лого всегда белое (chip тёмный).
-
-## Формы LP
-
-- CF Turnstile Domains: `audit-en|rus|he` добавлены.
-- `turnstileHostnames()` мержит LP hosts — задеплоено в production.
-- Waiting page: `?lang=` с LP (cookie не пересекает субдомен → erythro.ai).
+- Form + packages/`?lang=` + Turnstile off.
+- Шапка: плашка тема + EN/RU/HE → `/lp/audit/{locale}` (dev) или `audit-*.erythro.ai` (prod).
+- Текстовый блок: 3 карточки с цветной верхней гранью (как Google/AI comparison).
 
 ## Сейчас
 
-1. Задеплоить `?lang=` на report waiting; smoke HE → waiting на he.
+1. Smoke locale switch + form; деплой.
 2. Ads Final URL на субдомены.
 
 ## Не делать
@@ -51,7 +29,9 @@
 - Не добавлять второй `gtag/js` на страницу.
 - Не включать PostgREST exposed schemas = `public` без RLS.
 - Не фиксировать язык LP через `Set-Cookie` в middleware (PIT-056 / PIT-112).
+- Не копировать `GRANT … TO anon` на таблицы Payload.
+- Не трогать RLS/grants hardening сейчас — пункт в `PLAN-deferred` (later).
 
 ## Последняя эстафета
 
-2026-10-18 — Cursor — LP perf на production (#256); дальше PSI + Ads Final URL.
+2026-10-19 — Cursor — RLS в KB; hardening → `PLAN-deferred` later. Дальше: LP waiting `?lang=` / Ads Final URL.

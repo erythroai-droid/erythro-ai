@@ -16,6 +16,7 @@ import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
 import { checkFreeAuditCooldown, isAuditIntakeLimitsDisabled } from '@/lib/auditRateLimit'
+import { AUDIT_LP_TURNSTILE_ENABLED, isAuditLpHost } from '@/lib/auditLp'
 import { buildAuditReportPath } from '@/lib/auditReport'
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
 import {
@@ -23,6 +24,7 @@ import {
   turnstileActionFromBody,
   verifyTurnstileToken,
 } from '@/lib/turnstile'
+import { requestHost } from '@/lib/vercelHost'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -67,13 +69,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
-  const turnstile = await verifyTurnstileToken({
-    token: readTurnstileToken(body),
-    action: turnstileActionFromBody(body),
-    remoteip: ip === 'unknown' ? undefined : ip,
-  })
-  if (!turnstile.ok) {
-    return NextResponse.json({ message: turnstile.message }, { status: turnstile.status })
+  // Ads LP hosts: optional Turnstile skip (`AUDIT_LP_TURNSTILE_ENABLED`).
+  // Same-origin POST from audit-*.erythro.ai → Host is the LP subdomain.
+  const requestFromAuditLp = isAuditLpHost(requestHost(request.headers))
+  const skipTurnstile = requestFromAuditLp && !AUDIT_LP_TURNSTILE_ENABLED
+  if (!skipTurnstile) {
+    const turnstile = await verifyTurnstileToken({
+      token: readTurnstileToken(body),
+      action: turnstileActionFromBody(body),
+      remoteip: ip === 'unknown' ? undefined : ip,
+    })
+    if (!turnstile.ok) {
+      return NextResponse.json({ message: turnstile.message }, { status: turnstile.status })
+    }
   }
 
   const guarded = guardContactSubmission(body)

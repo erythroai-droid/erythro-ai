@@ -5,6 +5,12 @@ import { normalizeHost } from '@/lib/vercelHost'
 export const AUDIT_LP_LOCALES = ['en', 'ru', 'he'] as const
 export type AuditLpLocale = (typeof AUDIT_LP_LOCALES)[number]
 
+/**
+ * Temporary: ads LP forms skip Turnstile (honeypot + rate limits remain).
+ * Flip to `true` when spam warrants captcha again. Main `/audit` is unchanged.
+ */
+export const AUDIT_LP_TURNSTILE_ENABLED = false
+
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai').replace(/\/+$/, '')
 
 /**
@@ -54,10 +60,42 @@ export function auditLpCanonicalUrl(locale: AuditLpLocale): string {
   return `${auditLpPublicOrigin(locale)}/`
 }
 
+/**
+ * Href for switching LP locale.
+ * Dev / preview → `/lp/audit/{locale}`. Production → `https://audit-*.erythro.ai/`.
+ */
+export function auditLpHrefForLocale(
+  target: AuditLpLocale,
+  currentHost?: string | null,
+): string {
+  const h = normalizeHost(currentHost)
+  const usePath =
+    process.env.NODE_ENV === 'development' ||
+    h === 'localhost' ||
+    h === '127.0.0.1' ||
+    (h != null && h.endsWith('.vercel.app')) ||
+    (h != null && h.endsWith('.local'))
+  if (usePath) return `/lp/audit/${target}`
+  return auditLpCanonicalUrl(target)
+}
+
 /** Absolute URL on the main brand domain (reports, legal, home). */
 export function mainSiteUrl(path = '/'): string {
   if (!path || path === '/') return `${SITE_URL}/`
   return path.startsWith('/') ? `${SITE_URL}${path}` : `${SITE_URL}/${path}`
+}
+
+/** Absolute main-site URL with `?lang=` for cross-subdomain locale (ads LP → apex). */
+export function mainSiteUrlWithLang(path: string, locale: string): string {
+  const base = mainSiteUrl(path)
+  if (!isSiteLocale(locale)) return base
+  try {
+    const u = new URL(base)
+    u.searchParams.set('lang', locale)
+    return u.toString()
+  } catch {
+    return base
+  }
 }
 
 export function toSiteLocale(locale: AuditLpLocale): SiteLocale {
@@ -92,6 +130,27 @@ export const auditLpCopy = {
     en: 'Score 0–100, top-3 risks, and a PDF preview — no card required.',
     ru: 'Оценка 0–100, топ-3 риска и PDF-превью — карта не нужна.',
     he: 'ציון 0–100, 3 סיכונים עיקריים ו-PDF — בלי כרטיס אשראי.',
+  } satisfies Localized,
+  aboutKicker: {
+    en: 'What you get',
+    ru: 'Что вы получаете',
+    he: 'מה אתם מקבלים',
+  } satisfies Localized,
+  aboutHeading: {
+    en: 'Commercial QA on five scales',
+    ru: 'Коммерческий QA по пяти шкалам',
+    he: 'ביקורת QA מסחרית בחמש סקאלות',
+  } satisfies Localized,
+  /** Short card body — period-separated, like comparison cards. */
+  aboutBody: {
+    en: 'Homepage crawl. PageSpeed mobile + desktop. Forms, SEO, security. AI Visibility signals.',
+    ru: 'Съём главной. PageSpeed mobile + desktop. Формы, SEO, security. Сигналы AI Visibility.',
+    he: 'סריקת דף הבית. PageSpeed מובייל + דסקטופ. טפסים, SEO, אבטחה. אותות נראות AI.',
+  } satisfies Localized,
+  aboutFooter: {
+    en: '✓ Free · no card · open HTML report',
+    ru: '✓ Free · без карты · HTML-отчёт сразу',
+    he: '✓ Free · בלי כרטיס · דוח HTML מיד',
   } satisfies Localized,
   about: {
     en: 'The lab runs a commercial QA audit on five scorecard scales. On the free plan we crawl the homepage in the language of this page — PageSpeed (mobile + desktop), forms, SEO, security headers, and AI Visibility signals. You get a 0–100 score with a letter grade (A+–F) and an HTML report you can open right away.',
@@ -134,6 +193,16 @@ export const auditLpCopy = {
     en: 'In the free report',
     ru: 'В бесплатном отчёте',
     he: 'בדוח החינמי',
+  } satisfies Localized,
+  scalesFooter: {
+    en: '✓ Full scorecard weight in the lab',
+    ru: '✓ Полный вес scorecard в лаборатории',
+    he: '✓ משקל מלא של ה-scorecard במעבדה',
+  } satisfies Localized,
+  deliverablesFooter: {
+    en: '✓ Included on the free plan',
+    ru: '✓ Входит в бесплатный тариф',
+    he: '✓ כלול בחבילה החינמית',
   } satisfies Localized,
   deliverables: [
     {
@@ -212,9 +281,14 @@ export const auditLpCopy = {
     },
   ] as const,
   formKicker: {
-    en: 'Start free audit',
-    ru: 'Запустить бесплатный аудит',
-    he: 'להתחיל ביקורת בחינם',
+    en: 'Free website audit',
+    ru: 'Бесплатный аудит сайта',
+    he: 'ביקורת אתר בחינם',
+  } satisfies Localized,
+  allOffersLink: {
+    en: 'See all packages',
+    ru: 'Ознакомиться со всеми пакетами',
+    he: 'לכל החבילות',
   } satisfies Localized,
   legalNote: {
     en: 'By continuing you agree to our privacy policy.',

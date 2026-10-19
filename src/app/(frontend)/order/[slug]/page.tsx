@@ -10,6 +10,7 @@ import { orderPageTitleSuffix } from '@/lib/copyHygiene'
 import { getCachedAuditPage } from '@/lib/auditPage.server'
 import { ogImageFields, ogImageForPlan } from '@/lib/ogImages'
 import { getRequestPrefs } from '@/lib/requestPrefs'
+import { isSiteLocale } from '@/lib/sitePrefs'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -17,6 +18,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
 interface OrderPageProps {
   params: Promise<{ slug: string }>
+  searchParams: Promise<{ lang?: string }>
 }
 
 export async function generateStaticParams() {
@@ -34,8 +36,9 @@ export async function generateStaticParams() {
     .map((slug) => ({ slug }))
 }
 
-export async function generateMetadata({ params }: OrderPageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: OrderPageProps): Promise<Metadata> {
   const { slug } = await params
+  const { lang: langParam } = await searchParams
   const plan = await getOrderPlanBySlug(slug)
 
   if (!plan) {
@@ -44,8 +47,11 @@ export async function generateMetadata({ params }: OrderPageProps): Promise<Meta
 
   const cookieStore = await cookies()
   const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
-  const locale =
-    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+  const locale = isSiteLocale(langParam)
+    ? langParam
+    : cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale)
+      ? cookieLocale
+      : DEFAULT_LOCALE
 
   const customTitle = tLocale(plan.seoTitle, locale)
   const customDescription = tLocale(plan.seoDescription, locale)
@@ -78,8 +84,9 @@ export async function generateMetadata({ params }: OrderPageProps): Promise<Meta
   }
 }
 
-export default async function OrderPage({ params }: OrderPageProps) {
+export default async function OrderPage({ params, searchParams }: OrderPageProps) {
   const { slug } = await params
+  const { lang: langParam } = await searchParams
   const plan = await getOrderPlanBySlug(slug)
   if (!plan) notFound()
 
@@ -92,7 +99,10 @@ export default async function OrderPage({ params }: OrderPageProps) {
     redirect('/audit')
   }
 
-  const { initialLocale, initialTheme } = await getRequestPrefs('light')
+  const prefs = await getRequestPrefs('light')
+  // Prefer ?lang= from ads LP (cross-subdomain; cookie on audit-* does not apply here).
+  const initialLocale = isSiteLocale(langParam) ? langParam : prefs.initialLocale
+  const initialTheme = prefs.initialTheme
   const [content, plans, auditPageContent] = await Promise.all([
     getCachedSiteContent(),
     getCachedOrderPlans().catch(() => ORDER_PLANS),

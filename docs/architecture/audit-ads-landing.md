@@ -21,13 +21,16 @@ DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → D
 1. Middleware: host → rewrite на `/lp/audit/{locale}` (URL в браузере остаётся субдоменом).
 2. `LOCALE_BOOTSTRAP_SCRIPT`: host/path lock → `html[lang]` / `dir` до paint, **игнор** cookie.
 3. `useSitePrefs({ lockedLocale })`: не читает storage, `setLocale` — no-op.
-4. Язык отчёта в форме = локаль страницы (селектор скрыт).
+4. Язык отчёта в форме = локаль страницы.
+5. Переключатель EN/RU/HE в шапке → другая LP-страница (`audit-*.erythro.ai` / локально `/lp/audit/{locale}`), без cookie.
 
 ## Что на LP
 
 Отдельный UI (`AuditLpClient`): бренд, короткий hero, 3 буллета, форма free-audit, cookie banner, ссылки privacy/terms на `erythro.ai`. Без полного Navbar, FAQ, табов pricing, splash.
 
 Форма → тот же `POST /api/contact` + `trackFreeAuditLead`. Ссылка на отчёт после успеха — абсолютный URL на `https://erythro.ai/audit/report/…?k=…&lang={locale}` (`lang` обязателен: cookie/localStorage LP-хоста не видны на apex).
+
+**Turnstile:** временно выключен на LP (`AUDIT_LP_TURNSTILE_ENABLED` в `auditLp.ts` + skip siteverify когда `Host` = audit-*). Honeypot `ContactHoneypotField` + rate limit остаются. Вернуть: флаг → `true`.
 
 ## SEO / robots
 
