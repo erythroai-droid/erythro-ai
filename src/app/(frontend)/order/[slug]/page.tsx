@@ -5,10 +5,16 @@ import { notFound, redirect } from 'next/navigation'
 import OrderClient from './OrderClient'
 import { getCachedSeoSettings, getCachedSiteContent } from '@/lib/getSiteContent'
 import { getAllOrderSlugsCms, getCachedOrderPlans, getOrderPlanBySlug } from '@/lib/cmsPages'
-import { getAllOrderSlugs, ORDER_PLANS, tLocale } from '@/lib/orderPlans'
+import {
+  getAllOrderSlugs,
+  isHiddenAuditOrderSlug,
+  ORDER_PLANS,
+  tLocale,
+} from '@/lib/orderPlans'
 import { orderPageTitleSuffix } from '@/lib/copyHygiene'
 import { getCachedAuditPage } from '@/lib/auditPage.server'
 import { ogImageFields, ogImageForPlan } from '@/lib/ogImages'
+import { verifyProOfferCheckoutAccess } from '@/lib/proOfferCheckoutAccess'
 import { getRequestPrefs } from '@/lib/requestPrefs'
 import { isSiteLocale } from '@/lib/sitePrefs'
 
@@ -18,31 +24,37 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
 interface OrderPageProps {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ lang?: string }>
+  searchParams: Promise<{ lang?: string; t?: string }>
 }
 
 export async function generateStaticParams() {
+  const allow = (slug: string) => {
+    if (isHiddenAuditOrderSlug(slug)) return false
+    const p = ORDER_PLANS.find((row) => row.slug === slug)
+    return p?.checkoutMode !== 'contact'
+  }
   try {
     const slugs = await getAllOrderSlugsCms()
-    if (slugs.length) return slugs.map((slug) => ({ slug }))
+    if (slugs.length) return slugs.filter(allow).map((slug) => ({ slug }))
   } catch {
     /* fall through */
   }
   return getAllOrderSlugs()
-    .filter((slug) => {
-      const p = ORDER_PLANS.find((row) => row.slug === slug)
-      return p?.checkoutMode !== 'contact'
-    })
+    .filter(allow)
     .map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params, searchParams }: OrderPageProps): Promise<Metadata> {
   const { slug } = await params
-  const { lang: langParam } = await searchParams
+  const { lang: langParam, t: accessToken } = await searchParams
   const plan = await getOrderPlanBySlug(slug)
 
   if (!plan) {
     return { title: 'Order not found | Erythro.ai' }
+  }
+
+  if (isHiddenAuditOrderSlug(plan.slug) && !verifyProOfferCheckoutAccess(accessToken)) {
+    return { title: 'Order not found | Erythro.ai', robots: { index: false, follow: false } }
   }
 
   const cookieStore = await cookies()
@@ -63,10 +75,15 @@ export async function generateMetadata({ params, searchParams }: OrderPageProps)
   const ogImage = ogImageForPlan(plan.slug, seo.ogImage)
   const ogImages = [ogImageFields(ogImage, title)]
 
+  const gated = isHiddenAuditOrderSlug(plan.slug)
   return {
     title,
     description: subtitle,
-    alternates: { canonical: `/order/${plan.slug}` },
+    ...(gated
+      ? {
+          robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+        }
+      : { alternates: { canonical: `/order/${plan.slug}` } }),
     openGraph: {
       title,
       description: subtitle,
@@ -86,7 +103,7 @@ export async function generateMetadata({ params, searchParams }: OrderPageProps)
 
 export default async function OrderPage({ params, searchParams }: OrderPageProps) {
   const { slug } = await params
-  const { lang: langParam } = await searchParams
+  const { lang: langParam, t: accessToken } = await searchParams
   const plan = await getOrderPlanBySlug(slug)
   if (!plan) notFound()
 
@@ -97,6 +114,14 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
     plan.slug === 'audit-manual'
   ) {
     redirect('/audit')
+  }
+
+  // Meta ads Pro promo: only from signed email link (?t=).
+  let proOfferToken: string | undefined
+  if (isHiddenAuditOrderSlug(plan.slug)) {
+    const claims = verifyProOfferCheckoutAccess(accessToken)
+    if (!claims || !accessToken?.trim()) notFound()
+    proOfferToken = accessToken.trim()
   }
 
   const prefs = await getRequestPrefs('light')
@@ -111,8 +136,11 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
 
   const list = plans.length ? plans : ORDER_PLANS
   const isAuditPlan = plan.kind === 'audit' || plan.slug.startsWith('audit-')
+  // Promo-only slugs (e.g. audit-pro-ads) stay off plan hopping and public nav cycles.
+  const hideNeighbors = isHiddenAuditOrderSlug(plan.slug)
   const navList = list.filter((p) => {
     if (p.checkoutMode === 'contact') return false
+    if (isHiddenAuditOrderSlug(p.slug)) return false
     return isAuditPlan
       ? p.kind === 'audit' || p.slug.startsWith('audit-')
       : !p.kind || p.kind === 'solution' || !p.slug.startsWith('audit-')
@@ -120,13 +148,21 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
   const effectiveList = navList.length ? navList : list
   const index = effectiveList.findIndex((p) => p.slug === plan.slug)
   const prevPlan =
-    index > 0 ? effectiveList[index - 1] : effectiveList.length > 1 ? effectiveList[effectiveList.length - 1] : null
+    hideNeighbors || index < 0
+      ? null
+      : index > 0
+        ? effectiveList[index - 1]
+        : effectiveList.length > 1
+          ? effectiveList[effectiveList.length - 1]
+          : null
   const nextPlan =
-    index >= 0 && index < effectiveList.length - 1
-      ? effectiveList[index + 1]
-      : effectiveList.length > 1
-        ? effectiveList[0]
-        : null
+    hideNeighbors || index < 0
+      ? null
+      : index >= 0 && index < effectiveList.length - 1
+        ? effectiveList[index + 1]
+        : effectiveList.length > 1
+          ? effectiveList[0]
+          : null
 
   const toNeighbor = (p: (typeof list)[number] | null) =>
     p
@@ -145,6 +181,7 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
       prev={toNeighbor(prevPlan)}
       next={toNeighbor(nextPlan)}
       auditForm={isAuditPlan ? auditPageContent.form : undefined}
+      proOfferToken={proOfferToken}
     />
   )
 }

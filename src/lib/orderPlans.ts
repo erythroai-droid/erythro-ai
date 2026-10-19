@@ -648,7 +648,6 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
       price: '390',
       originalPrice: '490',
       featured: true,
-      priceNote: true,
       title: {
         en: 'AI Audit: Pro — ads special',
         ru: 'AI Аудит: Pro — спецпредложение',

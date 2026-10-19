@@ -19,8 +19,8 @@
 | `fullName` | Два слова, уже проверены |
 | `phone` | Израильский мобильный `05XXXXXXXX` |
 | `email` | Email клиента |
-| `title`, `productName` | `Erythro AI audit {slug}` |
-| `price` | Сумма плана в шекелях, как на сайте (`299.00`) |
+| `title`, `productName` | Локализованное имя плана + `· Erythro.ai` (не slug) |
+| `price` | Сумма плана в шекелях, как на сайте (`390.00` для `audit-pro-ads`) |
 | `quantity` | `1` |
 | `successUrl` | `https://erythro.ai/order/success?id=&sig=` |
 | `cancelUrl` | `https://erythro.ai/order/cancel?slug=` |
