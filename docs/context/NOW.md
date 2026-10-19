@@ -7,12 +7,15 @@
 
 ## Сделано в этой сессии
 
-- PIT-114 harden v2: trigger отказывает unpaid; contact блокирует paid slugs; create чистит `audit_status`; report 404 пока не paid.
+- Unsubscribe для КП/Pro: футер письма → «Отписаться от рассылки» → `/unsubscribe` confirm → `mail_unsubscribes` → skip offer+reminder.
+- Миграция `20261019_220000_mail_unsubscribes` (deploy: migrate).
+- PIT-114 harden v2 уже в ветке (trigger/contact/create/report).
+- Fix CI: `auditAgentTrigger` мокает `assertAuditMayRun` (раньше `lookup_failed` без Payload).
 
 ## Сейчас
 
-1. **Срочно:** commit/push/merge harden v2 на prod.
-2. Проверка: diagnostic/pro/ads → submit → запись pending без auditStatus new → без отчёта до Grow paid.
+1. После merge: `payload migrate` на prod (`mail_unsubscribes`).
+2. Проверка: письмо → футер unsubscribe → confirm → повторный send skipped `unsubscribed`.
 
 ## Не делать
 
@@ -21,4 +24,4 @@
 
 ## Последняя эстафета
 
-2026-10-19 — Cursor — PIT-114 harden v2 ready for deploy.
+2026-10-19 — Cursor — commercial mail unsubscribe ready (page + gate + footer).

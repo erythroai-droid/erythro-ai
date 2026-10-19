@@ -12,6 +12,10 @@ import {
   verifyProOfferCheckoutAccess,
 } from '@/lib/proOfferCheckoutAccess'
 import { isFreeAuditPlanSlug, isHiddenAuditOrderSlug, getOrderPlan } from '@/lib/orderPlans'
+import {
+  signMailUnsubscribeToken,
+  verifyMailUnsubscribeToken,
+} from '@/lib/mailUnsubscribe'
 
 describe('auditProOffer', () => {
   it('ads checkout URL is signed (email-only gate)', () => {
@@ -45,6 +49,8 @@ describe('auditProOffer', () => {
   })
 
   it('RU offer is Pro-only (no modernization block)', () => {
+    const prev = process.env.PAYLOAD_SECRET
+    process.env.PAYLOAD_SECRET = 'test-pro-offer-secret'
     const mail = buildProOfferEmail({
       name: 'Иван',
       email: 'ivan@example.com',
@@ -69,9 +75,27 @@ describe('auditProOffer', () => {
     expect(mail.html).toContain(`₪${PRO_LIST_PRICE}`)
     expect(mail.html).not.toContain('WhatsApp')
     expect(mail.html).not.toContain('linear-gradient')
+    expect(mail.html).toContain('Отписаться от рассылки')
+    expect(mail.html).toContain('/unsubscribe')
+    expect(mail.html).toContain('t=')
+    expect(mail.unsubscribeUrl).toContain('/unsubscribe')
+    if (prev === undefined) delete process.env.PAYLOAD_SECRET
+    else process.env.PAYLOAD_SECRET = prev
+  })
+
+  it('unsubscribe token round-trips email', () => {
+    const prev = process.env.PAYLOAD_SECRET
+    process.env.PAYLOAD_SECRET = 'test-unsub-secret'
+    const token = signMailUnsubscribeToken('Ada@Example.COM')
+    expect(verifyMailUnsubscribeToken(token)).toBe('ada@example.com')
+    expect(verifyMailUnsubscribeToken('bad')).toBeNull()
+    if (prev === undefined) delete process.env.PAYLOAD_SECRET
+    else process.env.PAYLOAD_SECRET = prev
   })
 
   it('HE offer shell is RTL letterhead', () => {
+    const prev = process.env.PAYLOAD_SECRET
+    process.env.PAYLOAD_SECRET = 'test-pro-offer-secret'
     const mail = buildProOfferEmail({
       email: 'ada@example.com',
       locale: 'he',
@@ -82,11 +106,16 @@ describe('auditProOffer', () => {
     expect(mail.html).toContain('text-align:right')
     expect(mail.html).toContain('אילת, ישראל')
     expect(mail.html).toContain('הצעה מיוחדת עבור ada@example.com')
+    expect(mail.html).toContain('ביטול הרשמה לדיוור')
     expect(mail.html).not.toContain('WhatsApp')
     expect(mail.html).not.toContain('טל.')
+    if (prev === undefined) delete process.env.PAYLOAD_SECRET
+    else process.env.PAYLOAD_SECRET = prev
   })
 
   it('RU +72h letter is modernization / AI (not Pro promo)', () => {
+    const prev = process.env.PAYLOAD_SECRET
+    process.env.PAYLOAD_SECRET = 'test-pro-offer-secret'
     const mail = buildProOfferEmail({
       email: 'ivan@example.com',
       locale: 'ru',
@@ -99,6 +128,9 @@ describe('auditProOffer', () => {
     expect(mail.text).toMatch(/устарел|модерниз/)
     expect(mail.text).not.toContain('Оплатить Pro')
     expect(mail.html).toContain('services/ai-automation')
+    expect(mail.html).toContain('Отписаться от рассылки')
+    if (prev === undefined) delete process.env.PAYLOAD_SECRET
+    else process.env.PAYLOAD_SECRET = prev
   })
 
   it('PRO offer locale follows reportLang', () => {

@@ -4,11 +4,17 @@ vi.mock('@/lib/checkWebsite', () => ({
   checkWebsiteReachable: vi.fn(async () => ({ ok: true, hostname: 'shop.example' })),
 }))
 
+vi.mock('@/lib/auditPaymentGate', () => ({
+  assertAuditMayRun: vi.fn(async () => ({ ok: true })),
+  isUnpaidAuditCheckout: vi.fn(() => false),
+}))
+
 import {
   getAuditAgentBaseUrl,
   triggerAuditAgent,
 } from '@/lib/auditAgentTrigger'
 import { checkWebsiteReachable } from '@/lib/checkWebsite'
+import { assertAuditMayRun } from '@/lib/auditPaymentGate'
 import { AGENT_SECRET_HEADER, AGENT_SIGNATURE_HEADER } from '@/lib/agentAuth'
 
 describe('auditAgentTrigger', () => {
@@ -25,6 +31,7 @@ describe('auditAgentTrigger', () => {
       ok: true,
       hostname: 'shop.example',
     })
+    vi.mocked(assertAuditMayRun).mockResolvedValue({ ok: true })
   })
 
   afterEach(() => {
@@ -42,6 +49,26 @@ describe('auditAgentTrigger', () => {
       targetUrl: 'https://example.com',
     })
     expect(result).toEqual({ ok: false, reason: 'missing_agent_secret' })
+  })
+
+  it('refuses unpaid checkout before SSRF/fetch', async () => {
+    process.env.AGENT_SECRET_TOKEN = 'test-secret'
+    vi.mocked(assertAuditMayRun).mockResolvedValue({
+      ok: false,
+      reason: 'unpaid_checkout',
+    })
+
+    const fetchMock = vi.fn()
+    globalThis.fetch = fetchMock as unknown as typeof fetch
+
+    const result = await triggerAuditAgent({
+      submissionId: 1,
+      targetUrl: 'https://shop.example',
+    })
+
+    expect(result).toEqual({ ok: false, reason: 'unpaid_checkout' })
+    expect(checkWebsiteReachable).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('blocks when SSRF/DNS check fails', async () => {
