@@ -8,7 +8,7 @@ export const TURNSTILE_SITEVERIFY_URL = 'https://challenges.cloudflare.com/turns
 /** Always allow ads LP hosts even if TURNSTILE_HOSTNAMES omits them. */
 const AUDIT_LP_TURNSTILE_HOSTS = [
   ...Object.values(AUDIT_LP_HOST_BY_LOCALE),
-  'audit-ru.erythro.ai', // legacy Hotnet alias
+  'audit-rus.erythro.ai', // unused label — allow if DNS is ever added
 ] as const
 
 /** `consult` covers the AI consultant widget (chat + OTP request). */

@@ -16,7 +16,7 @@ describe('audit LP host / path lock', () => {
     expect(auditLpLocaleFromHost('audit-he.erythro.ai:443')).toBe('he')
     expect(auditLpLocaleFromHost('erythro.ai')).toBeNull()
     expect(isAuditLpHost(AUDIT_LP_HOST_BY_LOCALE.ru)).toBe(true)
-    expect(AUDIT_LP_HOST_BY_LOCALE.ru).toBe('audit-rus.erythro.ai')
+    expect(AUDIT_LP_HOST_BY_LOCALE.ru).toBe('audit-ru.erythro.ai')
   })
 
   it('locks locale from /lp/audit/{locale} path (local preview)', () => {
@@ -26,7 +26,7 @@ describe('audit LP host / path lock', () => {
   })
 
   it('builds canonical LP and main-site URLs', () => {
-    expect(auditLpCanonicalUrl('ru')).toBe('https://audit-rus.erythro.ai/')
+    expect(auditLpCanonicalUrl('ru')).toBe('https://audit-ru.erythro.ai/')
     expect(mainSiteUrl('/privacy')).toBe('https://erythro.ai/privacy')
     expect(mainSiteUrl('/audit/report/1?k=abc')).toContain('https://erythro.ai/audit/report/1?k=abc')
   })

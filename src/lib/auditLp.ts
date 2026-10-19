@@ -15,20 +15,20 @@ const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai').repl
 
 /**
  * Production hosts for ads Final URLs (one locale each).
- * RU uses `audit-rus` — some ISP caches (Hotnet) kept NXDOMAIN for `audit-ru`
- * after the first lookup before the CF record existed.
+ * Public RU host is `audit-ru` (live DNS). `audit-rus` stays a middleware
+ * alias only — that label was never published in CF DNS (NXDOMAIN).
  */
 export const AUDIT_LP_HOST_BY_LOCALE: Record<AuditLpLocale, string> = {
   en: 'audit-en.erythro.ai',
-  ru: 'audit-rus.erythro.ai',
+  ru: 'audit-ru.erythro.ai',
   he: 'audit-he.erythro.ai',
 }
 
 const LOCALE_BY_HOST: Record<string, AuditLpLocale> = {
   'audit-en.erythro.ai': 'en',
-  'audit-rus.erythro.ai': 'ru',
-  /** Legacy label — still rewrite if ISP cache clears. */
   'audit-ru.erythro.ai': 'ru',
+  /** Unused public label — rewrite if DNS is ever added. */
+  'audit-rus.erythro.ai': 'ru',
   'audit-he.erythro.ai': 'he',
 }
 

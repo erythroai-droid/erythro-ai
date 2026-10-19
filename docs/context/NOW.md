@@ -12,14 +12,13 @@
 
 ## LP polish
 
-- Form + packages/`?lang=` + Turnstile off.
-- Шапка: плашка тема + EN/RU/HE → `/lp/audit/{locale}` (dev) или `audit-*.erythro.ai` (prod).
-- Текстовый блок: 3 карточки с цветной верхней гранью (как Google/AI comparison).
+- Form + packages/`?lang=` + Turnstile off; accent cards; locale pill.
+- **Fix:** RU canonical host → `audit-ru.erythro.ai` (`audit-rus` NXDOMAIN — пустая страница при switch).
 
 ## Сейчас
 
-1. Smoke locale switch + form; деплой.
-2. Ads Final URL на субдомены.
+1. Задеплоить RU host fix; smoke EN→RU switch.
+2. Ads Final URL: `audit-en` / `audit-ru` / `audit-he` (не `audit-rus`).
 
 ## Не делать
 
