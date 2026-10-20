@@ -1,4 +1,4 @@
-# Deferred follow-ups (updated 2026-09-19)
+# Deferred follow-ups (updated 2026-10-19)
 
 Напомнить в следующем сеансе, когда пользователь спросит про безопасность / perf / R2 / admin.
 
@@ -20,6 +20,7 @@
 | low | Purge `consult-sessions` older than 12 months | Retention promised on `/privacy` is manual today; add a cron |
 | later | CF-only UFW 80/443 | Needs orange cloud + Origin Cert for n8n/agent-api |
 | later | ISR remaining frontend pages | services/order/audit still use `getRequestPrefs` / dynamic params (PIT-056) |
+| later | Locale URL routing EN + `/ru` `/he` | Indexable RU/HE without breaking Ads/EN paths. Branch `feat/locale-url-routing` only — merge/deploy after full smoke. Plan: [`architecture/locale-url-routing.md`](architecture/locale-url-routing.md). |
 | later | Custom domain `media.erythro.ai` | r2.dev is rate-limited |
 
 ## Consultant v2 (wizard + grounded facts)
