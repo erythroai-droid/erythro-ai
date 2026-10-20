@@ -70,11 +70,20 @@ export function isFreeAuditPlanSlug(planSlug) {
   return !s || s === 'audit-free' || s === 'free'
 }
 
+/** Paid Diagnostic / Pro — delayed development offer email from the site. */
+export function isPaidAuditFunnelPlanSlug(planSlug) {
+  const s = String(planSlug || '')
+    .trim()
+    .toLowerCase()
+  return s === 'audit-pro' || s === 'audit-pro-ads' || s === 'audit-diagnostic'
+}
+
 const PRO_OFFER_DELAY_MS = 15 * 60 * 1000
 
 /**
- * All free audits (ads LP + organic): schedule PRO ₪390 commercial email (+15m).
- * Site also checks DB for Pro/Diagnostic orders before sending.
+ * Schedule team@ commercial follow-up (+15m):
+ * - free → Pro ₪390 offer
+ * - Pro / Diagnostic → development offer (fixes or rebuild)
  * Reconcile cron is the safety net if this process restarts.
  *
  * @param {number|string} submissionId
@@ -82,7 +91,9 @@ const PRO_OFFER_DELAY_MS = 15 * 60 * 1000
  * @param {{ leadChannel?: string|null }} [meta] unused (kept for call-site compat)
  */
 export function scheduleProOfferEmail(submissionId, planSlug, _meta = {}) {
-  if (!isFreeAuditPlanSlug(planSlug)) return
+  const free = isFreeAuditPlanSlug(planSlug)
+  const paid = isPaidAuditFunnelPlanSlug(planSlug)
+  if (!free && !paid) return
 
   // Off until letterhead approved (mirror site `isAuditProOfferEnabled`).
   const offerOn = String(process.env.AUDIT_PRO_OFFER_ENABLED || '')
@@ -101,6 +112,9 @@ export function scheduleProOfferEmail(submissionId, planSlug, _meta = {}) {
     return
   }
 
+  const kind = paid ? 'paid_dev' : 'offer'
+  const label = paid ? 'paid-dev' : 'pro-offer'
+
   const run = async () => {
     const dueAt = new Date(Date.now() + PRO_OFFER_DELAY_MS).toISOString()
     try {
@@ -110,14 +124,14 @@ export function scheduleProOfferEmail(submissionId, planSlug, _meta = {}) {
       })
     } catch (err) {
       console.warn(
-        `[payload] pro-offer schedule PATCH failed id=${submissionId}:`,
+        `[payload] ${label} schedule PATCH failed id=${submissionId}:`,
         err instanceof Error ? err.message : err,
       )
       return
     }
 
     console.log(
-      `[payload] pro-offer scheduled id=${submissionId} due=${dueAt} (delay ${Math.round(PRO_OFFER_DELAY_MS / 60000)}m)`,
+      `[payload] ${label} scheduled id=${submissionId} due=${dueAt} (delay ${Math.round(PRO_OFFER_DELAY_MS / 60000)}m)`,
     )
 
     setTimeout(() => {
@@ -127,21 +141,21 @@ export function scheduleProOfferEmail(submissionId, planSlug, _meta = {}) {
           'Content-Type': 'application/json',
           'X-Agent-Secret-Key': secret,
         },
-        body: JSON.stringify({ kind: 'offer' }),
+        body: JSON.stringify({ kind }),
       })
         .then(async (res) => {
           if (!res.ok) {
             const text = await res.text().catch(() => '')
             console.warn(
-              `[payload] pro-offer POST id=${submissionId} status=${res.status} ${text.slice(0, 200)}`,
+              `[payload] ${label} POST id=${submissionId} status=${res.status} ${text.slice(0, 200)}`,
             )
             return
           }
-          console.log(`[payload] pro-offer triggered id=${submissionId}`)
+          console.log(`[payload] ${label} triggered id=${submissionId}`)
         })
         .catch((err) => {
           console.warn(
-            `[payload] pro-offer POST failed id=${submissionId}:`,
+            `[payload] ${label} POST failed id=${submissionId}:`,
             err instanceof Error ? err.message : err,
           )
         })
@@ -150,7 +164,7 @@ export function scheduleProOfferEmail(submissionId, planSlug, _meta = {}) {
 
   run().catch((err) => {
     console.warn(
-      `[payload] pro-offer schedule error id=${submissionId}:`,
+      `[payload] ${label} schedule error id=${submissionId}:`,
       err instanceof Error ? err.message : err,
     )
   })

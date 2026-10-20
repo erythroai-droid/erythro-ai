@@ -384,7 +384,7 @@ export const ContactSubmissions: CollectionConfig = {
               ],
               admin: {
                 description:
-                  'Ads LP free→Pro: scheduled (+15m) → sent → nudge_sent (−24h) → reminder_sent (72h development) / skipped',
+                  'Free→Pro: scheduled (+15m) → sent → nudge_sent (−24h) → reminder_sent (72h). Paid Pro/Diagnostic: scheduled (+15m) → reminder_sent (dev offer). Or skipped.',
                 condition: auditOnly,
                 position: 'sidebar',
               },
@@ -393,7 +393,7 @@ export const ContactSubmissions: CollectionConfig = {
               name: 'proOfferDueAt',
               type: 'date',
               admin: {
-                description: 'First commercial email due (report_sent + 15 min)',
+                description: 'First commercial email due (report_sent + 15 min; free Pro or paid development)',
                 condition: auditOnly,
                 date: { pickerAppearance: 'dayAndTime' },
                 position: 'sidebar',
@@ -455,7 +455,7 @@ export const ContactSubmissions: CollectionConfig = {
               name: 'proOfferReminderSentAt',
               type: 'date',
               admin: {
-                description: 'When the +72h development offer email was sent',
+                description: 'When the development offer was sent (+72h free funnel or +15m after paid audit)',
                 condition: auditOnly,
                 date: { pickerAppearance: 'dayAndTime' },
                 readOnly: true,

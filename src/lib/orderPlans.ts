@@ -855,6 +855,18 @@ export function isFreeAuditPlanSlug(slug: string | null | undefined): boolean {
   return !s || s === 'audit-free' || s === 'free'
 }
 
+/** Paid Diagnostic / Pro — triggers delayed development offer email (+15m). */
+export const PAID_AUDIT_FUNNEL_PLAN_SLUGS = [
+  'audit-pro',
+  'audit-pro-ads',
+  'audit-diagnostic',
+] as const
+
+export function isPaidAuditFunnelPlanSlug(slug: string | null | undefined): boolean {
+  const s = (slug || '').trim().toLowerCase()
+  return (PAID_AUDIT_FUNNEL_PLAN_SLUGS as readonly string[]).includes(s)
+}
+
 export function getOrderPlan(slug: string): OrderPlan | undefined {
   const direct = ORDER_PLANS.find((plan) => plan.slug === slug)
   if (direct) return direct

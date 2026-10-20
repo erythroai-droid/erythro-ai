@@ -14,7 +14,12 @@ import {
   signProOfferCheckoutAccess,
   verifyProOfferCheckoutAccess,
 } from '@/lib/proOfferCheckoutAccess'
-import { isFreeAuditPlanSlug, isHiddenAuditOrderSlug, getOrderPlan } from '@/lib/orderPlans'
+import {
+  isFreeAuditPlanSlug,
+  isHiddenAuditOrderSlug,
+  isPaidAuditFunnelPlanSlug,
+  getOrderPlan,
+} from '@/lib/orderPlans'
 import {
   signMailUnsubscribeToken,
   verifyMailUnsubscribeToken,
@@ -196,6 +201,34 @@ describe('auditProOffer', () => {
     else process.env.PAYLOAD_SECRET = prev
   })
 
+  it('RU paid_dev letter offers fixes or rebuild after Pro/Diagnostic', () => {
+    const prev = process.env.PAYLOAD_SECRET
+    process.env.PAYLOAD_SECRET = 'test-pro-offer-secret'
+    const mail = buildProOfferEmail({
+      name: 'Иван',
+      email: 'ivan@example.com',
+      locale: 'ru',
+      checkoutUrl: 'https://erythro.ai/services/development?lang=ru',
+      reportUrl: 'https://erythro.ai/audit/report/42?k=abc',
+      kind: 'paid_dev',
+    })
+    expect(mail.subject).toBe('Предложение о разработке для ivan@example.com')
+    expect(mail.text).toContain('Отчёт по вашему аудиту готов')
+    expect(mail.text).toContain('правки и изменения')
+    expect(mail.text).toContain('полностью пересобрать')
+    expect(mail.text).toContain('Правки и доработки по результатам аудита')
+    expect(mail.text).toContain('«правки»')
+    expect(mail.text).toContain('Открыть отчёт: https://erythro.ai/audit/report/42')
+    expect(mail.text).not.toContain('Спецпредложение на Pro уже завершилось')
+    expect(mail.text).not.toContain('Иван')
+    expect(mail.text).not.toContain('Оплатить Pro')
+    expect(mail.html).toContain('Открыть отчёт')
+    expect(mail.html).toContain('services/development')
+    expect(mail.html).toContain('Отписаться от рассылки')
+    if (prev === undefined) delete process.env.PAYLOAD_SECRET
+    else process.env.PAYLOAD_SECRET = prev
+  })
+
   it('PRO offer locale follows reportLang', () => {
     expect(resolveProOfferLocale({ reportLang: 'ru', locale: 'en' })).toBe('ru')
     expect(resolveProOfferLocale({ reportLang: 'HE' })).toBe('he')
@@ -206,5 +239,8 @@ describe('auditProOffer', () => {
     expect(plan?.card.price).toBe('390')
     expect(isHiddenAuditOrderSlug('audit-pro-ads')).toBe(true)
     expect(isFreeAuditPlanSlug('audit-free')).toBe(true)
+    expect(isPaidAuditFunnelPlanSlug('audit-pro')).toBe(true)
+    expect(isPaidAuditFunnelPlanSlug('audit-diagnostic')).toBe(true)
+    expect(isPaidAuditFunnelPlanSlug('audit-free')).toBe(false)
   })
 })
