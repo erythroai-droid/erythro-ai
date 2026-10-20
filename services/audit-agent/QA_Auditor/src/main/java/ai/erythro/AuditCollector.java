@@ -2923,13 +2923,17 @@ public class AuditCollector {
     private static Map<String, Object> callGeminiFunnelOnce(String apiKey, ObjectMapper mapper, String prompt)
             throws Exception {
         Map<String, Object> out = new LinkedHashMap<>();
-        // Gemini 3.x: no temperature / top_p / top_k (PIT-106).
+        // Gemini 3.x: no temperature / top_p / top_k / thinking_budget (PIT-106).
+        // Steer depth with thinkingLevel only — medium for Funnel JSON + language lock.
         Map<String, Object> body = Map.of(
                 "contents", List.of(Map.of(
                         "parts", List.of(Map.of("text", prompt))
                 )),
                 "generationConfig", Map.of(
-                        "responseMimeType", "application/json"
+                        "responseMimeType", "application/json",
+                        "thinkingConfig", Map.of(
+                                "thinkingLevel", "medium"
+                        )
                 )
         );
         HttpRequest request = HttpRequest.newBuilder()

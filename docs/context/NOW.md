@@ -7,14 +7,13 @@
 
 ## Сделано в этой сессии
 
-- Localize Diagnostic/Pro robots checklist detail (HE/EN/RU).
-- Gemini Funnel: strict lang lock + retry; drop block on Cyrillic/wrong-lang for HE/EN (never ship RU into HE report).
-- Prior: free H3/title, platform blocklist, HE gap `tr()`.
+- Gemini Funnel: explicit `thinkingLevel: medium` (PIT-106).
+- Prior: HE lang lock + retry; robots checklist i18n; free H3/title; platform blocklist.
 
 ## Сейчас
 
-1. Commit + push + redeploy audit-agent.
-2. Merge branch → Vercel for site platform blocklist.
+1. Redeploy audit-agent so `thinkingLevel` is live.
+2. Merge branch → production for site platform blocklist.
 
 ## Не делать
 
@@ -23,4 +22,4 @@
 
 ## Последняя эстафета
 
-2026-10-20 — Cursor — Gemini HE lang lock + robotsDetail i18n (await push/redeploy).
+2026-10-20 — Cursor — `1f12ca1` Gemini HE lang guard + robots i18n; worker live.
