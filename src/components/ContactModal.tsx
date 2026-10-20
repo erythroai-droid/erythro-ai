@@ -25,6 +25,7 @@ import {
   requiredPlaceholder,
 } from '@/components/form/FormPills'
 import type { ContactFormSource } from '@/lib/contactNotification'
+import { trackContactLead } from '@/lib/adsConversion'
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
 import { TURNSTILE_TOKEN_FIELD } from '@/lib/turnstile'
 import {
@@ -201,8 +202,11 @@ function ContactModal({
         setStatus('error')
         return
       }
-      const payload = (await res.json().catch(() => null)) as { ticketId?: string } | null
-      setTicketId(readContactSubmitTicketId(payload) || '')
+      const payload = (await res.json().catch(() => null)) as { submissionId?: number | string; ticketId?: string } | null
+      const resolvedTicket = readContactSubmitTicketId(payload) || ''
+      const leadId = payload?.submissionId != null ? String(payload.submissionId) : resolvedTicket
+      if (leadId) trackContactLead(leadId, source)
+      setTicketId(resolvedTicket)
       setStatus('success')
       setValues({ name: '', email: '', phone: '', message: '' })
       setFieldErrors({})

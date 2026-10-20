@@ -26,6 +26,7 @@ declare global {
       options?: { eventID?: string },
     ) => void
     __ERYTHRO_GA_ID__?: string
+    __ERYTHRO_GA_CONFIGURED__?: boolean
     __ERYTHRO_AW_ID__?: string
     __ERYTHRO_META_PIXEL_ID__?: string
   }
@@ -88,7 +89,8 @@ export default function AnalyticsLoader() {
       {/* gtag.js already loaded in AnalyticsBootstrap (AW-…); do not load a second copy */}
       <Script id="google-analytics-config" strategy="afterInteractive">
         {`
-          if (typeof window.gtag === 'function') {
+          if (typeof window.gtag === 'function' && !window.__ERYTHRO_GA_CONFIGURED__) {
+            window.__ERYTHRO_GA_CONFIGURED__ = true;
             gtag('config', '${GA_ID}', {
               anonymize_ip: true,
               allow_google_signals: false,

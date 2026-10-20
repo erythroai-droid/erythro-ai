@@ -1920,6 +1920,24 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Prevent:** Do not look for funnel copies in Sent until IMAP APPEND is deployed. Status of record remains Payload `proOfferStatus` / `proOfferSentAt`.
 
+---
+
+## PIT-116 — GA4 Key Events stay at 0 despite active form submissions and Ads `conversion` hits
+
+**Tags:** `ga4`, `google-ads`, `gtag`, `consent`, `conversions`  
+**Seen:** 2026-10-20 — GA4 property `543568002` (`G-F3BTVWGDRS`), `keyEvents = 0` across 789 sessions and 54 `form_start` events
+
+**Symptom:** GA4 reports `0` Key Events (`qualify_lead`, `close_convert_lead`, `purchase`), and only 1 automatic `form_submit` across months of traffic, even though leads are arriving in Payload CMS / CRM.
+
+**Cause (stack):**
+1. `adsConversion.ts` fired `gtag('event', 'conversion', { send_to: 'AW-18453652197/…' })`. Because `send_to` targeted only Google Ads (`AW-…`), GA4 (`G-F3BTVWGDRS`) never received any lead or purchase event, and AJAX `fetch('/api/contact')` does not reliably trigger GA4 Enhanced Measurement `form_submit`.
+2. Consent Mode race: `gtag('config', 'G-F3BTVWGDRS')` lived only inside `AnalyticsLoader` (`<Script strategy="afterInteractive">` rendered after cookie banner accept). When a user submitted a form with the form's privacy checkbox without clicking the cookie banner first, `setConsentValue(CONSENT_ACCEPTED)` triggered an async React state update while `gtag('event', …)` ran synchronously before `consent update` or `gtag('config', 'G-…')` executed.
+3. Three form surfaces (`/order/free-start` & `/order/enterprise-custom` in `OrderClient.tsx`, `/contacts` in `ContactsBody.tsx`, and `ContactModal.tsx`) had no conversion tracking calls on submit success.
+
+**Fix:** `ensureAnalyticsConsentAndGaConfig()` in `src/lib/adsConversion.ts` synchronously calls `gtag('consent', 'update', { …granted })` and initializes `gtag('config', 'G-F3BTVWGDRS')` (guarded by `window.__ERYTHRO_GA_CONFIGURED__`, shared with `AnalyticsLoader.tsx`). Added `trackGaLead` (`qualify_lead`, plus `close_convert_lead` for package orders) and `trackGaPurchase` (`purchase` + `close_convert_lead`), wired into `trackFreeAuditLead`, `trackOrderLead`, `trackContactLead`, and `trackAdsPurchase` across all 5 form surfaces and `PaymentReturn.tsx`.
+
+**Prevent:** Never rely on `send_to: 'AW-…'` or browser-auto `form_submit` to populate GA4 Key Events on AJAX forms. Always pair Ads conversion calls with explicit GA4 Key Event calls (`qualify_lead`, `close_convert_lead`, `purchase`) after synchronous consent + GA4 config initialization.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -2021,4 +2039,5 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 - [ ] Supabase: `anon` must not SELECT Payload `public` tables; keep REST schemas empty (PIT-110)
 - [ ] After `vercel env pull`: `[SENSITIVE]` placeholders — fill from `.env` or Save in admin to revalidate (PIT-111)
 - [ ] Ads free-audit Final URL: `audit-en` / `audit-ru` / `audit-he`.erythro.ai, not `/audit` (PIT-112; not `audit-rus` — NXDOMAIN)
+- [ ] GA4 conversions on AJAX forms: always fire explicit `qualify_lead` / `close_convert_lead` / `purchase` (`send_to: G-…`) after synchronous consent + GA4 config init (`ensureAnalyticsConsentAndGaConfig`), not just `send_to: AW-…` (PIT-116)
 

@@ -7,6 +7,7 @@ import { ContactHoneypotField } from '@/components/ContactHoneypotField'
 import { ContactSendSpinner } from '@/components/ContactSendingPanel'
 import { TurnstileField, isTurnstileSiteKeyConfigured, type TurnstileHandle } from '@/components/TurnstileField'
 import { CONTACT_HONEYPOT_FIELD } from '@/lib/contactHoneypot'
+import { trackContactLead } from '@/lib/adsConversion'
 import { TURNSTILE_TOKEN_FIELD } from '@/lib/turnstile'
 import {
   contactSubmitErrorMessage,
@@ -151,8 +152,11 @@ export default function ContactsBody({ locale, theme = 'dark' }: ContactsBodyPro
         setStatus('error')
         return
       }
-      const payload = (await res.json().catch(() => null)) as { ticketId?: string } | null
-      setTicketId(readContactSubmitTicketId(payload) || '')
+      const payload = (await res.json().catch(() => null)) as { submissionId?: number | string; ticketId?: string } | null
+      const resolvedTicket = readContactSubmitTicketId(payload) || ''
+      const leadId = payload?.submissionId != null ? String(payload.submissionId) : resolvedTicket
+      if (leadId) trackContactLead(leadId, 'contact')
+      setTicketId(resolvedTicket)
       setStatus('success')
       setValues({ name: '', email: '', phone: '', message: '' })
       setFieldErrors({})
