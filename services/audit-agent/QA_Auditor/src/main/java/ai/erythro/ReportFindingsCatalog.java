@@ -104,7 +104,10 @@ public final class ReportFindingsCatalog {
                 gaps.add("link rel=describedby");
             }
             if (ctx.aiRobotsApplies && ctx.aiRobotsSevereBlock) {
-                gaps.add("robots Disallow: / для AI-ботов");
+                gaps.add(tr(lang,
+                        "robots Disallow: / для AI-ботов",
+                        "robots Disallow: / for AI bots",
+                        "robots Disallow: / לבוטי AI"));
             }
             if (ctx.aiVercelApplies && !ctx.aiContentSignalsOk) {
                 gaps.add(tr(lang, "Content-Signal в robots.txt",

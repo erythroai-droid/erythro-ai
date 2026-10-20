@@ -1570,12 +1570,15 @@ public final class A44ReportGenerator {
         for (int i = 0; i < n; i++) {
             Map<String, String> v = list.get(i);
             String solution = tier == A44Tier.PRO ? esc(v.get("solution")) : esc(i18n.proposalSolutionTeaser);
+            String headTitle = v.get("title");
+            if (headTitle == null || headTitle.isBlank()) {
+                headTitle = copy.findingHead;
+            }
             cards.append("<article class=\"finding-card\">");
             cards.append("<div class=\"finding-head\"><div class=\"finding-idx\">")
                     .append(String.format("%02d", i + 1)).append("</div>");
-            cards.append("<h3 class=\"finding-head-title\">").append(esc(copy.findingHead)).append("</h3></div>");
+            cards.append("<h3 class=\"finding-head-title\">").append(esc(headTitle)).append("</h3></div>");
             cards.append("<div class=\"finding-box problem\"><strong>").append(esc(i18n.findingProblem)).append("</strong> ")
-                    .append(esc(v.get("title")))
                     .append("<span class=\"issue\">").append(esc(v.get("issue"))).append("</span></div>");
             cards.append("<div class=\"finding-box impact\"><strong>").append(esc(i18n.findingImpact)).append("</strong> ")
                     .append(esc(v.get("impact"))).append("</div>");

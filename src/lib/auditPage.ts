@@ -44,8 +44,18 @@ export const AUDIT_WEBSITE_UNREACHABLE = {
   he: 'האתר לא נמצא. בדקו את הכתובת.',
 } satisfies Localized
 
+export const AUDIT_WEBSITE_PLATFORM = {
+  en: 'Enter your business website — not YouTube, Instagram, Facebook, LinkedIn or similar.',
+  ru: 'Укажите сайт бизнеса — не YouTube, Instagram, Facebook, LinkedIn и подобные платформы.',
+  he: 'הזינו אתר עסקי — לא YouTube, Instagram, Facebook, LinkedIn או פלטפורמות דומות.',
+} satisfies Localized
+
 export function tAuditWebsiteUnreachable(field: Localized | undefined, locale: string): string {
   return tAudit(field ?? AUDIT_WEBSITE_UNREACHABLE, locale)
+}
+
+export function tAuditWebsitePlatform(field: Localized | undefined, locale: string): string {
+  return tAudit(field ?? AUDIT_WEBSITE_PLATFORM, locale)
 }
 
 export const auditPage = {
@@ -114,6 +124,7 @@ export const auditPage = {
       he: 'הזינו דומיין או כתובת URL תקינים',
     } satisfies Localized,
     websiteUnreachable: AUDIT_WEBSITE_UNREACHABLE,
+    websitePlatform: AUDIT_WEBSITE_PLATFORM,
     auditLanguage: {
       en: 'Audit report language',
       ru: 'Язык отчёта аудита',
@@ -520,6 +531,7 @@ export type AuditPageContent = {
     websitePlaceholder: Localized
     websiteInvalid: Localized
     websiteUnreachable?: Localized
+    websitePlatform?: Localized
     auditLanguage: Localized
     auditLanguageOptions: { en: Localized; ru: Localized; he: Localized }
     submit: Localized

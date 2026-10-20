@@ -74,7 +74,13 @@ import {
 import { useAuditFieldChecks } from '@/hooks/useAuditFieldChecks'
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
 import { contactForm } from '@/translations'
-import { auditPage, tAudit, tAuditWebsiteUnreachable, type AuditPageContent } from '@/lib/auditPage'
+import {
+  auditPage,
+  tAudit,
+  tAuditWebsitePlatform,
+  tAuditWebsiteUnreachable,
+  type AuditPageContent,
+} from '@/lib/auditPage'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -1696,7 +1702,9 @@ function AuditOrderModal({
                         ? tAudit(formCopy.websiteInvalid, locale)
                         : fieldErrors.website === 'unreachable'
                           ? tAuditWebsiteUnreachable(formCopy.websiteUnreachable, locale)
-                          : tForm(contactForm.fieldRequired)}
+                          : fieldErrors.website === 'platform'
+                            ? tAuditWebsitePlatform(formCopy.websitePlatform, locale)
+                            : tForm(contactForm.fieldRequired)}
                     </p>
                   ) : null}
                 </div>

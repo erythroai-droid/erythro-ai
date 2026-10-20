@@ -2,7 +2,9 @@
 
 import { useCallback, useRef, useState } from 'react'
 import {
+  auditWebsiteHostname,
   isAuditEmailFormat,
+  isAuditPlatformHost,
   isAuditWebsiteFormat,
   type AuditField,
   type AuditFieldError,
@@ -114,6 +116,13 @@ export function useAuditFieldChecks(
         verifiedWebsite.current = ''
         return false
       }
+      const host = auditWebsiteHostname(trimmed)
+      if (host && isAuditPlatformHost(host)) {
+        setOk((prev) => ({ ...prev, website: false }))
+        setFieldError('website', 'platform')
+        verifiedWebsite.current = ''
+        return false
+      }
       if (verifiedWebsite.current === trimmed) {
         setOk((prev) => ({ ...prev, website: true }))
         setFieldError('website', undefined)
@@ -134,7 +143,14 @@ export function useAuditFieldChecks(
         verifiedWebsite.current = ''
         setOk((prev) => ({ ...prev, website: false }))
         if (payload.reason === 'rate_limited') return true
-        setFieldError('website', payload.reason === 'format' ? 'invalid' : 'unreachable')
+        setFieldError(
+          'website',
+          payload.reason === 'format'
+            ? 'invalid'
+            : payload.reason === 'platform'
+              ? 'platform'
+              : 'unreachable',
+        )
         return false
       } catch {
         if (gen !== websiteGen.current) return false

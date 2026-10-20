@@ -52,6 +52,21 @@ describe('auditFormValidation', () => {
     ).toEqual({})
   })
 
+  it('rejects social platform URLs', () => {
+    expect(
+      validateAuditForm(
+        {
+          website: 'https://www.youtube.com/@channel',
+          name: '',
+          email: 'ada@example.com',
+          phone: '',
+          auditLanguage: 'he',
+        },
+        { requireNamePhone: false },
+      ),
+    ).toEqual({ website: 'platform' })
+  })
+
   it('skips name and phone for free audit intake', () => {
     expect(
       validateAuditForm(

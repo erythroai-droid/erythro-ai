@@ -175,6 +175,7 @@ export async function fetchAuditPage(): Promise<AuditPageContent> {
         websitePlaceholder: pickAll(rawForm?.websitePlaceholder as RawLocalized, fallback.form.websitePlaceholder),
         websiteInvalid: pickAll(rawForm?.websiteInvalid as RawLocalized, fallback.form.websiteInvalid),
         websiteUnreachable: fallback.form.websiteUnreachable,
+        websitePlatform: fallback.form.websitePlatform,
         auditLanguage: pickAll(rawForm?.auditLanguage as RawLocalized, fallback.form.auditLanguage),
         auditLanguageOptions: {
           en: pickAll(rawLangOpts?.en as RawLocalized, fallback.form.auditLanguageOptions.en as Localized),

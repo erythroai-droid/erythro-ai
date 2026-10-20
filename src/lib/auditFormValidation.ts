@@ -13,7 +13,7 @@ export type AuditFormValues = {
 }
 
 export type AuditField = keyof AuditFormValues
-export type AuditFieldError = 'required' | 'invalid' | 'unreachable'
+export type AuditFieldError = 'required' | 'invalid' | 'unreachable' | 'platform'
 export type AuditFieldErrors = Partial<Record<AuditField, AuditFieldError>>
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -22,12 +22,66 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export const AUDIT_WEBSITE_RE =
   /^(?:https?:\/\/)?(?:[\da-z](?:[\da-z-]{0,61}[\da-z])?\.)+[a-z]{2,}(?:\/[^\s]*)?$/i
 
+/**
+ * Social / video / messenger hosts — not a business site we can audit.
+ * Match exact host or any subdomain (www.youtube.com, m.facebook.com).
+ */
+export const AUDIT_PLATFORM_HOST_SUFFIXES = [
+  'youtube.com',
+  'youtu.be',
+  'facebook.com',
+  'fb.com',
+  'fb.me',
+  'instagram.com',
+  'tiktok.com',
+  'linkedin.com',
+  'lnkd.in',
+  'twitter.com',
+  'x.com',
+  't.co',
+  'threads.net',
+  'pinterest.com',
+  'pin.it',
+  'reddit.com',
+  'vk.com',
+  'vk.ru',
+  'ok.ru',
+  't.me',
+  'telegram.me',
+  'telegram.org',
+  'wa.me',
+  'whatsapp.com',
+  'snapchat.com',
+  'vimeo.com',
+  'twitch.tv',
+] as const
+
 export function isAuditEmailFormat(raw: string): boolean {
   return EMAIL_RE.test(raw.trim())
 }
 
 export function isAuditWebsiteFormat(raw: string): boolean {
   return AUDIT_WEBSITE_RE.test(raw.trim())
+}
+
+/** True when hostname is a known social/video/messenger platform. */
+export function isAuditPlatformHost(hostname: string): boolean {
+  const host = hostname.trim().toLowerCase().replace(/\.$/, '')
+  if (!host) return false
+  return AUDIT_PLATFORM_HOST_SUFFIXES.some(
+    (suffix) => host === suffix || host.endsWith(`.${suffix}`),
+  )
+}
+
+/** Parse hostname from a typed website field; empty if format is invalid. */
+export function auditWebsiteHostname(raw: string): string | null {
+  const normalized = sanitizeAuditWebsite(raw)
+  if (!normalized) return null
+  try {
+    return new URL(normalized).hostname.toLowerCase()
+  } catch {
+    return null
+  }
 }
 
 /** http(s) only, no credentials / javascript: — used before DB write. */
@@ -68,6 +122,10 @@ export function validateAuditForm(
 
   if (!website) errors.website = 'required'
   else if (!isAuditWebsiteFormat(website)) errors.website = 'invalid'
+  else {
+    const host = auditWebsiteHostname(website)
+    if (host && isAuditPlatformHost(host)) errors.website = 'platform'
+  }
 
   if (requireNamePhone && !values.name.trim()) errors.name = 'required'
   if (!values.email.trim()) errors.email = 'required'
