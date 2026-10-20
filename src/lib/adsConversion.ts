@@ -12,6 +12,7 @@ const META_LEAD_KEY_PREFIX = 'erythro:meta-lead:'
 declare global {
   interface Window {
     __ERYTHRO_GA_CONFIGURED__?: boolean
+    __ERYTHRO_META_PAGEVIEW_SENT__?: boolean
     __ERYTHRO_INITIAL_UTM__?: Record<string, string | undefined>
     fbq?: (
       command: string,
@@ -24,8 +25,8 @@ declare global {
 
 /**
  * Extracts explicit UTM parameters from the current URL or the initial landing snapshot
- * (`window.__ERYTHRO_INITIAL_UTM__`) so GA4 never falls back to `(not set)` when `gclid`
- * is present without a linked Google Ads property or when consent is granted after navigation.
+ * (`window.__ERYTHRO_INITIAL_UTM__`), with automatic attribution fallback for `fbclid`
+ * (`fb / paid`) and `gclid` / `gbraid` / `wbraid` (`google / cpc`).
  */
 export function readCampaignConfigParams(): Record<string, string> {
   if (typeof window === 'undefined') return {}
@@ -33,9 +34,17 @@ export function readCampaignConfigParams(): Record<string, string> {
   try {
     const sp = new URLSearchParams(window.location.search || '')
     const initial = window.__ERYTHRO_INITIAL_UTM__ || {}
+    const fbclid = sp.get('fbclid')
+    const gclid = sp.get('gclid') || sp.get('gbraid') || sp.get('wbraid')
     const name = sp.get('utm_campaign') || initial.campaign_name
-    const source = sp.get('utm_source') || initial.campaign_source
-    const medium = sp.get('utm_medium') || initial.campaign_medium
+    const source =
+      sp.get('utm_source') ||
+      initial.campaign_source ||
+      (fbclid ? 'fb' : gclid ? 'google' : undefined)
+    const medium =
+      sp.get('utm_medium') ||
+      initial.campaign_medium ||
+      (fbclid ? 'paid' : gclid ? 'cpc' : undefined)
     const content = sp.get('utm_content') || initial.campaign_content
     const term = sp.get('utm_term') || initial.campaign_term
 
@@ -82,6 +91,18 @@ export function ensureAnalyticsConsentAndGaConfig() {
         send_page_view: true,
         ...readCampaignConfigParams(),
       })
+    }
+  }
+
+  if (typeof window.fbq === 'function') {
+    try {
+      window.fbq('consent', 'grant')
+      if (!window.__ERYTHRO_META_PAGEVIEW_SENT__) {
+        window.__ERYTHRO_META_PAGEVIEW_SENT__ = true
+        window.fbq('track', 'PageView')
+      }
+    } catch {
+      // ignore fbq errors
     }
   }
 }

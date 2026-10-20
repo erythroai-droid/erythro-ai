@@ -1938,6 +1938,29 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Prevent:** Never rely on `send_to: 'AW-…'` or browser-auto `form_submit` to populate GA4 Key Events on AJAX forms. Always pair Ads conversion calls with explicit GA4 Key Event calls (`qualify_lead`, `close_convert_lead`, `purchase`) after synchronous consent + GA4 config initialization.
 
+---
+
+## PIT-117 — Mobile Facebook / Meta Ads bounce (3.1s average duration) and m.facebook.com / referral misattribution
+
+**Tags:** meta-ads, ga4, splash, mobile, bclid, ttribution  
+**Seen:** 2026-10-20 — GA4 showed 15 m.facebook.com / referral sessions with 6.7% engagement and 3.1s duration, while udit-he.erythro.ai had 100% engagement and 50% lead conversion
+
+**Symptom:** Traffic from Facebook mobile In-App Browser (m.facebook.com, l.facebook.com, lm.facebook.com) to /, /audit, and /portfolio/* bounced within ~3 seconds and was bucketed into Organic Social ((referral)) instead of Paid Social (b / paid), and Meta Pixel missed PageView when consent was granted after initial load.
+
+**Cause (stack):**
+1. SplashHost.tsx only skipped the full-screen red <SplashScreen /> overlay on /lp/audit/* (udit-*.erythro.ai). Any ad pointing to /audit, /order/*, or carrying ?fbclid= / ?gclid= still rendered the full-screen SplashScreen overlay while JS bundles hydrated + animated for 1.5–3.5s in mobile WebViews.
+2. Meta Ads creatives had url_tags: None, so mobile clicks arrived with only ?fbclid=... and no utm_source / utm_medium.
+3. AnalyticsBootstrap.tsx calls bq('consent', 'revoke') before bq('track', 'PageView'), and AnalyticsLoader.tsx did not re-fire bq('track', 'PageView') after bq('consent', 'grant').
+
+**Fix:**
+1. shouldSkipSplashSurface() in src/lib/splash.ts (used by SplashHost.tsx) now skips <SplashScreen /> on /audit, /order/*, /lp/audit/*, udit-*.erythro.ai, and any URL with bclid, gclid, gbraid, wbraid, or utm_* query parameters.
+2. AnalyticsBootstrap.tsx and 
+eadCampaignConfigParams() in src/lib/adsConversion.ts automatically fall back to campaign_source: 'fb', campaign_medium: 'paid' when bclid is present without explicit utm_source, and google / cpc when gclid / gbraid / wbraid is present.
+3. AnalyticsLoader.tsx and ensureAnalyticsConsentAndGaConfig() fire bq('track', 'PageView') once (window.__ERYTHRO_META_PAGEVIEW_SENT__) immediately after bq('consent', 'grant').
+
+**Prevent:** Never show <SplashScreen /> on conversion routes (/audit, /order/*) or paid ad clicks (bclid/gclid/utm_*), and always include bclid/gclid attribution fallbacks in 
+eadCampaignConfigParams().
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -2040,4 +2063,4 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 - [ ] After `vercel env pull`: `[SENSITIVE]` placeholders — fill from `.env` or Save in admin to revalidate (PIT-111)
 - [ ] Ads free-audit Final URL: `audit-en` / `audit-ru` / `audit-he`.erythro.ai, not `/audit` (PIT-112; not `audit-rus` — NXDOMAIN)
 - [ ] GA4 conversions on AJAX forms: always fire explicit `qualify_lead` / `close_convert_lead` / `purchase` (`send_to: G-…`) after synchronous consent + GA4 config init (`ensureAnalyticsConsentAndGaConfig`), not just `send_to: AW-…` (PIT-116)
-
+- [ ] Paid ad clicks (bclid / gclid / utm_*) and /audit / /order/*: skip <SplashScreen /> (shouldSkipSplashSurface) and auto-attribute b / paid or google / cpc (PIT-117)

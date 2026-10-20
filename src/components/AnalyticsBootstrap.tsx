@@ -21,9 +21,11 @@ window.__ERYTHRO_GA_ID__ = '${GA_ID}';
 window.__ERYTHRO_AW_ID__ = '${AW_ID}';
 try {
   var sp = new URLSearchParams(window.location.search || '');
+  var fbclid = sp.get('fbclid');
+  var gclid = sp.get('gclid') || sp.get('gbraid') || sp.get('wbraid');
   var utmCampaign = sp.get('utm_campaign');
-  var utmSource = sp.get('utm_source');
-  var utmMedium = sp.get('utm_medium');
+  var utmSource = sp.get('utm_source') || (fbclid ? 'fb' : gclid ? 'google' : null);
+  var utmMedium = sp.get('utm_medium') || (fbclid ? 'paid' : gclid ? 'cpc' : null);
   if (utmCampaign || utmSource || utmMedium) {
     window.__ERYTHRO_INITIAL_UTM__ = {
       campaign_name: utmCampaign || undefined,

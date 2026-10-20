@@ -56,3 +56,15 @@
 ## 7. Если покупатель не вернулся на сайт
 
 Событие со страницы «спасибо» не сработает. Тогда офлайн-конверсия из платёжного вебхука (Make). На erythro.ai это не сделано.
+
+## 8. Атрибуция платного трафика (bclid / gclid) и отключение Splash на посадочных (PIT-117)
+
+1. **Автоматический fallback источника (
+eadCampaignConfigParams и AnalyticsBootstrap.tsx):**
+   - Если в URL есть bclid без явных utm_source / utm_medium, автоматически выставляются campaign_source: 'fb', campaign_medium: 'paid'.
+   - Если в URL есть gclid / gbraid / wbraid без явных utm_source / utm_medium, автоматически выставляются campaign_source: 'google', campaign_medium: 'cpc'.
+2. **Мгновенный первый экран (shouldSkipSplashSurface в src/lib/splash.ts):**
+   - Полноэкранный <SplashScreen /> отключён не только на /lp/audit/* (udit-*.erythro.ai), но и на /audit, /order/*, а также при любом переходе с параметрами bclid, gclid, gbraid, wbraid, utm_source, utm_campaign, utm_medium.
+3. **Meta Pixel PageView после согласия:**
+   - При вызове bq('consent', 'grant') (в AnalyticsLoader.tsx или ensureAnalyticsConsentAndGaConfig()) однократно досылается bq('track', 'PageView') (window.__ERYTHRO_META_PAGEVIEW_SENT__), чтобы Meta Ads фиксировал landing_page_view.
+

@@ -28,6 +28,7 @@ declare global {
     ) => void
     __ERYTHRO_GA_ID__?: string
     __ERYTHRO_GA_CONFIGURED__?: boolean
+    __ERYTHRO_META_PAGEVIEW_SENT__?: boolean
     __ERYTHRO_INITIAL_UTM__?: Record<string, string | undefined>
     __ERYTHRO_AW_ID__?: string
     __ERYTHRO_META_PIXEL_ID__?: string
@@ -52,6 +53,10 @@ function updateAnalyticsConsent(consent: ConsentValue) {
 
   if (typeof window.fbq === 'function') {
     window.fbq('consent', accepted ? 'grant' : 'revoke')
+    if (accepted && !window.__ERYTHRO_META_PAGEVIEW_SENT__) {
+      window.__ERYTHRO_META_PAGEVIEW_SENT__ = true
+      window.fbq('track', 'PageView')
+    }
   }
 }
 

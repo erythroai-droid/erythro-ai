@@ -6,6 +6,7 @@ import {
   trackFreeAuditLead,
   trackOrderLead,
 } from '@/lib/adsConversion'
+import { shouldSkipSplashSurface } from '@/lib/splash'
 
 describe('adsConversion (Google Ads + GA4 Key Events + Meta Pixel)', () => {
   const gtagCalls: unknown[][] = []
@@ -16,7 +17,9 @@ describe('adsConversion (Google Ads + GA4 Key Events + Meta Pixel)', () => {
     fbqCalls.length = 0
     window.localStorage.clear()
     window.__ERYTHRO_GA_CONFIGURED__ = false
+    window.__ERYTHRO_META_PAGEVIEW_SENT__ = false
     window.__ERYTHRO_INITIAL_UTM__ = undefined
+    window.history.replaceState({}, '', '/')
     window.gtag = vi.fn((...args: unknown[]) => {
       gtagCalls.push(args)
     })
@@ -59,6 +62,7 @@ describe('adsConversion (Google Ads + GA4 Key Events + Meta Pixel)', () => {
         plan_slug: 'audit-free',
       }),
     ])
+    expect(fbqCalls).toContainEqual(['track', 'PageView'])
     expect(fbqCalls).toContainEqual([
       'track',
       'Lead',
@@ -108,6 +112,25 @@ describe('adsConversion (Google Ads + GA4 Key Events + Meta Pixel)', () => {
         campaign_medium: 'cpc',
       }),
     ])
+  })
+
+  it('auto-populates fb / paid when fbclid is present without explicit utm_source', () => {
+    window.history.replaceState({}, '', '/?fbclid=IwZXh0bgNhZW0CMTEAcGRv')
+
+    expect(readCampaignConfigParams()).toEqual({
+      campaign_source: 'fb',
+      campaign_medium: 'paid',
+    })
+  })
+
+  it('skips SplashScreen on /audit, /order/*, audit LP subdomains, and paid ad query strings', () => {
+    expect(shouldSkipSplashSurface('/audit')).toBe(true)
+    expect(shouldSkipSplashSurface('/order/free-start')).toBe(true)
+    expect(shouldSkipSplashSurface('/lp/audit/he')).toBe(true)
+    expect(shouldSkipSplashSurface('/', '', 'audit-he.erythro.ai')).toBe(true)
+    expect(shouldSkipSplashSurface('/', '?fbclid=IwZXh0bg', 'erythro.ai')).toBe(true)
+    expect(shouldSkipSplashSurface('/', '?gclid=CjwKCAjw', 'erythro.ai')).toBe(true)
+    expect(shouldSkipSplashSurface('/', '', 'erythro.ai')).toBe(false)
   })
 
   it('fires qualify_lead and close_convert_lead for non-audit order packages', () => {
