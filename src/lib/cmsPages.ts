@@ -590,20 +590,24 @@ function mergePlanLocaleRichText(
 }
 
 function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
+  // Trim slug — trailing spaces from CMS/import create a duplicate static plan
+  // at the end of the nav list, so "Next" on /order/ai-smart-card wraps to free-start (PIT-119).
+  const rawSlug = typeof d.slug === 'string' ? d.slug.trim() : ''
   const fb =
-    ORDER_PLANS.find((p) => p.slug === d.slug) ||
+    (rawSlug ? ORDER_PLANS.find((p) => p.slug === rawSlug) : undefined) ||
     ORDER_PLANS[i] ||
     ORDER_PLANS[0]
+  const resolvedSlug = rawSlug || fb.slug
 
   const card: SolutionCardItem = {
-    id: d.slug || fb.slug,
+    id: resolvedSlug,
     price: d.price ?? fb.card.price,
     currency:
       d.currency === 'USD' || d.currency === 'EUR' || d.currency === 'ILS'
         ? d.currency
         : fb.card.currency || 'ILS',
     title: sanitizePlanTitle(
-      d.slug || fb.slug,
+      resolvedSlug,
       locMap(d.title, fb.card.title) as SolutionCardItem['title'],
     ),
     features: [],
@@ -740,7 +744,7 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
     }
   }
 
-  const slug = d.slug || fb.slug
+  const slug = resolvedSlug
   const kind: OrderPlan['kind'] =
     d.kind === 'audit' || d.kind === 'solution'
       ? d.kind
@@ -821,7 +825,7 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
     ...(hasLocalizedSeo(d.taxValue) ? { taxValue: locMapCms(d.taxValue) } : {}),
     ...(() => {
       const cmsSeo = hasLocalizedSeo(d.seo?.title) ? locMapCms(d.seo.title) : undefined
-      const seoTitle = sanitizeSeoTitle(d.slug || fb.slug, cmsSeo || fb.seoTitle, card.title)
+      const seoTitle = sanitizeSeoTitle(slug, cmsSeo || fb.seoTitle, card.title)
       return seoTitle ? { seoTitle } : {}
     })(),
     ...(hasLocalizedSeo(d.seo?.description) ? { seoDescription: locMapCms(d.seo.description) } : {}),
@@ -923,14 +927,16 @@ export async function getAllServiceSlugsCms(): Promise<string[]> {
 }
 
 export const getCachedOrderPlans = () =>
-  unstable_cache(() => fetchOrderPlans(), ['order-plans-v8-card-name'], {
+  unstable_cache(() => fetchOrderPlans(), ['order-plans-v9-trim-slug'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
 
 export async function getOrderPlanBySlug(slug: string): Promise<OrderPlan | undefined> {
+  const needle = (slug || '').trim()
+  if (!needle) return undefined
   const all = await getCachedOrderPlans()
-  return all.find((p) => p.slug === slug) || getStaticOrderPlan(slug)
+  return all.find((p) => p.slug === needle) || getStaticOrderPlan(needle)
 }
 
 export async function getAllOrderSlugsCms(): Promise<string[]> {

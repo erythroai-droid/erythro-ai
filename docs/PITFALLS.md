@@ -1984,6 +1984,25 @@ eadCampaignConfigParams().
 
 ---
 
+## PIT-119 — Order plan «Далее» on AI-визитка jumps to Бесплатный старт
+
+**Tags:** `order`, `nav`, `slug`, `payload`, `cms`  
+**Seen:** 2026-10-20 — `/order/ai-smart-card` ProjectNav
+
+**Symptom:** On `/order/ai-smart-card`, **Далее** goes to `/order/free-start` and **Назад** to `/order/enterprise-custom` (circular wrap as if Smart Card were the last solution plan). Expected: prev = Free Start, next = Business Automation.
+
+**Cause:** CMS `solution-plans` row for Smart Card had slug `"ai-smart-card "` (trailing space). `mapOrderFromPlanDoc` kept the spaced slug; `extraStatic` then appended a clean static `ai-smart-card` because `cmsSlugs` only had the spaced key. `/order/ai-smart-card` resolved to that duplicate at the **end** of the nav list → wrap to `free-start`. Same class of bug as portfolio trailing spaces (PIT-109). Null solution slugs (`free-start`, `business-automation`, `enterprise-custom`) were masked by index fallback until order drifted.
+
+**Fix:**
+1. Trim slug in `mapOrderFromPlanDoc` + `getOrderPlanBySlug`; cache key `order-plans-v9-trim-slug`.
+2. `beforeValidate` on `solution-plans` trims `slug` on write.
+3. Prod DB: set missing/ spaced slugs (`free-start`, `ai-smart-card`, `business-automation`, `enterprise-custom`).
+4. Revalidate `payload-content` (or redeploy) so Vercel Data Cache drops the spaced list.
+
+**Prevent:** Always trim order-plan slugs on read and write. After CMS slug edits from scripts/SQL, revalidate live — local `revalidateTag` does not reach Vercel.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -2088,3 +2107,4 @@ eadCampaignConfigParams().
 - [ ] GA4 conversions on AJAX forms: always fire explicit `qualify_lead` / `close_convert_lead` / `purchase` (`send_to: G-…`) after synchronous consent + GA4 config init (`ensureAnalyticsConsentAndGaConfig`), not just `send_to: AW-…` (PIT-116)
 - [ ] Paid ad clicks (`fbclid` / `gclid` / `utm_*`) and `/audit` / `/order/*`: skip `<SplashScreen />` (`shouldSkipSplashSurface`) and auto-attribute `fb / paid` or `google / cpc` (PIT-117)
 - [ ] Sitemap & canonicals: exclude `checkoutMode === 'contact'` (`audit-manual`) and placeholder portfolio slugs (`next-project`) from `sitemap.xml`, 308-redirect legacy aliases (`/order/ai-business-card` → `/order/ai-smart-card`, `/portfolio/Interior` → `/portfolio/pro-interior`), and restrict GA4/Ads/Meta beacons to `erythro.ai` / `*.erythro.ai` (`isProductionAnalyticsHost`, PIT-118)
+- [ ] Solution-plan slugs: trim on read/write; no trailing spaces or null slugs — else order ProjectNav wraps to Free Start (PIT-119)
