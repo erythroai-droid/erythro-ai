@@ -27,6 +27,7 @@ import { trackFreeAuditLead } from '@/lib/adsConversion'
 import {
   auditPage,
   tAudit,
+  tAuditWebsitePlatform,
   tAuditWebsiteUnreachable,
   type AuditPageContent,
 } from '@/lib/auditPage'
@@ -255,6 +256,9 @@ export default function AuditLpForm({
     if (field === 'website' && err === 'invalid') return tAudit(page.form.websiteInvalid, locale)
     if (field === 'website' && err === 'unreachable') {
       return tAuditWebsiteUnreachable(page.form.websiteUnreachable, locale)
+    }
+    if (field === 'website' && err === 'platform') {
+      return tAuditWebsitePlatform(page.form.websitePlatform, locale)
     }
     if (field === 'email' && err === 'invalid') return tForm(contactForm.emailInvalid)
     return tForm(contactForm.fieldRequired)

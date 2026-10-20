@@ -30,6 +30,26 @@ describe('checkWebsiteReachable', () => {
     })
   })
 
+  it('rejects social and video platforms without DNS', async () => {
+    const lookup = async () => [{ address: '8.8.8.8' }]
+    expect(await checkWebsiteReachable('https://www.youtube.com/@channel', lookup)).toEqual({
+      ok: false,
+      reason: 'platform',
+    })
+    expect(await checkWebsiteReachable('instagram.com/brand', lookup)).toEqual({
+      ok: false,
+      reason: 'platform',
+    })
+    expect(await checkWebsiteReachable('https://linkedin.com/in/someone', lookup)).toEqual({
+      ok: false,
+      reason: 'platform',
+    })
+    expect(await checkWebsiteReachable('https://tiktok.com/@user', lookup)).toEqual({
+      ok: false,
+      reason: 'platform',
+    })
+  })
+
   it('accepts a public A record', async () => {
     const result = await checkWebsiteReachable('example.com', async () => [{ address: '93.184.216.34' }])
     expect(result).toEqual({ ok: true, hostname: 'example.com' })

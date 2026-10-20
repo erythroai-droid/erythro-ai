@@ -1,8 +1,12 @@
 import { lookup as dnsLookup } from 'node:dns/promises'
 import { isIP } from 'node:net'
-import { isAuditWebsiteFormat, sanitizeAuditWebsite } from '@/lib/auditFormValidation'
+import {
+  isAuditPlatformHost,
+  isAuditWebsiteFormat,
+  sanitizeAuditWebsite,
+} from '@/lib/auditFormValidation'
 
-export type WebsiteCheckReason = 'format' | 'blocked' | 'dns'
+export type WebsiteCheckReason = 'format' | 'blocked' | 'platform' | 'dns'
 
 export type WebsiteCheckResult =
   | { ok: true; hostname: string }
@@ -37,6 +41,19 @@ function hostnameBlocked(hostname: string): boolean {
   return false
 }
 
+function parseHostnameOrNull(raw: string): { hostname: string } | { fail: WebsiteCheckReason } {
+  const normalized = sanitizeAuditWebsite(raw)
+  if (!normalized) return { fail: 'format' }
+  try {
+    const hostname = new URL(normalized).hostname.toLowerCase()
+    if (!hostname || hostnameBlocked(hostname)) return { fail: 'blocked' }
+    if (isAuditPlatformHost(hostname)) return { fail: 'platform' }
+    return { hostname }
+  } catch {
+    return { fail: 'format' }
+  }
+}
+
 /** Public internet only — reject loopback, RFC1918, link-local, IPv6 ULA. */
 export function isPrivateOrReservedIp(address: string): boolean {
   const ip = address.trim().toLowerCase()
@@ -64,31 +81,23 @@ export function isPrivateOrReservedIp(address: string): boolean {
   return false
 }
 
-function parsePublicHostname(raw: string): string | null {
-  const normalized = sanitizeAuditWebsite(raw)
-  if (!normalized) return null
-  try {
-    const hostname = new URL(normalized).hostname.toLowerCase()
-    if (!hostname || hostnameBlocked(hostname)) return null
-    return hostname
-  } catch {
-    return null
-  }
-}
-
 /**
  * Confirms the URL is a real public hostname (DNS A/AAAA to a public IP).
  * Does not require HTTP 200 — many sites block bots.
+ * Rejects social/video/messenger platforms (YouTube, Instagram, …).
  */
 export async function checkWebsiteReachable(
   raw: string,
   lookup: WebsiteLookup = defaultLookup,
 ): Promise<WebsiteCheckResult> {
-  const hostname = parsePublicHostname(raw)
-  if (!hostname) {
-    const formatOk = isAuditWebsiteFormat(raw)
-    return { ok: false, reason: formatOk ? 'blocked' : 'format' }
+  const parsed = parseHostnameOrNull(raw)
+  if ('fail' in parsed) {
+    if (parsed.fail === 'format' && !isAuditWebsiteFormat(raw)) {
+      return { ok: false, reason: 'format' }
+    }
+    return { ok: false, reason: parsed.fail }
   }
+  const { hostname } = parsed
 
   let records: Array<{ address: string }>
   try {
