@@ -12,6 +12,7 @@ const META_LEAD_KEY_PREFIX = 'erythro:meta-lead:'
 declare global {
   interface Window {
     __ERYTHRO_GA_CONFIGURED__?: boolean
+    __ERYTHRO_INITIAL_UTM__?: Record<string, string | undefined>
     fbq?: (
       command: string,
       eventOrAction?: string,
@@ -19,6 +20,34 @@ declare global {
       options?: { eventID?: string },
     ) => void
   }
+}
+
+/**
+ * Extracts explicit UTM parameters from the current URL or the initial landing snapshot
+ * (`window.__ERYTHRO_INITIAL_UTM__`) so GA4 never falls back to `(not set)` when `gclid`
+ * is present without a linked Google Ads property or when consent is granted after navigation.
+ */
+export function readCampaignConfigParams(): Record<string, string> {
+  if (typeof window === 'undefined') return {}
+  const out: Record<string, string> = {}
+  try {
+    const sp = new URLSearchParams(window.location.search || '')
+    const initial = window.__ERYTHRO_INITIAL_UTM__ || {}
+    const name = sp.get('utm_campaign') || initial.campaign_name
+    const source = sp.get('utm_source') || initial.campaign_source
+    const medium = sp.get('utm_medium') || initial.campaign_medium
+    const content = sp.get('utm_content') || initial.campaign_content
+    const term = sp.get('utm_term') || initial.campaign_term
+
+    if (name) out.campaign_name = name
+    if (source) out.campaign_source = source
+    if (medium) out.campaign_medium = medium
+    if (content) out.campaign_content = content
+    if (term) out.campaign_term = term
+  } catch {
+    // ignore URLSearchParams errors
+  }
+  return out
 }
 
 /**
@@ -51,6 +80,7 @@ export function ensureAnalyticsConsentAndGaConfig() {
         allow_google_signals: false,
         allow_ad_personalization_signals: false,
         send_page_view: true,
+        ...readCampaignConfigParams(),
       })
     }
   }
@@ -107,6 +137,7 @@ export function trackGaLead(
     currency: 'ILS',
     ...(options?.leadSource ? { lead_source: options.leadSource } : {}),
     ...(options?.planSlug ? { plan_slug: options.planSlug } : {}),
+    ...readCampaignConfigParams(),
   }
 
   window.gtag('event', 'qualify_lead', eventParams)

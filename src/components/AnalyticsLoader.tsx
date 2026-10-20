@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
 import { pushAiReferralToDataLayer } from '@/lib/aiReferral'
+import { readCampaignConfigParams } from '@/lib/adsConversion'
 import {
   clearAnalyticsCookies,
   CONSENT_ACCEPTED,
@@ -27,6 +28,7 @@ declare global {
     ) => void
     __ERYTHRO_GA_ID__?: string
     __ERYTHRO_GA_CONFIGURED__?: boolean
+    __ERYTHRO_INITIAL_UTM__?: Record<string, string | undefined>
     __ERYTHRO_AW_ID__?: string
     __ERYTHRO_META_PIXEL_ID__?: string
   }
@@ -79,6 +81,16 @@ export default function AnalyticsLoader() {
   useEffect(() => {
     if (!enabled) return
     pushAiReferralToDataLayer()
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function' && !window.__ERYTHRO_GA_CONFIGURED__) {
+      window.__ERYTHRO_GA_CONFIGURED__ = true
+      window.gtag('config', GA_ID, {
+        anonymize_ip: true,
+        allow_google_signals: false,
+        allow_ad_personalization_signals: false,
+        send_page_view: true,
+        ...readCampaignConfigParams(),
+      })
+    }
   }, [enabled])
 
   if (!enabled) return null
@@ -91,12 +103,12 @@ export default function AnalyticsLoader() {
         {`
           if (typeof window.gtag === 'function' && !window.__ERYTHRO_GA_CONFIGURED__) {
             window.__ERYTHRO_GA_CONFIGURED__ = true;
-            gtag('config', '${GA_ID}', {
+            gtag('config', '${GA_ID}', Object.assign({
               anonymize_ip: true,
               allow_google_signals: false,
               allow_ad_personalization_signals: false,
               send_page_view: true
-            });
+            }, window.__ERYTHRO_INITIAL_UTM__ || {}));
           }
         `}
       </Script>

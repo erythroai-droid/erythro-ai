@@ -14,10 +14,26 @@ gtag('consent', 'default', {
   functionality_storage: 'granted',
   security_storage: 'granted'
 });
+gtag('set', 'url_passthrough', true);
 gtag('js', new Date());
 gtag('config', '${AW_ID}');
 window.__ERYTHRO_GA_ID__ = '${GA_ID}';
 window.__ERYTHRO_AW_ID__ = '${AW_ID}';
+try {
+  var sp = new URLSearchParams(window.location.search || '');
+  var utmCampaign = sp.get('utm_campaign');
+  var utmSource = sp.get('utm_source');
+  var utmMedium = sp.get('utm_medium');
+  if (utmCampaign || utmSource || utmMedium) {
+    window.__ERYTHRO_INITIAL_UTM__ = {
+      campaign_name: utmCampaign || undefined,
+      campaign_source: utmSource || undefined,
+      campaign_medium: utmMedium || undefined,
+      campaign_content: sp.get('utm_content') || undefined,
+      campaign_term: sp.get('utm_term') || undefined
+    };
+  }
+} catch (e) {}
 `.trim()
 
 /** Meta Pixel in &lt;head&gt; so Events Manager verifies the base code. Consent revoke until Accept. */

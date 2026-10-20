@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  readCampaignConfigParams,
   trackAdsPurchase,
   trackContactLead,
   trackFreeAuditLead,
@@ -15,6 +16,7 @@ describe('adsConversion (Google Ads + GA4 Key Events + Meta Pixel)', () => {
     fbqCalls.length = 0
     window.localStorage.clear()
     window.__ERYTHRO_GA_CONFIGURED__ = false
+    window.__ERYTHRO_INITIAL_UTM__ = undefined
     window.gtag = vi.fn((...args: unknown[]) => {
       gtagCalls.push(args)
     })
@@ -69,6 +71,43 @@ describe('adsConversion (Google Ads + GA4 Key Events + Meta Pixel)', () => {
     trackFreeAuditLead('42')
     const countAfterSecond = gtagCalls.filter((c) => c[0] === 'event').length
     expect(countAfterSecond).toBe(countAfterFirst)
+  })
+
+  it('propagates initial landing UTM params into GA4 config and qualify_lead to prevent (not set)', () => {
+    window.__ERYTHRO_INITIAL_UTM__ = {
+      campaign_name: 'google_search_he',
+      campaign_source: 'google',
+      campaign_medium: 'cpc',
+    }
+
+    expect(readCampaignConfigParams()).toEqual({
+      campaign_name: 'google_search_he',
+      campaign_source: 'google',
+      campaign_medium: 'cpc',
+    })
+
+    trackFreeAuditLead('88')
+
+    expect(gtagCalls).toContainEqual([
+      'config',
+      'G-F3BTVWGDRS',
+      expect.objectContaining({
+        campaign_name: 'google_search_he',
+        campaign_source: 'google',
+        campaign_medium: 'cpc',
+      }),
+    ])
+    expect(gtagCalls).toContainEqual([
+      'event',
+      'qualify_lead',
+      expect.objectContaining({
+        send_to: 'G-F3BTVWGDRS',
+        transaction_id: '88',
+        campaign_name: 'google_search_he',
+        campaign_source: 'google',
+        campaign_medium: 'cpc',
+      }),
+    ])
   })
 
   it('fires qualify_lead and close_convert_lead for non-audit order packages', () => {
