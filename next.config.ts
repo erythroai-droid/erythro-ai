@@ -93,6 +93,40 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: turnstileSiteKey,
   },
+  async redirects() {
+    return [
+      {
+        source: '/portfolio/Interior',
+        destination: '/portfolio/pro-interior',
+        permanent: true,
+      },
+      {
+        source: '/portfolio/interior',
+        destination: '/portfolio/pro-interior',
+        permanent: true,
+      },
+      {
+        source: '/portfolio/next-project',
+        destination: '/portfolio',
+        permanent: true,
+      },
+      {
+        source: '/order/ai-business-card',
+        destination: '/order/ai-smart-card',
+        permanent: true,
+      },
+      {
+        source: '/order/audit-manual',
+        destination: '/audit',
+        permanent: true,
+      },
+      {
+        source: '/order/manual',
+        destination: '/audit',
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [
       {

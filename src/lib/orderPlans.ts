@@ -849,6 +849,20 @@ export function isHiddenAuditOrderSlug(slug: string | null | undefined): boolean
   return Boolean(slug && HIDDEN_AUDIT_ORDER_SLUGS.has(slug))
 }
 
+/**
+ * Plans that have no public /order/[slug] checkout page (promo-gated or
+ * contact-mode Manual audit that redirects to /audit). Excluded from sitemap.xml.
+ */
+export const NON_SITEMAP_ORDER_SLUGS = new Set(['audit-pro-ads', 'audit-manual', 'manual'])
+
+export function isNonSitemapOrderSlug(slug: string | null | undefined): boolean {
+  const s = (slug || '').trim()
+  if (!s) return true
+  if (NON_SITEMAP_ORDER_SLUGS.has(s) || isHiddenAuditOrderSlug(s)) return true
+  const staticPlan = ORDER_PLANS.find((plan) => plan.slug === s)
+  return staticPlan?.checkoutMode === 'contact'
+}
+
 /** Free express audit (scorecard) — triggers delayed PRO upsell email. */
 export function isFreeAuditPlanSlug(slug: string | null | undefined): boolean {
   const s = (slug || '').trim().toLowerCase()

@@ -320,15 +320,26 @@ const FLAT_PORTFOLIO_PROJECTS: FlatPortfolioProject[] = [
 export const PORTFOLIO_PROJECTS: PortfolioProject[] =
   FLAT_PORTFOLIO_PROJECTS.map(localizeProject)
 
+/** Draft / placeholder CMS slugs that must never appear in portfolio grids, detail routes, or sitemap.xml. */
+export const HIDDEN_PORTFOLIO_SLUGS = new Set(['next-project'])
+
+export function isHiddenPortfolioSlug(slug: string | null | undefined): boolean {
+  const s = (slug || '').trim().toLowerCase()
+  return !s || HIDDEN_PORTFOLIO_SLUGS.has(s)
+}
+
 export const matchesPortfolioFilter = (
   category: Exclude<PortfolioCategory, 'all'>,
   filter: PortfolioCategory,
 ) => filter === 'all' || category === filter
 
 export function getPortfolioProject(slug: string): PortfolioProject | undefined {
+  if (isHiddenPortfolioSlug(slug)) return undefined
   return PORTFOLIO_PROJECTS.find((project) => project.slug === slug)
 }
 
 export function getAllPortfolioSlugs(): string[] {
-  return PORTFOLIO_PROJECTS.map((project) => project.slug)
+  return PORTFOLIO_PROJECTS.map((project) => project.slug).filter(
+    (slug) => !isHiddenPortfolioSlug(slug),
+  )
 }

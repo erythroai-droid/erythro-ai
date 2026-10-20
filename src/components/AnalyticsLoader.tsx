@@ -5,6 +5,7 @@ import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
 import { pushAiReferralToDataLayer } from '@/lib/aiReferral'
 import { readCampaignConfigParams } from '@/lib/adsConversion'
+import { isProductionAnalyticsHost } from '@/lib/vercelHost'
 import {
   clearAnalyticsCookies,
   CONSENT_ACCEPTED,
@@ -32,11 +33,13 @@ declare global {
     __ERYTHRO_INITIAL_UTM__?: Record<string, string | undefined>
     __ERYTHRO_AW_ID__?: string
     __ERYTHRO_META_PIXEL_ID__?: string
+    __ERYTHRO_ANALYTICS_DISABLED__?: boolean
   }
 }
 
 function updateAnalyticsConsent(consent: ConsentValue) {
   if (typeof window === 'undefined') return
+  if (!isProductionAnalyticsHost(window.location.hostname)) return
   const accepted = consent === CONSENT_ACCEPTED
 
   if (typeof window.gtag === 'function') {
@@ -64,6 +67,7 @@ export default function AnalyticsLoader() {
   const [enabled, setEnabled] = useState(false)
 
   useEffect(() => {
+    if (!isProductionAnalyticsHost(window.location.hostname)) return
     const accepted = hasAcceptedConsent()
     setEnabled(accepted)
     if (accepted) updateAnalyticsConsent(CONSENT_ACCEPTED)

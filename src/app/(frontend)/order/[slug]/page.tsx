@@ -1,7 +1,7 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
-import { notFound, redirect } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import OrderClient from './OrderClient'
 import { getCachedSeoSettings, getCachedSiteContent } from '@/lib/getSiteContent'
 import { getAllOrderSlugsCms, getCachedOrderPlans, getOrderPlanBySlug } from '@/lib/cmsPages'
@@ -113,7 +113,16 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
     plan.planId === 'manual' ||
     plan.slug === 'audit-manual'
   ) {
-    redirect('/audit')
+    permanentRedirect('/audit')
+  }
+
+  // Redirect legacy aliases (e.g. /order/ai-business-card → /order/ai-smart-card) with 308.
+  if (slug !== plan.slug && !isHiddenAuditOrderSlug(plan.slug)) {
+    const qs = new URLSearchParams()
+    if (langParam) qs.set('lang', langParam)
+    if (accessToken) qs.set('t', accessToken)
+    const suffix = qs.toString() ? `?${qs.toString()}` : ''
+    permanentRedirect(`/order/${plan.slug}${suffix}`)
   }
 
   // Meta ads Pro promo: only from signed email link (?t=).

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { getAllOrderSlugs } from '@/lib/orderPlans'
+import { getAllOrderSlugs, isNonSitemapOrderSlug } from '@/lib/orderPlans'
 import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
 import { getAllServiceSlugs } from '@/lib/servicePages'
 import {
@@ -47,7 +47,7 @@ export function staticSitemapFallback(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),
-    ...getAllOrderSlugs().map((slug) => ({
+    ...getAllOrderSlugs().filter((slug) => !isNonSitemapOrderSlug(slug)).map((slug) => ({
       url: loc(`/order/${slug}`),
       changeFrequency: 'monthly' as const,
       priority: 0.6,

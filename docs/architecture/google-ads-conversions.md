@@ -11,15 +11,16 @@
 3. Создание: **«Вручную, с добавлением кода»**. «Автоматически, без кода» считает заход на URL, а не успешную отправку.
 4. На каждое действие в Google Ads одно основное. Импорт из GA4 в Google Ads переключить в **«Дополнительные»**, чтобы два основных в одной цели не давали «Неверная конфигурация» / «Требуется действие».
 5. Из сниппета Google Ads забрать только `send_to` (`AW-…/метка`). Базовый тег второй раз не вставлять.
-6. **В GA4 (`G-F3BTVWGDRS`):** в разделе *Admin → Key events* настроены ключевые события `qualify_lead`, `close_convert_lead`, `purchase`. Важно: вызов `gtag('event', 'conversion', { send_to: 'AW-…' })` уходит **только в Google Ads** и не попадает в GA4. Поэтому при успехе заявки/оплаты обязательно параллельно вызывать GA4-события с `send_to: 'G-…'`.
+6. **В GA4 (`G-F3BTVWGDRS`):** в разделе *Admin → Key events* настроены ключевые события `qualify_lead`, `close_convert_lead`, `purchase`, `form_submit`. Срок хранения данных (`Data Retention`) выставлен в `FOURTEEN_MONTHS`. Важно: вызов `gtag('event', 'conversion', { send_to: 'AW-…' })` уходит **только в Google Ads** и не попадает в GA4. Поэтому при успехе заявки/оплаты обязательно параллельно вызывать GA4-события с `send_to: 'G-…'`.
 
 ## 2. Тег в коде и Consent Mode
 
 1. Один раз в `<head>`, сырыми `<script>`, чтобы проверка Ads видела `gtag/js?id=AW-…` в HTML. `next/script` и загрузка только после «Принять» проверку не проходят.
-2. Сразу после загрузчика: `dataLayer`, `gtag`, Consent Mode **default denied** (`ad_storage`, `ad_user_data`, `ad_personalization`, `analytics_storage`), `gtag('js', new Date())`, `gtag('config', 'AW-…')`.
-3. Второй `gtag/js` не грузить. GA4 `gtag('config', 'G-…')` — после согласия, тем же `gtag` (с защитой флагом `window.__ERYTHRO_GA_CONFIGURED__`, чтобы не дублировать `config`).
-4. По «Принять» — `gtag('consent', 'update', …)` со всеми четырьмя хранилищами `granted`. По «Отклонить» — `denied` и очистка `_ga*`, `_gcl_*`.
-5. **Критично при отправке формы или успешной оплате (`ensureAnalyticsConsentAndGaConfig`):** если посетитель поставил галочку согласия в самой форме (не нажимая до этого cookie-баннер), нельзя ждать асинхронного рендера React (`AnalyticsLoader`). Перед отправкой события конверсии синхронно вызывается `gtag('consent', 'update', { ...granted })` и (если ещё не вызван) `gtag('config', 'G-F3BTVWGDRS')`.
+2. **Фильтр dev/preview хостов (`isProductionAnalyticsHost` в `src/lib/vercelHost.ts`, PIT-118):** отправка живых хитов в GA4, Google Ads и Meta Pixel разрешена только на `erythro.ai` и `*.erythro.ai`. На `localhost`, локальных IP (`172.*`, `192.168.*`, `10.*`) и `*.vercel.app` функции `window.gtag` и `window.fbq` работают в режиме no-op, чтобы локальная разработка и превью не засоряли статистику.
+3. Сразу после загрузчика: `dataLayer`, `gtag`, Consent Mode **default denied** (`ad_storage`, `ad_user_data`, `ad_personalization`, `analytics_storage`), `gtag('set', 'url_passthrough', true)`, `gtag('js', new Date())`, `gtag('config', 'AW-…')`.
+4. Второй `gtag/js` не грузить. GA4 `gtag('config', 'G-…')` — после согласия, тем же `gtag` (с защитой флагом `window.__ERYTHRO_GA_CONFIGURED__`, чтобы не дублировать `config`).
+5. По «Принять» — `gtag('consent', 'update', …)` со всеми четырьмя хранилищами `granted`. По «Отклонить» — `denied` и очистка `_ga*`, `_gcl_*`.
+6. **Критично при отправке формы или успешной оплате (`ensureAnalyticsConsentAndGaConfig`):** если посетитель поставил галочку согласия в самой форме (не нажимая до этого cookie-баннер), нельзя ждать асинхронного рендера React (`AnalyticsLoader`). Перед отправкой события конверсии синхронно вызывается `gtag('consent', 'update', { ...granted })` и (если ещё не вызван) `gtag('config', 'G-F3BTVWGDRS')`.
 
 ## 3. События конверсий (`src/lib/adsConversion.ts`)
 
@@ -57,14 +58,12 @@
 
 Событие со страницы «спасибо» не сработает. Тогда офлайн-конверсия из платёжного вебхука (Make). На erythro.ai это не сделано.
 
-## 8. Атрибуция платного трафика (bclid / gclid) и отключение Splash на посадочных (PIT-117)
+## 8. Атрибуция платного трафика (`fbclid` / `gclid`) и отключение Splash на посадочных (PIT-117)
 
-1. **Автоматический fallback источника (
-eadCampaignConfigParams и AnalyticsBootstrap.tsx):**
-   - Если в URL есть bclid без явных utm_source / utm_medium, автоматически выставляются campaign_source: 'fb', campaign_medium: 'paid'.
-   - Если в URL есть gclid / gbraid / wbraid без явных utm_source / utm_medium, автоматически выставляются campaign_source: 'google', campaign_medium: 'cpc'.
-2. **Мгновенный первый экран (shouldSkipSplashSurface в src/lib/splash.ts):**
-   - Полноэкранный <SplashScreen /> отключён не только на /lp/audit/* (udit-*.erythro.ai), но и на /audit, /order/*, а также при любом переходе с параметрами bclid, gclid, gbraid, wbraid, utm_source, utm_campaign, utm_medium.
-3. **Meta Pixel PageView после согласия:**
-   - При вызове bq('consent', 'grant') (в AnalyticsLoader.tsx или ensureAnalyticsConsentAndGaConfig()) однократно досылается bq('track', 'PageView') (window.__ERYTHRO_META_PAGEVIEW_SENT__), чтобы Meta Ads фиксировал landing_page_view.
-
+1. **Автоматический fallback источника (`readCampaignConfigParams` и `AnalyticsBootstrap.tsx`):**
+   - Если в URL есть `fbclid` без явных `utm_source` / `utm_medium`, автоматически выставляются `campaign_source: 'fb', campaign_medium: 'paid'`.
+   - Если в URL есть `gclid` / `gbraid` / `wbraid` без явных `utm_source` / `utm_medium`, автоматически выставляются `campaign_source: 'google', campaign_medium: 'cpc'`.
+2. **Мгновенный первый экран (`shouldSkipSplashSurface` в `src/lib/splash.ts`):**
+   - Полноэкранный `<SplashScreen />` отключён не только на `/lp/audit/*` (`audit-*.erythro.ai`), но и на `/audit`, `/order/*`, а также при любом переходе с параметрами `fbclid`, `gclid`, `gbraid`, `wbraid`, `utm_source`, `utm_campaign`, `utm_medium`.
+3. **Meta Pixel `PageView` после согласия:**
+   - При вызове `fbq('consent', 'grant')` (в `AnalyticsLoader.tsx` или `ensureAnalyticsConsentAndGaConfig()`) однократно досылается `fbq('track', 'PageView')` (`window.__ERYTHRO_META_PAGEVIEW_SENT__`), чтобы Meta Ads фиксировал `landing_page_view`.

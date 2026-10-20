@@ -1,5 +1,5 @@
-import { getAllOrderSlugs, isHiddenAuditOrderSlug } from '@/lib/orderPlans'
-import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
+import { getAllOrderSlugs, isNonSitemapOrderSlug } from '@/lib/orderPlans'
+import { getAllPortfolioSlugs, isHiddenPortfolioSlug } from '@/lib/portfolioProjects'
 import { getAllServiceSlugs } from '@/lib/servicePages'
 import { getCachedLegalPage } from '@/lib/legalPages.server'
 import type { LegalPageId } from '@/lib/legalPages'
@@ -80,7 +80,7 @@ export async function getServiceSitemapEntries(): Promise<SitemapSlugEntry[]> {
 export async function getPortfolioSitemapEntries(): Promise<SitemapSlugEntry[]> {
   const staticSlugs = getAllPortfolioSlugs()
   try {
-    const rows = await fetchCollectionSitemap('portfolio-projects')
+    const rows = (await fetchCollectionSitemap('portfolio-projects')).filter((r) => !isHiddenPortfolioSlug(r.slug))
     // Unlike services/orders, portfolio detail pages do NOT fall back to static
     // demos when CMS has any docs — merging static slugs here creates sitemap 404s
     // (e.g. /portfolio/product-launch-landing). Only list CMS-published cases.
@@ -92,11 +92,11 @@ export async function getPortfolioSitemapEntries(): Promise<SitemapSlugEntry[]> 
 }
 
 export async function getOrderSitemapEntries(): Promise<SitemapSlugEntry[]> {
-  const staticSlugs = getAllOrderSlugs().filter((slug) => !isHiddenAuditOrderSlug(slug))
+  const staticSlugs = getAllOrderSlugs().filter((slug) => !isNonSitemapOrderSlug(slug))
   try {
     const rows = await fetchCollectionSitemap('solution-plans')
     if (rows.length) {
-      const publicRows = rows.filter((r) => !isHiddenAuditOrderSlug(r.slug))
+      const publicRows = rows.filter((r) => !isNonSitemapOrderSlug(r.slug))
       const existing = new Set(publicRows.map((r) => r.slug))
       const missing = staticSlugs
         .filter((slug) => !existing.has(slug))

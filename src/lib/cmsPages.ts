@@ -5,6 +5,7 @@ import { SITE_CONTENT_TAG } from './revalidate'
 import {
   PORTFOLIO_FILTERS,
   PORTFOLIO_PROJECTS,
+  isHiddenPortfolioSlug,
   type PortfolioCategory,
   type PortfolioFilter,
   type PortfolioProject,
@@ -328,6 +329,7 @@ async function fetchPortfolioProjects(): Promise<PortfolioProject[]> {
     // (that fallback hid new slugs and 404'd /portfolio/[slug] — PIT-109).
     const mapped: PortfolioProject[] = []
     for (const d of res.docs as any[]) {
+      if (isHiddenPortfolioSlug(d?.slug)) continue
       try {
         mapped.push(mapPortfolioDoc(d))
       } catch (err) {
@@ -372,7 +374,9 @@ async function fetchPortfolioProjectCards(): Promise<PortfolioProject[]> {
     if (!res.docs?.length) {
       return PORTFOLIO_PROJECTS.map((p) => ({ ...p, body: [], summary: { en: '' } }))
     }
-    return res.docs.map((d: any) => {
+    return res.docs
+      .filter((d: any) => !isHiddenPortfolioSlug(d?.slug))
+      .map((d: any) => {
       const mapped = mapPortfolioDoc(d)
       return { ...mapped, body: [], summary: mapped.summary || { en: '' } }
     })
@@ -871,14 +875,14 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
   // v10: trim slugs + per-doc map (trailing-space slugs 404'd detail pages)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v10-r2'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v11-r2'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
 
 /** Lean list for `/portfolio` index — avoids shipping every project body Lexical tree. */
 export const getCachedPortfolioProjectCards = () =>
-  unstable_cache(() => fetchPortfolioProjectCards(), ['portfolio-project-cards-v3-r2'], {
+  unstable_cache(() => fetchPortfolioProjectCards(), ['portfolio-project-cards-v4-r2'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

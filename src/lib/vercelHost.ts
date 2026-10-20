@@ -11,6 +11,17 @@ export function isVercelAppHost(host: string | null | undefined): boolean {
   return h === 'vercel.app' || h.endsWith('.vercel.app')
 }
 
+/**
+ * Only send live GA4 / Google Ads / Meta Pixel hits from canonical production
+ * domains (`erythro.ai` and `*.erythro.ai`). Localhost, LAN IPs (`172.*`,
+ * `192.168.*`, `10.*`), and `*.vercel.app` preview URLs must not pollute GA4.
+ */
+export function isProductionAnalyticsHost(host: string | null | undefined): boolean {
+  const h = normalizeHost(host)
+  if (!h) return false
+  return h === 'erythro.ai' || h.endsWith('.erythro.ai')
+}
+
 export function requestHost(headers: {
   get(name: string): string | null
 }, fallbackHostname?: string): string {
