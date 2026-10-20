@@ -1,6 +1,6 @@
-# Free audit (ads LP) → PRO offer ₪390
+# Free audit → PRO offer ₪390
 
-Только лиды с **рекламного лендинга** (`audit-en|ru|he.erythro.ai` → `leadChannel=meta_ads`).
+Акция для **всех** free-аудитов: и рекламный LP (`audit-*.erythro.ai` → `leadChannel=meta_ads`), и органика с `/audit` (`organic`).
 
 ## Воронка
 
@@ -11,15 +11,13 @@
 5. **+72 часа** (конец промо): если Pro/Diagnostic всё ещё нет → **предложение о разработке** (ответ «новый сайт» / «автоматизация» / «консультация»).
 6. **Walker / cron** подстраховывает все три шага (см. ниже). Футер: «Отписаться от рассылки» → `mail_unsubscribes`.
 
-Органические free с `/audit` — **не** входят в эту воронку (`skipped`).
-
 ## Walker vs cron vs флаги
 
 Таймеры и проверки оплаты живут в **Postgres + HMAC**, не в n8n Wait-нодах.
 
 | Роль | Что делает |
 |---|---|
-| Worker | На `report_sent` (ads LP) → `scheduleProOfferEmail` (`scheduled`, due +15m) |
+| Worker | На `report_sent` (любой free) → `scheduleProOfferEmail` (`scheduled`, due +15m) |
 | Сайт | `trySendAuditProOffer` / `Nudge` / `Reminder` — unpaid + unsub check перед каждой отправкой |
 | Vercel Cron `*/2` | `POST/GET /api/audit/reconcile` — stuck jobs **и** due Pro/nudge/reminder |
 | n8n **Pro Offer Walker** | Backup каждые 5 мин → тот же `/api/audit/reconcile` ([doc](../infrastructure/n8n-audit-pro-offer-walker.md)) |

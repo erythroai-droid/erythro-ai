@@ -7,13 +7,14 @@
 
 ## Сделано в этой сессии
 
-- Gemini Funnel: explicit `thinkingLevel: medium` (PIT-106).
-- Prior: HE lang lock + retry; robots checklist i18n; free H3/title; platform blocklist.
+- Pro ₪390 offer: all free audits (organic + meta_ads), not ads-only.
+- Prior: Gemini medium + HE lang lock; report UX; platform blocklist.
 
 ## Сейчас
 
-1. Redeploy audit-agent so `thinkingLevel` is live.
-2. Merge branch → production for site platform blocklist.
+1. Commit/push site + redeploy audit-agent (scheduleProOfferEmail).
+2. Merge → Vercel so reconcile sends organic offers.
+3. Optional: re-schedule organics already `pro_offer_status=skipped` from old ads-only rule.
 
 ## Не делать
 
@@ -22,4 +23,4 @@
 
 ## Последняя эстафета
 
-2026-10-20 — Cursor — `1f12ca1` Gemini HE lang guard + robots i18n; worker live.
+2026-10-20 — Cursor — Pro ₪390 for all free audits (await push/deploy).

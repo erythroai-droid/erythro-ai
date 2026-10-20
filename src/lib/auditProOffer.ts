@@ -1,5 +1,5 @@
 /**
- * Ads LP free-audit funnel (team@erythro.ai):
+ * Free-audit promo funnel (team@erythro.ai) — all free audits (ads LP + organic):
  * report → +15m Pro ₪390 (72h) → +48h (24h left nudge) → +72h development offer.
  */
 import { getPayload, type Payload } from 'payload'
@@ -957,7 +957,7 @@ export type SendProOfferResult =
   | { ok: false; reason: string }
 
 /**
- * First commercial email (+15m). Ads LP free audits only.
+ * First commercial email (+15m). Every free audit (ads LP + organic /audit).
  * Skips if email already has Pro / Diagnostic pending|paid.
  */
 export async function trySendAuditProOffer(
@@ -987,11 +987,6 @@ export async function trySendAuditProOffer(
   const status = (doc.proOfferStatus as ProOfferStatus | null) || 'none'
   if (status === 'sent' || status === 'nudge_sent' || status === 'reminder_sent') {
     return { ok: true, status: 'already_sent' }
-  }
-
-  if (doc.leadChannel !== 'meta_ads') {
-    await patchProOfferFieldsSql(payload, submissionId, { proOfferStatus: 'skipped' })
-    return { ok: true, status: 'skipped', reason: 'not_ads_lp' }
   }
 
   const planSlug = typeof doc.planSlug === 'string' ? doc.planSlug : ''
@@ -1295,7 +1290,6 @@ export async function sendDueAuditProOffers(limit = 20): Promise<{
     where: {
       and: [
         { source: { equals: 'audit' } },
-        { leadChannel: { equals: 'meta_ads' } },
         { proOfferStatus: { equals: 'scheduled' } },
         { proOfferDueAt: { less_than_equal: nowIso } },
         { auditStatus: { equals: 'report_sent' } },
@@ -1329,7 +1323,6 @@ export async function sendDueAuditProOfferNudges(limit = 20): Promise<{
     where: {
       and: [
         { source: { equals: 'audit' } },
-        { leadChannel: { equals: 'meta_ads' } },
         { proOfferStatus: { equals: 'sent' } },
         { proOfferNudgeDueAt: { less_than_equal: nowIso } },
         {
@@ -1368,7 +1361,6 @@ export async function sendDueAuditProOfferReminders(limit = 20): Promise<{
     where: {
       and: [
         { source: { equals: 'audit' } },
-        { leadChannel: { equals: 'meta_ads' } },
         { proOfferStatus: { in: ['sent', 'nudge_sent'] } },
         { proOfferReminderDueAt: { less_than_equal: nowIso } },
         {
