@@ -7,22 +7,23 @@
 
 ## Сделано в этой сессии
 
-- План SEO URL-локалей: [`docs/architecture/locale-url-routing.md`](../architecture/locale-url-routing.md) (EN на корне, `/ru` `/he`, hreflang, фазы 0–8). Ссылка в `PLAN-deferred.md`.
-- Ранее (др. сессия): GA4 Key Events / UTM / PIT-116; first-visit browser locale.
+- Worktree: `c:\dev\erythro-ai-locale` → ветка `feat/locale-url-routing` (изолировано от `c:\dev\erythro-ai` на `main`).
+- План: [`docs/architecture/locale-url-routing.md`](../architecture/locale-url-routing.md).
 
 ## Сейчас
 
-- Ветка `feat/locale-url-routing`: весь перенос URL-локалей. Commit/push только туда.
-- В `main` / прод — **не мержить и не деплоить**, пока фазы 0–8 готовы и повторный smoke OK.
+- Рабочая копия для локалей: **`c:\dev\erythro-ai-locale`**. Сюда коммитить/пушить фазы 0–8.
+- `c:\dev\erythro-ai` — другие задачи (`main` + прочий WIP). Не мешать с locale URL.
 - Ждём старта **Фазы 0** — по команде.
+- В `main` / прод — не мержить, пока полный smoke OK.
 
 ## Не делать
 
 - Не печатать SMTP / AGENT / VPS `.env`.
 - Не зеркалировать этот файл в Obsidian.
-- Не начинать фазу N+1 locale URL, пока N не принята.
+- Не начинать фазу N+1, пока N не принята.
 - Не merge/deploy locale URL до полной готовности и явного OK.
 
 ## Последняя эстафета
 
-2026-10-20 — Cursor — locale-url-routing plan on feat branch; merge only when complete.
+2026-10-20 — Cursor — locale worktree at c:\dev\erythro-ai-locale; await Phase 0.
