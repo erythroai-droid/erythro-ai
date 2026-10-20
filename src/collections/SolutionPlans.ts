@@ -14,7 +14,18 @@ export const SolutionPlans: CollectionConfig = {
     description:
       'Solution packages and AI Audit tariffs. For audits: edit Free / Diagnostic / Pro / Manual here — single source for /audit Pricing cards and /order/audit-* (except Manual contact CTA). Card name = Pricing badge; Title = order page / admin list.',
   },
-  hooks: { afterChange: [revalidateOnChange], afterDelete: [revalidateOnDelete] },
+  hooks: {
+    beforeValidate: [
+      ({ data }) => {
+        if (data && typeof data.slug === 'string') {
+          data.slug = data.slug.trim()
+        }
+        return data
+      },
+    ],
+    afterChange: [revalidateOnChange],
+    afterDelete: [revalidateOnDelete],
+  },
   fields: [
     locText('title', {
       required: true,
@@ -68,7 +79,7 @@ export const SolutionPlans: CollectionConfig = {
       unique: true,
       admin: {
         description:
-          'Stable id / order URL, e.g. "business-automation" → /order/business-automation',
+          'Stable id / order URL, e.g. "business-automation" → /order/business-automation. No trailing spaces (PIT-119).',
       },
     },
     {
