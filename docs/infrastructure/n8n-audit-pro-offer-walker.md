@@ -23,7 +23,7 @@ That endpoint sweeps:
 - due −24h nudge
 - due +72h development reminder
 
-Sends happen only when `AUDIT_PRO_OFFER_ENABLED=1` **and** Pro/Diagnostic unpaid **and** email not unsubscribed.
+Sends happen only when `AUDIT_PRO_OFFER_ENABLED=1`. Free funnel also requires Pro/Diagnostic unpaid; paid Pro/Diagnostic get the development offer (`paid_dev`). Unsubscribe checked before every send.
 
 ## Import (inactive)
 

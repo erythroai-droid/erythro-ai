@@ -5,16 +5,18 @@ import {
   trySendAuditProOffer,
   trySendAuditProOfferNudge,
   trySendAuditProOfferReminder,
+  trySendPaidAuditDevOffer,
 } from '@/lib/auditProOffer'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
 type RouteParams = { params: Promise<{ id: string }> }
+type ProOfferKind = 'offer' | 'nudge' | 'reminder' | 'paid_dev'
 
 /**
  * POST /api/audit/internal/[id]/pro-offer
- * Body: { force?: boolean, kind?: 'offer' | 'nudge' | 'reminder' }
+ * Body: { force?: boolean, kind?: 'offer' | 'nudge' | 'reminder' | 'paid_dev' }
  * Auth: X-Agent-Secret-Key.
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
@@ -27,7 +29,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   if (!id) return NextResponse.json({ message: 'Invalid id' }, { status: 400 })
 
   let force = false
-  let kind: 'offer' | 'nudge' | 'reminder' = 'offer'
+  let kind: ProOfferKind = 'offer'
   try {
     const body = (await request.json().catch(() => null)) as {
       force?: unknown
@@ -36,6 +38,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     force = Boolean(body?.force)
     if (body?.kind === 'reminder') kind = 'reminder'
     else if (body?.kind === 'nudge') kind = 'nudge'
+    else if (body?.kind === 'paid_dev') kind = 'paid_dev'
   } catch {
     force = false
   }
@@ -46,7 +49,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         ? await trySendAuditProOfferReminder(id, { force })
         : kind === 'nudge'
           ? await trySendAuditProOfferNudge(id, { force })
-          : await trySendAuditProOffer(id, { force })
+          : kind === 'paid_dev'
+            ? await trySendPaidAuditDevOffer(id, { force })
+            : await trySendAuditProOffer(id, { force })
     if (!result.ok) {
       const status =
         result.reason === 'not_found'

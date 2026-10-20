@@ -150,7 +150,7 @@ export async function runAuditJob(job) {
         console.log(
           `[audit] submission=${submissionId} email sent to client orderId=${mailed.orderId || formatAuditOrderId(submissionId)}`,
         )
-        // Ads LP free → delayed commercial Pro offer (site checks DB + sends).
+        // Free → Pro promo; Pro/Diagnostic → development offer (+15m, site sends).
         scheduleProOfferEmail(submissionId, planSlug, { leadChannel })
       }
     } else {

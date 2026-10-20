@@ -7,14 +7,14 @@
 
 ## Сделано в этой сессии
 
-- Pro ₪390 offer: all free audits (organic + meta_ads), not ads-only.
-- Prior: Gemini medium + HE lang lock; report UX; platform blocklist.
+- Pro / Diagnostic → development offer (+15m, `kind=paid_dev`): адаптация «Предложение о разработке», worker + reconcile, docs/Obsidian.
+- Ранее: Pro ₪390 for all free audits (`f6443f7`); worker redeployed.
 
 ## Сейчас
 
-1. Commit/push site + redeploy audit-agent (scheduleProOfferEmail).
-2. Merge → Vercel so reconcile sends organic offers.
-3. Optional: re-schedule organics already `pro_offer_status=skipped` from old ads-only rule.
+1. Merge / deploy site (Vercel) + redeploy **audit-agent** (worker schedule для paid).
+2. Убедиться `AUDIT_PRO_OFFER_ENABLED=1` на Vercel и worker (иначе commercial не шлётся).
+3. Optional: merge `fix/pro-offer-sql-status` если ещё не в production.
 
 ## Не делать
 
@@ -23,4 +23,4 @@
 
 ## Последняя эстафета
 
-2026-10-20 — Cursor — Pro ₪390 for all free audits (await push/deploy).
+2026-10-20 — Cursor — paid Pro/Diagnostic → team@ development offer (+15m); await deploy site + worker.

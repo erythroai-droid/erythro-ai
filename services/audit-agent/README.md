@@ -34,7 +34,7 @@ Plan → tier / page cap:
 | `audit-pro-ads` (Meta promo checkout) | PRO | 10 |
 | `audit-manual` (ops / offline after call) | PRO | 10 |
 
-After a **free** report email succeeds, the worker schedules a PRO upsell (`+15 min`) via `POST /api/audit/internal/[id]/pro-offer` (site sends from `team@`). See `docs/architecture/audit-pro-offer-funnel.md`.
+After a report email succeeds, the worker schedules a team@ follow-up (`+15 min`) via `POST /api/audit/internal/[id]/pro-offer`: **free** → Pro ₪390 (`kind=offer`); **Pro / Diagnostic** → development offer (`kind=paid_dev`). See `docs/architecture/audit-pro-offer-funnel.md`. Requires `AUDIT_PRO_OFFER_ENABLED=1`.
 
 ## Env
 

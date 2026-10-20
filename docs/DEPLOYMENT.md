@@ -69,7 +69,7 @@ DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-1-...pooler.supabase.com
 | `NEXT_PUBLIC_SITE_URL` | `https://erythro.ai` | canonical / OG |
 | `REVALIDATION_TOKEN` | (опционально) | для On-Demand Revalidation из n8n — добавить позже |
 | `SMTP_PASS` | пароль ящика Hostinger `order@erythro.ai` | форма шлёт с `order@erythro.ai` на email из Site Settings → Contacts |
-| `TEAM_SMTP_PASS` | пароль ящика Hostinger `team@erythro.ai` | delayed PRO upsell после free-аудита (`docs/architecture/audit-pro-offer-funnel.md`); **не** тот же, что `SMTP_PASS` (PIT-054) |
+| `TEAM_SMTP_PASS` | пароль ящика Hostinger `team@erythro.ai` | free→Pro upsell + paid Pro/Diagnostic→development offer (`docs/architecture/audit-pro-offer-funnel.md`); **не** тот же, что `SMTP_PASS` (PIT-054) |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | sitekey виджета (публичный). Алиас: `TURNSTILE_SITE_KEY` | Cloudflare Turnstile на формах |
 | `TURNSTILE_SECRET` | secret виджета. Алиас: `TURNSTILE_SECRET_KEY` | server-side siteverify, не в браузер |
 | `TURNSTILE_HOSTNAMES` | `erythro.ai,www.erythro.ai` (prod) | allowlist hostname из siteverify; **без** localhost на проде. Ads LP hosts (`audit-en|rus|he.erythro.ai`) подмешиваются в коде. В Cloudflare Turnstile widget Domains — те же хосты. |
