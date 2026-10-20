@@ -1961,6 +1961,29 @@ eadCampaignConfigParams() in src/lib/adsConversion.ts automatically fall back to
 **Prevent:** Never show <SplashScreen /> on conversion routes (/audit, /order/*) or paid ad clicks (bclid/gclid/utm_*), and always include bclid/gclid attribution fallbacks in 
 eadCampaignConfigParams().
 
+---
+
+## PIT-118 — GSC sitemap / canonical conflicts (`/order/audit-manual`, `/portfolio/next-project`, `/order/ai-business-card`) and dev-host GA4 pollution
+
+**Tags:** `gsc`, `sitemap`, `seo`, `canonical`, `redirects`, `ga4`  
+**Seen:** 2026-10-20 — GSC URL Inspection & GA4 hostname audit (`properties/543568002`)
+
+**Symptom:**
+1. `/order/audit-manual` was listed in `sitemap.xml` even though it redirected (`307`) to `/audit` (`Page with redirect` in GSC).
+2. Draft placeholder `/portfolio/next-project` was listed in `sitemap.xml` and indexed in Google (`Submitted and indexed`).
+3. `/order/ai-smart-card` remained `Discovered - currently not indexed` while `/order/ai-business-card` stayed indexed (`Duplicate, Google chose different canonical than user`), because the CMS `Header` submenu still linked to `/order/ai-business-card` and `/order/ai-business-card` returned `200 OK` via `ORDER_SLUG_ALIASES`.
+4. Legacy `/portfolio/Interior` returned `404` despite active incoming views.
+5. `localhost`, `172.24.80.1`, and `*.vercel.app` accounted for ~19% of all GA4 events (`1,704` events across `100` dev/preview sessions).
+
+**Fix:**
+1. Added `isNonSitemapOrderSlug()` in `src/lib/orderPlans.ts` and `isHiddenPortfolioSlug()` (`next-project`) in `src/lib/portfolioProjects.ts`; filtered them out of `sitemap.xml`, `sitemapEntries.ts`, and `cmsPages.ts` (`v11` / `v4` cache bump).
+2. Added `sanitizeOrderHref()` in `src/lib/copyHygiene.ts` to rewrite `/order/ai-business-card` → `/order/ai-smart-card` in `Header` submenus and solution cards, plus `308` permanent redirects in `next.config.ts` and `src/app/(frontend)/order/[slug]/page.tsx` for `/order/ai-business-card` → `/order/ai-smart-card`, `/order/audit-manual` → `/audit`, `/portfolio/Interior` & `/portfolio/interior` → `/portfolio/pro-interior`, and `/portfolio/next-project` → `/portfolio`.
+3. Added `isProductionAnalyticsHost()` in `src/lib/vercelHost.ts` and guarded `AnalyticsBootstrap.tsx` / `AnalyticsLoader.tsx` so live GA4 / Google Ads / Meta Pixel hits only fire on `erythro.ai` and `*.erythro.ai`. Also upgraded GA4 Data Retention to `FOURTEEN_MONTHS` via GA4 Admin API.
+
+**Prevent:** Never include contact-only order plans (`checkoutMode === 'contact'`) or CMS placeholder slugs in `sitemap.xml`; always pair slug aliases with a `308` redirect + internal link hygiene; guard analytics bootstrap to canonical production hostnames.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -2063,4 +2086,5 @@ eadCampaignConfigParams().
 - [ ] After `vercel env pull`: `[SENSITIVE]` placeholders — fill from `.env` or Save in admin to revalidate (PIT-111)
 - [ ] Ads free-audit Final URL: `audit-en` / `audit-ru` / `audit-he`.erythro.ai, not `/audit` (PIT-112; not `audit-rus` — NXDOMAIN)
 - [ ] GA4 conversions on AJAX forms: always fire explicit `qualify_lead` / `close_convert_lead` / `purchase` (`send_to: G-…`) after synchronous consent + GA4 config init (`ensureAnalyticsConsentAndGaConfig`), not just `send_to: AW-…` (PIT-116)
-- [ ] Paid ad clicks (bclid / gclid / utm_*) and /audit / /order/*: skip <SplashScreen /> (shouldSkipSplashSurface) and auto-attribute b / paid or google / cpc (PIT-117)
+- [ ] Paid ad clicks (`fbclid` / `gclid` / `utm_*`) and `/audit` / `/order/*`: skip `<SplashScreen />` (`shouldSkipSplashSurface`) and auto-attribute `fb / paid` or `google / cpc` (PIT-117)
+- [ ] Sitemap & canonicals: exclude `checkoutMode === 'contact'` (`audit-manual`) and placeholder portfolio slugs (`next-project`) from `sitemap.xml`, 308-redirect legacy aliases (`/order/ai-business-card` → `/order/ai-smart-card`, `/portfolio/Interior` → `/portfolio/pro-interior`), and restrict GA4/Ads/Meta beacons to `erythro.ai` / `*.erythro.ai` (`isProductionAnalyticsHost`, PIT-118)

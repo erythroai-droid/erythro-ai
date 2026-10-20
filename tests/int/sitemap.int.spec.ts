@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import sitemap from '@/app/sitemap'
 import { getAllServiceSlugs } from '@/lib/servicePages'
-import { getAllOrderSlugs, isHiddenAuditOrderSlug } from '@/lib/orderPlans'
+import { getAllOrderSlugs, isNonSitemapOrderSlug } from '@/lib/orderPlans'
 import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
 import { getPortfolioSitemapEntries } from '@/lib/sitemapEntries'
 
@@ -33,7 +33,7 @@ describe('sitemap()', () => {
 
       // Public order slugs (solutions + audit). Promo-only plans stay out of sitemap.
       for (const slug of getAllOrderSlugs()) {
-        if (isHiddenAuditOrderSlug(slug)) {
+        if (isNonSitemapOrderSlug(slug)) {
           expect(urls.has(`https://erythro.ai/order/${slug}`)).toBe(false)
           continue
         }
@@ -42,6 +42,8 @@ describe('sitemap()', () => {
 
       // Portfolio: CMS-published cases when the collection has docs; static
       // seed slugs only as fallback. Do not require demo URLs that 404 (PIT-070).
+      expect(urls.has('https://erythro.ai/order/audit-manual')).toBe(false)
+      expect(urls.has('https://erythro.ai/portfolio/next-project')).toBe(false)
       const portfolio = await getPortfolioSitemapEntries()
       expect(portfolio.length).toBeGreaterThan(0)
       for (const { slug } of portfolio) {

@@ -5,6 +5,7 @@ import sitemap, { staticSitemapFallback } from '@/app/sitemap'
 import { middleware } from '@/middleware'
 import {
   canonicalUrlForPath,
+  isProductionAnalyticsHost,
   isVercelAppHost,
   shouldRedirectVercelAppToCanonical,
   shouldSkipVercelAppRedirect,
@@ -31,6 +32,17 @@ describe('vercelHost', () => {
   it('canonical homepage has no trailing slash', () => {
     expect(canonicalUrlForPath('/')).toBe('https://erythro.ai')
     expect(canonicalUrlForPath('/about')).toBe('https://erythro.ai/about')
+  })
+
+  it('allows analytics only on erythro.ai and *.erythro.ai', () => {
+    expect(isProductionAnalyticsHost('erythro.ai')).toBe(true)
+    expect(isProductionAnalyticsHost('www.erythro.ai')).toBe(true)
+    expect(isProductionAnalyticsHost('audit-he.erythro.ai')).toBe(true)
+    expect(isProductionAnalyticsHost('localhost')).toBe(false)
+    expect(isProductionAnalyticsHost('localhost:3000')).toBe(false)
+    expect(isProductionAnalyticsHost('172.24.80.1:3000')).toBe(false)
+    expect(isProductionAnalyticsHost('192.168.1.50')).toBe(false)
+    expect(isProductionAnalyticsHost('erythro-ai.vercel.app')).toBe(false)
   })
 })
 

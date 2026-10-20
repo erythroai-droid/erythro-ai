@@ -4,7 +4,10 @@ export const META_PIXEL_ID = '2395401914532727'
 
 const BOOTSTRAP_JS = `
 window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
+var __erythroHost = (window.location && window.location.hostname || '').toLowerCase();
+var __erythroProd = __erythroHost === 'erythro.ai' || __erythroHost.slice(-11) === '.erythro.ai';
+window.__ERYTHRO_ANALYTICS_DISABLED__ = !__erythroProd;
+function gtag(){if(__erythroProd){dataLayer.push(arguments);}}
 window.gtag = gtag;
 gtag('consent', 'default', {
   ad_storage: 'denied',
@@ -40,6 +43,7 @@ try {
 
 /** Meta Pixel in &lt;head&gt; so Events Manager verifies the base code. Consent revoke until Accept. */
 const META_PIXEL_JS = `
+if (!window.__ERYTHRO_ANALYTICS_DISABLED__) {
 !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
@@ -50,6 +54,9 @@ s.parentNode.insertBefore(t,s)}(window,document,'script',
 fbq('consent', 'revoke');
 fbq('init', '${META_PIXEL_ID}');
 fbq('track', 'PageView');
+} else {
+window.fbq = window.fbq || function(){};
+}
 window.__ERYTHRO_META_PIXEL_ID__ = '${META_PIXEL_ID}';
 `.trim()
 

@@ -27,6 +27,11 @@ export function slugFromOrderHref(href: string | undefined): string {
   return match ? match[1] : ''
 }
 
+export function sanitizeOrderHref(href: string | undefined): string {
+  if (!href) return ''
+  return href.replace(/\/order\/ai-business-card(?=[/?#]|$)/i, '/order/ai-smart-card')
+}
+
 export function sanitizeCtaLabel(label: Localized): Localized {
   if (trim(label.en) === 'Get a start') return { ...label, en: 'Get started' }
   return label
@@ -151,6 +156,8 @@ export function applySiteContentCopyHygiene(content: SiteContent): SiteContent {
   content.solutions.cards = content.solutions.cards.map((card) => ({
     ...card,
     title: sanitizePlanTitle(card.id, card.title),
+    id: card.id === 'ai-business-card' ? 'ai-smart-card' : card.id,
+    ...(card.ctaHref ? { ctaHref: sanitizeOrderHref(card.ctaHref) } : {}),
     features: (card.features || []).map(sanitizeFeature),
   }))
   content.navbar.navItems = content.navbar.navItems.map((item) => ({
@@ -158,6 +165,7 @@ export function applySiteContentCopyHygiene(content: SiteContent): SiteContent {
     children: (item.children || []).map((child) => ({
       ...child,
       label: sanitizePlanTitle(slugFromOrderHref(child.href) || child.href, child.label),
+      href: sanitizeOrderHref(child.href),
     })),
   }))
   return content
