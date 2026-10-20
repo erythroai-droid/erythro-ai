@@ -73,15 +73,15 @@ export function isFreeAuditPlanSlug(planSlug) {
 const PRO_OFFER_DELAY_MS = 15 * 60 * 1000
 
 /**
- * Ads LP free audits only: schedule PRO commercial email (+15m).
+ * All free audits (ads LP + organic): schedule PRO ₪390 commercial email (+15m).
  * Site also checks DB for Pro/Diagnostic orders before sending.
  * Reconcile cron is the safety net if this process restarts.
  *
  * @param {number|string} submissionId
  * @param {string} [planSlug]
- * @param {{ leadChannel?: string|null }} [meta]
+ * @param {{ leadChannel?: string|null }} [meta] unused (kept for call-site compat)
  */
-export function scheduleProOfferEmail(submissionId, planSlug, meta = {}) {
+export function scheduleProOfferEmail(submissionId, planSlug, _meta = {}) {
   if (!isFreeAuditPlanSlug(planSlug)) return
 
   // Off until letterhead approved (mirror site `isAuditProOfferEnabled`).
@@ -102,25 +102,6 @@ export function scheduleProOfferEmail(submissionId, planSlug, meta = {}) {
   }
 
   const run = async () => {
-    let leadChannel = meta.leadChannel
-    if (leadChannel == null) {
-      try {
-        const doc = await getContactSubmission(submissionId)
-        leadChannel = doc?.leadChannel || null
-      } catch (err) {
-        console.warn(
-          `[payload] pro-offer leadChannel GET failed id=${submissionId}:`,
-          err instanceof Error ? err.message : err,
-        )
-      }
-    }
-    if (leadChannel !== 'meta_ads') {
-      console.log(
-        `[payload] pro-offer skip id=${submissionId} (not ads LP leadChannel=${leadChannel || 'none'})`,
-      )
-      return
-    }
-
     const dueAt = new Date(Date.now() + PRO_OFFER_DELAY_MS).toISOString()
     try {
       await updateContactSubmission(submissionId, {

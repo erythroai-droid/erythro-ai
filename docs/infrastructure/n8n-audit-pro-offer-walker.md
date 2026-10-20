@@ -1,6 +1,6 @@
 # n8n AI Audit Pro Offer Walker
 
-Durable **cron Walker** for the ads-LP Pro funnel. Does **not** hold 72h Wait per lead and does **not** send SMTP itself.
+Durable **cron Walker** for the free-audit Pro ₪390 funnel (ads LP + organic). Does **not** hold 72h Wait per lead and does **not** send SMTP itself.
 
 Primary send path is still the site: Postgres due timestamps + [`/api/audit/reconcile`](../../src/app/api/audit/reconcile) (also Vercel Cron `*/2`). Funnel overview: [`docs/architecture/audit-pro-offer-funnel.md`](../architecture/audit-pro-offer-funnel.md).
 
