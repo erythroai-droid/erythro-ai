@@ -7,21 +7,20 @@
 
 ## Сделано в этой сессии
 
-- Free report UX: unique finding H3 titles; drop `Preview ·` from free `<title>` (badge PREVIEW on page stays). Solution teaser for free unchanged.
-- HE Cyrillic gap fix (`tr()` for AI-bots disallow).
-- Platform blocklist on audit website (YouTube/FB/IG/TikTok/LinkedIn/…).
+- Localize Diagnostic/Pro robots checklist detail (HE/EN/RU).
+- Gemini Funnel: strict lang lock + retry; drop block on Cyrillic/wrong-lang for HE/EN (never ship RU into HE report).
+- Prior: free H3/title, platform blocklist, HE gap `tr()`.
 
 ## Сейчас
 
-1. Commit + push → Vercel picks up site blocklist.
-2. Redeploy `audit-agent` on VPS (Java report fixes).
+1. Commit + push + redeploy audit-agent.
+2. Merge branch → Vercel for site platform blocklist.
 
 ## Не делать
 
 - Не печатать SMTP / AGENT / VPS `.env`.
 - Не зеркалировать этот файл в Obsidian.
-- Не открывать solution в free (тизер «в полном отчёте» — by design).
 
 ## Последняя эстафета
 
-2026-10-20 — Cursor — free report title/H3 + platform block + Cyrillic gap (commit/push/worker).
+2026-10-20 — Cursor — Gemini HE lang lock + robotsDetail i18n (await push/redeploy).

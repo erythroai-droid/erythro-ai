@@ -1934,9 +1934,20 @@ public class AuditCollector {
                 ? (List<String>) robotsAi.get("allowed_bots") : List.of();
         boolean hasRobots = infra != null && Boolean.TRUE.equals(infra.get("has_robots_txt"));
         boolean hasSitemap = infra != null && Boolean.TRUE.equals(infra.get("has_sitemap_xml"));
-        String robotsDetail = severeBlock
-                ? "Disallow: / для ботов: " + robotsAi.getOrDefault("blocked_bots", List.of())
-                : "Allow для AI-ботов" + (allowed.isEmpty() ? "" : ": " + String.join(", ", allowed));
+        String robotsDetail;
+        if (severeBlock) {
+            Object blockedBots = robotsAi.getOrDefault("blocked_bots", List.of());
+            robotsDetail = ReportFindingsCatalog.tr(i18n.lang,
+                    "Disallow: / для ботов: " + blockedBots,
+                    "Disallow: / for bots: " + blockedBots,
+                    "Disallow: / לבוטים: " + blockedBots);
+        } else {
+            String allowSuffix = allowed.isEmpty() ? "" : ": " + String.join(", ", allowed);
+            robotsDetail = ReportFindingsCatalog.tr(i18n.lang,
+                    "Allow для AI-ботов" + allowSuffix,
+                    "Allow for AI bots" + allowSuffix,
+                    "Allow לבוטי AI" + allowSuffix);
+        }
         if (infra != null) {
             robotsDetail += "; robots.txt: " + (hasRobots ? "200 OK" : infra.getOrDefault("robots_txt_status", "err"));
             robotsDetail += "; sitemap: " + (hasSitemap
@@ -2797,6 +2808,18 @@ public class AuditCollector {
         }
         String verdict = review.get("verdict") == null ? "" : String.valueOf(review.get("verdict"));
         String priority = review.get("priority_fix") == null ? "" : String.valueOf(review.get("priority_fix"));
+        Map<String, Object> langCheck = new LinkedHashMap<>();
+        langCheck.put("verdict", verdict);
+        langCheck.put("priority_fix", priority);
+        langCheck.put("gaps", gaps);
+        String reportLang = finalReport.get("report_lang") == null
+                ? ""
+                : String.valueOf(finalReport.get("report_lang"));
+        if (!geminiFunnelMatchesReportLang(reportLang, langCheck)) {
+            System.err.println("  [!] Gemini funnel omitted from HTML: language mismatch vs report_lang="
+                    + reportLang);
+            return null;
+        }
         AuditReportView.GeminiFunnel funnel = new AuditReportView.GeminiFunnel(verdict, gaps, priority);
         return funnel.hasContent() ? funnel : null;
     }
@@ -2820,76 +2843,42 @@ public class AuditCollector {
                         .append(" | soft404: ").append(page.getOrDefault("soft404", false))
                         .append("\n");
             }
-            String answerLang = switch (AuditReportI18n.normalizeLang(reportLang)) {
-                case "he" -> "Hebrew";
+            String lang = AuditReportI18n.normalizeLang(reportLang);
+            String answerLang = switch (lang) {
+                case "he" -> "Hebrew (עברית)";
                 case "en" -> "English";
                 default -> "Russian";
             };
-            String prompt = """
-                You are Erythro.ai's commercial QA agent. From the funnel crawl of %s, \
-                judge the path to a lead. Reply with strict JSON and no markdown. \
-                All string values MUST be in %s:
-                {"verdict":"short verdict, max 180 characters",\
-                "gaps":["up to 3 funnel gaps"],\
-                "priority_fix":"one priority fix"}
-                Lead capture on a page is VALID if any of: forms>0 (inline OR opened after a CTA click — formViaCta=true), \
-                chat=true, messenger=true (WhatsApp, Telegram, and similar). \
-                A modal or dialog form after a CTA click is a normal modern pattern — do NOT call that \
-                "CTA without an embedded form" or "form only on the contacts page". \
-                Flag a gap only if the visitor cannot submit a lead and has no instant channel.
-                Pages:
-                %s
-                """.formatted(targetUrl, answerLang, pagesBlock);
-
-            // Gemini 3.x: no temperature / top_p / top_k (PIT-106).
-            Map<String, Object> body = Map.of(
-                    "contents", List.of(Map.of(
-                            "parts", List.of(Map.of("text", prompt))
-                    )),
-                    "generationConfig", Map.of(
-                            "responseMimeType", "application/json"
-                    )
-            );
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://generativelanguage.googleapis.com/v1beta/models/"
-                            + GEMINI_MODEL + ":generateContent?key=" + apiKey))
-                    .timeout(Duration.ofSeconds(45))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)))
-                    .build();
-            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            out.put("http_status", response.statusCode());
-            if (response.statusCode() != 200) {
-                out.put("status", "ERROR");
-                out.put("error", response.body() != null && response.body().length() > 300
-                        ? response.body().substring(0, 300) : response.body());
+            String pages = pagesBlock.toString();
+            String prompt = buildGeminiFunnelPrompt(targetUrl, answerLang, pages, false);
+            Map<String, Object> attempt = callGeminiFunnelOnce(apiKey, mapper, prompt);
+            mergeGeminiUsage(out, attempt);
+            if (!"SUCCESS".equals(attempt.get("status"))) {
+                out.putAll(attempt);
                 return out;
             }
-            JsonNode root = mapper.readTree(response.body());
-            JsonNode usageNode = root.path("usageMetadata");
-            if (!usageNode.isMissingNode()) {
-                Map<String, Object> usage = new LinkedHashMap<>();
-                usage.put("prompt_tokens", usageNode.path("promptTokenCount").asInt(0));
-                usage.put("candidates_tokens", usageNode.path("candidatesTokenCount").asInt(0));
-                usage.put("total_tokens", usageNode.path("totalTokenCount").asInt(0));
-                out.put("usage_metadata", usage);
-            }
-            String text = root.path("candidates").path(0).path("content").path("parts").path(0).path("text").asText("");
-            out.put("raw_text", text);
-            try {
-                JsonNode parsed = mapper.readTree(text);
-                out.put("status", "SUCCESS");
-                out.put("verdict", parsed.path("verdict").asText(""));
-                List<String> gaps = new ArrayList<>();
-                if (parsed.path("gaps").isArray()) {
-                    parsed.path("gaps").forEach(n -> gaps.add(n.asText()));
+            applyGeminiFunnelFields(out, attempt);
+            if (!geminiFunnelMatchesReportLang(lang, out)) {
+                System.err.println("  [!] Gemini funnel language mismatch for report_lang=" + lang
+                        + " — retrying with strict language lock");
+                String retryPrompt = buildGeminiFunnelPrompt(targetUrl, answerLang, pages, true);
+                Map<String, Object> retry = callGeminiFunnelOnce(apiKey, mapper, retryPrompt);
+                mergeGeminiUsage(out, retry);
+                if ("SUCCESS".equals(retry.get("status")) && geminiFunnelMatchesReportLang(lang, retry)) {
+                    applyGeminiFunnelFields(out, retry);
+                    out.put("language_retry", true);
+                } else {
+                    // Never ship wrong-language funnel copy into a client HTML report.
+                    out.put("status", "ERROR");
+                    out.put("error", "language_mismatch");
+                    out.put("language_expected", lang);
+                    out.remove("verdict");
+                    out.remove("gaps");
+                    out.remove("priority_fix");
+                    out.remove("raw_text");
+                    System.err.println("  [!] Gemini funnel dropped: wrong language after retry (expected " + lang + ")");
+                    return out;
                 }
-                out.put("gaps", gaps);
-                out.put("priority_fix", parsed.path("priority_fix").asText(""));
-            } catch (Exception parseExc) {
-                out.put("status", "SUCCESS");
-                out.put("verdict", text.length() > 220 ? text.substring(0, 220) : text);
             }
             System.out.println("  Gemini-разбор агентного просмотра: " + out.getOrDefault("verdict", ""));
             if (out.containsKey("usage_metadata")) {
@@ -2904,6 +2893,165 @@ public class AuditCollector {
             System.err.println("  [!] Gemini agent browse: " + e.getMessage());
         }
         return out;
+    }
+
+    private static String buildGeminiFunnelPrompt(String targetUrl, String answerLang, String pagesBlock,
+                                                  boolean strictRetry) {
+        String langLock = strictRetry
+                ? ("CRITICAL LANGUAGE LOCK: every JSON string value MUST be written in " + answerLang
+                + " only. Do NOT use Russian. Do NOT use Cyrillic letters (а-я, А-Я). "
+                + "Product names (WhatsApp, Telegram, GPTBot) may stay in Latin. ")
+                : "";
+        return """
+                You are Erythro.ai's commercial QA agent. From the funnel crawl of %s, \
+                judge the path to a lead. Reply with strict JSON and no markdown. \
+                %sAll string values in the JSON MUST be in %s — never Russian/Cyrillic when the target language is Hebrew or English.
+                {"verdict":"short verdict, max 180 characters",\
+                "gaps":["up to 3 funnel gaps"],\
+                "priority_fix":"one priority fix"}
+                Lead capture on a page is VALID if any of: forms>0 (inline OR opened after a CTA click — formViaCta=true), \
+                chat=true, messenger=true (WhatsApp, Telegram, and similar). \
+                A modal or dialog form after a CTA click is a normal modern pattern — do NOT call that \
+                "CTA without an embedded form" or "form only on the contacts page". \
+                Flag a gap only if the visitor cannot submit a lead and has no instant channel.
+                Pages:
+                %s
+                """.formatted(targetUrl, langLock, answerLang, pagesBlock);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> callGeminiFunnelOnce(String apiKey, ObjectMapper mapper, String prompt)
+            throws Exception {
+        Map<String, Object> out = new LinkedHashMap<>();
+        // Gemini 3.x: no temperature / top_p / top_k (PIT-106).
+        Map<String, Object> body = Map.of(
+                "contents", List.of(Map.of(
+                        "parts", List.of(Map.of("text", prompt))
+                )),
+                "generationConfig", Map.of(
+                        "responseMimeType", "application/json"
+                )
+        );
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://generativelanguage.googleapis.com/v1beta/models/"
+                        + GEMINI_MODEL + ":generateContent?key=" + apiKey))
+                .timeout(Duration.ofSeconds(45))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body)))
+                .build();
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        out.put("http_status", response.statusCode());
+        if (response.statusCode() != 200) {
+            out.put("status", "ERROR");
+            out.put("error", response.body() != null && response.body().length() > 300
+                    ? response.body().substring(0, 300) : response.body());
+            return out;
+        }
+        JsonNode root = mapper.readTree(response.body());
+        JsonNode usageNode = root.path("usageMetadata");
+        if (!usageNode.isMissingNode()) {
+            Map<String, Object> usage = new LinkedHashMap<>();
+            usage.put("prompt_tokens", usageNode.path("promptTokenCount").asInt(0));
+            usage.put("candidates_tokens", usageNode.path("candidatesTokenCount").asInt(0));
+            usage.put("total_tokens", usageNode.path("totalTokenCount").asInt(0));
+            out.put("usage_metadata", usage);
+        }
+        String text = root.path("candidates").path(0).path("content").path("parts").path(0).path("text").asText("");
+        out.put("raw_text", text);
+        try {
+            JsonNode parsed = mapper.readTree(text);
+            out.put("status", "SUCCESS");
+            out.put("verdict", parsed.path("verdict").asText(""));
+            List<String> gaps = new ArrayList<>();
+            if (parsed.path("gaps").isArray()) {
+                parsed.path("gaps").forEach(n -> gaps.add(n.asText()));
+            }
+            out.put("gaps", gaps);
+            out.put("priority_fix", parsed.path("priority_fix").asText(""));
+        } catch (Exception parseExc) {
+            out.put("status", "SUCCESS");
+            out.put("verdict", text.length() > 220 ? text.substring(0, 220) : text);
+            out.put("gaps", List.of());
+            out.put("priority_fix", "");
+        }
+        return out;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void applyGeminiFunnelFields(Map<String, Object> target, Map<String, Object> source) {
+        target.put("status", "SUCCESS");
+        target.put("verdict", source.getOrDefault("verdict", ""));
+        target.put("gaps", source.getOrDefault("gaps", List.of()));
+        target.put("priority_fix", source.getOrDefault("priority_fix", ""));
+        if (source.get("raw_text") != null) {
+            target.put("raw_text", source.get("raw_text"));
+        }
+        if (source.get("http_status") != null) {
+            target.put("http_status", source.get("http_status"));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void mergeGeminiUsage(Map<String, Object> target, Map<String, Object> attempt) {
+        Object next = attempt.get("usage_metadata");
+        if (!(next instanceof Map<?, ?> nextMap)) {
+            return;
+        }
+        Map<String, Object> prev = target.get("usage_metadata") instanceof Map<?, ?> existing
+                ? new LinkedHashMap<>((Map<String, Object>) existing)
+                : new LinkedHashMap<>();
+        for (String key : List.of("prompt_tokens", "candidates_tokens", "total_tokens")) {
+            int a = prev.get(key) instanceof Number n ? n.intValue() : 0;
+            int b = nextMap.get(key) instanceof Number n ? n.intValue() : 0;
+            prev.put(key, a + b);
+        }
+        target.put("usage_metadata", prev);
+    }
+
+    /**
+     * HE/EN client reports must never show Cyrillic funnel copy.
+     * HE also requires Hebrew letters when the answer has substantial letter content.
+     */
+    @SuppressWarnings("unchecked")
+    static boolean geminiFunnelMatchesReportLang(String reportLang, Map<String, Object> fields) {
+        String lang = AuditReportI18n.normalizeLang(reportLang);
+        StringBuilder blob = new StringBuilder();
+        blob.append(String.valueOf(fields.getOrDefault("verdict", ""))).append(' ');
+        blob.append(String.valueOf(fields.getOrDefault("priority_fix", ""))).append(' ');
+        Object gapsObj = fields.get("gaps");
+        if (gapsObj instanceof List<?> gaps) {
+            for (Object g : gaps) {
+                blob.append(String.valueOf(g)).append(' ');
+            }
+        }
+        String text = blob.toString().trim();
+        if (text.isBlank()) {
+            return true;
+        }
+        if ("he".equals(lang) || "en".equals(lang)) {
+            if (containsCyrillic(text)) {
+                return false;
+            }
+        }
+        if ("he".equals(lang)) {
+            long letters = text.codePoints().filter(Character::isLetter).count();
+            long hebrew = text.codePoints().filter(AuditCollector::isHebrewLetter).count();
+            // Substantial prose with zero Hebrew → English/other leak (Latin product names alone are fine).
+            if (letters >= 40 && hebrew == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean containsCyrillic(String text) {
+        return text != null && text.codePoints().anyMatch(cp ->
+                (cp >= 0x0400 && cp <= 0x04FF) || (cp >= 0x0500 && cp <= 0x052F));
+    }
+
+    private static boolean isHebrewLetter(int cp) {
+        return cp >= 0x0590 && cp <= 0x05FF;
     }
 
     /** Loads the page in an emulated iPhone SE to catch parasitic horizontal scroll. */
