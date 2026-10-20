@@ -1,3 +1,5 @@
+import { auditLpLocaleFromHost, auditLpLocaleFromPathname } from '@/lib/auditLp'
+
 /** Shared splash lifecycle helpers for hero / motion intros. */
 
 export type SplashMode = 'full' | 'quick'
@@ -17,6 +19,47 @@ declare global {
   interface Window {
     __erythroSplashDone?: boolean
   }
+}
+
+/**
+ * Returns true when the full-screen brand splash should be skipped entirely:
+ * - `/lp/audit/*` and `audit-*.erythro.ai`
+ * - `/audit` and `/order/*` conversion pages
+ * - Any landing URL with paid ad click parameters (`fbclid`, `gclid`, `gbraid`, `wbraid`, `utm_*`)
+ */
+export function shouldSkipSplashSurface(
+  pathname: string,
+  search?: string,
+  hostname?: string,
+): boolean {
+  const cleanPath = (pathname || '/').split('?')[0] || '/'
+  if (auditLpLocaleFromPathname(cleanPath)) return true
+  if (cleanPath === '/audit' || cleanPath.startsWith('/audit/') || cleanPath.startsWith('/order/')) {
+    return true
+  }
+  const host = hostname ?? (typeof window !== 'undefined' ? window.location.hostname : '')
+  if (host && auditLpLocaleFromHost(host) != null) return true
+
+  const rawSearch = search ?? (typeof window !== 'undefined' ? window.location.search : '')
+  if (rawSearch) {
+    try {
+      const sp = new URLSearchParams(rawSearch)
+      if (
+        sp.has('fbclid') ||
+        sp.has('gclid') ||
+        sp.has('gbraid') ||
+        sp.has('wbraid') ||
+        sp.has('utm_source') ||
+        sp.has('utm_campaign') ||
+        sp.has('utm_medium')
+      ) {
+        return true
+      }
+    } catch {
+      // ignore URLSearchParams parse errors
+    }
+  }
+  return false
 }
 
 export function readSavedScrollY(): number {

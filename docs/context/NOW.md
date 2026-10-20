@@ -9,16 +9,18 @@
 
 - **GA4 Key Events (`qualify_lead`, `close_convert_lead`, `purchase`) + синхронный Consent Mode + сохранение UTM (PIT-116):**
   - В [`src/lib/adsConversion.ts`](../../src/lib/adsConversion.ts) добавлена `ensureAnalyticsConsentAndGaConfig()` и `readCampaignConfigParams()`.
-  - В [`src/components/AnalyticsBootstrap.tsx`](../../src/components/AnalyticsBootstrap.tsx) включён `gtag('set', 'url_passthrough', true)` и снимок стартовых UTM-параметров `window.__ERYTHRO_INITIAL_UTM__`, чтобы GA4 не терял `utm_campaign` при отложенном согласии или несвязанном `gclid`.
-  - Через Google Ads API в аккаунте `106-795-7298` очищен конфликтующий `customer.tracking_url_template` (`{lpurl}?utm_source=...`), который дублировал второй `?` поверх `ad.finalUrls` с уже прописанными UTM.
-  - Подключён трекинг конверсий во всех 5 формах сайта (`AuditBody`, `AuditLpForm`, `OrderClient`, `ContactModal`, `ContactsBody`) и `PaymentReturn`.
-  - Обновлены [`docs/architecture/google-ads-conversions.md`](../architecture/google-ads-conversions.md), [`docs/PITFALLS.md`](../PITFALLS.md) (PIT-116) и их зеркала в Obsidian.
+  - В [`src/components/AnalyticsBootstrap.tsx`](../../src/components/AnalyticsBootstrap.tsx) включён `gtag('set', 'url_passthrough', true)` и снимок стартовых UTM-параметров `window.__ERYTHRO_INITIAL_UTM__`.
+  - В GA4 (`543568002`) через Admin API добавлено ключевое событие `form_submit` (`keyEvents/16167623633`), созданы Custom Dimensions `lead_source` (`16167737469`) и `plan_slug` (`16167737470`), а также завершена связка с Google Ads (`googleAdsLinks/16167871915` ↔ `106-795-7298`).
+  - Через Google Ads API в аккаунте `106-795-7298` очищен конфликтующий `customer.tracking_url_template` (`{lpurl}?utm_source=...`), который дублировал второй `?` поверх `ad.finalUrls`.
+- **Оптимизация мобильного трафика из Facebook / Meta Ads и атрибуции `fbclid` / `gclid` (PIT-117):**
+  - В [`src/lib/splash.ts`](../../src/lib/splash.ts) и [`src/components/SplashHost.tsx`](../../src/components/SplashHost.tsx) добавлена `shouldSkipSplashSurface()`: полноэкранный `<SplashScreen />` отключён на `/audit`, `/order/*`, `/lp/audit/*`, `audit-*.erythro.ai` и при любом переходе с рекламными метками (`fbclid`, `gclid`, `gbraid`, `wbraid`, `utm_*`), чтобы мобильный In-App Browser (Facebook/Instagram) открывал страницу без 1.5–3.5с задержки.
+  - В [`src/components/AnalyticsBootstrap.tsx`](../../src/components/AnalyticsBootstrap.tsx) и [`src/lib/adsConversion.ts`](../../src/lib/adsConversion.ts) добавлен автоматический fallback атрибуции: `fbclid` → `fb / paid`, `gclid` → `google / cpc`, если нет явных `utm_source` / `utm_medium`.
+  - В [`src/components/AnalyticsLoader.tsx`](../../src/components/AnalyticsLoader.tsx) и `ensureAnalyticsConsentAndGaConfig()` добавлена отправка `fbq('track', 'PageView')` после `fbq('consent', 'grant')`.
+  - Обновлены [`docs/architecture/google-ads-conversions.md`](../architecture/google-ads-conversions.md), [`docs/PITFALLS.md`](../PITFALLS.md) (PIT-116, PIT-117) и их зеркала в Obsidian.
 
 ## Сейчас
 
-- **Этап 2 (остаток в UI GA4):** В GA4 сервисный аккаунт имеет права `Viewer` (`403` на `googleAdsLinks.create`). Чтобы завершить связку `106-795-7298` ↔ `543568002`, нужно либо повысить права `ai-analytics-agent@gen-lang-client-0558620659.iam.gserviceaccount.com` в GA4 до **Администратор**, либо подтвердить заявку `productLinkInvitations/6479052939` в UI.
-- **Этап 3 аудита:** SEO-маршрутизация языковых версий (разделение URL для EN/RU/HE, `hreflang`, `sitemap.xml`).
-- **Этап 4 аудита:** Оптимизация мобильного трафика из встроенного браузера Facebook (`m.facebook.com`).
+- **Этап 3 аудита (отложен пользователем для отдельной поэтапной реализации):** SEO-маршрутизация языковых версий (разделение URL для EN/RU/HE, `hreflang`, `sitemap.xml`).
 
 ## Не делать
 
@@ -27,4 +29,4 @@
 
 ## Последняя эстафета
 
-2026-10-20 — Gemini — исправлены Key Events в GA4, двойной `?` в шаблоне отслеживания Google Ads и сохранение UTM (PIT-116).
+2026-10-20 — Gemini — исправлены Key Events в GA4, связка Google Ads ↔ GA4, отключение SplashScreen на рекламном трафике и авто-атрибуция `fbclid`/`gclid` (PIT-116, PIT-117).

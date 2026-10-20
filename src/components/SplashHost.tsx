@@ -3,24 +3,20 @@
 import React, { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import SplashScreen from '@/components/SplashScreen'
-import { auditLpLocaleFromHost, auditLpLocaleFromPathname } from '@/lib/auditLp'
-import { markSplashDone, requestQuickSplash } from '@/lib/splash'
+import { markSplashDone, requestQuickSplash, shouldSkipSplashSurface } from '@/lib/splash'
 
-function isAuditLpSurface(pathname: string): boolean {
-  if (auditLpLocaleFromPathname(pathname)) return true
-  if (typeof window === 'undefined') return false
-  return auditLpLocaleFromHost(window.location.hostname) != null
-}
+export { shouldSkipSplashSurface }
 
 /**
  * Site-wide splash host. Remounts splash on client-side route changes with a
  * quick (static logo) intro. Hard reloads resolve mode via sessionStorage.
- * Ads audit LPs skip splash entirely (Final URL must show the form immediately).
+ * Ads audit LPs, /audit, /order/* and paid ad clicks skip splash entirely so
+ * mobile in-app browsers (Facebook/Instagram/Google Ads) show content immediately.
  */
 export default function SplashHost() {
   const pathname = usePathname() || '/'
   const prevPath = useRef(pathname)
-  const skipSplash = isAuditLpSurface(pathname)
+  const skipSplash = shouldSkipSplashSurface(pathname)
 
   if (prevPath.current !== pathname) {
     if (!skipSplash) requestQuickSplash()
