@@ -7,8 +7,10 @@ import {
   persistLocale,
   persistTheme,
   readLocaleCookieClient,
+  readQueryLocale,
   readStoredLocale,
   readStoredTheme,
+  resolveClientLocale,
   type SiteTheme,
 } from '@/lib/sitePrefs'
 
@@ -48,6 +50,9 @@ export type UseSitePrefsOptions = {
  * Pass `initialTheme` from the request cookie so SSR and the first client
  * render match. When omitted (or `clientHydratePrefs`), both sides start from
  * defaults and storage is applied after mount.
+ *
+ * First visit (no `?lang=` / storage / cookie): `resolveClientLocale` uses
+ * `navigator.languages` so RU/HE browsers are not stuck on EN.
  */
 export function useSitePrefs(
   initialLocale: string,
@@ -61,8 +66,9 @@ export function useSitePrefs(
   const [locale, setLocaleState] = useState(lockedLocale ?? initialLocale)
   const [theme, setThemeState] = useState<SiteTheme>(initialTheme ?? defaultTheme)
 
-  // useLayoutEffect: apply stored locale before paint to cut CLS from EN→RU/HE swap
-  // after ISR HTML (always SSR as `en`). Locked LPs never adopt cookie locale.
+  // useLayoutEffect: apply stored / browser locale before paint to cut CLS from
+  // EN→RU/HE swap after ISR HTML (always SSR as `en`). Locked LPs never adopt
+  // cookie / browser locale.
   useLayoutEffect(() => {
     if (lockedLocale) {
       applyDocumentLocale(lockedLocale)
@@ -73,19 +79,31 @@ export function useSitePrefs(
       return
     }
 
-    if (!clientHydratePrefs) return
+    if (clientHydratePrefs) {
+      const storedTheme = readStoredTheme()
+      if (storedTheme) setThemeState(storedTheme)
+      else persistTheme(defaultTheme)
 
-    const storedTheme = readStoredTheme()
-    if (storedTheme) setThemeState(storedTheme)
-    else persistTheme(defaultTheme)
+      const resolved = resolveClientLocale(initialLocale)
+      applyDocumentLocale(resolved)
+      setLocaleState(resolved)
+      persistLocale(resolved)
+      return
+    }
 
-    const storedLocale = readStoredLocale() || readLocaleCookieClient()
-    if (storedLocale) {
-      applyDocumentLocale(storedLocale)
-      setLocaleState(storedLocale)
-      persistLocale(storedLocale)
-    } else if (isSiteLocale(initialLocale)) {
-      persistLocale(initialLocale)
+    // Dynamic SSR pages: cookie may already match. On first visit, adopt browser.
+    const existing = readQueryLocale() || readStoredLocale() || readLocaleCookieClient()
+    if (existing) {
+      if (existing !== initialLocale) {
+        applyDocumentLocale(existing)
+        setLocaleState(existing)
+      }
+      persistLocale(existing)
+    } else {
+      const resolved = resolveClientLocale(initialLocale)
+      applyDocumentLocale(resolved)
+      setLocaleState(resolved)
+      persistLocale(resolved)
     }
   }, [clientHydratePrefs, initialLocale, defaultTheme, lockedLocale, initialTheme])
 
@@ -99,8 +117,7 @@ export function useSitePrefs(
       if (stored) setThemeState(stored)
       else persistTheme(defaultTheme)
     }
-    if (isSiteLocale(initialLocale)) persistLocale(initialLocale)
-  }, [clientHydratePrefs, initialLocale, initialTheme, defaultTheme, lockedLocale])
+  }, [clientHydratePrefs, initialTheme, defaultTheme, lockedLocale])
 
   useEffect(() => {
     const root = document.documentElement

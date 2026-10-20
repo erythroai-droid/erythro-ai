@@ -7,14 +7,13 @@
 
 ## Сделано в этой сессии
 
-- Pro / Diagnostic → development offer (+15m, `kind=paid_dev`): адаптация «Предложение о разработке», worker + reconcile, docs/Obsidian.
-- Ранее: Pro ₪390 for all free audits (`f6443f7`); worker redeployed.
+- First-visit locale from browser: `navigator.languages` when no `?lang=` / cookie / `localStorage` (`sitePrefs` bootstrap + `useSitePrefs` + 404). Ads LP locks unchanged. No middleware Set-Cookie (CDN).
+- Ранее: Pro / Diagnostic → development offer (`paid_dev`); audit-agent live.
 
 ## Сейчас
 
-1. Merge / deploy site (Vercel) + redeploy **audit-agent** (worker schedule для paid).
-2. Убедиться `AUDIT_PRO_OFFER_ENABLED=1` на Vercel и worker (иначе commercial не шлётся).
-3. Optional: merge `fix/pro-offer-sql-status` если ещё не в production.
+- Проверить локально: инкогнито + браузер RU/HE → UI на том языке; повторный визит помнит выбор; переключатель вручную важнее браузера.
+- URL-локали (`/ru/...`) — позже, не в этом шаге.
 
 ## Не делать
 
@@ -23,4 +22,4 @@
 
 ## Последняя эстафета
 
-2026-10-20 — Cursor — paid Pro/Diagnostic → team@ development offer (+15m); await deploy site + worker.
+2026-10-20 — Cursor — browser locale on first visit (no URL split yet).

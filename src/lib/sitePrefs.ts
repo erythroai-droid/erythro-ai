@@ -74,6 +74,50 @@ export function readLocaleCookieClient(): SiteLocale | null {
   }
 }
 
+/** `?lang=en|ru|he` (ads LP handoff, shared links). */
+export function readQueryLocale(): SiteLocale | null {
+  if (typeof window === 'undefined') return null
+  const match = (window.location.search || '').match(/[?&]lang=(en|ru|he)(?:&|$)/)
+  return match && isSiteLocale(match[1]) ? match[1] : null
+}
+
+/**
+ * Map BCP-47 tags to a supported site locale (`iw` → `he`).
+ * Pure helper for tests and `detectBrowserLocale`.
+ */
+export function pickLocaleFromLanguageTags(tags: readonly string[]): SiteLocale | null {
+  for (const tag of tags) {
+    if (!tag) continue
+    let base = tag.trim().toLowerCase().split('-')[0]
+    if (base === 'iw') base = 'he'
+    if (isSiteLocale(base)) return base
+  }
+  return null
+}
+
+/** First matching `navigator.languages` / `navigator.language`, or null. */
+export function detectBrowserLocale(): SiteLocale | null {
+  if (typeof navigator === 'undefined') return null
+  const tags: string[] = []
+  if (navigator.languages?.length) tags.push(...navigator.languages)
+  if (navigator.language) tags.push(navigator.language)
+  return pickLocaleFromLanguageTags(tags)
+}
+
+/**
+ * Unlocked client locale: `?lang=` → storage/cookie → browser → fallback.
+ * Does not run on ads LP locks (`lockedLocale` / host path).
+ */
+export function resolveClientLocale(fallback: string = 'en'): SiteLocale {
+  const fromQuery = readQueryLocale()
+  if (fromQuery) return fromQuery
+  const stored = readStoredLocale() || readLocaleCookieClient()
+  if (stored) return stored
+  const browser = detectBrowserLocale()
+  if (browser) return browser
+  return isSiteLocale(fallback) ? fallback : 'en'
+}
+
 /** Inline bootstrap: apply stored theme before first paint (paste into layout). */
 export const THEME_BOOTSTRAP_SCRIPT = `(function(){try{var k='${THEME_STORAGE_KEY}';var t=localStorage.getItem(k);if(!t){var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=([^;]*)/);t=m?decodeURIComponent(m[1]):null}var r=document.documentElement;if(t==='light'){r.classList.remove('dark')}else if(t==='dark'){r.classList.add('dark')}}catch(e){}})();`
 
@@ -81,7 +125,8 @@ export const THEME_BOOTSTRAP_SCRIPT = `(function(){try{var k='${THEME_STORAGE_KE
  * Apply lang/dir before paint (ISR pages SSR as `en`).
  * Ads audit LPs (`audit-{locale}.erythro.ai` or `/lp/audit/{locale}`) lock
  * locale from host/path and ignore cookie/localStorage so the UI cannot jump.
+ * First visit (no `?lang=` / storage / cookie): adopt `navigator.languages`.
  * Font CSS variables still settle in `useSitePrefs` after mount.
  */
-export const LOCALE_BOOTSTRAP_SCRIPT = `(function(){try{var h=(location.hostname||'').toLowerCase();var path=location.pathname||'/';var lock=null;if(h==='audit-rus.erythro.ai'||h==='audit-ru.erythro.ai')lock='ru';else if(h==='audit-en.erythro.ai')lock='en';else if(h==='audit-he.erythro.ai')lock='he';else{var pm=path.match(/^\\/lp\\/audit\\/(en|ru|he)(?:\\/|$)/);if(pm)lock=pm[1]}var loc=lock;if(!loc){var qm=(location.search||'').match(/[?&]lang=(en|ru|he)(?:&|$)/);if(qm)loc=qm[1]}if(!loc){var k='${LOCALE_STORAGE_KEY}';try{loc=localStorage.getItem(k)}catch(e){}if(!loc){var m=document.cookie.match(/(?:^|; )${LOCALE_COOKIE}=([^;]*)/);loc=m?decodeURIComponent(m[1]):null}}if(loc!=='en'&&loc!=='ru'&&loc!=='he')return;var r=document.documentElement;r.lang=loc;r.dir=loc==='he'?'rtl':'ltr';if(lock)r.setAttribute('data-locale-lock',lock)}catch(e){}})();`
+export const LOCALE_BOOTSTRAP_SCRIPT = `(function(){try{var h=(location.hostname||'').toLowerCase();var path=location.pathname||'/';var lock=null;if(h==='audit-rus.erythro.ai'||h==='audit-ru.erythro.ai')lock='ru';else if(h==='audit-en.erythro.ai')lock='en';else if(h==='audit-he.erythro.ai')lock='he';else{var pm=path.match(/^\\/lp\\/audit\\/(en|ru|he)(?:\\/|$)/);if(pm)lock=pm[1]}var loc=lock;var k='${LOCALE_STORAGE_KEY}';if(!loc){var qm=(location.search||'').match(/[?&]lang=(en|ru|he)(?:&|$)/);if(qm)loc=qm[1]}if(!loc){try{loc=localStorage.getItem(k)}catch(e){}if(!loc){var m=document.cookie.match(/(?:^|; )${LOCALE_COOKIE}=([^;]*)/);loc=m?decodeURIComponent(m[1]):null}}if(!loc){try{var langs=navigator.languages||[];if(!langs.length&&navigator.language)langs=[navigator.language];for(var i=0;i<langs.length;i++){var b=String(langs[i]||'').toLowerCase().split('-')[0];if(b==='iw')b='he';if(b==='en'||b==='ru'||b==='he'){loc=b;break}}}catch(e){}}if(loc!=='en'&&loc!=='ru'&&loc!=='he')return;var r=document.documentElement;r.lang=loc;r.dir=loc==='he'?'rtl':'ltr';if(lock)r.setAttribute('data-locale-lock',lock);else{try{localStorage.setItem(k,loc)}catch(e){}document.cookie='${LOCALE_COOKIE}='+encodeURIComponent(loc)+'; path=/; max-age=31536000; samesite=lax'}}catch(e){}})();`
 

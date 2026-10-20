@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { readLocaleCookieClient, readStoredLocale, type SiteLocale } from '@/lib/sitePrefs'
+import { resolveClientLocale, type SiteLocale } from '@/lib/sitePrefs'
 
 const COPY = {
   en: {
@@ -23,23 +23,15 @@ const COPY = {
   },
 } as const
 
-type Locale = keyof typeof COPY
-
-function resolveLocale(value?: string | null): Locale {
-  if (value === 'ru' || value === 'he') return value
-  return 'en'
-}
-
 /**
  * Client 404 — no `cookies()` so the `(frontend)` segment stays statically
- * cacheable (ISR). Locale hydrates from storage like other marketing pages.
+ * cacheable (ISR). Locale hydrates from storage / browser like other marketing pages.
  */
 export default function NotFound() {
-  const [locale, setLocale] = useState<Locale>('en')
+  const [locale, setLocale] = useState<SiteLocale>('en')
 
-  useEffect(() => {
-    const stored = readStoredLocale() || readLocaleCookieClient()
-    setLocale(resolveLocale(stored as SiteLocale | null))
+  useLayoutEffect(() => {
+    setLocale(resolveClientLocale('en'))
   }, [])
 
   const t = COPY[locale]
