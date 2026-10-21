@@ -573,9 +573,9 @@ function shellHtml(input: {
   const fontStack = isRtl
     ? "'Heebo',Arial,Helvetica,sans-serif"
     : "Arial,Helvetica,sans-serif"
-  // Wordmark without plate; full header sits on a white pixel plate (Gmail inverts CSS bgcolor).
-  const logoUrl = `${SITE_URL}/images/logo/letterhead-full.svg`
-  const headerPlateUrl = `${SITE_URL}/images/logo/email-header-plate.svg?v=1`
+  // PNG: Gmail/Outlook do not render SVG in <img>. Wordmark; full header sits on a white pixel plate (Gmail inverts CSS bgcolor).
+  const logoUrl = `${SITE_URL}/images/logo/letterhead-full-email.png?v=3`
+  const headerPlateUrl = `${SITE_URL}/images/logo/email-header-plate.png?v=2`
   const footerLine = letterheadFooterLine(input.locale)
   const unsubLabel = unsubscribeCopy(input.locale).linkLabel
   // Header: full-bleed white plate image + logo / contacts on top (dir flips cells in RTL).

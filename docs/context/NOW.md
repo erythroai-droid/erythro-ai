@@ -1,21 +1,22 @@
 # Latest changes
 
-Обновлено: 2026-10-20  
+Обновлено: 2026-10-21  
 Модель: Composer  
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
 ## Сделано в этой сессии
 
-- **PIT-119 — «Далее» на `/order/ai-smart-card` вело на Бесплатный старт:**
-  - Причина: CMS slug `"ai-smart-card "` (хвостовой пробел) → дубликат плана в конце nav-списка → циклический wrap на `free-start`.
-  - Код: trim slug в `mapOrderFromPlanDoc` / `getOrderPlanBySlug`, cache `order-plans-v9-trim-slug`, `beforeValidate` на `solution-plans`.
-  - Prod DB: проставлены `free-start` / `ai-smart-card` / `business-automation` / `enterprise-custom`.
-  - До деплоя или Save в прод-админке Vercel Data Cache может ещё отдавать старый список.
+- **PIT-120 — n8n отвечал на DMARC-отчёты Microsoft → NDR `550 5.4.1`:**
+  - Skip: `dmarcreport@`, local-part `dmarc`/`rua`/`ruf`, тема `Report Domain:` / `DMARC … report`.
+  - Repo: `infra/n8n/workflows/email-autoresponder.json` + docs + PIT-120.
+  - Live n8n задеплоен и проверен (`report_sender` / `dmarc_report_mail` в Code node, `active=True`).
+
+- **PIT-121 — пропал логотип в Pro-письме:** SVG не рендерится в Gmail/Outlook → `letterhead-full-email.png` + `email-header-plate.png` в `auditProOffer.ts`. Нужен деплой (PNG в `public/`), потом тест-отправка.
 
 ## Сейчас
 
-- Нужен деплой (или Save любого solution-plan в prod admin / `POST /api/revalidate`) чтобы сбросить кэш на живом сайте.
+- PIT-119: нужен деплой сайта (или Save solution-plan / `POST /api/revalidate`) для сброса Data Cache order-plans.
 - **Этап 3 аудита (отложен):** SEO-маршрутизация языковых версий (EN/RU/HE URL, `hreflang`, `sitemap.xml`).
 
 ## Не делать
@@ -25,4 +26,4 @@
 
 ## Последняя эстафета
 
-2026-10-20 — Composer — PIT-119: trim order-plan slugs + DB fix; «Далее» на AI-визитке больше не должно прыгать на Free Start после деплоя/revalidate.
+2026-10-21 — Composer — PIT-120: n8n не отвечает на DMARC aggregate reports; workflow обновлён на VPS.
