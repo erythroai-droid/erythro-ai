@@ -83,6 +83,9 @@ describe('auditProOffer', () => {
     expect(mail.html).toContain('#b5a58d')
     expect(mail.html).toContain('Эйлат, Израиль')
     expect(mail.html).toContain('audit-pro-ads')
+    expect(mail.html).toContain('https://erythro.ai/samples/audit/pro-ru.html')
+    expect(mail.text).toContain('Смотреть пример отчёта Pro: https://erythro.ai/samples/audit/pro-ru.html')
+    expect(mail.html).not.toContain('/audit/report/')
     expect(mail.html).toContain('text-decoration:line-through')
     expect(mail.html).toContain(`₪${PRO_LIST_PRICE}`)
     expect(mail.html).not.toContain('WhatsApp')
@@ -243,4 +246,31 @@ describe('auditProOffer', () => {
     expect(isPaidAuditFunnelPlanSlug('audit-diagnostic')).toBe(true)
     expect(isPaidAuditFunnelPlanSlug('audit-free')).toBe(false)
   })
+})
+
+describe('buildProOfferEmail sample Pro report link', () => {
+  for (const [locale, label] of [
+    ['en', 'View sample Pro report'],
+    ['ru', 'Смотреть пример отчёта Pro'],
+    ['he', 'צפו בדוגמת דוח Pro'],
+  ] as const) {
+    for (const kind of ['offer', 'nudge'] as const) {
+      it(`${kind} ${locale} links sample in same language`, () => {
+        const prev = process.env.PAYLOAD_SECRET
+        process.env.PAYLOAD_SECRET = 'test-pro-offer-secret'
+        const mail = buildProOfferEmail({
+          email: 'a@example.com',
+          locale,
+          checkoutUrl: 'https://erythro.ai/order/audit-pro-ads',
+          reportUrl: 'https://erythro.ai/audit/report/1?k=abc',
+          kind,
+        })
+        process.env.PAYLOAD_SECRET = prev
+        expect(mail.html).toContain(`https://erythro.ai/samples/audit/pro-${locale}.html`)
+        expect(mail.html).toContain(label)
+        expect(mail.html).not.toContain('/audit/report/')
+        expect(mail.text).not.toContain('/audit/report/')
+      })
+    }
+  }
 })

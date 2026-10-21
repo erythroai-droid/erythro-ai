@@ -9,7 +9,8 @@
 1. **IMAP Triggers**: Опрашивает почтовые ящики `order@erythro.ai` и `team@erythro.ai` (Hostinger: `imap.hostinger.com:993` SSL/TLS).
 2. **Anti-Loop & Spam Filter (RFC 3834)**:
    - Игнорирует письма от отправителей `@erythro.ai` (защита от зацикливания).
-   - Игнорирует `mailer-daemon`, `no-reply`, `postmaster`, `bounce`.
+   - Игнорирует `mailer-daemon`, `no-reply`, `postmaster`, `bounce`, `notifications@`.
+   - Игнорирует DMARC/RUA report-отправителей (`dmarcreport@…`, local-part `dmarc` / `rua` / `ruf`, темы `Report Domain:` / `DMARC … report`) — иначе ответ на aggregate-отчёт ловит `550 5.4.1` (PIT-122).
    - Игнорирует письма с заголовками `Auto-Submitted: auto-replied`, `Precedence: bulk/junk/list`, `X-Autoreply`.
 3. **Thread Detection (Защита от спама в диалогах)**:
    - Игнорирует входящие ответы в рамках существующей переписки (проверка заголовков `In-Reply-To`, `References`, а также тем с префиксами `Re:`, `Fwd:`, `Отв:`, `На:`).

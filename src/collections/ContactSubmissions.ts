@@ -343,10 +343,13 @@ export const ContactSubmissions: CollectionConfig = {
               type: 'textarea',
               admin: {
                 description:
-                  'Inline HTML report for typical sizes (≤ ~2MB); larger reports stay in R2 only',
+                  'Inline HTML report for typical sizes (≤ ~2MB); larger reports stay in R2 only. Collapsed by default — Expand to view.',
                 condition: auditOnly,
                 readOnly: true,
                 rows: 8,
+                components: {
+                  Field: '/components/admin/HtmlResultField#HtmlResultField',
+                },
               },
             },
             {
