@@ -2003,6 +2003,33 @@ eadCampaignConfigParams().
 
 ---
 
+## PIT-120 — n8n autoresponder replies to DMARC aggregate reports → Microsoft `550 5.4.1`
+
+**Tags:** `n8n`, `email`, `autoresponder`, `dmarc`, `hostinger`  
+**Seen:** 2026-10-21 — `order@erythro.ai` → `dmarcreport@microsoft.com`
+
+**Symptom:** Hostinger NDR after a Microsoft DMARC aggregate lands in `order@`: *Recipient address rejected: Access denied* (`550 5.4.1`) while communicating with `microsoft-com.mail.protection.outlook.com`. Message deleted from queue. The XML report itself was already delivered.
+
+**Cause:** `rua=mailto:order@erythro.ai` receives reports From `dmarcreport@microsoft.com`. That mailbox is outbound-only. n8n `Process & Sign Autoresponder` skipped `no-reply` / `mailer-daemon` / `bounce` but not `dmarcreport@`, and DMARC subjects lack `Re:` so thread detection did not fire → branded auto-reply → Microsoft rejects → Hostinger NDR noise.
+
+**Fix:** In `infra/n8n/workflows/email-autoresponder.json` skip:
+1. `dmarcreport@` / `dmarcreportfeedback@` in the automated-sender regex;
+2. local-part `dmarc` / `rua` / `ruf` (and `dmarc-report` variants) → `report_sender`;
+3. subject `Report Domain:` or `DMARC … report` → `dmarc_report_mail`.
+Redeploy the live workflow (`scripts/deploy_n8n_email_autoresponder.py` or Import from File).
+
+**Prevent:** Any mailbox used as DMARC `rua`/`ruf` must treat report senders as automated — never auto-reply to them.
+
+---
+
+## PIT-121 — Pro-offer email: logo missing (broken image) in Gmail/Outlook
+
+**Symptom:** Pro/nudge email header shows broken-image icons instead of the logo; `https://erythro.ai/images/logo/letterhead-full.svg` returns 200 `image/svg+xml`.
+
+**Cause:** Gmail and Outlook do not render SVG in `<img>`. Email used `letterhead-full.svg` + `email-header-plate.svg`.
+
+**Fix:** `src/lib/auditProOffer.ts` now uses `public/images/logo/letterhead-full-email.png` (354px, 2x, white baked in) and `email-header-plate.png`. Never use SVG for email images.
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -2041,6 +2068,7 @@ eadCampaignConfigParams().
 - [ ] Audit order/form intake must POST structured website / auditLanguage / planSlug (PIT-030)
 - [ ] No hardcoded API keys / `AIza…` in source; secrets only via env (PIT-039)
 - [ ] n8n IMAP autoresponder: Hostinger Autoreply/Vacation must be Off (PIT-040)
+- [ ] n8n IMAP autoresponder: skip DMARC/`dmarcreport@` / `rua`/`ruf` senders (PIT-120)
 - [ ] User-supplied website check: DNS + public IP only, never HTTP-fetch the URL (PIT-041)
 - [ ] Rounded pill inputs: clip autofill or set input radius + `:-webkit-autofill` override (PIT-042)
 - [ ] Turnstile: CSP `frame-src` + `worker-src blob:` + sitekey `NEXT_PUBLIC_` (or `TURNSTILE_SITE_KEY` map); prod hostnames without localhost (PIT-043)
@@ -2108,3 +2136,4 @@ eadCampaignConfigParams().
 - [ ] Paid ad clicks (`fbclid` / `gclid` / `utm_*`) and `/audit` / `/order/*`: skip `<SplashScreen />` (`shouldSkipSplashSurface`) and auto-attribute `fb / paid` or `google / cpc` (PIT-117)
 - [ ] Sitemap & canonicals: exclude `checkoutMode === 'contact'` (`audit-manual`) and placeholder portfolio slugs (`next-project`) from `sitemap.xml`, 308-redirect legacy aliases (`/order/ai-business-card` → `/order/ai-smart-card`, `/portfolio/Interior` → `/portfolio/pro-interior`), and restrict GA4/Ads/Meta beacons to `erythro.ai` / `*.erythro.ai` (`isProductionAnalyticsHost`, PIT-118)
 - [ ] Solution-plan slugs: trim on read/write; no trailing spaces or null slugs — else order ProjectNav wraps to Free Start (PIT-119)
+- [ ] Email images: PNG/JPG only, never SVG (Gmail/Outlook show broken image) (PIT-121)
