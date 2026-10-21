@@ -7,6 +7,7 @@ import { getPayload, type Payload } from 'payload'
 import { sql } from '@payloadcms/db-postgres'
 import config from '@payload-config'
 import { buildAuditReportPath } from '@/lib/auditReport'
+import { auditSampleReportHref } from '@/lib/auditSampleReports'
 import {
   buildMailUnsubscribeUrl,
   isMailUnsubscribed,
@@ -644,6 +645,20 @@ function shellHtml(input: {
 </html>`
 }
 
+/** Offer / nudge link to the Pro sample report in the recipient's language (not their own free report). */
+function proSampleReport(locale: OfferLocale): { url: string; label: string } {
+  const href = auditSampleReportHref('audit-pro', locale) ?? '/samples/audit/pro-en.html'
+  return {
+    url: `${SITE_URL}${href}`,
+    label:
+      locale === 'ru'
+        ? 'Смотреть пример отчёта Pro'
+        : locale === 'he'
+          ? 'צפו בדוגמת דוח Pro'
+          : 'View sample Pro report',
+  }
+}
+
 /** Brand HTML email (table layout). Offer = Pro only; reminder/paid_dev = modernization/AI. */
 export function buildProOfferEmail(input: {
   name?: string | null
@@ -657,6 +672,7 @@ export function buildProOfferEmail(input: {
   const locale = offerLocale(input.locale)
   const dir = locale === 'he' ? 'rtl' : 'ltr'
   const kind = input.kind || 'offer'
+  const sample = proSampleReport(locale)
   const email = input.email.trim()
   const unsubscribeUrl = buildMailUnsubscribeUrl(email, locale)
   const unsubLabel = unsubscribeCopy(locale).linkLabel
@@ -680,13 +696,11 @@ export function buildProOfferEmail(input: {
           : `${copy.priceBadge} instead of ₪${PRO_LIST_PRICE} · ${copy.priceNote}`,
       `${copy.cta}: ${input.checkoutUrl}`,
     ]
-    if (input.reportUrl) textParts.push('', `${copy.reportCta}: ${input.reportUrl}`)
+    textParts.push('', `${sample.label}: ${sample.url}`)
     if (input.orderId) textParts.push('', `Order: ${input.orderId}`)
     textParts.push('', copy.close, `${unsubLabel}: ${unsubscribeUrl}`, '', copy.brand)
 
-    const reportBlock = input.reportUrl
-      ? `<p style="margin:0 0 16px;"><a href="${escapeHtml(input.reportUrl)}" style="color:#c41e3a;font-size:14px;font-weight:600;">${escapeHtml(copy.reportCta)} →</a></p>`
-      : ''
+    const reportBlock = `<p style="margin:0 0 16px;"><a href="${escapeHtml(sample.url)}" style="color:#c41e3a;font-size:14px;font-weight:600;">${escapeHtml(sample.label)} →</a></p>`
 
     const bodyInner = `
       <p style="margin:0 0 16px;color:#333;font-size:15px;line-height:1.55;">${escapeHtml(copy.intro)}</p>
@@ -808,13 +822,11 @@ export function buildProOfferEmail(input: {
         : `${copy.priceBadge} instead of ₪${PRO_LIST_PRICE} · ${copy.priceNote}`,
     `${copy.cta}: ${input.checkoutUrl}`,
   ]
-  if (input.reportUrl) textParts.push('', `${copy.reportCta}: ${input.reportUrl}`)
+  textParts.push('', `${sample.label}: ${sample.url}`)
   if (input.orderId) textParts.push('', `Order: ${input.orderId}`)
   textParts.push('', copy.close, `${unsubLabel}: ${unsubscribeUrl}`, '', copy.brand)
 
-  const reportBlock = input.reportUrl
-    ? `<p style="margin:0 0 16px;"><a href="${escapeHtml(input.reportUrl)}" style="color:#c41e3a;font-size:14px;font-weight:600;">${escapeHtml(copy.reportCta)} →</a></p>`
-    : ''
+  const reportBlock = `<p style="margin:0 0 16px;"><a href="${escapeHtml(sample.url)}" style="color:#c41e3a;font-size:14px;font-weight:600;">${escapeHtml(sample.label)} →</a></p>`
 
   const bodyInner = `
     <p style="margin:0 0 16px;color:#333;font-size:15px;line-height:1.55;">${escapeHtml(copy.intro)}</p>
