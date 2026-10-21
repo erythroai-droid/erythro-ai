@@ -7,17 +7,14 @@
 
 ## Сделано в этой сессии
 
-- **PIT-120 — n8n отвечал на DMARC-отчёты Microsoft → NDR `550 5.4.1`:**
-  - Skip: `dmarcreport@`, local-part `dmarc`/`rua`/`ruf`, тема `Report Domain:` / `DMARC … report`.
-  - Repo: `infra/n8n/workflows/email-autoresponder.json` + docs + PIT-120.
-  - Live n8n задеплоен и проверен (`report_sender` / `dmarc_report_mail` в Code node, `active=True`).
-
-- **PIT-121 — пропал логотип в Pro-письме:** SVG не рендерится в Gmail/Outlook → `letterhead-full-email.png` + `email-header-plate.png` в `auditProOffer.ts`. Нужен деплой (PNG в `public/`), потом тест-отправка.
+- **Admin Html Result collapsible:** `HtmlResultField` — свёрнут по умолчанию, кнопка Expand/Collapse + размер; wired на `contact-submissions.htmlResult`; `pnpm generate:importmap`.
+- Ранее: local `main` = #290; PIT-120/121/122 numbering + n8n DMARC skip в рабочей копии (ещё без коммита).
 
 ## Сейчас
 
-- PIT-119: нужен деплой сайта (или Save solution-plan / `POST /api/revalidate`) для сброса Data Cache order-plans.
-- **Этап 3 аудита (отложен):** SEO-маршрутизация языковых версий (EN/RU/HE URL, `hreflang`, `sitemap.xml`).
+- Нужен деплой/preview, чтобы увидеть свёртку Html Result в админке.
+- Коммит/PR: HtmlResultField (+ опционально PIT-120/122 docs + n8n JSON).
+- **Этап 3 аудита (отложен):** SEO-маршрутизация языковых версий.
 
 ## Не делать
 
@@ -26,4 +23,4 @@
 
 ## Последняя эстафета
 
-2026-10-21 — Composer — PIT-120: n8n не отвечает на DMARC aggregate reports; workflow обновлён на VPS.
+2026-10-21 — Composer — Html Result в Audit pipeline сворачивается (Expand/Collapse).

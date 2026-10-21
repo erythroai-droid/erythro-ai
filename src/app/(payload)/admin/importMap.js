@@ -33,6 +33,7 @@ import { CompactTextCell as CompactTextCell_6c75be75af3d474a9a4458997fd0b0d8 } f
 import { SourceBadgeCell as SourceBadgeCell_3472cf698bdf4ced58b0213a911dc07d } from '../../../components/admin/SourceBadgeCell'
 import { AuditStatusCell as AuditStatusCell_90598d21a356610c87f8c97a143ebe3d } from '../../../components/admin/AuditStatusCell'
 import { CompactNumberCell as CompactNumberCell_2b4ba1512b08e2926a6b0339bba30411 } from '../../../components/admin/CompactNumberCell'
+import { HtmlResultField as HtmlResultField_882a076673dd009bff4435f77cec7ec1 } from '../../../components/admin/HtmlResultField'
 import { ConsultTranscriptCell as ConsultTranscriptCell_dd5d263d85fd88e4e06edb83e680fd1b } from '../../../components/admin/ConsultTranscriptField'
 import { ConsultTranscriptField as ConsultTranscriptField_dd5d263d85fd88e4e06edb83e680fd1b } from '../../../components/admin/ConsultTranscriptField'
 import { SiteEmailSelect as SiteEmailSelect_30db27f8d892d48b69f8e5b1c40f89db } from '../../../components/admin/SiteEmailSelect'
@@ -82,6 +83,7 @@ export const importMap = {
   "/components/admin/SourceBadgeCell#SourceBadgeCell": SourceBadgeCell_3472cf698bdf4ced58b0213a911dc07d,
   "/components/admin/AuditStatusCell#AuditStatusCell": AuditStatusCell_90598d21a356610c87f8c97a143ebe3d,
   "/components/admin/CompactNumberCell#CompactNumberCell": CompactNumberCell_2b4ba1512b08e2926a6b0339bba30411,
+  "/components/admin/HtmlResultField#HtmlResultField": HtmlResultField_882a076673dd009bff4435f77cec7ec1,
   "/components/admin/ConsultTranscriptField#ConsultTranscriptCell": ConsultTranscriptCell_dd5d263d85fd88e4e06edb83e680fd1b,
   "/components/admin/ConsultTranscriptField#ConsultTranscriptField": ConsultTranscriptField_dd5d263d85fd88e4e06edb83e680fd1b,
   "/components/admin/SiteEmailSelect#SiteEmailSelect": SiteEmailSelect_30db27f8d892d48b69f8e5b1c40f89db,

@@ -2003,7 +2003,32 @@ eadCampaignConfigParams().
 
 ---
 
-## PIT-120 — n8n autoresponder replies to DMARC aggregate reports → Microsoft `550 5.4.1`
+## PIT-120 — Ads traffic on `/audit` must land on dedicated language LPs
+
+**Tags:** `ads`, `middleware`, `audit`, `utm`, `landing`  
+**Seen:** 2026-10-20 — Google/Meta Final URL still hitting `https://erythro.ai/audit?…`
+
+**Symptom:** Paid clicks open the main-site `/audit` (cookie/splash/locale hop) instead of the fast dedicated LP (`audit-en|ru|he.erythro.ai`). Bounce and mis-locale; PIT-112 Final URL guidance alone is not enough when old ads or shared links still point at `/audit`.
+
+**Cause:** Campaign tags (`utm_campaign` with `_ru`/`_en`/`_he`, or `lang=`) arrive on the apex `/audit` path. Without a middleware hop, the visitor stays on the heavy main audit page.
+
+**Fix:** In `src/middleware.ts`, when pathname is `/audit` and campaign/lang resolves to `ru|en|he`, **307** to `https://audit-{locale}.erythro.ai/` preserving the query string; set `X-Robots-Tag: noindex, nofollow`. Prefer Final URL = dedicated host (PIT-112); this redirect is the safety net.
+
+**Prevent:** Keep ads Final URLs on `audit-{locale}.erythro.ai`. Do not remove the middleware redirect while legacy `/audit?utm_…` links exist.
+
+---
+
+## PIT-121 — Pro-offer email: logo missing (broken image) in Gmail/Outlook
+
+**Symptom:** Pro/nudge email header shows broken-image icons instead of the logo; `https://erythro.ai/images/logo/letterhead-full.svg` returns 200 `image/svg+xml`.
+
+**Cause:** Gmail and Outlook do not render SVG in `<img>`. Email used `letterhead-full.svg` + `email-header-plate.svg`.
+
+**Fix:** `src/lib/auditProOffer.ts` now uses `public/images/logo/letterhead-full-email.png` (354px, 2x, white baked in) and `email-header-plate.png`. Never use SVG for email images.
+
+---
+
+## PIT-122 — n8n autoresponder replies to DMARC aggregate reports → Microsoft `550 5.4.1`
 
 **Tags:** `n8n`, `email`, `autoresponder`, `dmarc`, `hostinger`  
 **Seen:** 2026-10-21 — `order@erythro.ai` → `dmarcreport@microsoft.com`
@@ -2019,16 +2044,6 @@ eadCampaignConfigParams().
 Redeploy the live workflow (`scripts/deploy_n8n_email_autoresponder.py` or Import from File).
 
 **Prevent:** Any mailbox used as DMARC `rua`/`ruf` must treat report senders as automated — never auto-reply to them.
-
----
-
-## PIT-121 — Pro-offer email: logo missing (broken image) in Gmail/Outlook
-
-**Symptom:** Pro/nudge email header shows broken-image icons instead of the logo; `https://erythro.ai/images/logo/letterhead-full.svg` returns 200 `image/svg+xml`.
-
-**Cause:** Gmail and Outlook do not render SVG in `<img>`. Email used `letterhead-full.svg` + `email-header-plate.svg`.
-
-**Fix:** `src/lib/auditProOffer.ts` now uses `public/images/logo/letterhead-full-email.png` (354px, 2x, white baked in) and `email-header-plate.png`. Never use SVG for email images.
 
 ## Checklist before merging CMS / schema PRs
 
@@ -2068,7 +2083,8 @@ Redeploy the live workflow (`scripts/deploy_n8n_email_autoresponder.py` or Impor
 - [ ] Audit order/form intake must POST structured website / auditLanguage / planSlug (PIT-030)
 - [ ] No hardcoded API keys / `AIza…` in source; secrets only via env (PIT-039)
 - [ ] n8n IMAP autoresponder: Hostinger Autoreply/Vacation must be Off (PIT-040)
-- [ ] n8n IMAP autoresponder: skip DMARC/`dmarcreport@` / `rua`/`ruf` senders (PIT-120)
+- [ ] Ads `/audit?utm_…`: middleware 307 → `audit-{en|ru|he}.erythro.ai` (PIT-120)
+- [ ] n8n IMAP autoresponder: skip DMARC/`dmarcreport@` / `rua`/`ruf` senders (PIT-122)
 - [ ] User-supplied website check: DNS + public IP only, never HTTP-fetch the URL (PIT-041)
 - [ ] Rounded pill inputs: clip autofill or set input radius + `:-webkit-autofill` override (PIT-042)
 - [ ] Turnstile: CSP `frame-src` + `worker-src blob:` + sitekey `NEXT_PUBLIC_` (or `TURNSTILE_SITE_KEY` map); prod hostnames without localhost (PIT-043)
