@@ -1,26 +1,28 @@
 # Latest changes
 
-Обновлено: 2026-10-21  
-Модель: Composer  
+Обновлено: 2026-10-23  
+Модель: Sonnet 5.5  
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
 ## Сделано в этой сессии
 
-- **Admin Html Result collapsible:** `HtmlResultField` — свёрнут по умолчанию, кнопка Expand/Collapse + размер; wired на `contact-submissions.htmlResult`; `pnpm generate:importmap`.
-- Ранее: local `main` = #290; PIT-120/121/122 numbering + n8n DMARC skip в рабочей копии (ещё без коммита).
+- **PIT-123 — дубль письма «Специальное предложение» (заявка 202):** причина — гонка таймера audit-agent и Vercel cron (оба видели `scheduled`). Фикс в рабочей копии: атомарный захват `claimProOfferSend` + колонка `pro_offer_lock_at` (миграция `20261023_120000`), lock снимается вместе с итоговым статусом, сбой SMTP освобождает lock, таймаут после `DATA` не ретраится на 587. Тесты: `tests/int/auditProOfferClaim.int.spec.ts` (22 теста auditProOffer* зелёные). PITFALLS + Obsidian + `audit-pro-offer-funnel.md` обновлены.
+- Получателю pizza280784@gmail.com ничего дополнительно не отправлять (решение владельца): два ушедших письма остаются как есть.
+- Ранее: Admin Html Result collapsible; PIT-120/121/122 + n8n DMARC skip (в рабочей копии, без коммита).
 
 ## Сейчас
 
-- Нужен деплой/preview, чтобы увидеть свёртку Html Result в админке.
-- Коммит/PR: HtmlResultField (+ опционально PIT-120/122 docs + n8n JSON).
+- Коммит/PR: PIT-123 фикс (+ HtmlResultField, PIT-120/122 docs). Миграция идёт через `payload migrate` в `pnpm build` — деплой кода и миграции одним билдом.
+- После деплоя: в логах Vercel не должно быть двух `POST …/pro-offer` на один id с обоими `ok`; проверить `pro_offer_lock_at IS NULL` у отправленных заявок.
 - **Этап 3 аудита (отложен):** SEO-маршрутизация языковых версий.
 
 ## Не делать
 
 - Не печатать SMTP / AGENT / VPS `.env`.
 - Не зеркалировать этот файл в Obsidian.
+- Не слать повторно письма заявке 202.
 
 ## Последняя эстафета
 
-2026-10-21 — Composer — Html Result в Audit pipeline сворачивается (Expand/Collapse).
+2026-10-23 — Sonnet 5.5 — PIT-123: атомарный claim отправки team@ Pro-оффера (код + тесты + доки; не закоммичено).

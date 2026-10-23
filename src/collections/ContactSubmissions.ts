@@ -465,6 +465,18 @@ export const ContactSubmissions: CollectionConfig = {
                 position: 'sidebar',
               },
             },
+            {
+              name: 'proOfferLockAt',
+              type: 'date',
+              admin: {
+                description:
+                  'Send lock: set while a team@ commercial email is being sent (stale after 10 min). Written only via SQL.',
+                condition: auditOnly,
+                date: { pickerAppearance: 'dayAndTime' },
+                readOnly: true,
+                position: 'sidebar',
+              },
+            },
           ],
         },
       ],

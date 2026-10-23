@@ -889,6 +889,8 @@ async function patchProOfferFieldsSql(
     proOfferNudgeSentAt?: string | null
     proOfferReminderDueAt?: string | null
     proOfferReminderSentAt?: string | null
+    /** Only `null` (release the send lock together with the final status write). */
+    proOfferLockAt?: null
   },
 ): Promise<void> {
   const id = typeof submissionId === 'string' ? Number(submissionId) : submissionId
@@ -949,6 +951,9 @@ async function patchProOfferFieldsSql(
         : sql`pro_offer_reminder_sent_at = ${fields.proOfferReminderSentAt}::timestamptz`,
     )
   }
+  if (fields.proOfferLockAt === null) {
+    sets.push(sql`pro_offer_lock_at = null`)
+  }
   if (!sets.length) return
 
   sets.push(sql`updated_at = now()`)
@@ -960,6 +965,97 @@ async function patchProOfferFieldsSql(
   await payload.db.drizzle.execute(
     sql`update contact_submissions set ${setSql} where id = ${id}`,
   )
+}
+
+/** A send lock older than this is treated as a crashed worker and may be re-claimed. */
+export const PRO_OFFER_LOCK_TTL_SEC = 10 * 60
+
+/**
+ * Atomic send claim. The worker timer, Vercel cron and the n8n walker can all
+ * hit the same submission within seconds; a read-then-send check lets two of
+ * them through (duplicate team@ mail, submission 202). The status guard lives in
+ * the same UPDATE so a caller holding a stale read cannot claim after another
+ * caller has already finished.
+ */
+async function claimProOfferSend(
+  payload: Payload,
+  submissionId: number | string,
+  kind: OfferKind,
+  force: boolean,
+): Promise<boolean> {
+  const id = typeof submissionId === 'string' ? Number(submissionId) : submissionId
+  if (!Number.isFinite(id)) {
+    throw new Error(`Invalid submission id for pro-offer claim: ${submissionId}`)
+  }
+
+  const statusGuard = force
+    ? sql`true`
+    : kind === 'nudge'
+      ? sql`coalesce(pro_offer_status, 'none') = 'sent' and pro_offer_nudge_sent_at is null`
+      : kind === 'reminder'
+        ? sql`coalesce(pro_offer_status, 'none') in ('sent', 'nudge_sent') and pro_offer_reminder_sent_at is null`
+        : sql`coalesce(pro_offer_status, 'none') in ('scheduled', 'none')`
+
+  const res = (await payload.db.drizzle.execute(sql`
+    update contact_submissions
+    set pro_offer_lock_at = now()
+    where id = ${id}
+      and ${statusGuard}
+      and (
+        pro_offer_lock_at is null
+        or pro_offer_lock_at < now() - make_interval(secs => ${PRO_OFFER_LOCK_TTL_SEC})
+      )
+    returning id
+  `)) as { rows?: unknown[]; rowCount?: number | null }
+
+  return (res.rows?.length ?? res.rowCount ?? 0) > 0
+}
+
+async function releaseProOfferClaim(
+  payload: Payload,
+  submissionId: number | string,
+): Promise<void> {
+  try {
+    await patchProOfferFieldsSql(payload, submissionId, { proOfferLockAt: null })
+  } catch (err) {
+    // TTL expiry frees the lock anyway; never mask the original send error.
+    console.warn(
+      '[auditProOffer] lock release failed id=',
+      submissionId,
+      err instanceof Error ? err.message.slice(0, 160) : err,
+    )
+  }
+}
+
+/**
+ * Claim → send → release-on-failure. Returns a result to short-circuit with, or
+ * null when the mail was sent (caller then writes the final status + clears the lock).
+ */
+async function sendClaimed(
+  payload: Payload,
+  submissionId: number | string,
+  kind: OfferKind,
+  force: boolean,
+  to: string,
+  mail: { subject: string; text: string; html: string; unsubscribeUrl: string },
+): Promise<SendProOfferResult | null> {
+  if (!(await claimProOfferSend(payload, submissionId, kind, force))) {
+    return { ok: true, status: 'already_sent', reason: 'send_in_progress_or_done' }
+  }
+  try {
+    await sendViaTeamSmtp(to, mail, { listUnsubscribeUrl: mail.unsubscribeUrl })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(`[auditProOffer] ${kind} failed id=`, submissionId, message)
+    await releaseProOfferClaim(payload, submissionId)
+    return { ok: false, reason: message.slice(0, 300) }
+  }
+  return null
+}
+
+function isSmtpPostDataFailure(err: unknown): boolean {
+  const command = String((err as { command?: unknown } | null)?.command ?? '')
+  return /^DATA/i.test(command)
 }
 
 async function sendViaTeamSmtp(
@@ -1008,7 +1104,14 @@ async function sendViaTeamSmtp(
   try {
     await sendWith(port, port === 465)
   } catch (firstErr) {
-    if (port === 465) {
+    if (isSmtpPostDataFailure(firstErr)) {
+      // Timeout/reset after DATA: the server may already have accepted the message.
+      // Retrying on 587 would deliver a second copy — treat as sent.
+      console.warn(
+        '[pro-offer] SMTP failed after DATA, not retrying (delivery unknown):',
+        firstErr instanceof Error ? firstErr.message.slice(0, 160) : firstErr,
+      )
+    } else if (port === 465) {
       await sendWith(587, false)
     } else {
       throw firstErr
@@ -1153,20 +1256,23 @@ export async function trySendAuditProOffer(
     kind: 'offer',
   })
 
-  try {
-    await sendViaTeamSmtp(email, mail, { listUnsubscribeUrl: mail.unsubscribeUrl })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error('[auditProOffer] send failed id=', submissionId, message)
-    return { ok: false, reason: message.slice(0, 300) }
-  }
+  const blocked = await sendClaimed(
+    payload,
+    submissionId,
+    'offer',
+    Boolean(options.force),
+    email,
+    mail,
+  )
+  if (blocked) return blocked
 
   await patchProOfferFieldsSql(payload, submissionId, {
     proOfferStatus: 'sent',
-    proOfferSentAt: new Date(now).toISOString(),
+    proOfferSentAt: new Date().toISOString(),
     proOfferExpiresAt: expiresAt,
     proOfferNudgeDueAt: computeProOfferNudgeDueAt(expiresAtMs),
     proOfferReminderDueAt: expiresAt,
+    proOfferLockAt: null,
   })
 
   return { ok: true, status: 'sent' }
@@ -1256,19 +1362,22 @@ export async function trySendPaidAuditDevOffer(
     kind: 'paid_dev',
   })
 
-  try {
-    await sendViaTeamSmtp(email, mail, { listUnsubscribeUrl: mail.unsubscribeUrl })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error('[auditProOffer] paid_dev failed id=', submissionId, message)
-    return { ok: false, reason: message.slice(0, 300) }
-  }
+  const blocked = await sendClaimed(
+    payload,
+    submissionId,
+    'paid_dev',
+    Boolean(options.force),
+    email,
+    mail,
+  )
+  if (blocked) return blocked
 
   const nowIso = new Date().toISOString()
   await patchProOfferFieldsSql(payload, submissionId, {
     proOfferStatus: 'reminder_sent',
     proOfferSentAt: nowIso,
     proOfferReminderSentAt: nowIso,
+    proOfferLockAt: null,
   })
 
   return { ok: true, status: 'reminder_sent' }
@@ -1361,17 +1470,20 @@ export async function trySendAuditProOfferNudge(
     kind: 'nudge',
   })
 
-  try {
-    await sendViaTeamSmtp(email, mail, { listUnsubscribeUrl: mail.unsubscribeUrl })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error('[auditProOffer] nudge failed id=', submissionId, message)
-    return { ok: false, reason: message.slice(0, 300) }
-  }
+  const blocked = await sendClaimed(
+    payload,
+    submissionId,
+    'nudge',
+    Boolean(options.force),
+    email,
+    mail,
+  )
+  if (blocked) return blocked
 
   await patchProOfferFieldsSql(payload, submissionId, {
     proOfferStatus: 'nudge_sent',
     proOfferNudgeSentAt: new Date().toISOString(),
+    proOfferLockAt: null,
   })
 
   return { ok: true, status: 'nudge_sent' }
@@ -1464,17 +1576,20 @@ export async function trySendAuditProOfferReminder(
     kind: 'reminder',
   })
 
-  try {
-    await sendViaTeamSmtp(email, mail, { listUnsubscribeUrl: mail.unsubscribeUrl })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error('[auditProOffer] reminder failed id=', submissionId, message)
-    return { ok: false, reason: message.slice(0, 300) }
-  }
+  const blocked = await sendClaimed(
+    payload,
+    submissionId,
+    'reminder',
+    Boolean(options.force),
+    email,
+    mail,
+  )
+  if (blocked) return blocked
 
   await patchProOfferFieldsSql(payload, submissionId, {
     proOfferStatus: 'reminder_sent',
     proOfferReminderSentAt: new Date().toISOString(),
+    proOfferLockAt: null,
   })
 
   return { ok: true, status: 'reminder_sent' }
