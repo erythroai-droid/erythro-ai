@@ -2045,6 +2045,19 @@ Redeploy the live workflow (`scripts/deploy_n8n_email_autoresponder.py` or Impor
 
 **Prevent:** Any mailbox used as DMARC `rua`/`ruf` must treat report senders as automated — never auto-reply to them.
 
+## PIT-123 — Duplicate team@ Pro offer: worker timer + Vercel cron + n8n walker race
+
+**Tags:** `email`, `pro-offer`, `race`, `vercel-cron`, `audit-agent`  
+**Seen:** 2026-10-23 — submission 202, `pizza280784@gmail.com` (2 identical «הצעה מיוחדת עבור …» mails, 03:06 and 03:07 UTC; two copies in Hostinger Sent)
+
+**Symptom:** Two identical Pro-offer emails for one free audit. `contact_submissions` shows a single row with `pro_offer_status = sent`.
+
+**Cause:** `trySendAuditProOffer` (and nudge / reminder / paid_dev) did read-status → SMTP + IMAP APPEND → write status. The status stayed `scheduled` for the whole send (5–16 s). The audit-agent `setTimeout` (+15m) and Vercel cron `/api/audit/reconcile` (every 2 min, fires at `:50`) both fire right after `pro_offer_due_at`. Vercel logs: cron `GET /api/audit/reconcile` at 03:06:50 (20.8 s) and agent `POST /api/audit/internal/202/pro-offer` at 03:06:51 — both saw `scheduled`. ~5–13% of sends were exposed (send time / cron interval); submission 201 escaped by chance.
+
+**Fix:** Atomic claim before SMTP — `UPDATE contact_submissions SET pro_offer_lock_at = now() WHERE id = … AND <status guard per kind> AND (pro_offer_lock_at IS NULL OR pro_offer_lock_at < now() - 10 min) RETURNING id` (`claimProOfferSend`, migration `20261023_120000`). Lock is cleared in the same SQL as the final status write, released on SMTP failure, and expires after 10 min if the process dies. The status guard is part of the claim so a caller with a stale read cannot claim after another finished. Also: no 465→587 retry after a failure at `DATA` (message may already be accepted — retry would send a second copy).
+
+**Prevent:** Any "check state, then send, then mark" email path must claim the row atomically in SQL first. Never rely on a single timer — several triggers (timer, cron, walker) are by design. Test with concurrent callers (`tests/int/auditProOfferClaim.int.spec.ts`).
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -2084,6 +2097,7 @@ Redeploy the live workflow (`scripts/deploy_n8n_email_autoresponder.py` or Impor
 - [ ] No hardcoded API keys / `AIza…` in source; secrets only via env (PIT-039)
 - [ ] n8n IMAP autoresponder: Hostinger Autoreply/Vacation must be Off (PIT-040)
 - [ ] Ads `/audit?utm_…`: middleware 307 → `audit-{en|ru|he}.erythro.ai` (PIT-120)
+- [ ] Commercial email senders: atomic SQL claim before SMTP (PIT-123)
 - [ ] n8n IMAP autoresponder: skip DMARC/`dmarcreport@` / `rua`/`ruf` senders (PIT-122)
 - [ ] User-supplied website check: DNS + public IP only, never HTTP-fetch the URL (PIT-041)
 - [ ] Rounded pill inputs: clip autofill or set input radius + `:-webkit-autofill` override (PIT-042)

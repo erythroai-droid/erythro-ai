@@ -912,6 +912,10 @@ export interface ContactSubmission {
    * When the +72h development offer email was sent
    */
   proOfferReminderSentAt?: string | null;
+  /**
+   * Send lock: set while a team@ commercial email is being sent (stale after 10 min). Written only via SQL.
+   */
+  proOfferLockAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1489,6 +1493,7 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   proOfferNudgeSentAt?: T;
   proOfferReminderDueAt?: T;
   proOfferReminderSentAt?: T;
+  proOfferLockAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

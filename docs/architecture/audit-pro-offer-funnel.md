@@ -52,4 +52,5 @@
 Seed: `audit-pro-ads`. Redeploy site + **audit-agent**.
 
 Код: `src/lib/auditProOffer.ts` (`isAuditProOfferEnabled`, `trySendPaidAuditDevOffer`), `src/lib/proOfferCheckoutAccess.ts`, worker `scheduleProOfferEmail`, reconcile.  
+**Защита от дублей (PIT-123):** перед SMTP каждая из четырёх функций делает атомарный захват `claimProOfferSend` — `UPDATE … SET pro_offer_lock_at = now() WHERE id=… AND <guard статуса> AND (lock IS NULL OR lock < now() − 10 мин) RETURNING id`. Не вернулась строка → `already_sent`, письмо не уходит. Lock снимается тем же SQL, что пишет итоговый статус; при сбое SMTP — освобождается; если процесс упал — истекает через 10 мин. Миграция `20261023_120000_…` (колонка `pro_offer_lock_at`). После таймаута на `DATA` повтор через порт 587 не делается.  
 Писать **SQL** (`patchProOfferFieldsSql`) — `payload.update` ломается на существующем `html_result` (PIT-113 / PIT-035).
