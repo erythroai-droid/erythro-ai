@@ -221,8 +221,6 @@ export default function AuditLpForm({
     auditLanguage: reportLanguage,
   })
   const [fieldErrors, setFieldErrors] = useState<AuditFieldErrors>({})
-  const [privacyConsent, setPrivacyConsent] = useState(false)
-  const [consentError, setConsentError] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState('')
   const turnstileRef = useRef<TurnstileHandle>(null)
   const submittingRef = useRef(false)
@@ -289,10 +287,8 @@ export default function AuditLpForm({
 
     const nextFieldErrors = validateAuditForm(values, { requireNamePhone: false })
     setFieldErrors(nextFieldErrors)
-    if (!privacyConsent) setConsentError(true)
-    else setConsentError(false)
 
-    if (hasAuditFieldErrors(nextFieldErrors) || !privacyConsent) return
+    if (hasAuditFieldErrors(nextFieldErrors)) return
     if (
       AUDIT_LP_TURNSTILE_ENABLED &&
       isTurnstileSiteKeyConfigured() &&
@@ -384,7 +380,6 @@ export default function AuditLpForm({
       })
       setFieldErrors({})
       resetChecks()
-      setPrivacyConsent(false)
     } catch {
       setSubmitError(tForm(contactForm.error))
       setStatus('error')
@@ -424,93 +419,80 @@ export default function AuditLpForm({
         >
           <ContactHoneypotField idPrefix="audit-lp" />
 
-          <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:gap-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:gap-3">
-                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                  <FormPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.email)}>
-                    <div className="relative min-w-0 flex-1">
-                      <label htmlFor="audit-lp-email" className="sr-only">
-                        {tForm(contactForm.email)}
-                      </label>
-                      <input
-                        id="audit-lp-email"
-                        name="email"
-                        type="email"
-                        inputMode="email"
-                        required
-                        value={values.email}
-                        onChange={handleChange}
-                        onBlur={blurEmail}
-                        placeholder={requiredPlaceholder(tForm(contactForm.email))}
-                        className={`${pillFieldClass} ${fieldOk.email ? 'pe-10' : 'pe-4'}`}
-                        autoComplete="email"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        spellCheck={false}
-                        aria-required="true"
-                        aria-invalid={Boolean(fieldErrors.email) || undefined}
-                        aria-describedby={fieldErrors.email ? 'audit-lp-email-error' : undefined}
-                      />
-                      <FieldOkCheck show={Boolean(fieldOk.email)} isLight={isLight} />
-                    </div>
-                  </FormPillShell>
-                  {fieldErrors.email ? renderFieldError('email', 'audit-lp-email-error') : null}
-                </div>
-
-                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                  <FormPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.website)}>
-                    <div className="relative min-w-0 flex-1">
-                      <label htmlFor="audit-lp-website" className="sr-only">
-                        {tAudit(page.form.website, locale)}
-                      </label>
-                      <input
-                        id="audit-lp-website"
-                        name="website"
-                        type="url"
-                        inputMode="url"
-                        required
-                        value={values.website}
-                        onChange={handleChange}
-                        onBlur={blurWebsite}
-                        placeholder={requiredPlaceholder(tAudit(page.form.website, locale))}
-                        className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'} ${
-                          locale === 'he' ? 'text-right placeholder:text-right' : ''
-                        }`}
-                        autoComplete="url"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        spellCheck={false}
-                        dir="ltr"
-                        aria-required="true"
-                        aria-invalid={Boolean(fieldErrors.website) || undefined}
-                        aria-describedby={fieldErrors.website ? 'audit-lp-website-error' : undefined}
-                      />
-                      <FieldOkCheck
-                        show={Boolean(fieldOk.website)}
-                        checking={checkingWebsite}
-                        isLight={isLight}
-                      />
-                    </div>
-                  </FormPillShell>
-                  {renderFieldError('website', 'audit-lp-website-error')}
-                </div>
+          <div className="flex min-w-0 flex-col gap-3">
+            <div className="flex min-w-0 flex-row items-start gap-2 sm:gap-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <FormPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.email)}>
+                  <div className="relative min-w-0 flex-1">
+                    <label htmlFor="audit-lp-email" className="sr-only">
+                      {tForm(contactForm.email)}
+                    </label>
+                    <input
+                      id="audit-lp-email"
+                      name="email"
+                      type="email"
+                      inputMode="email"
+                      required
+                      value={values.email}
+                      onChange={handleChange}
+                      onBlur={blurEmail}
+                      placeholder={requiredPlaceholder(tForm(contactForm.email))}
+                      className={`${pillFieldClass} ${fieldOk.email ? 'pe-10' : 'pe-4'}`}
+                      autoComplete="email"
+                      autoCapitalize="off"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      aria-required="true"
+                      aria-invalid={Boolean(fieldErrors.email) || undefined}
+                      aria-describedby={fieldErrors.email ? 'audit-lp-email-error' : undefined}
+                    />
+                    <FieldOkCheck show={Boolean(fieldOk.email)} isLight={isLight} />
+                  </div>
+                </FormPillShell>
+                {fieldErrors.email ? renderFieldError('email', 'audit-lp-email-error') : null}
               </div>
 
-              <ContactPrivacyConsent
-                locale={locale}
-                theme={theme}
-                idPrefix="audit-lp"
-                parts="notice"
-                privacyHref={mainSiteUrl('/privacy')}
-                termsHref={mainSiteUrl('/terms')}
-              />
-            </div>
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <FormPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.website)}>
+                  <div className="relative min-w-0 flex-1">
+                    <label htmlFor="audit-lp-website" className="sr-only">
+                      {tAudit(page.form.website, locale)}
+                    </label>
+                    <input
+                      id="audit-lp-website"
+                      name="website"
+                      type="url"
+                      inputMode="url"
+                      required
+                      value={values.website}
+                      onChange={handleChange}
+                      onBlur={blurWebsite}
+                      placeholder={requiredPlaceholder(tAudit(page.form.website, locale))}
+                      className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'} ${
+                        locale === 'he' ? 'text-right placeholder:text-right' : ''
+                      }`}
+                      autoComplete="url"
+                      autoCapitalize="off"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      dir="ltr"
+                      aria-required="true"
+                      aria-invalid={Boolean(fieldErrors.website) || undefined}
+                      aria-describedby={fieldErrors.website ? 'audit-lp-website-error' : undefined}
+                    />
+                    <FieldOkCheck
+                      show={Boolean(fieldOk.website)}
+                      checking={checkingWebsite}
+                      isLight={isLight}
+                    />
+                  </div>
+                </FormPillShell>
+                {renderFieldError('website', 'audit-lp-website-error')}
+              </div>
 
-            <div className="flex min-w-0 flex-col gap-2 lg:shrink-0">
               <button
                 type="submit"
-                className={`${FORM_SUBMIT_CLASS} box-border h-[50px] py-0 sm:h-[54px] lg:w-auto lg:shrink-0 lg:px-10`}
+                className={`${FORM_SUBMIT_CLASS} !w-auto box-border h-[50px] shrink-0 whitespace-nowrap px-3 py-0 text-[11px] tracking-wide sm:h-[54px] sm:px-8 sm:text-sm sm:tracking-widest`}
               >
                 {status === 'sending' ? (
                   <>
@@ -521,31 +503,46 @@ export default function AuditLpForm({
                   tAudit(page.form.submit, locale)
                 )}
               </button>
+            </div>
 
-              <ContactPrivacyConsent
-                locale={locale}
-                theme={theme}
-                idPrefix="audit-lp"
-                parts="consent"
-                privacyHref={mainSiteUrl('/privacy')}
-                termsHref={mainSiteUrl('/terms')}
-                checked={privacyConsent}
-                showRequiredError={consentError}
-                disabled={status === 'sending'}
-                onCheckedChange={(next) => {
-                  setPrivacyConsent(next)
-                  if (next) setConsentError(false)
-                }}
-              />
+            <ContactPrivacyConsent
+              locale={locale}
+              theme={theme}
+              idPrefix="audit-lp"
+              parts="notice"
+              privacyHref={mainSiteUrl('/privacy')}
+              termsHref={mainSiteUrl('/terms')}
+            />
 
-              <p className={`m-0 px-1 text-xs ${fieldLabelClass}`}>
+            <p
+              className={`m-0 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 px-1 text-[11px] font-light leading-snug ${fieldLabelClass}`}
+            >
+              <span>
+                {tAuditLp(auditLpCopy.legalNote, locale)}{' '}
+                <a
+                  href={mainSiteUrl('/privacy')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={
+                    isLight
+                      ? 'font-normal text-coal-900/80 underline underline-offset-2 decoration-coal-900/25 transition-colors hover:text-erythro-500 hover:decoration-erythro-500'
+                      : 'font-normal text-gold-500/90 underline underline-offset-2 decoration-gold-500/35 transition-colors hover:text-gold-100 hover:decoration-gold-100'
+                  }
+                >
+                  {tForm(locale === 'ru' ? contactForm.privacyLink : contactForm.privacyPolicy)}
+                </a>
+                {locale === 'ru' ? '' : '.'}
+              </span>
+              <span className="inline-flex items-baseline gap-1">
                 <span className="text-erythro-500" aria-hidden="true">
                   *
                 </span>
-                {' — '}
-                {tAudit(page.form.requiredNote, locale)}
-              </p>
-            </div>
+                <span>
+                  {'— '}
+                  {tAudit(page.form.requiredNote, locale)}
+                </span>
+              </span>
+            </p>
           </div>
 
           {status === 'error' ? (

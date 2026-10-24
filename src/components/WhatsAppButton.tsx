@@ -17,7 +17,7 @@ export default function WhatsAppButton({ alwaysVisible = false }: { alwaysVisibl
       target="_blank"
       rel="noopener noreferrer"
       aria-label="WhatsApp"
-      className={`${alwaysVisible ? '' : 'lg:hidden '}fixed bottom-[18px] end-[18px] z-50 flex h-[54px] w-[54px] items-center justify-center`}
+      className={`${alwaysVisible ? '' : 'lg:hidden '}fixed bottom-14 end-[18px] z-[70] flex h-[54px] w-[54px] items-center justify-center`}
     >
       <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-70 animate-ping" />
 

@@ -1,21 +1,20 @@
 # Latest changes
 
-Обновлено: 2026-10-23  
-Модель: Sonnet 5.5  
+Обновлено: 2026-10-24  
+Модель: Composer  
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
 ## Сделано в этой сессии
 
-- **PIT-123 — дубль письма «Специальное предложение» (заявка 202):** причина — гонка таймера audit-agent и Vercel cron (оба видели `scheduled`). Фикс в рабочей копии: атомарный захват `claimProOfferSend` + колонка `pro_offer_lock_at` (миграция `20261023_120000`), lock снимается вместе с итоговым статусом, сбой SMTP освобождает lock, таймаут после `DATA` не ретраится на 587. Тесты: `tests/int/auditProOfferClaim.int.spec.ts` (22 теста auditProOffer* зелёные). PITFALLS + Obsidian + `audit-pro-offer-funnel.md` обновлены.
-- Получателю pizza280784@gmail.com ничего дополнительно не отправлять (решение владельца): два ушедших письма остаются как есть.
-- Ранее: Admin Html Result collapsible; PIT-120/121/122 + n8n DMARC skip (в рабочей копии, без коммита).
+- LP message-match субзаголовок во всех локалях: Express Audit / Экспресс-аудит / אודיט אקספרס (`auditLp.ts`).
+- Audit LP форма: без privacy-checkbox; email + сайт + CTA в одну строку; под ними notice с замком и implied consent + `*` (`AuditLpForm.tsx`).
+- Cookie-баннер: компактная одна строка снизу экрана + короткий `messageCompact` на мобиле (`CookieConsent.tsx`, `translations`). WhatsApp FAB поднят над баром (`bottom-14`, z-70).
 
 ## Сейчас
 
-- Коммит/PR: PIT-123 фикс (+ HtmlResultField, PIT-120/122 docs). Миграция идёт через `payload migrate` в `pnpm build` — деплой кода и миграции одним билдом.
-- После деплоя: в логах Vercel не должно быть двух `POST …/pro-offer` на один id с обоими `ok`; проверить `pro_offer_lock_at IS NULL` у отправленных заявок.
-- **Этап 3 аудита (отложен):** SEO-маршрутизация языковых версий.
+- Коммит/PR: PIT-123 + LP conversion UX — по запросу.
+- После деплоя: проверить fold на `audit-he` (кнопка без чекбокса, cookie не перекрывает CTA) и что Pro-offer не дублируется.
 
 ## Не делать
 
@@ -25,4 +24,4 @@
 
 ## Последняя эстафета
 
-2026-10-23 — Sonnet 5.5 — PIT-123: атомарный claim отправки team@ Pro-оффера (код + тесты + доки; не закоммичено).
+2026-10-24 — Composer — LP: implied consent, компактный cookie, HE `אודיט אקספרס`.
