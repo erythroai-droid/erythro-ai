@@ -18,6 +18,7 @@ import {
   isPaidAuditFunnelPlanSlug,
   PAID_AUDIT_FUNNEL_PLAN_SLUGS,
 } from '@/lib/orderPlans'
+import { buildMailOpenPixelUrl } from '@/lib/mailOpenTrack'
 import { signProOfferCheckoutAccess } from '@/lib/proOfferCheckoutAccess'
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
 
@@ -259,7 +260,7 @@ function proCopy(locale: OfferLocale): ProMailCopy {
     return {
       kind: 'offer',
       ...shared,
-      subject: (email) => `Специальное предложение для ${email}`,
+      subject: () => 'Ваш отчёт готов: AI Аудит Pro для вашего сайта',
       preheader: `AI Аудит Pro за ₪${PRO_ADS_PRICE} вместо ₪${PRO_LIST_PRICE} — 72 часа`,
       intro:
         'Вы прошли бесплатный экспресс-аудит на нашем лендинге. Отчёт уже у вас — ниже персональное спецпредложение на полный AI Аудит Pro.',
@@ -281,7 +282,7 @@ function proCopy(locale: OfferLocale): ProMailCopy {
       kind: 'offer',
       ...shared,
       support: 'WhatsApp / טל.: +972 50-530-8305 · team@erythro.ai',
-      subject: (email) => `הצעה מיוחדת עבור ${email}`,
+      subject: () => 'הדוח שלכם מוכן: AI Audit Pro לאתר שלכם',
       preheader: `AI Audit Pro ב-₪${PRO_ADS_PRICE} במקום ₪${PRO_LIST_PRICE} — 72 שעות`,
       intro:
         'עברתם ביקורת אקספרס חינמית בדף הנחיתה. הדוח כבר אצלכם — להלן הצעה אישית ל-AI Audit Pro המלא.',
@@ -302,7 +303,7 @@ function proCopy(locale: OfferLocale): ProMailCopy {
     kind: 'offer',
     ...shared,
     support: 'WhatsApp / tel.: +972 50-530-8305 · team@erythro.ai',
-    subject: (email) => `Special offer for ${email}`,
+    subject: () => 'Your report is ready: AI Audit Pro for your site',
     preheader: `AI Audit Pro for ₪${PRO_ADS_PRICE} instead of ₪${PRO_LIST_PRICE} — 72 hours`,
     intro:
       'You completed the free express audit on our landing page. Your report is ready — here is a personal offer for full AI Audit Pro.',
@@ -330,7 +331,7 @@ function nudgeCopy(locale: OfferLocale): NudgeMailCopy {
       support: shared.support,
       brand: shared.brand,
       close: shared.close,
-      subject: 'Осталось 24 часа до завершения специального предложения!',
+      subject: 'AI Аудит Pro: цена ₪390 действует ещё 24 часа',
       preheader: `AI Аудит Pro ₪${PRO_ADS_PRICE} — осталось 24 часа`,
       intro:
         'Специальное предложение на полный AI Аудит Pro скоро закончится. Успейте зафиксировать цену ₪390 вместо ₪490.',
@@ -347,7 +348,7 @@ function nudgeCopy(locale: OfferLocale): NudgeMailCopy {
       support: 'WhatsApp / טל.: +972 50-530-8305 · team@erythro.ai',
       brand: shared.brand,
       close: shared.close,
-      subject: 'נותרו 24 שעות לסיום ההצעה המיוחדת!',
+      subject: 'AI Audit Pro: מחיר ₪390 בתוקף עוד 24 שעות',
       preheader: `AI Audit Pro ₪${PRO_ADS_PRICE} — נותרו 24 שעות`,
       intro:
         'ההצעה המיוחדת ל-AI Audit Pro המלא עומדת להסתיים. קבעו את המחיר ₪390 במקום ₪490 לפני שייגמר.',
@@ -363,7 +364,7 @@ function nudgeCopy(locale: OfferLocale): NudgeMailCopy {
     support: 'WhatsApp / tel.: +972 50-530-8305 · team@erythro.ai',
     brand: shared.brand,
     close: shared.close,
-    subject: '24 hours left until the special offer ends!',
+    subject: 'AI Audit Pro: the ₪390 price holds for 24 more hours',
     preheader: `AI Audit Pro ₪${PRO_ADS_PRICE} — 24 hours left`,
     intro:
       'The special offer for full AI Audit Pro is about to end. Lock in ₪390 instead of ₪490 while it lasts.',
@@ -383,7 +384,7 @@ function servicesCopy(locale: OfferLocale): ServicesMailCopy {
       reportCta: shared.reportCta,
       support: shared.support,
       brand: shared.brand,
-      subject: (email) => `Предложение о разработке для ${email}`,
+      subject: () => 'Как развить сайт: идеи по разработке',
       preheader: 'Сайт, AI-агенты и автоматизация под ключ',
       headline: 'Предложение о разработке',
       intro:
@@ -410,7 +411,7 @@ function servicesCopy(locale: OfferLocale): ServicesMailCopy {
       reportCta: shared.reportCta,
       support: 'WhatsApp / טל.: +972 50-530-8305 · team@erythro.ai',
       brand: shared.brand,
-      subject: (email) => `הצעה לפיתוח עבור ${email}`,
+      subject: () => 'איך לפתח את האתר: רעיונות לפיתוח',
       preheader: 'אתר, סוכני AI ואוטומציה turnkey',
       headline: 'הצעה לפיתוח',
       intro: 'מבצע ה-Pro הסתיים, אבל אולי מתאים לכם מסלול אחר?',
@@ -435,7 +436,7 @@ function servicesCopy(locale: OfferLocale): ServicesMailCopy {
     reportCta: shared.reportCta,
     support: 'WhatsApp / tel.: +972 50-530-8305 · team@erythro.ai',
     brand: shared.brand,
-    subject: (email) => `Development offer for ${email}`,
+    subject: () => 'Ideas for developing your site',
     preheader: 'Site, AI agents, and turnkey automation',
     headline: 'A development offer',
     intro: 'The Pro promotion has ended, but another path might be the right fit for you.',
@@ -465,7 +466,7 @@ function paidDevCopy(locale: OfferLocale): ServicesMailCopy {
       reportCta: shared.reportCta,
       support: shared.support,
       brand: shared.brand,
-      subject: (email) => `Предложение о разработке для ${email}`,
+      subject: () => 'Что делать с результатами аудита: варианты доработки',
       preheader: 'Правки по аудиту или пересборка сайта под ключ',
       headline: 'Предложение о разработке',
       intro:
@@ -492,7 +493,7 @@ function paidDevCopy(locale: OfferLocale): ServicesMailCopy {
       reportCta: shared.reportCta,
       support: 'WhatsApp / טל.: +972 50-530-8305 · team@erythro.ai',
       brand: shared.brand,
-      subject: (email) => `הצעה לפיתוח עבור ${email}`,
+      subject: () => 'מה עושים עם תוצאות הביקורת: אפשרויות לתיקון',
       preheader: 'תיקונים לפי הביקורת או בניית אתר מחדש turnkey',
       headline: 'הצעה לפיתוח',
       intro:
@@ -518,7 +519,7 @@ function paidDevCopy(locale: OfferLocale): ServicesMailCopy {
     reportCta: shared.reportCta,
     support: 'WhatsApp / tel.: +972 50-530-8305 · team@erythro.ai',
     brand: shared.brand,
-    subject: (email) => `Development offer for ${email}`,
+    subject: () => 'What to do with your audit results: improvement options',
     preheader: 'Audit fixes or a full site rebuild, turnkey',
     headline: 'A development offer',
     intro:
@@ -567,6 +568,7 @@ function shellHtml(input: {
   headline: string
   bodyInner: string
   unsubscribeUrl: string
+  openPixelUrl?: string
 }): string {
   const isRtl = input.dir === 'rtl'
   const align = isRtl ? 'right' : 'left'
@@ -631,7 +633,7 @@ function shellHtml(input: {
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="height:1px;line-height:1px;font-size:0;background:#b5a58d;">&nbsp;</td></tr></table>
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" dir="${input.dir}" style="margin-top:10px;">
             <tr>
-              <td align="${align}" style="font-size:11px;line-height:16px;color:#686868;text-align:${align};">${escapeHtml(footerLine)}</td>
+              <td align="${align}" style="font-size:11px;line-height:16px;color:#686868;text-align:${align};">${escapeHtml(footerLine).replace(/erythro\.ai$/, `<a href="${escapeHtml(SITE_URL)}" style="color:#686868;text-decoration:none;">erythro.ai</a>`)}</td>
               <td align="${contactsAlign}" style="font-size:11px;line-height:16px;color:#686868;text-align:${contactsAlign};">
                 <a href="${escapeHtml(input.unsubscribeUrl)}" style="color:#686868;text-decoration:underline;">${escapeHtml(unsubLabel)}</a>
               </td>
@@ -641,6 +643,7 @@ function shellHtml(input: {
       </table>
     </td></tr>
   </table>
+  ${input.openPixelUrl ? `<img src="${escapeHtml(input.openPixelUrl)}" width="1" height="1" alt="" style="display:block;border:0;width:1px;height:1px;"/>` : ''}
 </body>
 </html>`
 }
@@ -667,6 +670,8 @@ export function buildProOfferEmail(input: {
   checkoutUrl: string
   reportUrl?: string | null
   orderId?: string | null
+  /** When set, a signed open-tracking pixel is appended to the HTML. */
+  submissionId?: string | number | null
   kind?: OfferKind
 }): { subject: string; text: string; html: string; unsubscribeUrl: string } {
   const locale = offerLocale(input.locale)
@@ -675,6 +680,10 @@ export function buildProOfferEmail(input: {
   const sample = proSampleReport(locale)
   const email = input.email.trim()
   const unsubscribeUrl = buildMailUnsubscribeUrl(email, locale)
+  const openPixelUrl =
+    input.submissionId != null && input.submissionId !== ''
+      ? buildMailOpenPixelUrl(input.submissionId, input.kind || 'offer')
+      : undefined
   const unsubLabel = unsubscribeCopy(locale).linkLabel
   const servicesDevUrl = siteUrlWithLang('/services/development', locale)
   const servicesAiUrl = siteUrlWithLang('/services/ai-automation', locale)
@@ -740,6 +749,7 @@ export function buildProOfferEmail(input: {
         headline: subject,
         bodyInner,
         unsubscribeUrl,
+        openPixelUrl,
       }),
       unsubscribeUrl,
     }
@@ -801,6 +811,7 @@ export function buildProOfferEmail(input: {
         headline: subject,
         bodyInner,
         unsubscribeUrl,
+        openPixelUrl,
       }),
       unsubscribeUrl,
     }
@@ -868,6 +879,7 @@ export function buildProOfferEmail(input: {
       headline: subject,
       bodyInner,
       unsubscribeUrl,
+      openPixelUrl,
     }),
     unsubscribeUrl,
   }
@@ -1253,6 +1265,7 @@ export async function trySendAuditProOffer(
     checkoutUrl,
     reportUrl,
     orderId,
+    submissionId,
     kind: 'offer',
   })
 
@@ -1359,6 +1372,7 @@ export async function trySendPaidAuditDevOffer(
     checkoutUrl,
     reportUrl,
     orderId,
+    submissionId,
     kind: 'paid_dev',
   })
 
@@ -1467,6 +1481,7 @@ export async function trySendAuditProOfferNudge(
     checkoutUrl,
     reportUrl,
     orderId,
+    submissionId,
     kind: 'nudge',
   })
 
@@ -1573,6 +1588,7 @@ export async function trySendAuditProOfferReminder(
     checkoutUrl,
     reportUrl,
     orderId,
+    submissionId,
     kind: 'reminder',
   })
 
