@@ -271,7 +271,6 @@ export default function AuditLpClient({
   const isRtl = locale === 'he'
   const isLight = theme === 'light'
   const ink = isLight ? 'text-coal-900' : 'text-white'
-  const mutedSoft = isLight ? 'text-coal-900/70' : 'text-white/65'
   const listText = isLight ? 'text-coal-900/85' : 'text-white/80'
   const accent = isLight ? 'text-gold-900' : 'text-gold-500'
   const accentBorder = isLight ? 'border-coal-900/10' : 'border-gold-500'
@@ -346,11 +345,6 @@ export default function AuditLpClient({
                 }`}
               >
                 {tAuditLp(auditLpCopy.headline, locale)}
-              </p>
-              <p
-                className={`m-0 max-w-xl font-sans text-sm font-light leading-7 sm:text-base sm:leading-8 ${mutedSoft}`}
-              >
-                {tAuditLp(auditLpCopy.subhead, locale)}
               </p>
             </div>
             <p
