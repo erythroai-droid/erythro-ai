@@ -121,15 +121,16 @@ export const auditLpCopy = {
     ru: 'Бесплатный AI-аудит',
     he: 'ביקורת AI בחינם',
   } satisfies Localized,
+  /** Gold line under H1 — message-match «Express Audit» + time promise. */
   headline: {
-    en: 'See what your site is losing',
-    ru: 'Увидьте, где сайт теряет деньги',
-    he: 'גלו איפה האתר מפסיד כסף',
+    en: 'Express Audit of your website in 5 minutes',
+    ru: 'Экспресс-аудит вашего сайта за 5 минут',
+    he: 'אודיט אקספרס לאתר שלכם תוך 5 דקות',
   } satisfies Localized,
   subhead: {
-    en: 'Score 0–100, top-3 risks, and a PDF preview — no card required.',
-    ru: 'Оценка 0–100, топ-3 риска и PDF-превью — карта не нужна.',
-    he: 'ציון 0–100, 3 סיכונים עיקריים ו-PDF — בלי כרטיס אשראי.',
+    en: 'See what your site is losing. Score 0–100, top-3 risks, and a PDF preview — no card required.',
+    ru: 'Увидьте, где сайт теряет деньги. Оценка 0–100, топ-3 риска и PDF-превью — карта не нужна.',
+    he: 'גלו איפה האתר מפסיד כסף. ציון 0–100, 3 סיכונים עיקריים ו-PDF — בלי כרטיס אשראי.',
   } satisfies Localized,
   aboutKicker: {
     en: 'What you get',
@@ -290,10 +291,11 @@ export const auditLpCopy = {
     ru: 'Ознакомиться со всеми пакетами',
     he: 'לכל החבילות',
   } satisfies Localized,
+  /** Prefix before Privacy Policy link (implied consent on submit). */
   legalNote: {
-    en: 'By continuing you agree to our privacy policy.',
-    ru: 'Продолжая, вы соглашаетесь с политикой конфиденциальности.',
-    he: 'בהמשך אתם מסכימים למדיניות הפרטיות.',
+    en: 'By clicking the button you agree to the',
+    ru: 'Нажимая кнопку, вы соглашаетесь с',
+    he: 'בלחיצה על הכפתור הינך מסכים/ה ל',
   } satisfies Localized,
   homeLink: {
     en: 'erythro.ai',

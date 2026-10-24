@@ -62,6 +62,12 @@ export const cookieConsent = {
     ru: 'Мы используем необходимые cookie для языка и настроек сайта. Если вы согласитесь, мы также подключим Google Analytics, Meta Pixel и Vercel Web Analytics для измерения использования сайта и рекламы.',
     he: 'אנו משתמשים ב־Cookie חיוניים לשפה ולהעדפות האתר. אם תאשרו, נטען גם את Google Analytics, Meta Pixel ו־Vercel Web Analytics כדי למדוד שימוש באתר וביצועי פרסום.',
   },
+  /** One-line bar on narrow screens (full `message` stays in title + sm+). */
+  messageCompact: {
+    en: 'Essential cookies for prefs; analytics only if you accept.',
+    ru: 'Нужные cookie для настроек; аналитика — только с согласия.',
+    he: 'Cookie חיוניים להעדפות; אנליטיקה רק באישור.',
+  },
   privacyLink: {
     en: 'Privacy Policy',
     ru: 'Конфиденциальность',

@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSiteContent } from './SiteContentProvider'
-import Button from './Button'
 import {
   clearAnalyticsCookies,
   getConsentValue,
@@ -53,9 +52,14 @@ export default function CookieConsent({ locale, theme, privacyHref = '/privacy' 
       ? 'text-coal-900 underline underline-offset-2 decoration-coal-900/30 transition-colors hover:text-erythro-500 hover:decoration-erythro-500'
       : 'text-gold-500 underline underline-offset-2 decoration-gold-500/40 transition-colors hover:text-gold-100 hover:decoration-gold-100'
 
+  const privacyLabel = t(
+    translations.privacyLink || { en: 'Privacy Policy', ru: 'Конфиденциальность', he: 'מדיניות פרטיות' },
+  )
+  const fullMessage = `${t(translations.message)} ${privacyLabel}`
+
   return (
     <div
-      className="fixed inset-x-0 bottom-6 z-[60] w-full px-[30px] max-w-[1170px] mx-auto pointer-events-none"
+      className="fixed inset-x-0 bottom-0 z-[60] w-full pointer-events-none"
       role="region"
       aria-label={
         locale === 'ru'
@@ -65,20 +69,23 @@ export default function CookieConsent({ locale, theme, privacyHref = '/privacy' 
             : 'Cookie consent'
       }
     >
-      {/* Pill matches the navbar geometry/colors and reacts to the active theme */}
       <div
-        className={`pointer-events-auto w-full flex flex-col sm:flex-row items-center gap-4 rounded-[40px] border px-[30px] py-4 backdrop-blur-md transition-colors duration-500 ${
+        className={`pointer-events-auto flex w-full items-center gap-2 border-t px-3 py-2 backdrop-blur-md sm:gap-3 sm:px-4 ${
           theme === 'light'
-            ? 'border-gold-100 bg-white text-coal-900 shadow-[0_4px_24px_0_rgba(13,13,13,0.08)]'
-            : 'border-[#0D0D0D] bg-coal-900/50 text-gold-100'
+            ? 'border-coal-900/10 bg-white/95 text-coal-900 shadow-[0_-4px_16px_0_rgba(13,13,13,0.06)]'
+            : 'border-white/10 bg-coal-900/90 text-gold-100 shadow-[0_-4px_16px_0_rgba(0,0,0,0.35)]'
         }`}
       >
         <p
-          className={`flex-1 text-[12px] leading-relaxed tracking-[0.5px] text-center sm:text-start ${
+          className={`m-0 min-w-0 flex-1 truncate text-[11px] leading-none tracking-[0.3px] ${
             theme === 'light' ? 'text-coal-900/70' : 'text-gold-100/80'
           }`}
+          title={fullMessage}
         >
-          {t(translations.message)}{' '}
+          <span className="sm:hidden">
+            {t(translations.messageCompact || translations.message)}{' '}
+          </span>
+          <span className="hidden sm:inline">{t(translations.message)} </span>
           {/^https?:\/\//i.test(privacyHref) ? (
             <a
               href={privacyHref}
@@ -86,31 +93,33 @@ export default function CookieConsent({ locale, theme, privacyHref = '/privacy' 
               target="_blank"
               rel="noopener noreferrer"
             >
-              {t(translations.privacyLink || { en: 'Privacy Policy', ru: 'Конфиденциальность', he: 'מדיניות פרטיות' })}
+              {privacyLabel}
             </a>
           ) : (
             <Link href={privacyHref} className={linkClass}>
-              {t(translations.privacyLink || { en: 'Privacy Policy', ru: 'Конфиденциальность', he: 'מדיניות פרטיות' })}
+              {privacyLabel}
             </Link>
           )}
         </p>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           <button
+            type="button"
             onClick={() => handleConsent('declined')}
-            className={`text-[12px] font-light uppercase tracking-[2.4px] transition-colors duration-300 cursor-pointer ${
+            className={`cursor-pointer whitespace-nowrap text-[11px] font-light uppercase tracking-[1.5px] transition-colors duration-300 ${
               theme === 'light'
-                ? 'text-coal-900/60 hover:text-coal-900'
-                : 'text-gold-100/60 hover:text-gold-500'
+                ? 'text-coal-900/55 hover:text-coal-900'
+                : 'text-gold-100/55 hover:text-gold-500'
             }`}
           >
             {t(translations.decline)}
           </button>
-          <Button
-            variant={theme === 'light' ? 'light-accent' : 'nav-talk'}
+          <button
+            type="button"
             onClick={() => handleConsent('accepted')}
+            className="cursor-pointer whitespace-nowrap rounded-full bg-erythro-500 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[1.2px] text-white transition-colors hover:bg-erythro-600"
           >
             {t(translations.accept)}
-          </Button>
+          </button>
         </div>
       </div>
     </div>
