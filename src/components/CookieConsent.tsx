@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSiteContent } from './SiteContentProvider'
+import Button from './Button'
 import {
   clearAnalyticsCookies,
   getConsentValue,
@@ -113,13 +114,13 @@ export default function CookieConsent({ locale, theme, privacyHref = '/privacy' 
           >
             {t(translations.decline)}
           </button>
-          <button
-            type="button"
+          <Button
+            variant={theme === 'light' ? 'gold-outline' : 'nav-talk'}
             onClick={() => handleConsent('accepted')}
-            className="cursor-pointer whitespace-nowrap rounded-full bg-erythro-500 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[1.2px] text-white transition-colors hover:bg-erythro-600"
+            className="!min-h-0 !px-3 !py-1.5 text-[11px] tracking-[1.2px]"
           >
             {t(translations.accept)}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

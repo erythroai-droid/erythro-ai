@@ -123,9 +123,9 @@ export const auditLpCopy = {
   } satisfies Localized,
   /** Gold line under H1 — message-match «Express Audit» + time promise. */
   headline: {
-    en: 'Express Audit of your website in 5 minutes',
-    ru: 'Экспресс-аудит вашего сайта за 5 минут',
-    he: 'אודיט אקספרס לאתר שלכם תוך 5 דקות',
+    en: 'Express Audit in 5 minutes',
+    ru: 'Экспресс-аудит за 5 минут',
+    he: 'אודיט אקספרס תוך 5 דקות',
   } satisfies Localized,
   subhead: {
     en: 'See what your site is losing. Score 0–100, top-3 risks, and a PDF preview — no card required.',
