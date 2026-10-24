@@ -569,7 +569,7 @@ export default function AuditLpForm({
               </AuditLpExternalLink>
             ) : null}
             <AuditLpExternalLink
-              href={mainSiteUrlWithLang('/order/audit-pro', locale)}
+              href={mainSiteUrlWithLang('/audit', locale)}
               isLight={isLight}
             >
               {tAuditLp(auditLpCopy.allOffersLink, locale)}
