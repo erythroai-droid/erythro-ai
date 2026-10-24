@@ -420,7 +420,7 @@ export default function AuditLpForm({
           <ContactHoneypotField idPrefix="audit-lp" />
 
           <div className="flex min-w-0 flex-col gap-3">
-            <div className="flex min-w-0 flex-row items-start gap-2 sm:gap-3">
+            <div className="flex min-w-0 flex-col items-stretch gap-3 lg:flex-row lg:items-start">
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <FormPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.email)}>
                   <div className="relative min-w-0 flex-1">
@@ -492,7 +492,7 @@ export default function AuditLpForm({
 
               <button
                 type="submit"
-                className={`${FORM_SUBMIT_CLASS} !w-auto box-border h-[50px] shrink-0 whitespace-nowrap px-3 py-0 text-[11px] tracking-wide sm:h-[54px] sm:px-8 sm:text-sm sm:tracking-widest`}
+                className={`${FORM_SUBMIT_CLASS} box-border h-[50px] w-full py-0 sm:h-[54px] lg:!w-auto lg:shrink-0 lg:whitespace-nowrap lg:px-8`}
               >
                 {status === 'sending' ? (
                   <>
