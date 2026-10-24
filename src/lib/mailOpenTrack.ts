@@ -10,6 +10,9 @@ import { timingSafeStringEqual } from '@/lib/agentAuth'
 
 export type MailOpenKind = 'offer' | 'nudge' | 'reminder' | 'paid_dev'
 
+/** Repeat pixel hits for the same mail within this window are not stored. */
+export const MAIL_OPEN_DEDUPE_SEC = 10 * 60
+
 const KINDS: readonly MailOpenKind[] = ['offer', 'nudge', 'reminder', 'paid_dev']
 
 function secret(): string {
@@ -61,8 +64,23 @@ export async function recordMailOpen(input: {
   userAgent?: string | null
 }): Promise<void> {
   const payload = await getPayload({ config })
-  await payload.db.drizzle.execute(sql`
-    insert into mail_opens (submission_id, kind, user_agent)
-    values (${input.submissionId}, ${input.kind}, ${(input.userAgent || '').slice(0, 200)})
-  `)
+  // Clients fetch the pixel several times per view (prefetch + render, proxies),
+  // so repeat hits for the same mail inside the window count as one open.
+  // The advisory lock serialises concurrent hits; the insert then runs as a new
+  // statement and sees the row the other request just committed.
+  await payload.db.drizzle.transaction(async (tx) => {
+    await tx.execute(
+      sql`select pg_advisory_xact_lock(hashtext(${`mail-open:${input.submissionId}:${input.kind}`}))`,
+    )
+    await tx.execute(sql`
+      insert into mail_opens (submission_id, kind, user_agent)
+      select ${input.submissionId}, ${input.kind}, ${(input.userAgent || '').slice(0, 200)}
+      where not exists (
+        select 1 from mail_opens
+        where submission_id = ${input.submissionId}
+          and kind = ${input.kind}
+          and opened_at > now() - make_interval(secs => ${MAIL_OPEN_DEDUPE_SEC})
+      )
+    `)
+  })
 }
