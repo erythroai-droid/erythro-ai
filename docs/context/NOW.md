@@ -8,7 +8,7 @@
 ## Сделано в этой сессии
 
 - LP message-match субзаголовок во всех локалях: Express Audit / Экспресс-аудит / אודיט אקספרס (`auditLp.ts`).
-- Audit LP форма: без privacy-checkbox; email + сайт + CTA в одну строку; под ними notice с замком и implied consent + `*` (`AuditLpForm.tsx`).
+- Audit LP форма: без privacy-checkbox; email + сайт + CTA в ряд на `lg+`, на мобилке столбиком; notice + implied consent под ними (`AuditLpForm.tsx`).
 - Cookie-баннер: компактная одна строка снизу экрана + короткий `messageCompact` на мобиле (`CookieConsent.tsx`, `translations`). WhatsApp FAB поднят над баром (`bottom-14`, z-70).
 
 ## Сейчас
