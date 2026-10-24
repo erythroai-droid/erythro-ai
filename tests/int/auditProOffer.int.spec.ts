@@ -1,3 +1,4 @@
+import { verifyMailOpenToken } from '@/lib/mailOpenTrack'
 import { describe, expect, it } from 'vitest'
 import {
   buildProOfferCheckoutUrl,
@@ -68,7 +69,9 @@ describe('auditProOffer', () => {
       orderId: 'AUD-1',
       kind: 'offer',
     })
-    expect(mail.subject).toBe('Специальное предложение для ivan@example.com')
+    expect(mail.subject).toBe('Ваш отчёт готов: AI Аудит Pro для вашего сайта')
+    expect(mail.subject).not.toContain('ivan@example.com')
+    expect(mail.html).not.toContain('/api/mail/open')
     expect(mail.text).toContain('₪390')
     expect(mail.text).toContain('вместо ₪490')
     expect(mail.text).toContain('72 часа')
@@ -113,11 +116,11 @@ describe('auditProOffer', () => {
       checkoutUrl: 'https://erythro.ai/order/audit-pro-ads?lang=he',
       kind: 'offer',
     })
-    expect(en.subject).toBe('Special offer for ada@example.com')
+    expect(en.subject).toBe('Your report is ready: AI Audit Pro for your site')
     expect(en.text).toContain('Pay for Pro')
     expect(en.text).not.toMatch(/^Hello/m)
     expect(en.html).toContain('Unsubscribe from mailing')
-    expect(he.subject).toBe('הצעה מיוחדת עבור ada@example.com')
+    expect(he.subject).toBe('הדוח שלכם מוכן: AI Audit Pro לאתר שלכם')
     expect(he.html).toContain('dir="rtl"')
     expect(he.html).toContain('ביטול הרשמה לדיוור')
     expect(he.text).not.toMatch(/^שלום/m)
@@ -147,7 +150,7 @@ describe('auditProOffer', () => {
     expect(mail.html).toContain('dir="rtl"')
     expect(mail.html).toContain('text-align:right')
     expect(mail.html).toContain('אילת, ישראל')
-    expect(mail.html).toContain('הצעה מיוחדת עבור ada@example.com')
+    expect(mail.html).toContain('הדוח שלכם מוכן: AI Audit Pro לאתר שלכם')
     expect(mail.html).toContain('ביטול הרשמה לדיוור')
     expect(mail.html).not.toContain('WhatsApp')
     expect(mail.html).not.toContain('טל.')
@@ -164,7 +167,7 @@ describe('auditProOffer', () => {
       checkoutUrl: 'https://erythro.ai/order/audit-pro-ads?lang=ru',
       kind: 'nudge',
     })
-    expect(mail.subject).toBe('Осталось 24 часа до завершения специального предложения!')
+    expect(mail.subject).toBe('AI Аудит Pro: цена ₪390 действует ещё 24 часа')
     expect(mail.text).toContain('24 часа')
     expect(mail.text).toContain('₪390')
     expect(mail.text).toContain('Оплатить Pro')
@@ -189,8 +192,8 @@ describe('auditProOffer', () => {
       reportUrl: 'https://erythro.ai/audit/report/1?k=abc',
       kind: 'reminder',
     })
-    expect(mail.subject).toBe('Предложение о разработке для ivan@example.com')
-    expect(mail.html).toContain('Предложение о разработке для ivan@example.com')
+    expect(mail.subject).toBe('Как развить сайт: идеи по разработке')
+    expect(mail.html).toContain('Как развить сайт: идеи по разработке')
     expect(mail.text).toContain('Спецпредложение на Pro уже завершилось')
     expect(mail.text).toContain('другой путь')
     expect(mail.text).toContain('консультация')
@@ -215,7 +218,7 @@ describe('auditProOffer', () => {
       reportUrl: 'https://erythro.ai/audit/report/42?k=abc',
       kind: 'paid_dev',
     })
-    expect(mail.subject).toBe('Предложение о разработке для ivan@example.com')
+    expect(mail.subject).toBe('Что делать с результатами аудита: варианты доработки')
     expect(mail.text).toContain('Отчёт по вашему аудиту готов')
     expect(mail.text).toContain('правки и изменения')
     expect(mail.text).toContain('полностью пересобрать')
@@ -273,4 +276,26 @@ describe('buildProOfferEmail sample Pro report link', () => {
       })
     }
   }
+
+  it('adds a signed open-tracking pixel only when submissionId is given', () => {
+    const prev = process.env.PAYLOAD_SECRET
+    process.env.PAYLOAD_SECRET = 'test-pro-offer-secret'
+    const base = {
+      email: 'ivan@example.com',
+      locale: 'ru',
+      checkoutUrl: 'https://erythro.ai/order/audit-pro-ads?lang=ru',
+      kind: 'offer' as const,
+    }
+    const mail = buildProOfferEmail({ ...base, submissionId: 42 })
+    const m = mail.html.match(/\/api\/mail\/open\?t=([^"]+)"/)
+    expect(m).not.toBeNull()
+    expect(verifyMailOpenToken(decodeURIComponent(m![1]!))).toEqual({
+      submissionId: 42,
+      kind: 'offer',
+    })
+    expect(verifyMailOpenToken('42.offer.forged')).toBeNull()
+    expect(buildProOfferEmail(base).html).not.toContain('/api/mail/open')
+    if (prev === undefined) delete process.env.PAYLOAD_SECRET
+    else process.env.PAYLOAD_SECRET = prev
+  })
 })
