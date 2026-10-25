@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { HOMEPAGE_LINK_HEADER } from '@/lib/agentDiscovery'
-import { auditLpLocaleFromHost } from '@/lib/auditLp'
+import { auditLpInternalPath, auditLpTargetFromHost } from '@/lib/auditLp'
 import { shouldServeMarkdown } from '@/lib/markdownAccept'
 import {
   canonicalUrlForPath,
@@ -20,20 +20,19 @@ import {
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const host = requestHost(request.headers, request.nextUrl.hostname)
-  const auditLpLocale = auditLpLocaleFromHost(host)
+  const auditLp = auditLpTargetFromHost(host)
 
-  // Ads Final URLs: audit-{locale}.erythro.ai → internal /lp/audit/{locale}
+  // Ads Final URLs: audit[-pro|-diag]-{locale}.erythro.ai → /lp/audit[/pro|/diagnostic]/{locale}
   // (URL bar stays on the subdomain; no Set-Cookie).
-  if (auditLpLocale) {
+  if (auditLp) {
+    const internalPath = auditLpInternalPath(auditLp.product, auditLp.locale)
     const isRoot = pathname === '/' || pathname === ''
-    const alreadyLp =
-      pathname === `/lp/audit/${auditLpLocale}` ||
-      pathname.startsWith(`/lp/audit/${auditLpLocale}/`)
+    const alreadyLp = pathname === internalPath || pathname.startsWith(`${internalPath}/`)
 
     let response: NextResponse
     if (isRoot) {
       const url = request.nextUrl.clone()
-      url.pathname = `/lp/audit/${auditLpLocale}`
+      url.pathname = internalPath
       response = NextResponse.rewrite(url)
     } else if (alreadyLp || pathname.startsWith('/api/') || pathname.startsWith('/_next/')) {
       response = NextResponse.next()
@@ -61,25 +60,29 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Ads traffic hitting main site /audit with campaign tags -> fast dedicated LP
+  // Ads traffic hitting /audit with campaign tags → free LP subdomain.
+  // Do NOT redirect on bare `?lang=` — LP “see all packages” links use
+  // https://erythro.ai/audit?lang=… and must stay on the main pricing page.
   if (pathname === '/audit' || pathname === '/audit/') {
     const campaign = (request.nextUrl.searchParams.get('utm_campaign') || '').toLowerCase()
-    const lang = (request.nextUrl.searchParams.get('lang') || '').toLowerCase()
-    let targetLocale: 'ru' | 'en' | 'he' | null = null
-    if (campaign.includes('_ru') || campaign.endsWith('ru') || lang === 'ru') {
-      targetLocale = 'ru'
-    } else if (campaign.includes('_en') || campaign.endsWith('en') || lang === 'en') {
-      targetLocale = 'en'
-    } else if (campaign.includes('_he') || campaign.endsWith('he') || lang === 'he') {
-      targetLocale = 'he'
-    }
-    if (targetLocale) {
-      const targetUrl = new URL(`https://audit-${targetLocale}.erythro.ai/`)
-      targetUrl.search = request.nextUrl.search
-      const redirect = NextResponse.redirect(targetUrl, 307)
-      redirect.headers.set('X-Robots-Tag', 'noindex, nofollow')
-      redirect.headers.delete('x-powered-by')
-      return redirect
+    if (campaign) {
+      const lang = (request.nextUrl.searchParams.get('lang') || '').toLowerCase()
+      let targetLocale: 'ru' | 'en' | 'he' | null = null
+      if (campaign.includes('_ru') || campaign.endsWith('ru') || lang === 'ru') {
+        targetLocale = 'ru'
+      } else if (campaign.includes('_en') || campaign.endsWith('en') || lang === 'en') {
+        targetLocale = 'en'
+      } else if (campaign.includes('_he') || campaign.endsWith('he') || lang === 'he') {
+        targetLocale = 'he'
+      }
+      if (targetLocale) {
+        const targetUrl = new URL(`https://audit-${targetLocale}.erythro.ai/`)
+        targetUrl.search = request.nextUrl.search
+        const redirect = NextResponse.redirect(targetUrl, 307)
+        redirect.headers.set('X-Robots-Tag', 'noindex, nofollow')
+        redirect.headers.delete('x-powered-by')
+        return redirect
+      }
     }
   }
 

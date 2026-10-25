@@ -82,6 +82,7 @@ export default async function AuditLpPage({ params }: PageProps) {
   return (
     <AuditLpClient
       locale={raw}
+      product="free"
       content={content}
       auditPageContent={auditPageContent}
     />

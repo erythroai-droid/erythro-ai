@@ -19,7 +19,9 @@ import { signPaymentReturn } from '@/lib/payments/returnSig'
 import { verifyProOfferCheckoutAccess } from '@/lib/proOfferCheckoutAccess'
 import { getRequestIp, consumeContactRateLimit } from '@/lib/contactRateLimit'
 import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
+import { AUDIT_LP_TURNSTILE_ENABLED, isAuditLpHost } from '@/lib/auditLp'
 import { readTurnstileToken, verifyTurnstileToken } from '@/lib/turnstile'
+import { requestHost } from '@/lib/vercelHost'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -67,14 +69,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
-  // The order widget mints the token with action "audit" (OrderClient).
-  const turnstile = await verifyTurnstileToken({
-    token: readTurnstileToken(body),
-    action: 'audit',
-    remoteip: ip === 'unknown' ? undefined : ip,
-  })
-  if (!turnstile.ok) {
-    return NextResponse.json({ message: turnstile.message }, { status: turnstile.status })
+  // Ads LP hosts may skip Turnstile (`AUDIT_LP_TURNSTILE_ENABLED`) — same as /api/contact.
+  // Order widget on apex still requires a token with action "audit".
+  const requestFromAuditLp = isAuditLpHost(requestHost(request.headers))
+  const skipTurnstile = requestFromAuditLp && !AUDIT_LP_TURNSTILE_ENABLED
+  if (!skipTurnstile) {
+    const turnstile = await verifyTurnstileToken({
+      token: readTurnstileToken(body),
+      action: 'audit',
+      remoteip: ip === 'unknown' ? undefined : ip,
+    })
+    if (!turnstile.ok) {
+      return NextResponse.json({ message: turnstile.message }, { status: turnstile.status })
+    }
   }
 
   // Extract and validate required fields

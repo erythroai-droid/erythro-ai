@@ -1,4 +1,4 @@
-import { AUDIT_LP_HOST_BY_LOCALE } from '@/lib/auditLp'
+import { AUDIT_LP_ALL_HOSTS } from '@/lib/auditLp'
 import type { ContactFormSource } from '@/lib/contactNotification'
 
 export const TURNSTILE_TOKEN_FIELD = 'cf-turnstile-response' as const
@@ -6,10 +6,7 @@ export const TURNSTILE_TOKEN_MAX_LEN = 2048
 export const TURNSTILE_SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 
 /** Always allow ads LP hosts even if TURNSTILE_HOSTNAMES omits them. */
-const AUDIT_LP_TURNSTILE_HOSTS = [
-  ...Object.values(AUDIT_LP_HOST_BY_LOCALE),
-  'audit-rus.erythro.ai', // unused label — allow if DNS is ever added
-] as const
+const AUDIT_LP_TURNSTILE_HOSTS = AUDIT_LP_ALL_HOSTS
 
 /** `consult` covers the AI consultant widget (chat + OTP request). */
 export type TurnstileAction = ContactFormSource | 'consult'
