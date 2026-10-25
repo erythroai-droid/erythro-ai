@@ -7,21 +7,25 @@ import WhatsAppButton from '@/components/WhatsAppButton'
 import { SiteContentProvider, useSiteContent } from '@/components/SiteContentProvider'
 import StylizedSectionTitle from '@/components/StylizedSectionTitle'
 import AuditLpForm from '@/components/audit/AuditLpForm'
+import AuditLpPaidForm from '@/components/audit/AuditLpPaidForm'
 import type { SiteContent } from '@/lib/defaultContent'
 import type { AuditPageContent } from '@/lib/auditPage'
 import {
   AUDIT_LP_LOCALES,
-  auditLpCopy,
+  auditLpCopyFor,
   auditLpHrefForLocale,
   mainSiteUrl,
   tAuditLp,
   type AuditLpLocale,
+  type AuditLpProduct,
 } from '@/lib/auditLp'
 import { openConsentSettings } from '@/lib/privacyConsent'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 
 interface AuditLpClientProps {
   locale: AuditLpLocale
+  /** Ads LP product — free form or Grow checkout for Pro / Diagnostic. */
+  product?: AuditLpProduct
   content: SiteContent
   auditPageContent: AuditPageContent
 }
@@ -92,18 +96,21 @@ function BrandLogo({ className = '' }: { className?: string }) {
 /** Theme + EN/RU/HE pill. Locale switches navigate to the matching LP page. */
 function AuditLpPrefsPill({
   locale,
+  product,
   theme,
   setTheme,
 }: {
   locale: AuditLpLocale
+  product: AuditLpProduct
   theme: 'light' | 'dark'
   setTheme: (next: 'light' | 'dark') => void
 }) {
+  const copy = auditLpCopyFor(product)
   const next = theme === 'dark' ? 'light' : 'dark'
   const themeLabel =
     next === 'light'
-      ? tAuditLp(auditLpCopy.themeToLight, locale)
-      : tAuditLp(auditLpCopy.themeToDark, locale)
+      ? tAuditLp(copy.themeToLight, locale)
+      : tAuditLp(copy.themeToDark, locale)
   const themeShort =
     next === 'light'
       ? locale === 'ru'
@@ -153,7 +160,7 @@ function AuditLpPrefsPill({
       <div className="flex items-center gap-0.5 sm:gap-1" role="navigation" aria-label="Language">
         {AUDIT_LP_LOCALES.map((lang) => {
           const active = locale === lang
-          const href = auditLpHrefForLocale(lang)
+          const href = auditLpHrefForLocale(lang, product)
           return (
             <a
               key={lang}
@@ -177,14 +184,17 @@ function AuditLpPrefsPill({
 /** Chip strip + logo + theme/locale pill. Scrolls with the page. */
 function AuditLpHeader({
   locale,
+  product,
   theme,
   setTheme,
 }: {
   locale: AuditLpLocale
+  product: AuditLpProduct
   theme: 'light' | 'dark'
   setTheme: (next: 'light' | 'dark') => void
 }) {
-  const logoAlt = tAuditLp(auditLpCopy.homeLink, locale)
+  const copy = auditLpCopyFor(product)
+  const logoAlt = tAuditLp(copy.homeLink, locale)
 
   return (
     <div className="relative z-20 w-full">
@@ -203,7 +213,12 @@ function AuditLpHeader({
             className="hidden h-[52px] w-[235px] bg-[url('/images/logo/Logo_digital.svg')] bg-contain bg-left bg-no-repeat lg:block"
           />
         </a>
-        <AuditLpPrefsPill locale={locale} theme={theme} setTheme={setTheme} />
+        <AuditLpPrefsPill
+          locale={locale}
+          product={product}
+          theme={theme}
+          setTheme={setTheme}
+        />
       </header>
     </div>
   )
@@ -262,12 +277,14 @@ function AuditLpFooter({ locale, theme }: { locale: string; theme: 'light' | 'da
  */
 export default function AuditLpClient({
   locale: lockedLocale,
+  product = 'free',
   content,
   auditPageContent,
 }: AuditLpClientProps) {
   const { locale, theme, setTheme } = useSitePrefs(lockedLocale, 'dark', undefined, {
     lockedLocale,
   })
+  const copy = auditLpCopyFor(product)
   const isRtl = locale === 'he'
   const isLight = theme === 'light'
   const ink = isLight ? 'text-coal-900' : 'text-white'
@@ -281,32 +298,31 @@ export default function AuditLpClient({
     ? 'border border-coal-900/10 bg-white shadow-[0_4px_24px_0_rgba(13,13,13,0.08)] hover:shadow-[0_8px_26px_0_rgba(13,13,13,0.16)]'
     : 'border border-gold-500 bg-coal-900 hover:shadow-[0_8px_26px_0_rgba(0,0,0,0.45)]'
 
-  const scalesBody = auditLpCopy.scales.map((s) => tAuditLp(s, locale)).join('. ') + '.'
-  const deliverablesBody =
-    auditLpCopy.deliverables.map((d) => tAuditLp(d, locale)).join('. ') + '.'
+  const scalesBody = copy.scales.map((s) => tAuditLp(s, locale)).join('. ') + '.'
+  const deliverablesBody = copy.deliverables.map((d) => tAuditLp(d, locale)).join('. ') + '.'
 
   const accentCards = [
     {
       key: 'about',
-      label: tAuditLp(auditLpCopy.aboutKicker, locale),
-      body: tAuditLp(auditLpCopy.aboutBody, locale),
-      footer: tAuditLp(auditLpCopy.aboutFooter, locale),
+      label: tAuditLp(copy.aboutKicker, locale),
+      body: tAuditLp(copy.aboutBody, locale),
+      footer: tAuditLp(copy.aboutFooter, locale),
       bar: 'border-t-emerald-400',
       foot: isLight ? 'text-emerald-700' : 'text-emerald-400',
     },
     {
       key: 'scales',
-      label: tAuditLp(auditLpCopy.scalesHeading, locale),
+      label: tAuditLp(copy.scalesHeading, locale),
       body: scalesBody,
-      footer: tAuditLp(auditLpCopy.scalesFooter, locale),
+      footer: tAuditLp(copy.scalesFooter, locale),
       bar: isLight ? 'border-t-gold-900' : 'border-t-gold-500',
       foot: isLight ? 'text-gold-900' : 'text-gold-500',
     },
     {
       key: 'deliverables',
-      label: tAuditLp(auditLpCopy.deliverablesHeading, locale),
+      label: tAuditLp(copy.deliverablesHeading, locale),
       body: deliverablesBody,
-      footer: tAuditLp(auditLpCopy.deliverablesFooter, locale),
+      footer: tAuditLp(copy.deliverablesFooter, locale),
       bar: 'border-t-[#E07A5F]',
       foot: isLight ? 'text-[#B85A40]' : 'text-[#E07A5F]',
     },
@@ -318,12 +334,17 @@ export default function AuditLpClient({
         dir={isRtl ? 'rtl' : 'ltr'}
         className={`relative min-h-screen overflow-x-clip font-sans transition-colors duration-500 ${shell} ${ink}`}
       >
-        <AuditLpHeader locale={locale} theme={theme} setTheme={setTheme} />
+        <AuditLpHeader
+          locale={locale}
+          product={product}
+          theme={theme}
+          setTheme={setTheme}
+        />
 
         <section
           id="audit-lp"
           data-menu-contrast={isLight ? 'light' : 'dark'}
-          className={`relative z-20 w-full shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:-mt-8 max-lg:overflow-clip max-lg:rounded-t-[28px] ${plate}`}
+          className={`relative z-20 w-full overflow-visible shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:-mt-8 max-lg:rounded-t-[28px] ${plate}`}
         >
           {!isLight ? (
             <div className="solution-section-noise absolute inset-0 z-[1] pointer-events-none" aria-hidden />
@@ -335,7 +356,7 @@ export default function AuditLpClient({
                 className={`m-0 font-sans text-[32px] font-extralight uppercase leading-tight tracking-[9.6px] lg:text-[48px] lg:leading-[60px] ${ink}`}
               >
                 <StylizedSectionTitle
-                  text={tAuditLp(auditLpCopy.sectionTitle, locale)}
+                  text={tAuditLp(copy.sectionTitle, locale)}
                   restClassName={ink}
                 />
               </h1>
@@ -344,7 +365,7 @@ export default function AuditLpClient({
                   isLight ? 'text-gold-900' : 'text-gold-800'
                 }`}
               >
-                {tAuditLp(auditLpCopy.headline, locale)}
+                {tAuditLp(copy.headline, locale)}
               </p>
             </div>
             <p
@@ -352,12 +373,21 @@ export default function AuditLpClient({
                 isLight ? 'border-coal-900/15 text-gold-900' : `${accentBorder} ${accent}`
               }`}
             >
-              {tAuditLp(auditLpCopy.freeBadge, locale)}
+              {tAuditLp(copy.freeBadge, locale)}
             </p>
           </div>
 
           <div className="w-full min-w-0">
-            <AuditLpForm locale={locale} theme={theme} page={auditPageContent} />
+            {product === 'free' ? (
+              <AuditLpForm locale={locale} theme={theme} page={auditPageContent} />
+            ) : (
+              <AuditLpPaidForm
+                locale={locale}
+                product={product}
+                theme={theme}
+                page={auditPageContent}
+              />
+            )}
           </div>
 
           <div className="grid w-full grid-cols-1 items-stretch gap-4 sm:gap-5 lg:grid-cols-3 lg:gap-6">
@@ -394,12 +424,12 @@ export default function AuditLpClient({
           <div className="flex w-full flex-col gap-6">
             <div className="flex flex-col items-center gap-2 text-center">
               <p className={`m-0 text-[11px] font-bold uppercase tracking-[0.18em] ${accent}`}>
-                {tAuditLp(auditLpCopy.benefitsKicker, locale)}
+                {tAuditLp(copy.benefitsKicker, locale)}
               </p>
               <h2
                 className={`m-0 font-sans text-xl font-normal leading-[1.5] tracking-[0.04em] md:text-2xl ${ink}`}
               >
-                {tAuditLp(auditLpCopy.benefitsHeading, locale)}
+                {tAuditLp(copy.benefitsHeading, locale)}
               </h2>
             </div>
 
@@ -410,7 +440,7 @@ export default function AuditLpClient({
                 }`}
               />
               <ol className="relative m-0 grid list-none grid-cols-3 justify-items-center p-0">
-                {auditLpCopy.benefits.map((_, index) => (
+                {copy.benefits.map((_, index) => (
                   <li key={index} className="flex justify-center">
                     <span
                       dir="ltr"
@@ -424,7 +454,7 @@ export default function AuditLpClient({
             </div>
 
             <ol className="m-0 grid w-full list-none grid-cols-1 gap-4 p-0 md:grid-cols-3">
-              {auditLpCopy.benefits.map((step, index) => (
+              {copy.benefits.map((step, index) => (
                 <li
                   key={step.title.en}
                   className={`rounded-[10px] p-6 pb-11 transition-shadow duration-300 md:p-8 md:pb-[52px] ${cardClass}`}
