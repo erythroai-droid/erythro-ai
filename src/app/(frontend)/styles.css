@@ -1058,6 +1058,14 @@ html:not(.dark) .audit-pill-shell input:-webkit-autofill:active {
     background-size: 100% 100%;
   }
 
+  /* PIT-126: pre-paint hide when splash-skip-bootstrap set the flag (fbclid etc.).
+     Keeps orphaned SSR plates invisible even before React sweeps them. */
+  html[data-erythro-skip-splash] .splash-bg {
+    display: none !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+  }
+
   /* Premium Design System Glassmorphism */
   .panel-glass {
     background: rgba(255, 255, 255, 0.03);
