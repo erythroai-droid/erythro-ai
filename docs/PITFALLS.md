@@ -2058,6 +2058,73 @@ Redeploy the live workflow (`scripts/deploy_n8n_email_autoresponder.py` or Impor
 
 **Prevent:** Any "check state, then send, then mark" email path must claim the row atomically in SQL first. Never rely on a single timer — several triggers (timer, cron, walker) are by design. Test with concurrent callers (`tests/int/auditProOfferClaim.int.spec.ts`).
 
+## PIT-124 — QA Auditor false negative on custom AI chat / consultant widgets
+
+**Tags:** `qa-auditor`, `playwright`, `lead-capture`, `chat-widget`, `ai-consultant`  
+**Seen:** 2026-10-25 — erythro.ai audit missed active custom AI consultant (`ErythroConsultant` / `.chat-launcher`)
+
+**Symptom:** Audited site has an active AI consultant or custom chat widget, but the audit report shows `Живой чат — нет` / `hasChatWidget: false`, penalizing lead capture and recommending adding a live chat.
+
+**Cause:** Chat detection in `AuditCollector.java` checked only known 3rd-party SaaS iframe URLs (`tawk`, `crisp`, `intercom`, `zendesk`, `jivosite`, `livechat`) and generic `.chat-widget` / `.chatbot` classes. Custom React/Next.js widgets often use `.chat-launcher`, `.consultant-widget`, or lazy-mount on clicking a button with `aria-label="ИИ консультант"`.
+
+**Fix:** In `AuditCollector.java` (both `lead_capture` and `AGENT_PAGE_SNAPSHOT_SCRIPT`), expand `chatSelectors` to include:
+- `[class*="chat-launcher"]`, `[id*="chat-launcher"]`, `[class*="chat-trigger"]`, `[class*="chat-button"]`, `[class*="consultant"]`, `[id*="consultant"]`, `[class*="assistant"]`, `[id*="assistant"]`, `[class*="ai-chat"]`, `[id*="ai-chat"]`, `[data-chat]`, `[data-chatbot]`, `[data-consultant]`
+
+And add multilingual semantic scanning of `aria-label`, `title`, and `innerText` on interactive elements (`button, a, [role="button"]`) matching:
+`/(?:ai[- ]?(?:chat|assistant|consultant)|chat[- ]?(?:bot|widget|launcher)|(?:ии|ai)[- ]?(?:чат|консультант|ассистент)|(?:чат|онлайн[- ]?чат)|יועץ[- ]?ai|צ['׳]אט)/i`
+
+**Prevent:** Whenever new interactive contact launchers or custom AI widgets are added to the site design, verify that the QA auditor's DOM selector and keyword patterns recognize them.
+
+---
+
+## PIT-125 — QA Auditor false positives on browser/third-party console and runtime noise
+
+**Tags:** `qa-auditor`, `playwright`, `console-logs`, `pageerror`, `turnstile`, `csp`  
+**Seen:** 2026-10-25 — erythro.ai audit flagged 1 critical PageError (React #418 hydration mismatch) and 71 console noise messages, penalizing security/lead score and generating false critical alerts.
+
+**Symptom:** Audit report flags critical JavaScript crashes (`JavaScript падает в браузере и блокирует кнопки`, `PageError в рантайме`) and numerous console errors/warnings, although forms, interactive buttons, and all 10/10 funnel pages work properly in reality.
+
+**Cause:** 
+1. Cloudflare Turnstile inside its isolated sandbox iframe (`challenges.cloudflare.com`) tests browser environment capabilities by sending internal probes: `data:,` CSP reports, WebGPU/WebGL adapter queries (`powerPreference ignored`, `No available adapters`, `SwiftShader fallback`), audio/video decoder capability probes, and cross-origin `postMessage` origin checks.
+2. Next.js / PerformanceObserver emits non-fatal deprecation notices (`Deprecated API for given entry type`).
+3. Chromium / Edge emits subset font decompression warnings (`OTS parsing error: Size of decompressed WOFF 2.0 is less than compressed size`) and lazy-load notices (`[Intervention] Images loaded lazily`).
+4. Auditor's own internal script injection (e.g. `axe-core` from cdnjs) is blocked when the audited site enforces strict CSP `script-src`.
+5. Automated multi-locale emulation (forcing cookies/localStorage and reloading) triggers React #418 client hydration mismatch, which React automatically recovers from via client rendering.
+
+**Fix:** In `AuditCollector.java`, implement `isIgnorableConsoleMessage(text, location, type)` and `isIgnorablePageError(error)` to ignore:
+- Turnstile iframe sandbox messages (`challenges.cloudflare.com`, `turnstile`, `/challenge-platform/`, `data:,` CSP).
+- WebGPU / WebGL headless adapter fallback warnings (`powerPreference`, `no available adapters`, `swiftshader`).
+- Non-fatal deprecation logs (`Deprecated API for given entry type`).
+- WOFF/WOFF2 font subset OTS parsing notices.
+- Chromium browser interventions (`Images loaded lazily`).
+- Injected test scripts blocked by site CSP (`axe-core`, `cdnjs.cloudflare.com`).
+- Non-fatal React hydration recoveries (`React error #418`, `#423`, `#425`, `Hydration failed`).
+
+**Prevent:** Filter out sandbox/extension/browser-intervention noise in Playwright listeners before counting them towards runtime penalties or generating Top-3 executive vulnerability findings.
+
+---
+
+## PIT-126 — Facebook `?fbclid=` leaves a solid-red orphaned splash (portfolio / home “won’t open”)
+
+**Tags:** `meta-ads`, `splash`, `fbclid`, `hydration`, `isr`, `portfolio`  
+**Seen:** 2026-10-25 — Meta lead rollback; `https://erythro.ai/portfolio/rosso-garage?fbclid=…` shows only the red brand plate forever
+
+**Symptom:** Paid Facebook clicks (and any URL with `fbclid` / `gclid` / `utm_*`) appear to “not open”: HTTP 200, content in the accessibility tree, but the viewport stays solid red. Meta Quality / lead delivery rolls back. Reproducible in a normal browser with the same query string.
+
+**Cause (stack):**
+1. Root layout is ISR-static (`revalidate = 60`) and SSR’s `SplashHost` without the request query → `shouldSkipSplashSurface(pathname)` is `false` → full-screen `.splash-bg` is in the HTML.
+2. On the client, `fbclid` makes `skipSplash=true` → host returns `null`. Hydration mismatch can leave the SSR plate on `<body>` with **no React fiber** (orphan). GSAP never owns it; `opacity` stays `1`.
+3. PIT-117 added skip-by-query logic, but `SplashHost` only passed `pathname` (not `useSearchParams()`), and there was no pre-paint hide / orphan sweep — so Meta in-app browsers still hit the stuck plate.
+
+**Fix:**
+1. `SplashHost` reads `useSearchParams()` (inside `Suspense`) and passes `?…` into `shouldSkipSplashSurface`.
+2. `SPLASH_SKIP_BOOTSTRAP_SCRIPT` in the layout sets `html[data-erythro-skip-splash]` + `window.__erythroSplashDone` before paint; CSS hides `.splash-bg` under that flag.
+3. On skip, `sweepOrphanedSplashPlates()` removes any leftover `.splash-bg` nodes.
+
+**Prevent:** Never SSR-decide splash skip from pathname alone when paid-click query params matter. Keep the bootstrap + CSS hide + React sweep in sync with `shouldSkipSplashSurface`. After splash/skip changes, open `/portfolio/<slug>?fbclid=test` and confirm no `.splash-bg` remains.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -2163,7 +2230,7 @@ Redeploy the live workflow (`scripts/deploy_n8n_email_autoresponder.py` or Impor
 - [ ] After `vercel env pull`: `[SENSITIVE]` placeholders — fill from `.env` or Save in admin to revalidate (PIT-111)
 - [ ] Ads free-audit Final URL: `audit-en` / `audit-ru` / `audit-he`.erythro.ai, not `/audit` (PIT-112; not `audit-rus` — NXDOMAIN)
 - [ ] GA4 conversions on AJAX forms: always fire explicit `qualify_lead` / `close_convert_lead` / `purchase` (`send_to: G-…`) after synchronous consent + GA4 config init (`ensureAnalyticsConsentAndGaConfig`), not just `send_to: AW-…` (PIT-116)
-- [ ] Paid ad clicks (`fbclid` / `gclid` / `utm_*`) and `/audit` / `/order/*`: skip `<SplashScreen />` (`shouldSkipSplashSurface`) and auto-attribute `fb / paid` or `google / cpc` (PIT-117)
+- [ ] Paid ad clicks (`fbclid` / `gclid` / `utm_*`) and `/audit` / `/order/*`: skip `<SplashScreen />` via `useSearchParams` + pre-paint bootstrap (`shouldSkipSplashSurface`, PIT-117 / PIT-126) and auto-attribute `fb / paid` or `google / cpc`
 - [ ] Sitemap & canonicals: exclude `checkoutMode === 'contact'` (`audit-manual`) and placeholder portfolio slugs (`next-project`) from `sitemap.xml`, 308-redirect legacy aliases (`/order/ai-business-card` → `/order/ai-smart-card`, `/portfolio/Interior` → `/portfolio/pro-interior`), and restrict GA4/Ads/Meta beacons to `erythro.ai` / `*.erythro.ai` (`isProductionAnalyticsHost`, PIT-118)
 - [ ] Solution-plan slugs: trim on read/write; no trailing spaces or null slugs — else order ProjectNav wraps to Free Start (PIT-119)
 - [ ] Email images: PNG/JPG only, never SVG (Gmail/Outlook show broken image) (PIT-121)

@@ -21,6 +21,17 @@ declare global {
   }
 }
 
+/** `<html data-…>` set by {@link SPLASH_SKIP_BOOTSTRAP_SCRIPT} before paint (PIT-117 / PIT-126). */
+export const SPLASH_SKIP_HTML_ATTR = 'data-erythro-skip-splash'
+
+/**
+ * Inline bootstrap: hide / mark splash done before first paint when the URL is a
+ * paid-ad click or a conversion surface. The layout shell is ISR-static and cannot
+ * see `?fbclid=` at SSR — without this, React hydrates `skip=true` over an SSR
+ * splash plate and can orphan `.splash-bg` on `<body>` (solid red forever).
+ */
+export const SPLASH_SKIP_BOOTSTRAP_SCRIPT = `(function(){try{var path=(location.pathname||'/').split('?')[0]||'/';var host=(location.hostname||'').toLowerCase();var q=location.search||'';var paid=/[?&](fbclid|gclid|gbraid|wbraid|utm_source|utm_campaign|utm_medium)=/.test(q);var conv=path==='/audit'||path.indexOf('/audit/')===0||path.indexOf('/order/')===0;var lp=path.indexOf('/lp/audit/')===0||/^audit-[a-z0-9-]+\\.erythro\\.ai$/.test(host);if(!(paid||conv||lp))return;document.documentElement.setAttribute('${SPLASH_SKIP_HTML_ATTR}','1');window.__erythroSplashDone=true}catch(e){}})();`
+
 /**
  * Returns true when the full-screen brand splash should be skipped entirely:
  * - `/lp/audit/*` and `audit-*.erythro.ai`
@@ -40,10 +51,19 @@ export function shouldSkipSplashSurface(
   const host = hostname ?? (typeof window !== 'undefined' ? window.location.hostname : '')
   if (host && auditLpLocaleFromHost(host) != null) return true
 
-  const rawSearch = search ?? (typeof window !== 'undefined' ? window.location.search : '')
+  // Prefer the explicit search argument (SplashHost + useSearchParams). Fall back
+  // to window only when the caller omitted it — never treat `''` as “unknown”.
+  const rawSearch =
+    search !== undefined
+      ? search
+      : typeof window !== 'undefined'
+        ? window.location.search
+        : ''
   if (rawSearch) {
     try {
-      const sp = new URLSearchParams(rawSearch)
+      const sp = new URLSearchParams(
+        rawSearch.startsWith('?') ? rawSearch.slice(1) : rawSearch,
+      )
       if (
         sp.has('fbclid') ||
         sp.has('gclid') ||
@@ -60,6 +80,14 @@ export function shouldSkipSplashSurface(
     }
   }
   return false
+}
+
+/** Remove any leftover SSR splash plates (hydration mismatch orphans). */
+export function sweepOrphanedSplashPlates() {
+  if (typeof document === 'undefined') return
+  document.querySelectorAll('.splash-bg').forEach((el) => {
+    el.remove()
+  })
 }
 
 export function readSavedScrollY(): number {

@@ -129,7 +129,11 @@ describe('adsConversion (Google Ads + GA4 Key Events + Meta Pixel)', () => {
     expect(shouldSkipSplashSurface('/lp/audit/he')).toBe(true)
     expect(shouldSkipSplashSurface('/', '', 'audit-he.erythro.ai')).toBe(true)
     expect(shouldSkipSplashSurface('/', '?fbclid=IwZXh0bg', 'erythro.ai')).toBe(true)
+    expect(shouldSkipSplashSurface('/portfolio/rosso-garage', '?fbclid=IwZXh0bg', 'erythro.ai')).toBe(
+      true,
+    )
     expect(shouldSkipSplashSurface('/', '?gclid=CjwKCAjw', 'erythro.ai')).toBe(true)
+    // Explicit empty search must not fall back to a previous window.location (PIT-126).
     expect(shouldSkipSplashSurface('/', '', 'erythro.ai')).toBe(false)
   })
 

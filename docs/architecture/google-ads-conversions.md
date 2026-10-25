@@ -63,7 +63,8 @@
 1. **Автоматический fallback источника (`readCampaignConfigParams` и `AnalyticsBootstrap.tsx`):**
    - Если в URL есть `fbclid` без явных `utm_source` / `utm_medium`, автоматически выставляются `campaign_source: 'fb', campaign_medium: 'paid'`.
    - Если в URL есть `gclid` / `gbraid` / `wbraid` без явных `utm_source` / `utm_medium`, автоматически выставляются `campaign_source: 'google', campaign_medium: 'cpc'`.
-2. **Мгновенный первый экран (`shouldSkipSplashSurface` в `src/lib/splash.ts`):**
+2. **Мгновенный первый экран (`shouldSkipSplashSurface` в `src/lib/splash.ts`, PIT-117 / PIT-126):**
    - Полноэкранный `<SplashScreen />` отключён не только на `/lp/audit/*` (`audit-*.erythro.ai`), но и на `/audit`, `/order/*`, а также при любом переходе с параметрами `fbclid`, `gclid`, `gbraid`, `wbraid`, `utm_source`, `utm_campaign`, `utm_medium`.
+   - `SplashHost` обязан передавать `useSearchParams()` (layout ISR-static не видит query на SSR). Дополнительно: `SPLASH_SKIP_BOOTSTRAP_SCRIPT` + CSS `html[data-erythro-skip-splash]` + `sweepOrphanedSplashPlates()` — иначе hydration orphan оставляет вечный красный экран (PIT-126).
 3. **Meta Pixel `PageView` после согласия:**
    - При вызове `fbq('consent', 'grant')` (в `AnalyticsLoader.tsx` или `ensureAnalyticsConsentAndGaConfig()`) однократно досылается `fbq('track', 'PageView')` (`window.__ERYTHRO_META_PAGEVIEW_SENT__`), чтобы Meta Ads фиксировал `landing_page_view`.

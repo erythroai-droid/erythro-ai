@@ -9,6 +9,7 @@ import SplashHost from '@/components/SplashHost'
 import NavigationTopLoader from '@/components/NavigationTopLoader'
 import SkipToContent from '@/components/SkipToContent'
 import { LOCALE_BOOTSTRAP_SCRIPT, THEME_BOOTSTRAP_SCRIPT } from '@/lib/sitePrefs'
+import { SPLASH_SKIP_BOOTSTRAP_SCRIPT } from '@/lib/splash'
 import './styles.css'
 
 /** Layout shell is locale-agnostic; pages that can be static use ISR revalidate. */
@@ -180,6 +181,10 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <script
           id="locale-bootstrap"
           dangerouslySetInnerHTML={{ __html: LOCALE_BOOTSTRAP_SCRIPT }}
+        />
+        <script
+          id="splash-skip-bootstrap"
+          dangerouslySetInnerHTML={{ __html: SPLASH_SKIP_BOOTSTRAP_SCRIPT }}
         />
         <AnalyticsLoader />
         <SkipToContent locale={locale} />

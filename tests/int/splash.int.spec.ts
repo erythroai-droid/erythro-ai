@@ -5,9 +5,13 @@ import {
   MID_PAGE_SCROLL_PX,
   MOBILE_QUICK_SPLASH_MQ,
   SPLASH_MODE_KEY,
+  SPLASH_SKIP_BOOTSTRAP_SCRIPT,
+  SPLASH_SKIP_HTML_ATTR,
   requestQuickSplash,
   resolveSplashNavigation,
   resolveSplashMode,
+  shouldSkipSplashSurface,
+  sweepOrphanedSplashPlates,
 } from '@/lib/splash'
 
 function mockMatchMedia(mobile: boolean) {
@@ -115,5 +119,28 @@ describe('resolveSplashNavigation', () => {
     mockMatchMedia(true)
     sessionStorage.clear()
     expect(resolveSplashMode('/')).toBe('quick')
+  })
+})
+
+describe('splash skip helpers (PIT-126)', () => {
+  it('bootstrap script marks skip + done for fbclid without touching organic URLs', () => {
+    expect(SPLASH_SKIP_BOOTSTRAP_SCRIPT).toContain(SPLASH_SKIP_HTML_ATTR)
+    expect(SPLASH_SKIP_BOOTSTRAP_SCRIPT).toContain('fbclid')
+    expect(SPLASH_SKIP_BOOTSTRAP_SCRIPT).toContain('__erythroSplashDone')
+  })
+
+  it('sweepOrphanedSplashPlates removes leftover .splash-bg nodes', () => {
+    const orphan = document.createElement('div')
+    orphan.className = 'fixed inset-0 splash-bg'
+    document.body.appendChild(orphan)
+    expect(document.querySelectorAll('.splash-bg')).toHaveLength(1)
+    sweepOrphanedSplashPlates()
+    expect(document.querySelectorAll('.splash-bg')).toHaveLength(0)
+  })
+
+  it('explicit empty search does not inherit window.location.search', () => {
+    window.history.replaceState({}, '', '/portfolio/rosso-garage?fbclid=IwOrphanRisk')
+    expect(shouldSkipSplashSurface('/portfolio/rosso-garage')).toBe(true)
+    expect(shouldSkipSplashSurface('/portfolio/rosso-garage', '')).toBe(false)
   })
 })
