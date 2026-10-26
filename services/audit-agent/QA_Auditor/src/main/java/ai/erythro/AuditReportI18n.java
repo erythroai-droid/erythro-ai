@@ -260,6 +260,18 @@ public final class AuditReportI18n {
     /** Pro checkout — target of Free/Diagnostic «unlock full report» buttons. */
     public static final String UNLOCK_PRO_URL = "https://erythro.ai/order/audit-pro";
 
+    /**
+     * Locale-locked Pro checkout so HE/EN reports do not open the order page in the
+     * visitor's cookie/default locale. Avoids {@link #normalizeLang} during static init.
+     */
+    public static String unlockProUrl(String lang) {
+        String l = lang == null ? "ru" : lang.trim().toLowerCase(Locale.ROOT);
+        if (!"en".equals(l) && !"he".equals(l) && !"ru".equals(l)) {
+            l = "ru";
+        }
+        return UNLOCK_PRO_URL + "?lang=" + l;
+    }
+
     private static final String FOOTER_LOGO_SVG = loadFooterLogoSvg();
 
     private static String ctaWithLogo(String prefix) {
@@ -342,7 +354,7 @@ public final class AuditReportI18n {
             "Robots.txt: AI-боты и индексация",
             "GA4 / dataLayer readiness",
             "Разблокировать полный отчёт · 60+ проверок",
-            UNLOCK_PRO_URL,
+            unlockProUrl("ru"),
             "Бесплатный коммерческий аудит — Erythro.ai",
             "PREVIEW · БЕСПЛАТНЫЙ АУДИТ",
             "Ключевые метрики и топ-3 уязвимости. Полный отчёт: 60+ проверок, Lighthouse desktop, AI Visibility и план на 3 языках.",
@@ -389,7 +401,7 @@ public final class AuditReportI18n {
             "Robots.txt: AI crawlers & indexing",
             "GA4 / dataLayer readiness",
             "Unlock full report · 60+ checks",
-            UNLOCK_PRO_URL,
+            unlockProUrl("en"),
             "Free Commercial Audit — Erythro.ai",
             "PREVIEW · FREE AUDIT",
             "Key metrics and top 3 vulnerabilities. Full report: 60+ checks, desktop Lighthouse, AI Visibility and 3-language PDF.",
@@ -436,7 +448,7 @@ public final class AuditReportI18n {
             "Robots.txt: בוטים AI ואינדוקס",
             "GA4 / dataLayer readiness",
             "שחרר את הדוח המלא · 60+ בדיקות",
-            UNLOCK_PRO_URL,
+            unlockProUrl("he"),
             "אודיט מסחרי חינם — Erythro.ai",
             "PREVIEW · אודיט חינם",
             "מדדים מרכזיים ו-3 פגיעויות מובילות. דוח מלא: 60+ בדיקות, Lighthouse desktop, AI Visibility ו-PDF ב-3 שפות.",
