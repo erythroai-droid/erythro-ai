@@ -75,7 +75,7 @@ export default function SplashScreen() {
       markSplashDone()
     }
 
-    // ---- Quick: finished logo fades in (~0.9s), no body lock ----
+    // ---- Quick: finished logo + early overlay fade (uncover LCP sooner) ----
     if (mode === 'quick') {
       gsap.set(svg, { x: 0, y: 0, scale: 1, clearProps: 'transform' })
       gsap.set(allMarks, {
@@ -86,7 +86,6 @@ export default function SplashScreen() {
         strokeDasharray: 'none',
       })
       if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 1, y: 0 })
-      // Start hidden — short appear → hold → fade.
       gsap.set(wrap, { opacity: 0 })
       window.scrollTo(0, scrollY > 0 ? scrollY : 0)
 
@@ -94,19 +93,33 @@ export default function SplashScreen() {
         typeof window !== 'undefined' &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-      const appear = reduceMotion ? 0.35 : 0.45
-      const hold = reduceMotion ? 0.15 : 0.15
-      const fade = reduceMotion ? 0.2 : 0.3
       const tl = gsap.timeline()
-      tl.to(wrap, { opacity: 1, duration: appear, ease: 'power2.out' })
-        .to({}, { duration: hold })
-        .to(overlay, {
-          opacity: 0,
-          duration: fade,
-          ease: 'power2.inOut',
-          onStart: () => markSplashDone(),
-          onComplete: () => finish(),
-        })
+      if (reduceMotion) {
+        // Short sequential path — accessibility first.
+        tl.to(wrap, { opacity: 1, duration: 0.25, ease: 'power2.out' })
+          .to(overlay, {
+            opacity: 0,
+            duration: 0.2,
+            ease: 'power2.inOut',
+            onStart: () => markSplashDone(),
+            onComplete: () => finish(),
+          })
+      } else {
+        // Logo appears while the plate already starts clearing (~0.2s) so mobile
+        // LCP is not blocked for the full brand beat (PSI Slow 4G).
+        tl.to(wrap, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 0)
+          .to(
+            overlay,
+            {
+              opacity: 0,
+              duration: 0.35,
+              ease: 'power2.inOut',
+              onStart: () => markSplashDone(),
+              onComplete: () => finish(),
+            },
+            0.2,
+          )
+      }
 
       return () => {
         tl.kill()

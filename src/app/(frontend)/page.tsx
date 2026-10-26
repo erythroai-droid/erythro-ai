@@ -22,7 +22,13 @@ export default async function HomePage() {
         One asset serves mobile still + desktop video poster.
       */}
       {heroPreload ? (
-        <link rel="preload" as="image" href={heroPreload} fetchPriority="high" />
+        <link
+          rel="preload"
+          as="image"
+          href={heroPreload}
+          type="image/webp"
+          fetchPriority="high"
+        />
       ) : null}
       <HomeClient initialLocale="en" content={content} clientHydratePrefs />
     </>
