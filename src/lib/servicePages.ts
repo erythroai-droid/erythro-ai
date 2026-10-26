@@ -48,7 +48,10 @@ export const SERVICE_PAGES: ServicePage[] = [
       ru: 'Дизайн и брендинг',
       he: 'עיצוב ומיתוג',
     },
-    hero: { type: 'image', src: '/images/service-headers/design-branding.webp' },
+    hero: {
+      type: 'image',
+      src: 'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/header_9.webp',
+    },
     summary: {
       en: 'Visual systems that make the product memorable — from identity to motion.',
       ru: 'Визуальные системы, которые запоминаются — от айдентики до моушна.',
@@ -144,7 +147,10 @@ export const SERVICE_PAGES: ServicePage[] = [
       ru: 'Разработка',
       he: 'פיתוח',
     },
-    hero: { type: 'image', src: '/images/service-headers/development.webp' },
+    hero: {
+      type: 'image',
+      src: 'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/header_10.webp',
+    },
     summary: {
       en: 'Front-end that ships fast — responsive, animated, and ready for CMS.',
       ru: 'Фронтенд, который быстро уходит в прод — адаптив, анимация, готовность к CMS.',
@@ -225,7 +231,10 @@ export const SERVICE_PAGES: ServicePage[] = [
       ru: 'Управление',
       he: 'ניהול',
     },
-    hero: { type: 'image', src: '/images/service-headers/management.webp' },
+    hero: {
+      type: 'image',
+      src: 'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/header_87.webp',
+    },
     summary: {
       en: 'Infrastructure and admin so the product stays publishable and scalable.',
       ru: 'Инфраструктура и админка, чтобы продукт оставался управляемым и масштабируемым.',
@@ -309,7 +318,10 @@ export const SERVICE_PAGES: ServicePage[] = [
       ru: 'ИИ и автоматизация',
       he: 'בינה מלאכותית ואוטומציה',
     },
-    hero: { type: 'image', src: '/images/service-headers/ai-automation.webp' },
+    hero: {
+      type: 'image',
+      src: 'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/header_14.webp',
+    },
     summary: {
       en: 'Agents and workflows that remove busywork and move leads to the next step.',
       ru: 'Агенты и сценарии, которые снимают рутину и двигают лиды дальше по воронке.',

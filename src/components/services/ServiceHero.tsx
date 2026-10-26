@@ -5,10 +5,6 @@ import Image from 'next/image'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { ServicePage } from '@/lib/servicePages'
-import {
-  resolveServiceHeaderSrc,
-  shouldOptimizeServiceHeaderSrc,
-} from '@/lib/serviceHeaderImage'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -18,14 +14,13 @@ interface ServiceHeroProps {
   service: ServicePage
 }
 
+/**
+ * 150px header strip. Media comes from CMS → R2 (compressed WebP).
+ * Keep `unoptimized` for absolute CDN URLs so LCP does not pay an extra
+ * `/_next/image` hop (PIT-058); sources are already strip-sized WebP.
+ */
 export default function ServiceHero({ service }: ServiceHeroProps) {
   const sectionRef = useRef<HTMLElement | null>(null)
-  const heroSrc =
-    service.hero.type === 'image'
-      ? resolveServiceHeaderSrc(service.hero.src, service.slug)
-      : service.hero.src
-  const optimizeImage =
-    service.hero.type === 'image' && shouldOptimizeServiceHeaderSrc(heroSrc)
 
   useEffect(() => {
     if (!sectionRef.current) return
@@ -69,12 +64,11 @@ export default function ServiceHero({ service }: ServiceHeroProps) {
           />
         ) : (
           <Image
-            src={heroSrc}
+            src={service.hero.src}
             alt=""
             fill
             priority
-            unoptimized={!optimizeImage}
-            quality={70}
+            unoptimized
             sizes="100vw"
             className="object-cover"
           />

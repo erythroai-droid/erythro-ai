@@ -19,7 +19,6 @@ import {
   type LocaleMap,
   type LocaleListMap,
 } from './servicePages'
-import { resolveServiceHeaderSrc } from './serviceHeaderImage'
 import { getPageFaq, pageFaqFromCms } from './pageFaq'
 import {
   lexicalFromParagraphs,
@@ -422,11 +421,9 @@ function mapServiceDoc(d: any, i: number): ServicePage {
     SERVICE_PAGES.find((p) => p.slug === d.slug) ||
     SERVICE_PAGES[i] ||
     SERVICE_PAGES[0]
-  const rawHeroUrl = mediaUrl(d.heroMedia) || mediaUrl(d.image) || fb.hero.src
+  const heroUrl = mediaUrl(d.heroMedia) || mediaUrl(d.image) || fb.hero.src
   const mime = d.heroMedia?.mimeType || d.image?.mimeType || ''
   const heroType: 'image' | 'video' = String(mime).startsWith('video/') ? 'video' : 'image'
-  const heroUrl =
-    heroType === 'image' ? resolveServiceHeaderSrc(rawHeroUrl, d.slug || fb.slug) : rawHeroUrl
 
   const features = locList(d.features, 'feature', fb.features)
 
