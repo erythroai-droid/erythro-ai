@@ -1,17 +1,15 @@
 # Latest changes
 
-Обновлено: 2026-10-26  
+Обновлено: 2026-10-27  
 Модель: Composer (Cursor)
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
-## PIT-137 — no double client mail on re-queue + PHP focus
+## Report host + PHP alert duplicate
 
-- **Дубли adi_g@maabarot.com:** наши re-queue слали отчёт снова (`notifyClient` default true) и сбрасывали pro-offer. Fix: admin `notifyClient:false`, worker skip SMTP, `scheduleProOfferEmail` skip если status ≠ none/skipped. AUD-209: `pro_offer_status=sent`, в `audit_summary` дописаны tech chips.
-- **Пустые «Выявленные технологии»:** у anipet в HTML чипы есть (Shopify…); в CMS `detectedTechnologies` был null — теперь пишется в summary на каждом run + backfill 209.
-- **PHP CTA:** `.tech-php-cta { display:block }` в `render-v2-reports.mjs`.
-- **Письмо модернизации:** `withPhpStackRiskFocus` для reminder/paid_dev при PHP в stack.
+- **Адрес в шапке:** шаблон вшивал `erythro.ai` в `.site`; `render-v2-reports.mjs` теперь подставляет hostname из `audit_data.target_url` (без fallback на erythro.ai).
+- **Дубль PHP-алерта:** при повторном render старый `<p class="tech-php-alert">` оставался рядом с новым — теперь снимаем предыдущие siblings перед вставкой.
+- VPS: `render-v2-reports.mjs` docker cp. Новые аудиты / re-queue подхватят.
 
 ### Очередь
-- VPS audit-agent: docker cp + restart done (notifyClient / schedule skip / PHP CTA).
-- Сайт (Vercel): `notifyClient:false` на requeue + PHP-акцент в reminder/paid_dev — нужен commit + deploy.
+- Commit + push правок `render-v2-reports.mjs` (по запросу).
