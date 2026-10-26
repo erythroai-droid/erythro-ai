@@ -3387,6 +3387,10 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
         return `      <span class="chip chip-crit">${TECH_ICONS[t] || ''}<span>${esc(t)}</span><span class="chip-crit-badge" title="${esc(alertCopy.title)}">${esc(alertCopy.badge)}</span></span>`;
       }).join('\n')
     : `      <span class="chip"><span>${esc(noneTechLabel)}</span></span>`;
+  // Always strip prior PHP alerts first. Re-renders used to append forever: the old
+  // sibling regex used `\b` after the class quote, which never matched before `>`.
+  s = s.replace(/\s*<p class="tech-php-alert"[^>]*>[\s\S]*?<\/p>/g, '');
+
   let techBlockHtml = `    <div class="chips">\n${techChipsInner}\n    </div>`;
   if (flaggedPhpTech.length) {
     const siteHost = reportSiteHost(data);
@@ -3399,14 +3403,7 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
   if (idxChips !== -1) {
     const endChips = s.indexOf('</div>', idxChips);
     if (endChips !== -1) {
-      // Drop any prior tech-php-alert siblings so re-renders do not duplicate the PHP warning.
-      let end = endChips + 6;
-      while (true) {
-        const m = s.slice(end).match(/^\s*<p class="tech-php-alert"\b[\s\S]*?<\/p>/);
-        if (!m) break;
-        end += m[0].length;
-      }
-      s = s.slice(0, idxChips) + techBlockHtml.trim() + s.slice(end);
+      s = s.slice(0, idxChips) + techBlockHtml.trim() + s.slice(endChips + 6);
     }
   }
 
@@ -3741,13 +3738,8 @@ for (const tier of TIERS) {
       writeOut(rootPath, html, 'utf8');
     }
 
-    // 4. Write template to QA_Auditor/templates/
-    const tplPath = path.join(TEMPLATES_V2_DIR, `audit_template_${tier}_${lang}.html`);
-    writeOut(tplPath, html, 'utf8');
-    if (tier === 'pro') {
-      const tplV2Path = path.join(TEMPLATES_V2_DIR, `audit_template_v2_${lang}.html`);
-      writeOut(tplV2Path, html, 'utf8');
-    }
+    // 4. Do NOT overwrite audit_template_* with rendered client HTML.
+    // That polluted the next run's base (PHP alerts stacked on every re-render).
 
     // 5. Write to services/audit-agent/QA_Auditor/reports/${tier}/ if DEV_ROOT exists
     if (DEV_ROOT) {
