@@ -2614,10 +2614,11 @@ ${cards}
 
   // --- Overall score
   const score = sc.overall_score;
+  // Two-line wrap for multi-word gauge labels (keep clearance from the ring).
   const ZONE_WORD = {
-    ru: { good: 'Отлично', warn: 'Требует внимания', bad: 'Критично' },
-    en: { good: 'Excellent', warn: 'Needs attention', bad: 'Critical' },
-    he: { good: 'מצוין', warn: 'דורש תשומת לב', bad: 'קריטי' }
+    ru: { good: 'Отлично', warn: 'Требует<br>внимания', bad: 'Критично' },
+    en: { good: 'Excellent', warn: 'Needs<br>attention', bad: 'Critical' },
+    he: { good: 'מצוין', warn: 'דורש<br>תשומת לב', bad: 'קריטי' }
   }[lang];
   const ZONE_COLOR = { good: '#22bf16', warn: '#ff7900', bad: '#e52421' };
   const grade = ZONE_WORD[zoneOf(score)];
@@ -2628,7 +2629,7 @@ ${cards}
     /stroke="#[0-9a-f]{6}" stroke-width="7" stroke-linecap="round" stroke-dasharray="[\d.]+ [\d.]+"/,
     `stroke="${ZONE_COLOR[zoneOf(score)]}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${((circ * score) / 100).toFixed(0)} ${circ.toFixed(0)}"`
   );
-  s = s.replace(/<div class="lbl">[^<]*<\/div>/, `<div class="lbl">${grade}</div>`);
+  s = s.replace(/<div class="lbl">[\s\S]*?<\/div>/, `<div class="lbl"><span>${grade}</span></div>`);
 
   // Section badge
   let checksStr = '';

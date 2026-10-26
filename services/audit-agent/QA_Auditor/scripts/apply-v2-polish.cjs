@@ -476,7 +476,7 @@ ${R}.fr-fix[data-s="w"] { --c: #ff7900; }
    even when a badge wraps under the title (tablet, PDF) */
 ${R}.scale { display: flex; flex-direction: column; }
 ${R}.scale .row { flex: 1 0 auto; align-items: flex-start; }
-/* gauge word stays inside the ring, centered both vertically and horizontally */
+/* gauge word stays inside the ring: 2-line wrap via <span>…<br>…</span>, room from the stroke */
 ${R}.gauge { display: inline-flex !important; position: relative !important; align-items: center !important; justify-content: center !important; }
 ${R}.gauge .lbl {
   position: absolute !important;
@@ -485,12 +485,20 @@ ${R}.gauge .lbl {
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  padding: 0 16px !important;
-  font-size: 13px !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 26px 22px !important;
+  font-size: 14.5px !important;
   font-weight: 700 !important;
-  line-height: 1.15 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
   box-sizing: border-box !important;
-  word-break: normal !important;
+}
+${R}.gauge .lbl > span {
+  display: block !important;
+  text-align: center !important;
+  max-width: 100% !important;
+  line-height: 1.25 !important;
 }
 ${R}.bt-short { display: none; }
 ${R}.tiers-hint { display: none; }
@@ -632,6 +640,11 @@ ${R}.top3 .t3 .t3-rows { grid-column: 1 / -1; grid-row: 2; margin-top: 0; }
   ${R}.sub, ${R}.score-note, ${R}.note { font-size: 13px !important; margin-top: 10px !important; }
   ${R}.score-num { font-size: 60px !important; }
   ${R}.gauge { width: 120px; height: 120px; }
+  ${R}.gauge .lbl {
+    padding: 24px 22px !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
   ${R}.score { margin-top: 14px !important; gap: 14px !important; }
   /* atomic blocks never split */
   ${R}.t3, ${R}.action, ${R}.check, ${R}.scale, ${R}.stat, ${R}.flow, ${R}.ai-engine, ${R}.ai-factor, ${R}.ai-verdict, ${R}.code-box, ${R}tr, ${R}.scope-list li, ${R}.legend { break-inside: avoid !important; page-break-inside: avoid !important; }
@@ -719,12 +732,12 @@ ${R}.top3 .t3 .t3-rows { grid-column: 1 / -1; grid-row: 2; margin-top: 0; }
   ${R}.scale .val { margin: 8px 0 8px !important; }
   ${R}.score { margin-top: 10px !important; }
   ${R}.score-num { font-size: 54px !important; }
-  ${R}.gauge { width: 104px !important; height: 104px !important; }
+  ${R}.gauge { width: 112px !important; height: 112px !important; }
   ${R}.gauge .lbl {
-    font-size: 10.5px !important;
-    line-height: 1.15 !important;
-    padding: 0 8px !important;
-    letter-spacing: -0.1px !important;
+    padding: 22px 20px !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0 !important;
   }
   ${R}.wrap > .logo { margin-bottom: -30px !important; }
   /* channel pills: equal width, stretched over the column height like the middle column */
@@ -900,6 +913,30 @@ function actionRanges(s) {
 
 function patchMarkup(s, lang, log) {
   const t = T[lang];
+
+  // 0) gauge status: wrap label in <span>, two lines for multi-word (RU/EN/HE)
+  const gaugeLabels = [
+    ['Требует внимания', 'Требует<br>внимания'],
+    ['Требует<br>внимания', 'Требует<br>внимания'],
+    ['Needs attention', 'Needs<br>attention'],
+    ['Needs<br>attention', 'Needs<br>attention'],
+    ['דורש תשומת לב', 'דורש<br>תשומת לב'],
+    ['דורש<br>תשומת לב', 'דורש<br>תשומת לב'],
+    ['Отлично', 'Отлично'],
+    ['Excellent', 'Excellent'],
+    ['מצוין', 'מצוין'],
+    ['Критично', 'Критично'],
+    ['Critical', 'Critical'],
+    ['קריטי', 'קריטי'],
+  ];
+  for (const [from, to] of gaugeLabels) {
+    const bare = `<div class="lbl">${from}</div>`;
+    const wrapped = `<div class="lbl"><span>${to}</span></div>`;
+    if (s.includes(bare)) {
+      s = s.split(bare).join(wrapped);
+      log.push('gauge-lbl');
+    }
+  }
 
   // 1) green scale badges are plain status (no link / arrow)
   s = s.replace(/<a href="#[^"]+" class="badge ok"[^>]*>([^<]*?)\s*[↓⬇]?\s*<\/a>/g, (m, txt) => { log.push('ok-badge'); return `<span class="badge ok">${txt.trim()}</span>`; });
