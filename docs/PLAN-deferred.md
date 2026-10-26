@@ -19,7 +19,7 @@
 | medium | Consultant wizard / intent router (v2) | **Not now.** Dynamic chips + intent router + engineer in the same thread. How-we-work card and reply-language detection are already in v1. See § Consultant v2 below. |
 | low | Purge `consult-sessions` older than 12 months | Retention promised on `/privacy` is manual today; add a cron |
 | later | CF-only UFW 80/443 | Needs orange cloud + Origin Cert for n8n/agent-api |
-| later | ISR remaining frontend pages | services/order/audit still use `getRequestPrefs` / dynamic params (PIT-056) |
+| later | ISR remaining frontend pages | `/services/[slug]` done (2026-10-26). Still dynamic: order/audit + `/portfolio/[slug]` (`getRequestPrefs`, PIT-056) |
 | later | Custom domain `media.erythro.ai` | r2.dev is rate-limited |
 
 ## Consultant v2 (wizard + grounded facts)

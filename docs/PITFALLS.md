@@ -919,12 +919,12 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 **Fix:**
 1. Layout SSR defaults (`lang="en"`) + `THEME_BOOTSTRAP_SCRIPT` / `LOCALE_BOOTSTRAP_SCRIPT`.
-2. Home + `/portfolio`: `export const dynamic = 'force-static'` + `revalidate = 60`; `clientHydratePrefs`; no `getRequestPrefs`.
+2. Home + `/portfolio` + `/services/[slug]`: `export const dynamic = 'force-static'` + `revalidate = 60`; `clientHydratePrefs`; no `getRequestPrefs` / no `cookies()` in `generateMetadata`.
 3. `not-found` must not call `cookies()` (client hydrate locale).
 4. Middleware: markdown rewrite + Link header only — **never** set `NEXT_LOCALE`.
 5. CMS reads via `getPayloadLocal()` (`src/lib/payloadStatic.ts`) with `overrideAccess: true` — never `initReq` / `headers()`.
 
-**Verify after deploy:** `Cache-Control` contains `s-maxage=60`, second request `x-vercel-cache: HIT` (or `STALE`), build table shows `○` / ISR for `/` and `/portfolio` (not `ƒ`).
+**Verify after deploy:** `Cache-Control` contains `s-maxage=60`, second request `x-vercel-cache: HIT` (or `STALE`), build table shows `○` / ISR for `/`, `/portfolio`, and `/services/*` (not `ƒ`).
 
 **Prevent:** Never put `cookies()` in shared layout or `not-found`. Never Set-Cookie on cacheable HTML responses. Keep Local API for static pages.
 
@@ -2125,6 +2125,96 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-133 — Flat R2 media: `_objectkey = filename` doubles the public URL
+
+**Tags:** `r2`, `media`, `payload`, `storage-s3`
+**Seen:** 2026-10-26 — service header strips after SQL compress to WebP
+
+**Symptom:** Hero `<img src>` becomes `https://…r2.dev/header_14.webp/header_14.webp` (404, `naturalWidth: 0`). DB `media.url` looks correct.
+
+**Cause:** `@payloadcms/plugin-cloud-storage` afterRead builds the folder as `prefix + _objectKey`, then `generateFileURL` appends `filename`. Flat keys in this project historically keep `_objectkey` NULL. Setting `_objectkey` to `header_14.webp` made the folder equal the filename → doubled path.
+
+**Fix:** `UPDATE media SET _objectkey = NULL` for those rows. Compress script must not write `_objectkey` for flat keys. Harden `generateFileURL` so `prefix === filename` does not double.
+
+**Prevent:** Never set `_objectkey` to the file basename on flat R2 media. After SQL media edits, revalidate `site-content` (Save in admin or `/api/revalidate`).
+
+---
+
+## PIT-127 — Pro v2 report HTML silently overwritten: all design disappears
+
+**Tags:** `audit`, `report`, `pro-v2`, `multi-agent`, `overwrite`
+**Seen:** 2026-10-25 — twice in one evening every v2 copy (RU/EN/HE, five locations) lost its CSS polish, "Шаг N" badges and sorted actions
+
+**Symptom:** The report looks like the old version again (P1 priority badges, no accordion styling, hover effects gone), although edits were made and verified minutes earlier.
+
+**Cause:** The v2 HTML exists in ~15 copies that other agents/processes also write (dev-lab `templates/` + `reports/pro-v2/`, project `public/samples/audit/`, worker `reports/pro-v2/`). A copy step from another session replaced all of them with its own version.
+
+**Fix:** All design work lives in `services/audit-agent/QA_Auditor/scripts/apply-v2-polish.cjs` (mirror in dev-lab `QA_Auditor/scripts/`): idempotent CSS block between `v2-polish:start/end` markers + markup tweaks. Re-run it, then `render-v2-pdf.cjs`.
+
+**Prevent:** Never hand-edit a single v2 copy. Change the script, run it on every copy, regenerate the PDFs. Long-term: make the generator emit v2 so no patching is needed.
+
+---
+
+## PIT-128 — Chromium print: `box-decoration-break: clone` and fixed-height flex corrupt PDF pages
+
+**Tags:** `pdf`, `playwright`, `print-css`, `fragmentation`, `chromium`
+**Seen:** 2026-10-26 — Pro v2 PDF
+
+**Symptom:** In the PDF the last items of one section are painted over the first block of the next section (overlap), or the third card of a section disappears entirely.
+
+**Cause:** (1) `box-decoration-break: clone` on a section card that contains `<details>`/grid children mis-sizes the last fragment. (2) A fixed `height` on a flex container that must fragment across pages drops the overflowing child.
+
+**Fix:** Long sections (top-3, actions, checklist) print frameless (transparent card, items are cards themselves). Fill a page with per-card `min-height` (top-3: 71mm) instead of fixed container height. Keep short sections whole with `break-inside: avoid`.
+
+**Prevent:** After any print-CSS change render the PDF and look at every page (pdf.js in Playwright works without poppler). Margins at a fragmentation break are truncated — put spacing inside blocks or use borders.
+
+---
+
+## PIT-129 — PDF: only one accordion open, white page margins, locked output files
+
+**Tags:** `pdf`, `details`, `playwright`, `windows`
+**Seen:** 2026-10-25/26
+
+**Symptom:** (a) Checklist prints with only the last item expanded. (b) White strips around the grey page background. (c) `RenderV2Pdf.java` aborts: "file is used by another process"; the PDF in the viewer stays old.
+
+**Cause:** (a) `<details name="audit-checklist">` is an exclusive group — opening all closes the others. (b) Chrome never paints `@page` margins. (c) Windows locks a PDF open in a viewer.
+
+**Fix:** (a) Remove the `name` attribute and open all (`render-v2-pdf.cjs` + `matchMedia('print')` handler in the HTML). (b) `@page{margin:0}` and rebuild 10mm/8mm spacing with a wrapper table whose `thead`/`tfoot` repeat per page (reset inherited `td` styles: `text-transform`, `text-align`, `font`). (c) `render-v2-pdf.cjs` writes `*.new.pdf` next to a locked target and prints which file was locked.
+
+**Prevent:** Close the viewer before regenerating; if the user "sees no changes" in a PDF, check for a `.new.pdf` or a lock first.
+
+---
+
+## PIT-130 — Local QA Auditor run fails: `Unable to establish loopback connection` (JDK 17 and 21)
+
+**Tags:** `qa-auditor`, `java`, `windows`, `httpclient`, `loopback`
+**Seen:** 2026-10-25 — dev machine (Windows 11 build 26300)
+
+**Symptom:** `mvn compile exec:java` crashes after the Playwright steps at "TTFB, security headers, robots.txt" with `java.io.IOException: Unable to establish loopback connection: Invalid argument: connect`. A 6-line Java `HttpClient` probe fails the same way, also with `-Djava.net.preferIPv4Stack=true`, `useFastTcpLoopback=false` and JDK 21.
+
+**Cause:** The JDK selector wake-up pipe (`PipeImpl`) cannot open a loopback TCP connection on this machine (Node can; so does PowerShell HTTP). Not the sandbox, not the site (erythro.ai answers 200).
+
+**Fix / workaround:** Run the audit where Java networking works (VPS worker, GitHub Actions workflow). Reports from the last good run are reused; do not overwrite them with a half-run. Fixing the machine (AV/firewall/Winsock reset) is a system change — ask the user first.
+
+**Prevent:** Test with the minimal `HttpClient` probe before blaming the auditor code.
+
+---
+
+## PIT-131 — Idempotent text patches: replacement that contains its own source text
+
+**Tags:** `scripts`, `i18n`, `he`, `idempotency`
+**Seen:** 2026-10-26 — Hebrew checklist title became "שיקוף שיקוף שיקוף … RTL ופריסה לישראל"
+
+**Symptom:** A heading repeats a word dozens of times after the polish script was re-run.
+
+**Cause:** The patch replaced `RTL ופריסה…` with `שיקוף RTL ופריסה…`; the result still contains the search text, so every run prepended one more `שיקוף`.
+
+**Fix:** In `apply-v2-polish.cjs`, a fix whose result contains its source is normalised first (`result → source`) and then applied once; the damaged title is repaired by regex.
+
+**Prevent:** Re-run a patch script twice and diff the output; replacement text must not contain the search text.
+
+---
+
 ## Checklist before merging CMS / schema PRs
 
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
@@ -2186,7 +2276,7 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 - [ ] Funnel review: CTA-opened modal forms and chat/WhatsApp count as a lead path; disclose the method in the Pro block (PIT-068)
 - [ ] Form-mail “not arriving”: check Hostinger INBOX (not Unread); `team@` password is not `SMTP_PASS` (PIT-054)
 - [ ] Contact honeypot must not be named company/website/email — mobile autofill silent-drops leads (PIT-055)
-- [ ] Shared frontend layout / not-found must not call `cookies()`; middleware must not Set-Cookie on HTML; use `force-static` + `getPayloadLocal` for ISR HIT (PIT-056)
+- [ ] Shared frontend layout / not-found must not call `cookies()`; middleware must not Set-Cookie on HTML; use `force-static` + `getPayloadLocal` for ISR HIT; `/services/[slug]` metadata must not read cookies (PIT-056)
 - [ ] Hero LCP media: CSS `lg:block` poster in SSR HTML, not `useState(isLg)` gate (PIT-057)
 - [ ] Absolute CDN hero stills: preload + `<img>` direct URL, skip `/_next/image` when bytes unchanged (PIT-058)
 - [ ] Home hero: no static import of HeroMotionText/GSAP before LCP (PIT-059)
@@ -2230,7 +2320,14 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 - [ ] After `vercel env pull`: `[SENSITIVE]` placeholders — fill from `.env` or Save in admin to revalidate (PIT-111)
 - [ ] Ads free-audit Final URL: `audit-en` / `audit-ru` / `audit-he`.erythro.ai, not `/audit` (PIT-112; not `audit-rus` — NXDOMAIN)
 - [ ] GA4 conversions on AJAX forms: always fire explicit `qualify_lead` / `close_convert_lead` / `purchase` (`send_to: G-…`) after synchronous consent + GA4 config init (`ensureAnalyticsConsentAndGaConfig`), not just `send_to: AW-…` (PIT-116)
-- [ ] Paid ad clicks (`fbclid` / `gclid` / `utm_*`) and `/audit` / `/order/*`: skip `<SplashScreen />` via `useSearchParams` + pre-paint bootstrap (`shouldSkipSplashSurface`, PIT-117 / PIT-126) and auto-attribute `fb / paid` or `google / cpc`
+- [ ] Splash only on `/`; skip all inner routes + paid ad clicks (`fbclid` / `gclid` / `utm_*`) / `/audit` / `/order/*` via `useSearchParams` + pre-paint bootstrap (`shouldSkipSplashSurface`, PIT-117 / PIT-126) and auto-attribute `fb / paid` or `google / cpc`
 - [ ] Sitemap & canonicals: exclude `checkoutMode === 'contact'` (`audit-manual`) and placeholder portfolio slugs (`next-project`) from `sitemap.xml`, 308-redirect legacy aliases (`/order/ai-business-card` → `/order/ai-smart-card`, `/portfolio/Interior` → `/portfolio/pro-interior`), and restrict GA4/Ads/Meta beacons to `erythro.ai` / `*.erythro.ai` (`isProductionAnalyticsHost`, PIT-118)
 - [ ] Solution-plan slugs: trim on read/write; no trailing spaces or null slugs — else order ProjectNav wraps to Free Start (PIT-119)
 - [ ] Email images: PNG/JPG only, never SVG (Gmail/Outlook show broken image) (PIT-121)
+- [ ] Pro v2 report: change `apply-v2-polish.cjs`, never hand-edit one copy; re-run it + `render-v2-pdf.cjs` after any overwrite (PIT-127)
+- [ ] PDF print CSS: no `box-decoration-break: clone`, no fixed-height flex over page breaks; look at every PDF page (PIT-128)
+- [ ] PDF: open all `<details>` (drop `name`), `@page{margin:0}` + wrapper table, watch for locked files / `.new.pdf` (PIT-129)
+- [ ] Local QA Auditor on Windows: loopback bug in JDK HttpClient — run audits on VPS/Actions (PIT-130)
+- [ ] Patch scripts must be idempotent: replacement must not contain the search text (PIT-131)
+- [ ] Free report navigation anchors: non-action pillars must anchor to open checklist details (`#diag-*`) or `#locked-checks`, never nonexistent `#action-*` cards (PIT-132)
+- [ ] Flat R2 media keys: keep `media._objectkey` NULL; never set it to the filename or Payload afterRead builds `file.webp/file.webp` (PIT-133)

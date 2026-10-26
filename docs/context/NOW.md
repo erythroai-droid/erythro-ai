@@ -5,22 +5,20 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
-## В работе: mobile perf — service headers на R2
+## В работе: ISR `/services/[slug]` (ждёт деплоя)
 
 ### Сделано
-- Сжатые strip WebP залиты в **R2** `erythro-media` и обновлены строки `media`:
-  - `header_14.webp` (ai-automation, id 65) ~84 KiB
-  - `header_9.webp` (design, id 59) ~86 KiB
-  - `header_10.webp` (development, id 60) ~53 KiB
-  - `header_87.webp` (enterprise-engineering, id 58) ~48 KiB
-- Локальный маппинг `/images/service-headers/` убран — шапки только с R2 через CMS.
-- Скрипт: `node scripts/compress-service-headers-r2.mjs` (`--apply`).
+- `force-static` + `revalidate=60`, убраны `cookies()` / `getRequestPrefs`.
+- `ServiceClient` + `clientHydratePrefs` (локаль/тема после mount).
+- Metadata SSR как EN (как contacts/home).
 
-### Очередь
-1. Deploy кода (fallback URLs в `servicePages` → R2 webp) + убедиться, что ISR/revalidate подхватил новые `media.url`.
-2. PSI mobile `/services/ai-automation`.
-3. Позже: ISR `/services/*`; аналитику / chunk `8261` не трогать.
+### После деплоя проверить
+- `Cache-Control: s-maxage=60`, второй запрос `x-vercel-cache: HIT`.
+- PSI mobile `/services/ai-automation` (TTFB должен упасть с ~180ms).
+
+### Очередь дальше
+1. Portfolio LCP / картинки на R2.
+2. Home LCP / main-thread.
+3. Не трогать: аналитика, chunk `8261`.
 
 ## Параллельно (Claude Code): отчёты аудита — не удалять
-
-- Free HTML / tier-scope — не смешивать с mobile-perf.

@@ -151,6 +151,9 @@ async function main() {
 
         if (found.rows.length) {
           for (const row of found.rows) {
+            // Keep `_objectkey` NULL for flat R2 keys. Payload afterRead treats
+            // `_objectKey` as a folder segment and then appends `filename`, so
+            // setting it to `header_14.webp` produced `.../header_14.webp/header_14.webp`.
             await client.query(
               `update media set
                  filename = $2,
@@ -160,7 +163,7 @@ async function main() {
                  filesize = $4,
                  width = $5,
                  height = $6,
-                 _objectkey = $2,
+                 _objectkey = null,
                  updated_at = now()
                where id = $1`,
               [row.id, job.destKey, publicUrl, filesize, width, height],
@@ -170,7 +173,7 @@ async function main() {
         } else if (job.createIfMissing) {
           const ins = await client.query(
             `insert into media (alt, filename, url, thumbnail_u_r_l, mime_type, filesize, width, height, _objectkey, created_at, updated_at)
-             values ($1, $2, $3, $3, 'image/webp', $4, $5, $6, $2, now(), now())
+             values ($1, $2, $3, $3, 'image/webp', $4, $5, $6, null, now(), now())
              returning id`,
             [`Service header ${job.slug}`, job.destKey, publicUrl, filesize, width, height],
           )

@@ -24,14 +24,27 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 interface ServiceClientProps {
   initialLocale: string
   initialTheme?: 'light' | 'dark'
+  /** ISR pages: hydrate locale/theme from storage after mount (no SSR cookies). */
+  clientHydratePrefs?: boolean
   content: SiteContent
   service: ServicePage
 }
 
-export default function ServiceClient({ initialLocale, initialTheme, content, service }: ServiceClientProps) {
+export default function ServiceClient({
+  initialLocale,
+  initialTheme,
+  clientHydratePrefs,
+  content,
+  service,
+}: ServiceClientProps) {
   const a11yTranslations = content.accessibility
   const pageFaq = service.faq ?? getPageFaq(service.slug)
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(
+    initialLocale,
+    'dark',
+    initialTheme,
+    clientHydratePrefs ? { clientHydratePrefs: true } : undefined,
+  )
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   const pickA11y = (field?: Record<string, string> | null) =>
