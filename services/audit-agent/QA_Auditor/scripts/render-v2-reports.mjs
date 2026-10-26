@@ -2103,6 +2103,17 @@ function detectedTechnologiesFromData(auditData) {
   return raw.map((t) => String(t || '').trim()).filter(Boolean);
 }
 
+/** Hostname for the audited site — never fall back to erythro.ai (that is our brand, not the client). */
+function reportSiteHost(auditData) {
+  const raw = String(auditData?.target_url || '').trim();
+  if (!raw) return '';
+  try {
+    return new URL(raw.includes('://') ? raw : `https://${raw}`).hostname;
+  } catch {
+    return raw.replace(/^https?:\/\//i, '').split('/')[0].split('?')[0] || '';
+  }
+}
+
 /**
  * PHP / PHP-CMS stack flagged for CVE-2026-109618 & CVE-2026-109619 (php2shell, Oct 2026).
  * Detection of the runtime or a typical PHP CMS is enough — we do not claim the host is unpatched.
@@ -3233,7 +3244,7 @@ ${restHtml}
   // 5 funnel URLs, 184 checks; Pro: 3 languages, up to 10 funnel URLs, 230 checks — audit-report-tier-scope.md §3)
   {
     const names = renderedChecks.map((c) => c.name).join('; ');
-    const host = esc(String(data.target_url || 'erythro.ai').replace(/^https?:\/\//, '').replace(/\/$/, ''));
+    const host = esc(reportSiteHost(data) || '—');
     const pp = ab.pages_visited || 10;
     const proN = 55 + 28 * 3 + 9 * pp + 1;
     const PRO_P = {
@@ -3348,6 +3359,17 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
     s = s.slice(0, ni) + `<p class="note">${P.note}</p>` + s.slice(s.indexOf('</p>', ni) + 4);
   }
 
+  // --- Header site hostname (templates ship with placeholder erythro.ai)
+  {
+    const siteHost = reportSiteHost(data);
+    if (siteHost) {
+      s = s.replace(
+        /(<div class="site">\s*(?:<svg[\s\S]*?<\/svg>\s*)?)(?:<span[^>]*>)?[^<]+?(?:<\/span>)?(\s*<\/div>)/i,
+        `$1${esc(siteHost)}$2`,
+      );
+    }
+  }
+
   // --- Detected technologies chips from audit_data (never a hardcoded demo stack)
   const detectedTech = detectedTechnologiesFromData(data);
   const flaggedPhpTech = detectedTech.filter(isPhpStackAlertTech);
@@ -3367,12 +3389,7 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
     : `      <span class="chip"><span>${esc(noneTechLabel)}</span></span>`;
   let techBlockHtml = `    <div class="chips">\n${techChipsInner}\n    </div>`;
   if (flaggedPhpTech.length) {
-    let siteHost = '';
-    try {
-      siteHost = new URL(String(data.target_url || '')).hostname;
-    } catch {
-      siteHost = String(data.target_url || '').replace(/^https?:\/\//, '').split('/')[0] || '';
-    }
+    const siteHost = reportSiteHost(data);
     const alert = phpStackAlertCopy(lang, flaggedPhpTech, siteHost || undefined);
     const waHref = `${PHP_WA_HREF}?text=${encodeURIComponent(alert.waText)}`;
     techBlockHtml += `\n    <p class="tech-php-alert"><strong>${esc(alert.title)}.</strong> ${esc(alert.body)}`
@@ -3382,7 +3399,14 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
   if (idxChips !== -1) {
     const endChips = s.indexOf('</div>', idxChips);
     if (endChips !== -1) {
-      s = s.slice(0, idxChips) + techBlockHtml.trim() + s.slice(endChips + 6);
+      // Drop any prior tech-php-alert siblings so re-renders do not duplicate the PHP warning.
+      let end = endChips + 6;
+      while (true) {
+        const m = s.slice(end).match(/^\s*<p class="tech-php-alert"\b[\s\S]*?<\/p>/);
+        if (!m) break;
+        end += m[0].length;
+      }
+      s = s.slice(0, idxChips) + techBlockHtml.trim() + s.slice(end);
     }
   }
 
