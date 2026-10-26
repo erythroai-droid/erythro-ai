@@ -124,12 +124,13 @@ describe('adsConversion (Google Ads + GA4 Key Events + Meta Pixel)', () => {
     })
   })
 
-  it('skips SplashScreen on inner routes, /audit, /order/*, audit LP hosts, and paid ad query strings', () => {
+  it('skips SplashScreen on /audit, /order/*, audit LP hosts, paid ads; organic inner only on mobile', () => {
     expect(shouldSkipSplashSurface('/audit')).toBe(true)
     expect(shouldSkipSplashSurface('/order/free-start')).toBe(true)
     expect(shouldSkipSplashSurface('/lp/audit/he')).toBe(true)
-    expect(shouldSkipSplashSurface('/portfolio')).toBe(true)
-    expect(shouldSkipSplashSurface('/services/ai-automation', '')).toBe(true)
+    // jsdom has no mobile MQ → desktop: organic inner keeps short brand splash.
+    expect(shouldSkipSplashSurface('/portfolio')).toBe(false)
+    expect(shouldSkipSplashSurface('/services/ai-automation', '')).toBe(false)
     expect(shouldSkipSplashSurface('/', '', 'audit-he.erythro.ai')).toBe(true)
     expect(shouldSkipSplashSurface('/', '?fbclid=IwZXh0bg', 'erythro.ai')).toBe(true)
     expect(shouldSkipSplashSurface('/portfolio/rosso-garage', '?fbclid=IwZXh0bg', 'erythro.ai')).toBe(
