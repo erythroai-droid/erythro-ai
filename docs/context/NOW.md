@@ -5,13 +5,13 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
-## Desktop splash brand beat (не задеплоено)
+## Audit sample reports v2 → прод (блокер для клиентов)
 
-- **Desktop:** короткий splash снова на organic inner (переходы + cold load). Mobile inner по-прежнему skip.
-- **Desktop quick timing:** ~1.3 с (appear 0.5 + hold 0.35 + fade 0.4) — бренд читается на главной.
-- **Mobile quick:** без изменений (ранний fade для LCP).
-- Conversion/ads (`/audit`, `/order/*`, LP, `fbclid`…) всегда skip.
+- **Факт:** воркер на VPS уже отдаёт клиентам v2. Сайт/LP/письма ссылаются на `/samples/audit/{tier}-{lang}.html` — пути верные, **контент на erythro.ai ещё старый A4-4**.
+- **Локально готово:** все 9 HTML + PDF в `public/samples/audit/` = v2 (`v2-polish`), `pro-*.html` ≡ `pro-*-v2.html`.
+- **Код:** `auditSampleReports.ts` + `audit-pro-ads` → pro sample; тест обновлён под v2.
+- **Smoke прод (без реальной оплаты):** free/diagnostic/pro order + LP diagnostic/pro — формы и CTA оплаты живые (₪99 / ₪490 / free submit).
 
 ### Очередь
-1. Задеплоить → глазами desktop home + переход на /portfolio.
-2. Chunk `8261` без OWNER не трогать.
+1. **Commit + deploy** `public/samples/audit/*` (+ мелкий diff `auditSampleReports.ts` / тест / arch doc) → после деплоя примеры на сайте = v2.
+2. Desktop splash brand beat (не задеплоено ранее) — отдельно, не блокер аудита.

@@ -4,6 +4,8 @@ export const AUDIT_SAMPLE_REPORT_TIERS = {
   'audit-free': 'free',
   'audit-diagnostic': 'diagnostic',
   'audit-pro': 'pro',
+  /** Same Pro lab sample as audit-pro (promo checkout). */
+  'audit-pro-ads': 'pro',
 } as const
 
 export type AuditSampleTier =
