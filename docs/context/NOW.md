@@ -5,20 +5,21 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
-## В работе: ISR `/services/[slug]` (ждёт деплоя)
+## Portfolio media → R2 WebP (сделано)
 
-### Сделано
-- `force-static` + `revalidate=60`, убраны `cookies()` / `getRequestPrefs`.
-- `ServiceClient` + `clientHydratePrefs` (локаль/тема после mount).
-- Metadata SSR как EN (как contacts/home).
+- Скрипт `scripts/compress-portfolio-media-r2.mjs` (strip + cards + heavy mobile heroes).
+- Flat WebP на R2, `media._objectkey = null` (PIT-133).
+- PSI mobile `/portfolio`: Perf **69**, **LCP 5.0s** (было ~8s). Картинки ок; остаток main-thread / `8261` / аналитика.
 
-### После деплоя проверить
-- `Cache-Control: s-maxage=60`, второй запрос `x-vercel-cache: HIT`.
-- PSI mobile `/services/ai-automation` (TTFB должен упасть с ~180ms).
+## Home LCP — замер (без правок)
 
-### Очередь дальше
-1. Portfolio LCP / картинки на R2.
-2. Home LCP / main-thread.
-3. Не трогать: аналитика, chunk `8261`.
+- PSI mobile `/`: Perf **63**, LCP **5.1s**, TTFB 20ms. Hero_Mobile.webp ~50KB — не bottleneck.
+- Heavy transfers: GTM 162KB, fbevents 116KB, fonts ~186KB, chunk `8261` (~framer/payload) + main-thread Style&Layout **2.3s**.
+- Картинки/ISR уже выжаты; дальше только аналитика или `8261` — **не трогаем** по плану.
+
+### Очередь
+1. (опционально) Commit `scripts/compress-portfolio-media-r2.mjs` + NOW.
+2. Стоп по perf-плану, пока не разрешат аналитику / `8261`.
+3. Если где-то ещё jpg на portfolio — Save Site Settings (локальный `REVALIDATION_TOKEN` непригоден).
 
 ## Параллельно (Claude Code): отчёты аудита — не удалять
