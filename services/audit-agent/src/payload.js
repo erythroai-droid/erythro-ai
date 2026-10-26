@@ -116,6 +116,23 @@ export function scheduleProOfferEmail(submissionId, planSlug, _meta = {}) {
   const label = paid ? 'paid-dev' : 'pro-offer'
 
   const run = async () => {
+    try {
+      const doc = await getContactSubmission(submissionId)
+      const st = doc && typeof doc.proOfferStatus === 'string' ? doc.proOfferStatus : 'none'
+      // Do not reset funnel after a re-run that already mailed / scheduled.
+      if (st && st !== 'none' && st !== 'skipped') {
+        console.log(
+          `[payload] ${label} schedule skipped id=${submissionId} (already status=${st})`,
+        )
+        return
+      }
+    } catch (err) {
+      console.warn(
+        `[payload] ${label} pre-check GET failed id=${submissionId}:`,
+        err instanceof Error ? err.message : err,
+      )
+    }
+
     const dueAt = new Date(Date.now() + PRO_OFFER_DELAY_MS).toISOString()
     try {
       await updateContactSubmission(submissionId, {

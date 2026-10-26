@@ -82,6 +82,9 @@ export async function runQaAuditor(input) {
     const card = raw?.executive_scorecard || {}
     score = Number(card.overall_score ?? 0) || 0
     grade = card.grade ?? null
+    const detectedTechnologies = Array.isArray(raw.detected_technologies)
+      ? raw.detected_technologies.map((t) => String(t || '').trim()).filter(Boolean)
+      : []
     summary = {
       ...summary,
       grade,
@@ -89,6 +92,7 @@ export async function runQaAuditor(input) {
       targetUrl: raw.target_url || targetUrl,
       timestamp: raw.timestamp || null,
       scales: card.scales || card.pillars || undefined,
+      detectedTechnologies,
     }
   } catch (err) {
     console.warn('[qa-auditor] could not parse audit_data.json:', err?.message || err)

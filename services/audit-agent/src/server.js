@@ -114,6 +114,8 @@ const server = http.createServer(async (req, res) => {
         planSlug: typeof body.planSlug === 'string' ? body.planSlug : undefined,
         clientEmail: typeof body.clientEmail === 'string' ? body.clientEmail : undefined,
         clientName: typeof body.clientName === 'string' ? body.clientName : undefined,
+        // Admin re-queue sends false; first intake omits → email client.
+        notifyClient: body.notifyClient !== false,
       })
     })
     return

@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-137 — Admin re-queue resent client report email (+ reset pro-offer)
+
+**Tags:** `audit`, `email`, `requeue`, `pro-offer`
+**Seen:** 2026-10-26 — `adi_g@maabarot.com` (AUD-209) got two report emails ~22:18 and ~23:16
+
+**Symptom:** Second client “report ready” mail after an admin re-queue; pro-offer could be re-scheduled even after already sent.
+
+**Cause:** Worker treated every successful run as a fresh funnel: `notifyClient` defaulted true, and `scheduleProOfferEmail` always reset `proOfferStatus` → `scheduled`.
+
+**Fix:** Admin `/api/audit/admin/requeue` sends `notifyClient: false`. Worker skips SMTP when false. `scheduleProOfferEmail` no-ops if status is not `none`/`skipped`. After a mistaken reset, set `pro_offer_status='sent'` when `pro_offer_sent_at` is already set.
+
+**Prevent:** Never re-queue with client notify for polish-only re-renders. Persist `detectedTechnologies` into `audit_summary` on every run (chips in HTML ≠ empty CMS summary).
+
+---
+
 ## PIT-136 — Cleaning WIP Java dropped the v2 report pipeline (old A4-4 shipped)
 
 **Tags:** `audit`, `report`, `pro-v2`, `deploy`, `multi-agent`

@@ -46,6 +46,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       leadChannel: doc.leadChannel ?? null,
       auditStatus: doc.auditStatus,
       auditScore: doc.auditScore ?? null,
+      auditSummary: doc.auditSummary ?? null,
       reportUrl: doc.reportUrl,
       reportAccessToken:
         typeof doc.reportAccessToken === 'string' ? doc.reportAccessToken : null,

@@ -243,6 +243,79 @@ type ServicesMailCopy = SharedMail & {
   home: string
 }
 
+/** Same set as render-v2 PHP stack alert (CVE-2026-109618 / 109619). */
+const PHP_STACK_ALERT_TECH = new Set([
+  'PHP',
+  'WordPress',
+  'Drupal',
+  'Joomla',
+  'Bitrix',
+])
+
+/** True when audit_summary.detectedTechnologies includes a PHP / PHP-CMS signal. */
+export function auditSummaryHasPhpStackRisk(summary: unknown): boolean {
+  if (!summary || typeof summary !== 'object' || Array.isArray(summary)) return false
+  const tech = (summary as { detectedTechnologies?: unknown }).detectedTechnologies
+  if (!Array.isArray(tech)) return false
+  return tech.some((t) => PHP_STACK_ALERT_TECH.has(String(t || '').trim()))
+}
+
+/** Lead with critical PHP risk on modernization / paid-dev letters. */
+function withPhpStackRiskFocus(
+  copy: ServicesMailCopy,
+  locale: OfferLocale,
+): ServicesMailCopy {
+  if (locale === 'ru') {
+    return {
+      ...copy,
+      subject: () => 'Критическая уязвимость PHP на сайте — поможем устранить',
+      preheader: 'CVE php2shell: срочная проверка и модернизация',
+      headline: 'Критический риск PHP',
+      intro:
+        'В отчёте аудита мы обнаружили признаки стека PHP / PHP-CMS с критическими уязвимостями удалённого выполнения кода (CVE-2026-109618 / CVE-2026-109619, «php2shell»). Это требует срочной проверки версии и обновления — мы можем помочь закрыть риск.',
+      bridge:
+        'Параллельно можем внедрить правки по аудиту или пересобрать сайт на современном стеке без этого риска:',
+      bullets: [
+        'Срочная проверка и устранение риска PHP / CMS (обновление, hardening, мониторинг)',
+        ...copy.bullets,
+      ],
+      cta:
+        'Ответьте «PHP», «правки» или «новый сайт» — приоритизируем устранение уязвимости и пришлём план.',
+    }
+  }
+  if (locale === 'he') {
+    return {
+      ...copy,
+      subject: () => 'פגיעות PHP קריטית באתר — נעזור לתקן',
+      preheader: 'CVE php2shell: בדיקה דחופה ושדרוג',
+      headline: 'סיכון PHP קריטי',
+      intro:
+        'בדוח הביקורת זיהינו סימנים למחסנית PHP / CMS מבוססת PHP עם פגיעויות קריטיות לביצוע קוד מרחוק (CVE-2026-109618 / CVE-2026-109619, «php2shell»). נדרשת בדיקת גרסה ועדכון דחופים — נוכל לעזור לסגור את הסיכון.',
+      bridge: 'במקביל אפשר ליישם תיקונים לפי הביקורת או לבנות מחדש את האתר על מחסנית מודרנית ללא הסיכון הזה:',
+      bullets: [
+        'בדיקה ותיקון דחופים של סיכון PHP / CMS (עדכון, hardening, ניטור)',
+        ...copy.bullets,
+      ],
+      cta: 'השיבו «PHP», «תיקונים» או «אתר חדש» — נעדיף את סגירת הפגיעות ונשלח תוכנית.',
+    }
+  }
+  return {
+    ...copy,
+    subject: () => 'Critical PHP vulnerability on your site — we can help fix it',
+    preheader: 'CVE php2shell: urgent review and modernization',
+    headline: 'Critical PHP risk',
+    intro:
+      'Your audit report flagged a PHP / PHP-CMS stack exposed to critical unauthenticated RCE issues (CVE-2026-109618 / CVE-2026-109619, “php2shell”). This needs an urgent version check and patch — we can help close the risk.',
+    bridge:
+      'In parallel we can implement the audit fixes or rebuild the site on a modern stack without this exposure:',
+    bullets: [
+      'Urgent PHP / CMS risk assessment and remediation (patch, hardening, monitoring)',
+      ...copy.bullets,
+    ],
+    cta: 'Reply “PHP”, “fixes”, or “new site” — we will prioritize closing the vulnerability and send a plan.',
+  }
+}
+
 function proCopy(locale: OfferLocale): ProMailCopy {
   const shared: SharedMail = {
     reportCta:
@@ -673,6 +746,8 @@ export function buildProOfferEmail(input: {
   /** When set, a signed open-tracking pixel is appended to the HTML. */
   submissionId?: string | number | null
   kind?: OfferKind
+  /** Lead modernization / paid-dev copy with critical PHP CVE messaging. */
+  phpStackRisk?: boolean
 }): { subject: string; text: string; html: string; unsubscribeUrl: string } {
   const locale = offerLocale(input.locale)
   const dir = locale === 'he' ? 'rtl' : 'ltr'
@@ -756,7 +831,8 @@ export function buildProOfferEmail(input: {
   }
 
   if (kind === 'reminder' || kind === 'paid_dev') {
-    const copy = kind === 'paid_dev' ? paidDevCopy(locale) : servicesCopy(locale)
+    const base = kind === 'paid_dev' ? paidDevCopy(locale) : servicesCopy(locale)
+    const copy = input.phpStackRisk ? withPhpStackRiskFocus(base, locale) : base
     const subject = copy.subject(email)
     const textParts = [
       subject,
@@ -1374,6 +1450,7 @@ export async function trySendPaidAuditDevOffer(
     orderId,
     submissionId,
     kind: 'paid_dev',
+    phpStackRisk: auditSummaryHasPhpStackRisk(doc.auditSummary),
   })
 
   const blocked = await sendClaimed(
@@ -1590,6 +1667,7 @@ export async function trySendAuditProOfferReminder(
     orderId,
     submissionId,
     kind: 'reminder',
+    phpStackRisk: auditSummaryHasPhpStackRisk(doc.auditSummary),
   })
 
   const blocked = await sendClaimed(

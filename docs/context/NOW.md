@@ -5,10 +5,13 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
-## Gauge label typography
+## PIT-137 — no double client mail on re-queue + PHP focus
 
-- **Сделано:** `a0bc900` + VPS redeploy (пользователь). Двухстрочная подпись в круге общей оценки.
-- Новые аудиты подхватят стили. Старые HTML в R2 без re-queue не обновятся.
+- **Дубли adi_g@maabarot.com:** наши re-queue слали отчёт снова (`notifyClient` default true) и сбрасывали pro-offer. Fix: admin `notifyClient:false`, worker skip SMTP, `scheduleProOfferEmail` skip если status ≠ none/skipped. AUD-209: `pro_offer_status=sent`, в `audit_summary` дописаны tech chips.
+- **Пустые «Выявленные технологии»:** у anipet в HTML чипы есть (Shopify…); в CMS `detectedTechnologies` был null — теперь пишется в summary на каждом run + backfill 209.
+- **PHP CTA:** `.tech-php-cta { display:block }` в `render-v2-reports.mjs`.
+- **Письмо модернизации:** `withPhpStackRiskFocus` для reminder/paid_dev при PHP в stack.
 
 ### Очередь
-— пусто.
+- VPS audit-agent: docker cp + restart done (notifyClient / schedule skip / PHP CTA).
+- Сайт (Vercel): `notifyClient:false` на requeue + PHP-акцент в reminder/paid_dev — нужен commit + deploy.

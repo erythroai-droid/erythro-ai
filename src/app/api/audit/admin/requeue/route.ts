@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
       overrideAccess: false,
     })
 
+    // Re-generate report only — do not email the client again (PIT-137).
     const triggered = await triggerAuditAgent({
       submissionId: id,
       targetUrl: website,
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest) {
       planSlug: typeof doc.planSlug === 'string' ? doc.planSlug : undefined,
       clientEmail: typeof doc.email === 'string' ? doc.email : undefined,
       clientName: typeof doc.name === 'string' ? doc.name : undefined,
+      notifyClient: false,
     })
 
     if (!triggered.ok) {
