@@ -8,6 +8,10 @@
 
 export const HERO_IMAGE_QUALITY = 70
 
+/** Intrinsic size of the production mobile still / desktop poster on R2. */
+export const HERO_STILL_WIDTH = 1080
+export const HERO_STILL_HEIGHT = 1920
+
 /** @deprecated Kept for tests / callers that still build optimizer srcsets. */
 export const HERO_IMAGE_DEVICE_SIZES = [640, 750, 828, 1080, 1200, 1920, 2048, 3840] as const
 

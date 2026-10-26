@@ -3,7 +3,14 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { waitForSplashDone } from '@/lib/splash'
-import { DESKTOP_HERO_SIZES, HERO_IMAGE_QUALITY, heroStillSrc, isAbsoluteHeroUrl } from '@/lib/heroImage'
+import {
+  DESKTOP_HERO_SIZES,
+  HERO_IMAGE_QUALITY,
+  HERO_STILL_HEIGHT,
+  HERO_STILL_WIDTH,
+  heroStillSrc,
+  isAbsoluteHeroUrl,
+} from '@/lib/heroImage'
 
 /** Full-bleed LCP still — absolute CDN URLs skip `/_next/image` (PIT-058). */
 function HeroStill({
@@ -19,8 +26,12 @@ function HeroStill({
       <img
         src={heroStillSrc(src)}
         alt=""
+        width={HERO_STILL_WIDTH}
+        height={HERO_STILL_HEIGHT}
+        sizes={DESKTOP_HERO_SIZES}
         fetchPriority="high"
-        decoding="async"
+        // Sync decode: LCP still — avoid post-load decode delay on Slow 4G lab.
+        decoding="sync"
         className={`absolute inset-0 h-full w-full ${className}`}
       />
     )
