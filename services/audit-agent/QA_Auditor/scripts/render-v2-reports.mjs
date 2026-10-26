@@ -1742,6 +1742,45 @@ a.badge.crit:hover {
   flex-shrink: 0 !important;
   display: block !important;
 }
+.chip.chip-crit {
+  border-color: #fca5a5 !important;
+  background: #fff1f0 !important;
+  padding-inline-end: 10px !important;
+}
+.chip-crit-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin-inline-start: 2px !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: #e52421 !important;
+  color: #fff !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  line-height: 1.2 !important;
+}
+.tech-php-alert {
+  margin-top: 14px !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid #fca5a5 !important;
+  background: #fff1f0 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  color: #7f1d1d !important;
+}
+.tech-php-alert a {
+  color: #b91c1c !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+.tech-php-alert a:hover {
+  color: #e52421 !important;
+}
 
 /* Official header logo styling */
 .logo {
@@ -2040,24 +2079,88 @@ const BRAND_LOGO_SVG = `<a class="logo" href="https://erythro.ai" aria-label="Er
 const TECH_ICONS = {
   'Next.js': `<svg viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></svg>`,
   'React': `<svg viewBox="0 0 24 24" fill="#087ea4" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"/></svg>`,
+  'Vue.js': `<svg viewBox="0 0 24 24" fill="#41B883" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M1.5 3h5.25L12 12 17.25 3H22.5L12 21 1.5 3z"/><path d="M6.75 3 12 12 17.25 3h-3.375L12 7.5 10.125 3z" fill="#34495E"/></svg>`,
+  'Vercel': `<svg viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2L22 20H2L12 2z"/></svg>`,
+  'WordPress': `<svg viewBox="0 0 24 24" fill="#21759B" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18.5c-1.193 0-2.325-.25-3.35-.694l4.61-12.63c.24.01.476.036.74.036 1.33 0 2.53-.24 2.53-.24.527-.03.466-.837-.06-.807 0 0-1.41.11-2.92.11-1.08 0-2.89-.11-2.89-.11-.525-.03-.585.777-.06.807 0 0 .46.053 1.19.08l1.72 4.72-2.41 7.23-4.01-11.95c.24.01.476.036.74.036 1.33 0 2.53-.24 2.53-.24.527-.03.466-.837-.06-.807 0 0-1.41.11-2.92.11-.206 0-.45-.005-.706-.013C6.1 4.64 4 8.06 4 12c0 4.411 3.589 8 8 8 2.195 0 4.185-.888 5.63-2.324l-2.29-6.27zm3.26-1.26c-.215.76-1.01 2.61-1.01 2.61l3.25-9.42c.24.01.476.036.74.036 1.08 0 1.84-.12 1.84-.12.527-.03.466-.837-.06-.807 0 0-.8.07-1.9.07-.59 0-1.26-.03-1.87-.07.66 1.9 1.86 5.39 2 5.71z"/></svg>`,
+  'Shopify': `<svg viewBox="0 0 24 24" fill="#95BF47" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15.337 3.4s-.25-.2-.7-.2c-.15 0-.33.05-.52.1-.05-.15-.15-.35-.3-.5-.35-.35-.85-.45-1.3-.45-2.05.05-3.55 1.6-3.9 3.85-.9.28-1.53.47-1.6.5-.5.15-.52.17-.58.65-.05.35-1.45 11.15-1.45 11.15l9.6 1.65 3.95-1.05S15.337 3.4 15.337 3.4zm-2.85.7c-.2.05-.4.12-.62.18l.35-1.55c.35.05.85.25.95.95.02.18.0.32-.05.42h-.63zm-1.05-.35.4-1.45c.2 0 .4.02.58.08l-.38 1.55c-.2-.07-.4-.13-.6-.18zm-.85 3.35c.1 0 1.55-.05 2.55-.35-.25 1.2-.85 2.3-1.8 2.3-.75 0-.9-.85-.75-1.95zm1.55-3.65c.15 0 .3.02.45.05l-.4 1.55c-.22-.07-.45-.12-.68-.17l.38-1.43c.08 0 .17 0 .25 0z"/></svg>`,
   'Cloudflare': `<svg viewBox="0 0 24 24" fill="#F38020" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16.5088 16.8447c.1475-.5068.0908-.9707-.1553-1.3154-.2246-.3164-.6045-.499-1.0615-.5205l-8.6592-.1123a.1559.1559 0 0 1-.1333-.0713c-.0283-.042-.0351-.0986-.021-.1553.0278-.084.1123-.1484.2036-.1562l8.7359-.1123c1.0351-.0489 2.1601-.8868 2.5537-1.9136l.499-1.3013c.0215-.0561.0293-.1128.0147-.168-.5625-2.5463-2.835-4.4453-5.5499-4.4453-2.5039 0-4.6284 1.6177-5.3876 3.8614-.4927-.3658-1.1187-.5625-1.794-.499-1.2026.119-2.1665 1.083-2.2861 2.2856-.0283.31-.0069.6128.0635.894C1.5683 13.171 0 14.7754 0 16.752c0 .1748.0142.3515.0352.5273.0141.083.0844.1475.1689.1475h15.9814c.0909 0 .1758-.0645.2032-.1553l.12-.4268zm2.7568-5.5634c-.0771 0-.1611 0-.2383.0112-.0566 0-.1054.0415-.127.0976l-.3378 1.1744c-.1475.5068-.0918.9707.1543 1.3164.2256.3164.6055.498 1.0625.5195l1.8437.1133c.0557 0 .1055.0263.1329.0703.0283.043.0351.1074.0214.1562-.0283.084-.1132.1485-.204.1553l-1.921.1123c-1.041.0488-2.1582.8867-2.5527 1.914l-.1406.3585c-.0283.0713.0215.1416.0986.1416h6.5977c.0771 0 .1474-.0489.169-.126.1122-.4082.1757-.837.1757-1.2803 0-2.6025-2.125-4.727-4.7344-4.727"/></svg>`,
   'Cloudflare Turnstile': `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="#F38020"/><path d="M10 15.5l-3.5-3.5 1.41-1.41L10 12.67l6.09-6.09L17.5 8l-7.5 7.5z" fill="#ffffff"/></svg>`,
   'Google Analytics 4': `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="16" y="2" width="6" height="20" rx="3" fill="#F9AB00"/><rect x="9" y="8" width="6" height="14" rx="3" fill="#E37400"/><circle cx="4" cy="19" r="3" fill="#E37400"/></svg>`,
+  'Google Tag Manager': `<svg viewBox="0 0 24 24" fill="#246FDB" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2l4 4-8 8-4-4 8-8zm0 20l-4-4 3-3 4 4-3 3zm8-8l-4-4 1.5-1.5L21.5 12 20 14z"/></svg>`,
   'WhatsApp': `<svg viewBox="0 0 24 24" fill="#25D366" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>`,
   'Telegram': `<svg viewBox="0 0 24 24" fill="#24A1DE" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>`,
-  'JSON-LD': `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="5" cy="7" r="3.2" fill="#005A9C"/><circle cx="19" cy="7" r="3.2" fill="#0FB5EE"/><circle cx="12" cy="18" r="3.2" fill="#CB3837"/><path d="M8 7h8M7 9.5l3.5 6M17 9.5l-3.5 6" stroke="#4a5568" stroke-width="1.6" stroke-linecap="round"/></svg>`
+  'JSON-LD': `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="5" cy="7" r="3.2" fill="#005A9C"/><circle cx="19" cy="7" r="3.2" fill="#0FB5EE"/><circle cx="12" cy="18" r="3.2" fill="#CB3837"/><path d="M8 7h8M7 9.5l3.5 6M17 9.5l-3.5 6" stroke="#4a5568" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  'PHP': `<svg viewBox="0 0 24 24" fill="#777BB4" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="12" cy="12" rx="11" ry="7" fill="#777BB4"/><text x="12" y="15" text-anchor="middle" font-size="8" font-weight="700" fill="#fff" font-family="sans-serif">PHP</text></svg>`,
+  'Nginx': `<svg viewBox="0 0 24 24" fill="#009639" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.2l6.8 3.8v7.6L12 19.8l-6.8-3.8V8L12 4.2z"/></svg>`,
 };
 
-const DETECTED_TECH = [
-  'Next.js',
-  'React',
-  'Cloudflare',
-  'Cloudflare Turnstile',
-  'Google Analytics 4',
-  'WhatsApp',
-  'Telegram',
-  'JSON-LD'
-];
+/** Real stack from AuditCollector → audit_data.detected_technologies. Never invent a demo list. */
+function detectedTechnologiesFromData(auditData) {
+  const raw = auditData?.detected_technologies;
+  if (!Array.isArray(raw)) return [];
+  return raw.map((t) => String(t || '').trim()).filter(Boolean);
+}
+
+/**
+ * PHP / PHP-CMS stack flagged for CVE-2026-109618 & CVE-2026-109619 (php2shell, Oct 2026).
+ * Detection of the runtime or a typical PHP CMS is enough — we do not claim the host is unpatched.
+ */
+const PHP_STACK_ALERT_TECH = new Set([
+  'PHP',
+  'WordPress',
+  'Drupal',
+  'Joomla',
+  'Bitrix',
+  // Magento / PrestaShop: add when the collector fingerprints them
+]);
+
+const PHP_WA_HREF = 'https://wa.me/972505308305';
+
+function isPhpStackAlertTech(name) {
+  return PHP_STACK_ALERT_TECH.has(String(name || '').trim());
+}
+
+function phpStackAlertCopy(lang, flaggedNames, siteHost) {
+  const list = flaggedNames.join(', ');
+  const host = siteHost || 'your website';
+  if (lang === 'ru') {
+    return {
+      badge: 'Критично',
+      title: 'Критический риск PHP (CVE-2026-109618 / CVE-2026-109619)',
+      body:
+        `На сайте обнаружены ${list}. В октябре 2026 в PHP раскрыты критические уязвимости удалённого выполнения кода (RCE) без аутентификации («php2shell»). ` +
+        `Сайты на PHP и CMS на его базе (WordPress, Drupal, Joomla, Bitrix и др.) требуют срочной проверки версии и обновления. ` +
+        `Это предупреждение о технологическом стеке, а не подтверждение, что хост уже скомпрометирован.`,
+      cta: 'Связаться с командой Erythro.ai в WhatsApp — поможем проверить и устранить риск',
+      waText:
+        `Здравствуйте! В отчёте аудита для ${host} отмечен критический риск PHP (CVE-2026-109618 / CVE-2026-109619). Нужна помощь с проверкой и устранением.`,
+    };
+  }
+  if (lang === 'he') {
+    return {
+      badge: 'קריטי',
+      title: 'סיכון קריטי ב-PHP (CVE-2026-109618 / CVE-2026-109619)',
+      body:
+        `באתר זוהו: ${list}. באוקטובר 2026 נחשפו ב-PHP פגיעויות קריטיות לביצוע קוד מרחוק ללא אימות (RCE, «php2shell»). ` +
+        `אתרים על PHP ו-CMS מבוססות PHP (WordPress, Drupal, Joomla, Bitrix ועוד) דורשים בדיקת גרסה ועדכון מיידי. ` +
+        `זו אזהרת מחסנית טכנולוגית — לא אישור שהשרת כבר נפרץ.`,
+      cta: 'פנו לצוות Erythro.ai ב-WhatsApp — נבדוק ונסייע לתקן',
+      waText:
+        `שלום! בדוח הביקורת עבור ${host} סומן סיכון PHP קריטי (CVE-2026-109618 / CVE-2026-109619). אשמח לעזרה בבדיקה ובתיקון.`,
+    };
+  }
+  return {
+    badge: 'Critical',
+    title: 'Critical PHP risk (CVE-2026-109618 / CVE-2026-109619)',
+    body:
+      `Detected: ${list}. In October 2026, critical unauthenticated remote code execution flaws in PHP web runtimes were disclosed («php2shell»). ` +
+      `Sites on PHP and PHP-based CMS (WordPress, Drupal, Joomla, Bitrix, and similar) need an urgent version check and patch. ` +
+      `This is a stack warning, not confirmation that the host is already compromised.`,
+    cta: 'Contact the Erythro.ai team on WhatsApp — we can assess and remediate',
+    waText:
+      `Hi! The audit report for ${host} flagged a critical PHP risk (CVE-2026-109618 / CVE-2026-109619). I need help checking and fixing it.`,
+  };
+}
 
 function classifyCheck(name) {
   const n = (name || '').toLowerCase();
@@ -3242,15 +3345,41 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
     s = s.slice(0, ni) + `<p class="note">${P.note}</p>` + s.slice(s.indexOf('</p>', ni) + 4);
   }
 
-  // --- Detected technologies chips with official logos
-  const techChipsHtml = `    <div class="chips">\n` +
-    DETECTED_TECH.map((t) => `      <span class="chip">${TECH_ICONS[t] || ''}<span>${t}</span></span>`).join('\n') +
-    `\n    </div>`;
+  // --- Detected technologies chips from audit_data (never a hardcoded demo stack)
+  const detectedTech = detectedTechnologiesFromData(data);
+  const flaggedPhpTech = detectedTech.filter(isPhpStackAlertTech);
+  const noneTechLabel = lang === 'ru'
+    ? 'Автоматически не определены'
+    : lang === 'he'
+      ? 'לא זוהו אוטומטית'
+      : 'None detected automatically';
+  const techChipsInner = detectedTech.length
+    ? detectedTech.map((t) => {
+        if (!isPhpStackAlertTech(t)) {
+          return `      <span class="chip">${TECH_ICONS[t] || ''}<span>${esc(t)}</span></span>`;
+        }
+        const alertCopy = phpStackAlertCopy(lang, [t], '');
+        return `      <span class="chip chip-crit">${TECH_ICONS[t] || ''}<span>${esc(t)}</span><span class="chip-crit-badge" title="${esc(alertCopy.title)}">${esc(alertCopy.badge)}</span></span>`;
+      }).join('\n')
+    : `      <span class="chip"><span>${esc(noneTechLabel)}</span></span>`;
+  let techBlockHtml = `    <div class="chips">\n${techChipsInner}\n    </div>`;
+  if (flaggedPhpTech.length) {
+    let siteHost = '';
+    try {
+      siteHost = new URL(String(data.target_url || '')).hostname;
+    } catch {
+      siteHost = String(data.target_url || '').replace(/^https?:\/\//, '').split('/')[0] || '';
+    }
+    const alert = phpStackAlertCopy(lang, flaggedPhpTech, siteHost || undefined);
+    const waHref = `${PHP_WA_HREF}?text=${encodeURIComponent(alert.waText)}`;
+    techBlockHtml += `\n    <p class="tech-php-alert"><strong>${esc(alert.title)}.</strong> ${esc(alert.body)} `
+      + `<a href="${esc(waHref)}" target="_blank" rel="noopener noreferrer">${esc(alert.cta)}</a>.</p>`;
+  }
   const idxChips = s.indexOf('<div class="chips">');
   if (idxChips !== -1) {
     const endChips = s.indexOf('</div>', idxChips);
     if (endChips !== -1) {
-      s = s.slice(0, idxChips) + techChipsHtml.trim() + s.slice(endChips + 6);
+      s = s.slice(0, idxChips) + techBlockHtml.trim() + s.slice(endChips + 6);
     }
   }
 

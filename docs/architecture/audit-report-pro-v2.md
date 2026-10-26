@@ -82,6 +82,8 @@ node services/audit-agent/QA_Auditor/scripts/render-v2-pdf.cjs         # соб�
 
 ## 6. Данные и перевод
 
+- **Detected technologies:** только из `audit_data.detected_technologies` (DOM fingerprint + HTTP tech headers + lead messengers в `AuditCollector`). Хардкод демо-стека запрещён (PIT-135).
+- **PHP / CMS alert:** если среди чипов есть PHP, WordPress, Drupal, Joomla или Bitrix — бейдж «Critical» на чипе + сноска про CVE-2026-109618 / CVE-2026-109619 (php2shell, окт 2026) и CTA на WhatsApp `wa.me/972505308305` (текст EN/RU/HE в `render-v2-reports.mjs`).
 - Данные в текущих копиях: аудит 2026-10-25 12:41 UTC (сгенерирован другим агентом), оценка 83.
 - Свежий прогон аудитора на этой Windows-машине невозможен: JDK 17 и 21 падают на `Unable to establish loopback connection` (PIT-130). Запускать на VPS / GitHub Actions.
 - Перевод на иврит проверен воркером `C:\agents\Translater` (Gemini; `cli.py --review`, режим пар RU→HE через `TechnicalTranslationPipeline.review_existing`). Отчёт: `docs/qa/he-translation-review-2026-10-25.json` (99 пар, средний балл 6,5; приняты только содержательные правки). Принято решение: «משפך» (воронка) оставить, «פאנל» воркера не брать.

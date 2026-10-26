@@ -262,6 +262,118 @@ public class AuditCollector {
         }
         """;
 
+    /**
+     * Homepage technology fingerprints (DOM / scripts / cookies / meta).
+     * Returns { technologies: string[] } — display names in stable priority order.
+     * Header-based signals (Cloudflare, Vercel, …) are merged in Java from infrastructure.
+     */
+    private static final String TECH_FINGERPRINT_SCRIPT = """
+        () => {
+            const html = document.documentElement ? document.documentElement.outerHTML : '';
+            const htmlLow = html.toLowerCase();
+            const scripts = Array.from(document.querySelectorAll('script[src]'))
+                .map(s => s.getAttribute('src') || '').join(' ');
+            const scriptsLow = scripts.toLowerCase();
+            const inline = Array.from(document.querySelectorAll('script:not([src])'))
+                .map(s => s.textContent || '').join('\\n');
+            const inlineLow = inline.toLowerCase();
+            const allJs = (scriptsLow + ' ' + inlineLow);
+            const cookies = document.cookie || '';
+            const generator = (document.querySelector('meta[name="generator"]')?.getAttribute('content') || '').toLowerCase();
+            const links = Array.from(document.querySelectorAll('a[href]'))
+                .map(a => a.getAttribute('href') || '').join(' ').toLowerCase();
+            const stylesheets = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+                .map(l => l.getAttribute('href') || '').join(' ').toLowerCase();
+
+            const has = (s) => htmlLow.includes(s) || allJs.includes(s);
+            const win = (name) => {
+                try { return typeof window[name] !== 'undefined' && window[name] != null; }
+                catch (e) { return false; }
+            };
+
+            // [name, test] — first match wins; order = report display order
+            const rules = [
+                ['Next.js', () => win('__NEXT_DATA__') || !!document.getElementById('__NEXT_DATA__')
+                    || has('/_next/static') || has('__next_f') || !!document.querySelector('[data-next-mark]')],
+                ['Nuxt.js', () => win('__NUXT__') || has('__nuxt') || has('/_nuxt/')],
+                ['Gatsby', () => win('___gatsby') || has('___gatsby') || !!document.getElementById('___gatsby')],
+                ['Astro', () => has('astro-') || !!document.querySelector('[data-astro-cid]')
+                    || generator.includes('astro')],
+                ['Remix', () => has('__remixcontext') || has('@remix-run')],
+                ['React', () => win('React') || win('ReactDOM') || has('react-dom')
+                    || !!document.querySelector('[data-reactroot], [data-reactid]')
+                    || !!document.querySelector('#root [data-reactroot]')],
+                ['Vue.js', () => win('Vue') || win('__VUE__') || has('vue.runtime') || has('vue.min.js')
+                    || !!document.querySelector('[data-v-app], [data-v-]')],
+                ['Angular', () => !!document.querySelector('[ng-version]') || win('ng')
+                    || has('angular.js') || has('@angular/')],
+                ['Svelte', () => has('svelte') || !!document.querySelector('[class*="svelte-"]')],
+                ['WordPress', () => has('wp-content') || has('wp-includes') || win('wp')
+                    || generator.includes('wordpress')],
+                ['Shopify', () => win('Shopify') || has('cdn.shopify.com') || has('shopify')],
+                ['Wix', () => has('static.wixstatic.com') || has('wix.com') || win('wixBiSession')],
+                ['Squarespace', () => has('squarespace') || has('sqsp.net')],
+                ['Webflow', () => has('webflow') || !!document.querySelector('html[data-wf-site]')],
+                ['Tilda', () => has('tildacdn') || has('tilda') || win('tilda')],
+                ['Drupal', () => win('Drupal') || has('/sites/default/') || generator.includes('drupal')],
+                ['Joomla', () => win('Joomla') || has('/media/jui/') || generator.includes('joomla')],
+                ['Ghost', () => has('ghost.org') || generator.includes('ghost') || has('/ghost/')],
+                ['Bitrix', () => has('bitrix') || win('BX')],
+                ['Payload CMS', () => has('payloadcms') || has('@payloadcms') || has('/admin/payload')],
+                ['jQuery', () => win('jQuery') || has('jquery.min') || has('/jquery.') || has('jquery-')],
+                ['GSAP', () => win('gsap') || win('GreenSock') || has('gsap') || has('greensock')],
+                ['Tailwind CSS', () => stylesheets.includes('tailwind') || has('tailwindcss')],
+                ['Bootstrap', () => win('bootstrap') || stylesheets.includes('bootstrap')
+                    || has('bootstrap.min')],
+                ['Google Tag Manager', () => has('googletagmanager.com/gtm.js') || /GTM-[A-Z0-9]+/.test(html)
+                    || win('google_tag_manager')],
+                ['Google Analytics 4', () => /G-[A-Z0-9]{6,}/.test(html + allJs)
+                    || has('googletagmanager.com/gtag/js') || (win('gtag') && has('G-'))],
+                ['Meta Pixel', () => has('fbevents.js') || has('connect.facebook.net') || win('fbq')],
+                ['Yandex Metrica', () => has('mc.yandex.ru') || has('metrika') || win('ym')],
+                ['Hotjar', () => has('static.hotjar.com') || win('hj')],
+                ['Microsoft Clarity', () => has('clarity.ms') || win('clarity')],
+                ['Cloudflare Turnstile', () => has('challenges.cloudflare.com/turnstile')
+                    || has('cf-turnstile') || win('turnstile')],
+                ['Google reCAPTCHA', () => has('recaptcha') || win('grecaptcha')],
+                ['hCaptcha', () => has('hcaptcha') || win('hcaptcha')],
+                ['WhatsApp', () => links.includes('wa.me') || links.includes('api.whatsapp.com')
+                    || links.includes('whatsapp.com')],
+                ['Telegram', () => links.includes('t.me/') || links.includes('tg://')
+                    || links.includes('telegram.me')],
+                ['Viber', () => links.includes('viber:') || links.includes('viber.com')],
+                ['Facebook Messenger', () => links.includes('m.me/') || links.includes('messenger.com')],
+                ['JSON-LD', () => document.querySelectorAll('script[type="application/ld+json"]').length > 0],
+                ['Open Graph', () => !!document.querySelector('meta[property^="og:"]')],
+            ];
+
+            // Prefer framework over bare React when both match
+            const suppress = new Set();
+            const found = [];
+            for (const [name, test] of rules) {
+                try {
+                    if (test()) found.push(name);
+                } catch (e) { /* ignore rule errors */ }
+            }
+            if (found.includes('Next.js') || found.includes('Gatsby') || found.includes('Remix')) {
+                suppress.add('React');
+            }
+            if (found.includes('Nuxt.js')) suppress.add('Vue.js');
+            if (found.includes('Google Tag Manager') && found.includes('Google Analytics 4')) {
+                // keep both — GTM often loads GA4
+            }
+
+            return {
+                technologies: found.filter(n => !suppress.has(n)),
+                generator: generator || null,
+                cookieHints: [
+                    cookies.includes('__cf') || cookies.includes('cf_') ? 'cloudflare-cookie' : null,
+                    cookies.includes('vercel') ? 'vercel-cookie' : null,
+                ].filter(Boolean)
+            };
+        }
+        """;
+
     /** Marks a button that most likely opens a modal contact form and returns its label. */
     private static final String CONTACT_TRIGGER_SCRIPT = """
         () => {
@@ -680,6 +792,7 @@ public class AuditCollector {
             Page mobilePage = mobileContext.newPage();
 
             Map<String, Object> aiVisibilityDom = null;
+            Map<String, Object> techFingerprintDom = null;
 
             final String[] currentLocaleRef = new String[]{"unknown"};
 
@@ -994,6 +1107,22 @@ public class AuditCollector {
                     }
                 }
 
+                if (techFingerprintDom == null) {
+                    try {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> techDom = (Map<String, Object>) page.evaluate(TECH_FINGERPRINT_SCRIPT);
+                        techFingerprintDom = techDom;
+                        Object techs = techDom.get("technologies");
+                        System.out.printf("  Technologies (DOM): %s%n",
+                                techs instanceof List && !((List<?>) techs).isEmpty()
+                                        ? String.join(", ", ((List<?>) techs).stream().map(String::valueOf).toList())
+                                        : "(none yet — headers merged later)");
+                    } catch (Exception e) {
+                        System.err.println("  [!] Technology fingerprint: " + e.getMessage());
+                    }
+                }
+
+
                 // Е. Мобильная верстка: паразитный горизонтальный скролл на эмулированном iPhone SE
                 Map<String, Object> localeMobileLayout = auditMobileLayout(mobilePage, targetUrl, loc);
                 localeResult.put("mobile_layout_audit", localeMobileLayout);
@@ -1035,6 +1164,11 @@ public class AuditCollector {
             finalReport.put("agent_browse", agentBrowse);
             finalReport.put("mobile_layout_audit", worstMobileLayout(localeAudits));
             finalReport.put("pagespeed_insights", pageSpeedData);
+            List<String> detectedTechnologies = mergeDetectedTechnologies(
+                    techFingerprintDom, infrastructure, localeAudits);
+            finalReport.put("detected_technologies", detectedTechnologies);
+            System.out.println("[+] Detected technologies: "
+                    + (detectedTechnologies.isEmpty() ? "(none)" : String.join(", ", detectedTechnologies)));
             // Scorecard is computed before the JSON dump so audit_data.json carries the same verdict as the PDF
             finalReport.put("report_lang", reportLang);
             finalReport.put("executive_scorecard", calculateExecutiveScorecard(finalReport, targetUrl, reportLocales, reportLang));
@@ -3081,6 +3215,132 @@ public class AuditCollector {
         return result;
     }
 
+    /**
+     * Merge DOM fingerprints + HTTP technology headers + lead-channel signals into
+     * the ordered list shown as "Detected technologies" in the v2 report.
+     * Never invents a demo stack — empty list is valid when nothing matched.
+     */
+    @SuppressWarnings("unchecked")
+    private static List<String> mergeDetectedTechnologies(
+            Map<String, Object> techDom,
+            Map<String, Object> infrastructure,
+            Map<String, Object> localeAudits) {
+        LinkedHashSet<String> out = new LinkedHashSet<>();
+
+        if (techDom != null && techDom.get("technologies") instanceof List<?> domList) {
+            for (Object item : domList) {
+                if (item != null) {
+                    String name = String.valueOf(item).trim();
+                    if (!name.isEmpty()) out.add(name);
+                }
+            }
+        }
+
+        Map<String, String> techHeaders = new LinkedHashMap<>();
+        if (infrastructure != null && infrastructure.get("technology_headers") instanceof Map<?, ?> raw) {
+            for (Map.Entry<?, ?> e : raw.entrySet()) {
+                if (e.getKey() != null && e.getValue() != null) {
+                    techHeaders.put(String.valueOf(e.getKey()).toLowerCase(Locale.ROOT),
+                            String.valueOf(e.getValue()).toLowerCase(Locale.ROOT));
+                }
+            }
+        }
+        String server = infrastructure != null && infrastructure.get("server") != null
+                ? String.valueOf(infrastructure.get("server")).toLowerCase(Locale.ROOT) : "";
+        if (!server.isBlank()) techHeaders.putIfAbsent("server", server);
+
+        if (techHeaders.containsKey("cf-ray") || techHeaders.containsKey("cf-cache-status")
+                || techHeaders.containsKey("cf-mitigated")
+                || server.contains("cloudflare")
+                || (techDom != null && techDom.get("cookieHints") instanceof List<?> hints
+                && hints.stream().anyMatch(h -> String.valueOf(h).contains("cloudflare")))) {
+            out.add("Cloudflare");
+        }
+        if (techHeaders.containsKey("x-vercel-id") || techHeaders.containsKey("x-vercel-cache")
+                || techHeaders.containsKey("x-nextjs-cache")
+                || (techDom != null && techDom.get("cookieHints") instanceof List<?> hints
+                && hints.stream().anyMatch(h -> String.valueOf(h).contains("vercel")))) {
+            out.add("Vercel");
+            if (!out.contains("Next.js") && techHeaders.containsKey("x-nextjs-cache")) {
+                out.add("Next.js");
+            }
+        }
+        if (techHeaders.containsKey("x-nf-request-id") || server.contains("netlify")) {
+            out.add("Netlify");
+        }
+        if (techHeaders.containsKey("x-amz-cf-id")
+                || techHeaders.getOrDefault("via", "").contains("cloudfront")
+                || techHeaders.getOrDefault("x-cache", "").contains("cloudfront")) {
+            out.add("Amazon CloudFront");
+        }
+        if (techHeaders.containsKey("x-shopify-stage") || techHeaders.containsKey("x-shopid")) {
+            out.add("Shopify");
+        }
+        if (techHeaders.containsKey("x-drupal-cache")) {
+            out.add("Drupal");
+        }
+        String powered = techHeaders.getOrDefault("x-powered-by", "");
+        if (powered.contains("express")) out.add("Express");
+        if (powered.contains("php")) out.add("PHP");
+        if (powered.contains("asp.net")) out.add("ASP.NET");
+        if (powered.contains("next.js") || powered.contains("nextjs")) out.add("Next.js");
+        if (server.contains("nginx")) out.add("Nginx");
+        if (server.contains("apache")) out.add("Apache");
+        if (server.contains("litespeed") || server.contains("openlitespeed")) out.add("LiteSpeed");
+        if (techHeaders.containsKey("x-hostinger") || server.contains("hostinger")) {
+            out.add("Hostinger");
+        }
+
+        if (localeAudits != null) {
+            for (Object localeObj : localeAudits.values()) {
+                if (!(localeObj instanceof Map<?, ?> localeMap)) continue;
+                Object leadObj = localeMap.get("lead_capture");
+                if (!(leadObj instanceof Map<?, ?> lead)) continue;
+                Object anti = lead.get("antiSpam");
+                if (anti instanceof Map<?, ?> antiMap && antiMap.get("providers") instanceof List<?> providers) {
+                    for (Object p : providers) {
+                        String name = String.valueOf(p);
+                        if ("Honeypot".equalsIgnoreCase(name)) continue;
+                        if (!name.isBlank()) out.add(name);
+                    }
+                }
+                if (lead.get("messengerLinks") instanceof List<?> links) {
+                    for (Object linkObj : links) {
+                        String href = String.valueOf(linkObj).toLowerCase(Locale.ROOT);
+                        if (href.contains("wa.me") || href.contains("whatsapp")) out.add("WhatsApp");
+                        if (href.contains("t.me") || href.contains("tg://") || href.contains("telegram")) {
+                            out.add("Telegram");
+                        }
+                        if (href.contains("viber")) out.add("Viber");
+                        if (href.contains("m.me") || href.contains("messenger.com")) {
+                            out.add("Facebook Messenger");
+                        }
+                    }
+                }
+            }
+        }
+
+        List<String> preferred = List.of(
+                "Next.js", "Nuxt.js", "Gatsby", "Astro", "Remix", "React", "Vue.js", "Angular", "Svelte",
+                "WordPress", "Shopify", "Wix", "Squarespace", "Webflow", "Tilda", "Drupal", "Joomla",
+                "Ghost", "Bitrix", "Payload CMS",
+                "Vercel", "Netlify", "Cloudflare", "Amazon CloudFront", "Hostinger", "Nginx", "Apache",
+                "LiteSpeed", "Express", "PHP", "ASP.NET",
+                "jQuery", "GSAP", "Tailwind CSS", "Bootstrap",
+                "Google Tag Manager", "Google Analytics 4", "Meta Pixel", "Yandex Metrica",
+                "Hotjar", "Microsoft Clarity",
+                "Cloudflare Turnstile", "Google reCAPTCHA", "hCaptcha",
+                "WhatsApp", "Telegram", "Viber", "Facebook Messenger",
+                "JSON-LD", "Open Graph"
+        );
+        List<String> ordered = new ArrayList<>();
+        for (String name : preferred) {
+            if (out.remove(name)) ordered.add(name);
+        }
+        ordered.addAll(out);
+        return ordered;
+    }
+
     /** HTTP layer: TLS, TTFB, security headers, robots.txt and sitemap.xml. */
     private static Map<String, Object> auditInfrastructure(String targetUrl) {
         System.out.println("\n[+] Проверка инфраструктуры: TTFB, security headers, robots.txt / sitemap.xml...");
@@ -3117,7 +3377,18 @@ public class AuditCollector {
             infra.put("ttfb_ms", ttfbMs);
             infra.put("server", response.headers().firstValue("server").orElse(null));
 
-            Map<String, Object> securityHeaders = new LinkedHashMap<>();
+            // Headers used for technology fingerprinting (CDN / host / framework)
+            Map<String, String> techHeaders = new LinkedHashMap<>();
+            for (String name : List.of(
+                    "server", "x-powered-by", "via", "cf-ray", "cf-cache-status", "cf-mitigated",
+                    "x-vercel-id", "x-vercel-cache", "x-nextjs-cache", "x-nf-request-id",
+                    "x-amz-cf-id", "x-cache", "x-shopify-stage", "x-shopid", "x-drupal-cache",
+                    "x-generator", "x-hostinger", "x-dns-prefetch-control")) {
+                response.headers().firstValue(name).ifPresent(v -> techHeaders.put(name, v));
+            }
+            infra.put("technology_headers", techHeaders);
+
+Map<String, Object> securityHeaders = new LinkedHashMap<>();
             List<String> missing = new ArrayList<>();
             for (Map.Entry<String, String> header : SECURITY_HEADERS.entrySet()) {
                 String value = response.headers().firstValue(header.getKey()).orElse(null);
