@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-136 — Cleaning WIP Java dropped the v2 report pipeline (old A4-4 shipped)
+
+**Tags:** `audit`, `report`, `pro-v2`, `deploy`, `multi-agent`
+**Seen:** 2026-10-26 — after VPS redeploy for PIT-135, client report HTML was the old A4-4 template again
+
+**Symptom:** Live free/diagnostic/pro `audit-report_*.html` looks like legacy A44 layout (no modern v2 sections / polish).
+
+**Cause:** Local uncommitted WIP had `generateV2Reports` + PRO `a44-audit-report_*` naming. Aligning Java to HEAD for a clean deploy removed that wiring. Worker then wrote A44 straight to `audit-report_*.html` and never ran `render-v2-reports.mjs` / `RenderV2Pdf`.
+
+**Fix:** Restore from lab: PRO → `a44-audit-report_*`; after A44 export call `AuditCollector.generateV2Reports` → `node scripts/render-v2-reports.mjs` + `RenderV2Pdf`. Keep `apply-v2-polish.cjs` in the image.
+
+**Prevent:** Do not strip `generateV2Reports` / `a44-` naming when cleaning unrelated WIP. Smoke: after redeploy, open a fresh report and confirm v2 markup (not A4-4 chrome).
+
+---
+
 ## PIT-127 — Pro v2 report HTML silently overwritten: all design disappears
 
 **Tags:** `audit`, `report`, `pro-v2`, `multi-agent`, `overwrite`

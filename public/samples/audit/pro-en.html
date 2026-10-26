@@ -1693,7 +1693,7 @@ body[dir="rtl"] .logo {
    even when a badge wraps under the title (tablet, PDF) */
 :root:root:root .scale { display: flex; flex-direction: column; }
 :root:root:root .scale .row { flex: 1 0 auto; align-items: flex-start; }
-/* gauge word stays inside the ring, centered both vertically and horizontally */
+/* gauge word stays inside the ring: 2-line wrap via <span>…<br>…</span>, room from the stroke */
 :root:root:root .gauge { display: inline-flex !important; position: relative !important; align-items: center !important; justify-content: center !important; }
 :root:root:root .gauge .lbl {
   position: absolute !important;
@@ -1702,12 +1702,20 @@ body[dir="rtl"] .logo {
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  padding: 0 16px !important;
-  font-size: 13px !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 26px 22px !important;
+  font-size: 14.5px !important;
   font-weight: 700 !important;
-  line-height: 1.15 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
   box-sizing: border-box !important;
-  word-break: normal !important;
+}
+:root:root:root .gauge .lbl > span {
+  display: block !important;
+  text-align: center !important;
+  max-width: 100% !important;
+  line-height: 1.25 !important;
 }
 :root:root:root .bt-short { display: none; }
 :root:root:root .tiers-hint { display: none; }
@@ -1849,6 +1857,11 @@ body[dir="rtl"] .logo {
   :root:root:root .sub, :root:root:root .score-note, :root:root:root .note { font-size: 13px !important; margin-top: 10px !important; }
   :root:root:root .score-num { font-size: 60px !important; }
   :root:root:root .gauge { width: 120px; height: 120px; }
+  :root:root:root .gauge .lbl {
+    padding: 24px 22px !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
   :root:root:root .score { margin-top: 14px !important; gap: 14px !important; }
   /* atomic blocks never split */
   :root:root:root .t3, :root:root:root .action, :root:root:root .check, :root:root:root .scale, :root:root:root .stat, :root:root:root .flow, :root:root:root .ai-engine, :root:root:root .ai-factor, :root:root:root .ai-verdict, :root:root:root .code-box, :root:root:root tr, :root:root:root .scope-list li, :root:root:root .legend { break-inside: avoid !important; page-break-inside: avoid !important; }
@@ -1936,12 +1949,12 @@ body[dir="rtl"] .logo {
   :root:root:root .scale .val { margin: 8px 0 8px !important; }
   :root:root:root .score { margin-top: 10px !important; }
   :root:root:root .score-num { font-size: 54px !important; }
-  :root:root:root .gauge { width: 104px !important; height: 104px !important; }
+  :root:root:root .gauge { width: 112px !important; height: 112px !important; }
   :root:root:root .gauge .lbl {
-    font-size: 10.5px !important;
-    line-height: 1.15 !important;
-    padding: 0 8px !important;
-    letter-spacing: -0.1px !important;
+    padding: 22px 20px !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0 !important;
   }
   :root:root:root .wrap > .logo { margin-bottom: -30px !important; }
   /* channel pills: equal width, stretched over the column height like the middle column */
@@ -2026,7 +2039,7 @@ body[dir="rtl"] .logo {
           <circle cx="75" cy="75" r="66" fill="none" stroke="#c9c9c9" stroke-width="3" stroke-dasharray="1.5 6" stroke-linecap="round"/>
           <circle cx="75" cy="75" r="66" fill="none" stroke="#ff7900" stroke-width="7" stroke-linecap="round" stroke-dasharray="365 415"/>
         </svg>
-        <div class="lbl">Needs attention</div>
+        <div class="lbl"><span>Needs<br>attention</span></div>
       </div>
       <div class="score-sep"></div>
     </div>

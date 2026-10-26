@@ -74,9 +74,11 @@ public class RegenerateA44ReportsFromData {
                 System.setProperty("REPORT_LANG", lang);
                 AuditReportView view = AuditCollector.buildReportView(report, targetUrl, locales, lang);
                 String html = A44ReportGenerator.render(view, tier, ASSET_BASE);
-                Path htmlOut = dir.resolve("audit-report_" + lang + ".html");
-                Path pdfOut = dir.resolve("audit-report_" + lang + ".pdf");
-                Path pdfFallback = dir.resolve("audit-report_" + lang + ".locked.pdf");
+                // PRO: write a44-* so render-v2-reports.mjs can replace audit-report_* with modern v2.
+                // Free/Diagnostic: write audit-report_* directly (v2 render overwrites them too).
+                Path htmlOut = dir.resolve((tier == A44Tier.PRO ? "a44-" : "") + "audit-report_" + lang + ".html");
+                Path pdfOut = dir.resolve((tier == A44Tier.PRO ? "a44-" : "") + "audit-report_" + lang + ".pdf");
+                Path pdfFallback = dir.resolve((tier == A44Tier.PRO ? "a44-" : "") + "audit-report_" + lang + ".locked.pdf");
                 Files.writeString(htmlOut, html);
                 System.out.println("[✓] HTML " + tier.folder + "/" + lang + ": " + htmlOut);
 
@@ -103,6 +105,17 @@ public class RegenerateA44ReportsFromData {
                 }
                 page.close();
             }
+        }
+
+        boolean hasPro = false;
+        for (A44Tier tier : tiers) {
+            if (tier == A44Tier.PRO) {
+                hasPro = true;
+                break;
+            }
+        }
+        if (hasPro) {
+            AuditCollector.generateV2Reports(browser, langs.isEmpty() ? "ru" : langs.get(0));
         }
     }
 
