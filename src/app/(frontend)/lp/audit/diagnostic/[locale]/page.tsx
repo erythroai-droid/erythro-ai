@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const locale = raw
   const copy = auditLpCopyFor(PRODUCT)
-  const title = `${tAuditLp(copy.eyebrow, locale)} | Erythro.ai`
+  const title = `${tAuditLp(copy.sectionTitle, locale)} | Erythro.ai`
   const description = tAuditLp(copy.subhead, locale)
   const canonical = auditLpCanonicalUrl(locale, PRODUCT)
   const origin = auditLpPublicOrigin(locale, PRODUCT)

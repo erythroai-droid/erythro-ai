@@ -294,9 +294,9 @@ const SHARED_SCALES = [
 /** Ads LP copy — shorter than `/audit`, fixed per locale page. */
 export const auditLpCopy = {
   sectionTitle: {
-    en: 'AI Audit',
-    ru: 'AI Аудит',
-    he: 'ביקורת AI',
+    en: 'AI Audit Free',
+    ru: 'AI Аудит Free',
+    he: 'ביקורת AI Free',
   } satisfies Localized,
   eyebrow: {
     en: 'Free AI audit',
@@ -444,9 +444,9 @@ export const auditLpCopy = {
 
 export const auditLpDiagCopy = {
   sectionTitle: {
-    en: 'AI Audit',
-    ru: 'AI Аудит',
-    he: 'ביקורת AI',
+    en: 'AI Audit Diagnostic',
+    ru: 'AI Аудит Diagnostic',
+    he: 'ביקורת AI Diagnostic',
   } satisfies Localized,
   eyebrow: {
     en: 'Diagnostic AI audit',
@@ -599,9 +599,9 @@ export const auditLpDiagCopy = {
 
 export const auditLpProCopy = {
   sectionTitle: {
-    en: 'AI Audit',
-    ru: 'AI Аудит',
-    he: 'ביקורת AI',
+    en: 'AI Audit Pro',
+    ru: 'AI Аудит Pro',
+    he: 'ביקורת AI Pro',
   } satisfies Localized,
   eyebrow: {
     en: 'Pro AI audit',
