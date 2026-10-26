@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-138 — Free report contradicts itself: "no form" in top-3, "lead path OK" below
+
+**Tags:** `audit`, `report`, `render-v2`, `free`
+**Seen:** 2026-10-27 — AUD-218 (theme.madsparrow.me, Free RU)
+
+**Symptom:** Top-3 and Step 1 said "На сайте нет формы захвата заявок", while "Путь к заявке" said "Исправен — форма и мессенджеры работают", "1/1", "Антиспам OK". Step 1 was tagged "Скорость" and showed the LCP preload snippet from our own Next.js repo. AI steps were also tagged "Скорость". A Turnstile step sat next to detected reCAPTCHA. The funnel lock card was printed twice, and the checklist was empty under "Результаты: 5 из 28".
+
+**Cause:** (1) The "Путь к заявке" block (channels, steps, verdict, badge) was static template copy for every tier. (2) `classifyActionPillar` had no keywords for "ИИ", "формы", "заявок", RTL, OG, robots, so those findings fell through to `speed`, and the Free branch used `ACTION_CODE_SOLUTIONS[pillar] || speed`. (3) Filler steps were added whenever a pillar had a code snippet (`issues.length > 0 || ACTION_CODE_SOLUTIONS[pKey]`). (4) The template already ships the funnel lock card, and the render appended a second one. (5) The Java "no form" finding ignored messengers and chat. (6) The renderer took the first candidate with `check-card` by list order, so a stale `a44-*` copy could win over the fresh Java HTML.
+
+**Fix:** `leadPathFromData()` builds the block from `lead_capture` + `agent_browse` (Free: homepage, Diagnostic: 5 pages, Pro: all). The classifier covers every `ReportFindingsCatalog` title, plus `solutionFor()` and a new `lead_form` snippet. Filler steps need a failing check or a weak scale, and are dropped when the data contradicts them. The funnel lock card is replaced, not appended. Java: "no form" fires only without a form *and* without an instant channel, and top-3 holds one AI finding. The renderer picks the own-tier Java HTML first, newest first; an empty checklist says so honestly instead of "5 из 28".
+
+**Prevent:** Never ship verdict text in a template; every status line comes from `audit_data`. A new finding title in the catalog must hit a keyword in `classifyActionPillar` (run the title list through it).
+
+---
+
 ## PIT-137 — Admin re-queue resent client report email (+ reset pro-offer)
 
 **Tags:** `audit`, `email`, `requeue`, `pro-offer`
@@ -2400,3 +2415,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Free report navigation anchors: non-action pillars must anchor to open checklist details (`#diag-*`) or `#locked-checks`, never nonexistent `#action-*` cards (PIT-132)
 - [ ] Flat R2 media keys: keep `media._objectkey` NULL; never set it to the filename or Payload afterRead builds `file.webp/file.webp` (PIT-133)
 - [ ] Audit report order CTAs: always `?lang=` matching report locale (PIT-134)
+- [ ] Audit report status blocks ("Путь к заявке", verdicts, badges) only from audit_data; new catalog titles must classify in `classifyActionPillar` (PIT-138)

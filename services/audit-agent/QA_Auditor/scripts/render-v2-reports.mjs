@@ -276,6 +276,40 @@ import { Turnstile } from '@marsidev/react-turnstile';
 <input type="text" name="_gotcha" tabIndex={-1} autoComplete="off" style={{ display: 'none' }} />`
     }
   },
+  // "No lead form" finding: the Turnstile snippet above assumes a form already exists
+  lead_form: {
+    file: 'index.html #contact',
+    ru: {
+      desc: 'Короткая лид-форма на главной (имя, телефон, отправка) и резервный канал в WhatsApp',
+      code: `<!-- index.html · секция #contact -->
+<form id="contact" action="/lead" method="post">
+  <input name="name" autocomplete="name" placeholder="Имя" required>
+  <input name="phone" type="tel" autocomplete="tel" placeholder="Телефон" required>
+  <button type="submit">Получить консультацию</button>
+</form>
+<a href="https://wa.me/<номер>" rel="noopener">Написать в WhatsApp</a>`
+    },
+    en: {
+      desc: 'A short homepage lead form (name, phone, submit) plus a WhatsApp fallback channel',
+      code: `<!-- index.html · #contact section -->
+<form id="contact" action="/lead" method="post">
+  <input name="name" autocomplete="name" placeholder="Name" required>
+  <input name="phone" type="tel" autocomplete="tel" placeholder="Phone" required>
+  <button type="submit">Get a consultation</button>
+</form>
+<a href="https://wa.me/<number>" rel="noopener">Message us on WhatsApp</a>`
+    },
+    he: {
+      desc: 'טופס ליד קצר בעמוד הבית (שם, טלפון, שליחה) וערוץ גיבוי ב-WhatsApp',
+      code: `<!-- index.html · אזור #contact -->
+<form id="contact" action="/lead" method="post">
+  <input name="name" autocomplete="name" placeholder="שם" required>
+  <input name="phone" type="tel" autocomplete="tel" placeholder="טלפון" required>
+  <button type="submit">לקבלת ייעוץ</button>
+</form>
+<a href="https://wa.me/<מספר>" rel="noopener">כתבו לנו ב-WhatsApp</a>`
+    }
+  },
   sec: {
     file: 'next.config.mjs:15-32',
     ru: {
@@ -738,7 +772,7 @@ function renderTierCompare(lang, orderDiag, orderPro, here = 'free') {
       diagNote: 'разово · промо',
       proNote: 'разово',
       aiTag: 'Приоритет 2026',
-      method: 'Как считаем: 55 проверок по сайту целиком (из них 20 — AI Visibility, Agent Readiness и доступ AI-ботов), 28 на каждый язык сайта, 9 на каждую страницу воронки. Free: 5 проверок + 20 метрик Lighthouse.',
+      method: 'Как считаем: 55 проверок по сайту целиком (из них 20 — AI Visibility, Agent Readiness и доступ AI-ботов), 28 на каждый язык сайта, 9 на каждую страницу воронки, в Pro ещё 1 — Funnel review. Free: 5 проверок + 20 метрик Lighthouse.',
       rows: [
         ['list', 'Проверок всего', 'по сайту, языкам и страницам воронки', '25', '184', '230', 'count'],
         ['spark', 'AI Visibility', 'как сайт видят ChatGPT, Perplexity, Claude и Gemini', '—', 'сводная оценка', '7 критериев, разбор по каждому', 'ai'],
@@ -758,7 +792,7 @@ function renderTierCompare(lang, orderDiag, orderPro, here = 'free') {
       diagNote: 'one-time · promo price',
       proNote: 'one-time',
       aiTag: 'Priority 2026',
-      method: 'How we count: 55 site-wide checks (20 of them on AI Visibility, Agent Readiness and AI-bot access), 28 per site language, 9 per funnel page. Free: 5 checks + 20 Lighthouse metrics.',
+      method: 'How we count: 55 site-wide checks (20 of them on AI Visibility, Agent Readiness and AI-bot access), 28 per site language, 9 per funnel page, plus 1 Funnel review in Pro. Free: 5 checks + 20 Lighthouse metrics.',
       rows: [
         ['list', 'Checks in total', 'site-wide, per language and per funnel page', '25', '184', '230', 'count'],
         ['spark', 'AI Visibility', 'how ChatGPT, Perplexity, Claude and Gemini see the site', '—', 'summary score', '7 criteria, each broken down', 'ai'],
@@ -778,7 +812,7 @@ function renderTierCompare(lang, orderDiag, orderPro, here = 'free') {
       diagNote: 'חד-פעמי · מחיר מבצע',
       proNote: 'חד-פעמי',
       aiTag: 'עדיפות 2026',
-      method: 'איך סופרים: 55 בדיקות לאתר כולו (20 מהן — AI Visibility, Agent Readiness וגישת בוטי AI), 28 לכל שפת אתר, 9 לכל עמוד משפך. Free: 5 בדיקות + 20 מדדי Lighthouse.',
+      method: 'איך סופרים: 55 בדיקות לאתר כולו (20 מהן — AI Visibility, Agent Readiness וגישת בוטי AI), 28 לכל שפת אתר, 9 לכל עמוד משפך, וב-Pro עוד 1 — Funnel review. Free: 5 בדיקות + 20 מדדי Lighthouse.',
       rows: [
         ['list', 'סה״כ בדיקות', 'לאתר כולו, לכל שפה ולכל עמוד משפך', '25', '184', '230', 'count'],
         ['spark', 'AI Visibility', 'איך ChatGPT, Perplexity, Claude ו-Gemini רואים את האתר', '—', 'ציון מסכם', '7 קריטריונים, פירוט לכל אחד', 'ai'],
@@ -2096,6 +2130,52 @@ const TECH_ICONS = {
   'Nginx': `<svg viewBox="0 0 24 24" fill="#009639" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.2l6.8 3.8v7.6L12 19.8l-6.8-3.8V8L12 4.2z"/></svg>`,
 };
 
+/**
+ * Lead path facts for the "Путь к заявке" block. Free looks at the homepage in the report locale,
+ * Diagnostic at the first 5 funnel pages, Pro at every visited page. Same sources as the Java
+ * findings (lead_capture per locale + agent_browse snapshots), so the block and top-3 agree.
+ */
+function leadPathFromData(auditData, tier) {
+  const byLocale = auditData?.audits_by_locale || {};
+  const reportLocale = auditData?.report_lang;
+  const leads = (tier === 'free' && byLocale[reportLocale]
+    ? [byLocale[reportLocale]]
+    : Object.values(byLocale)).map((l) => l?.lead_capture).filter(Boolean);
+  const allPages = Array.isArray(auditData?.agent_browse?.pages) ? auditData.agent_browse.pages : [];
+  const home = allPages.find((p) => p.source === 'homepage') || allPages[0];
+  const pages = tier === 'free' ? (home ? [home] : []) : tier === 'diagnostic' ? allPages.slice(0, 5) : allPages;
+
+  const links = [...leads.flatMap((l) => l.messengerLinks || []), ...pages.flatMap((p) => p.messengerLinks || [])];
+  const whatsapp = links.some((h) => /wa\.me|whatsapp\.com/i.test(h));
+  const telegram = links.some((h) => /t\.me\/|tg:\/\//i.test(h));
+  const otherMessenger = links.some((h) => /viber:|m\.me\//i.test(h));
+  const chat = leads.some((l) => l.hasChatWidget) || pages.some((p) => p.hasChatWidget);
+  const instant = whatsapp || telegram || otherMessenger || chat
+    || leads.some((l) => l.hasInstantContactChannel) || pages.some((p) => p.hasInstantContactChannel);
+  const formViaCta = leads.some((l) => l.openedFromTrigger && l.formsCount > 0) || pages.some((p) => p.formViaCta);
+  const inlineForm = leads.some((l) => l.formsCount > 0 && !l.openedFromTrigger) || pages.some((p) => p.formsCount > 0 && !p.formViaCta);
+  const hasForm = inlineForm || formViaCta;
+  const isProtected = leads.some((l) => l.antiSpam?.isProtected || l.isProtected);
+
+  // Without an agent snapshot the homepage still counts as one page, judged by lead_capture
+  const pageCount = pages.length || (leads.length ? 1 : 0);
+  const httpStatus = Number(auditData?.infrastructure_and_security?.http_status) || 0;
+  const httpOk = pages.length
+    ? pages.filter((p) => p.ok !== false && !p.soft404 && (!p.http_status || (p.http_status >= 200 && p.http_status < 400))).length
+    : (httpStatus >= 200 && httpStatus < 400 ? pageCount : 0);
+  const pagePath = (p) => p.formsCount > 0 || p.hasChatWidget || p.hasInstantContactChannel || (p.messengerLinks || []).length > 0;
+  const pagesWithPath = pages.length
+    ? pages.filter((p, i) => pagePath(p) || (tier === 'free' && i === 0 && (hasForm || instant))).length
+    : (hasForm || instant ? pageCount : 0);
+
+  return {
+    known: leads.length > 0 || pages.length > 0,
+    pages: pageCount, httpOk, pagesWithPath,
+    inlineForm, formViaCta, hasForm, isProtected,
+    whatsapp, telegram, otherMessenger, chat, instant,
+  };
+}
+
 /** Real stack from AuditCollector → audit_data.detected_technologies. Never invent a demo list. */
 function detectedTechnologiesFromData(auditData) {
   const raw = auditData?.detected_technologies;
@@ -2141,7 +2221,7 @@ function phpStackAlertCopy(lang, flaggedNames, siteHost) {
       badge: 'Критично',
       title: 'Критический риск PHP (CVE-2026-109618 / CVE-2026-109619)',
       body:
-        `На сайте обнаружены ${list}. В октябре 2026 в PHP раскрыты критические уязвимости удалённого выполнения кода (RCE) без аутентификации («php2shell»). ` +
+        `Обнаружено на сайте: ${list}. В октябре 2026 в PHP раскрыты критические уязвимости удалённого выполнения кода (RCE) без аутентификации («php2shell»). ` +
         `Сайты на PHP и CMS на его базе (WordPress, Drupal, Joomla, Bitrix и др.) требуют срочной проверки версии и обновления. ` +
         `Это предупреждение о технологическом стеке, а не подтверждение, что хост уже скомпрометирован.`,
       cta: 'Связаться с командой Erythro.ai в WhatsApp — поможем проверить и устранить риск',
@@ -2232,6 +2312,15 @@ function freeLocaleResult(result, lang) {
 
 function classifyActionPillar(title) {
   const t = (title || '').toLowerCase();
+  // Unmatched titles fall through to 'speed' and get its LCP preload code, so every catalog
+  // title (ReportFindingsCatalog) must hit a keyword here or below.
+  if (t.includes('битые') || t.includes('broken') || t.includes('שבור')) return 'sec';
+  if (/(^|[^а-яё])ии([^а-яё]|$)/.test(t) || t.includes('/about') || t.includes('ai visibility') || t.includes('ai assistant')
+    || t.includes('ai agent') || t.includes('content-signal') || t.includes('chatgpt') || t.includes('עוזרי ai')) return 'ai';
+  if (/(^|[^а-яё])форм(?!ат)/.test(t) || t.includes('заявок') || t.includes('טופס') || t.includes('одностранич')
+    || t.includes('single-page') || t.includes('דף יחיד')) return 'lead';
+  if (t.includes('rtl') || t.includes('индексац') || t.includes('indexing') || t.includes('אינדוקס') || t.includes('мессенджер')
+    || t.includes('link preview') || t.includes('תצוגת קישור') || t.includes('ga4')) return 'seo';
   if (t.includes('доступност') || t.includes('wcag') || t.includes('נגישות') || t.includes('a11y')) return 'a11y';
   if (t.includes('скорост') || t.includes('загрузк') || t.includes('vitals') || t.includes('lcp') || t.includes('speed') || t.includes('מהירות')) return 'speed';
   if (t.includes('seo') || t.includes('мультиязыч') || t.includes('multilingual') || t.includes('רב-לשוני') || t.includes('opengraph') || t.includes('נראות') || t.includes('שפה')) return 'seo';
@@ -2256,17 +2345,21 @@ function renderReport(lang, tier = 'pro') {
     path.join('QA_Auditor/reports/pro', `audit-report_${lang}.html`)
   ];
   let pro = '';
-  for (const cp of proCandidates) {
-    if (fs.existsSync(cp)) {
-      const c = fs.readFileSync(cp, 'utf8');
-      if (c.includes('class="check-card"')) {
-        pro = c;
-        try {
-          fs.writeFileSync(path.join(AUDITOR_ROOT, `reports/${tier}`, `a44-audit-report_${lang}.html`), c, 'utf8');
-        } catch (e) {}
-        break;
-      }
-    }
+  // Own tier folder first, newest file inside it: the a44-* copy saved below outlives the audit,
+  // and taking it first by list order fed the previous site's checks into a single-tier re-run.
+  const ownDir = path.join('reports', tier) + path.sep;
+  const withCards = [...new Set(proCandidates.map((cp) => path.resolve(cp)))]
+    .filter((cp) => fs.existsSync(cp))
+    .map((cp) => ({ cp, own: cp.includes(ownDir), mtime: fs.statSync(cp).mtimeMs, c: fs.readFileSync(cp, 'utf8') }))
+    .filter((x) => x.c.includes('class="check-card"'))
+    .sort((a, b) => (b.own - a.own) || (b.mtime - a.mtime));
+  if (withCards.length) {
+    pro = withCards[0].c;
+    try {
+      fs.writeFileSync(path.join(AUDITOR_ROOT, `reports/${tier}`, `a44-audit-report_${lang}.html`), pro, 'utf8');
+    } catch (e) {}
+  } else {
+    console.error(`[render-v2] ${tier}/${lang}: no Java HTML with check-card found, checklist will be empty`);
   }
   if (!pro) {
     for (const cp of proCandidates) {
@@ -2391,7 +2484,10 @@ function renderReport(lang, tier = 'pro') {
 
   // Severity of a pillar for top-3 and the action plan: 0 critical, 1 needs attention, 2 growth point.
   // A critical check is always critical, otherwise the scale zone decides (a11y has no scale: its checks decide).
+  const leadPath = leadPathFromData(data, tier);
   const sevForPillar = (pKey) => {
+    // No form, messenger or chat: the "Путь к заявке" block says critical, the plan must agree
+    if (pKey === 'lead' && leadPath.known && !leadPath.hasForm && !leadPath.instant) return 0;
     const issues = checks.filter((c) => c.pillar === pKey && c.status !== 'good');
     if (issues.some((c) => c.status === 'bad')) return 0;
     const v = pillarScore[pKey];
@@ -2472,6 +2568,14 @@ function renderReport(lang, tier = 'pro') {
       }
     )
     .join('\n');
+
+  if (!renderedChecks.length && tier !== 'diagnostic') {
+    checkHtml = `      <p class="sub">${lang === 'ru'
+      ? 'Результаты проверок не получены: страница не отдала данные аудитору. Отчёт нужно перевыпустить.'
+      : lang === 'he'
+        ? 'תוצאות הבדיקות לא התקבלו: העמוד לא החזיר נתונים לסוקר. יש להפיק את הדוח מחדש.'
+        : 'Check results were not received: the page returned no data to the auditor. The report needs to be re-issued.'}</p>`;
+  }
 
   if (tier === 'free') {
     const lockChecksData = {
@@ -2607,7 +2711,7 @@ ${cards}
 
   const resultsPrefix = lang === 'ru' ? 'Результаты: ' : lang === 'he' ? 'תוצאות: ' : 'Results: ';
   const countText = tier === 'free'
-    ? (lang === 'ru' ? '5 из 28' : lang === 'he' ? '5 מתוך 28' : '5 of 28')
+    ? (lang === 'ru' ? `${renderedChecks.length} из 28` : lang === 'he' ? `${renderedChecks.length} מתוך 28` : `${renderedChecks.length} of 28`)
     : tier === 'diagnostic'
     ? (lang === 'ru' ? `${diagCheckCount} проверки · ${diagAreaCount} направлений` : lang === 'he' ? `${diagCheckCount} בדיקות · ${diagAreaCount} תחומים` : `${diagCheckCount} checks · ${diagAreaCount} areas`)
     : String(checks.length);
@@ -3013,7 +3117,15 @@ ${cards}
         <a href="#tiers" class="tier-btn-secondary">${btnText(TIER_COMPARE_LINK[lang], TIER_COMPARE_SHORT[lang])}</a>
       </div>
     </div>`;
-    s = s.replace(/<\/div>\s*<p class="note">/, `</div>\n${flowLockCard}\n    <p class="note">`);
+    // Templates already ship this lock card: replace it, appending a second one duplicated the block
+    const fIdx = s.indexOf('<div class="flow">');
+    const fEnd = fIdx === -1 ? -1 : s.indexOf('</section>', fIdx);
+    if (fIdx !== -1 && fEnd !== -1) {
+      let sec = s.slice(fIdx, fEnd);
+      sec = sec.replace(/\s*<div class="tier-lock-card">[\s\S]*?<div class="lock-actions">[\s\S]*?<\/div>\s*<\/div>(?=\s*<p class="note">)/g, '');
+      sec = sec.replace(/<\/div>\s*<p class="note">/, `</div>\n${flowLockCard}\n    <p class="note">`);
+      s = s.slice(0, fIdx) + sec + s.slice(fEnd);
+    }
   }
 
   // --- Recommended Actions
@@ -3068,11 +3180,20 @@ ${cards}
   });
 
   // 2. Ensure all diagnostic pillars with issues or solutions are represented with distinct strategic tasks
+  // A filler step needs evidence: a failing check, or (no checks for the pillar) a scale outside the
+  // green zone. Data that contradicts the step's title drops it (Turnstile next to "anti-spam OK").
+  const missingHeaders = data.infrastructure_and_security?.security_headers_missing;
+  const contradicted = {
+    lead: leadPath.isProtected || !leadPath.hasForm,
+    sec: Array.isArray(missingHeaders) && missingHeaders.length === 0,
+  };
   const diagnosticPillars = ['speed', 'seo', 'lead', 'sec', 'ai', 'a11y'];
   diagnosticPillars.forEach((pKey) => {
     if (!actions.some((a) => a.pillarKey === pKey)) {
-      const issues = checks.filter((c) => c.pillar === pKey && c.status !== 'good');
-      if (issues.length > 0 || ACTION_CODE_SOLUTIONS[pKey]) {
+      const pillarChecks = checks.filter((c) => c.pillar === pKey);
+      const issues = pillarChecks.filter((c) => c.status !== 'good');
+      const scaleWeak = pillarChecks.length === 0 && pillarScore[pKey] != null && zoneOf(pillarScore[pKey]) !== 'good';
+      if ((issues.length > 0 || scaleWeak) && !contradicted[pKey]) {
         const sol = ACTION_CODE_SOLUTIONS[pKey];
         const solDesc = sol ? (sol[lang] || sol.ru).desc : '';
         const titleObj = pillarTitles[pKey] || {};
@@ -3101,12 +3222,29 @@ ${cards}
     }
   });
 
+  // Code snippet for a step: the title picks a variant inside the pillar, else the pillar default
+  const solutionFor = (a) => {
+    const tLower = a.title.toLowerCase();
+    if (a.anchorId === 'action-speed-cwv' || tLower.includes('vitals') || tLower.includes('cwv') || tLower.includes('ускорен') || tLower.includes('האצת')) {
+      return ACTION_CODE_SOLUTIONS.speed_cwv;
+    }
+    if (tLower.includes('квалификац') || tLower.includes('qualification') || tLower.includes('סיווג')) {
+      return ACTION_CODE_SOLUTIONS.ai_lead;
+    }
+    if (tLower.includes('turnstile') || tLower.includes('спам') || tLower.includes('spam') || tLower.includes('ספאם') || tLower.includes('bot protection')) {
+      return ACTION_CODE_SOLUTIONS.lead;
+    }
+    if (a.pillarKey === 'lead' && (/нет формы|no lead capture form|אין טופס/.test(tLower))) {
+      return ACTION_CODE_SOLUTIONS.lead_form;
+    }
+    return ACTION_CODE_SOLUTIONS[a.pillarKey];
+  };
+
   let actHtml = '';
   if (tier !== 'pro') {
     // Free and Diagnostic: Action 1 in full with code, actions 2-6 locked (the full plan with code is Pro)
     const a = actions[0];
-    let solObj = ACTION_CODE_SOLUTIONS[a.pillarKey] || ACTION_CODE_SOLUTIONS.speed;
-    const codeHtml = renderCodeBox(solObj, lang);
+    const codeHtml = renderCodeBox(solutionFor(a), lang);
     const act1 = `      <div class="action"${a.anchorId ? ` id="${a.anchorId}"` : ''}>
         <div>
           <h3>${esc(a.title)}</h3>
@@ -3162,22 +3300,14 @@ ${restHtml}
           <a href="${orderCheckoutUrl('audit-pro', lang)}" class="tier-btn-primary">${btnText(lkAct.btn, lkAct.btnShort)}</a>
         </div>
       </div>`;
-    actHtml = `${act1}\n${lockCard}`;
+    actHtml = rest.length ? `${act1}\n${lockCard}` : act1;
   } else {
     // Pro and Diagnostic: show all 6 actions
     actHtml = actions
       .slice(0, 6)
       .map(
         (a, i) => {
-          const tLower = a.title.toLowerCase();
-          let solObj = ACTION_CODE_SOLUTIONS[a.pillarKey];
-          if (a.anchorId === 'action-speed-cwv' || tLower.includes('vitals') || tLower.includes('cwv') || tLower.includes('ускорен') || tLower.includes('האצת')) {
-            solObj = ACTION_CODE_SOLUTIONS.speed_cwv;
-          } else if (tLower.includes('квалификац') || tLower.includes('qualification') || tLower.includes('סיווג')) {
-            solObj = ACTION_CODE_SOLUTIONS.ai_lead;
-          } else if (tLower.includes('turnstile') || tLower.includes('спам') || tLower.includes('spam') || tLower.includes('ספאם') || tLower.includes('bot protection')) {
-            solObj = ACTION_CODE_SOLUTIONS.lead;
-          }
+          const solObj = solutionFor(a);
 
           // In Diagnostic, render engineering specification box; in Pro, render production code box
           const codeHtml = solObj
@@ -3323,7 +3453,7 @@ ${restHtml}
           ['Главная страница', 'HTTP-статус и HTTPS, формы и каналы связи, обнаруженные технологии.'],
           ['5 базовых проверок', names]
         ],
-        note: 'Free — экспресс-срез одной страницы. Сквозной обход воронки, другие локали и AI Visibility в этот отчёт не входят.'
+        note: 'Free — экспресс-срез одной страницы. Сквозной обход воронки, другие локали и разбор AI Visibility по критериям в этот отчёт не входят: по AI Visibility показана только сводная оценка.'
       },
       en: {
         sub: `The Erythro.ai lab checked the ${host} homepage in the ${lang.toUpperCase()} locale on mobile (iPhone SE 375×667) and desktop.`,
@@ -3333,7 +3463,7 @@ ${restHtml}
           ['Homepage', 'HTTP status and HTTPS, forms and contact channels, detected technologies.'],
           ['5 core checks', names]
         ],
-        note: 'Free is an express snapshot of one page. The funnel crawl, other locales and AI Visibility are not part of this report.'
+        note: 'Free is an express snapshot of one page. The funnel crawl, other locales and the per-criterion AI Visibility breakdown are not part of this report: AI Visibility shows only the summary score.'
       },
       he: {
         sub: `המעבדה של Erythro.ai בדקה את עמוד הבית של ${host} בשפה ${lang.toUpperCase()} במובייל (iPhone SE 375×667) ובדסקטופ.`,
@@ -3343,7 +3473,7 @@ ${restHtml}
           ['עמוד הבית', 'סטטוס HTTP ו-HTTPS, טפסים וערוצי קשר, טכנולוגיות שזוהו.'],
           ['5 בדיקות בסיס', names]
         ],
-        note: 'Free הוא צילום מהיר של עמוד אחד. סריקת המשפך, שפות נוספות ו-AI Visibility אינם חלק מדוח זה.'
+        note: 'Free הוא צילום מהיר של עמוד אחד. סריקת המשפך, שפות נוספות ופירוט AI Visibility לפי קריטריונים אינם חלק מדוח זה: עבור AI Visibility מוצג רק הציון המסכם.'
       }
     }[lang];
     const statsHtml = `    <div class="proto">
@@ -3407,47 +3537,75 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
     }
   }
 
-  // --- Funnel conversion path (Путь к заявке)
-  const hasChat = ab.pages ? ab.pages.some((p) => p.hasChatWidget) : true;
-  let chatPill = '';
-  let flowVerdict = '';
-  if (tier === 'free') {
-    chatPill = lang === 'ru' ? '<span class="pill ok">Главная страница</span>' : lang === 'he' ? '<span class="pill ok">עמוד הבית</span>' : '<span class="pill ok">Homepage</span>';
-    if (lang === 'ru') {
-      flowVerdict = 'Вердикт: на главной странице заявку можно оставить — форма и мессенджеры работают.';
-    } else if (lang === 'he') {
-      flowVerdict = 'פסק דין: בעמוד הבית אפשר להשאיר פנייה — הטופס והמסנג\'רים עובדים.';
+  // --- Funnel conversion path (Путь к заявке): built from lead_capture + agent_browse,
+  // never template copy. The template used to say "Исправен" even when the top-3 said "no form".
+  {
+    const lp = leadPathFromData(data, tier);
+    const T = (ru, en, he) => (lang === 'ru' ? ru : lang === 'he' ? he : en);
+    const pill = (ok, label) => `<span class="pill${ok ? ' ok' : ''}">${esc(label)}</span>`;
+    const pills = [];
+    if (lp.inlineForm) pills.push(pill(true, T('Форма на странице', 'On-page form', 'טופס בעמוד')));
+    if (lp.formViaCta) pills.push(pill(true, T('Форма по кнопке', 'Form on button click', 'טופס בלחיצה על כפתור')));
+    if (lp.whatsapp) pills.push(pill(true, 'WhatsApp'));
+    if (lp.telegram) pills.push(pill(true, 'Telegram'));
+    if (lp.otherMessenger) pills.push(pill(true, T('Мессенджер', 'Messenger', 'מסנג׳ר')));
+    if (lp.chat) pills.push(pill(true, T('Онлайн-чат', 'Live chat', 'צ׳אט חי')));
+    if (!pills.length) pills.push(pill(false, T('Каналы заявки не найдены', 'No lead channels found', 'לא נמצאו ערוצי פנייה')));
+
+    const mark = (txt, st) => `<span${st === 'ok' ? '' : ` style="color:var(--${st === 'bad' ? 'bad' : 'warn'})"`}${lang === 'he' ? ' dir="ltr"' : ''}>${esc(txt)}</span>`;
+    const ratioSt = (n, d) => (d === 0 || n === d ? 'ok' : n === 0 ? 'bad' : 'warn');
+    const none = T('нет', 'none', 'אין');
+    const spam = !lp.hasForm ? ['—', 'ok'] : lp.isProtected ? ['OK', 'ok'] : [none, 'warn'];
+    const steps = [
+      [T('HTTP 200 и отсутствие soft-404', 'HTTP 200, no soft-404', 'HTTP 200 וללא soft-404'), mark(`${lp.httpOk}/${lp.pages}`, ratioSt(lp.httpOk, lp.pages))],
+      [T('CTA или форма на странице', 'CTA or form on page', 'CTA או טופס בעמוד'), mark(`${lp.pagesWithPath}/${lp.pages}`, ratioSt(lp.pagesWithPath, lp.pages))],
+      [T('Антиспам: Turnstile, honeypot, reCAPTCHA', 'Anti-spam: Turnstile, honeypot, reCAPTCHA', 'אנטי-ספאם: Turnstile, honeypot, reCAPTCHA'), mark(spam[0], spam[1])],
+      [T('Мгновенный канал связи', 'Instant contact channel', 'ערוץ תקשורת מיידי'), mark(lp.instant ? 'OK' : none, lp.instant ? 'ok' : 'warn')],
+    ];
+    const stepsHtml = steps.map(([name, val]) => `          <div class="flow-step">${name} ${val}</div>`).join('\n');
+
+    const scopeTxt = tier === 'free'
+      ? T('на главной странице', 'on the homepage', 'בעמוד הבית')
+      : T(`на ${lp.pages} проверенных страницах воронки`, `on the ${lp.pages} audited funnel pages`, `ב-${lp.pages} דפי המשפך שנבדקו`);
+    let badge;
+    let flowVerdict;
+    if (!lp.known) {
+      badge = `<span class="badge warn">${T('Нет данных', 'No data', 'אין נתונים')}</span>`;
+      flowVerdict = T('Вердикт: страницу не удалось проверить — данных о формах и мессенджерах нет.',
+        'Verdict: the page could not be checked — there is no data on forms and messengers.',
+        'פסק דין: לא ניתן היה לבדוק את העמוד — אין נתונים על טפסים ומסנג׳רים.');
+    } else if (!lp.hasForm && !lp.instant) {
+      badge = `<span class="badge crit">${T('Критично', 'Critical', 'קריטי')}</span>`;
+      flowVerdict = T(`Вердикт: ${scopeTxt} заявку оставить нельзя — нет ни формы, ни мессенджера, ни чата.`,
+        `Verdict: visitors cannot leave a lead ${scopeTxt} — there is no form, messenger or chat.`,
+        `פסק דין: ${scopeTxt} אי אפשר להשאיר פנייה — אין טופס, מסנג׳ר או צ׳אט.`);
+    } else if (lp.pagesWithPath < lp.pages || !lp.hasForm || !lp.instant) {
+      badge = `<span class="badge warn">${T('Требует внимания', 'Needs attention', 'דורש תשומת לב')}</span>`;
+      const gap = lp.pagesWithPath < lp.pages
+        ? T(`путь к заявке есть на ${lp.pagesWithPath} из ${lp.pages} страниц`, `a lead path exists on ${lp.pagesWithPath} of ${lp.pages} pages`, `נתיב לפנייה קיים ב-${lp.pagesWithPath} מתוך ${lp.pages} עמודים`)
+        : !lp.hasForm
+          ? T('формы нет, заявку принимают только мессенджеры или чат', 'there is no form; only messengers or chat take leads', 'אין טופס; פניות מתקבלות רק במסנג׳ר או בצ׳אט')
+          : T('форма есть, но нет мгновенного канала (мессенджер или чат)', 'there is a form but no instant channel (messenger or chat)', 'יש טופס, אבל אין ערוץ מיידי (מסנג׳ר או צ׳אט)');
+      flowVerdict = T(`Вердикт: ${scopeTxt} ${gap}.`, `Verdict: ${scopeTxt}, ${gap}.`, `פסק דין: ${scopeTxt} ${gap}.`);
     } else {
-      flowVerdict = 'Verdict: visitors can reach you from the homepage — the form and messengers work.';
+      badge = `<span class="badge ok">${T('Исправен', 'Operational', 'תקין')}</span>`;
+      flowVerdict = T(`Вердикт: ${scopeTxt} заявку можно оставить — есть форма и мгновенный канал связи.`,
+        `Verdict: visitors can leave a lead ${scopeTxt} — there is a form and an instant contact channel.`,
+        `פסק דין: ${scopeTxt} אפשר להשאיר פנייה — יש טופס וערוץ תקשורת מיידי.`);
     }
-  } else if (tier === 'diagnostic') {
-    chatPill = lang === 'ru' ? '<span class="pill ok">5 URL воронки</span>' : lang === 'he' ? '<span class="pill ok">5 עמודי משפך</span>' : '<span class="pill ok">5 funnel URLs</span>';
-    if (lang === 'ru') {
-      flowVerdict = 'Вердикт: на 5 проверенных ключевых страницах воронки доступна отправка заявки через форму, мессенджеры или умного ИИ-консультанта. Путь к заявке исправен.';
-    } else if (lang === 'he') {
-      flowVerdict = 'פסק דין: בכל 5 דפי המפתח שנבדקו במשפך זמינה הגשת פנייה באמצעות טופס, מסנג\'רים או יועץ AI. נתיב ההמרה תקין.';
-    } else {
-      flowVerdict = 'Verdict: all 5 audited key funnel pages provide lead capture via form, messengers or AI consultant. Conversion path is operational.';
-    }
-  } else {
-    if (hasChat) {
-      chatPill = lang === 'ru' ? '<span class="pill ok">ИИ-консультант</span>' : lang === 'he' ? '<span class="pill ok">יועץ AI</span>' : '<span class="pill ok">AI Consultant</span>';
-      flowVerdict = lang === 'ru'
-        ? `Вердикт: на всех ${ab.pages_visited || 10} проверенных страницах воронки доступна отправка заявки через форму, мессенджеры или умного ИИ-консультанта (Live Chat). Путь к заявке полностью исправен.`
-        : lang === 'he'
-        ? `פסק דין: בכל ${ab.pages_visited || 10} דפי המשפך שנבדקו זמינה הגשת פנייה באמצעות טופס, מסנג'רים או יועץ ה-AI המובנה (צ'אט חי). נתיב ההמרה תקין לחלוטין.`
-        : `Verdict: all ${ab.pages_visited || 10} audited funnel pages provide lead capture via form, messengers or the built-in AI consultant (Live Chat). Conversion path is fully operational.`;
-    } else {
-      chatPill = lang === 'ru' ? '<span class="pill">Живой чат — нет</span>' : lang === 'he' ? '<span class="pill">צ\'אט חי — אין</span>' : '<span class="pill">Live chat — none</span>';
-      flowVerdict = lang === 'ru'
-        ? `Вердикт: на всех ${ab.pages_visited || 10} проверенных страницах воронки доступна отправка заявки через форму или мессенджер. Приоритетная доработка — добавить виджет живого чата для посетителей без мессенджеров.`
-        : lang === 'he'
-        ? `פסק דין: בכל ${ab.pages_visited || 10} דפי המשפך שנבדקו זמינה הגשת פנייה באמצעות טופס או מסנג'ר. שדרוג מומלץ — הוספת צ'אט חי למבקרים ללא מסנג'רים.`
-        : `Verdict: all ${ab.pages_visited || 10} audited funnel pages provide lead capture via form or messenger. Priority improvement — add a live chat widget for visitors without messengers.`;
+
+    const fStart = s.indexOf('<div class="flow">');
+    if (fStart !== -1) {
+      const secStart = s.lastIndexOf('<section', fStart);
+      const secEnd = s.indexOf('</section>', fStart);
+      let sec = s.slice(secStart, secEnd);
+      sec = sec.replace(/(<div class="row"><h2>[^<]*<\/h2>)\s*<span class="badge [a-z]+">[^<]*<\/span>/, `$1${badge}`);
+      sec = sec.replace(/<p class="sub">[\s\S]*?<\/p>/, `<p class="sub">${esc(flowVerdict)}</p>`);
+      sec = sec.replace(/<div class="flow-in">[\s\S]*?<\/div>/, `<div class="flow-in">${pills.join('')}</div>`);
+      sec = sec.replace(/<div class="flow-steps">[\s\S]*?<\/div>\s*<\/div>/, `<div class="flow-steps">\n${stepsHtml}\n        </div>\n      </div>`);
+      s = s.slice(0, secStart) + sec + s.slice(secEnd);
     }
   }
-  s = s.replace(/<span class="pill">(?:Живой чат — нет|Live chat — none|צ['\u05f3]אט חי — אין|ИИ-консультант|AI Consultant|יועץ AI|Главная страница|Homepage|עמוד הבית|5 URL воронки|5 funnel URLs|5 עמודי משפך)<\/span>/, chatPill);
-  s = s.replace(/<p class="sub">(?:Вердикт|Verdict|פסק דין):[\s\S]*?<\/p>/, `<p class="sub">${flowVerdict}</p>`);
 
   // --- Order Button & Bottom CTA Block
   const ctaData = {

@@ -12,6 +12,7 @@ COPY QA_Auditor/pom.xml ./
 COPY QA_Auditor/src ./src
 COPY QA_Auditor/config ./config
 COPY QA_Auditor/templates ./templates
+COPY QA_Auditor/scripts ./scripts
 COPY QA_Auditor/AGENTS.md QA_Auditor/README.md ./
 
 # Resolve deps + compile once at image build

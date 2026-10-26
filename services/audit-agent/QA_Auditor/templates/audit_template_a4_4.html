@@ -332,6 +332,8 @@
         white-space: nowrap;
         box-sizing: border-box;
     }
+    /* Desktop: keep scale names on one line even if copy has a mobile break. */
+    .chart-label br { display: none; }
     .bar-track {
         height: 24px;
         background: #f9f9f9;
@@ -349,7 +351,6 @@
         display: flex;
         gap: 30px;
         width: 870px;
-        overflow: hidden;
     }
     .finding-card {
         width: 270px;
@@ -363,8 +364,8 @@
         flex-shrink: 0;
         box-sizing: border-box;
         overflow: hidden;
-        overflow-wrap: anywhere;
         word-break: break-word;
+        overflow-wrap: anywhere;
     }
     .finding-head {
         display: flex;
@@ -394,6 +395,8 @@
         text-transform: uppercase;
         color: #000;
         margin: 0;
+        word-break: break-word;
+        overflow-wrap: anywhere;
     }
     .finding-box {
         width: 100%;
@@ -406,9 +409,8 @@
         font-size: 11px;
         line-height: 18px;
         color: #000;
-        overflow: hidden;
-        overflow-wrap: anywhere;
         word-break: break-word;
+        overflow-wrap: anywhere;
     }
     .finding-box::before {
         content: "";
@@ -424,14 +426,11 @@
     .finding-box.solution::before { background: #22bf16; }
     .finding-box strong { font-weight: 700; }
     .finding-box .issue {
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 6;
-        overflow: hidden;
-        overflow-wrap: anywhere;
-        word-break: break-word;
+        display: block;
         font-weight: 500;
         margin-top: 4px;
+        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 
     /* Check cards */
