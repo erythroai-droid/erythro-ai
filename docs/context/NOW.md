@@ -5,19 +5,22 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
-## /audit SEO — AI Visibility
+## Home perf: always quick splash
 
-- **CMS title обновлён в БД** (`audit_page_locales`): EN `Free AI Website Audit & AI Visibility Tool`, RU/HE аналоги. Description не трогал.
-- **Кеш Vercel ещё старый** — SQL не триггерит Payload hooks. Нужен Save в Admin → audit-page **или** `POST /api/revalidate?secret=…&path=/audit` (в local `.env` токен-заглушка `YOUR…`, прод-секрет в env не найден через MCP).
-- В коде (не задеплоено): WebApplication JSON-LD, form intro AI Visibility, twitter=page meta, fallbacks title/description.
+- Cold `/` (mobile + desktop) → всегда `quick` (~0.9 с). `full` только по клику на логотип (`navigateHomeWithFullSplash`).
+- Ужат quick: appear 0.45 / hold 0.15 / fade 0.3; убран мобильный delay 800 ms в `refreshScrollLayout`.
+- Тесты `splash.int.spec.ts` обновлены.
 
 ### Очередь
-1. Сбросить кеш (Save в admin / revalidate) → проверить `<title>` на `/audit`.
-2. Задеплоить код (схема + form intro).
-3. Perf: PSI; chunk `8261` без явного ОК не трогать.
+1. Задеплоить → PSI `/` mobile + desktop.
+2. Chunk `8261` без явного OWNER не трогать.
+3. Параллельно (не блокирует): /audit SEO revalidate + деплой схемы (см. ниже).
+
+## /audit SEO — AI Visibility (не задеплоено / кеш)
+
+- CMS title в БД обновлён; Vercel cache может быть старым — Save в Admin или revalidate.
+- В коде: WebApplication JSON-LD, form intro AI Visibility.
 
 ## Параллельно (Claude Code): отчёты аудита — не удалять
 
-**Состояние на 2026-10-26 17:30 UTC.** Шаблоны Free / Diagnostic / Pro (RU/EN/HE) утверждены. Рабочие отчёты erythro.ai собраны локально.
-
-Подробности — [`docs/architecture/audit-report-tier-scope.md`](../architecture/audit-report-tier-scope.md); v2 — [`docs/architecture/audit-report-pro-v2.md`](../architecture/audit-report-pro-v2.md).
+Шаблоны Free / Diagnostic / Pro утверждены. См. `docs/architecture/audit-report-tier-scope.md`.

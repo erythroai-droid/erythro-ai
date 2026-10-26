@@ -38,9 +38,9 @@ describe('resolveSplashNavigation', () => {
     mockMatchMedia(false)
   })
 
-  it('uses full splash at top of home on desktop', () => {
-    expect(resolveSplashNavigation('/')).toEqual({ mode: 'full', scrollY: 0 })
-    expect(sessionStorage.getItem(FULL_SPLASH_SEEN_KEY)).toBe('1')
+  it('uses quick splash at top of home on desktop (no auto full)', () => {
+    expect(resolveSplashNavigation('/')).toEqual({ mode: 'quick', scrollY: 0 })
+    expect(sessionStorage.getItem(FULL_SPLASH_SEEN_KEY)).toBeNull()
   })
 
   it('uses quick splash on mobile home even on first visit', () => {
@@ -56,7 +56,7 @@ describe('resolveSplashNavigation', () => {
     expect(sessionStorage.getItem(FULL_SPLASH_SEEN_KEY)).toBe('1')
   })
 
-  it('uses quick on desktop after full was already seen this session', () => {
+  it('cold home stays quick even if FULL_SPLASH_SEEN was set earlier', () => {
     sessionStorage.setItem(FULL_SPLASH_SEEN_KEY, '1')
     expect(resolveSplashNavigation('/')).toEqual({ mode: 'quick', scrollY: 0 })
   })
@@ -115,7 +115,7 @@ describe('resolveSplashNavigation', () => {
 
   it('resolveSplashMode mirrors mode only', () => {
     expect(resolveSplashMode('/portfolio')).toBe('quick')
-    expect(resolveSplashMode('/')).toBe('full')
+    expect(resolveSplashMode('/')).toBe('quick')
     mockMatchMedia(true)
     sessionStorage.clear()
     expect(resolveSplashMode('/')).toBe('quick')
