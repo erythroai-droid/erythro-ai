@@ -5,21 +5,25 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
-## Portfolio media → R2 WebP (сделано)
+## Analytics organic defer (готово к деплою)
 
-- Скрипт `scripts/compress-portfolio-media-r2.mjs` (strip + cards + heavy mobile heroes).
-- Flat WebP на R2, `media._objectkey = null` (PIT-133).
-- PSI mobile `/portfolio`: Perf **69**, **LCP 5.0s** (было ~8s). Картинки ок; остаток main-thread / `8261` / аналитика.
+- `needsEagerAdAnalytics` + `requestAnalyticsScripts` (`src/lib/analyticsEager.ts`).
+- **Eager (как раньше):** `gclid`/`fbclid`/`utm_*`, ads LP host, `/lp/audit/*`, `/audit`, `/order/*` — gtag.js + Meta сразу в head, Consent Mode denied.
+- **Organic** (`/`, `/portfolio`, services, …): stub only; сеть на Accept или первом conversion (`ensureAnalyticsConsentAndGaConfig`).
+- Тесты `adsConversion.int.spec.ts` — 8/8. PIT-108 note обновлён.
 
-## Home LCP — замер (без правок)
-
-- PSI mobile `/`: Perf **63**, LCP **5.1s**, TTFB 20ms. Hero_Mobile.webp ~50KB — не bottleneck.
-- Heavy transfers: GTM 162KB, fbevents 116KB, fonts ~186KB, chunk `8261` (~framer/payload) + main-thread Style&Layout **2.3s**.
-- Картинки/ISR уже выжаты; дальше только аналитика или `8261` — **не трогаем** по плану.
+### Проверить после деплоя
+1. `/?gclid=test` — Network: `gtag/js` + `fbevents` без Accept.
+2. `/` organic — те же скрипты **нет** до Accept; после Accept — есть.
+3. Tag Assistant / Meta Pixel Helper на LP + lead/purchase.
 
 ### Очередь
-1. (опционально) Commit `scripts/compress-portfolio-media-r2.mjs` + NOW.
-2. Стоп по perf-плану, пока не разрешат аналитику / `8261`.
-3. Если где-то ещё jpg на portfolio — Save Site Settings (локальный `REVALIDATION_TOKEN` непригоден).
+1. Деплой + smoke выше.
+2. Chunk `8261` — не трогаем.
 
 ## Параллельно (Claude Code): отчёты аудита — не удалять
+
+- **Free, Diagnostic, Pro: HTML и PDF готовы на RU/EN/HE** во всех копиях, включая `public/samples/audit/*`. Free 12/12/11 стр., Diagnostic 11, Pro 21/20/20.
+- Сборка из `C:\agents\website-auditor\erythro-ai\QA_Auditor`: `node scripts/render-v2-reports.mjs [--tier=…]`, затем `node scripts/render-v2-pdf.cjs [--tier=…]`. Перед сборкой закрыть отчёты/PDF в превью и просмотрщиках — Windows блокирует запись (PDF тогда кладётся рядом как `*.new.pdf`). Зеркало скриптов `services/audit-agent/QA_Auditor/scripts/` синхронизировано.
+- Не сделано (решения владельца, сайт): формулировка «одна приоритетная правка» в карточках Pro (`orderPlans.ts`, `auditLp.ts`), «60+ проверок» против 230, публичный лендинг `audit-pro-ads` за ₪390.
+- Тарифы, цены, подсчёт проверок, что сделано — [`docs/architecture/audit-report-tier-scope.md`](../architecture/audit-report-tier-scope.md).

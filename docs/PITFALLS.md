@@ -1806,6 +1806,8 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Prevent:** Follow `docs/architecture/google-ads-conversions.md`. Do not paste a second Google tag. Do not count a landing-page view as a purchase. Confirm in Tag Assistant: a «Конверсия» hit and an empty console, then wait hours before treating «Неактивно» as a code bug.
 
+**Organic defer (2026-10-26):** Marketing pages without ad params may delay `gtag.js` / `fbevents` until cookie Accept or the first conversion (`requestAnalyticsScripts`). **Do not** defer on paid query params, ads LP hosts, `/lp/audit/*`, `/audit`, or `/order/*` — those stay eager in head (same Consent Mode denied → grant on Accept). See `needsEagerAdAnalytics` / `AnalyticsBootstrap`.
+
 ---
 
 ## PIT-109 — Portfolio CMS projects 404 on `/portfolio/[slug]` while cards may load
