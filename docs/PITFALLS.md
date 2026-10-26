@@ -2142,6 +2142,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-134 — Audit report CTA opens order page in the wrong language
+
+**Tags:** `audit`, `report`, `i18n`, `he`, `order`, `cta`
+**Seen:** 2026-10-26 — HE HTML sample → «Audit Pro» opened `/order/audit-pro` in Russian
+
+**Symptom:** From a Hebrew (or English) HTML report, checkout CTAs land on the order page in another locale (often RU from cookie / prefs).
+
+**Cause:** Links were bare `https://erythro.ai/order/audit-pro` (and diagnostic). `/order/[slug]` prefers `?lang=` then cookie; without `?lang=` the visitor's existing locale wins.
+
+**Fix:** Always append `?lang=he|en|ru` matching the report language — samples, v2 templates, `render-v2-reports.mjs` (`orderCheckoutUrl`), and `AuditReportI18n.unlockProUrl(lang)`.
+
+**Prevent:** Never hardcode order checkout URLs without `?lang=` in report HTML/generators. Redeploy audit-agent after Java/template changes so live client reports pick it up.
+
+---
+
 ## PIT-127 — Pro v2 report HTML silently overwritten: all design disappears
 
 **Tags:** `audit`, `report`, `pro-v2`, `multi-agent`, `overwrite`
@@ -2333,3 +2348,4 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 - [ ] Patch scripts must be idempotent: replacement must not contain the search text (PIT-131)
 - [ ] Free report navigation anchors: non-action pillars must anchor to open checklist details (`#diag-*`) or `#locked-checks`, never nonexistent `#action-*` cards (PIT-132)
 - [ ] Flat R2 media keys: keep `media._objectkey` NULL; never set it to the filename or Payload afterRead builds `file.webp/file.webp` (PIT-133)
+- [ ] Audit report order CTAs: always `?lang=` matching report locale (PIT-134)
