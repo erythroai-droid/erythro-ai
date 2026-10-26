@@ -1,4 +1,4 @@
-import { auditLpLocaleFromHost, auditLpLocaleFromPathname } from '@/lib/auditLp'
+import { auditLpLocaleFromHost } from '@/lib/auditLp'
 
 /** Shared splash lifecycle helpers for hero / motion intros. */
 
@@ -25,16 +25,19 @@ declare global {
 export const SPLASH_SKIP_HTML_ATTR = 'data-erythro-skip-splash'
 
 /**
- * Inline bootstrap: hide / mark splash done before first paint when the URL is a
- * paid-ad click or a conversion surface. The layout shell is ISR-static and cannot
- * see `?fbclid=` at SSR — without this, React hydrates `skip=true` over an SSR
- * splash plate and can orphan `.splash-bg` on `<body>` (solid red forever).
+ * Inline bootstrap: hide / mark splash done before first paint when splash must
+ * not show. Covers: any non-home path, paid-ad clicks, conversion/LP surfaces.
+ * The layout shell is ISR-static and cannot see `?fbclid=` at SSR — without this,
+ * React hydrates `skip=true` over an SSR splash plate and can orphan `.splash-bg`
+ * on `<body>` (solid red forever). Path skips also run here so cold loads of
+ * inner pages never flash the plate before hydration.
  */
-export const SPLASH_SKIP_BOOTSTRAP_SCRIPT = `(function(){try{var path=(location.pathname||'/').split('?')[0]||'/';var host=(location.hostname||'').toLowerCase();var q=location.search||'';var paid=/[?&](fbclid|gclid|gbraid|wbraid|utm_source|utm_campaign|utm_medium)=/.test(q);var conv=path==='/audit'||path.indexOf('/audit/')===0||path.indexOf('/order/')===0;var lp=path.indexOf('/lp/audit/')===0||/^audit-[a-z0-9-]+\\.erythro\\.ai$/.test(host);if(!(paid||conv||lp))return;document.documentElement.setAttribute('${SPLASH_SKIP_HTML_ATTR}','1');window.__erythroSplashDone=true}catch(e){}})();`
+export const SPLASH_SKIP_BOOTSTRAP_SCRIPT = `(function(){try{var path=(location.pathname||'/').split('?')[0]||'/';var host=(location.hostname||'').toLowerCase();var q=location.search||'';var paid=/[?&](fbclid|gclid|gbraid|wbraid|utm_source|utm_campaign|utm_medium)=/.test(q);var conv=path==='/audit'||path.indexOf('/audit/')===0||path.indexOf('/order/')===0;var lp=path.indexOf('/lp/audit/')===0||/^audit-[a-z0-9-]+\\.erythro\\.ai$/.test(host);var inner=path!=='/';if(!(paid||conv||lp||inner))return;document.documentElement.setAttribute('${SPLASH_SKIP_HTML_ATTR}','1');window.__erythroSplashDone=true}catch(e){}})();`
 
 /**
  * Returns true when the full-screen brand splash should be skipped entirely:
- * - `/lp/audit/*` and `audit-*.erythro.ai`
+ * - Any path other than `/` (home keeps splash; inner pages open content immediately)
+ * - `/lp/audit/*` and `audit-*.erythro.ai` (also covered by non-home, host covers `/`)
  * - `/audit` and `/order/*` conversion pages
  * - Any landing URL with paid ad click parameters (`fbclid`, `gclid`, `gbraid`, `wbraid`, `utm_*`)
  */
@@ -44,10 +47,8 @@ export function shouldSkipSplashSurface(
   hostname?: string,
 ): boolean {
   const cleanPath = (pathname || '/').split('?')[0] || '/'
-  if (auditLpLocaleFromPathname(cleanPath)) return true
-  if (cleanPath === '/audit' || cleanPath.startsWith('/audit/') || cleanPath.startsWith('/order/')) {
-    return true
-  }
+  // Home only — brand intro. All other routes skip for LCP / mobile speed.
+  if (cleanPath !== '/') return true
   const host = hostname ?? (typeof window !== 'undefined' ? window.location.hostname : '')
   if (host && auditLpLocaleFromHost(host) != null) return true
 
@@ -154,8 +155,9 @@ export function prefersMobileQuickSplash(): boolean {
 /**
  * Resolve splash style + restored scroll for this navigation:
  * - `full` — animated draw (desktop first home this session, or forced by logo click)
- * - `quick` — red plate + finished logo (mobile always unless logo click; repeat desktop;
- *   mid-page reload; inner pages)
+ * - `quick` — red plate + finished logo (mobile home unless logo click; repeat desktop;
+ *   mid-page home reload). Inner pages skip splash in SplashHost — this helper is
+ *   only consulted when SplashScreen mounts (home).
  */
 export function resolveSplashNavigation(pathname: string): {
   mode: SplashMode
@@ -182,6 +184,7 @@ export function resolveSplashNavigation(pathname: string): {
   }
   // Client route changes set this flag — never carry the previous page's scrollY.
   if (forced === 'quick') return { mode: 'quick', scrollY: 0 }
+  // Defensive: SplashHost skips non-home; if mounted anyway, stay quick.
   if (path !== '/') return { mode: 'quick', scrollY: 0 }
   if (scrollY > MID_PAGE_SCROLL_PX) return { mode: 'quick', scrollY }
 

@@ -13,10 +13,10 @@ import {
 export { shouldSkipSplashSurface }
 
 /**
- * Site-wide splash host. Remounts splash on client-side route changes with a
- * quick (static logo) intro. Hard reloads resolve mode via sessionStorage.
- * Ads audit LPs, /audit, /order/* and paid ad clicks skip splash entirely so
- * mobile in-app browsers (Facebook/Instagram/Google Ads) show content immediately.
+ * Site-wide splash host. Brand splash runs on `/` only (full or quick via
+ * sessionStorage). All other routes skip splash so mobile cold loads show
+ * content immediately. Ads LPs, /audit, /order/* and paid ad clicks also skip
+ * (including on `/` with fbclid etc.).
  *
  * Must pass `useSearchParams()` into {@link shouldSkipSplashSurface}: the layout
  * shell is ISR-static and SSR cannot see `?fbclid=`. Skipping only on the client

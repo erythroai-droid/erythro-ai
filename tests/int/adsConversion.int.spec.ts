@@ -123,17 +123,19 @@ describe('adsConversion (Google Ads + GA4 Key Events + Meta Pixel)', () => {
     })
   })
 
-  it('skips SplashScreen on /audit, /order/*, audit LP subdomains, and paid ad query strings', () => {
+  it('skips SplashScreen on inner routes, /audit, /order/*, audit LP hosts, and paid ad query strings', () => {
     expect(shouldSkipSplashSurface('/audit')).toBe(true)
     expect(shouldSkipSplashSurface('/order/free-start')).toBe(true)
     expect(shouldSkipSplashSurface('/lp/audit/he')).toBe(true)
+    expect(shouldSkipSplashSurface('/portfolio')).toBe(true)
+    expect(shouldSkipSplashSurface('/services/ai-automation', '')).toBe(true)
     expect(shouldSkipSplashSurface('/', '', 'audit-he.erythro.ai')).toBe(true)
     expect(shouldSkipSplashSurface('/', '?fbclid=IwZXh0bg', 'erythro.ai')).toBe(true)
     expect(shouldSkipSplashSurface('/portfolio/rosso-garage', '?fbclid=IwZXh0bg', 'erythro.ai')).toBe(
       true,
     )
     expect(shouldSkipSplashSurface('/', '?gclid=CjwKCAjw', 'erythro.ai')).toBe(true)
-    // Explicit empty search must not fall back to a previous window.location (PIT-126).
+    // Home organic: keep splash. Explicit empty search must not fall back (PIT-126).
     expect(shouldSkipSplashSurface('/', '', 'erythro.ai')).toBe(false)
   })
 

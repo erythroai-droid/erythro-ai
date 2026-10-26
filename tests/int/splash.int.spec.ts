@@ -138,9 +138,18 @@ describe('splash skip helpers (PIT-126)', () => {
     expect(document.querySelectorAll('.splash-bg')).toHaveLength(0)
   })
 
-  it('explicit empty search does not inherit window.location.search', () => {
+  it('inner routes skip splash even with explicit empty search', () => {
     window.history.replaceState({}, '', '/portfolio/rosso-garage?fbclid=IwOrphanRisk')
     expect(shouldSkipSplashSurface('/portfolio/rosso-garage')).toBe(true)
-    expect(shouldSkipSplashSurface('/portfolio/rosso-garage', '')).toBe(false)
+    // Non-home always skips — empty search must not re-enable splash on inner pages.
+    expect(shouldSkipSplashSurface('/portfolio/rosso-garage', '')).toBe(true)
+  })
+
+  it('home keeps splash unless paid params / audit LP host', () => {
+    expect(shouldSkipSplashSurface('/', '')).toBe(false)
+    expect(shouldSkipSplashSurface('/', '', 'erythro.ai')).toBe(false)
+    expect(shouldSkipSplashSurface('/', '?fbclid=x', 'erythro.ai')).toBe(true)
+    expect(shouldSkipSplashSurface('/services/ai-automation', '')).toBe(true)
+    expect(SPLASH_SKIP_BOOTSTRAP_SCRIPT).toContain('var inner=path!==\'/\'')
   })
 })
