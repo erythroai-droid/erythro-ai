@@ -7,8 +7,8 @@
 
 ## Gauge label typography
 
-- **Сделано:** в круге «Общая оценка» — две строки (`Требует<br>внимания` / Needs / דורש), шрифт 14.5px, padding от кольца. Span-обёртка + CSS в `apply-v2-polish.cjs`; генератор `render-v2-reports.mjs`. RU/EN/HE, free/diagnostic/pro + samples.
-- **Осталось:** commit/push + VPS redeploy по запросу.
+- **Сделано:** `a0bc900` + VPS redeploy (пользователь). Двухстрочная подпись в круге общей оценки.
+- Новые аудиты подхватят стили. Старые HTML в R2 без re-queue не обновятся.
 
 ### Очередь
-1. Approve visually → commit.
+— пусто.
