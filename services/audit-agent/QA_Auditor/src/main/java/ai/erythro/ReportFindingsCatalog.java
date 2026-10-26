@@ -165,7 +165,8 @@ public final class ReportFindingsCatalog {
                             "Cloudflare Turnstile plus Erythro.ai AI lead filtering before CRM.",
                             "Cloudflare Turnstile וסינון AI של Erythro.ai לפני CRM.")));
         }
-        if (!ctx.hasForms) {
+        // A messenger link or chat widget is a working lead path: "visitor cannot leave a lead" would be false
+        if (!ctx.hasForms && !ctx.hasInstantChannel) {
             findings.add(new BizFinding(99,
                     tr(lang, "На сайте нет формы захвата заявок",
                             "No lead capture form on the site",
@@ -671,6 +672,10 @@ public final class ReportFindingsCatalog {
             }
             if (picked.size() == 3) {
                 break;
+            }
+            // One AI Visibility finding per top-3: the umbrella card already lists /about, MCP, llms.txt
+            if (f.aiDiscovery() && picked.stream().anyMatch(BizFinding::aiDiscovery)) {
+                continue;
             }
             picked.add(f);
         }
