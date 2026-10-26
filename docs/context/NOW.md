@@ -5,16 +5,22 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
-## В работе: mobile perf
+## В работе: mobile perf — service headers на R2
 
-### Сделано (ждёт деплоя)
-- **Splash только на `/`**: внутренние страницы без заставки (`shouldSkipSplashSurface` + bootstrap). Тесты `splash.int` / `adsConversion.int` зелёные.
+### Сделано
+- Сжатые strip WebP залиты в **R2** `erythro-media` и обновлены строки `media`:
+  - `header_14.webp` (ai-automation, id 65) ~84 KiB
+  - `header_9.webp` (design, id 59) ~86 KiB
+  - `header_10.webp` (development, id 60) ~53 KiB
+  - `header_87.webp` (enterprise-engineering, id 58) ~48 KiB
+- Локальный маппинг `/images/service-headers/` убран — шапки только с R2 через CMS.
+- Скрипт: `node scripts/compress-service-headers-r2.mjs` (`--apply`).
 
-### Очередь (согласовано)
-1. **Deploy** skip-splash → перемерить PSI mobile на `/portfolio` и `/services/*`.
-2. **Сжать / привести в порядок картинки на services** (PSI: `header_14.jpg` ~180 KiB лишнего на mobile).
-3. Позже: ISR `/services/*` (сейчас `getRequestPrefs`, TTFB выше).
-4. **Не трогать пока:** аналитика (GTM/Meta), тяжёлый main-thread / chunk `8261` — после картинок.
+### Очередь
+1. Deploy кода (fallback URLs в `servicePages` → R2 webp) + убедиться, что ISR/revalidate подхватил новые `media.url`.
+2. PSI mobile `/services/ai-automation`.
+3. Позже: ISR `/services/*`; аналитику / chunk `8261` не трогать.
 
-### Baseline PSI mobile (prod, до деплоя skip-splash)
-- `/` ~63, LCP ~8.3s · `/portfolio` ~53, LCP ~7.7s · `/services/ai-automation` ~73, LCP ~4.2s
+## Параллельно (Claude Code): отчёты аудита — не удалять
+
+- Free HTML / tier-scope — не смешивать с mobile-perf.

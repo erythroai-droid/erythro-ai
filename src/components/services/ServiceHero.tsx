@@ -14,6 +14,11 @@ interface ServiceHeroProps {
   service: ServicePage
 }
 
+/**
+ * 150px header strip. Media comes from CMS → R2 (compressed WebP).
+ * Keep `unoptimized` for absolute CDN URLs so LCP does not pay an extra
+ * `/_next/image` hop (PIT-058); sources are already strip-sized WebP.
+ */
 export default function ServiceHero({ service }: ServiceHeroProps) {
   const sectionRef = useRef<HTMLElement | null>(null)
 
