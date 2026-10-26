@@ -919,12 +919,12 @@ The generic body is **not** in `infra/n8n/workflows/email-autoresponder.json`.
 
 **Fix:**
 1. Layout SSR defaults (`lang="en"`) + `THEME_BOOTSTRAP_SCRIPT` / `LOCALE_BOOTSTRAP_SCRIPT`.
-2. Home + `/portfolio`: `export const dynamic = 'force-static'` + `revalidate = 60`; `clientHydratePrefs`; no `getRequestPrefs`.
+2. Home + `/portfolio` + `/services/[slug]`: `export const dynamic = 'force-static'` + `revalidate = 60`; `clientHydratePrefs`; no `getRequestPrefs` / no `cookies()` in `generateMetadata`.
 3. `not-found` must not call `cookies()` (client hydrate locale).
 4. Middleware: markdown rewrite + Link header only — **never** set `NEXT_LOCALE`.
 5. CMS reads via `getPayloadLocal()` (`src/lib/payloadStatic.ts`) with `overrideAccess: true` — never `initReq` / `headers()`.
 
-**Verify after deploy:** `Cache-Control` contains `s-maxage=60`, second request `x-vercel-cache: HIT` (or `STALE`), build table shows `○` / ISR for `/` and `/portfolio` (not `ƒ`).
+**Verify after deploy:** `Cache-Control` contains `s-maxage=60`, second request `x-vercel-cache: HIT` (or `STALE`), build table shows `○` / ISR for `/`, `/portfolio`, and `/services/*` (not `ƒ`).
 
 **Prevent:** Never put `cookies()` in shared layout or `not-found`. Never Set-Cookie on cacheable HTML responses. Keep Local API for static pages.
 
@@ -2276,7 +2276,7 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 - [ ] Funnel review: CTA-opened modal forms and chat/WhatsApp count as a lead path; disclose the method in the Pro block (PIT-068)
 - [ ] Form-mail “not arriving”: check Hostinger INBOX (not Unread); `team@` password is not `SMTP_PASS` (PIT-054)
 - [ ] Contact honeypot must not be named company/website/email — mobile autofill silent-drops leads (PIT-055)
-- [ ] Shared frontend layout / not-found must not call `cookies()`; middleware must not Set-Cookie on HTML; use `force-static` + `getPayloadLocal` for ISR HIT (PIT-056)
+- [ ] Shared frontend layout / not-found must not call `cookies()`; middleware must not Set-Cookie on HTML; use `force-static` + `getPayloadLocal` for ISR HIT; `/services/[slug]` metadata must not read cookies (PIT-056)
 - [ ] Hero LCP media: CSS `lg:block` poster in SSR HTML, not `useState(isLg)` gate (PIT-057)
 - [ ] Absolute CDN hero stills: preload + `<img>` direct URL, skip `/_next/image` when bytes unchanged (PIT-058)
 - [ ] Home hero: no static import of HeroMotionText/GSAP before LCP (PIT-059)

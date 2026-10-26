@@ -1,16 +1,20 @@
 import React from 'react'
 import type { Metadata } from 'next'
-import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import ServiceClient from './ServiceClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getAllServiceSlugsCms, getServicePageBySlug } from '@/lib/cmsPages'
 import { getAllServiceSlugs, tLocale } from '@/lib/servicePages'
-import { getRequestPrefs } from '@/lib/requestPrefs'
 
-const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
+
+/**
+ * Full Route Cache / CDN: static HTML with ISR. Must not call cookies()/headers()
+ * anywhere in this tree. Locale/theme hydrate client-side (PIT-056).
+ */
+export const dynamic = 'force-static'
+export const revalidate = 60
 
 interface ServicePageProps {
   params: Promise<{ slug: string }>
@@ -36,11 +40,8 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
     }
   }
 
-  const cookieStore = await cookies()
-  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
-  const locale =
-    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
-
+  // ISR HTML is locale-agnostic (SSR as EN). Client hydrates NEXT_LOCALE / storage.
+  const locale = DEFAULT_LOCALE
   const customTitle = tLocale(service.seoTitle, locale)
   const customDescription = tLocale(service.seoDescription, locale)
   const pageTitle = tLocale(service.title, locale)
@@ -76,15 +77,14 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
 
   if (!service) notFound()
 
-  const { initialLocale, initialTheme } = await getRequestPrefs()
   const content = await getCachedSiteContent()
 
   return (
     <ServiceClient
-      initialLocale={initialLocale}
-      initialTheme={initialTheme}
+      initialLocale={DEFAULT_LOCALE}
       content={content}
       service={service}
+      clientHydratePrefs
     />
   )
 }
