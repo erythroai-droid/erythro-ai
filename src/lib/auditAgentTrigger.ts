@@ -18,6 +18,12 @@ export type AuditAgentTriggerInput = {
   planSlug?: string
   clientEmail?: string
   clientName?: string
+  /**
+   * When false, worker regenerates the report but does not email the client
+   * or re-schedule the commercial follow-up. Admin re-queue must pass false.
+   * Default (omit / true): first intake and payment fulfillment.
+   */
+  notifyClient?: boolean
 }
 
 export type AuditAgentTriggerResult =
@@ -71,6 +77,7 @@ async function postRunAuditOnce(
     planSlug: input.planSlug || undefined,
     clientEmail: input.clientEmail || undefined,
     clientName: input.clientName || undefined,
+    ...(input.notifyClient === false ? { notifyClient: false } : {}),
   })
   const signature = signAgentBody(body)
 

@@ -26,6 +26,7 @@ function siteBase() {
  *   planSlug?: string,
  *   clientEmail?: string,
  *   clientName?: string,
+ *   notifyClient?: boolean,
  * }} job
  */
 export async function runAuditJob(job) {
@@ -34,6 +35,7 @@ export async function runAuditJob(job) {
   const targetUrl = job.targetUrl
   const locale = job.locale || 'en'
   const planSlug = job.planSlug || 'audit-free'
+  const notifyClient = job.notifyClient !== false
   let clientEmail = job.clientEmail?.trim() || ''
   let clientName = job.clientName?.trim() || ''
 
@@ -98,6 +100,10 @@ export async function runAuditJob(job) {
       ? statusPageUrl
       : uploaded.url
 
+    const detectedTechnologies = Array.isArray(result.summary?.detectedTechnologies)
+      ? result.summary.detectedTechnologies
+      : []
+
     const patchBase = {
       auditStatus: 'report_sent',
       reportUrl: publicReportUrl,
@@ -114,6 +120,7 @@ export async function runAuditJob(job) {
         overallScore: result.score,
         storageKey: uploaded.key,
         pdfStorageKey: pdfUpload?.key || null,
+        detectedTechnologies,
       },
       errorLast: null,
     }
@@ -132,7 +139,7 @@ export async function runAuditJob(job) {
       await updateContactSubmission(submissionId, patchBase)
     }
 
-    if (clientEmail) {
+    if (clientEmail && notifyClient) {
       const mailed = await sendClientAuditEmail({
         to: clientEmail,
         clientName,
@@ -153,6 +160,10 @@ export async function runAuditJob(job) {
         // Free → Pro promo; Pro/Diagnostic → development offer (+15m, site sends).
         scheduleProOfferEmail(submissionId, planSlug, { leadChannel })
       }
+    } else if (clientEmail && !notifyClient) {
+      console.log(
+        `[audit] submission=${submissionId} report ready — client email skipped (notifyClient=false)`,
+      )
     } else {
       console.warn(`[audit] submission=${submissionId} no clientEmail — skip mail`)
     }

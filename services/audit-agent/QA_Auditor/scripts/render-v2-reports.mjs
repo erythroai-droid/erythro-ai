@@ -1772,13 +1772,15 @@ a.badge.crit:hover {
   line-height: 1.45 !important;
   color: #7f1d1d !important;
 }
-.tech-php-alert a {
+.tech-php-alert .tech-php-cta {
+  display: block !important;
+  margin-top: 10px !important;
   color: #b91c1c !important;
   font-weight: 700 !important;
   text-decoration: underline !important;
   text-underline-offset: 2px !important;
 }
-.tech-php-alert a:hover {
+.tech-php-alert .tech-php-cta:hover {
   color: #e52421 !important;
 }
 
@@ -3373,8 +3375,8 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
     }
     const alert = phpStackAlertCopy(lang, flaggedPhpTech, siteHost || undefined);
     const waHref = `${PHP_WA_HREF}?text=${encodeURIComponent(alert.waText)}`;
-    techBlockHtml += `\n    <p class="tech-php-alert"><strong>${esc(alert.title)}.</strong> ${esc(alert.body)} `
-      + `<a href="${esc(waHref)}" target="_blank" rel="noopener noreferrer">${esc(alert.cta)}</a>.</p>`;
+    techBlockHtml += `\n    <p class="tech-php-alert"><strong>${esc(alert.title)}.</strong> ${esc(alert.body)}`
+      + `<br><a class="tech-php-cta" href="${esc(waHref)}" target="_blank" rel="noopener noreferrer">${esc(alert.cta)}</a></p>`;
   }
   const idxChips = s.indexOf('<div class="chips">');
   if (idxChips !== -1) {

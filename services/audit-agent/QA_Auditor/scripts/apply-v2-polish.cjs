@@ -487,8 +487,8 @@ ${R}.gauge .lbl {
   text-align: center !important;
   width: 100% !important;
   height: 100% !important;
-  padding: 26px 22px !important;
-  font-size: 14.5px !important;
+  padding: 24px 20px !important;
+  font-size: 16px !important;
   font-weight: 700 !important;
   line-height: 1.2 !important;
   letter-spacing: 0 !important;
@@ -641,8 +641,8 @@ ${R}.top3 .t3 .t3-rows { grid-column: 1 / -1; grid-row: 2; margin-top: 0; }
   ${R}.score-num { font-size: 60px !important; }
   ${R}.gauge { width: 120px; height: 120px; }
   ${R}.gauge .lbl {
-    padding: 24px 22px !important;
-    font-size: 13px !important;
+    padding: 22px 18px !important;
+    font-size: 14px !important;
     line-height: 1.25 !important;
   }
   ${R}.score { margin-top: 14px !important; gap: 14px !important; }
@@ -734,8 +734,8 @@ ${R}.top3 .t3 .t3-rows { grid-column: 1 / -1; grid-row: 2; margin-top: 0; }
   ${R}.score-num { font-size: 54px !important; }
   ${R}.gauge { width: 112px !important; height: 112px !important; }
   ${R}.gauge .lbl {
-    padding: 22px 20px !important;
-    font-size: 12px !important;
+    padding: 20px 16px !important;
+    font-size: 13px !important;
     line-height: 1.25 !important;
     letter-spacing: 0 !important;
   }
