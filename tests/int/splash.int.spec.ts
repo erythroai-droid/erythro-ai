@@ -138,18 +138,24 @@ describe('splash skip helpers (PIT-126)', () => {
     expect(document.querySelectorAll('.splash-bg')).toHaveLength(0)
   })
 
-  it('inner routes skip splash even with explicit empty search', () => {
+  it('paid params still skip splash on inner routes', () => {
     window.history.replaceState({}, '', '/portfolio/rosso-garage?fbclid=IwOrphanRisk')
-    expect(shouldSkipSplashSurface('/portfolio/rosso-garage')).toBe(true)
-    // Non-home always skips — empty search must not re-enable splash on inner pages.
-    expect(shouldSkipSplashSurface('/portfolio/rosso-garage', '')).toBe(true)
+    expect(shouldSkipSplashSurface('/portfolio/rosso-garage', '?fbclid=IwOrphanRisk')).toBe(true)
   })
 
-  it('home keeps splash unless paid params / audit LP host', () => {
+  it('desktop keeps organic inner splash; mobile skips; home/ads rules unchanged', () => {
+    mockMatchMedia(false)
     expect(shouldSkipSplashSurface('/', '')).toBe(false)
     expect(shouldSkipSplashSurface('/', '', 'erythro.ai')).toBe(false)
     expect(shouldSkipSplashSurface('/', '?fbclid=x', 'erythro.ai')).toBe(true)
+    expect(shouldSkipSplashSurface('/services/ai-automation', '')).toBe(false)
+    expect(shouldSkipSplashSurface('/portfolio/rosso-garage', '')).toBe(false)
+    expect(shouldSkipSplashSurface('/audit', '')).toBe(true)
+    expect(shouldSkipSplashSurface('/order/free-start', '')).toBe(true)
+
+    mockMatchMedia(true)
     expect(shouldSkipSplashSurface('/services/ai-automation', '')).toBe(true)
-    expect(SPLASH_SKIP_BOOTSTRAP_SCRIPT).toContain('var inner=path!==\'/\'')
+    expect(shouldSkipSplashSurface('/portfolio', '')).toBe(true)
+    expect(SPLASH_SKIP_BOOTSTRAP_SCRIPT).toContain('innerMobile')
   })
 })

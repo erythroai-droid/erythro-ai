@@ -6,6 +6,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
   markSplashDone,
+  prefersMobileQuickSplash,
   resetSplashDone,
   resolveSplashNavigation,
 } from '@/lib/splash'
@@ -75,7 +76,7 @@ export default function SplashScreen() {
       markSplashDone()
     }
 
-    // ---- Quick: finished logo + early overlay fade (uncover LCP sooner) ----
+    // ---- Quick: finished logo plate (timings: mobile LCP-fast / desktop brand) ----
     if (mode === 'quick') {
       gsap.set(svg, { x: 0, y: 0, scale: 1, clearProps: 'transform' })
       gsap.set(allMarks, {
@@ -92,10 +93,10 @@ export default function SplashScreen() {
       const reduceMotion =
         typeof window !== 'undefined' &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const mobileQuick = prefersMobileQuickSplash()
 
       const tl = gsap.timeline()
       if (reduceMotion) {
-        // Short sequential path — accessibility first.
         tl.to(wrap, { opacity: 1, duration: 0.25, ease: 'power2.out' })
           .to(overlay, {
             opacity: 0,
@@ -104,9 +105,8 @@ export default function SplashScreen() {
             onStart: () => markSplashDone(),
             onComplete: () => finish(),
           })
-      } else {
-        // Logo appears while the plate already starts clearing (~0.2s) so mobile
-        // LCP is not blocked for the full brand beat (PSI Slow 4G).
+      } else if (mobileQuick) {
+        // Mobile: uncover LCP early — logo in while plate already clears.
         tl.to(wrap, { opacity: 1, duration: 0.3, ease: 'power2.out' }, 0)
           .to(
             overlay,
@@ -119,6 +119,17 @@ export default function SplashScreen() {
             },
             0.2,
           )
+      } else {
+        // Desktop: readable brand beat (~1.3s) — home load + inner navigations.
+        tl.to(wrap, { opacity: 1, duration: 0.5, ease: 'power2.out' })
+          .to({}, { duration: 0.35 })
+          .to(overlay, {
+            opacity: 0,
+            duration: 0.4,
+            ease: 'power2.inOut',
+            onStart: () => markSplashDone(),
+            onComplete: () => finish(),
+          })
       }
 
       return () => {

@@ -26,20 +26,23 @@ export const SPLASH_SKIP_HTML_ATTR = 'data-erythro-skip-splash'
 
 /**
  * Inline bootstrap: hide / mark splash done before first paint when splash must
- * not show. Covers: any non-home path, paid-ad clicks, conversion/LP surfaces.
- * The layout shell is ISR-static and cannot see `?fbclid=` at SSR — without this,
- * React hydrates `skip=true` over an SSR splash plate and can orphan `.splash-bg`
- * on `<body>` (solid red forever). Path skips also run here so cold loads of
- * inner pages never flash the plate before hydration.
+ * not show. Covers: paid-ad clicks, conversion/LP surfaces, and mobile inner
+ * routes (desktop keeps a short brand splash on organic pages). The layout shell
+ * is ISR-static and cannot see `?fbclid=` at SSR — without this, React hydrates
+ * `skip=true` over an SSR splash plate and can orphan `.splash-bg` on `<body>`
+ * (solid red forever).
  */
-export const SPLASH_SKIP_BOOTSTRAP_SCRIPT = `(function(){try{var path=(location.pathname||'/').split('?')[0]||'/';var host=(location.hostname||'').toLowerCase();var q=location.search||'';var paid=/[?&](fbclid|gclid|gbraid|wbraid|utm_source|utm_campaign|utm_medium)=/.test(q);var conv=path==='/audit'||path.indexOf('/audit/')===0||path.indexOf('/order/')===0;var lp=path.indexOf('/lp/audit/')===0||/^audit-[a-z0-9-]+\\.erythro\\.ai$/.test(host);var inner=path!=='/';if(!(paid||conv||lp||inner))return;document.documentElement.setAttribute('${SPLASH_SKIP_HTML_ATTR}','1');window.__erythroSplashDone=true}catch(e){}})();`
+export const SPLASH_SKIP_BOOTSTRAP_SCRIPT = `(function(){try{var path=(location.pathname||'/').split('?')[0]||'/';var host=(location.hostname||'').toLowerCase();var q=location.search||'';var paid=/[?&](fbclid|gclid|gbraid|wbraid|utm_source|utm_campaign|utm_medium)=/.test(q);var conv=path==='/audit'||path.indexOf('/audit/')===0||path.indexOf('/order/')===0;var lp=path.indexOf('/lp/audit/')===0||/^audit-[a-z0-9-]+\\.erythro\\.ai$/.test(host);var mobile=false;try{mobile=window.matchMedia('${MOBILE_QUICK_SPLASH_MQ}').matches}catch(e){}var innerMobile=path!=='/'&&mobile;if(!(paid||conv||lp||innerMobile))return;document.documentElement.setAttribute('${SPLASH_SKIP_HTML_ATTR}','1');window.__erythroSplashDone=true}catch(e){}})();`
 
 /**
  * Returns true when the full-screen brand splash should be skipped entirely:
- * - Any path other than `/` (home keeps splash; inner pages open content immediately)
- * - `/lp/audit/*` and `audit-*.erythro.ai` (also covered by non-home, host covers `/`)
+ * - `/lp/audit/*` and `audit-*.erythro.ai`
  * - `/audit` and `/order/*` conversion pages
- * - Any landing URL with paid ad click parameters (`fbclid`, `gclid`, `gbraid`, `wbraid`, `utm_*`)
+ * - Paid ad click parameters (`fbclid`, `gclid`, `gbraid`, `wbraid`, `utm_*`)
+ * - Organic inner routes on **mobile only** (desktop keeps short brand splash)
+ *
+ * SSR for organic inner pages returns false so the plate is in HTML; mobile
+ * bootstrap hides it before paint (PIT-126).
  */
 export function shouldSkipSplashSurface(
   pathname: string,
@@ -47,8 +50,6 @@ export function shouldSkipSplashSurface(
   hostname?: string,
 ): boolean {
   const cleanPath = (pathname || '/').split('?')[0] || '/'
-  // Home only — brand intro. All other routes skip for LCP / mobile speed.
-  if (cleanPath !== '/') return true
   const host = hostname ?? (typeof window !== 'undefined' ? window.location.hostname : '')
   if (host && auditLpLocaleFromHost(host) != null) return true
 
@@ -79,6 +80,19 @@ export function shouldSkipSplashSurface(
     } catch {
       // ignore URLSearchParams parse errors
     }
+  }
+
+  const isConversion =
+    cleanPath === '/audit' ||
+    cleanPath.startsWith('/audit/') ||
+    cleanPath.startsWith('/order/') ||
+    cleanPath.startsWith('/lp/audit/')
+  if (isConversion) return true
+
+  // Organic inner: mobile skips for LCP; desktop shows quick splash.
+  if (cleanPath !== '/') {
+    if (typeof window === 'undefined') return false
+    return prefersMobileQuickSplash()
   }
   return false
 }
@@ -147,9 +161,8 @@ export function prefersMobileQuickSplash(): boolean {
 /**
  * Resolve splash style + restored scroll for this navigation:
  * - `full` — animated draw only when forced by logo click (`navigateHomeWithFullSplash`)
- * - `quick` — red plate + finished logo (default cold home, mid-page reload, client nav).
- *   Inner pages skip splash in SplashHost — this helper is only consulted when
- *   SplashScreen mounts (home).
+ * - `quick` — red plate + finished logo (cold home, mid-page reload, desktop inner
+ *   routes, client nav). Mobile inner routes skip in SplashHost.
  */
 export function resolveSplashNavigation(pathname: string): {
   mode: SplashMode
@@ -176,7 +189,7 @@ export function resolveSplashNavigation(pathname: string): {
   }
   // Client route changes set this flag — never carry the previous page's scrollY.
   if (forced === 'quick') return { mode: 'quick', scrollY: 0 }
-  // Defensive: SplashHost skips non-home; if mounted anyway, stay quick.
+  // Desktop organic inner (or defensive mount): always quick.
   if (path !== '/') return { mode: 'quick', scrollY: 0 }
   if (scrollY > MID_PAGE_SCROLL_PX) return { mode: 'quick', scrollY }
 

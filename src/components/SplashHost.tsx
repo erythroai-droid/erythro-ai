@@ -13,10 +13,9 @@ import {
 export { shouldSkipSplashSurface }
 
 /**
- * Site-wide splash host. Brand splash runs on `/` only (full or quick via
- * sessionStorage). All other routes skip splash so mobile cold loads show
- * content immediately. Ads LPs, /audit, /order/* and paid ad clicks also skip
- * (including on `/` with fbclid etc.).
+ * Site-wide splash host. Quick brand splash on home (all viewports) and on
+ * organic inner routes on **desktop**. Mobile inner routes skip for LCP.
+ * Ads LPs, /audit, /order/* and paid ad clicks always skip.
  *
  * Must pass `useSearchParams()` into {@link shouldSkipSplashSurface}: the layout
  * shell is ISR-static and SSR cannot see `?fbclid=`. Skipping only on the client
