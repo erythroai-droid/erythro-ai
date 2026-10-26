@@ -150,7 +150,13 @@ export default buildConfig({
                   // Public R2 / custom domain — Range works for <video> (PIT-003).
                   disablePayloadAccessControl: true,
                   generateFileURL: ({ filename, prefix }) => {
-                    const key = prefix ? `${prefix}/${filename}` : filename
+                    // Flat R2 keys: `_objectKey` must stay null. If it equals the
+                    // filename, afterRead passes it as `prefix` and would double
+                    // the path (`file.webp/file.webp`).
+                    const key =
+                      prefix && prefix !== filename && !String(prefix).endsWith(`/${filename}`)
+                        ? `${prefix}/${filename}`
+                        : filename
                     return `${r2.publicBaseUrl}/${key}`
                   },
                 },
