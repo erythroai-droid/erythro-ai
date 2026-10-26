@@ -5,6 +5,10 @@ import Image from 'next/image'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { ServicePage } from '@/lib/servicePages'
+import {
+  resolveServiceHeaderSrc,
+  shouldOptimizeServiceHeaderSrc,
+} from '@/lib/serviceHeaderImage'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -16,6 +20,12 @@ interface ServiceHeroProps {
 
 export default function ServiceHero({ service }: ServiceHeroProps) {
   const sectionRef = useRef<HTMLElement | null>(null)
+  const heroSrc =
+    service.hero.type === 'image'
+      ? resolveServiceHeaderSrc(service.hero.src, service.slug)
+      : service.hero.src
+  const optimizeImage =
+    service.hero.type === 'image' && shouldOptimizeServiceHeaderSrc(heroSrc)
 
   useEffect(() => {
     if (!sectionRef.current) return
@@ -59,11 +69,12 @@ export default function ServiceHero({ service }: ServiceHeroProps) {
           />
         ) : (
           <Image
-            src={service.hero.src}
+            src={heroSrc}
             alt=""
             fill
             priority
-            unoptimized
+            unoptimized={!optimizeImage}
+            quality={70}
             sizes="100vw"
             className="object-cover"
           />

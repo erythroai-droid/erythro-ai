@@ -5,16 +5,21 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
-## В работе: mobile perf
+## В работе: mobile perf — сжатие header images на services
 
 ### Сделано (ждёт деплоя)
-- **Splash только на `/`**: внутренние страницы без заставки (`shouldSkipSplashSurface` + bootstrap). Тесты `splash.int` / `adsConversion.int` зелёные.
+- Compressed strip WebP в `public/images/service-headers/` (~21–86 KiB vs CMS JPEG ~230–320 KiB).
+- `resolveServiceHeaderSrc` мапит `header_14/9/10.jpg` и старые square fallbacks → WebP; неизвестные JPEG идут через next/image.
+- Правки: `ServiceHero`, `cmsPages`, `servicePages` fallbacks, тест `serviceHeaderImage.int`.
 
-### Очередь (согласовано)
-1. **Deploy** skip-splash → перемерить PSI mobile на `/portfolio` и `/services/*`.
-2. **Сжать / привести в порядок картинки на services** (PSI: `header_14.jpg` ~180 KiB лишнего на mobile).
-3. Позже: ISR `/services/*` (сейчас `getRequestPrefs`, TTFB выше).
-4. **Не трогать пока:** аналитика (GTM/Meta), тяжёлый main-thread / chunk `8261` — после картинок.
+### Уже на проде
+- Splash только на `/`. PSI mobile: portfolio **81**, services **78**, home **64**.
 
-### Baseline PSI mobile (prod, до деплоя skip-splash)
-- `/` ~63, LCP ~8.3s · `/portfolio` ~53, LCP ~7.7s · `/services/ai-automation` ~73, LCP ~4.2s
+### Очередь после деплоя headers
+1. Перемерить PSI `/services/ai-automation`.
+2. Позже: ISR `/services/*`.
+3. Не трогать пока: аналитика, chunk `8261`.
+
+## Параллельно (Claude Code): отчёты аудита — не удалять
+
+- Free HTML / tier-scope — см. предыдущую эстафету; не смешивать с mobile-perf.
