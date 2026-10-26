@@ -33,6 +33,11 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: 'Erythro.ai',
       type: 'website',
     },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
   }
 }
 

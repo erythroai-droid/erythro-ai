@@ -61,14 +61,14 @@ export function tAuditWebsitePlatform(field: Localized | undefined, locale: stri
 export const auditPage = {
   slug: 'audit',
   title: {
-    en: 'AI Audit',
-    ru: 'AI Аудит',
-    he: 'ביקורת AI',
+    en: 'Free AI Website Audit & AI Visibility Tool',
+    ru: 'Бесплатный AI-аудит сайта и AI Visibility',
+    he: 'ביקורת אתר AI בחינם וכלי נראות AI',
   } satisfies Localized,
   metaDescription: {
-    en: 'Free commercial website audit: Speed & Mobile UX, lead forms, SEO & Visibility, security, and AI Visibility. Score 0–100, top-3 risks, PDF by plan.',
-    ru: 'Бесплатный коммерческий аудит сайта: скорость и мобильный UX, формы, SEO и видимость, безопасность и AI Visibility. Оценка 0–100, топ-3 риска, PDF по тарифу.',
-    he: 'ביקורת מסחרית חינמית לאתר: מהירות ו-UX למובייל, טפסים, SEO ונראות, אבטחה ונראות AI. ציון 0–100, 3 סיכונים עיקריים, PDF לפי חבילה.',
+    en: "Get an instant free AI website audit. Test mobile PageSpeed, conversion risks, UX friction, and your brand's AI visibility score across ChatGPT & Perplexity.",
+    ru: 'Мгновенный бесплатный AI-аудит сайта: PageSpeed mobile, риски конверсии, UX и AI Visibility в ChatGPT и Perplexity. Оценка 0–100 и топ-3 риска.',
+    he: 'ביקורת אתר AI מיידית בחינם: PageSpeed במובייל, סיכוני המרה, UX ונראות AI ב-ChatGPT ו-Perplexity. ציון 0–100 ו-3 סיכונים מובילים.',
   } satisfies Localized,
   tabs: {
     audit: {
@@ -89,14 +89,14 @@ export const auditPage = {
   },
   form: {
     heading: {
-      en: 'Free website audit',
-      ru: 'Бесплатный аудит сайта',
-      he: 'ביקורת אתר בחינם',
+      en: 'Free AI Visibility audit',
+      ru: 'Бесплатный аудит AI Visibility',
+      he: 'ביקורת נראות AI בחינם',
     } satisfies Localized,
     intro: {
-      en: 'Enter your site URL, contacts, and preferred report language. The lab scores five scales — Speed & Mobile UX, Lead gen & Forms, SEO & Visibility, Security & Stability, AI Visibility & Brand Discovery — then we send a report with the score, top-3 risks, and what your plan unlocks.',
-      ru: 'Укажите URL сайта, контакты и язык отчёта. Лаборатория считает пять шкал — скорость и мобильный UX, лиды и формы, SEO и видимость, безопасность и стабильность, AI Visibility & Brand Discovery — и мы пришлём отчёт с оценкой, топ-3 рисками и тем, что открывает ваш тариф.',
-      he: 'הזינו כתובת אתר, פרטי קשר ושפת דוח. המעבדה מחשבת חמש סקאלות — מהירות ו-UX למובייל, לידים וטפסים, SEO ונראות, אבטחה ויציבות, נראות AI וגילוי מותג — ונשלח דוח עם הציון, 3 הסיכונים העיקריים ומה שהחבילה שלכם פותחת.',
+      en: 'Includes AI Search Visibility (ChatGPT, Claude, Perplexity) + Full CRO & Speed Audit. Enter your site URL, contacts, and report language — score 0–100, top-3 risks, and what your plan unlocks.',
+      ru: 'Includes AI Search Visibility (ChatGPT, Claude, Perplexity) + полный CRO и Speed Audit. Укажите URL, контакты и язык отчёта — оценка 0–100, топ-3 риска и то, что открывает тариф.',
+      he: 'Includes AI Search Visibility (ChatGPT, Claude, Perplexity) + בדיקת CRO ומהירות מלאה. הזינו כתובת אתר, פרטי קשר ושפת דוח — ציון 0–100, 3 סיכונים עיקריים ומה שהחבילה פותחת.',
     } satisfies Localized,
     introNote: {
       en: 'Free preview audit: one domain per user every 7 days.',
