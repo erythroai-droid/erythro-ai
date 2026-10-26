@@ -6,6 +6,7 @@ import {
   trackFreeAuditLead,
   trackOrderLead,
 } from '@/lib/adsConversion'
+import { needsEagerAdAnalytics } from '@/lib/analyticsEager'
 import { shouldSkipSplashSurface } from '@/lib/splash'
 
 describe('adsConversion (Google Ads + GA4 Key Events + Meta Pixel)', () => {
@@ -137,6 +138,21 @@ describe('adsConversion (Google Ads + GA4 Key Events + Meta Pixel)', () => {
     expect(shouldSkipSplashSurface('/', '?gclid=CjwKCAjw', 'erythro.ai')).toBe(true)
     // Home organic: keep splash. Explicit empty search must not fall back (PIT-126).
     expect(shouldSkipSplashSurface('/', '', 'erythro.ai')).toBe(false)
+  })
+
+  it('loads ad tags eagerly on paid/LP/audit/order; defers on organic marketing pages', () => {
+    expect(needsEagerAdAnalytics('/audit', '', 'erythro.ai')).toBe(true)
+    expect(needsEagerAdAnalytics('/order/free-start', '', 'erythro.ai')).toBe(true)
+    expect(needsEagerAdAnalytics('/lp/audit/he', '', 'erythro.ai')).toBe(true)
+    expect(needsEagerAdAnalytics('/', '', 'audit-he.erythro.ai')).toBe(true)
+    expect(needsEagerAdAnalytics('/', '?gclid=CjwKCAjw', 'erythro.ai')).toBe(true)
+    expect(needsEagerAdAnalytics('/', '?fbclid=IwZXh0bg', 'erythro.ai')).toBe(true)
+    expect(needsEagerAdAnalytics('/portfolio', '?utm_source=fb', 'erythro.ai')).toBe(true)
+    // Organic marketing: defer gtag/Meta until consent or conversion.
+    expect(needsEagerAdAnalytics('/', '', 'erythro.ai')).toBe(false)
+    expect(needsEagerAdAnalytics('/portfolio', '', 'erythro.ai')).toBe(false)
+    expect(needsEagerAdAnalytics('/services/ai-automation', '', 'erythro.ai')).toBe(false)
+    expect(needsEagerAdAnalytics('/contacts', '', 'erythro.ai')).toBe(false)
   })
 
   it('fires qualify_lead and close_convert_lead for non-audit order packages', () => {

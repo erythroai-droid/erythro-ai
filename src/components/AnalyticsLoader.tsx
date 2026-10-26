@@ -5,6 +5,7 @@ import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
 import { pushAiReferralToDataLayer } from '@/lib/aiReferral'
 import { readCampaignConfigParams } from '@/lib/adsConversion'
+import { ANALYTICS_GA_ID, requestAnalyticsScripts } from '@/lib/analyticsEager'
 import { isProductionAnalyticsHost } from '@/lib/vercelHost'
 import {
   clearAnalyticsCookies,
@@ -15,7 +16,7 @@ import {
   type ConsentValue,
 } from '@/lib/privacyConsent'
 
-const GA_ID = 'G-F3BTVWGDRS'
+const GA_ID = ANALYTICS_GA_ID
 
 declare global {
   interface Window {
@@ -70,11 +71,16 @@ export default function AnalyticsLoader() {
     if (!isProductionAnalyticsHost(window.location.hostname)) return
     const accepted = hasAcceptedConsent()
     setEnabled(accepted)
-    if (accepted) updateAnalyticsConsent(CONSENT_ACCEPTED)
+    if (accepted) {
+      // Organic defer: pull gtag/Meta before consent update / GA4 config.
+      requestAnalyticsScripts()
+      updateAnalyticsConsent(CONSENT_ACCEPTED)
+    }
 
     const onConsentChanged = (event: Event) => {
       const value = (event as CustomEvent<ConsentValue>).detail
       if (value === CONSENT_ACCEPTED) {
+        requestAnalyticsScripts()
         setEnabled(true)
         updateAnalyticsConsent(CONSENT_ACCEPTED)
         return
@@ -89,6 +95,7 @@ export default function AnalyticsLoader() {
 
   useEffect(() => {
     if (!enabled) return
+    requestAnalyticsScripts()
     pushAiReferralToDataLayer()
     if (typeof window !== 'undefined' && typeof window.gtag === 'function' && !window.__ERYTHRO_GA_CONFIGURED__) {
       window.__ERYTHRO_GA_CONFIGURED__ = true
@@ -107,9 +114,12 @@ export default function AnalyticsLoader() {
   return (
     <>
       <Analytics />
-      {/* gtag.js already loaded in AnalyticsBootstrap (AW-…); do not load a second copy */}
+      {/* gtag.js from AnalyticsBootstrap (eager) or requestAnalyticsScripts (organic). */}
       <Script id="google-analytics-config" strategy="afterInteractive">
         {`
+          if (typeof window.__erythroLoadAnalyticsScripts === 'function') {
+            window.__erythroLoadAnalyticsScripts();
+          }
           if (typeof window.gtag === 'function' && !window.__ERYTHRO_GA_CONFIGURED__) {
             window.__ERYTHRO_GA_CONFIGURED__ = true;
             gtag('config', '${GA_ID}', Object.assign({

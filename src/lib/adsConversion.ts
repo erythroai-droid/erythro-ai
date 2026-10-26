@@ -1,6 +1,7 @@
+import { ANALYTICS_GA_ID, requestAnalyticsScripts } from '@/lib/analyticsEager'
 import { setConsentValue, CONSENT_ACCEPTED } from '@/lib/privacyConsent'
 
-const GA_ID = 'G-F3BTVWGDRS'
+const GA_ID = ANALYTICS_GA_ID
 const PURCHASE_SEND_TO = 'AW-18453652197/-mcPCMys6Z0dEOXFsd9E'
 const LEAD_SEND_TO = 'AW-18453652197/L4VgCMWPhZ4dEOXFsd9E'
 const SENT_KEY_PREFIX = 'erythro:ads-purchase:'
@@ -62,6 +63,7 @@ export function readCampaignConfigParams(): Record<string, string> {
 /**
  * Synchronously grants consent and initializes GA4 config if a user submits a form
  * (with form privacy consent) or completes a purchase before clicking the cookie banner.
+ * On organic pages this also starts gtag.js / Meta load if they were deferred.
  */
 export function ensureAnalyticsConsentAndGaConfig() {
   if (typeof window === 'undefined') return
@@ -71,6 +73,9 @@ export function ensureAnalyticsConsentAndGaConfig() {
   } catch {
     // Storage blocked
   }
+
+  // Organic defer: inject network tags before consent update / events (dataLayer queues).
+  requestAnalyticsScripts()
 
   if (typeof window.gtag === 'function') {
     window.gtag('consent', 'update', {
