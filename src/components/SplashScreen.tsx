@@ -21,15 +21,7 @@ function refreshScrollLayout(scrollY: number) {
     ScrollTrigger.refresh()
     window.scrollTo(0, scrollY)
   }
-  // Mobile has no pinned hero — don't force a sync ST recalc on splash end (PSI reflow).
-  const delay =
-    typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 1023px)').matches
-      ? 800
-      : 0
-  if (delay > 0) {
-    window.setTimeout(run, delay)
-    return
-  }
+  // Defer ST refresh off the splash critical path (no fixed mobile delay — PSI reflow).
   if (typeof window.requestIdleCallback === 'function') {
     window.requestIdleCallback(() => run(), { timeout: 400 })
   } else {
@@ -40,8 +32,8 @@ function refreshScrollLayout(scrollY: number) {
 /**
  * Brand intro overlay.
  *
- * - `full` — stroke-draw (first home visit this session / logo click); shortened ~3s.
- * - `quick` — red plate + finished logo (repeat home, mid-page, inner pages).
+ * - `full` — stroke-draw (logo click only); shortened ~3s.
+ * - `quick` — red plate + finished logo (default cold home, mid-page).
  */
 export default function SplashScreen() {
   const pathname = usePathname() || '/'
@@ -83,7 +75,7 @@ export default function SplashScreen() {
       markSplashDone()
     }
 
-    // ---- Quick: finished logo fades in (1.5s), no body lock ----
+    // ---- Quick: finished logo fades in (~0.9s), no body lock ----
     if (mode === 'quick') {
       gsap.set(svg, { x: 0, y: 0, scale: 1, clearProps: 'transform' })
       gsap.set(allMarks, {
@@ -94,7 +86,7 @@ export default function SplashScreen() {
         strokeDasharray: 'none',
       })
       if (taglineRef.current) gsap.set(taglineRef.current, { opacity: 1, y: 0 })
-      // Start hidden — appearance is the 1.5s fade-in.
+      // Start hidden — short appear → hold → fade.
       gsap.set(wrap, { opacity: 0 })
       window.scrollTo(0, scrollY > 0 ? scrollY : 0)
 
@@ -102,9 +94,9 @@ export default function SplashScreen() {
         typeof window !== 'undefined' &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-      const appear = reduceMotion ? 0.35 : 0.85
-      const hold = reduceMotion ? 0.15 : 0.25
-      const fade = reduceMotion ? 0.2 : 0.4
+      const appear = reduceMotion ? 0.35 : 0.45
+      const hold = reduceMotion ? 0.15 : 0.15
+      const fade = reduceMotion ? 0.2 : 0.3
       const tl = gsap.timeline()
       tl.to(wrap, { opacity: 1, duration: appear, ease: 'power2.out' })
         .to({}, { duration: hold })
