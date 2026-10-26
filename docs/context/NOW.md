@@ -5,11 +5,10 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
-## Report host + PHP alert duplicate
+## PHP alert stacked 3× (regex `\b` + polluted templates)
 
-- **Адрес в шапке:** шаблон вшивал `erythro.ai` в `.site`; `render-v2-reports.mjs` теперь подставляет hostname из `audit_data.target_url` (без fallback на erythro.ai).
-- **Дубль PHP-алерта:** при повторном render старый `<p class="tech-php-alert">` оставался рядом с новым — теперь снимаем предыдущие siblings перед вставкой.
-- VPS: `render-v2-reports.mjs` docker cp. Новые аудиты / re-queue подхватят.
+- **Причина:** strip старых `<p class="tech-php-alert">` использовал `\b` после кавычки класса — перед `>` границы слова нет, regex никогда не матчил. Плюс render перезаписывал `audit_template_*` уже готовым HTML → алерты копились в базе шаблона (на VPS free_ru было 3 body-алерта).
+- **Fix:** глобальный strip всех `tech-php-alert` перед вставкой одного; больше не пишем rendered HTML поверх `audit_template_*`. На VPS восстановлены чистые templates + новый script.
 
 ### Очередь
-- Commit + push правок `render-v2-reports.mjs` (по запросу).
+- Commit/push; re-queue аудита чтобы клиентский R2 HTML обновился.
