@@ -186,3 +186,53 @@ export function buildFaqPageSchema(
     mainEntity,
   }
 }
+
+export type WebApplicationSchemaInput = {
+  name: string
+  description: string
+  locale?: string
+  /** Absolute page URL, e.g. https://erythro.ai/audit */
+  url?: string
+  /** Fragment id on that page, default `#app` */
+  id?: string
+}
+
+/**
+ * Free interactive tool on /audit — pairs with FAQPage for rich-result eligibility.
+ * price 0 ILS signals a free WebApplication offer.
+ */
+export function buildWebApplicationSchema(input: WebApplicationSchemaInput) {
+  const lang = schemaLocale(input.locale || 'en')
+  const url = (input.url || `${SITE_URL}/audit`).replace(/\/$/, '')
+  const id = input.id || `${url}#app`
+  const name = input.name.trim()
+  const description = input.description.trim()
+  if (!name || !description) return null
+
+  return {
+    '@type': 'WebApplication',
+    '@id': id,
+    name,
+    url,
+    description,
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires JavaScript. Requires HTML5.',
+    inLanguage: lang,
+    isAccessibleForFree: true,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'ILS',
+      availability: 'https://schema.org/InStock',
+    },
+    featureList: [
+      'AI Search Visibility (ChatGPT, Claude, Perplexity)',
+      'PageSpeed mobile & desktop',
+      'CRO & UX friction',
+      'SEO & security signals',
+    ],
+    provider: { '@id': `${SITE_URL}/#organization` },
+    publisher: { '@id': `${SITE_URL}/#organization` },
+  }
+}

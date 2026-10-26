@@ -15,7 +15,9 @@ import type { SiteContent } from '@/lib/defaultContent'
 import type { AuditPageContent } from '@/lib/auditPage'
 import { getPageFaq } from '@/lib/pageFaq'
 import FaqJsonLd from '@/components/FaqJsonLd'
+import WebApplicationJsonLd from '@/components/WebApplicationJsonLd'
 import PageFaqSection from '@/components/PageFaqSection'
+import { tAudit } from '@/lib/auditPage'
 import { tLocale } from '@/lib/servicePages'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 
@@ -100,6 +102,14 @@ export default function AuditClient({
           <div className="relative z-20 -mt-8 max-lg:overflow-clip max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
             <AuditBody locale={locale} theme={theme} page={auditPageContent} />
           </div>
+
+          <WebApplicationJsonLd
+            name={`${tAudit(auditPageContent.title, locale)} | Erythro.ai`}
+            description={tAudit(auditPageContent.metaDescription, locale)}
+            locale={locale}
+            url={`${SITE_URL}/audit`}
+            id={`${SITE_URL}/audit#app`}
+          />
 
           {auditFaq ? (
             <div className="relative z-[28] -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
