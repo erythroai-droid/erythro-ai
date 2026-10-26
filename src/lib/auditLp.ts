@@ -676,9 +676,9 @@ export const auditLpProCopy = {
       he: 'סריקת המשפך — עד 10 כתובות',
     },
     {
-      en: 'Funnel review + one priority fix',
-      ru: 'Funnel review + одна приоритетная правка',
-      he: 'Funnel review + תיקון אחד בעדיפות',
+      en: 'Funnel review + main funnel recommendation',
+      ru: 'Funnel review + главная рекомендация по воронке',
+      he: 'Funnel review + המלצה מרכזית למשפך',
     },
     {
       en: 'Full HTML + PDF report',

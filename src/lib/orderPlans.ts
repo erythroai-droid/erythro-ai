@@ -311,9 +311,9 @@ export const AUDIT_CHECK_CATEGORIES = [
       he: 'Funnel review',
     } satisfies LocaleMap,
     description: {
-      en: 'Pro only: AI verdict on the path to a lead (modal forms and chat/WhatsApp count), up to 3 funnel gaps, and one priority fix',
-      ru: 'Только Pro: AI-вердикт по пути к заявке (модалки и чат считаются), до 3 пробелов воронки и одна приоритетная доработка',
-      he: 'רק Pro: פסק דין AI על הדרך לליד (טפסי מודאל וצ׳אט נספרים), עד 3 פערי משפך ותיקון אחד בעדיפות',
+      en: 'Pro only: AI verdict on the path to a lead (modal forms and chat/WhatsApp count), up to 3 funnel gaps, and the main recommendation on what to fix first',
+      ru: 'Только Pro: AI-вердикт по пути к заявке (модалки и чат считаются), до 3 пробелов воронки и главная рекомендация: что исправить первым',
+      he: 'רק Pro: פסק דין AI על הדרך לליד (טפסי מודאל וצ׳אט נספרים), עד 3 פערי משפך והמלצה מרכזית: מה לתקן קודם',
     } satisfies LocaleMap,
   },
 ]
@@ -572,9 +572,9 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         },
         {
           value: {
-            en: 'Funnel review + one priority fix',
-            ru: 'Funnel review + одна приоритетная правка',
-            he: 'Funnel review + תיקון אחד בעדיפות',
+            en: 'Funnel review + main funnel recommendation',
+            ru: 'Funnel review + главная рекомендация по воронке',
+            he: 'Funnel review + המלצה מרכזית למשפך',
           },
         },
         {
@@ -677,9 +677,9 @@ export const AUDIT_ORDER_PLANS: OrderPlan[] = [
         },
         {
           value: {
-            en: 'Funnel review + one priority fix',
-            ru: 'Funnel review + одна приоритетная правка',
-            he: 'Funnel review + תיקון אחד בעדיפות',
+            en: 'Funnel review + main funnel recommendation',
+            ru: 'Funnel review + главная рекомендация по воронке',
+            he: 'Funnel review + המלצה מרכזית למשפך',
           },
         },
         {

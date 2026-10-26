@@ -419,9 +419,9 @@ export const auditPage = {
           he: 'Funnel review',
         } satisfies Localized,
         body: {
-          en: 'Pro only. After the funnel crawl, an AI review of the path to a lead — including forms that open in a modal, chat and messenger widgets, not only a form already in the page HTML. Short verdict, up to three gaps, one priority fix — after top-3, before Lighthouse.',
-          ru: 'Только Pro. После обхода воронки — AI-разбор пути к заявке: учитываются формы в модалке, чат и мессенджеры, а не только форма уже в HTML страницы. Короткий вердикт, до трёх пробелов и одна приоритетная доработка — после топ-3, до Lighthouse.',
-          he: 'רק Pro. אחרי סריקת המשפך, ניתוח AI של הדרך לליד — כולל טפסים שנפתחים במודאל, צ׳אט וווידג׳טי מסנג׳ר, לא רק טופס שכבר ב-HTML. פסק דין קצר, עד שלושה פערים ותיקון אחד בעדיפות — אחרי הטופ-3 ולפני Lighthouse.',
+          en: 'Pro only. After the funnel crawl, an AI review of the path to a lead — including forms that open in a modal, chat and messenger widgets, not only a form already in the page HTML. Short verdict, up to three gaps and the main recommendation on what to fix first — after top-3, before Lighthouse.',
+          ru: 'Только Pro. После обхода воронки — AI-разбор пути к заявке: учитываются формы в модалке, чат и мессенджеры, а не только форма уже в HTML страницы. Короткий вердикт, до трёх пробелов и главная рекомендация: что исправить первым — после топ-3, до Lighthouse.',
+          he: 'רק Pro. אחרי סריקת המשפך, ניתוח AI של הדרך לליד — כולל טפסים שנפתחים במודאל, צ׳אט וווידג׳טי מסנג׳ר, לא רק טופס שכבר ב-HTML. פסק דין קצר, עד שלושה פערים והמלצה מרכזית: מה לתקן קודם — אחרי הטופ-3 ולפני Lighthouse.',
         } satisfies Localized,
       },
     ],
