@@ -1234,7 +1234,32 @@ public class AuditCollector {
                 System.err.println("[-] Ошибка при генерации пакетов Free/Diagnostic/Pro: " + e.getMessage());
             }
 
+            // Modern v2 HTML+PDF (reads a44-audit-report_* for PRO, writes audit-report_*)
+            generateV2Reports(browser, reportLang);
+
             browser.close();
+        }
+    }
+
+    public static void generateV2Reports(Browser browser, String reportLang) {
+        try {
+            System.out.println("\n[+] Генерация v2 отчетов для всех локалей (RU, EN, HE)...");
+            Path scriptPath = Paths.get("scripts/render-v2-reports.mjs");
+            if (!Files.exists(scriptPath)) {
+                scriptPath = Paths.get("QA_Auditor/scripts/render-v2-reports.mjs");
+            }
+            ProcessBuilder pb = new ProcessBuilder("node", scriptPath.toString());
+            pb.inheritIO();
+            Process p = pb.start();
+            int exitCode = p.waitFor();
+            if (exitCode == 0) {
+                RenderV2Pdf.renderAll(browser, reportLang);
+                System.out.println("[✓] Все v2 отчёты успешно применены к основному аудиту (HTML + PDF).");
+            } else {
+                System.err.println("[-] render-v2-reports.mjs завершился с кодом: " + exitCode);
+            }
+        } catch (Exception e) {
+            System.err.println("[-] Ошибка генерации v2 отчетов: " + e.getMessage());
         }
     }
 
