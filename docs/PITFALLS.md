@@ -2157,6 +2157,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-135 — Audit report “Detected technologies” was a hardcoded Erythro demo stack
+
+**Tags:** `audit`, `report`, `pro-v2`, `fingerprint`, `technologies`
+**Seen:** 2026-10-26 — every free/diagnostic/pro HTML showed Next.js / React / Cloudflare / Turnstile / GA4 / WhatsApp / Telegram / JSON-LD regardless of client site
+
+**Symptom:** Client audit reports claim technologies that belong to erythro.ai, not the audited origin.
+
+**Cause:** `render-v2-reports.mjs` used a constant `DETECTED_TECH`; templates shipped the same chips. No `detected_technologies` field was written to `audit_data.json`.
+
+**Fix:** `AuditCollector` runs a homepage DOM fingerprint + merges `technology_headers` / lead messengers into `detected_technologies`. Renderer fills chips from that array only (empty → localized “none detected”). Never reintroduce a demo list.
+
+**Prevent:** Any new tech chip must come from collector signals. Redeploy audit-agent after Java/script changes; re-run an audit to refresh samples.
+
+---
+
 ## PIT-127 — Pro v2 report HTML silently overwritten: all design disappears
 
 **Tags:** `audit`, `report`, `pro-v2`, `multi-agent`, `overwrite`
@@ -2209,11 +2224,17 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 **Symptom:** `mvn compile exec:java` crashes after the Playwright steps at "TTFB, security headers, robots.txt" with `java.io.IOException: Unable to establish loopback connection: Invalid argument: connect`. A 6-line Java `HttpClient` probe fails the same way, also with `-Djava.net.preferIPv4Stack=true`, `useFastTcpLoopback=false` and JDK 21.
 
-**Cause:** The JDK selector wake-up pipe (`PipeImpl`) cannot open a loopback TCP connection on this machine (Node can; so does PowerShell HTTP). Not the sandbox, not the site (erythro.ai answers 200).
+**Cause:** On Windows the JDK selector wake-up pipe (`PipeImpl`) is a Unix-domain socket created in the user temp folder. The temp path here contains Cyrillic (`C:UsersВадимAppDataLocalTemp`), and `connect` on that socket path fails with `Invalid argument`. Not the sandbox (same error outside it), not the site.
 
-**Fix / workaround:** Run the audit where Java networking works (VPS worker, GitHub Actions workflow). Reports from the last good run are reused; do not overwrite them with a half-run. Fixing the machine (AV/firewall/Winsock reset) is a system change — ask the user first.
+**Fix (2026-10-26, confirmed):** point the JDK at an ASCII-only folder for that socket:
 
-**Prevent:** Test with the minimal `HttpClient` probe before blaming the auditor code.
+```bash
+MAVEN_OPTS="-Djdk.net.unixdomain.tmpdir=C:/agents/website-auditor/tmp" mvn -q compile exec:java
+```
+
+The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally. VPS / GitHub Actions remain an option.
+
+**Prevent:** Any Java tool on a machine whose user folder is not ASCII needs `-Djdk.net.unixdomain.tmpdir=<ascii path>`. Test with the minimal `HttpClient` probe before blaming the auditor code.
 
 ---
 
@@ -2344,7 +2365,7 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 - [ ] Pro v2 report: change `apply-v2-polish.cjs`, never hand-edit one copy; re-run it + `render-v2-pdf.cjs` after any overwrite (PIT-127)
 - [ ] PDF print CSS: no `box-decoration-break: clone`, no fixed-height flex over page breaks; look at every PDF page (PIT-128)
 - [ ] PDF: open all `<details>` (drop `name`), `@page{margin:0}` + wrapper table, watch for locked files / `.new.pdf` (PIT-129)
-- [ ] Local QA Auditor on Windows: loopback bug in JDK HttpClient — run audits on VPS/Actions (PIT-130)
+- [ ] Local QA Auditor on Windows with a non-ASCII user folder: run with `MAVEN_OPTS=-Djdk.net.unixdomain.tmpdir=<ascii path>` (PIT-130)
 - [ ] Patch scripts must be idempotent: replacement must not contain the search text (PIT-131)
 - [ ] Free report navigation anchors: non-action pillars must anchor to open checklist details (`#diag-*`) or `#locked-checks`, never nonexistent `#action-*` cards (PIT-132)
 - [ ] Flat R2 media keys: keep `media._objectkey` NULL; never set it to the filename or Payload afterRead builds `file.webp/file.webp` (PIT-133)

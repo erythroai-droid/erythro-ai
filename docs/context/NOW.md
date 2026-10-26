@@ -5,13 +5,10 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
-## PIT-134: CTA из HE-отчёта открывал RU order
+## PIT-135 + PHP critical alert в отчёте
 
-- **Причина:** в HTML были `https://erythro.ai/order/audit-pro` без `?lang=` → cookie/prefs = RU.
-- **Исправлено:** samples + templates free/diagnostic + `render-v2-reports.mjs` (`orderCheckoutUrl`) + `AuditReportI18n.unlockProUrl(lang)`.
-- HE: `/order/audit-pro?lang=he`, diagnostic аналогично; EN/RU тоже с `?lang=`.
+- **Сделано:** реальные `detected_technologies`; на PHP / WordPress / Drupal / Joomla / Bitrix — бейдж Critical + сноска CVE-2026-109618/109619 → WhatsApp Erythro.
+- **Осталось:** commit/push (если ещё не); redeploy audit-agent; прогон аудита для samples.
 
 ### Очередь
-1. Commit + push samples/templates/Java/script + PIT-134.
-2. Redeploy **audit-agent** на VPS — иначе живые клиентские отчёты ещё без `?lang=`.
-3. Site deploy — чтобы публичные `/samples/audit/*` тоже с правильными CTA.
+1. Redeploy worker + smoke на сайте с PHP/WordPress.
