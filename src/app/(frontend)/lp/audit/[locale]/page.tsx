@@ -8,8 +8,10 @@ import { tAudit } from '@/lib/auditPage'
 import {
   AUDIT_LP_LOCALES,
   auditLpCanonicalUrl,
+  auditLpCopyFor,
   auditLpPublicOrigin,
   isAuditLpLocale,
+  tAuditLp,
   type AuditLpLocale,
 } from '@/lib/auditLp'
 
@@ -36,8 +38,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const locale = raw
   const page = await getCachedAuditPage()
-  const title = `${tAudit(page.title, locale)} | Erythro.ai`
-  const description = tAudit(page.metaDescription, locale)
+  const copy = auditLpCopyFor('free')
+  const title = `${tAuditLp(copy.sectionTitle, locale)} | Erythro.ai`
+  const description = tAudit(page.metaDescription, locale) || tAuditLp(copy.subhead, locale)
   const canonical = auditLpCanonicalUrl(locale)
   const origin = auditLpPublicOrigin(locale)
 
