@@ -65,6 +65,24 @@ const SAMPLE_REPORT_CONTENT_SECURITY_POLICY = [
   "form-action 'self' mailto: tel:",
 ].join('; ')
 
+/**
+ * Client audit reports (`/api/audit/report/:id/html`) are the same A44 HTML as the samples:
+ * Heebo / IBM Plex Mono from Google Fonts + inline scripts. Under the public CSP the font
+ * stylesheet was blocked and Hebrew code comments fell back to Courier New (AUD-228).
+ * Cloudflare injects its analytics beacon into HTML responses.
+ */
+const AUDIT_REPORT_CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "connect-src 'self' https://cloudflareinsights.com",
+  "frame-ancestors 'self'",
+  "base-uri 'self'",
+  "form-action 'self' mailto: tel:",
+].join('; ')
+
 const SECURITY_HEADERS = [
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -144,7 +162,14 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: '/((?!admin|samples/audit).*)',
+        source: '/api/audit/report/:id/html',
+        headers: [
+          ...SECURITY_HEADERS,
+          { key: 'Content-Security-Policy', value: AUDIT_REPORT_CONTENT_SECURITY_POLICY },
+        ],
+      },
+      {
+        source: '/((?!admin|samples/audit|api/audit/report/[^/]+/html).*)',
         headers: [
           ...SECURITY_HEADERS,
           { key: 'Content-Security-Policy', value: PUBLIC_CONTENT_SECURITY_POLICY },

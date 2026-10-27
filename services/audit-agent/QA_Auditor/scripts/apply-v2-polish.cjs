@@ -98,7 +98,7 @@ function css(lang) {
   return `${MARK_START}
 ${R.trim()} { --bg: #eaeaea; --card: #f8f8f8; --soft: #ffffff; --line: #d6d6d6; --mute: #554f42; --mono: ${font}; }
 ${R}body, ${R}body * { font-family: ${font}; }
-${R}.code-box, ${R}.code-box *, ${R}pre, ${R}code { font-family: 'IBM Plex Mono', ${he ? "'Heebo', " : ''}ui-monospace, Menlo, Consolas, monospace !important; }
+${R}.code-box, ${R}.code-box *, ${R}pre, ${R}code { font-family: 'IBM Plex Mono', ${he ? "'Heebo', " : ''}ui-monospace, Menlo, Consolas, ${he ? "'Segoe UI', Arial, " : ''}monospace !important; }
 ${R}.wrap { gap: 40px !important; }
 ${R}.wrap > .logo { margin-bottom: -30px !important; }
 ${R}.card { background: #f8f8f8 !important; }
