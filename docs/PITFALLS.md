@@ -2526,5 +2526,5 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Audit report order CTAs: always `?lang=` matching report locale (PIT-134)
 - [ ] Audit report status blocks ("Путь к заявке", verdicts, badges) only from audit_data; new catalog titles must classify in `classifyActionPillar` (PIT-138)
 - [ ] render-v2 reads only its own tier's Java HTML from this run; never fall back to another tier's file (PIT-139)
-- [ ] Lead check: a start form (URL field → sign-up) is `na` "not checked" in Free; Diagnostic/Pro submit it once with the site origin and judge the step that opens, never typing credentials (PIT-144)
+- [ ] Lead check: a start form (URL field → sign-up) is `na` "not checked" in Free; Diagnostic/Pro submit it once with the site origin and judge the step that opens, never typing credentials (PIT-144)
 - [ ] Start form next to other lead forms: Diagnostic/Pro still judge the step behind it and report both; a paid tier never reports less than a cheaper one (PIT-145)
