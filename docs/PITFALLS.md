@@ -2172,6 +2172,25 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-144 — Free calls a "check your site" URL field an unprotected lead form; consent stub missed on SPAs
+
+**Tags:** `audit`, `free`, `lead-capture`, `ga4`, `render-v2`
+**Seen:** 2026-10-27 — AUD-231 (myblindspot.eu, Lovable/Vite SPA, Free RU)
+
+**Symptom:** Top-1 and Step 1 "Lead forms are open to bots — Critical" for the site's only form: one URL field + submit (`Email: no, phone: no, submit: yes`). Its contact is asked on the next step (sign-up with name and email), which Free never opens. GA4 "consent stub incomplete" while `window.dataLayer` held a full `consent default` (all four keys denied).
+
+**Cause:** The homepage form scan (`LEAD_AND_RTL_SCRIPT`) skipped only search forms and counted any other form as a lead form; the contact-field rule existed only in the agent snapshot (Diagnostic/Pro). `gtagConsentStub` looked for `consent` in inline scripts only; a bundled app queues it from its JS. In render, the agent's homepage snapshot `formsCount` also counted the start form as an on-page form.
+
+**Fix:** A form with one visible URL/site field and no email/phone/textarea is an entry form: counted in `entryFormsCount`, excluded from `formsCount`. The lead check becomes status `na` ("Не проверено в Free" / "Не проверено"), `rec_variant=entry`, no "no form" / "unprotected" findings, no lead-form plan step; the scale counts it as a path (+25, +5). Free states that it does not submit the form or open the sign-up step and that the full check is in Diagnostic and Pro ("Путь к заявке" verdict and the checklist note). render uses `leadFormsCount` from agent snapshots when present. Consent counts `['consent','default',…]` queued in `window.dataLayer`.
+
+**Prevent:** A finding about a step the audit does not open must say "not checked", never pass or fail. Test lead checks on a start-form funnel (URL → sign-up), not only on contact-form sites.
+
+**Follow-up (paid tiers go past the start form):** Free promised the full check in Diagnostic and Pro, but they also stopped at the form. Now, with `AUDIT_TIER=DIAGNOSTIC` or `PRO` (never Free, never the local all-tiers run, whose crawl also feeds Free), the agent browse fills the homepage start form with the site's own origin and submits it once (`ENTRY_FORM_SUBMIT_SCRIPT`), then only observes the page that opens (`ENTRY_STEP_SCRIPT` → `agent_browse.entry_step`): `kind` signup / signin / contact / oauth / started, the name/email/phone/password fields, anti-spam (Turnstile, reCAPTCHA, hCaptcha, honeypot) and OAuth buttons (Google / Apple count as protection). It never types credentials or creates an account. Lead check (`entryStepStatus`): protected contact step = good; sign-up/sign-in without protection = warn (email confirmation is not visible); plain contact form without protection = bad; service started without sign-up = bad (warn if the start form itself is protected); unrecognised step = `na` as before. Findings "Форма регистрации после формы запуска открыта для ботов" / "Форма запуска работает для ботов: сервис стартует без регистрации", `rec_variant` entry_protected / entry_unprotected / entry_started; the "Путь к заявке" block shows the step, its path and a real status (Free still reads "не проверено в Free"). `isEntryForm` is one shared JS snippet (`IS_ENTRY_FORM_JS`) for the locale probe, the agent snapshot (now also `entryFormsCount`) and the submit. Checked on myblindspot.eu: `/signup?domain=myblindspot.eu`, name + email + password, no anti-spam, no OAuth → Diagnostic/Pro "Требует внимания".
+
+**Local check pitfall:** on Windows the checkout has CRLF templates, so `render-v2-reports.mjs` fails with "anchor end not found" on `    </div>\n  </section>`; convert the scratch copy to LF. Java in a temp dir under a non-ASCII user path fails with "Unable to establish loopback connection": pass `-Djdk.net.unixdomain.tmpdir=<ASCII dir>`.
+
+---
+
 ## PIT-143 — Diagnostic/Pro treat the en+ru+he probes as the site's languages
 
 **Tags:** `audit`, `diagnostic`, `pro`, `locales`, `agent-browse`, `render-v2`
@@ -2492,3 +2511,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Audit report order CTAs: always `?lang=` matching report locale (PIT-134)
 - [ ] Audit report status blocks ("Путь к заявке", verdicts, badges) only from audit_data; new catalog titles must classify in `classifyActionPillar` (PIT-138)
 - [ ] render-v2 reads only its own tier's Java HTML from this run; never fall back to another tier's file (PIT-139)
+- [ ] Lead check: a start form (URL field → sign-up) is `na` "not checked" in Free; Diagnostic/Pro submit it once with the site origin and judge the step that opens, never typing credentials (PIT-144)
