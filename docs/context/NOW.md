@@ -34,7 +34,6 @@
 - **Внимание:** OpenCart/Magento/PrestaShop входят в PHP-алерт («Критично» в «Технологиях»), по заготовке в коде. У AUD-226 он появится.
 - **Проверено:** headless на живых сайтах — OpenCart, WordPress(+WooCommerce), Wix, Squarespace, Webflow, Tilda, Joomla, Bitrix верно; Википедия про CMS — пусто. Shopify/Magento/PrestaShop/Drupal не проверены (Cloudflare-challenge, пустые демо). Рендер Free/Diagnostic/Pro RU/HE: путей нет, div сбалансированы.
 - **Сверка контейнера:** md5 рендера совпадает с `e447910`, `snippetWhere` есть, `next.config.mjs` нет, `platformScores` в классах, рестартов 0.
-- **Открыто:** PIT-141 не продублирован в Obsidian (запись вне проекта не проходила проверку прав) — дописать.
 
 ## AUD-226 (bliainara.co.il, OpenCart, Free HE): ложные находки и пропавший шаг (PIT-140) — `f010a61`, задеплоено 27.10 с пересборкой образа; AUD-226 перевыпустить
 
