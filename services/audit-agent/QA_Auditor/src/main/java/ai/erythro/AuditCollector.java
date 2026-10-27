@@ -104,7 +104,15 @@ public class AuditCollector {
                 return hidden || offScreen || ariaHidden || trapName.test(name);
             };
 
-            const forms = Array.from(document.querySelectorAll('form'));
+            // A site search box is not a lead form: counting it gave AUD-222 "form OK" and a fake honeypot
+            const isSearchForm = (form) => {
+                const marked = form.getAttribute('role') === 'search'
+                    || form.querySelector('input[type="search"], input[name="s"], input[name="q"], input[name="search"]');
+                const textFields = form.querySelectorAll(
+                    'input:not([type="hidden"]):not([type="submit"]):not([type="button"]), textarea').length;
+                return !!marked && textFields <= 2;
+            };
+            const forms = Array.from(document.querySelectorAll('form')).filter(f => !isSearchForm(f));
             let hasHiddenTrap = false;
             const formDetails = forms.map(form => {
                 const fields = Array.from(form.querySelectorAll('input, textarea, select'));
@@ -456,7 +464,13 @@ public class AuditCollector {
             const title = (document.title || '').trim();
             const h1 = Array.from(document.querySelectorAll('h1'))
                 .map(h => h.innerText.trim()).filter(Boolean);
-            const forms = document.querySelectorAll('form').length;
+            const forms = Array.from(document.querySelectorAll('form')).filter(form => {
+                const marked = form.getAttribute('role') === 'search'
+                    || form.querySelector('input[type="search"], input[name="s"], input[name="q"], input[name="search"]');
+                const textFields = form.querySelectorAll(
+                    'input:not([type="hidden"]):not([type="submit"]):not([type="button"]), textarea').length;
+                return !(marked && textFields <= 2);
+            }).length;
             const text = (document.body ? document.body.innerText : '') || '';
             const words = text.split(/\\s+/).filter(Boolean).length;
             const ctaRe = /(contact|связ|контакт|обсуд|начать|צור|קשר|whatsapp|wa\\.me|telegram|заявк|order|book|הזמנ|оставьте|let'?s talk|get started|start now|discuss)/i;
@@ -1574,7 +1588,7 @@ public class AuditCollector {
                     .append(severe ? "Disallow / для " + robotsAi.getOrDefault("blocked_bots", List.of()) : "Allow для AI-ботов")
                     .append(" | ").append(severe ? "Отключите Cloudflare Managed robots.txt или Allow AI crawlers" : "—").append(" |\n");
 
-            boolean gaOk = Boolean.TRUE.equals(dom.get("data_layer_present")) && Boolean.TRUE.equals(dom.get("gtag_consent_stub"));
+            boolean gaOk = gaSignal(dom) && Boolean.TRUE.equals(dom.get("gtag_consent_stub"));
             sb.append("| GA4 / dataLayer | ").append(gaOk ? "✅" : "⚠️").append(" | ")
                     .append(gaOk ? "dataLayer + consent stub" : "Неполный bootstrap")
                     .append(" | ").append(gaOk ? "—" : "Добавьте GA4 Consent Mode stub в head до cookie banner").append(" |\n");
@@ -2127,7 +2141,7 @@ public class AuditCollector {
                 "robots"
         ));
 
-        boolean dataLayer = Boolean.TRUE.equals(dom.get("data_layer_present"));
+        boolean dataLayer = gaSignal(dom);
         boolean consentStub = Boolean.TRUE.equals(dom.get("gtag_consent_stub"));
         boolean gaOk = dataLayer && consentStub;
         checkRows.add(ReportTemplateGenerator.checkRow(
@@ -2142,9 +2156,9 @@ public class AuditCollector {
                                 + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID נמצא" : "stub only") + ")")
                         : dataLayer
                                 ? ReportFindingsCatalog.tr(i18n.lang,
-                                "dataLayer есть, consent stub неполный",
-                                "dataLayer present, consent stub incomplete",
-                                "dataLayer קיים, consent stub חלקי")
+                                "GA4 / dataLayer есть, consent stub неполный",
+                                "GA4 / dataLayer present, consent stub incomplete",
+                                "GA4 / dataLayer קיים, consent stub חלקי")
                                 : ReportFindingsCatalog.tr(i18n.lang,
                                 "Нет сигналов dataLayer / gtag consent",
                                 "No dataLayer / gtag consent signals",
@@ -2472,7 +2486,7 @@ public class AuditCollector {
                 aiDom != null && Boolean.TRUE.equals(aiDom.get("organization_schema")),
                 aiRobots != null && Boolean.TRUE.equals(aiRobots.get("severe_block")),
                 aiRobots != null ? aiRobots.getOrDefault("blocked_bots", List.of()) : List.of(),
-                aiDom != null && Boolean.TRUE.equals(aiDom.get("data_layer_present")),
+                gaSignal(aiDom),
                 failedNetwork.size(),
                 failedNetworkSamples(failedNetwork),
                 uncaughtErrors.size(),
@@ -2596,6 +2610,15 @@ public class AuditCollector {
             }
         }
         return total;
+    }
+
+    /**
+     * GA4 is installed when window.dataLayer exists at scan time or a G- tag is on the page:
+     * delayed loaders (Site Kit, WP Rocket) set dataLayer late, AUD-222 got "no GA4" with GA4 found.
+     */
+    private static boolean gaSignal(Map<?, ?> dom) {
+        return dom != null
+                && (Boolean.TRUE.equals(dom.get("data_layer_present")) || Boolean.TRUE.equals(dom.get("ga4_id_present")));
     }
 
     private static int clamp(int value, int min, int max) {
@@ -3562,9 +3585,9 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
         if (!Boolean.TRUE.equals(robotsAi.get("severe_block"))) checksPassed++;
         if (Boolean.TRUE.equals(dom.get("organization_schema"))) checksPassed++;
         if (Boolean.TRUE.equals(dom.get("llms_describedby"))) checksPassed++;
-        if (Boolean.TRUE.equals(dom.get("data_layer_present")) && Boolean.TRUE.equals(dom.get("gtag_consent_stub"))) {
+        if (gaSignal(dom) && Boolean.TRUE.equals(dom.get("gtag_consent_stub"))) {
             checksPassed++;
-        } else if (Boolean.TRUE.equals(dom.get("data_layer_present"))) {
+        } else if (gaSignal(dom)) {
             // partial credit for dataLayer without full consent stub
             checksPassed++;
         }
