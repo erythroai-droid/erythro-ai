@@ -189,6 +189,46 @@ final class A44Recommendations {
     }
 
     private static String lead(String status, String lang, String variant) {
+        if ("entry".equals(variant)) {
+            return ReportFindingsCatalog.tr(lang,
+                    "Форма запуска ведёт посетителя к шагу, где он оставляет контакт (регистрация или вход). Защищать от ботов нужно этот шаг: "
+                            + "Cloudflare Turnstile, reCAPTCHA или вход через Google / Apple.\n\n"
+                            + "Убедитесь, что сервис не запускается до этого шага — иначе боты тратят ваши ресурсы без регистрации.",
+                    "The start form leads the visitor to the step where they leave a contact (sign-up or sign-in). That step is the one to protect from bots: "
+                            + "Cloudflare Turnstile, reCAPTCHA or Google / Apple sign-in.\n\n"
+                            + "Make sure the service does not run before that step, or bots spend your resources without signing up.",
+                    "טופס ההפעלה מוביל את המבקר לשלב שבו הוא משאיר פרטי קשר (הרשמה או התחברות). את השלב הזה צריך להגן מבוטים: "
+                            + "Cloudflare Turnstile, ‏reCAPTCHA או התחברות עם Google / Apple.\n\n"
+                            + "ודאו שהשירות לא מופעל לפני השלב הזה — אחרת בוטים מנצלים את המשאבים שלכם בלי להירשם.");
+        }
+        // Diagnostic/Pro submitted the start form and judged the step behind it
+        if ("entry_protected".equals(variant)) {
+            return ReportFindingsCatalog.tr(lang,
+                    "Шаг с контактом после формы запуска защищён (антиспам или вход через Google / Apple).\n\n"
+                            + "Не убирайте эту защиту в следующих релизах и не запускайте сервис до этого шага.",
+                    "The contact step after the start form is protected (anti-spam or Google / Apple sign-in).\n\n"
+                            + "Keep that protection in the next releases and do not run the service before that step.",
+                    "שלב פרטי הקשר אחרי טופס ההפעלה מוגן (אנטי-ספאם או התחברות עם Google / Apple).\n\n"
+                            + "שמרו על ההגנה הזו בריליסים הבאים ואל תריצו את השירות לפני השלב הזה.");
+        }
+        if ("entry_unprotected".equals(variant)) {
+            return ReportFindingsCatalog.tr(lang,
+                    "Шаг с контактом после формы запуска (регистрация, вход или форма) открыт для ботов. Добавьте на него Cloudflare Turnstile "
+                            + "или вход через Google / Apple; для регистрации — подтверждение email до первого запуска сервиса.",
+                    "The contact step after the start form (sign-up, sign-in or a form) is open to bots. Add Cloudflare Turnstile "
+                            + "or Google / Apple sign-in to it; for sign-up, confirm the email before the service's first run.",
+                    "שלב פרטי הקשר אחרי טופס ההפעלה (הרשמה, התחברות או טופס) פתוח לבוטים. הוסיפו לו Cloudflare Turnstile "
+                            + "או התחברות עם Google / Apple; בהרשמה — אימות email לפני ההרצה הראשונה של השירות.");
+        }
+        if ("entry_started".equals(variant)) {
+            return ReportFindingsCatalog.tr(lang,
+                    "Форма запуска сразу запускает сервис — без регистрации и контакта. Поставьте Cloudflare Turnstile на форму "
+                            + "и просите email (или вход через Google / Apple) до запуска: так боты не тратят ресурсы, а посетитель оставляет контакт.",
+                    "The start form runs the service at once, with no sign-up or contact. Put Cloudflare Turnstile on the form "
+                            + "and ask for an email (or Google / Apple sign-in) before the run: bots stop spending resources and the visitor leaves a contact.",
+                    "טופס ההפעלה מריץ את השירות מיד, בלי הרשמה ובלי פרטי קשר. הוסיפו Cloudflare Turnstile לטופס "
+                            + "ובקשו email (או התחברות עם Google / Apple) לפני ההרצה: כך בוטים לא מנצלים משאבים והמבקר משאיר פרטי קשר.");
+        }
         if ("good".equals(status)) {
             return ReportFindingsCatalog.tr(lang,
                     "Лид-захват в норме: форма, антиспам и мгновенный канал на месте.\n\n"

@@ -1821,6 +1821,10 @@ public final class A44ReportGenerator {
         if ("bad".equals(status) || "critical".equals(status)) {
             return "bad";
         }
+        // Not checked in this run (lead: only a start form, the contact step is not opened)
+        if ("na".equals(status)) {
+            return "na";
+        }
         return "warn";
     }
 

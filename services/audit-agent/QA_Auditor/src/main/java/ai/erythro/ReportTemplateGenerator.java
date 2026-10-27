@@ -544,7 +544,7 @@ public class ReportTemplateGenerator {
             Map<String, String> r = checkRows.get(i);
             String stClass = switch (String.valueOf(r.get("status")).toLowerCase()) {
                 case "good" -> "status-good";
-                case "warn" -> "status-warn";
+                case "warn", "na" -> "status-warn";
                 default -> "status-bad";
             };
             checksHtml.append("<tr>")
