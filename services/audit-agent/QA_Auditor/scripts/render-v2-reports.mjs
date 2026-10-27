@@ -221,6 +221,62 @@ POST https://<ה-webhook-שלכם>/lead
 <meta property="og:image" content="https://erythro.ai/og-image.jpg">`
     }
   },
+  // Single-language site: canonical + OpenGraph only, no hreflang lines (AUD-229)
+  seo_og: {
+    where: { ru: '<head> страницы', en: 'Page <head>', he: '<head> של הדף' },
+    ru: {
+      desc: 'Каноническая ссылка и метатеги OpenGraph для превью ссылки в мессенджерах и соцсетях',
+      code: `<link rel="canonical" href="https://erythro.ai/">
+<!-- Превью ссылки в WhatsApp, Telegram, Facebook: -->
+<meta property="og:title" content="Название страницы">
+<meta property="og:description" content="Короткое описание">
+<meta property="og:image" content="https://erythro.ai/og-image.jpg">
+<meta property="og:url" content="https://erythro.ai/">`
+    },
+    en: {
+      desc: 'Canonical link and OpenGraph tags for link previews in messengers and social networks',
+      code: `<link rel="canonical" href="https://erythro.ai/">
+<!-- Link preview in WhatsApp, Telegram, Facebook: -->
+<meta property="og:title" content="Page title">
+<meta property="og:description" content="Short description">
+<meta property="og:image" content="https://erythro.ai/og-image.jpg">
+<meta property="og:url" content="https://erythro.ai/">`
+    },
+    he: {
+      desc: 'קישור קנוני ותגיות OpenGraph לתצוגת קישור במסנג׳רים וברשתות חברתיות',
+      code: `<link rel="canonical" href="https://erythro.ai/">
+<!-- תצוגת קישור ב-WhatsApp, Telegram, Facebook: -->
+<meta property="og:title" content="כותרת הדף">
+<meta property="og:description" content="תיאור קצר">
+<meta property="og:image" content="https://erythro.ai/og-image.jpg">
+<meta property="og:url" content="https://erythro.ai/">`
+    }
+  },
+  // No robots.txt or no sitemap found at any standard path
+  seo_index: {
+    where: { ru: 'robots.txt в корне сайта', en: 'robots.txt at the site root', he: 'robots.txt בשורש האתר' },
+    ru: {
+      desc: 'robots.txt и карта сайта, чтобы поисковики находили все страницы',
+      code: `User-agent: *
+Allow: /
+# Адрес карты сайта. Нет карты — включите её в CMS или SEO-плагине:
+Sitemap: https://erythro.ai/sitemap.xml`
+    },
+    en: {
+      desc: 'robots.txt and a sitemap so search engines find every page',
+      code: `User-agent: *
+Allow: /
+# Sitemap address. No sitemap yet? Turn it on in the CMS or an SEO plugin:
+Sitemap: https://erythro.ai/sitemap.xml`
+    },
+    he: {
+      desc: 'robots.txt ומפת אתר כדי שמנועי חיפוש ימצאו את כל הדפים',
+      code: `User-agent: *
+Allow: /
+# כתובת מפת האתר. אין מפה? הפעילו אותה ב-CMS או בתוסף SEO:
+Sitemap: https://erythro.ai/sitemap.xml`
+    }
+  },
   lead: {
     where: { ru: 'Лид-форма', en: 'Lead form', he: 'טופס ליד' },
     ru: {
@@ -2101,6 +2157,30 @@ const TECH_ICONS = {
  * Diagnostic at the first 5 funnel pages, Pro at every visited page. Same sources as the Java
  * findings (lead_capture per locale + agent_browse snapshots), so the block and top-3 agree.
  */
+/**
+ * What actually pulls the SEO scale down, from the same signals as the Java scorecard. hreflang counts
+ * only for a site that serves several languages (detected switcher / alternates), never for the
+ * number of audited locales (AUD-229: Hebrew-only site, full OpenGraph, got an "hreflang & OG" step).
+ * Returns null for runs without locale data, so callers keep their old behaviour.
+ */
+function seoCausesFromData(auditData) {
+  const audits = Object.values(auditData?.audits_by_locale || {}).filter((a) => a && a.seo);
+  if (!audits.length) return null;
+  const infra = auditData?.infrastructure_and_security || {};
+  const siteLangSets = audits.map((a) => a.seo_assets?.siteLanguages).filter(Array.isArray);
+  const multilingual = siteLangSets.length
+    ? siteLangSets.some((l) => l.length > 1)
+    : audits.length > 1;
+  const anyHreflang = audits.some((a) => (a.seo_assets?.hreflangs || []).length > 0);
+  return {
+    hreflang: multilingual && !anyHreflang,
+    og: audits.some((a) => !a.seo.ogImage || !a.seo.ogTitle),
+    canonical: audits.some((a) => !a.seo.canonical),
+    robots: infra.has_robots_txt === false,
+    sitemap: infra.has_sitemap_xml === false,
+  };
+}
+
 function leadPathFromData(auditData, tier) {
   const byLocale = auditData?.audits_by_locale || {};
   const reportLocale = auditData?.report_lang;
@@ -3161,9 +3241,29 @@ ${cards}
   // becomes "add a lead form" instead of disappearing (AUD-226: lead 45, check failing, no step).
   const missingHeaders = data.infrastructure_and_security?.security_headers_missing;
   const leadNoForm = leadPath.known && !leadPath.hasForm;
+  // SEO step names the real cause, or is dropped when the data shows none (AUD-229)
+  const seoCauses = seoCausesFromData(data);
+  const seoPick = !seoCauses ? null
+    : (seoCauses.robots || seoCauses.sitemap) ? {
+        solKey: 'seo_index',
+        title: seoCauses.robots && seoCauses.sitemap
+          ? { ru: 'robots.txt и карта сайта для поисковиков', en: 'robots.txt and a sitemap for search engines', he: 'robots.txt ומפת אתר למנועי חיפוש' }
+          : seoCauses.robots
+          ? { ru: 'robots.txt для поисковиков', en: 'robots.txt for search engines', he: 'robots.txt למנועי חיפוש' }
+          : { ru: 'Карта сайта для поисковиков', en: 'A sitemap for search engines', he: 'מפת אתר למנועי חיפוש' },
+      }
+    : seoCauses.hreflang ? { solKey: 'seo', title: pillarTitles.seo }
+    : (seoCauses.og || seoCauses.canonical) ? {
+        solKey: 'seo_og',
+        title: seoCauses.og
+          ? { ru: 'Превью ссылок в мессенджерах (OpenGraph)', en: 'Link previews in messengers (OpenGraph)', he: 'תצוגת קישורים במסנג׳רים (OpenGraph)' }
+          : { ru: 'Каноническая ссылка (canonical)', en: 'Canonical link', he: 'קישור קנוני (canonical)' },
+      }
+    : null;
   const contradicted = {
     lead: !leadNoForm && (leadPath.isProtected || !leadPath.hasForm),
     sec: Array.isArray(missingHeaders) && missingHeaders.length === 0,
+    seo: !!seoCauses && !seoPick,
   };
   const leadFormTitle = { ru: 'Добавить лид-форму рядом с мессенджером', en: 'Add a lead form next to the messenger', he: 'הוספת טופס ליד לצד המסנג׳ר' };
   const leadFormTitleBare = { ru: 'Добавить лид-форму и мгновенный канал', en: 'Add a lead form and an instant channel', he: 'הוספת טופס ליד וערוץ תקשורת מיידי' };
@@ -3174,11 +3274,14 @@ ${cards}
       const issues = pillarChecks.filter((c) => c.status !== 'good');
       const scaleWeak = pillarScore[pKey] != null && zoneOf(pillarScore[pKey]) !== 'good';
       if ((issues.length > 0 || scaleWeak) && !contradicted[pKey]) {
-        const solKey = pKey === 'lead' && leadNoForm ? 'lead_form' : pKey;
+        const solKey = pKey === 'lead' && leadNoForm ? 'lead_form'
+          : pKey === 'seo' && seoPick ? seoPick.solKey
+          : pKey;
         const sol = ACTION_CODE_SOLUTIONS[solKey];
         const solDesc = sol ? (sol[lang] || sol.ru).desc : '';
         const titleObj = solKey === 'lead_form'
           ? (leadPath.instant ? leadFormTitle : leadFormTitleBare)
+          : pKey === 'seo' && seoPick ? seoPick.title
           : (pillarTitles[pKey] || {});
         const title = titleObj[lang] || titleObj.ru || pKey;
         const tag = (pillarTagNames[pKey] && pillarTagNames[pKey][lang]) || 'Erythro.ai';

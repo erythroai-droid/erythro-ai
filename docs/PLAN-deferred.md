@@ -1,4 +1,4 @@
-# Deferred follow-ups (updated 2026-09-19)
+# Deferred follow-ups (updated 2026-10-27)
 
 Напомнить в следующем сеансе, когда пользователь спросит про безопасность / perf / R2 / admin.
 
@@ -11,6 +11,7 @@
 | Priority | Item | Notes |
 |---|---|---|
 | medium | CSP nonce (drop `'unsafe-inline'`) | **Not critical now** — defense-in-depth only; public prod already without `'unsafe-eval'` (`next.config.ts` adds `'unsafe-eval'` only when `NODE_ENV===development'` — see PIT-066). Needs middleware nonce + wire GA consent / JSON-LD / Turnstile / `next/script`; `style-src` still hard with `experimental.inlineCss`. Admin keeps `'unsafe-eval'` for Payload. |
+| medium | Audit report route: 404 for a missing submission | `findAuditSubmission` (`src/lib/auditReportLoad.ts`) calls `payload.findByID`, which throws on a deleted/unknown id, so `/api/audit/report/:id` and `/:id/html` return 500 "Server error" instead of 404 (seen 2026-10-27 after test reports 226–228 were deleted). Catch NotFound → `null`; site PR to `main`. |
 | medium | Desktop CLS (~1.1) | Partially addressed: poster LCP without isLg gate, heading min-height + cross-locale slot, useLayoutEffect locale — re-measure after deploy |
 | low | Purge Vercel Blob copies | After admin upload→R2 verified; then drop `BLOB_READ_WRITE_TOKEN` |
 | low | Leftover ~4 Blob URL mentions in HTML | Rewrite/cache already mostly on R2 |

@@ -44,7 +44,10 @@ final class ReportFullSignals {
         List<String> bits = new ArrayList<>();
         boolean missingMeta = false;
         boolean missingOg = false;
-        boolean missingHreflang = locOrder.size() > 1;
+        // hreflang counts only for a site that serves several languages, not for the number of
+        // audited locales (AUD-229: Hebrew-only site audited in one or three locales)
+        Boolean multilingualSite = null;
+        boolean anyHreflang = false;
         boolean missingFavicon = false;
         for (String loc : locOrder) {
             Object raw = localesMap.get(loc);
@@ -54,6 +57,9 @@ final class ReportFullSignals {
             Map<String, Object> locMap = (Map<String, Object>) raw;
             Map<String, Object> seo = map(locMap.get("seo"));
             Map<String, Object> assets = map(locMap.get("seo_assets"));
+            if (assets.get("siteLanguages") instanceof List<?> siteLangs) {
+                multilingualSite = Boolean.TRUE.equals(multilingualSite) || siteLangs.size() > 1;
+            }
             boolean title = present(seo.get("title"));
             boolean desc = present(seo.get("description"));
             boolean ogImg = present(seo.get("ogImage"));
@@ -66,7 +72,7 @@ final class ReportFullSignals {
             }
             List<?> hreflang = assets.get("hreflangs") instanceof List<?> h ? h : List.of();
             if (!hreflang.isEmpty()) {
-                missingHreflang = false;
+                anyHreflang = true;
             }
             if (!present(assets.get("favicon"))) {
                 missingFavicon = true;
@@ -76,6 +82,9 @@ final class ReportFullSignals {
                     + ", og:image " + yn(i18n, ogImg)
                     + ", canonical " + yn(i18n, canonical));
         }
+        // Older runs have no siteLanguages: fall back to the number of audited locales
+        boolean missingHreflang = !anyHreflang
+                && (multilingualSite != null ? multilingualSite : locOrder.size() > 1);
         String status = (missingMeta || missingOg) ? "bad" : ((missingHreflang || missingFavicon) ? "warn" : "good");
         String extra = "";
         if (missingHreflang) {

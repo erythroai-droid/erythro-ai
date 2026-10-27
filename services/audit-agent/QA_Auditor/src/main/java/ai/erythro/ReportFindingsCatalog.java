@@ -675,6 +675,15 @@ public final class ReportFindingsCatalog {
     }
 
     public static List<Map<String, String>> toTopVulnerabilities(List<BizFinding> sortedFindings, String reportLang) {
+        return toTopVulnerabilities(sortedFindings, reportLang, true);
+    }
+
+    /**
+     * {@code multilingualSite}: the site serves several languages. The "multilingual funnel" pad says
+     * "locales work", so a single-language site must never get it (AUD-229).
+     */
+    public static List<Map<String, String>> toTopVulnerabilities(
+            List<BizFinding> sortedFindings, String reportLang, boolean multilingualSite) {
         List<BizFinding> picked = new ArrayList<>();
         for (BizFinding f : sortedFindings) {
             if (f.israelOnly()) {
@@ -710,9 +719,15 @@ public final class ReportFindingsCatalog {
         for (BizFinding f : picked) {
             top.add(Map.of("title", f.title(), "issue", f.issue(), "impact", f.impact(), "solution", f.solution()));
         }
-        for (BizFinding pad : growthPads(reportLang)) {
+        List<BizFinding> pads = growthPads(reportLang);
+        for (int i = 0; i < pads.size(); i++) {
+            BizFinding pad = pads.get(i);
             if (top.size() == 3) {
                 break;
+            }
+            // The last pad is the multilingual funnel one
+            if (!multilingualSite && i == pads.size() - 1) {
+                continue;
             }
             top.add(Map.of("title", pad.title(), "issue", pad.issue(), "impact", pad.impact(), "solution", pad.solution()));
         }
