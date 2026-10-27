@@ -978,6 +978,10 @@ public class AuditCollector {
                 System.out.println("\n[+] Запуск глубокого аудита локали: " + loc);
                 Map<String, Object> localeResult = new LinkedHashMap<>();
 
+                // Each locale probe is a fresh visitor: the previous probe's site cookies / storage
+                // (erythro.ai keeps "erythro-locale" in localStorage) otherwise pin every later probe
+                // to the first language (2026-10-27: en/ru/he probes all got the English page)
+                context.clearCookies();
                 // Переход и настройка локали через localStorage и Cookie (для Next.js SSR метатегов)
                 context.addCookies(List.of(
                         new com.microsoft.playwright.options.Cookie("NEXT_LOCALE", loc).setUrl(targetUrl),
@@ -992,6 +996,7 @@ public class AuditCollector {
                 try {
                     page.evaluate(String.format("""
                         () => {
+                            try { localStorage.clear(); sessionStorage.clear(); } catch (e) {}
                             localStorage.setItem('i18nextLng', '%s');
                             localStorage.setItem('locale', '%s');
                             localStorage.setItem('lang', '%s');
@@ -2042,12 +2047,26 @@ public class AuditCollector {
             int effectiveForms = formsCount + (formsOnFunnelOnly ? (int) funnelLead.get("forms") : 0);
 
             StringBuilder leadDetail = new StringBuilder();
-            if (formsOnFunnelOnly) {
+            int homeForms = (int) funnelLead.get("homeForms");
+            List<String> funnelPages = (List<String>) funnelLead.get("pages");
+            if (formsOnFunnelOnly && homeForms > 0) {
+                String trigger = String.valueOf(funnelLead.get("homeTrigger")).trim();
+                leadDetail.append(trigger.isEmpty()
+                        ? ReportFindingsCatalog.tr(i18n.lang, "Форма на главной: ", "Homepage form: ", "טופס בעמוד הבית: ") + homeForms
+                        : ReportFindingsCatalog.tr(i18n.lang,
+                        "Форма на главной открывается по кнопке «" + trigger + "»",
+                        "The homepage form opens from the «" + trigger + "» button",
+                        "הטופס בעמוד הבית נפתח מהכפתור «" + trigger + "»"));
+                if (!funnelPages.isEmpty()) {
+                    leadDetail.append(ReportFindingsCatalog.tr(i18n.lang, "; на страницах воронки: ",
+                            "; on funnel pages: ", "; בדפי המשפך: ")).append(String.join(", ", funnelPages));
+                }
+            } else if (formsOnFunnelOnly) {
                 leadDetail.append(ReportFindingsCatalog.tr(i18n.lang,
                         "На главной форм нет; лид-формы на страницах воронки: ",
                         "No form on the homepage; lead forms on funnel pages: ",
                         "אין טופס בעמוד הבית; טפסי ליד בדפי המשפך: "))
-                        .append(String.join(", ", (List<String>) funnelLead.get("pages")));
+                        .append(String.join(", ", funnelPages));
             } else if (formsCount == 0) {
                 leadDetail.append(ReportFindingsCatalog.tr(i18n.lang, "Формы не найдены", "No forms found", "לא נמצאו טפסים"));
             } else {
@@ -3672,6 +3691,8 @@ public class AuditCollector {
     static Map<String, Object> funnelLeadForms(Map<String, Object> agentBrowse) {
         List<String> pages = new ArrayList<>();
         int forms = 0;
+        int homeForms = 0;
+        String homeTrigger = "";
         boolean allProtected = true;
         boolean instant = false;
         Object raw = agentBrowse == null ? null : agentBrowse.get("pages");
@@ -3679,8 +3700,17 @@ public class AuditCollector {
             for (Object o : list) {
                 if (!(o instanceof Map<?, ?> m)) continue;
                 Map<String, Object> p = (Map<String, Object>) m;
-                if ("homepage".equals(String.valueOf(p.get("source")))) continue;
                 if (!Boolean.TRUE.equals(p.get("ok"))) continue;
+                // The homepage snapshot also opens a form behind a CTA ("בואו נדבר…") that the locale
+                // probe may miss (2026-10-27 erythro.ai HE: probe "no forms", agent 1 form via CTA)
+                if ("homepage".equals(String.valueOf(p.get("source")))) {
+                    homeForms = (int) asLong(p.get("leadFormsCount"), 0);
+                    if (homeForms > 0 && !Boolean.TRUE.equals(p.get("leadFormsProtected"))) allProtected = false;
+                    if (Boolean.TRUE.equals(p.get("formViaCta")) && p.get("triggerLabel") != null) {
+                        homeTrigger = String.valueOf(p.get("triggerLabel"));
+                    }
+                    continue;
+                }
                 if (Boolean.TRUE.equals(p.get("hasInstantContactChannel"))) instant = true;
                 // Older snapshots have no leadFormsCount: do not guess from the raw form count
                 int n = (int) asLong(p.get("leadFormsCount"), 0);
@@ -3692,8 +3722,10 @@ public class AuditCollector {
         }
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("pages", pages);
-        out.put("forms", forms);
-        out.put("allProtected", forms > 0 && allProtected);
+        out.put("forms", forms + homeForms);
+        out.put("homeForms", homeForms);
+        out.put("homeTrigger", homeTrigger);
+        out.put("allProtected", forms + homeForms > 0 && allProtected);
         out.put("instant", instant);
         return out;
     }
