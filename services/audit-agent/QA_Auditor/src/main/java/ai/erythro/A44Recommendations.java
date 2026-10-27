@@ -11,6 +11,29 @@ final class A44Recommendations {
     /** {@code variant}: the case inside the check (lead: no_form / unprotected / form_fields), null if unknown. */
     static String forCheck(String id, String status, String lang, String variant) {
         String s = status == null ? "" : status.toLowerCase();
+        // Locale rows carry their cause: the text must answer it, not default to the RTL or SEO text
+        if (id != null && id.startsWith("locale_") && variant != null && !variant.isBlank() && !"good".equals(s)) {
+            String code = id.substring("locale_".length()).toUpperCase();
+            switch (variant) {
+                case "dir": return rtl(s, lang);
+                case "overflow": return overflow(s, lang);
+                case "lang": return ReportFindingsCatalog.tr(lang,
+                        "html lang главной не совпадает с этой языковой версией (" + code + "). Укажите правильный lang "
+                                + "в <html>, иначе поисковики и экранные чтецы считают страницу другим языком.",
+                        "The homepage html lang does not match this language version (" + code + "). Set the right lang "
+                                + "on <html>, or search engines and screen readers treat the page as another language.",
+                        "html lang של עמוד הבית לא תואם לגרסת השפה הזו (" + code + "). הגדירו lang נכון "
+                                + "ב-<html>, אחרת מנועי חיפוש וקוראי מסך מתייחסים לדף כשפה אחרת.");
+                case "forms": return ReportFindingsCatalog.tr(lang,
+                        "На главной этой версии (" + code + ") и на страницах воронки нет лид-формы. Добавьте короткую форму "
+                                + "(имя, телефон, отправка) или заметную кнопку, которая её открывает.",
+                        "Neither this version's homepage (" + code + ") nor the funnel pages have a lead form. Add a short form "
+                                + "(name, phone, submit) or a visible button that opens one.",
+                        "לא בעמוד הבית של הגרסה הזו (" + code + ") ולא בדפי המשפך יש טופס ליד. הוסיפו טופס קצר "
+                                + "(שם, טלפון, שליחה) או כפתור בולט שפותח אותו.");
+                default: break;
+            }
+        }
         return switch (recKey(id)) {
             case "overflow" -> overflow(s, lang);
             case "rtl" -> rtl(s, lang);

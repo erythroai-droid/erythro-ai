@@ -17,6 +17,7 @@ final class LocalePresence {
     private static final Pattern HEBREW = Pattern.compile("[\\u0590-\\u05FF]");
     private static final Pattern ARABIC = Pattern.compile("[\\u0600-\\u06FF]");
     private static final Pattern CYRILLIC = Pattern.compile("[\\u0400-\\u04FF]");
+    private static final Pattern LATIN = Pattern.compile("[A-Za-z]");
     private static final Set<String> RTL_LOCALES = Set.of("he", "iw", "ar");
 
     private LocalePresence() {}
@@ -154,17 +155,28 @@ final class LocalePresence {
         return false;
     }
 
+    /**
+     * The page text is mostly in that script: a language-switcher label ("Русский", "עברית") on an
+     * English page is a few letters, not a Russian or Hebrew version (2026-10-27 erythro.ai: the ru
+     * probe got the English page and still counted as present).
+     */
     private static boolean textsMatchScript(String loc, Object extracted) {
         String blob = joinTexts(extracted);
         if (blob.isBlank()) {
             return false;
         }
-        return switch (loc) {
-            case "he", "iw" -> HEBREW.matcher(blob).find();
-            case "ar" -> ARABIC.matcher(blob).find();
-            case "ru" -> CYRILLIC.matcher(blob).find();
-            default -> false;
+        Pattern script = switch (loc) {
+            case "he", "iw" -> HEBREW;
+            case "ar" -> ARABIC;
+            case "ru" -> CYRILLIC;
+            default -> null;
         };
+        if (script == null) {
+            return false;
+        }
+        long target = script.matcher(blob).results().count();
+        long latin = LATIN.matcher(blob).results().count();
+        return target >= 20 && target >= 0.3 * (target + latin);
     }
 
     private static String joinTexts(Object extracted) {

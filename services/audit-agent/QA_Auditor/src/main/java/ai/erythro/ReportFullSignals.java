@@ -32,7 +32,7 @@ final class ReportFullSignals {
         addSeoOg(rows, i18n, localesMap, locOrder);
         addAccessibility(rows, i18n, localesMap, locOrder);
         addTtfb(rows, i18n, infra);
-        addLocales(rows, i18n, localesMap, locOrder);
+        addLocales(rows, i18n, localesMap, locOrder, agent);
         addAgent(rows, i18n, agent, pageCap);
         return rows;
     }
@@ -158,7 +158,9 @@ final class ReportFullSignals {
     @SuppressWarnings("unchecked")
     private static void addLocales(
             List<Map<String, String>> rows, AuditReportI18n i18n,
-            Map<String, Object> localesMap, List<String> locOrder) {
+            Map<String, Object> localesMap, List<String> locOrder, Map<String, Object> agent) {
+        // No form on a locale's homepage is not a gap when funnel pages carry lead forms
+        boolean funnelForms = (int) AuditCollector.funnelLeadForms(agent).get("forms") > 0;
         for (String loc : locOrder) {
             Object raw = localesMap.get(loc);
             if (!(raw instanceof Map<?, ?>)) {
@@ -175,7 +177,10 @@ final class ReportFullSignals {
             int forms = (int) num(lead.get("formsCount"), 0);
             boolean langOk = htmlLang.toLowerCase().startsWith(loc.toLowerCase());
             boolean dirOk = !LocalePresence.isRtlLocale(loc) || "rtl".equalsIgnoreCase(dir);
-            String status = overflow || !dirOk ? "bad" : (!langOk || forms == 0 ? "warn" : "good");
+            boolean noForm = forms == 0 && !funnelForms;
+            String status = overflow || !dirOk ? "bad" : (!langOk || noForm ? "warn" : "good");
+            // The recommendation follows the real cause (AUD-bliainara: forms=0 got the "still LTR" RTL text)
+            String cause = !dirOk ? "dir" : overflow ? "overflow" : !langOk ? "lang" : noForm ? "forms" : "";
             add(rows, i18n, "locale_" + loc,
                     n(i18n,
                             "Локаль " + loc.toUpperCase() + " · главная",
@@ -186,6 +191,7 @@ final class ReportFullSignals {
                             + ", overflow-x " + px + "px"
                             + ", forms=" + forms,
                     status);
+            rows.get(rows.size() - 1).put("rec_variant", cause);
         }
     }
 
