@@ -318,10 +318,13 @@ public class AuditCollector {
                 ['Svelte', () => has('svelte') || !!document.querySelector('[class*="svelte-"]')],
                 ['WordPress', () => has('wp-content') || has('wp-includes') || win('wp')
                     || generator.includes('wordpress')],
-                ['Shopify', () => win('Shopify') || has('cdn.shopify.com') || has('shopify')],
+                // Platform rules need a host or runtime marker, not the bare word: Font Awesome ships
+                // .fa-shopify/.fa-squarespace/.fa-webflow icon classes (AUD-226, an OpenCart site)
+                ['Shopify', () => win('Shopify') || has('cdn.shopify.com') || has('myshopify.com')],
                 ['Wix', () => has('static.wixstatic.com') || has('wix.com') || win('wixBiSession')],
-                ['Squarespace', () => has('squarespace') || has('sqsp.net')],
-                ['Webflow', () => has('webflow') || !!document.querySelector('html[data-wf-site]')],
+                ['Squarespace', () => has('squarespace.com') || has('sqsp.net') || win('Squarespace')],
+                ['Webflow', () => !!document.querySelector('html[data-wf-site]') || has('website-files.com')
+                    || has('webflow.com') || win('Webflow')],
                 ['Tilda', () => has('tildacdn') || has('tilda') || win('tilda')],
                 ['Drupal', () => win('Drupal') || has('/sites/default/') || generator.includes('drupal')],
                 ['Joomla', () => win('Joomla') || has('/media/jui/') || generator.includes('joomla')],
@@ -1921,18 +1924,23 @@ public class AuditCollector {
                         ". Instant channel: none", ". ערוץ מיידי: אין"));
             }
 
+            // No form but a messenger or chat still takes leads: needs attention, not critical
+            // (matches the "Lead path" block and ReportFindingsCatalog, AUD-226)
             String leadStatus = formsOk && isProtected ? "good"
-                    : (formsCount == 0 || !isProtected ? "bad" : "warn");
-            String leadLabel = formsOk && isProtected ? i18n.statusWorks
-                    : (formsCount == 0 ? i18n.statusCritical
-                    : (isProtected ? i18n.statusNeedsAttention : i18n.statusCritical));
-            checkRows.add(ReportTemplateGenerator.checkRow(
+                    : formsCount == 0 ? (instantChannel ? "warn" : "bad")
+                    : (isProtected ? "warn" : "bad");
+            String leadLabel = "good".equals(leadStatus) ? i18n.statusWorks
+                    : "warn".equals(leadStatus) ? i18n.statusNeedsAttention : i18n.statusCritical;
+            Map<String, String> leadRow = ReportTemplateGenerator.checkRow(
                     i18n.checkLead,
                     leadDetail.toString(),
                     leadStatus,
                     leadLabel,
                     "lead"
-            ));
+            );
+            // Picks the recommendation text: one case, not "if no form … / if a form …"
+            leadRow.put("rec_variant", formsCount == 0 ? "no_form" : (isProtected ? "form_fields" : "unprotected"));
+            checkRows.add(leadRow);
         }
         appendAiVisibilityCheckRows(checkRows, aiVisibility, infra, i18n);
         if (infra != null) {
@@ -3801,17 +3809,20 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
         return rulesByAgent;
     }
 
+    // An empty "Disallow:" allows everything (RFC 9309), it is not a root block: AUD-226 had
+    // "User-agent: * / Disallow:" reported as "Disallow: / for AI bots".
     private static boolean robotsHasAllowRoot(List<String> rules) {
         return rules.stream().anyMatch(r -> {
             String v = r.substring(r.indexOf(':') + 1).trim();
-            return r.startsWith("allow:") && ("/".equals(v) || v.isEmpty());
+            return (r.startsWith("allow:") && ("/".equals(v) || "/*".equals(v)))
+                    || (r.startsWith("disallow:") && v.isEmpty());
         });
     }
 
     private static boolean robotsHasDisallowRoot(List<String> rules) {
         return rules.stream().anyMatch(r -> {
             String v = r.substring(r.indexOf(':') + 1).trim();
-            return r.startsWith("disallow:") && ("/".equals(v) || v.isEmpty());
+            return r.startsWith("disallow:") && ("/".equals(v) || "/*".equals(v));
         });
     }
 

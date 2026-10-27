@@ -356,10 +356,11 @@ async headers() {
     }
   },
   ai: {
-    file: 'public/robots.txt:1-8',
+    // Site root, not a Next.js path: the audited site may run any CMS (AUD-226 was OpenCart)
+    file: '/robots.txt',
     ru: {
       desc: 'Разрешение цитирования AI-поисковиками (ChatGPT, Perplexity) и запрет несанкционированного обучения',
-      code: `# public/robots.txt:1-8
+      code: `# /robots.txt (корень сайта)
 User-agent: *
 Allow: /
 # Content-Signal: разрешение на цитирование в поиске, запрет на обучение моделей:
@@ -368,7 +369,7 @@ Sitemap: https://erythro.ai/sitemap.xml`
     },
     en: {
       desc: 'Permit AI search citations (ChatGPT, Perplexity) while blocking unauthorized model training',
-      code: `# public/robots.txt:1-8
+      code: `# /robots.txt (site root)
 User-agent: *
 Allow: /
 # Content-Signal: allow search citations, prohibit unauthorized model training:
@@ -377,7 +378,7 @@ Sitemap: https://erythro.ai/sitemap.xml`
     },
     he: {
       desc: 'אישור ציטוט במנועי חיפוש AI (ChatGPT, Perplexity) וחסימת אימון מודלים',
-      code: `# public/robots.txt:1-8
+      code: `# /robots.txt (שורש האתר)
 User-agent: *
 Allow: /
 # Content-Signal: אישור ציטוט בחיפוש, חסימת אימון מודלים:
@@ -2482,6 +2483,8 @@ function renderReport(lang, tier = 'pro') {
   const sevForPillar = (pKey) => {
     // No form, messenger or chat: the "Путь к заявке" block says critical, the plan must agree
     if (pKey === 'lead' && leadPath.known && !leadPath.hasForm && !leadPath.instant) return 0;
+    // No form but a messenger or chat: the block says "needs attention" (older Java runs marked the check bad)
+    if (pKey === 'lead' && leadPath.known && !leadPath.hasForm && leadPath.instant) return 1;
     const issues = checks.filter((c) => c.pillar === pKey && c.status !== 'good');
     if (issues.some((c) => c.status === 'bad')) return 0;
     if (issues.some((c) => c.status === 'warn')) return 1;
@@ -3190,12 +3193,16 @@ ${cards}
   // 2. Ensure all diagnostic pillars with issues or solutions are represented with distinct strategic tasks
   // A filler step needs evidence: a failing check or a scale outside the green zone (passing checks
   // do not cancel a weak scale: AUD-221 had overflow OK but mobile LCP 17.3s). Data that contradicts
-  // the step's title drops it (Turnstile next to "anti-spam OK").
+  // the step's title drops it (Turnstile next to "anti-spam OK"). Without a form the lead step
+  // becomes "add a lead form" instead of disappearing (AUD-226: lead 45, check failing, no step).
   const missingHeaders = data.infrastructure_and_security?.security_headers_missing;
+  const leadNoForm = leadPath.known && !leadPath.hasForm;
   const contradicted = {
-    lead: leadPath.isProtected || !leadPath.hasForm,
+    lead: !leadNoForm && (leadPath.isProtected || !leadPath.hasForm),
     sec: Array.isArray(missingHeaders) && missingHeaders.length === 0,
   };
+  const leadFormTitle = { ru: 'Добавить лид-форму рядом с мессенджером', en: 'Add a lead form next to the messenger', he: 'הוספת טופס ליד לצד המסנג׳ר' };
+  const leadFormTitleBare = { ru: 'Добавить лид-форму и мгновенный канал', en: 'Add a lead form and an instant channel', he: 'הוספת טופס ליד וערוץ תקשורת מיידי' };
   const diagnosticPillars = ['speed', 'seo', 'lead', 'sec', 'ai', 'a11y'];
   diagnosticPillars.forEach((pKey) => {
     if (!actions.some((a) => a.pillarKey === pKey)) {
@@ -3203,9 +3210,12 @@ ${cards}
       const issues = pillarChecks.filter((c) => c.status !== 'good');
       const scaleWeak = pillarScore[pKey] != null && zoneOf(pillarScore[pKey]) !== 'good';
       if ((issues.length > 0 || scaleWeak) && !contradicted[pKey]) {
-        const sol = ACTION_CODE_SOLUTIONS[pKey];
+        const solKey = pKey === 'lead' && leadNoForm ? 'lead_form' : pKey;
+        const sol = ACTION_CODE_SOLUTIONS[solKey];
         const solDesc = sol ? (sol[lang] || sol.ru).desc : '';
-        const titleObj = pillarTitles[pKey] || {};
+        const titleObj = solKey === 'lead_form'
+          ? (leadPath.instant ? leadFormTitle : leadFormTitleBare)
+          : (pillarTitles[pKey] || {});
         const title = titleObj[lang] || titleObj.ru || pKey;
         const tag = (pillarTagNames[pKey] && pillarTagNames[pKey][lang]) || 'Erythro.ai';
         const k = sevForPillar(pKey);
@@ -3225,6 +3235,7 @@ ${cards}
           cls,
           text: solDesc,
           pillarKey: pKey,
+          solKey,
           anchorId
         });
       }
@@ -3233,6 +3244,7 @@ ${cards}
 
   // Code snippet for a step: the title picks a variant inside the pillar, else the pillar default
   const solutionFor = (a) => {
+    if (a.solKey && a.solKey !== a.pillarKey && ACTION_CODE_SOLUTIONS[a.solKey]) return ACTION_CODE_SOLUTIONS[a.solKey];
     const tLower = a.title.toLowerCase();
     if (a.anchorId === 'action-speed-cwv' || tLower.includes('vitals') || tLower.includes('cwv') || tLower.includes('ускорен') || tLower.includes('האצת')) {
       return ACTION_CODE_SOLUTIONS.speed_cwv;
@@ -3462,7 +3474,7 @@ ${restHtml}
           ['Главная страница', 'HTTP-статус и HTTPS, формы и каналы связи, обнаруженные технологии.'],
           ['5 базовых проверок', names]
         ],
-        note: 'Free — экспресс-срез одной страницы. Сквозной обход воронки, другие локали и разбор AI Visibility по критериям в этот отчёт не входят: по AI Visibility показана только сводная оценка.'
+        note: 'Free — экспресс-срез одной страницы. Сквозной обход воронки, другие локали и разбор AI Visibility по критериям в этот отчёт не входят: по AI Visibility показаны сводная оценка и найденные пробелы, без статуса и рекомендации по каждому из 7 критериев.'
       },
       en: {
         sub: `The Erythro.ai lab checked the ${host} homepage in the ${lang.toUpperCase()} locale on mobile (iPhone SE 375×667) and desktop.`,
@@ -3472,7 +3484,7 @@ ${restHtml}
           ['Homepage', 'HTTP status and HTTPS, forms and contact channels, detected technologies.'],
           ['5 core checks', names]
         ],
-        note: 'Free is an express snapshot of one page. The funnel crawl, other locales and the per-criterion AI Visibility breakdown are not part of this report: AI Visibility shows only the summary score.'
+        note: 'Free is an express snapshot of one page. The funnel crawl, other locales and the per-criterion AI Visibility breakdown are not part of this report: AI Visibility shows the summary score and the gaps found, without a status and recommendation for each of the 7 criteria.'
       },
       he: {
         sub: `המעבדה של Erythro.ai בדקה את עמוד הבית של ${host} בשפה ${lang.toUpperCase()} במובייל (iPhone SE 375×667) ובדסקטופ.`,
@@ -3482,7 +3494,7 @@ ${restHtml}
           ['עמוד הבית', 'סטטוס HTTP ו-HTTPS, טפסים וערוצי קשר, טכנולוגיות שזוהו.'],
           ['5 בדיקות בסיס', names]
         ],
-        note: 'Free הוא צילום מהיר של עמוד אחד. סריקת המשפך, שפות נוספות ופירוט AI Visibility לפי קריטריונים אינם חלק מדוח זה: עבור AI Visibility מוצג רק הציון המסכם.'
+        note: 'Free הוא צילום מהיר של עמוד אחד. סריקת המשפך, שפות נוספות ופירוט AI Visibility לפי קריטריונים אינם חלק מדוח זה: עבור AI Visibility מוצגים הציון המסכם והפערים שנמצאו, בלי סטטוס והמלצה לכל אחד מ-7 הקריטריונים.'
       }
     }[lang];
     const statsHtml = `    <div class="proto">

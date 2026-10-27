@@ -5,11 +5,16 @@ final class A44Recommendations {
     private A44Recommendations() {}
 
     static String forCheck(String id, String status, String lang) {
+        return forCheck(id, status, lang, null);
+    }
+
+    /** {@code variant}: the case inside the check (lead: no_form / unprotected / form_fields), null if unknown. */
+    static String forCheck(String id, String status, String lang, String variant) {
         String s = status == null ? "" : status.toLowerCase();
         return switch (recKey(id)) {
             case "overflow" -> overflow(s, lang);
             case "rtl" -> rtl(s, lang);
-            case "lead" -> lead(s, lang);
+            case "lead" -> lead(s, lang, variant);
             case "llms" -> llms(s, lang);
             case "brand" -> brand(s, lang);
             case "robots" -> robots(s, lang);
@@ -160,7 +165,7 @@ final class A44Recommendations {
                         + "<html lang=\"he\" dir=\"rtl\">");
     }
 
-    private static String lead(String status, String lang) {
+    private static String lead(String status, String lang, String variant) {
         if ("good".equals(status)) {
             return ReportFindingsCatalog.tr(lang,
                     "Лид-захват в норме: форма, антиспам и мгновенный канал на месте.\n\n"
@@ -170,7 +175,42 @@ final class A44Recommendations {
                     "לכידת לידים תקינה: טופס, אנטי-ספאם וערוץ מיידי במקום.\n\n"
                             + "אל תסירו honeypot, Turnstile/reCAPTCHA או wa.me (או צ'אט) בריליס הבא — הספאם עולה ולידים מהמובייל נעלמים.");
         }
-        // Status "bad" covers both "no form" and "form without anti-spam": the text must fit either
+        if ("no_form".equals(variant)) {
+            return "warn".equals(status)
+                    ? ReportFindingsCatalog.tr(lang,
+                    "Формы нет: заявки идут только через мессенджер или чат. Добавьте короткую лид-форму (имя, телефон, отправка) рядом с кнопкой — "
+                            + "часть посетителей не пишет в мессенджер, а форма даёт заявку с контактом прямо в CRM.\n\n"
+                            + "Сразу защитите форму Cloudflare Turnstile или honeypot.",
+                    "No form: leads come only through a messenger or chat. Add a short lead form (name, phone, submit) next to the button — "
+                            + "some visitors never message, and a form sends a lead with contact details straight to CRM.\n\n"
+                            + "Protect the form with Cloudflare Turnstile or a honeypot from day one.",
+                    "אין טופס: פניות מגיעות רק במסנג׳ר או בצ׳אט. הוסיפו טופס ליד קצר (שם, טלפון, שליחה) ליד הכפתור — "
+                            + "חלק מהמבקרים לא כותבים במסנג׳ר, וטופס מעביר ליד עם פרטי קשר ישר ל-CRM.\n\n"
+                            + "הגנו על הטופס מהיום הראשון עם Cloudflare Turnstile או honeypot.")
+                    : ReportFindingsCatalog.tr(lang,
+                    "На странице нет ни формы, ни мессенджера: посетителю некуда оставить заявку. "
+                            + "Добавьте короткую лид-форму (имя, телефон, отправка) и кнопку wa.me или чат.\n\n"
+                            + "Сразу защитите форму Cloudflare Turnstile или honeypot.",
+                    "The page has no form and no messenger: a visitor has nowhere to leave a lead. "
+                            + "Add a short lead form (name, phone, submit) and a wa.me button or chat.\n\n"
+                            + "Protect the form with Cloudflare Turnstile or a honeypot from day one.",
+                    "בעמוד אין טופס ואין מסנג׳ר: למבקר אין איפה להשאיר פנייה. "
+                            + "הוסיפו טופס ליד קצר (שם, טלפון, שליחה) וכפתור wa.me או צ׳אט.\n\n"
+                            + "הגנו על הטופס מהיום הראשון עם Cloudflare Turnstile או honeypot.");
+        }
+        if ("unprotected".equals(variant)) {
+            return ReportFindingsCatalog.tr(lang,
+                    "Форма есть, но без антиспама. Защитите её Cloudflare Turnstile или honeypot и подключите AI-фильтрацию заявок Erythro.ai до CRM.",
+                    "The form has no anti-spam. Protect it with Cloudflare Turnstile or a honeypot and add Erythro.ai AI lead filtering before CRM.",
+                    "יש טופס, אבל בלי אנטי-ספאם. הגנו עליו עם Cloudflare Turnstile או honeypot וחברו סינון AI של Erythro.ai לפני CRM.");
+        }
+        if ("form_fields".equals(variant)) {
+            return ReportFindingsCatalog.tr(lang,
+                    "Форма защищена, но в ней нет поля email или телефона либо кнопки отправки. Добавьте контактное поле и явную кнопку отправки — иначе заявку не с чем обработать.",
+                    "The form is protected but lacks an email or phone field, or a submit button. Add a contact field and a clear submit button, otherwise there is nothing to follow up.",
+                    "הטופס מוגן, אבל חסר בו שדה אימייל או טלפון או כפתור שליחה. הוסיפו שדה קשר וכפתור שליחה ברור — אחרת אין עם מה לחזור לפונה.");
+        }
+        // Unknown case (old rows without rec_variant): the text must fit both "no form" and "form without anti-spam"
         return ReportFindingsCatalog.tr(lang,
                 "Если формы нет — добавьте короткую лид-форму (имя, телефон, отправка) и кнопку wa.me или чат.\n\n"
                         + "Если форма есть — защитите её Cloudflare Turnstile или honeypot и подключите AI-фильтрацию заявок Erythro.ai до CRM.",
