@@ -3972,6 +3972,18 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
     s = s.replace('</body>', `${NAV_SCRIPT}\n</body>`);
   }
 
+  // Advisory disclaimer above the footer in every tier and language: the report is a recommendation,
+  // not a legal opinion or a demand for urgent fixes (product decision 2026-10-27)
+  const DISCLAIMER = {
+    ru: 'Отчёт носит информационно-рекомендательный характер. Он отражает состояние сайта на момент автоматической проверки и экспертную оценку Erythro.ai, не является юридическим заключением, гарантией результата или требованием срочных изменений. Решение о внедрении рекомендаций и их сроках принимает владелец сайта.',
+    en: 'This report is for information and recommendation only. It reflects the site’s state at the time of the automated check and Erythro.ai’s expert view; it is not a legal opinion, a guarantee of results or a demand for urgent changes. The site owner decides whether and when to apply the recommendations.',
+    he: 'הדוח הוא לידיעה ולהמלצה בלבד. הוא משקף את מצב האתר בזמן הבדיקה האוטומטית ואת ההערכה המקצועית של Erythro.ai, ואינו חוות דעת משפטית, התחייבות לתוצאה או דרישה לתיקונים דחופים. ההחלטה אם ומתי ליישם את ההמלצות היא של בעל האתר.'
+  };
+  if (!s.includes('class="report-disclaimer"')) {
+    s = s.replace('<div class="foot">', `<p class="report-disclaimer" style="max-width:960px;margin:28px auto 10px;padding:0 16px;font-size:12px;line-height:1.6;color:#6b6b6b;text-align:start">${DISCLAIMER[lang] || DISCLAIMER.en}</p>
+  <div class="foot">`);
+  }
+
   // Every in-report link must land on something that exists: scale badges and the checklist's
   // "solution in the plan" links pointed at #diag-speed / #action-lead that were not rendered (AUD-230)
   const hasId = (id) => s.includes(`id="${id}"`);
