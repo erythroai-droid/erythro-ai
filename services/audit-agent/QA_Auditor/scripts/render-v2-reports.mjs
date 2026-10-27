@@ -307,6 +307,37 @@ Sitemap: https://erythro.ai/sitemap.xml`
 <!-- בשרת: לאמת את טוקן Turnstile (siteverify) ולדחות פניות ששדה המלכודת בהן מלא -->`
     }
   },
+  // Broken or timed-out funnel pages (agent crawl)
+  funnel: {
+    where: { ru: 'Ответы сервера для страниц меню', en: 'Server responses for menu pages', he: 'תשובות השרת לדפי התפריט' },
+    ru: {
+      desc: 'Каждая страница меню отвечает быстро и с кодом 200; удалённые — постоянный редирект на живую',
+      code: `# Каждая ссылка меню должна открываться быстро и с кодом 200 OK.
+# Страницу удалили или переименовали — постоянный редирект на живую:
+HTTP/1.1 301 Moved Permanently
+Location: https://erythro.ai/contact/
+# Страница не отвечает (504, тайм-аут) — проверьте хостинг, лимиты PHP,
+# тяжёлые плагины и кэш именно этой страницы.`
+    },
+    en: {
+      desc: 'Every menu page answers fast with 200; removed pages get a permanent redirect to a live one',
+      code: `# Every menu link must open fast with 200 OK.
+# Page removed or renamed: a permanent redirect to a live page:
+HTTP/1.1 301 Moved Permanently
+Location: https://erythro.ai/contact/
+# Page does not respond (504, timeout): check hosting, PHP limits,
+# heavy plugins and the cache of that page.`
+    },
+    he: {
+      desc: 'כל דף בתפריט עונה מהר עם 200; דף שהוסר מקבל הפניה קבועה לדף חי',
+      code: `# כל קישור בתפריט צריך להיפתח מהר עם 200 OK.
+# דף שהוסר או ששמו שונה: הפניה קבועה לדף חי:
+HTTP/1.1 301 Moved Permanently
+Location: https://erythro.ai/contact/
+# הדף לא עונה (504, תם הזמן): בדקו את האחסון, מגבלות PHP,
+# תוספים כבדים ואת המטמון של הדף הזה.`
+    }
+  },
   // "No lead form" finding: the Turnstile snippet above assumes a form already exists
   lead_form: {
     where: { ru: 'Блок контактов', en: 'Contact block', he: 'אזור יצירת קשר' },
@@ -2370,7 +2401,9 @@ function classifyActionPillar(title) {
   const t = (title || '').toLowerCase();
   // Unmatched titles fall through to 'speed' and get its LCP preload code, so every catalog
   // title (ReportFindingsCatalog) must hit a keyword here or below.
-  if (t.includes('битые') || t.includes('broken') || t.includes('שבור')) return 'sec';
+  // Broken funnel pages are their own step: as 'sec' they got the security-headers snippet and took
+  // the headers step's slot (AUD-230)
+  if (t.includes('битые') || t.includes('broken') || t.includes('שבור')) return 'funnel';
   if (/(^|[^а-яё])ии([^а-яё]|$)/.test(t) || t.includes('/about') || t.includes('ai visibility') || t.includes('ai assistant')
     || t.includes('ai agent') || t.includes('content-signal') || t.includes('chatgpt') || t.includes('עוזרי ai')) return 'ai';
   if (/(^|[^а-яё])форм(?!ат)/.test(t) || t.includes('заявок') || t.includes('טופס') || t.includes('одностранич')
@@ -2532,6 +2565,8 @@ function renderReport(lang, tier = 'pro') {
   // Only with no failing check does the scale zone decide (a11y has no scale: its checks decide).
   const leadPath = leadPathFromData(data, tier);
   const sevForPillar = (pKey) => {
+    // Broken funnel pages: critical while the crawl found any (no scale or check pillar of its own)
+    if (pKey === 'funnel') return Number(data.agent_browse?.pages_broken) > 0 ? 0 : 1;
     // No form, messenger or chat: the "Путь к заявке" block says critical, the plan must agree
     if (pKey === 'lead' && leadPath.known && !leadPath.hasForm && !leadPath.instant) return 0;
     // No form but a messenger or chat: the block says "needs attention" (older Java runs marked the check bad)
@@ -3209,7 +3244,8 @@ ${cards}
     lead: { ru: 'Лидогенерация', en: 'Lead capture', he: 'טפסים והמרות' },
     sec: { ru: 'Безопасность', en: 'Security', he: 'אבטחה ויציבות' },
     ai: { ru: 'AI Discovery', en: 'AI Discovery', he: 'נראות AI' },
-    a11y: { ru: 'Доступность', en: 'Accessibility', he: 'נגישות' }
+    a11y: { ru: 'Доступность', en: 'Accessibility', he: 'נגישות' },
+    funnel: { ru: 'Воронка', en: 'Funnel', he: 'משפך' }
   };
 
   // 1. Add top strategic findings from the executive audit
@@ -3353,7 +3389,7 @@ ${cards}
     // Steps 2–6: titles and urgency stay visible, the solution does not.
     // One wrapper, so apply-v2-polish keeps it after Step 1 and does not renumber inside it.
     const sevRank = { crit: 0, med: 1, gold: 2 };
-    const canon = ['speed', 'seo', 'lead', 'sec', 'ai', 'a11y'];
+    const canon = ['speed', 'seo', 'lead', 'funnel', 'sec', 'ai', 'a11y'];
     const rest = actions.slice(1, 6)
       .map((x, i) => ({ x, i }))
       .sort((p, q) => sevRank[p.x.cls] - sevRank[q.x.cls] || canon.indexOf(p.x.pillarKey) - canon.indexOf(q.x.pillarKey) || p.i - q.i)
@@ -3471,11 +3507,28 @@ ${restHtml}
     const names = renderedChecks.map((c) => c.name).join('; ');
     const host = esc(reportSiteHost(data) || '—');
     const pp = ab.pages_visited || 10;
-    const proN = 55 + 28 * 3 + 9 * pp + 1;
+    // Languages the site serves (locales_audited drops probes the site does not answer), not the
+    // en+ru+he probe list: AUD-230 told a Hebrew-only site it was checked "in three languages"
+    const siteLocs = (data.locales_audited || []).map((l) => String(l).toUpperCase());
+    const nLoc = siteLocs.length || 1;
+    const locList = siteLocs.join(', ') || lang.toUpperCase();
+    const inLangs = {
+      ru: nLoc === 1 ? `на языке сайта (${locList})` : `на ${nLoc} языках сайта (${locList})`,
+      en: nLoc === 1 ? `in the site's language (${locList})` : `in ${nLoc} site languages (${locList})`,
+      he: nLoc === 1 ? `בשפת האתר (${locList})` : `ב-${nLoc} שפות האתר (${locList})`,
+    };
+    const langLabel = {
+      ru: nLoc === 1 ? 'язык сайта' : nLoc < 5 ? 'языка сайта' : 'языков сайта',
+      en: nLoc === 1 ? 'site language' : 'site languages',
+      he: nLoc === 1 ? 'שפת אתר' : 'שפות אתר',
+    };
+    const diagPages = Math.min(ab.pages_visited || 5, 5);
+    const proN = 55 + 28 * nLoc + 9 * pp + 1;
+    const diagN = 55 + 28 * nLoc + 9 * diagPages;
     const PRO_P = {
       ru: {
-        sub: `Лаборатория Erythro.ai проверила ${host} на трёх языках (EN, RU, HE) и ${pp} страницах воронки, на мобильном (iPhone SE 375×667) и десктопе.`,
-        stats: [[String(proN), 'проверок'], ['3', 'языка сайта'], [String(pp), 'URL воронки'], ['2', 'устройства Lighthouse']],
+        sub: `Лаборатория Erythro.ai проверила ${host} ${inLangs.ru} и ${pp} страницах воронки, на мобильном (iPhone SE 375×667) и десктопе.`,
+        stats: [[String(proN), 'проверок'], [String(nLoc), langLabel.ru], [String(pp), 'URL воронки'], ['2', 'устройства Lighthouse']],
         scope: [
           ['По сайту целиком — 55', 'HTTPS, статус, TTFB, 6 заголовков безопасности, robots.txt и sitemap, стабильность, PageSpeed (10 метрик × 2 устройства), 7 критериев AI Visibility, 5 проверок Agent Readiness и правила для 8 AI-ботов.'],
           ['На каждый язык — 28', 'SEO и OpenGraph, hreflang, ассеты, доступность, орфография, ошибки, RTL, мобильная вёрстка 375px, формы и антиспам.'],
@@ -3485,8 +3538,8 @@ ${restHtml}
         note: 'Сырой JSON с результатами всех проверок — по запросу.'
       },
       en: {
-        sub: `The Erythro.ai lab checked ${host} in three languages (EN, RU, HE) and ${pp} funnel pages, on mobile (iPhone SE 375×667) and desktop.`,
-        stats: [[String(proN), 'checks'], ['3', 'site languages'], [String(pp), 'funnel URLs'], ['2', 'Lighthouse devices']],
+        sub: `The Erythro.ai lab checked ${host} ${inLangs.en} and ${pp} funnel pages, on mobile (iPhone SE 375×667) and desktop.`,
+        stats: [[String(proN), 'checks'], [String(nLoc), langLabel.en], [String(pp), 'funnel URLs'], ['2', 'Lighthouse devices']],
         scope: [
           ['Site-wide — 55', 'HTTPS, status, TTFB, 6 security headers, robots.txt and sitemap, stability, PageSpeed (10 metrics × 2 devices), 7 AI Visibility criteria, 5 Agent Readiness checks and rules for 8 AI bots.'],
           ['Per language — 28', 'SEO and OpenGraph, hreflang, assets, accessibility, spelling, errors, RTL, 375px mobile layout, forms and anti-spam.'],
@@ -3496,8 +3549,8 @@ ${restHtml}
         note: 'Raw JSON with the results of every check is available on request.'
       },
       he: {
-        sub: `המעבדה של Erythro.ai בדקה את ${host} בשלוש שפות (EN, RU, HE) וב-${pp} עמודי משפך, במובייל (iPhone SE 375×667) ובדסקטופ.`,
-        stats: [[String(proN), 'בדיקות'], ['3', 'שפות אתר'], [String(pp), 'עמודי משפך'], ['2', 'מכשירי Lighthouse']],
+        sub: `המעבדה של Erythro.ai בדקה את ${host} ${inLangs.he} וב-${pp} עמודי משפך, במובייל (iPhone SE 375×667) ובדסקטופ.`,
+        stats: [[String(proN), 'בדיקות'], [String(nLoc), langLabel.he], [String(pp), 'עמודי משפך'], ['2', 'מכשירי Lighthouse']],
         scope: [
           ['לאתר כולו — 55', 'HTTPS, סטטוס, TTFB, 6 כותרות אבטחה, robots.txt ו-sitemap, יציבות, PageSpeed (10 מדדים × 2 מכשירים), 7 קריטריונים של AI Visibility, 5 בדיקות Agent Readiness וכללים ל-8 בוטי AI.'],
           ['לכל שפה — 28', 'SEO ו-OpenGraph, hreflang, נכסים, נגישות, איות, שגיאות, RTL, פריסת מובייל 375px, טפסים ואנטי-ספאם.'],
@@ -3509,8 +3562,8 @@ ${restHtml}
     };
     const DIAG_P = {
       ru: {
-        sub: `Лаборатория Erythro.ai проверила ${host} на трёх языках (EN, RU, HE) и 5 страницах воронки, на мобильном (iPhone SE 375×667) и десктопе.`,
-        stats: [['184', 'проверки'], ['3', 'языка сайта'], ['5', 'URL воронки'], ['2', 'устройства Lighthouse']],
+        sub: `Лаборатория Erythro.ai проверила ${host} ${inLangs.ru} и ${diagPages} страницах воронки, на мобильном (iPhone SE 375×667) и десктопе.`,
+        stats: [[String(diagN), 'проверок'], [String(nLoc), langLabel.ru], [String(diagPages), 'URL воронки'], ['2', 'устройства Lighthouse']],
         scope: [
           ['По сайту целиком — 55', 'HTTPS, статус, TTFB, 6 заголовков безопасности, robots.txt и sitemap, стабильность, PageSpeed (10 метрик × 2 устройства), AI Visibility, Agent Readiness и правила для 8 AI-ботов.'],
           ['На каждый язык — 28', 'SEO и OpenGraph, hreflang, ассеты, доступность, орфография, ошибки, RTL, мобильная вёрстка 375px, формы и антиспам.'],
@@ -3519,8 +3572,8 @@ ${restHtml}
         note: 'Diagnostic — сводная картина. Построчные рекомендации, Funnel review и разбор AI Visibility по критериям — в Pro.'
       },
       en: {
-        sub: `The Erythro.ai lab checked ${host} in three languages (EN, RU, HE) and 5 funnel pages, on mobile (iPhone SE 375×667) and desktop.`,
-        stats: [['184', 'checks'], ['3', 'site languages'], ['5', 'funnel URLs'], ['2', 'Lighthouse devices']],
+        sub: `The Erythro.ai lab checked ${host} ${inLangs.en} and ${diagPages} funnel pages, on mobile (iPhone SE 375×667) and desktop.`,
+        stats: [[String(diagN), 'checks'], [String(nLoc), langLabel.en], [String(diagPages), 'funnel URLs'], ['2', 'Lighthouse devices']],
         scope: [
           ['Site-wide — 55', 'HTTPS, status, TTFB, 6 security headers, robots.txt and sitemap, stability, PageSpeed (10 metrics × 2 devices), AI Visibility, Agent Readiness and rules for 8 AI bots.'],
           ['Per language — 28', 'SEO and OpenGraph, hreflang, assets, accessibility, spelling, errors, RTL, 375px mobile layout, forms and anti-spam.'],
@@ -3529,8 +3582,8 @@ ${restHtml}
         note: 'Diagnostic is a summary. Row-by-row recommendations, the Funnel review and the per-criterion AI Visibility breakdown are in Pro.'
       },
       he: {
-        sub: `המעבדה של Erythro.ai בדקה את ${host} בשלוש שפות (EN, RU, HE) וב-5 עמודי משפך, במובייל (iPhone SE 375×667) ובדסקטופ.`,
-        stats: [['184', 'בדיקות'], ['3', 'שפות אתר'], ['5', 'עמודי משפך'], ['2', 'מכשירי Lighthouse']],
+        sub: `המעבדה של Erythro.ai בדקה את ${host} ${inLangs.he} וב-${diagPages} עמודי משפך, במובייל (iPhone SE 375×667) ובדסקטופ.`,
+        stats: [[String(diagN), 'בדיקות'], [String(nLoc), langLabel.he], [String(diagPages), 'עמודי משפך'], ['2', 'מכשירי Lighthouse']],
         scope: [
           ['לאתר כולו — 55', 'HTTPS, סטטוס, TTFB, 6 כותרות אבטחה, robots.txt ו-sitemap, יציבות, PageSpeed (10 מדדים × 2 מכשירים), AI Visibility, Agent Readiness וכללים ל-8 בוטי AI.'],
           ['לכל שפה — 28', 'SEO ו-OpenGraph, hreflang, נכסים, נגישות, איות, שגיאות, RTL, פריסת מובייל 375px, טפסים ואנטי-ספאם.'],
@@ -3918,6 +3971,16 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
   if (!s.includes('a[href^="#action-"], a[href^="#diag-"]')) {
     s = s.replace('</body>', `${NAV_SCRIPT}\n</body>`);
   }
+
+  // A scale badge must land on something that exists in this report: Diagnostic had no speed
+  // card (#diag-speed), Pro had no lead step (#action-lead) (AUD-230)
+  const hasId = (id) => s.includes(`id="${id}"`);
+  s = s.replace(/<a href="#([a-z]+)-([a-z0-9-]+)" class="badge/g, (m, kind, pKey) => {
+    if (hasId(`${kind}-${pKey}`)) return m;
+    const fallback = [`diag-${pKey}`, `action-${pKey}`, pKey === 'speed' ? 'lighthouse' : '', 'checks', 'locked-checks']
+      .find((id) => id && hasId(id));
+    return fallback ? `<a href="#${fallback}" class="badge` : m;
+  });
 
   return s;
 }
