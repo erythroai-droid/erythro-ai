@@ -5,6 +5,14 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
+## AUD-226: нейтральные сниппеты и одна платформа в детекторе (PIT-141) — `e447910`, задеплоено пользователем 27.10 с пересборкой образа
+
+- **Сниппеты:** без путей и строк во всех тирах; заголовок — нейтральное место (`where`), код — HTML / HTTP-заголовки / robots.txt / пример вебхука. Разбор файлов клиента — только ручной аудит, даже не Pro. В ТЗ Diagnostic убрано «код с юнит-тестами».
+- **Детектор:** `platformRules` с весом (4 generator, 3 runtime/разметка, 2 свой ассет или CDN), Java `pickPlatform` — одна платформа, при ничьей ни одной. Добавлены OpenCart, Magento, PrestaShop, WooCommerce/Elementor (только при WordPress). Ужесточены голые слова (Svelte, Tilda, Bitrix, Angular, Hotjar, GSAP, Astro).
+- **Внимание:** OpenCart/Magento/PrestaShop входят в PHP-алерт («Критично» в «Технологиях»), по заготовке в коде. У AUD-226 он появится.
+- **Проверено:** headless на живых сайтах — OpenCart, WordPress(+WooCommerce), Wix, Squarespace, Webflow, Tilda, Joomla, Bitrix верно; Википедия про CMS — пусто. Shopify/Magento/PrestaShop/Drupal не проверены (Cloudflare-challenge, пустые демо). Рендер Free/Diagnostic/Pro RU/HE: путей нет, div сбалансированы.
+- **Сверка контейнера:** не сделана (классификатор прав не пропускал SSH); деплой-скрипт отработал, его встроенные проверки прошли.
+
 ## AUD-226 (bliainara.co.il, OpenCart, Free HE): ложные находки и пропавший шаг (PIT-140) — `f010a61`, задеплоено 27.10 с пересборкой образа; AUD-226 перевыпустить
 
 - **robots:** пустой `Disallow:` считался `Disallow: /` → ложная «блокировка AI-ботов» (sev 97, минус критерий AI Visibility). `robotsHasAllowRoot/DisallowRoot` в `AuditCollector`. Баллы AI у таких сайтов вырастут.
