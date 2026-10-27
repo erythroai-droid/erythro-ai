@@ -2017,14 +2017,18 @@ public class AuditCollector {
                 secDetail += ReportFindingsCatalog.tr(i18n.lang, " (нет: ", " (missing: ", " (חסר: ")
                         + String.join(", ", missingHeaders) + ")";
             }
-            checkRows.add(ReportTemplateGenerator.checkRow(
+            Map<String, String> httpsRow = ReportTemplateGenerator.checkRow(
                     i18n.checkHttps,
                     secDetail,
                     headerStatus,
                     headersPresent >= 5 && hasHttps ? i18n.statusSecured
                             : (hasHttps ? i18n.statusNeedsAttention : i18n.statusDanger),
                     "https"
-            ));
+            );
+            // The recommendation lists exactly the missing headers (AUD-227 offered X-Frame-Options
+            // the site had and skipped the missing HSTS)
+            httpsRow.put("rec_variant", String.join(",", missingHeaders));
+            checkRows.add(httpsRow);
         } else if (targetUrl != null && targetUrl.startsWith("https://")) {
             checkRows.add(ReportTemplateGenerator.checkRow(
                     i18n.checkHttps,

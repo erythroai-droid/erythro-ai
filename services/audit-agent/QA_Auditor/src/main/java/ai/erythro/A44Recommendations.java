@@ -21,7 +21,7 @@ final class A44Recommendations {
             case "ga4" -> ga4(s, lang);
             case "content_signals" -> contentSignals(s, lang);
             case "markdown_neg" -> markdownNeg(s, lang);
-            case "https" -> https(s, lang);
+            case "https" -> https(s, lang, variant);
             case "runtime" -> runtime(s, lang);
             case "seo" -> seo(s, lang);
             case "a11y" -> a11y(s, lang);
@@ -358,29 +358,47 @@ final class A44Recommendations {
                         + "בלי זה ChatGPT ו-Perplexity מושכים HTML+JS, מבלבלים את המותג ושורפים טוקנים. הוסיפו Sitemap: ב-robots.txt עם XML תקין ו-<loc>.");
     }
 
-    private static String https(String status, String lang) {
+    // Safe starting values: a strict CSP (default-src 'self') breaks third-party scripts, and HSTS
+    // preload is a one-way commitment, so neither is suggested blindly
+    private static final java.util.Map<String, String> HEADER_LINES = java.util.Map.of(
+            "HSTS", "Strict-Transport-Security: max-age=63072000; includeSubDomains",
+            "CSP", "Content-Security-Policy: frame-ancestors 'self'",
+            "X-Frame-Options", "X-Frame-Options: SAMEORIGIN",
+            "X-Content-Type-Options", "X-Content-Type-Options: nosniff",
+            "Referrer-Policy", "Referrer-Policy: strict-origin-when-cross-origin",
+            "Permissions-Policy", "Permissions-Policy: camera=(), microphone=(), geolocation=()");
+    private static final java.util.List<String> HEADER_ORDER = java.util.List.of(
+            "HSTS", "CSP", "X-Frame-Options", "X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy");
+
+    /** {@code missing}: comma-joined labels of the absent headers; null for rows without the list. */
+    private static String https(String status, String lang, String missing) {
         if ("good".equals(status)) {
             return ReportFindingsCatalog.tr(lang,
                     "HTTPS и security headers на месте. Не снимайте HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy и Permissions-Policy при деплое.",
                     "HTTPS and security headers are in place. Do not drop HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy or Permissions-Policy on deploy.",
                     "HTTPS וכותרות אבטחה במקום. אל תסירו HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy או Permissions-Policy בפריסה.");
         }
+        java.util.List<String> absent = missing == null || missing.isBlank()
+                ? HEADER_ORDER
+                : HEADER_ORDER.stream().filter(h -> java.util.Arrays.asList(missing.split(",")).contains(h)).toList();
+        if (absent.isEmpty()) {
+            absent = HEADER_ORDER;
+        }
+        StringBuilder lines = new StringBuilder();
+        for (String h : absent) {
+            lines.append('\n').append(HEADER_LINES.get(h));
+        }
+        String cspNote = absent.contains("CSP")
+                ? ReportFindingsCatalog.tr(lang,
+                "\n\nПолную Content-Security-Policy собирают под сайт после проверки всех скриптов; frame-ancestors можно включить сразу.",
+                "\n\nA full Content-Security-Policy is built per site after reviewing every script; frame-ancestors is safe to enable now.",
+                "\n\nContent-Security-Policy מלאה נבנית לפי האתר אחרי בדיקת כל הסקריפטים; את frame-ancestors אפשר להפעיל כבר עכשיו.")
+                : "";
         return ReportFindingsCatalog.tr(lang,
-                "Добавьте недостающие заголовки:\n\n"
-                        + "Content-Security-Policy: default-src 'self'\n"
-                        + "X-Frame-Options: SAMEORIGIN\n"
-                        + "Referrer-Policy: strict-origin-when-cross-origin\n"
-                        + "Permissions-Policy: camera=(), microphone=(), geolocation=()",
-                "Add the missing headers:\n\n"
-                        + "Content-Security-Policy: default-src 'self'\n"
-                        + "X-Frame-Options: SAMEORIGIN\n"
-                        + "Referrer-Policy: strict-origin-when-cross-origin\n"
-                        + "Permissions-Policy: camera=(), microphone=(), geolocation=()",
-                "הוסיפו את הכותרות החסרות:\n\n"
-                        + "Content-Security-Policy: default-src 'self'\n"
-                        + "X-Frame-Options: SAMEORIGIN\n"
-                        + "Referrer-Policy: strict-origin-when-cross-origin\n"
-                        + "Permissions-Policy: camera=(), microphone=(), geolocation=()");
+                "Добавьте недостающие заголовки (сервер, CDN или панель хостинга):\n",
+                "Add the missing headers (server, CDN or hosting panel):\n",
+                "הוסיפו את הכותרות החסרות (שרת, CDN או לוח הבקרה של האחסון):\n")
+                + lines + cspNote;
     }
 
     private static String runtime(String status, String lang) {
