@@ -73,6 +73,7 @@ body { font-family: 'Inter Tight', Inter, system-ui, sans-serif; font-size: 16px
 .segs i { height: 3px; border-radius: 2px; background: var(--line); display: block; }
 .segs i.on-good { background: var(--good); }
 .segs i.on-warn { background: var(--warn); }
+.segs i.on-bad { background: var(--bad); }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
 .chip { background: var(--soft); border-radius: 999px; padding: 9px 16px; font-size: 15px; }
@@ -1042,6 +1043,47 @@ a.badge.crit:hover {
   flex-shrink: 0 !important;
   display: block !important;
 }
+.chip.chip-crit {
+  border-color: #fca5a5 !important;
+  background: #fff1f0 !important;
+  padding-inline-end: 10px !important;
+}
+.chip-crit-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin-inline-start: 2px !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: #e52421 !important;
+  color: #fff !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  line-height: 1.2 !important;
+}
+.tech-php-alert {
+  margin-top: 14px !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid #fca5a5 !important;
+  background: #fff1f0 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  color: #7f1d1d !important;
+}
+.tech-php-alert .tech-php-cta {
+  display: block !important;
+  margin-top: 10px !important;
+  color: #b91c1c !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+.tech-php-alert .tech-php-cta:hover {
+  color: #e52421 !important;
+}
 
 /* Official header logo styling */
 .logo {
@@ -1999,6 +2041,9 @@ body[dir="rtl"] .logo {
   :root:root:root .filters, :root:root:root #empty { display: none !important; }
   /* keep the one-line footer on the last content page instead of a page of its own */
   :root:root:root .foot { padding-top: 0 !important; margin-top: -24px !important; font-size: 11px !important; break-before: avoid !important; page-break-before: avoid !important; }
+  /* advisory disclaimer sits right above the footer: its bottom margin absorbs the footer's -24px */
+  /* compact: with the footer it must fit the last content page, not open a page of its own */
+  :root:root:root .report-disclaimer { margin: 4px 0 26px !important; padding: 0 !important; font-size: 9px !important; line-height: 1.4 !important; break-inside: avoid; page-break-inside: avoid; break-before: avoid; page-break-before: avoid; }
   :root:root:root .check, :root:root:root .check::before, :root:root:root .check .chev, :root:root:root .check::details-content, :root:root:root .action, :root:root:root .chip { transition: none !important; animation: none !important; }
   * { transition: none !important; animation: none !important; }
 }
@@ -2026,7 +2071,7 @@ body[dir="rtl"] .logo {
   <div class="head">
     <div class="head-top">
       <span class="badge dark">Экспресс-аудит сайта · Free</span>
-      <span class="badge">Проверено: 26 окт 2026 17:43 UTC</span>
+      <span class="badge">Проверено: 27 окт 2026 16:15 UTC</span>
       <span class="badge">Локаль: RU</span>
     </div>
     <div class="site">
@@ -2040,7 +2085,7 @@ body[dir="rtl"] .logo {
     <div class="score" style="margin-top:28px">
       <div>
         <div class="score-num">88<small>/100</small></div>
-        <p class="score-note">Оценка 88 из 100 — по экспресс-проверке главной страницы. Самая слабая шкала — «Скорость и мобильный UX» (62). В отчёте открыты 5 базовых проверок и Google Lighthouse; полный аудит (28 проверок, 3 локали, до 10 страниц) может уточнить оценку.</p>
+        <p class="score-note">Оценка 88 из 100 — по экспресс-проверке главной страницы. Самая слабая шкала — «Скорость и мобильный UX» (70). В отчёте открыты 5 базовых проверок и Google Lighthouse; полный аудит (28 проверок, 3 локали, до 10 страниц) может уточнить оценку.</p>
       </div>
       <div class="gauge">
         <svg viewBox="0 0 150 150" aria-hidden="true">
@@ -2057,17 +2102,17 @@ body[dir="rtl"] .logo {
     <div class="scales-head"><h2>Результаты диагностики</h2><span class="mono">основные показатели</span></div>
     <div class="scale">
       <div class="row"><h3>Скорость и мобильный UX</h3><a href="#action-speed" class="badge warn" title="Смотреть решение по направлению: Скорость и мобильный UX">Требует внимания ↓</a></div>
-      <div class="val"><b>62</b></div>
-      <div class="segs"><i class="on-warn"></i><i class="on-warn"></i><i></i><i></i></div>
+      <div class="val"><b>70</b></div>
+      <div class="segs"><i class="on-warn"></i><i class="on-warn"></i><i class="on-warn"></i><i></i></div>
     </div>
     <div class="scale">
-      <div class="row"><h3>SEO и видимость</h3><a href="#diag-seo" class="badge grow" title="Смотреть решение по направлению: SEO и видимость">1 точка роста ↓</a></div>
+      <div class="row"><h3>SEO и видимость</h3><a href="#tiers" class="badge lock" title="Детали по шкале — в тарифах Diagnostic и Pro">В полном аудите ↓</a></div>
       <div class="val"><b>94</b></div>
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
     <div class="scale">
-      <div class="row"><h3>Лидогенерация и формы</h3><span class="badge ok">Без замечаний</span></div>
-      <div class="val"><b>100</b></div>
+      <div class="row"><h3>Лидогенерация и формы</h3><a href="#diag-lead" class="badge grow" title="Смотреть решение по направлению: Лидогенерация и формы">1 точка роста ↓</a></div>
+      <div class="val"><b>90</b></div>
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
     <div class="scale">
@@ -2076,7 +2121,7 @@ body[dir="rtl"] .logo {
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
     <div class="scale">
-      <div class="row"><h3>AI Visibility и Brand Discovery</h3><a href="#tiers" class="badge lock" title="Детали по шкале — в тарифах Diagnostic и Pro">В полном аудите ↓</a></div>
+      <div class="row"><h3>AI Visibility и Brand Discovery</h3><span class="badge ok">Без замечаний</span></div>
       <div class="val"><b>100</b></div>
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
@@ -2110,18 +2155,18 @@ body[dir="rtl"] .logo {
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="lighthouse">
     <div class="row"><h2>Скорость и Core Web Vitals</h2><span class="badge">Google Lighthouse</span></div>
     <div class="table-scroll">
       <table>
         <thead><tr><th>Метрика</th><th>Mobile (iPhone SE)</th><th>Desktop</th></tr></thead>
         <tbody>
-          <tr><td>Performance</td><td><span class="p w">62</span></td><td><span class="p w">73</span></td></tr>
+          <tr><td>Performance</td><td><span class="p w">70</span></td><td><span class="p w">65</span></td></tr>
           <tr><td>Accessibility</td><td><span class="p g">100</span></td><td><span class="p g">100</span></td></tr>
-          <tr><td>Best practices</td><td><span class="p g">96</span></td><td><span class="p g">96</span></td></tr>
+          <tr><td>Best practices</td><td><span class="p g">100</span></td><td><span class="p g">96</span></td></tr>
           <tr><td>SEO</td><td><span class="p g">100</span></td><td><span class="p g">100</span></td></tr>
-          <tr><td>FCP</td><td>3.8 s</td><td>0.6 s</td></tr>
-          <tr><td>LCP</td><td>6.4 s</td><td>1.6 s</td></tr>
+          <tr><td>FCP</td><td>2.6 s</td><td>0.5 s</td></tr>
+          <tr><td>LCP</td><td>6.2 s</td><td>1.7 s</td></tr>
           <tr><td>CLS</td><td>0</td><td>0.001</td></tr>
           <tr><td>Страницы воронки</td><td colspan="2"><span class="p g">1/1</span></td></tr>
         </tbody>
@@ -2155,17 +2200,26 @@ body[dir="rtl"] .logo {
   <section class="card">
     <div class="row"><h2>Обнаруженные технологии</h2></div>
     <div class="chips">
-      <!-- filled from audit_data.detected_technologies on next audit render -->
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></svg><span>Next.js</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2L22 20H2L12 2z"/></svg><span>Vercel</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#F38020" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16.5088 16.8447c.1475-.5068.0908-.9707-.1553-1.3154-.2246-.3164-.6045-.499-1.0615-.5205l-8.6592-.1123a.1559.1559 0 0 1-.1333-.0713c-.0283-.042-.0351-.0986-.021-.1553.0278-.084.1123-.1484.2036-.1562l8.7359-.1123c1.0351-.0489 2.1601-.8868 2.5537-1.9136l.499-1.3013c.0215-.0561.0293-.1128.0147-.168-.5625-2.5463-2.835-4.4453-5.5499-4.4453-2.5039 0-4.6284 1.6177-5.3876 3.8614-.4927-.3658-1.1187-.5625-1.794-.499-1.2026.119-2.1665 1.083-2.2861 2.2856-.0283.31-.0069.6128.0635.894C1.5683 13.171 0 14.7754 0 16.752c0 .1748.0142.3515.0352.5273.0141.083.0844.1475.1689.1475h15.9814c.0909 0 .1758-.0645.2032-.1553l.12-.4268zm2.7568-5.5634c-.0771 0-.1611 0-.2383.0112-.0566 0-.1054.0415-.127.0976l-.3378 1.1744c-.1475.5068-.0918.9707.1543 1.3164.2256.3164.6055.498 1.0625.5195l1.8437.1133c.0557 0 .1055.0263.1329.0703.0283.043.0351.1074.0214.1562-.0283.084-.1132.1485-.204.1553l-1.921.1123c-1.041.0488-2.1582.8867-2.5527 1.914l-.1406.3585c-.0283.0713.0215.1416.0986.1416h6.5977c.0771 0 .1474-.0489.169-.126.1122-.4082.1757-.837.1757-1.2803 0-2.6025-2.125-4.727-4.7344-4.727"/></svg><span>Cloudflare</span></span>
+      <span class="chip"><span>Tailwind CSS</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="16" y="2" width="6" height="20" rx="3" fill="#F9AB00"/><rect x="9" y="8" width="6" height="14" rx="3" fill="#E37400"/><circle cx="4" cy="19" r="3" fill="#E37400"/></svg><span>Google Analytics 4</span></span>
+      <span class="chip"><span>Meta Pixel</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="#F38020"/><path d="M10 15.5l-3.5-3.5 1.41-1.41L10 12.67l6.09-6.09L17.5 8l-7.5 7.5z" fill="#ffffff"/></svg><span>Cloudflare Turnstile</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#24A1DE" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg><span>Telegram</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="5" cy="7" r="3.2" fill="#005A9C"/><circle cx="19" cy="7" r="3.2" fill="#0FB5EE"/><circle cx="12" cy="18" r="3.2" fill="#CB3837"/><path d="M8 7h8M7 9.5l3.5 6M17 9.5l-3.5 6" stroke="#4a5568" stroke-width="1.6" stroke-linecap="round"/></svg><span>JSON-LD</span></span>
+      <span class="chip"><span>Open Graph</span></span>
     </div>
   </section>
 
   <section class="card">
     <div class="row"><h2>Путь к заявке</h2><span class="badge ok">Исправен</span></div>
-    <p class="sub">Вердикт: на главной странице заявку можно оставить — форма и мессенджеры работают.</p>
+    <p class="sub">Вердикт: на главной странице заявку можно оставить — есть форма и мгновенный канал связи.</p>
     <div class="flow">
       <div class="flow-col">
         <h4>Каналы заявки</h4>
-        <div class="flow-in"><span class="pill ok">Форма на странице</span><span class="pill ok">Форма по кнопке</span><span class="pill ok">WhatsApp</span><span class="pill ok">Telegram</span><span class="pill ok">ИИ-консультант</span></div>
+        <div class="flow-in"><span class="pill ok">Форма на странице</span><span class="pill ok">Форма по кнопке</span><span class="pill ok">Telegram</span></div>
       </div>
       <div class="flow-arrow">→</div>
       <div class="flow-col">
@@ -2173,7 +2227,7 @@ body[dir="rtl"] .logo {
         <div class="flow-steps">
           <div class="flow-step">HTTP 200 и отсутствие soft-404 <span>1/1</span></div>
           <div class="flow-step">CTA или форма на странице <span>1/1</span></div>
-          <div class="flow-step">Антиспам: Turnstile, honeypot <span>OK</span></div>
+          <div class="flow-step">Антиспам: Turnstile, honeypot, reCAPTCHA <span>OK</span></div>
           <div class="flow-step">Мгновенный канал связи <span>OK</span></div>
         </div>
       </div>
@@ -2186,16 +2240,6 @@ body[dir="rtl"] .logo {
           <li>Посетитель из мессенджера отвечает за секунды</li>
           <li>Меню ведёт только на живые URL</li>
         </ul>
-      </div>
-    </div>
-    <div class="tier-lock-card">
-      <div class="lock-header">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-        <span>Путь к заявке по всей воронке (до 10 страниц)</span>
-      </div>
-      <p>Сквозное тестирование путей оформления заказа, мягких 404, мобильных форм и кнопок захвата лида по всем страницам каталога доступно в тарифах Diagnostic и Pro.</p>
-      <div class="lock-actions">
-        <a href="#tiers" class="tier-btn-secondary"><span class="bt-full">Что входит в Diagnostic и Pro ↓</span><span class="bt-short">Что входит в пакеты ↓</span></a>
       </div>
     </div>
     <div class="tier-lock-card">
@@ -2229,13 +2273,16 @@ body[dir="rtl"] .logo {
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
-          <code>src/app/(frontend)/layout.tsx:160-175</code>
+          <code>Разметка изображений и кэш статики</code>
         </span>
-        <button type="button" class="btn-copy" data-copy="// src/app/(frontend)/layout.tsx:160-175
-// Предзагрузка LCP-изображения и шрифтов для ускорения первой отрисовки:
-&lt;link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high" /&gt;
-&lt;link rel="preconnect" href="https://fonts.googleapis.com" crossorigin /&gt;
-&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /&gt;" aria-label="Copy code">
+        <button type="button" class="btn-copy" data-copy="&lt;!-- Современные форматы с запасным JPEG и заданными размерами (без сдвига вёрстки): --&gt;
+&lt;picture&gt;
+  &lt;source srcset="/images/hero.avif" type="image/avif"&gt;
+  &lt;source srcset="/images/hero.webp" type="image/webp"&gt;
+  &lt;img src="/images/hero.jpg" width="1200" height="630" alt="Описание баннера" fetchpriority="high"&gt;
+&lt;/picture&gt;
+&lt;!-- HTTP-заголовок для изображений, CSS и JS (сервер или CDN):
+     Cache-Control: public, max-age=31536000, immutable --&gt;" aria-label="Copy code">
           <span class="copy-text">copy</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -2243,11 +2290,14 @@ body[dir="rtl"] .logo {
           </svg>
         </button>
       </div>
-      <pre><code>// src/app/(frontend)/layout.tsx:160-175
-// Предзагрузка LCP-изображения и шрифтов для ускорения первой отрисовки:
-&lt;link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high" /&gt;
-&lt;link rel="preconnect" href="https://fonts.googleapis.com" crossorigin /&gt;
-&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /&gt;</code></pre>
+      <pre><code>&lt;!-- Современные форматы с запасным JPEG и заданными размерами (без сдвига вёрстки): --&gt;
+&lt;picture&gt;
+  &lt;source srcset="/images/hero.avif" type="image/avif"&gt;
+  &lt;source srcset="/images/hero.webp" type="image/webp"&gt;
+  &lt;img src="/images/hero.jpg" width="1200" height="630" alt="Описание баннера" fetchpriority="high"&gt;
+&lt;/picture&gt;
+&lt;!-- HTTP-заголовок для изображений, CSS и JS (сервер или CDN):
+     Cache-Control: public, max-age=31536000, immutable --&gt;</code></pre>
     </div>
         </div>
         <div class="plus"><small>Шаг</small>1</div>
@@ -2255,42 +2305,21 @@ body[dir="rtl"] .logo {
       <div class="tier-lock-card actions-locked">
         <div class="lock-header">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          <span>Ещё 5 шагов плана — с готовым кодом в Pro</span>
-        </div>
-        <div class="action-locked">
-          <div>
-            <h3>Доступность интерфейса WCAG 2.1 AA / IS 5568</h3>
-            <div class="tags"><span class="tag">Доступность</span><span class="tag med">Требует внимания</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Решение и код — в Pro</span></div>
-          </div>
-          <div class="plus"><small>Шаг</small>2</div>
+          <span>Ещё 2 шага плана — с готовым кодом в Pro</span>
         </div>
         <div class="action-locked">
           <div>
             <h3>Расширение мультиязычной воронки</h3>
             <div class="tags"><span class="tag">SEO & Funnel</span><span class="tag gold">Точка роста</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Решение и код — в Pro</span></div>
           </div>
-          <div class="plus"><small>Шаг</small>3</div>
+          <div class="plus"><small>Шаг</small>2</div>
         </div>
         <div class="action-locked">
           <div>
             <h3>AI-квалификация входящих заявок</h3>
             <div class="tags"><span class="tag">Лидогенерация</span><span class="tag gold">Точка роста</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Решение и код — в Pro</span></div>
           </div>
-          <div class="plus"><small>Шаг</small>4</div>
-        </div>
-        <div class="action-locked">
-          <div>
-            <h3>Обязательные заголовки безопасности HTTP</h3>
-            <div class="tags"><span class="tag">Безопасность</span><span class="tag gold">Точка роста</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Решение и код — в Pro</span></div>
-          </div>
-          <div class="plus"><small>Шаг</small>5</div>
-        </div>
-        <div class="action-locked">
-          <div>
-            <h3>AI Search Visibility: llms.txt и Content-Signals</h3>
-            <div class="tags"><span class="tag">AI Discovery</span><span class="tag gold">Точка роста</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Решение и код — в Pro</span></div>
-          </div>
-          <div class="plus"><small>Шаг</small>6</div>
+          <div class="plus"><small>Шаг</small>3</div>
         </div>
         <div class="lock-actions">
           <a href="https://erythro.ai/order/audit-pro?lang=ru" class="tier-btn-primary"><span class="bt-full">Открыть весь план с кодом в Pro · ₪490 →</span><span class="bt-short">Открыть в Pro · ₪490 →</span></a>
@@ -2310,25 +2339,12 @@ body[dir="rtl"] .logo {
     </div>
     <p id="empty" hidden>Нет пунктов с таким статусом.</p>
     <div class="checks" id="checks">
-      <details class="check" name="audit-checklist" data-s="w" data-pillar="a11y"><summary><span class="st w">Требует внимания</span><span class="nm">Доступность WCAG 2.1 AA / IS 5568</span><span class="chev">⌄</span></summary>
+      <details class="check" name="audit-checklist" data-s="n" data-pillar="lead" id="diag-lead"><summary><span class="st n">Точка роста</span><span class="nm">Лид-формы, антиспам и мгновенный ответ</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Результат проверки</b>img без alt: 2; кнопки без подписи: 0; axe-core: 0</div>
+          <div class="res"><b>Результат проверки</b>Форм: 1. Email: нет, телефон: нет, submit: да. Антиспам: Cloudflare Turnstile, Honeypot. Мгновенный канал: WhatsApp/Telegram (1)</div>
           <div class="rec">
             <div class="rec-title-row"><b>Рекомендация</b></div>
-            <p>Закройте WCAG 2.1 AA и IS 5568: alt у всех информативных img, aria-label у кнопок-иконок, контраст и фокус.
-
-Повторяйте axe-core на 375px перед релизом.</p>
-            
-          </div>
-        </div></details>
-      <details class="check" name="audit-checklist" data-s="n" data-pillar="seo" id="diag-seo"><summary><span class="st n">Точка роста</span><span class="nm">SEO, OpenGraph и превью в мессенджерах</span><span class="chev">⌄</span></summary>
-        <div class="body">
-          <div class="res"><b>Результат проверки</b>RU: title да, description да, og:image да, canonical да; hreflang не задан</div>
-          <div class="rec">
-            <div class="rec-title-row"><b>Рекомендация</b></div>
-            <p>Закройте превью в WhatsApp/Telegram/LinkedIn: уникальные title и description на каждой локали, og:image 1200×630, canonical и hreflang между языками.
-
-html lang должен совпадать с языком страницы.</p>
+            <p>Форма защищена, но в ней нет поля email или телефона либо кнопки отправки. Добавьте контактное поле и явную кнопку отправки — иначе заявку не с чем обработать.</p>
             
           </div>
         </div></details>
@@ -2343,14 +2359,12 @@ html lang должен совпадать с языком страницы.</p>
             
           </div>
         </div></details>
-      <details class="check" name="audit-checklist" data-s="g" data-pillar="lead" id="diag-lead"><summary><span class="st g">Отлично</span><span class="nm">Лид-формы, антиспам и мгновенный ответ</span><span class="chev">⌄</span></summary>
+      <details class="check" name="audit-checklist" data-s="g" data-pillar="ai"><summary><span class="st g">Отлично</span><span class="nm">GA4 / dataLayer readiness</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Результат проверки</b>Форм: 2 (по кнопке). Email: да, телефон: да, submit: да. Антиспам: Cloudflare Turnstile, Honeypot. Мгновенный канал: чат [class*="chat-launcher"]</div>
+          <div class="res"><b>Результат проверки</b>dataLayer + consent stub в head (GA4 G- ID найден)</div>
           <div class="rec">
             <div class="rec-title-row"><b>Рекомендация</b></div>
-            <p>Лид-захват в норме: форма, антиспам и мгновенный канал на месте.
-
-Не убирайте honeypot, Turnstile/reCAPTCHA и wa.me (или чат) в следующих релизах — без них растёт спам и теряются заявки с мобильных.</p>
+            <p>dataLayer и Consent Mode stub уже в &lt;head&gt;. Не переносите gtag('consent','default') ниже баннера cookies — иначе Google не зафиксирует согласие.</p>
             
           </div>
         </div></details>
@@ -2360,6 +2374,17 @@ html lang должен совпадать с языком страницы.</p>
           <div class="rec">
             <div class="rec-title-row"><b>Рекомендация</b></div>
             <p>HTTPS и security headers на месте. Не снимайте HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy и Permissions-Policy при деплое.</p>
+            
+          </div>
+        </div></details>
+      <details class="check" name="audit-checklist" data-s="g" data-pillar="sec"><summary><span class="st g">Отлично</span><span class="nm">Стабильность рантайма (JS-ошибки и битые запросы)</span><span class="chev">⌄</span></summary>
+        <div class="body">
+          <div class="res"><b>Результат проверки</b>Падений JavaScript и ответов 4xx/5xx не зафиксировано</div>
+          <div class="rec">
+            <div class="rec-title-row"><b>Рекомендация</b></div>
+            <p>Рантайм стабилен: нет PageError и ответов 4xx/5xx на просмотренных URL.
+
+Оставьте мониторинг console / PageError на воронке, чтобы регресс не дошёл до рекламного трафика.</p>
             
           </div>
         </div></details>
@@ -2395,9 +2420,9 @@ html lang должен совпадать с языком страницы.</p>
     <ul class="scope-list">
       <li><b>Google PageSpeed Insights</b>10 метрик × 2 устройства: Performance, Accessibility, Best Practices, SEO, FCP, LCP, CLS, TBT, Speed Index, TTI.</li>
       <li><b>Главная страница</b>HTTP-статус и HTTPS, формы и каналы связи, обнаруженные технологии.</li>
-      <li><b>5 базовых проверок</b>Доступность WCAG 2.1 AA / IS 5568; SEO, OpenGraph и превью в мессенджерах; Паразитный боковой скролл (Overflow-X на смартфонах 375px); Лид-формы, антиспам и мгновенный ответ; HTTPS и HTTP-заголовки безопасности</li>
+      <li><b>5 базовых проверок</b>Лид-формы, антиспам и мгновенный ответ; Паразитный боковой скролл (Overflow-X на смартфонах 375px); GA4 / dataLayer readiness; HTTPS и HTTP-заголовки безопасности; Стабильность рантайма (JS-ошибки и битые запросы)</li>
     </ul>
-    <p class="note">Free — экспресс-срез одной страницы. Сквозной обход воронки, другие локали и AI Visibility в этот отчёт не входят.</p>
+    <p class="note">Free — экспресс-срез одной страницы. Сквозной обход воронки, другие локали и разбор AI Visibility по критериям в этот отчёт не входят: по AI Visibility показаны сводная оценка и найденные пробелы, без статуса и рекомендации по каждому из 7 критериев.</p>
   </section>
 
   <section class="card tiers" id="tiers">
@@ -2423,7 +2448,7 @@ html lang должен совпадать с языком страницы.</p>
         </tbody>
       </table>
     </div>
-    <p class="tiers-method">Как считаем: 55 проверок по сайту целиком (из них 20 — AI Visibility, Agent Readiness и доступ AI-ботов), 28 на каждый язык сайта, 9 на каждую страницу воронки. Free: 5 проверок + 20 метрик Lighthouse.</p>
+    <p class="tiers-method">Как считаем: 55 проверок по сайту целиком (из них 20 — AI Visibility, Agent Readiness и доступ AI-ботов), 28 на каждый язык сайта, 9 на каждую страницу воронки, в Pro ещё 1 — Funnel review. Free: 5 проверок + 20 метрик Lighthouse.</p>
     <div class="tiers-actions">
       <a class="tier-btn-secondary" href="https://erythro.ai/order/audit-diagnostic?lang=ru"><span class="bt-full">Заказать Diagnostic · ₪99</span><span class="bt-short">Diagnostic · ₪99</span></a>
       <a class="tier-btn-primary" href="https://erythro.ai/order/audit-pro?lang=ru"><span class="bt-full">Заказать Pro · ₪490</span><span class="bt-short">Pro · ₪490</span></a>
@@ -2437,12 +2462,11 @@ html lang должен совпадать с языком страницы.</p>
       <div class="contacts"><a href="mailto:team@erythro.ai">team@erythro.ai</a><a href="tel:+972505308305" dir="ltr">+972 50 530 8305</a></div>
     </div>
     <div class="cta-buttons">
-        <a class="go sec" href="https://erythro.ai/order/audit-diagnostic?lang=ru"><span class="bt-full">Заказать Diagnostic · ₪99</span><span class="bt-short">Diagnostic · ₪99</span></a>
-        <a class="go" href="https://erythro.ai/order/audit-pro?lang=ru"><span class="bt-full">Заказать Pro · ₪490</span><span class="bt-short">Pro · ₪490</span></a>
         <a class="go sec" href="https://wa.me/972505308305"><span class="bt-full">Заказать консультацию в WhatsApp</span><span class="bt-short">Консультация в WhatsApp</span></a>
       </div>
   </section>
 
+  <p class="report-disclaimer" style="max-width:960px;margin:28px auto 10px;padding:0 16px;font-size:12px;line-height:1.6;color:#6b6b6b;text-align:start">Отчёт носит информационно-рекомендательный характер. Он отражает состояние сайта на момент автоматической проверки и экспертную оценку Erythro.ai, не является юридическим заключением, гарантией результата или требованием срочных изменений. Решение о внедрении рекомендаций и их сроках принимает владелец сайта.</p>
   <div class="foot">© 2026 Erythro.ai — Hi-Load Web Development &amp; AI Agents Automation · Commercial Executive Audit</div>
 </div>
 
