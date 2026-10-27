@@ -2275,7 +2275,8 @@ const FREE_CHECK_LIMIT = 5;
 const FREE_SKIP_RE = /rtl|локаль|locale|שפה|воронк|funnel|משפך|ivrit|иврит/i;
 
 function pickFreeChecks(checks, lang) {
-  const eligible = checks.filter((c) => c.pillar !== 'ai' && !FREE_SKIP_RE.test(c.name));
+  // GA4 sits in the 'ai' pillar but is plain analytics; without it Free's own rows give only 4 checks
+  const eligible = checks.filter((c) => (c.pillar !== 'ai' || /ga4|datalayer/i.test(c.name)) && !FREE_SKIP_RE.test(c.name));
   const picked = eligible.filter((c) => c.status !== 'good').slice(0, FREE_CHECK_LIMIT);
   for (const p of ['speed', 'seo', 'lead', 'sec']) {
     if (picked.length >= FREE_CHECK_LIMIT) break;
@@ -2331,43 +2332,31 @@ function classifyActionPillar(title) {
 }
 
 function renderReport(lang, tier = 'pro') {
+  // Java HTML of THIS tier from THIS run only. reports/ outlives audits inside the worker
+  // container, so another tier's file or an older one belongs to another client's site (PIT-139).
   const proCandidates = [
     path.join(AUDITOR_ROOT, `reports/${tier}`, `a44-audit-report_${lang}.html`),
     path.join(AUDITOR_ROOT, `reports/${tier}`, `audit-report_${lang}.html`),
-    path.join(AUDITOR_ROOT, 'reports/pro', `a44-audit-report_${lang}.html`),
-    path.join(AUDITOR_ROOT, 'reports/pro', `audit-report_${lang}.html`),
-    path.join(AUDITOR_ROOT, 'reports/audit-report.html'),
     path.join('reports', tier, `a44-audit-report_${lang}.html`),
     path.join('reports', tier, `audit-report_${lang}.html`),
-    path.join('reports/pro', `a44-audit-report_${lang}.html`),
-    path.join('reports/pro', `audit-report_${lang}.html`),
-    path.join('reports/audit-report.html'),
-    path.join('QA_Auditor/reports/pro', `audit-report_${lang}.html`)
   ];
+  // audit_data.json is written before the Java HTML, so an older file predates this audit
+  const runStart = fs.statSync(DATA_FILE).mtimeMs - 2000;
   let pro = '';
-  // Own tier folder first, newest file inside it: the a44-* copy saved below outlives the audit,
-  // and taking it first by list order fed the previous site's checks into a single-tier re-run.
-  const ownDir = path.join('reports', tier) + path.sep;
   const withCards = [...new Set(proCandidates.map((cp) => path.resolve(cp)))]
     .filter((cp) => fs.existsSync(cp))
-    .map((cp) => ({ cp, own: cp.includes(ownDir), mtime: fs.statSync(cp).mtimeMs, c: fs.readFileSync(cp, 'utf8') }))
+    .map((cp) => ({ cp, mtime: fs.statSync(cp).mtimeMs }))
+    .filter((x) => x.mtime >= runStart)
+    .map((x) => ({ ...x, c: fs.readFileSync(x.cp, 'utf8') }))
     .filter((x) => x.c.includes('class="check-card"'))
-    .sort((a, b) => (b.own - a.own) || (b.mtime - a.mtime));
+    .sort((a, b) => b.mtime - a.mtime);
   if (withCards.length) {
     pro = withCards[0].c;
     try {
       fs.writeFileSync(path.join(AUDITOR_ROOT, `reports/${tier}`, `a44-audit-report_${lang}.html`), pro, 'utf8');
     } catch (e) {}
   } else {
-    console.error(`[render-v2] ${tier}/${lang}: no Java HTML with check-card found, checklist will be empty`);
-  }
-  if (!pro) {
-    for (const cp of proCandidates) {
-      if (fs.existsSync(cp)) {
-        pro = fs.readFileSync(cp, 'utf8');
-        break;
-      }
-    }
+    console.error(`[render-v2] ${tier}/${lang}: no Java HTML with check-card from this run, checklist will be empty`);
   }
 
   // Load template from templates/ or SAMPLES_DIR

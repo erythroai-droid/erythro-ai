@@ -1451,6 +1451,7 @@ public final class A44ReportGenerator {
         } else if (tier == A44Tier.FREE) {
             body.append(metricsSection(view, copy, i18n, false, assetBase, pagesForTier(view, tier)));
             body.append(freeLockedChecksSection(copy, i18n));
+            body.append(freeCheckData(view, copy, i18n, assetBase));
         }
         body.append(ReportScopeOfWork.sectionRow(view, tier));
         body.append("    </div>\n");
@@ -1756,6 +1757,25 @@ public final class A44ReportGenerator {
     }
 
     /** Free tier teaser: unlock CTA only (full checklist lives in paid tiers). */
+    /**
+     * Free shows only the locked teaser, but render-v2 builds the Free checklist from check-cards.
+     * Without its own cards it fell back to the last Pro run in the container, i.e. another
+     * client's site (PIT-139). Hidden here, so the A4-4 HTML and PDF stay unchanged.
+     */
+    private static String freeCheckData(AuditReportView view, A44Copy copy, AuditReportI18n i18n, String assetBase) {
+        List<Map<String, String>> rows = view.checkRows == null ? List.of() : view.checkRows;
+        StringBuilder sb = new StringBuilder("<div class=\"free-check-data\" hidden style=\"display:none\">");
+        int pages = pagesForTier(view, A44Tier.FREE);
+        for (Map<String, String> row : rows) {
+            String card = checkCard(row, copy, i18n, pages, A44Tier.FREE, assetBase, false);
+            String rec = A44Recommendations.forCheck(
+                    String.valueOf(row.getOrDefault("id", "")), normalizeCheckStatus(row), i18n.lang);
+            int end = card.lastIndexOf("</article>");
+            sb.append(card, 0, end).append("<pre class=\"rec-body\">").append(esc(rec)).append("</pre></article>");
+        }
+        return sb.append("</div>").toString();
+    }
+
     private static String freeLockedChecksSection(A44Copy copy, AuditReportI18n i18n) {
         String inner = "<div class=\"section-free-locked\">"
                 + "<div class=\"free-locked-cta\">"

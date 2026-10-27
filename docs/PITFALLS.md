@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-139 — Free checklist showed another client's checks (or nothing)
+
+**Tags:** `audit`, `report`, `render-v2`, `free`, `privacy`
+**Seen:** 2026-10-27 — AUD-218 empty checklist; code review showed the leak path
+
+**Symptom:** Free report checklist was empty under "Результаты: 5 из 28". In other runs it could list 5 checks of a **different site**: the last Pro audit in the worker container.
+
+**Cause:** Java FREE rendered only `freeLockedChecksSection`, so its HTML had no `check-card`. `renderReport` then walked candidates down to `reports/pro/a44-audit-report_<lang>.html`. The worker runs one tier per audit (`AUDIT_TIER` in `runQaAuditor.js`), and `reports/` lives in the container with no volume, so that Pro file belonged to whichever client ran Pro last. With no Pro file (fresh container) the list was empty.
+
+**Fix:** Java FREE appends hidden `free-check-data` cards built from `view.checkRows` with `rec-body`. `renderReport` reads only its own tier's files, and only ones not older than this run's `audit_data.json`. `pickFreeChecks` lets GA4 through, so Free has its 5 checks.
+
+**Prevent:** The renderer never reads another tier's or another run's Java HTML. Test single-tier runs (`AUDIT_TIER=free`) in a folder that holds another site's Pro report.
+
+---
+
 ## PIT-138 — Free report contradicts itself: "no form" in top-3, "lead path OK" below
 
 **Tags:** `audit`, `report`, `render-v2`, `free`
@@ -2179,9 +2194,9 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 **Symptom:** Top-3 and Step 1 said "На сайте нет формы захвата заявок", while "Путь к заявке" said "Исправен — форма и мессенджеры работают", "1/1", "Антиспам OK". Step 1 was tagged "Скорость" and showed the LCP preload snippet from our own Next.js repo. AI steps were also tagged "Скорость". A Turnstile step sat next to detected reCAPTCHA. The funnel lock card was printed twice, and the checklist was empty under "Результаты: 5 из 28".
 
-**Cause:** (1) The "Путь к заявке" block (channels, steps, verdict, badge) was static template copy for every tier. (2) `classifyActionPillar` had no keywords for "ИИ", "формы", "заявок", RTL, OG, robots, so those findings fell through to `speed`, and the Free branch used `ACTION_CODE_SOLUTIONS[pillar] || speed`. (3) Filler steps were added whenever a pillar had a code snippet (`issues.length > 0 || ACTION_CODE_SOLUTIONS[pKey]`). (4) The template already ships the funnel lock card, and the render appended a second one. (5) The Java "no form" finding ignored messengers and chat. (6) The renderer took the first candidate with `check-card` by list order, so a stale `a44-*` copy could win over the fresh Java HTML.
+**Cause:** (1) The "Путь к заявке" block (channels, steps, verdict, badge) was static template copy for every tier. (2) `classifyActionPillar` had no keywords for "ИИ", "формы", "заявок", RTL, OG, robots, so those findings fell through to `speed`, and the Free branch used `ACTION_CODE_SOLUTIONS[pillar] || speed`. (3) Filler steps were added whenever a pillar had a code snippet (`issues.length > 0 || ACTION_CODE_SOLUTIONS[pKey]`). (4) The template already ships the funnel lock card, and the render appended a second one. (5) The Java "no form" finding ignored messengers and chat. (6) Empty checklist: see PIT-139.
 
-**Fix:** `leadPathFromData()` builds the block from `lead_capture` + `agent_browse` (Free: homepage, Diagnostic: 5 pages, Pro: all). The classifier covers every `ReportFindingsCatalog` title, plus `solutionFor()` and a new `lead_form` snippet. Filler steps need a failing check or a weak scale, and are dropped when the data contradicts them. The funnel lock card is replaced, not appended. Java: "no form" fires only without a form *and* without an instant channel, and top-3 holds one AI finding. The renderer picks the own-tier Java HTML first, newest first; an empty checklist says so honestly instead of "5 из 28".
+**Fix:** `leadPathFromData()` builds the block from `lead_capture` + `agent_browse` (Free: homepage, Diagnostic: 5 pages, Pro: all). The classifier covers every `ReportFindingsCatalog` title, plus `solutionFor()` and a new `lead_form` snippet. Filler steps need a failing check or a weak scale, and are dropped when the data contradicts them. The funnel lock card is replaced, not appended. Java: "no form" fires only without a form *and* without an instant channel, and top-3 holds one AI finding. An empty checklist says so honestly instead of "5 из 28".
 
 **Prevent:** Never ship verdict text in a template; every status line comes from `audit_data`. A new finding title in the catalog must hit a keyword in `classifyActionPillar` (run the title list through it).
 
@@ -2416,3 +2431,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Flat R2 media keys: keep `media._objectkey` NULL; never set it to the filename or Payload afterRead builds `file.webp/file.webp` (PIT-133)
 - [ ] Audit report order CTAs: always `?lang=` matching report locale (PIT-134)
 - [ ] Audit report status blocks ("Путь к заявке", verdicts, badges) only from audit_data; new catalog titles must classify in `classifyActionPillar` (PIT-138)
+- [ ] render-v2 reads only its own tier's Java HTML from this run; never fall back to another tier's file (PIT-139)
