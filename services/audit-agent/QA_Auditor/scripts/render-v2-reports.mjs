@@ -3684,15 +3684,10 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
     s = s.replace(ORDER_RE, ORDER_SLOT);
   }
   const waBtn = `<a class="go sec" href="https://wa.me/972505308305">${btnText(lang === 'ru' ? 'Заказать консультацию в WhatsApp' : lang === 'he' ? 'הזמנת ייעוץ ב-WhatsApp' : 'Book a WhatsApp consultation', lang === 'ru' ? 'Консультация в WhatsApp' : lang === 'he' ? 'ייעוץ ב-WhatsApp' : 'WhatsApp consultation')}</a>`;
-  const ctaBtnHtml = tier === 'free'
+  // Free and Diagnostic: the tier table right above already carries the order buttons, so the
+  // footer keeps only WhatsApp. Pro has no tier table and keeps its link to the tiers page.
+  const ctaBtnHtml = tier !== 'pro'
     ? `<div class="cta-buttons">
-        <a class="go sec" href="${orderCheckoutUrl('audit-diagnostic', lang)}">${orderDiag}</a>
-        <a class="go" href="${orderCheckoutUrl('audit-pro', lang)}">${orderPro}</a>
-        ${waBtn}
-      </div>`
-    : tier === 'diagnostic'
-    ? `<div class="cta-buttons">
-        <a class="go" href="${orderCheckoutUrl('audit-pro', lang)}">${btnText(cInfo.btn[lang], 'Pro · ₪490')}</a>
         ${waBtn}
       </div>`
     : `<a class="go" href="${cInfo.btnHref}">${cInfo.btn[lang]}</a>`;
