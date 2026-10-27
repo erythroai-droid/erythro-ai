@@ -2172,6 +2172,36 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-143 — Diagnostic/Pro treat the en+ru+he probes as the site's languages
+
+**Tags:** `audit`, `diagnostic`, `pro`, `locales`, `agent-browse`, `render-v2`
+**Seen:** 2026-10-27 — manual Diagnostic + Pro runs for gillemitzvot.co.il (Hebrew-only WordPress)
+
+**Symptom:** axe "6 serious violations — critical" in top-3 vs "axe-core: 2" in the checklist; "Locale EN/RU · needs attention" rows; protocol "checked in three languages (EN, RU, HE)", 184 checks; Agent Readiness "sitemap 0" with a found sitemap; "robots.txt: 200" for an HTML page; the homepage crawled twice (www + apex); a timed-out FAQ page shown as `Error { message='Timeout 45000ms…stack=…`; "broken pages" step tagged Security with the headers snippet (and the headers step gone); dead `#diag-speed` / `#action-lead`.
+
+**Cause:** Paid tiers always probe `LOCALES=en,ru,he`. A single-language site answers all three with the same Hebrew page; `LocalePresence.forReport` dropped absent locales only for RTL, so en/ru stayed and every per-locale count tripled. AI/L1 used the typed origin. `normalizeUrlKey` kept the host as typed. The agent stored the raw Playwright message. `classifyActionPillar` mapped "broken" to `sec`. Scale/plan links were built before knowing which anchors render.
+
+**Fix:** `forReport` drops any probed locale the site does not serve (unless the DOM scan saw that language). axe counts distinct serious rules on served locales. AI/L1 use `site_origin`; an HTML robots answer reads "missing". URL keys drop `www.`; sitemap URLs on the apex are kept for a www target. Timeouts store `timeout_45s` (+ `error_raw`) and render a plain sentence. Broken pages are a `funnel` pillar with its own snippet and severity. A final pass repoints any `#action-*/#diag-*` link to an existing anchor. Protocol counts come from `locales_audited`.
+
+**Prevent:** Never count or report a probed locale before checking the site serves it. Test paid tiers on a single-language site, not only erythro.ai.
+
+---
+
+## PIT-142 — "No sitemap" on a www URL and an "hreflang & OG" step for a Hebrew-only site
+
+**Tags:** `audit`, `seo`, `sitemap`, `hreflang`, `render-v2`
+**Seen:** 2026-10-27 — AUD-229 (gillemitzvot.co.il, WordPress + Yoast, Free HE)
+
+**Symptom:** SEO 74 with "no sitemap" (−10) although the site has a Yoast sitemap. Plan step 3 "hreflang и OpenGraph" for a site in Hebrew only with every OG tag present.
+
+**Cause:** (1) robots.txt and sitemap were fetched at the typed origin `www.` only; there `/sitemap.xml` is 404 (Yoast redirects only on the apex where the homepage lands) and `/sitemap_index.xml` was never tried. (2) "Multilingual" meant "audited in several locales" (`LOCALES=en,ru,he`), not "the site serves several languages". (3) The SEO filler step had one fixed title whatever pulled the scale down. (4) The "multilingual funnel" top-3 pad claims "locales work" for any site.
+
+**Fix:** robots/sitemap use the origin the homepage lands on, then the typed one, and try `/sitemap.xml`, `/sitemap_index.xml`, `/wp-sitemap.xml`, `/sitemap-index.xml`. The DOM scan records `seo_assets.siteLanguages` / `languageSwitcher` (html lang, hreflang, switcher links incl. `/il/he/`, `?lang=`, subdomains, and button switchers with ≥2 language labels). hreflang costs points and shows as a gap only when the site has >1 language. `seoCausesFromData()` picks the SEO step by cause (robots/sitemap → `seo_index`, OG/canonical → `seo_og`, hreflang → `seo`) or drops it. The multilingual pad is skipped for single-language sites.
+
+**Prevent:** Never treat the requested audit locales as the site's languages. Check HTTP resources at the landed origin. Every filler step must say which signal it fixes.
+
+---
+
 ## PIT-141 — Report snippets named our own Next.js files; detector allowed several CMS at once
 
 **Tags:** `audit`, `report`, `render-v2`, `tech-detect`

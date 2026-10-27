@@ -5,6 +5,21 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
+## AUD-230 + ручные Diagnostic/Pro (gillemitzvot): 8 правок платных тиров (PIT-143) — `0f5f729`, `c33e0bb`
+
+- Прогоны Diagnostic/Pro делались внутри контейнера без заявки/БД/почты (`mvn exec:java` с `AUDIT_TIER`, `LOCALES=en,ru,he`), скрипт в scratchpad сессии.
+- Исправлено: локали, которые сайт не обслуживает, выкидываются (`LocalePresence.forReport`, не только RTL) → нет строк «Язык EN/RU», протокол «на языке сайта (HE)», 128/174 проверки; axe = уникальные правила (было ×3); AI/L1 по `site_origin`, robots-HTML = «нет»; www/apex один сайт в агенте (нет дубля главной, sitemap-URL apex не отбрасываются); тайм-аут страницы — фраза, а не стек; «сломанные страницы» — свой шаг «Воронка» со сниппетом, шаг заголовков вернулся; все ссылки `#action-/#diag-` с запасным якорем; сниппет Sitemap → найденная карта.
+- Проверено повторным прогоном Diagnostic и Pro на `0f5f729` (7/8), якорь Pro `#action-lead` — на реальном HTML после `c33e0bb`.
+- **Найдено, но не трогал:** FAQ gillemitzvot реально отдаёт 504 (находка верная). Рекомендация рантайма в Diagnostic/Pro всё ещё общая (по решению — адрес запроса показывать в Diagnostic/Pro; не сделано). Gemini пишет «משעול ההמרה» (странное слово).
+
+## AUD-229: sitemap, языки сайта, шаг SEO (PIT-142) — `a859251`, воркер задеплоен 27.10 10:24 UTC, сверен
+
+- **Sitemap:** robots/sitemap по адресу, куда приводит главная (www → apex), затем по введённому; пути `/sitemap.xml`, `/sitemap_index.xml`, `/wp-sitemap.xml`, `/sitemap-index.xml`. gillemitzvot: sitemap найден (было ложное −10), robots.txt честно отсутствует.
+- **Языки сайта:** `seo_assets.siteLanguages` / `languageSwitcher` (html lang, hreflang, ссылки-переключатели, кнопки с ≥2 языками). Штраф и находка hreflang — только при >1 языке; запасная находка «мультиязычная воронка» не попадает к одноязычным. Проверено headless: gillemitzvot/bliainara/ikea-il — 1 язык, erythro.ai — ru/en/he (кнопки), wix/booking — много.
+- **Шаг SEO в плане:** по причине (robots/sitemap → `seo_index`, OG/canonical → `seo_og`, hreflang → `seo`), без причины — шага нет.
+- **Рантайм в Free:** по решению пользователя без адреса упавшего запроса; адрес — задача для Diagnostic/Pro.
+- AUD-226…229 удалены пользователем (тесты) — 500 на их ссылках и pro-offer POST 500 для 229 из-за этого; в плане: 404 вместо 500.
+
 ## AUD-228: шрифт иврита в коде и футер (воркер `e837265` задеплоен 27.10 09:54 UTC, сверен; сайт — ждёт PR в main)
 
 - **Засечки в сниппетах HE:** публичный CSP сайта (`style-src 'self'`) блокировал Google Fonts на `/api/audit/report/:id/html` → ни Heebo, ни IBM Plex Mono не грузились, иврит в коде падал в Courier New. `ae7ef05`: отдельный `AUDIT_REPORT_CONTENT_SECURITY_POLICY` в `next.config.ts` (Google Fonts + Cloudflare beacon) — **заработает только после деплоя сайта (PR → main)**. Запасная цепочка HE-кода `… Consolas, 'Segoe UI', Arial, monospace` в polish и 4 HE-шаблонах — на воркере.
@@ -26,7 +41,6 @@
 - **Внимание:** OpenCart/Magento/PrestaShop входят в PHP-алерт («Критично» в «Технологиях»), по заготовке в коде. У AUD-226 он появится.
 - **Проверено:** headless на живых сайтах — OpenCart, WordPress(+WooCommerce), Wix, Squarespace, Webflow, Tilda, Joomla, Bitrix верно; Википедия про CMS — пусто. Shopify/Magento/PrestaShop/Drupal не проверены (Cloudflare-challenge, пустые демо). Рендер Free/Diagnostic/Pro RU/HE: путей нет, div сбалансированы.
 - **Сверка контейнера:** md5 рендера совпадает с `e447910`, `snippetWhere` есть, `next.config.mjs` нет, `platformScores` в классах, рестартов 0.
-- **Открыто:** PIT-141 не продублирован в Obsidian (запись вне проекта не проходила проверку прав) — дописать.
 
 ## AUD-226 (bliainara.co.il, OpenCart, Free HE): ложные находки и пропавший шаг (PIT-140) — `f010a61`, задеплоено 27.10 с пересборкой образа; AUD-226 перевыпустить
 

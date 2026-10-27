@@ -251,9 +251,18 @@ final class ReportFullSignals {
             }
             String result;
             if (!ok) {
-                result = clip(str(page.get("error")), 160);
-                if (result.isBlank()) {
+                // A short reason, never the Playwright message and stack (AUD-230)
+                String err = str(page.get("error"));
+                boolean timeout = bool(page.get("timeout")) || err.contains("Timeout") || "timeout_45s".equals(err);
+                if (timeout) {
+                    result = n(i18n,
+                            "Страница не ответила за 45 секунд (сервер не отдал её вовремя)",
+                            "The page did not respond within 45 seconds (the server did not deliver it in time)",
+                            "הדף לא נטען תוך 45 שניות (השרת לא החזיר אותו בזמן)");
+                } else if (http > 0) {
                     result = "HTTP " + http;
+                } else {
+                    result = n(i18n, "Страница не открылась", "The page did not open", "הדף לא נפתח");
                 }
             } else {
                 result = "HTTP " + http

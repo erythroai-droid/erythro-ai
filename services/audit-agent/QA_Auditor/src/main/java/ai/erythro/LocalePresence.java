@@ -40,6 +40,11 @@ final class LocalePresence {
             source.addAll(audits.keySet());
         }
 
+        // A probed locale the site does not serve is dropped, whatever the script: a Hebrew-only site
+        // probed in en+ru+he got "Locale EN/RU · needs attention", "3 site languages" and axe ×3
+        // (AUD-230). A language the DOM scan saw on the site (switcher / hreflang) is kept even when
+        // the probe could not switch html lang.
+        Set<String> siteLangs = siteLanguages(audits);
         List<String> out = new ArrayList<>();
         Set<String> seen = new LinkedHashSet<>();
         for (String loc : source) {
@@ -48,13 +53,28 @@ final class LocalePresence {
                 continue;
             }
             Object raw = audits.get(code);
-            if (isRtlLocale(code) && !isActive(code, raw)) {
+            if ((raw != null || isRtlLocale(code)) && !isActive(code, raw)
+                    && !siteLangs.contains(code.equals("iw") ? "he" : code)) {
                 continue;
             }
             out.add(code);
         }
         if (out.isEmpty() && !source.isEmpty()) {
             out.add(normalize(source.get(0)));
+        }
+        return out;
+    }
+
+    /** Languages the DOM scan found on the site (seo_assets.siteLanguages), across all probes. */
+    private static Set<String> siteLanguages(Map<String, Object> audits) {
+        Set<String> out = new LinkedHashSet<>();
+        for (Object raw : audits.values()) {
+            Object langs = map(map(raw).get("seo_assets")).get("siteLanguages");
+            if (langs instanceof List<?> list) {
+                for (Object l : list) {
+                    if (l != null) out.add(normalize(String.valueOf(l)));
+                }
+            }
         }
         return out;
     }

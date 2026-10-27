@@ -1272,7 +1272,10 @@ public class AuditCollector {
             Map<String, Object> infrastructure = auditInfrastructure(targetUrl);
 
             // 3b. AI Visibility: llms.txt, MCP, Organization schema, robots AI rules
-            String origin = String.valueOf(infrastructure.getOrDefault("origin", originOf(targetUrl)));
+            // Where the homepage lands (www → apex): robots.txt, sitemap and llms.txt live there, so
+            // AI Visibility and Agent Readiness L1 agree with the infra block (AUD-230 L1: "sitemap 0")
+            String origin = String.valueOf(infrastructure.getOrDefault("site_origin",
+                    infrastructure.getOrDefault("origin", originOf(targetUrl))));
             Map<String, Object> aiVisibility = collectAiVisibility(origin, aiVisibilityDom);
             finalReport.put("ai_visibility", aiVisibility);
 
@@ -2103,7 +2106,24 @@ public class AuditCollector {
             ));
         }
         boolean runtimeClean = uncaughtErrors.isEmpty() && failedNetwork.isEmpty();
-        checkRows.add(ReportTemplateGenerator.checkRow(
+        // Diagnostic/Pro name what failed (status + full URL, host included: AUD-229 was a third-party
+        // CDN 403); Free keeps the counts only (product decision 2026-10-27)
+        List<String> failedSamples = new ArrayList<>();
+        for (Map<String, Object> req : failedNetwork) {
+            if (failedSamples.size() == 3) break;
+            String url = String.valueOf(req.getOrDefault("url", ""));
+            if (url.length() > 120) url = url.substring(0, 117) + "…";
+            int hits = (int) asLong(req.get("hits"), 1);
+            failedSamples.add(req.get("status") + " " + url + (hits > 1 ? " ×" + hits : ""));
+        }
+        List<String> jsSamples = new ArrayList<>();
+        for (Map<String, Object> err : uncaughtErrors) {
+            if (jsSamples.size() == 2) break;
+            String msg = String.valueOf(err.getOrDefault("error", "")).split("\\R", 2)[0];
+            if (msg.length() > 120) msg = msg.substring(0, 117) + "…";
+            if (!msg.isBlank()) jsSamples.add(msg);
+        }
+        Map<String, String> runtimeRow = ReportTemplateGenerator.checkRow(
                 i18n.checkRuntime,
                 runtimeClean
                         ? ReportFindingsCatalog.tr(i18n.lang,
@@ -2118,7 +2138,21 @@ public class AuditCollector {
                 runtimeClean ? i18n.statusStable
                         : (uncaughtErrors.isEmpty() ? i18n.statusNeedsAttention : i18n.statusCritical),
                 "runtime"
-        ));
+        );
+        if (!runtimeClean) {
+            StringBuilder paid = new StringBuilder(runtimeRow.get("result"));
+            if (!failedSamples.isEmpty()) {
+                paid.append(ReportFindingsCatalog.tr(i18n.lang, ". Запросы: ", ". Requests: ", ". בקשות: "))
+                        .append(String.join("; ", failedSamples));
+            }
+            if (!jsSamples.isEmpty()) {
+                paid.append(ReportFindingsCatalog.tr(i18n.lang, ". JS: ", ". JS: ", ". JS: "))
+                        .append(String.join("; ", jsSamples));
+            }
+            runtimeRow.put("result_paid", paid.toString());
+            runtimeRow.put("rec_variant_paid", String.join("\n", failedSamples));
+        }
+        checkRows.add(runtimeRow);
 
         Map<String, Object> agentBrowse = (Map<String, Object>) finalReport.get("agent_browse");
         int pagesVisited = agentBrowse == null ? 0 : (int) asLong(agentBrowse.get("pages_visited"), 0);
@@ -2254,7 +2288,13 @@ public class AuditCollector {
                     "Allow לבוטי AI" + allowSuffix);
         }
         if (infra != null) {
-            robotsDetail += "; robots.txt: " + (hasRobots ? "200 OK" : infra.getOrDefault("robots_txt_status", "err"));
+            // 200 with HTML (a redirect to the homepage) is no robots.txt, not "robots.txt: 200" (AUD-230)
+            Object robotsStatus = infra.getOrDefault("robots_txt_status", "err");
+            robotsDetail += "; robots.txt: " + (hasRobots ? "200 OK"
+                    : "200".equals(String.valueOf(robotsStatus))
+                    ? ReportFindingsCatalog.tr(i18n.lang, "нет (вместо файла отдаётся HTML-страница)",
+                    "missing (an HTML page is served instead)", "חסר (מוגש דף HTML במקום הקובץ)")
+                    : robotsStatus);
             robotsDetail += "; sitemap: " + (hasSitemap
                     ? "200 OK, " + infra.getOrDefault("sitemap_urls_count", 0) + " URL"
                     : infra.getOrDefault("sitemap_xml_status", "err"));
@@ -2732,21 +2772,30 @@ public class AuditCollector {
         return out;
     }
 
+    /**
+     * Distinct serious/critical axe rules on the language versions the site actually serves. A
+     * single-language site probed in en+ru+he is the same page three times (AUD-230: 2 rules → 6).
+     */
     private static int countSeriousA11yViolations(Map<String, Object> localeAudits) {
-        int total = 0;
-        for (Object localeObj : localeAudits.values()) {
+        Set<String> rules = new LinkedHashSet<>();
+        boolean anyPresent = localeAudits.entrySet().stream()
+                .anyMatch(e -> LocalePresence.isActive(e.getKey(), e.getValue()));
+        for (Map.Entry<String, Object> entry : localeAudits.entrySet()) {
+            Object localeObj = entry.getValue();
             if (!(localeObj instanceof Map)) continue;
+            if (anyPresent && !LocalePresence.isActive(entry.getKey(), localeObj)) continue;
             Object violationsObj = ((Map<String, Object>) localeObj).get("axe_wcag_violations");
             if (!(violationsObj instanceof List)) continue;
             for (Object violationObj : (List<Object>) violationsObj) {
                 if (!(violationObj instanceof Map)) continue;
-                String impact = String.valueOf(((Map<String, Object>) violationObj).get("impact"));
+                Map<String, Object> violation = (Map<String, Object>) violationObj;
+                String impact = String.valueOf(violation.get("impact"));
                 if ("critical".equalsIgnoreCase(impact) || "serious".equalsIgnoreCase(impact)) {
-                    total++;
+                    rules.add(String.valueOf(violation.get("id")));
                 }
             }
         }
-        return total;
+        return rules.size();
     }
 
     /**
@@ -2894,8 +2943,10 @@ public class AuditCollector {
         byKey.put(homeKey, home);
 
         List<String> sitemapLocs = (List<String>) infrastructure.getOrDefault("sitemap_locs", List.of());
+        String siteHost = normalizeUrlKey(origin + "/").replaceFirst("/.*$", "");
         for (String loc : sitemapLocs) {
-            if (!loc.startsWith(origin)) continue;
+            // Same site with or without www (the sitemap lists the apex, the client typed www)
+            if (!normalizeUrlKey(loc).startsWith(siteHost + "/")) continue;
             if (loc.toLowerCase().contains("sitemap") || loc.toLowerCase().endsWith(".xml")) continue;
             String key = normalizeUrlKey(loc);
             if (byKey.containsKey(key)) continue;
@@ -2992,7 +3043,13 @@ public class AuditCollector {
                         snap.get("hasInstantContactChannel"));
             } catch (Exception e) {
                 visit.put("ok", false);
-                visit.put("error", e.getMessage());
+                // The report shows a short reason; the Playwright message with its stack stays in
+                // error_raw (AUD-230 printed "Error { message='Timeout 45000ms…stack=…" to the client)
+                String raw = e.getMessage() == null ? "" : e.getMessage();
+                boolean timeout = raw.contains("Timeout") || e.getClass().getSimpleName().contains("Timeout");
+                visit.put("timeout", timeout);
+                visit.put("error", timeout ? "timeout_45s" : "load_failed");
+                visit.put("error_raw", raw.length() > 300 ? raw.substring(0, 300) : raw);
                 soft404Count++;
                 broken.add(url);
                 System.err.println("  [!] Агент не открыл " + url + ": " + e.getMessage());
@@ -3059,7 +3116,9 @@ public class AuditCollector {
             String path = u.getPath() == null || u.getPath().isBlank() ? "/" : u.getPath();
             if (path.length() > 1 && path.endsWith("/")) path = path.substring(0, path.length() - 1);
             String query = u.getQuery() == null ? "" : "?" + u.getQuery();
-            return (u.getScheme() + "://" + u.getAuthority() + path + query).toLowerCase();
+            // www and the apex are one site: AUD-230 visited the homepage twice (www/ and apex/)
+            String host = u.getAuthority() == null ? "" : u.getAuthority().toLowerCase().replaceFirst("^www\\.", "");
+            return (host + path + query).toLowerCase();
         } catch (Exception e) {
             return url == null ? "" : url.toLowerCase();
         }
@@ -3222,10 +3281,16 @@ public class AuditCollector {
                 + " only. Do NOT use Russian. Do NOT use Cyrillic letters (а-я, А-Я). "
                 + "Product names (WhatsApp, Telegram, GPTBot) may stay in Latin. ")
                 : "";
+        // Standard Hebrew marketing terms: AUD-230 Pro got the odd "משעול ההמרה" ("conversion trail")
+        String glossary = answerLang != null && answerLang.toLowerCase(Locale.ROOT).contains("hebrew")
+                ? "Hebrew terminology: write \"משפך המרה\" for the conversion funnel and \"נתיב המרה\" for the "
+                + "conversion path / user journey (Google Analytics Hebrew). Never use \"משעול\". "
+                + "Use \"ליד\" / \"פנייה\" for a lead. "
+                : "";
         return """
                 You are Erythro.ai's commercial QA agent. From the funnel crawl of %s, \
                 judge the path to a lead. Reply with strict JSON and no markdown. \
-                %sAll string values in the JSON MUST be in %s — never Russian/Cyrillic when the target language is Hebrew or English.
+                %s%sAll string values in the JSON MUST be in %s — never Russian/Cyrillic when the target language is Hebrew or English.
                 {"verdict":"short verdict, max 180 characters",\
                 "gaps":["up to 3 funnel gaps"],\
                 "priority_fix":"one priority fix"}
@@ -3236,7 +3301,7 @@ public class AuditCollector {
                 Flag a gap only if the visitor cannot submit a lead and has no instant channel.
                 Pages:
                 %s
-                """.formatted(targetUrl, langLock, answerLang, pagesBlock);
+                """.formatted(targetUrl, langLock, glossary, answerLang, pagesBlock);
     }
 
     @SuppressWarnings("unchecked")
