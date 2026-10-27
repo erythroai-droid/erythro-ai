@@ -73,6 +73,7 @@ body { font-family: 'Inter Tight', Inter, system-ui, sans-serif; font-size: 16px
 .segs i { height: 3px; border-radius: 2px; background: var(--line); display: block; }
 .segs i.on-good { background: var(--good); }
 .segs i.on-warn { background: var(--warn); }
+.segs i.on-bad { background: var(--bad); }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
 .chip { background: var(--soft); border-radius: 999px; padding: 9px 16px; font-size: 15px; }
@@ -1042,6 +1043,47 @@ a.badge.crit:hover {
   flex-shrink: 0 !important;
   display: block !important;
 }
+.chip.chip-crit {
+  border-color: #fca5a5 !important;
+  background: #fff1f0 !important;
+  padding-inline-end: 10px !important;
+}
+.chip-crit-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin-inline-start: 2px !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: #e52421 !important;
+  color: #fff !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  line-height: 1.2 !important;
+}
+.tech-php-alert {
+  margin-top: 14px !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid #fca5a5 !important;
+  background: #fff1f0 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  color: #7f1d1d !important;
+}
+.tech-php-alert .tech-php-cta {
+  display: block !important;
+  margin-top: 10px !important;
+  color: #b91c1c !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+.tech-php-alert .tech-php-cta:hover {
+  color: #e52421 !important;
+}
 
 /* Official header logo styling */
 .logo {
@@ -1999,6 +2041,9 @@ body[dir="rtl"] .logo {
   :root:root:root .filters, :root:root:root #empty { display: none !important; }
   /* keep the one-line footer on the last content page instead of a page of its own */
   :root:root:root .foot { padding-top: 0 !important; margin-top: -24px !important; font-size: 11px !important; break-before: avoid !important; page-break-before: avoid !important; }
+  /* advisory disclaimer sits right above the footer: its bottom margin absorbs the footer's -24px */
+  /* compact: with the footer it must fit the last content page, not open a page of its own */
+  :root:root:root .report-disclaimer { margin: 4px 0 26px !important; padding: 0 !important; font-size: 9px !important; line-height: 1.4 !important; break-inside: avoid; page-break-inside: avoid; break-before: avoid; page-break-before: avoid; }
   :root:root:root .check, :root:root:root .check::before, :root:root:root .check .chev, :root:root:root .check::details-content, :root:root:root .action, :root:root:root .chip { transition: none !important; animation: none !important; }
   * { transition: none !important; animation: none !important; }
 }
@@ -2026,7 +2071,7 @@ body[dir="rtl"] .logo {
   <div class="head">
     <div class="head-top">
       <span class="badge dark">Express Website Audit · Free</span>
-      <span class="badge">Scanned: 26 Oct 2026 17:43 UTC</span>
+      <span class="badge">Scanned: 27 Oct 2026 16:17 UTC</span>
       <span class="badge">Locale: EN</span>
     </div>
     <div class="site">
@@ -2039,13 +2084,13 @@ body[dir="rtl"] .logo {
     <div class="row"><h2>Overall score</h2><span class="badge">5 checks · Homepage</span></div>
     <div class="score" style="margin-top:28px">
       <div>
-        <div class="score-num">88<small>/100</small></div>
-        <p class="score-note">Score 88 out of 100 — from an express check of the homepage. The weakest scale is “Speed & Mobile UX” (62). This report opens 5 core checks and Google Lighthouse; a full audit (28 checks, 3 locales, up to 10 pages) may refine the score.</p>
+        <div class="score-num">87<small>/100</small></div>
+        <p class="score-note">Score 87 out of 100 — from an express check of the homepage. The weakest scale is “Speed & Mobile UX” (66). This report opens 5 core checks and Google Lighthouse; a full audit (28 checks, 3 locales, up to 10 pages) may refine the score.</p>
       </div>
       <div class="gauge">
         <svg viewBox="0 0 150 150" aria-hidden="true">
           <circle cx="75" cy="75" r="66" fill="none" stroke="#c9c9c9" stroke-width="3" stroke-dasharray="1.5 6" stroke-linecap="round"/>
-          <circle cx="75" cy="75" r="66" fill="none" stroke="#ff7900" stroke-width="7" stroke-linecap="round" stroke-dasharray="365 415"/>
+          <circle cx="75" cy="75" r="66" fill="none" stroke="#ff7900" stroke-width="7" stroke-linecap="round" stroke-dasharray="361 415"/>
         </svg>
         <div class="lbl"><span>Needs<br>attention</span></div>
       </div>
@@ -2057,17 +2102,17 @@ body[dir="rtl"] .logo {
     <div class="scales-head"><h2>Diagnostic results</h2><span class="mono">key indicators</span></div>
     <div class="scale">
       <div class="row"><h3>Speed & Mobile UX</h3><a href="#action-speed" class="badge warn" title="View solution for: Speed & Mobile UX">Needs attention ↓</a></div>
-      <div class="val"><b>62</b></div>
+      <div class="val"><b>66</b></div>
       <div class="segs"><i class="on-warn"></i><i class="on-warn"></i><i></i><i></i></div>
     </div>
     <div class="scale">
-      <div class="row"><h3>SEO & Visibility</h3><a href="#diag-seo" class="badge grow" title="View solution for: SEO & Visibility">1 growth point ↓</a></div>
+      <div class="row"><h3>SEO & Visibility</h3><a href="#tiers" class="badge lock" title="Scale details are in Diagnostic and Pro">In full audit ↓</a></div>
       <div class="val"><b>94</b></div>
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
     <div class="scale">
-      <div class="row"><h3>Lead Generation & Forms</h3><span class="badge ok">No issues</span></div>
-      <div class="val"><b>100</b></div>
+      <div class="row"><h3>Lead Generation & Forms</h3><a href="#diag-lead" class="badge grow" title="View solution for: Lead Generation & Forms">1 growth point ↓</a></div>
+      <div class="val"><b>90</b></div>
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
     <div class="scale">
@@ -2076,7 +2121,7 @@ body[dir="rtl"] .logo {
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
     <div class="scale">
-      <div class="row"><h3>AI Visibility & Brand Discovery</h3><a href="#tiers" class="badge lock" title="Scale details are in Diagnostic and Pro">In full audit ↓</a></div>
+      <div class="row"><h3>AI Visibility & Brand Discovery</h3><span class="badge ok">No issues</span></div>
       <div class="val"><b>100</b></div>
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
@@ -2089,8 +2134,8 @@ body[dir="rtl"] .logo {
       <div class="t3"><div class="t3-idx">01</div><div>
         <div class="t3-head"><h3>Accelerate Core Web Vitals and mobile LCP</h3><div class="tags"><span class="tag">Conversion vulnerability</span><span class="tag med">Needs attention</span></div></div>
         <div class="t3-rows">
-          <div class="t3-row problem"><b>Problem</b><span>Even with decent averages, mobile LCP and INP can reach the targets: 1.5 s and 200 ms.</span></div>
-          <div class="t3-row impact"><b>Business loss</b><span>Each +100 ms latency reduces conversion and increases cost per lead.</span></div>
+          <div class="t3-row problem"><b>Problem</b><span>Even with good averages, mobile LCP and INP can reach 1.5s and 200ms targets.</span></div>
+          <div class="t3-row impact"><b>Business loss</b><span>Each +100ms delay lowers conversion and raises cost per lead.</span></div>
           <div class="t3-row solution"><b>Erythro.ai solution</b><span><a href="#action-speed" class="t3-step-link">Ready solution with code — Step 1 of the action plan ↓</a></span></div>
         </div></div></div>
       <div class="t3"><div class="t3-idx">02</div><div>
@@ -2110,18 +2155,18 @@ body[dir="rtl"] .logo {
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="lighthouse">
     <div class="row"><h2>Speed &amp; Core Web Vitals</h2><span class="badge">Google Lighthouse</span></div>
     <div class="table-scroll">
       <table>
         <thead><tr><th>Metric</th><th>Mobile (iPhone SE)</th><th>Desktop</th></tr></thead>
         <tbody>
-          <tr><td>Performance</td><td><span class="p w">62</span></td><td><span class="p w">73</span></td></tr>
+          <tr><td>Performance</td><td><span class="p w">66</span></td><td><span class="p w">69</span></td></tr>
           <tr><td>Accessibility</td><td><span class="p g">100</span></td><td><span class="p g">100</span></td></tr>
-          <tr><td>Best practices</td><td><span class="p g">96</span></td><td><span class="p g">96</span></td></tr>
+          <tr><td>Best practices</td><td><span class="p g">100</span></td><td><span class="p g">96</span></td></tr>
           <tr><td>SEO</td><td><span class="p g">100</span></td><td><span class="p g">100</span></td></tr>
-          <tr><td>FCP</td><td>3.8 s</td><td>0.6 s</td></tr>
-          <tr><td>LCP</td><td>6.4 s</td><td>1.6 s</td></tr>
+          <tr><td>FCP</td><td>3.5 s</td><td>0.6 s</td></tr>
+          <tr><td>LCP</td><td>6.2 s</td><td>1.8 s</td></tr>
           <tr><td>CLS</td><td>0</td><td>0.001</td></tr>
           <tr><td>Funnel pages</td><td colspan="2"><span class="p g">1/1</span></td></tr>
         </tbody>
@@ -2155,25 +2200,34 @@ body[dir="rtl"] .logo {
   <section class="card">
     <div class="row"><h2>Detected technologies</h2></div>
     <div class="chips">
-      <!-- filled from audit_data.detected_technologies on next audit render -->
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></svg><span>Next.js</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2L22 20H2L12 2z"/></svg><span>Vercel</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#F38020" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16.5088 16.8447c.1475-.5068.0908-.9707-.1553-1.3154-.2246-.3164-.6045-.499-1.0615-.5205l-8.6592-.1123a.1559.1559 0 0 1-.1333-.0713c-.0283-.042-.0351-.0986-.021-.1553.0278-.084.1123-.1484.2036-.1562l8.7359-.1123c1.0351-.0489 2.1601-.8868 2.5537-1.9136l.499-1.3013c.0215-.0561.0293-.1128.0147-.168-.5625-2.5463-2.835-4.4453-5.5499-4.4453-2.5039 0-4.6284 1.6177-5.3876 3.8614-.4927-.3658-1.1187-.5625-1.794-.499-1.2026.119-2.1665 1.083-2.2861 2.2856-.0283.31-.0069.6128.0635.894C1.5683 13.171 0 14.7754 0 16.752c0 .1748.0142.3515.0352.5273.0141.083.0844.1475.1689.1475h15.9814c.0909 0 .1758-.0645.2032-.1553l.12-.4268zm2.7568-5.5634c-.0771 0-.1611 0-.2383.0112-.0566 0-.1054.0415-.127.0976l-.3378 1.1744c-.1475.5068-.0918.9707.1543 1.3164.2256.3164.6055.498 1.0625.5195l1.8437.1133c.0557 0 .1055.0263.1329.0703.0283.043.0351.1074.0214.1562-.0283.084-.1132.1485-.204.1553l-1.921.1123c-1.041.0488-2.1582.8867-2.5527 1.914l-.1406.3585c-.0283.0713.0215.1416.0986.1416h6.5977c.0771 0 .1474-.0489.169-.126.1122-.4082.1757-.837.1757-1.2803 0-2.6025-2.125-4.727-4.7344-4.727"/></svg><span>Cloudflare</span></span>
+      <span class="chip"><span>Tailwind CSS</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="16" y="2" width="6" height="20" rx="3" fill="#F9AB00"/><rect x="9" y="8" width="6" height="14" rx="3" fill="#E37400"/><circle cx="4" cy="19" r="3" fill="#E37400"/></svg><span>Google Analytics 4</span></span>
+      <span class="chip"><span>Meta Pixel</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="#F38020"/><path d="M10 15.5l-3.5-3.5 1.41-1.41L10 12.67l6.09-6.09L17.5 8l-7.5 7.5z" fill="#ffffff"/></svg><span>Cloudflare Turnstile</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#24A1DE" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg><span>Telegram</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="5" cy="7" r="3.2" fill="#005A9C"/><circle cx="19" cy="7" r="3.2" fill="#0FB5EE"/><circle cx="12" cy="18" r="3.2" fill="#CB3837"/><path d="M8 7h8M7 9.5l3.5 6M17 9.5l-3.5 6" stroke="#4a5568" stroke-width="1.6" stroke-linecap="round"/></svg><span>JSON-LD</span></span>
+      <span class="chip"><span>Open Graph</span></span>
     </div>
   </section>
 
   <section class="card">
-    <div class="row"><h2>Lead path</h2><span class="badge ok">Working</span></div>
-    <p class="sub">Verdict: visitors can reach you from the homepage — the form and messengers work.</p>
+    <div class="row"><h2>Lead path</h2><span class="badge ok">Operational</span></div>
+    <p class="sub">Verdict: visitors can leave a lead on the homepage — there is a form and an instant contact channel.</p>
     <div class="flow">
       <div class="flow-col">
         <h4>Lead channels</h4>
-        <div class="flow-in"><span class="pill ok">On-page form</span><span class="pill ok">Form on button click</span><span class="pill ok">WhatsApp</span><span class="pill ok">Telegram</span><span class="pill ok">AI Consultant</span></div>
+        <div class="flow-in"><span class="pill ok">On-page form</span><span class="pill ok">Form on button click</span><span class="pill ok">Telegram</span></div>
       </div>
       <div class="flow-arrow">→</div>
       <div class="flow-col">
         <h4>What the auditor checks</h4>
         <div class="flow-steps">
-          <div class="flow-step">HTTP 200, no soft-404 <span>10/10</span></div>
+          <div class="flow-step">HTTP 200, no soft-404 <span>1/1</span></div>
           <div class="flow-step">CTA or form on page <span>1/1</span></div>
-          <div class="flow-step">Anti-spam: Turnstile, honeypot <span>OK</span></div>
+          <div class="flow-step">Anti-spam: Turnstile, honeypot, reCAPTCHA <span>OK</span></div>
           <div class="flow-step">Instant contact channel <span>OK</span></div>
         </div>
       </div>
@@ -2198,16 +2252,6 @@ body[dir="rtl"] .logo {
         <a href="#tiers" class="tier-btn-secondary"><span class="bt-full">What Diagnostic and Pro include ↓</span><span class="bt-short">What tiers include ↓</span></a>
       </div>
     </div>
-    <div class="tier-lock-card">
-      <div class="lock-header">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-        <span>Lead path across the whole funnel (up to 10 pages)</span>
-      </div>
-      <p>End-to-end checkout verification, soft-404 detection, and lead capture form testing across all catalog pages is available in Diagnostic and Pro.</p>
-      <div class="lock-actions">
-        <a href="#tiers" class="tier-btn-secondary"><span class="bt-full">What Diagnostic and Pro include ↓</span><span class="bt-short">What tiers include ↓</span></a>
-      </div>
-    </div>
     <p class="note">How we count the lead path: an embedded form, a form opened by a button (Let’s Talk), chat and messengers. A button without a form is a CTA, not a funnel gap, if the click opens a form or WhatsApp.</p>
   </section>
 
@@ -2220,7 +2264,7 @@ body[dir="rtl"] .logo {
         <div>
           <h3>Accelerate Core Web Vitals and mobile LCP</h3>
           <div class="tags"><span class="tag">Speed</span><span class="tag med">Needs attention</span></div>
-          <p>Each +100 ms latency reduces conversion and increases cost per lead. Next-gen images, critical CSS and CDN caching by Erythro.ai.</p>
+          <p>Each +100ms delay lowers conversion and raises cost per lead. Next-gen images, critical CSS and CDN caching by Erythro.ai.</p>
           
     <div class="code-box">
       <div class="code-header">
@@ -2229,13 +2273,16 @@ body[dir="rtl"] .logo {
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
-          <code>src/app/(frontend)/layout.tsx:160-175</code>
+          <code>Image markup and static file cache</code>
         </span>
-        <button type="button" class="btn-copy" data-copy="// src/app/(frontend)/layout.tsx:160-175
-// Preload hero LCP image and critical fonts:
-&lt;link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high" /&gt;
-&lt;link rel="preconnect" href="https://fonts.googleapis.com" crossorigin /&gt;
-&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /&gt;" aria-label="Copy code">
+        <button type="button" class="btn-copy" data-copy="&lt;!-- Modern formats with a JPEG fallback and fixed dimensions (no layout shift): --&gt;
+&lt;picture&gt;
+  &lt;source srcset="/images/hero.avif" type="image/avif"&gt;
+  &lt;source srcset="/images/hero.webp" type="image/webp"&gt;
+  &lt;img src="/images/hero.jpg" width="1200" height="630" alt="Banner description" fetchpriority="high"&gt;
+&lt;/picture&gt;
+&lt;!-- HTTP header for images, CSS and JS (server or CDN):
+     Cache-Control: public, max-age=31536000, immutable --&gt;" aria-label="Copy code">
           <span class="copy-text">copy</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -2243,11 +2290,14 @@ body[dir="rtl"] .logo {
           </svg>
         </button>
       </div>
-      <pre><code>// src/app/(frontend)/layout.tsx:160-175
-// Preload hero LCP image and critical fonts:
-&lt;link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high" /&gt;
-&lt;link rel="preconnect" href="https://fonts.googleapis.com" crossorigin /&gt;
-&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /&gt;</code></pre>
+      <pre><code>&lt;!-- Modern formats with a JPEG fallback and fixed dimensions (no layout shift): --&gt;
+&lt;picture&gt;
+  &lt;source srcset="/images/hero.avif" type="image/avif"&gt;
+  &lt;source srcset="/images/hero.webp" type="image/webp"&gt;
+  &lt;img src="/images/hero.jpg" width="1200" height="630" alt="Banner description" fetchpriority="high"&gt;
+&lt;/picture&gt;
+&lt;!-- HTTP header for images, CSS and JS (server or CDN):
+     Cache-Control: public, max-age=31536000, immutable --&gt;</code></pre>
     </div>
         </div>
         <div class="plus"><small>Step</small>1</div>
@@ -2255,42 +2305,21 @@ body[dir="rtl"] .logo {
       <div class="tier-lock-card actions-locked">
         <div class="lock-header">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          <span>5 more steps — with ready code in Pro</span>
-        </div>
-        <div class="action-locked">
-          <div>
-            <h3>WCAG 2.1 AA / IS 5568 Accessibility compliance</h3>
-            <div class="tags"><span class="tag">Accessibility</span><span class="tag med">Needs attention</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Solution and code in Pro</span></div>
-          </div>
-          <div class="plus"><small>Step</small>2</div>
+          <span>2 more steps — with ready code in Pro</span>
         </div>
         <div class="action-locked">
           <div>
             <h3>Expand multilingual funnel</h3>
             <div class="tags"><span class="tag">SEO & Funnel</span><span class="tag gold">Growth opportunity</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Solution and code in Pro</span></div>
           </div>
-          <div class="plus"><small>Step</small>3</div>
+          <div class="plus"><small>Step</small>2</div>
         </div>
         <div class="action-locked">
           <div>
             <h3>AI qualification of inbound leads</h3>
             <div class="tags"><span class="tag">Lead capture</span><span class="tag gold">Growth opportunity</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Solution and code in Pro</span></div>
           </div>
-          <div class="plus"><small>Step</small>4</div>
-        </div>
-        <div class="action-locked">
-          <div>
-            <h3>Mandatory HTTP security headers</h3>
-            <div class="tags"><span class="tag">Security</span><span class="tag gold">Growth opportunity</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Solution and code in Pro</span></div>
-          </div>
-          <div class="plus"><small>Step</small>5</div>
-        </div>
-        <div class="action-locked">
-          <div>
-            <h3>AI Search Visibility: llms.txt &amp; signals</h3>
-            <div class="tags"><span class="tag">AI Discovery</span><span class="tag gold">Growth opportunity</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Solution and code in Pro</span></div>
-          </div>
-          <div class="plus"><small>Step</small>6</div>
+          <div class="plus"><small>Step</small>3</div>
         </div>
         <div class="lock-actions">
           <a href="https://erythro.ai/order/audit-pro?lang=en" class="tier-btn-primary"><span class="bt-full">Open the full plan with code in Pro · ₪490 →</span><span class="bt-short">Open in Pro · ₪490 →</span></a>
@@ -2310,25 +2339,12 @@ body[dir="rtl"] .logo {
     </div>
     <p id="empty" hidden>No items with this status.</p>
     <div class="checks" id="checks">
-      <details class="check" name="audit-checklist" data-s="w" data-pillar="a11y"><summary><span class="st w">Needs attention</span><span class="nm">Accessibility WCAG 2.1 AA / IS 5568</span><span class="chev">⌄</span></summary>
+      <details class="check" name="audit-checklist" data-s="n" data-pillar="lead" id="diag-lead"><summary><span class="st n">Growth opportunity</span><span class="nm">Lead forms, anti-spam &amp; instant response</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Check result</b>img without alt: 2; unlabeled buttons: 0; axe-core: 0</div>
+          <div class="res"><b>Check result</b>Forms: 1. Email: no, phone: no, submit: yes. Anti-spam: Cloudflare Turnstile, Honeypot. Instant channel: WhatsApp/Telegram (1)</div>
           <div class="rec">
             <div class="rec-title-row"><b>Recommendation</b></div>
-            <p>Close WCAG 2.1 AA and IS 5568: alt on informative images, aria-label on icon buttons, contrast and focus.
-
-Re-run axe-core at 375px before release.</p>
-            
-          </div>
-        </div></details>
-      <details class="check" name="audit-checklist" data-s="n" data-pillar="seo" id="diag-seo"><summary><span class="st n">Growth opportunity</span><span class="nm">SEO, OpenGraph and messenger preview</span><span class="chev">⌄</span></summary>
-        <div class="body">
-          <div class="res"><b>Check result</b>EN: title yes, description yes, og:image yes, canonical yes; hreflang missing</div>
-          <div class="rec">
-            <div class="rec-title-row"><b>Recommendation</b></div>
-            <p>Lock messenger previews: unique title and description per locale, og:image 1200×630, canonical and hreflang between languages.
-
-html lang must match the page language.</p>
+            <p>The form is protected but lacks an email or phone field, or a submit button. Add a contact field and a clear submit button, otherwise there is nothing to follow up.</p>
             
           </div>
         </div></details>
@@ -2343,14 +2359,12 @@ Lock a 375–430px grid regression in releases so blocks, sliders and absolute l
             
           </div>
         </div></details>
-      <details class="check" name="audit-checklist" data-s="g" data-pillar="lead" id="diag-lead"><summary><span class="st g">Excellent</span><span class="nm">Lead forms, anti-spam &amp; instant response</span><span class="chev">⌄</span></summary>
+      <details class="check" name="audit-checklist" data-s="g" data-pillar="ai"><summary><span class="st g">Excellent</span><span class="nm">GA4 / dataLayer readiness</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Check result</b>Forms: 2 (via button). Email: yes, phone: yes, submit: yes. Anti-spam: Cloudflare Turnstile, Honeypot. Instant channel: chat [class*="chat-launcher"]</div>
+          <div class="res"><b>Check result</b>dataLayer + consent stub in head (GA4 G- ID found)</div>
           <div class="rec">
             <div class="rec-title-row"><b>Recommendation</b></div>
-            <p>Lead capture is in place: form, anti-spam and an instant channel.
-
-Do not drop the honeypot, Turnstile/reCAPTCHA or wa.me (or chat) in the next release — spam rises and mobile leads disappear.</p>
+            <p>dataLayer and the Consent Mode stub are already in &lt;head&gt;. Do not move gtag('consent','default') below the cookie banner — Google will miss consent.</p>
             
           </div>
         </div></details>
@@ -2360,6 +2374,17 @@ Do not drop the honeypot, Turnstile/reCAPTCHA or wa.me (or chat) in the next rel
           <div class="rec">
             <div class="rec-title-row"><b>Recommendation</b></div>
             <p>HTTPS and security headers are in place. Do not drop HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy or Permissions-Policy on deploy.</p>
+            
+          </div>
+        </div></details>
+      <details class="check" name="audit-checklist" data-s="g" data-pillar="sec"><summary><span class="st g">Excellent</span><span class="nm">Runtime stability (JS errors &amp; failed requests)</span><span class="chev">⌄</span></summary>
+        <div class="body">
+          <div class="res"><b>Check result</b>No JS crashes or 4xx/5xx responses recorded</div>
+          <div class="rec">
+            <div class="rec-title-row"><b>Recommendation</b></div>
+            <p>Runtime is stable: no PageError or 4xx/5xx on visited URLs.
+
+Keep console / PageError monitoring on the funnel so a regression never hits paid traffic.</p>
             
           </div>
         </div></details>
@@ -2395,9 +2420,9 @@ Do not drop the honeypot, Turnstile/reCAPTCHA or wa.me (or chat) in the next rel
     <ul class="scope-list">
       <li><b>Google PageSpeed Insights</b>10 metrics × 2 devices: Performance, Accessibility, Best Practices, SEO, FCP, LCP, CLS, TBT, Speed Index, TTI.</li>
       <li><b>Homepage</b>HTTP status and HTTPS, forms and contact channels, detected technologies.</li>
-      <li><b>5 core checks</b>Accessibility WCAG 2.1 AA / IS 5568; SEO, OpenGraph and messenger preview; Horizontal overflow (Overflow-X at 375px mobile); Lead forms, anti-spam &amp; instant response; HTTPS &amp; security HTTP headers</li>
+      <li><b>5 core checks</b>Lead forms, anti-spam &amp; instant response; Horizontal overflow (Overflow-X at 375px mobile); GA4 / dataLayer readiness; HTTPS &amp; security HTTP headers; Runtime stability (JS errors &amp; failed requests)</li>
     </ul>
-    <p class="note">Free is an express snapshot of one page. The funnel crawl, other locales and AI Visibility are not part of this report.</p>
+    <p class="note">Free is an express snapshot of one page. The funnel crawl, other locales and the per-criterion AI Visibility breakdown are not part of this report: AI Visibility shows the summary score and the gaps found, without a status and recommendation for each of the 7 criteria.</p>
   </section>
 
   <section class="card tiers" id="tiers">
@@ -2423,7 +2448,7 @@ Do not drop the honeypot, Turnstile/reCAPTCHA or wa.me (or chat) in the next rel
         </tbody>
       </table>
     </div>
-    <p class="tiers-method">How we count: 55 site-wide checks (20 of them on AI Visibility, Agent Readiness and AI-bot access), 28 per site language, 9 per funnel page. Free: 5 checks + 20 Lighthouse metrics.</p>
+    <p class="tiers-method">How we count: 55 site-wide checks (20 of them on AI Visibility, Agent Readiness and AI-bot access), 28 per site language, 9 per funnel page, plus 1 Funnel review in Pro. Free: 5 checks + 20 Lighthouse metrics.</p>
     <div class="tiers-actions">
       <a class="tier-btn-secondary" href="https://erythro.ai/order/audit-diagnostic?lang=en"><span class="bt-full">Order Diagnostic · ₪99</span><span class="bt-short">Diagnostic · ₪99</span></a>
       <a class="tier-btn-primary" href="https://erythro.ai/order/audit-pro?lang=en"><span class="bt-full">Order Pro · ₪490</span><span class="bt-short">Pro · ₪490</span></a>
@@ -2437,12 +2462,11 @@ Do not drop the honeypot, Turnstile/reCAPTCHA or wa.me (or chat) in the next rel
       <div class="contacts"><a href="mailto:team@erythro.ai">team@erythro.ai</a><a href="tel:+972505308305" dir="ltr">+972 50 530 8305</a></div>
     </div>
     <div class="cta-buttons">
-        <a class="go sec" href="https://erythro.ai/order/audit-diagnostic?lang=en"><span class="bt-full">Order Diagnostic · ₪99</span><span class="bt-short">Diagnostic · ₪99</span></a>
-        <a class="go" href="https://erythro.ai/order/audit-pro?lang=en"><span class="bt-full">Order Pro · ₪490</span><span class="bt-short">Pro · ₪490</span></a>
         <a class="go sec" href="https://wa.me/972505308305"><span class="bt-full">Book a WhatsApp consultation</span><span class="bt-short">WhatsApp consultation</span></a>
       </div>
   </section>
 
+  <p class="report-disclaimer" style="max-width:960px;margin:28px auto 10px;padding:0 16px;font-size:12px;line-height:1.6;color:#6b6b6b;text-align:start">This report is for informational and advisory purposes only. It reflects the state of the website at the time of the automated scan and Erythro.ai’s expert assessment; it does not constitute a legal opinion, a guarantee of results, or a demand for urgent changes. The decision whether and when to implement the recommendations rests solely with the website owner.</p>
   <div class="foot">© 2026 Erythro.ai — Hi-Load Web Development &amp; AI Agents Automation · Commercial Executive Audit</div>
 </div>
 

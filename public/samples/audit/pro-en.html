@@ -73,6 +73,7 @@ body { font-family: 'Inter Tight', Inter, system-ui, sans-serif; font-size: 16px
 .segs i { height: 3px; border-radius: 2px; background: var(--line); display: block; }
 .segs i.on-good { background: var(--good); }
 .segs i.on-warn { background: var(--warn); }
+.segs i.on-bad { background: var(--bad); }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
 .chip { background: var(--soft); border-radius: 999px; padding: 9px 16px; font-size: 15px; }
@@ -269,6 +270,10 @@ td:first-child { font-family: var(--mono); font-size: 12px; text-transform: uppe
   .action { page-break-inside: avoid; break-inside: avoid; }
 }
 
+
+.badge.ok { background: #eef9ec; border-color: #cfeccb; color: #1d7a12; }
+.badge.warn { background: #fff6ec; border-color: #f8dcc0; color: #9a4a00; }
+.badge.crit { background: #fff1f0; border-color: #fca5a5; color: #b91c1c; }
 
 .badge.ok { background: #eef9ec; border-color: #cfeccb; color: #1d7a12; }
 .badge.warn { background: #fff6ec; border-color: #f8dcc0; color: #9a4a00; }
@@ -1033,6 +1038,47 @@ a.badge.crit:hover {
   height: 18px !important;
   flex-shrink: 0 !important;
   display: block !important;
+}
+.chip.chip-crit {
+  border-color: #fca5a5 !important;
+  background: #fff1f0 !important;
+  padding-inline-end: 10px !important;
+}
+.chip-crit-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin-inline-start: 2px !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: #e52421 !important;
+  color: #fff !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  line-height: 1.2 !important;
+}
+.tech-php-alert {
+  margin-top: 14px !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid #fca5a5 !important;
+  background: #fff1f0 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  color: #7f1d1d !important;
+}
+.tech-php-alert .tech-php-cta {
+  display: block !important;
+  margin-top: 10px !important;
+  color: #b91c1c !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+.tech-php-alert .tech-php-cta:hover {
+  color: #e52421 !important;
 }
 
 /* Official header logo styling */
@@ -1991,6 +2037,9 @@ body[dir="rtl"] .logo {
   :root:root:root .filters, :root:root:root #empty { display: none !important; }
   /* keep the one-line footer on the last content page instead of a page of its own */
   :root:root:root .foot { padding-top: 0 !important; margin-top: -24px !important; font-size: 11px !important; break-before: avoid !important; page-break-before: avoid !important; }
+  /* advisory disclaimer sits right above the footer: its bottom margin absorbs the footer's -24px */
+  /* compact: with the footer it must fit the last content page, not open a page of its own */
+  :root:root:root .report-disclaimer { margin: 4px 0 26px !important; padding: 0 !important; font-size: 9px !important; line-height: 1.4 !important; break-inside: avoid; page-break-inside: avoid; break-before: avoid; page-break-before: avoid; }
   :root:root:root .check, :root:root:root .check::before, :root:root:root .check .chev, :root:root:root .check::details-content, :root:root:root .action, :root:root:root .chip { transition: none !important; animation: none !important; }
   * { transition: none !important; animation: none !important; }
 }
@@ -2018,7 +2067,7 @@ body[dir="rtl"] .logo {
   <div class="head">
     <div class="head-top">
       <span class="badge dark">Audit Report · Pro</span>
-      <span class="badge">Scanned: 26 Oct 2026 17:43 UTC</span>
+      <span class="badge">Scanned: 27 Oct 2026 16:32 UTC</span>
       <span class="badge">Locales: EN, RU, HE</span>
     </div>
     <div class="site">
@@ -2031,15 +2080,15 @@ body[dir="rtl"] .logo {
     <div class="row"><h2>Overall score</h2><span class="badge">230 checks · 10 funnel URLs</span></div>
     <div class="score" style="margin-top:28px">
       <div>
-        <div class="score-num">88<small>/100</small></div>
-        <p class="score-note">Overall site score is 88 out of 100. The weakest scale is “Speed & Mobile UX” (62). Other areas are in good shape; below is what should be addressed first.</p>
+        <div class="score-num">90<small>/100</small></div>
+        <p class="score-note">Overall site score is 90 out of 100. The weakest scale is “Speed & Mobile UX” (69). Other areas are in good shape; below is what should be addressed first.</p>
       </div>
       <div class="gauge">
         <svg viewBox="0 0 150 150" aria-hidden="true">
           <circle cx="75" cy="75" r="66" fill="none" stroke="#c9c9c9" stroke-width="3" stroke-dasharray="1.5 6" stroke-linecap="round"/>
-          <circle cx="75" cy="75" r="66" fill="none" stroke="#ff7900" stroke-width="7" stroke-linecap="round" stroke-dasharray="365 415"/>
+          <circle cx="75" cy="75" r="66" fill="none" stroke="#22bf16" stroke-width="7" stroke-linecap="round" stroke-dasharray="373 415"/>
         </svg>
-        <div class="lbl"><span>Needs<br>attention</span></div>
+        <div class="lbl"><span>Excellent</span></div>
       </div>
       <div class="score-sep"></div>
     </div>
@@ -2049,7 +2098,7 @@ body[dir="rtl"] .logo {
     <div class="scales-head"><h2>Diagnostic results</h2><span class="mono">key indicators</span></div>
     <div class="scale">
       <div class="row"><h3>Speed & Mobile UX</h3><a href="#action-speed" class="badge warn" title="View solution for: Speed & Mobile UX">Needs attention ↓</a></div>
-      <div class="val"><b>62</b></div>
+      <div class="val"><b>69</b></div>
       <div class="segs"><i class="on-warn"></i><i class="on-warn"></i><i></i><i></i></div>
     </div>
     <div class="scale">
@@ -2081,8 +2130,8 @@ body[dir="rtl"] .logo {
       <div class="t3"><div class="t3-idx">01</div><div>
         <div class="t3-head"><h3>Accelerate Core Web Vitals and mobile LCP</h3><div class="tags"><span class="tag">Conversion vulnerability</span><span class="tag med">Needs attention</span></div></div>
         <div class="t3-rows">
-          <div class="t3-row problem"><b>Problem</b><span>Even with decent averages, mobile LCP and INP can reach the targets: 1.5 s and 200 ms.</span></div>
-          <div class="t3-row impact"><b>Business loss</b><span>Each +100 ms latency reduces conversion and increases cost per lead.</span></div>
+          <div class="t3-row problem"><b>Problem</b><span>Even with good averages, mobile LCP and INP can reach 1.5s and 200ms targets.</span></div>
+          <div class="t3-row impact"><b>Business loss</b><span>Each +100ms delay lowers conversion and raises cost per lead.</span></div>
           <div class="t3-row solution"><b>Erythro.ai solution</b><span>Next-gen images, critical CSS and CDN caching by Erythro.ai.</span></div>
         </div></div></div>
       <div class="t3"><div class="t3-idx">02</div><div>
@@ -2103,27 +2152,28 @@ body[dir="rtl"] .logo {
   </section>
 
   <section class="card funnel-review" id="funnel-review">
-    <div class="row"><h2>Funnel review: the lead path through AI eyes</h2><span class="badge">10 funnel pages</span></div>
-    <p class="sub">AI walked the visitor path across the funnel pages, including modal forms, chat and messengers.</p>
+    <div class="row"><h2>Funnel review: the lead path</h2><span class="badge">10 funnel pages</span></div>
+    <p class="sub">The lab walked the visitor path across the funnel pages, including modal forms, chat and messengers.</p>
     <div class="fr-grid">
-      <div class="fr-box" data-s="w"><b>Verdict</b><p>Gaps found on the lead path: 3.</p></div>
-      <div class="fr-box" data-s="w"><b>Gaps (up to 3)</b><p class="fr-none">Gaps: 3</p></div>
+      <div class="fr-box" data-s="g"><b>Verdict</b><p>The lead path works on all 10 pages: forms, chat and messengers are available.</p></div>
+      <div class="fr-box" data-s="g"><b>Gaps (up to 3)</b><p class="fr-none">No gaps found.</p></div>
     </div>
-    <div class="fr-fix" data-s="w"><b>Main funnel recommendation</b><p>Close the first gap on the list — it affects leads the most.</p></div>
+    <div class="fr-fix" data-s="g"><b>Main funnel recommendation</b><p>No critical barriers. Watch form and chat conversion after every release.</p></div>
+    <p class="note">Analysis performed according to the Erythro CRO Framework protocol: end-to-end validation of lead forms, CTA modals, chat, and instant communication channels at each funnel step.</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="lighthouse">
     <div class="row"><h2>Speed &amp; Core Web Vitals</h2><span class="badge">Google Lighthouse</span></div>
     <div class="table-scroll">
       <table>
         <thead><tr><th>Metric</th><th>Mobile (iPhone SE)</th><th>Desktop</th></tr></thead>
         <tbody>
-          <tr><td>Performance</td><td><span class="p w">62</span></td><td><span class="p w">73</span></td></tr>
+          <tr><td>Performance</td><td><span class="p w">69</span></td><td><span class="p g">90</span></td></tr>
           <tr><td>Accessibility</td><td><span class="p g">100</span></td><td><span class="p g">100</span></td></tr>
-          <tr><td>Best practices</td><td><span class="p g">96</span></td><td><span class="p g">96</span></td></tr>
+          <tr><td>Best practices</td><td><span class="p g">100</span></td><td><span class="p g">96</span></td></tr>
           <tr><td>SEO</td><td><span class="p g">100</span></td><td><span class="p g">100</span></td></tr>
-          <tr><td>FCP</td><td>3.8 s</td><td>0.6 s</td></tr>
-          <tr><td>LCP</td><td>6.4 s</td><td>1.6 s</td></tr>
+          <tr><td>FCP</td><td>2.6 s</td><td>0.6 s</td></tr>
+          <tr><td>LCP</td><td>6.5 s</td><td>1.5 s</td></tr>
           <tr><td>CLS</td><td>0</td><td>0.001</td></tr>
           <tr><td>Funnel pages</td><td colspan="2"><span class="p g">10/10</span></td></tr>
         </tbody>
@@ -2276,7 +2326,7 @@ body[dir="rtl"] .logo {
       <div class="ai-verdict-body">
         <h4>Executive Strategic Takeaway</h4>
         <p>AI Visibility 100/100: 7 of 7 criteria, Agent Readiness L1: 5 of 5. The site is open to AI search and agents. Keep /llms.txt and Schema.org current with every release.</p>
-        <a href="#action-ai" class="ai-verdict-link">Jump to AI Visibility implementation in Action Plan ↓</a>
+        <a href="#diag-ai" class="ai-verdict-link">Jump to AI Visibility implementation in Action Plan ↓</a>
       </div>
     </div>
   </section>
@@ -2284,17 +2334,26 @@ body[dir="rtl"] .logo {
   <section class="card">
     <div class="row"><h2>Detected technologies</h2></div>
     <div class="chips">
-      <!-- filled from audit_data.detected_technologies on next audit render -->
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></svg><span>Next.js</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2L22 20H2L12 2z"/></svg><span>Vercel</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#F38020" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16.5088 16.8447c.1475-.5068.0908-.9707-.1553-1.3154-.2246-.3164-.6045-.499-1.0615-.5205l-8.6592-.1123a.1559.1559 0 0 1-.1333-.0713c-.0283-.042-.0351-.0986-.021-.1553.0278-.084.1123-.1484.2036-.1562l8.7359-.1123c1.0351-.0489 2.1601-.8868 2.5537-1.9136l.499-1.3013c.0215-.0561.0293-.1128.0147-.168-.5625-2.5463-2.835-4.4453-5.5499-4.4453-2.5039 0-4.6284 1.6177-5.3876 3.8614-.4927-.3658-1.1187-.5625-1.794-.499-1.2026.119-2.1665 1.083-2.2861 2.2856-.0283.31-.0069.6128.0635.894C1.5683 13.171 0 14.7754 0 16.752c0 .1748.0142.3515.0352.5273.0141.083.0844.1475.1689.1475h15.9814c.0909 0 .1758-.0645.2032-.1553l.12-.4268zm2.7568-5.5634c-.0771 0-.1611 0-.2383.0112-.0566 0-.1054.0415-.127.0976l-.3378 1.1744c-.1475.5068-.0918.9707.1543 1.3164.2256.3164.6055.498 1.0625.5195l1.8437.1133c.0557 0 .1055.0263.1329.0703.0283.043.0351.1074.0214.1562-.0283.084-.1132.1485-.204.1553l-1.921.1123c-1.041.0488-2.1582.8867-2.5527 1.914l-.1406.3585c-.0283.0713.0215.1416.0986.1416h6.5977c.0771 0 .1474-.0489.169-.126.1122-.4082.1757-.837.1757-1.2803 0-2.6025-2.125-4.727-4.7344-4.727"/></svg><span>Cloudflare</span></span>
+      <span class="chip"><span>Tailwind CSS</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="16" y="2" width="6" height="20" rx="3" fill="#F9AB00"/><rect x="9" y="8" width="6" height="14" rx="3" fill="#E37400"/><circle cx="4" cy="19" r="3" fill="#E37400"/></svg><span>Google Analytics 4</span></span>
+      <span class="chip"><span>Meta Pixel</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="#F38020"/><path d="M10 15.5l-3.5-3.5 1.41-1.41L10 12.67l6.09-6.09L17.5 8l-7.5 7.5z" fill="#ffffff"/></svg><span>Cloudflare Turnstile</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#24A1DE" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg><span>Telegram</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="5" cy="7" r="3.2" fill="#005A9C"/><circle cx="19" cy="7" r="3.2" fill="#0FB5EE"/><circle cx="12" cy="18" r="3.2" fill="#CB3837"/><path d="M8 7h8M7 9.5l3.5 6M17 9.5l-3.5 6" stroke="#4a5568" stroke-width="1.6" stroke-linecap="round"/></svg><span>JSON-LD</span></span>
+      <span class="chip"><span>Open Graph</span></span>
     </div>
   </section>
 
   <section class="card">
-    <div class="row"><h2>Lead path</h2><span class="badge ok">Working</span></div>
-    <p class="sub">Verdict: all 10 audited funnel pages provide lead capture via form, messengers or the built-in AI consultant (Live Chat). Conversion path is fully operational.</p>
+    <div class="row"><h2>Lead path</h2><span class="badge ok">Operational</span></div>
+    <p class="sub">Verdict: visitors can leave a lead on the 10 audited funnel pages — there is a form and an instant contact channel.</p>
     <div class="flow">
       <div class="flow-col">
         <h4>Lead channels</h4>
-        <div class="flow-in"><span class="pill ok">On-page form</span><span class="pill ok">Form on button click</span><span class="pill ok">WhatsApp</span><span class="pill ok">Telegram</span><span class="pill ok">AI Consultant</span></div>
+        <div class="flow-in"><span class="pill ok">On-page form</span><span class="pill ok">Form on button click</span><span class="pill ok">Telegram</span></div>
       </div>
       <div class="flow-arrow">→</div>
       <div class="flow-col">
@@ -2302,7 +2361,7 @@ body[dir="rtl"] .logo {
         <div class="flow-steps">
           <div class="flow-step">HTTP 200, no soft-404 <span>10/10</span></div>
           <div class="flow-step">CTA or form on page <span>10/10</span></div>
-          <div class="flow-step">Anti-spam: Turnstile, honeypot <span>OK</span></div>
+          <div class="flow-step">Anti-spam: Turnstile, honeypot, reCAPTCHA <span>OK</span></div>
           <div class="flow-step">Instant contact channel <span>OK</span></div>
         </div>
       </div>
@@ -2329,7 +2388,7 @@ body[dir="rtl"] .logo {
         <div>
           <h3>Accelerate Core Web Vitals and mobile LCP</h3>
           <div class="tags"><span class="tag">Speed</span><span class="tag med">Needs attention</span></div>
-          <p>Each +100 ms latency reduces conversion and increases cost per lead. Next-gen images, critical CSS and CDN caching by Erythro.ai.</p>
+          <p>Each +100ms delay lowers conversion and raises cost per lead. Next-gen images, critical CSS and CDN caching by Erythro.ai.</p>
           
     <div class="code-box">
       <div class="code-header">
@@ -2338,16 +2397,16 @@ body[dir="rtl"] .logo {
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
-          <code>next.config.mjs:8-22</code>
+          <code>Image markup and static file cache</code>
         </span>
-        <button type="button" class="btn-copy" data-copy="// next.config.mjs:8-22
-// Automatic image optimization and cache TTL for Core Web Vitals:
-images: {
-  formats: ['image/avif', 'image/webp'],
-  minimumCacheTTL: 31536000,
-  deviceSizes: [375, 640, 750, 1080, 1200]
-},
-compress: true" aria-label="Copy code">
+        <button type="button" class="btn-copy" data-copy="&lt;!-- Modern formats with a JPEG fallback and fixed dimensions (no layout shift): --&gt;
+&lt;picture&gt;
+  &lt;source srcset="/images/hero.avif" type="image/avif"&gt;
+  &lt;source srcset="/images/hero.webp" type="image/webp"&gt;
+  &lt;img src="/images/hero.jpg" width="1200" height="630" alt="Banner description" fetchpriority="high"&gt;
+&lt;/picture&gt;
+&lt;!-- HTTP header for images, CSS and JS (server or CDN):
+     Cache-Control: public, max-age=31536000, immutable --&gt;" aria-label="Copy code">
           <span class="copy-text">copy</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -2355,14 +2414,14 @@ compress: true" aria-label="Copy code">
           </svg>
         </button>
       </div>
-      <pre><code>// next.config.mjs:8-22
-// Automatic image optimization and cache TTL for Core Web Vitals:
-images: {
-  formats: ['image/avif', 'image/webp'],
-  minimumCacheTTL: 31536000,
-  deviceSizes: [375, 640, 750, 1080, 1200]
-},
-compress: true</code></pre>
+      <pre><code>&lt;!-- Modern formats with a JPEG fallback and fixed dimensions (no layout shift): --&gt;
+&lt;picture&gt;
+  &lt;source srcset="/images/hero.avif" type="image/avif"&gt;
+  &lt;source srcset="/images/hero.webp" type="image/webp"&gt;
+  &lt;img src="/images/hero.jpg" width="1200" height="630" alt="Banner description" fetchpriority="high"&gt;
+&lt;/picture&gt;
+&lt;!-- HTTP header for images, CSS and JS (server or CDN):
+     Cache-Control: public, max-age=31536000, immutable --&gt;</code></pre>
     </div>
         </div>
         <div class="plus"><small>Step</small>1</div>
@@ -2380,14 +2439,13 @@ compress: true</code></pre>
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
-          <code>src/components/Footer.tsx:55-80</code>
+          <code>Image and button markup</code>
         </span>
-        <button type="button" class="btn-copy" data-copy="// src/components/Footer.tsx:55-80
-// 1. Informative alt attributes for images:
-&lt;Image src="/images/logo.svg" alt="Erythro.ai" width={140} height={40} /&gt;
-// 2. Accessible labels for icon buttons:
-&lt;button type="button" aria-label="WhatsApp consultation" onClick={openWhatsApp}&gt;
-  &lt;WhatsAppIcon aria-hidden="true" /&gt;
+        <button type="button" class="btn-copy" data-copy="&lt;!-- 1. Meaningful alt on informative images (alt="" on decorative ones): --&gt;
+&lt;img src="/images/logo.svg" alt="Company name" width="140" height="40"&gt;
+&lt;!-- 2. A label on an icon-only button: --&gt;
+&lt;button type="button" aria-label="WhatsApp consultation"&gt;
+  &lt;svg aria-hidden="true" focusable="false"&gt;…&lt;/svg&gt;
 &lt;/button&gt;" aria-label="Copy code">
           <span class="copy-text">copy</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2396,12 +2454,11 @@ compress: true</code></pre>
           </svg>
         </button>
       </div>
-      <pre><code>// src/components/Footer.tsx:55-80
-// 1. Informative alt attributes for images:
-&lt;Image src="/images/logo.svg" alt="Erythro.ai" width={140} height={40} /&gt;
-// 2. Accessible labels for icon buttons:
-&lt;button type="button" aria-label="WhatsApp consultation" onClick={openWhatsApp}&gt;
-  &lt;WhatsAppIcon aria-hidden="true" /&gt;
+      <pre><code>&lt;!-- 1. Meaningful alt on informative images (alt="" on decorative ones): --&gt;
+&lt;img src="/images/logo.svg" alt="Company name" width="140" height="40"&gt;
+&lt;!-- 2. A label on an icon-only button: --&gt;
+&lt;button type="button" aria-label="WhatsApp consultation"&gt;
+  &lt;svg aria-hidden="true" focusable="false"&gt;…&lt;/svg&gt;
 &lt;/button&gt;</code></pre>
     </div>
         </div>
@@ -2420,24 +2477,18 @@ compress: true</code></pre>
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
-          <code>src/app/(frontend)/layout.tsx:75-97</code>
+          <code>Page &lt;head&gt;</code>
         </span>
-        <button type="button" class="btn-copy" data-copy="// src/app/(frontend)/layout.tsx:75-97
-export async function generateMetadata(): Promise&lt;Metadata&gt; {
-  return {
-    alternates: {
-      canonical: '/',
-      languages: {
-        'en': '/?lang=en',
-        'ru': '/?lang=ru',
-        'he': '/?lang=he'
-      }
-    },
-    openGraph: {
-      images: [{ url: '/images/og-image.png', width: 1200, height: 630 }]
-    }
-  };
-}" aria-label="Copy code">
+        <button type="button" class="btn-copy" data-copy="&lt;!-- Canonical link and language versions (use your own URL for each locale): --&gt;
+&lt;link rel="canonical" href="https://erythro.ai/"&gt;
+&lt;link rel="alternate" hreflang="he" href="https://erythro.ai/he/"&gt;
+&lt;link rel="alternate" hreflang="ru" href="https://erythro.ai/ru/"&gt;
+&lt;link rel="alternate" hreflang="en" href="https://erythro.ai/en/"&gt;
+&lt;link rel="alternate" hreflang="x-default" href="https://erythro.ai/"&gt;
+&lt;!-- Link preview in WhatsApp, Telegram, Facebook: --&gt;
+&lt;meta property="og:title" content="Page title"&gt;
+&lt;meta property="og:description" content="Short description"&gt;
+&lt;meta property="og:image" content="https://erythro.ai/og-image.jpg"&gt;" aria-label="Copy code">
           <span class="copy-text">copy</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -2445,22 +2496,16 @@ export async function generateMetadata(): Promise&lt;Metadata&gt; {
           </svg>
         </button>
       </div>
-      <pre><code>// src/app/(frontend)/layout.tsx:75-97
-export async function generateMetadata(): Promise&lt;Metadata&gt; {
-  return {
-    alternates: {
-      canonical: '/',
-      languages: {
-        'en': '/?lang=en',
-        'ru': '/?lang=ru',
-        'he': '/?lang=he'
-      }
-    },
-    openGraph: {
-      images: [{ url: '/images/og-image.png', width: 1200, height: 630 }]
-    }
-  };
-}</code></pre>
+      <pre><code>&lt;!-- Canonical link and language versions (use your own URL for each locale): --&gt;
+&lt;link rel="canonical" href="https://erythro.ai/"&gt;
+&lt;link rel="alternate" hreflang="he" href="https://erythro.ai/he/"&gt;
+&lt;link rel="alternate" hreflang="ru" href="https://erythro.ai/ru/"&gt;
+&lt;link rel="alternate" hreflang="en" href="https://erythro.ai/en/"&gt;
+&lt;link rel="alternate" hreflang="x-default" href="https://erythro.ai/"&gt;
+&lt;!-- Link preview in WhatsApp, Telegram, Facebook: --&gt;
+&lt;meta property="og:title" content="Page title"&gt;
+&lt;meta property="og:description" content="Short description"&gt;
+&lt;meta property="og:image" content="https://erythro.ai/og-image.jpg"&gt;</code></pre>
     </div>
         </div>
         <div class="plus"><small>Step</small>3</div>
@@ -2478,16 +2523,14 @@ export async function generateMetadata(): Promise&lt;Metadata&gt; {
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
-          <code>src/app/api/lead/qualify/route.ts:12-35</code>
+          <code>Lead handling</code>
         </span>
-        <button type="button" class="btn-copy" data-copy="// src/app/api/lead/qualify/route.ts:12-35
-// Automated AI lead qualification and routing 24/7:
-export async function POST(req: Request) {
-  const { name, contact, inquiry } = await req.json();
-  const lead = await erythroAI.qualify({ inquiry, threshold: 0.8 });
-  await crm.dispatch({ name, contact, priority: lead.score, channel: lead.intent });
-  return Response.json({ status: 'routed', priority: lead.priority });
-}" aria-label="Copy code">
+        <button type="button" class="btn-copy" data-copy="# The form posts the lead to a qualification webhook, then to CRM:
+POST https://&lt;your-webhook&gt;/lead
+{ "name": "…", "phone": "…", "message": "…", "page": "/contact" }
+
+# Response: priority and owner for the sales team
+{ "score": 0.86, "priority": "high", "route": "sales" }" aria-label="Copy code">
           <span class="copy-text">copy</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -2495,103 +2538,15 @@ export async function POST(req: Request) {
           </svg>
         </button>
       </div>
-      <pre><code>// src/app/api/lead/qualify/route.ts:12-35
-// Automated AI lead qualification and routing 24/7:
-export async function POST(req: Request) {
-  const { name, contact, inquiry } = await req.json();
-  const lead = await erythroAI.qualify({ inquiry, threshold: 0.8 });
-  await crm.dispatch({ name, contact, priority: lead.score, channel: lead.intent });
-  return Response.json({ status: 'routed', priority: lead.priority });
-}</code></pre>
+      <pre><code># The form posts the lead to a qualification webhook, then to CRM:
+POST https://&lt;your-webhook&gt;/lead
+{ "name": "…", "phone": "…", "message": "…", "page": "/contact" }
+
+# Response: priority and owner for the sales team
+{ "score": 0.86, "priority": "high", "route": "sales" }</code></pre>
     </div>
         </div>
         <div class="plus"><small>Step</small>4</div>
-      </div>
-      <div class="action" id="action-sec">
-        <div>
-          <h3>Mandatory HTTP security headers</h3>
-          <div class="tags"><span class="tag">Security</span><span class="tag gold">Growth opportunity</span></div>
-          <p>Configuring mandatory HTTP security headers (HSTS, NoSniff, SameOrigin)</p>
-          
-    <div class="code-box">
-      <div class="code-header">
-        <span class="code-file">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-          </svg>
-          <code>next.config.mjs:15-32</code>
-        </span>
-        <button type="button" class="btn-copy" data-copy="// next.config.mjs:15-32
-async headers() {
-  return [{
-    source: '/:path*',
-    headers: [
-      { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-      { key: 'X-Content-Type-Options', value: 'nosniff' },
-      { key: 'X-Frame-Options', value: 'SAMEORIGIN' }
-    ]
-  }];
-}" aria-label="Copy code">
-          <span class="copy-text">copy</span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-        </button>
-      </div>
-      <pre><code>// next.config.mjs:15-32
-async headers() {
-  return [{
-    source: '/:path*',
-    headers: [
-      { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-      { key: 'X-Content-Type-Options', value: 'nosniff' },
-      { key: 'X-Frame-Options', value: 'SAMEORIGIN' }
-    ]
-  }];
-}</code></pre>
-    </div>
-        </div>
-        <div class="plus"><small>Step</small>5</div>
-      </div>
-      <div class="action" id="action-ai">
-        <div>
-          <h3>AI Search Visibility: llms.txt &amp; signals</h3>
-          <div class="tags"><span class="tag">AI Discovery</span><span class="tag gold">Growth opportunity</span></div>
-          <p>Permit AI search citations (ChatGPT, Perplexity) while blocking unauthorized model training</p>
-          
-    <div class="code-box">
-      <div class="code-header">
-        <span class="code-file">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-          </svg>
-          <code>public/robots.txt:1-8</code>
-        </span>
-        <button type="button" class="btn-copy" data-copy="# public/robots.txt:1-8
-User-agent: *
-Allow: /
-# Content-Signal: allow search citations, prohibit unauthorized model training:
-Content-Signal: search=yes, ai-input=yes, ai-train=no
-Sitemap: https://erythro.ai/sitemap.xml" aria-label="Copy code">
-          <span class="copy-text">copy</span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-        </button>
-      </div>
-      <pre><code># public/robots.txt:1-8
-User-agent: *
-Allow: /
-# Content-Signal: allow search citations, prohibit unauthorized model training:
-Content-Signal: search=yes, ai-input=yes, ai-train=no
-Sitemap: https://erythro.ai/sitemap.xml</code></pre>
-    </div>
-        </div>
-        <div class="plus"><small>Step</small>6</div>
       </div>
     </div>
   </section>
@@ -2657,7 +2612,7 @@ Lock a 375–430px grid regression in releases so blocks, sliders and absolute l
         </div></details>
       <details class="check" name="audit-checklist" data-s="g" data-pillar="lead" id="diag-lead"><summary><span class="st g">Excellent</span><span class="nm">Lead forms, anti-spam &amp; instant response</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Check result</b>Forms: 2 (via button). Email: yes, phone: yes, submit: yes. Anti-spam: Cloudflare Turnstile, Honeypot. Instant channel: chat [class*="chat-launcher"]</div>
+          <div class="res"><b>Check result</b>Forms: 2 (via button). Email: yes, phone: yes, submit: yes. Anti-spam: Cloudflare Turnstile, Honeypot. Instant channel: WhatsApp/Telegram (1)</div>
           <div class="rec">
             <div class="rec-title-row"><b>Recommendation</b><button type="button" class="btn-copy" data-copy="Lead capture is in place: form, anti-spam and an instant channel.
 
@@ -2688,7 +2643,7 @@ Do not drop the honeypot, Turnstile/reCAPTCHA or wa.me (or chat) in the next rel
         </div></details>
       <details class="check" name="audit-checklist" data-s="g" data-pillar="ai"><summary><span class="st g">Excellent</span><span class="nm">Robots.txt: AI crawlers &amp; indexing</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Check result</b>Allow для AI-ботов: GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, CCBot, Google-Extended, Applebot-Extended, PerplexityBot; robots.txt: 200 OK; sitemap: 200 OK, 25 URL; Content-Signal: {ai-train=no, search=yes, ai-input=yes}</div>
+          <div class="res"><b>Check result</b>Allow for AI bots: GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, CCBot, Google-Extended, Applebot-Extended, PerplexityBot; robots.txt: 200 OK; sitemap: 200 OK, 25 URL; Content-Signal: {ai-train=no, search=yes, ai-input=yes}</div>
           <div class="rec">
             <div class="rec-title-row"><b>Recommendation</b><button type="button" class="btn-copy" data-copy="AI crawlers are Allow, robots.txt and sitemap.xml return 200.
 
@@ -2758,7 +2713,7 @@ Keep console / PageError monitoring on the funnel so a regression never hits pai
         </div></details>
       <details class="check" name="audit-checklist" data-s="g" data-pillar="sec"><summary><span class="st g">Excellent</span><span class="nm">TTFB and server response</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Check result</b>TTFB 250 ms, Server: cloudflare</div>
+          <div class="res"><b>Check result</b>TTFB 172 ms, Server: cloudflare</div>
           <div class="rec">
             <div class="rec-title-row"><b>Recommendation</b><button type="button" class="btn-copy" data-copy="TTFB is in the target range. Keep the CDN and a warm origin so the first byte does not grow after a release." aria-label="Copy recommendation"><span class="copy-text">copy</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
             <p>TTFB is in the target range. Keep the CDN and a warm origin so the first byte does not grow after a release.</p>
@@ -2776,7 +2731,7 @@ Keep console / PageError monitoring on the funnel so a regression never hits pai
         </div></details>
       <details class="check" name="audit-checklist" data-s="g" data-pillar="seo"><summary><span class="st g">Excellent</span><span class="nm">Locale RU · homepage</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Check result</b>html lang=ru, dir=ltr, overflow-x 0px, forms=1</div>
+          <div class="res"><b>Check result</b>html lang=ru, dir=ltr, overflow-x 0px, forms=2</div>
           <div class="rec">
             <div class="rec-title-row"><b>Recommendation</b><button type="button" class="btn-copy" data-copy="Meta and previews for this check are in place. Keep unique title/description, og:image and html lang when content changes." aria-label="Copy recommendation"><span class="copy-text">copy</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
             <p>Meta and previews for this check are in place. Keep unique title/description, og:image and html lang when content changes.</p>
@@ -2785,7 +2740,7 @@ Keep console / PageError monitoring on the funnel so a regression never hits pai
         </div></details>
       <details class="check" name="audit-checklist" data-s="g" data-pillar="seo"><summary><span class="st g">Excellent</span><span class="nm">Locale HE · homepage</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Check result</b>html lang=he, dir=rtl, overflow-x 0px, forms=2</div>
+          <div class="res"><b>Check result</b>html lang=he, dir=rtl, overflow-x 0px, forms=1</div>
           <div class="rec">
             <div class="rec-title-row"><b>Recommendation</b><button type="button" class="btn-copy" data-copy="RTL is declared correctly. Keep html dir="rtl" / lang=he and mirrored menus, sliders and forms in future releases." aria-label="Copy recommendation"><span class="copy-text">copy</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
             <p>RTL is declared correctly. Keep html dir="rtl" / lang=he and mirrored menus, sliders and forms in future releases.</p>
@@ -2794,7 +2749,7 @@ Keep console / PageError monitoring on the funnel so a regression never hits pai
         </div></details>
       <details class="check" name="audit-checklist" data-s="g" data-pillar="lead"><summary><span class="st g">Excellent</span><span class="nm">Agent funnel crawl (10 URLs)</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Check result</b>Opened 10, broken: 0, with CTA: 10, inner forms: 11</div>
+          <div class="res"><b>Check result</b>Opened 10, broken: 0, with CTA: 10, inner forms: 12</div>
           <div class="rec">
             <div class="rec-title-row"><b>Recommendation</b><button type="button" class="btn-copy" data-copy="This funnel page is live: HTTP 200, CTA or form in place.
 
@@ -2807,7 +2762,7 @@ Do not remove the lead / WhatsApp button in the next release. Keep menu links on
         </div></details>
       <details class="check" name="audit-checklist" data-s="g" data-pillar="lead"><summary><span class="st g">Excellent</span><span class="nm">Funnel page · /</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Check result</b>HTTP 200 · CTA yes · forms 1 (via CTA) · instant yes · 922 words</div>
+          <div class="res"><b>Check result</b>HTTP 200 · CTA yes · forms 2 (via CTA) · instant yes · 923 words</div>
           <div class="rec">
             <div class="rec-title-row"><b>Recommendation</b><button type="button" class="btn-copy" data-copy="This funnel page is live: HTTP 200, CTA or form in place.
 
@@ -2911,7 +2866,7 @@ Do not remove the lead / WhatsApp button in the next release. Keep menu links on
         </div></details>
       <details class="check" name="audit-checklist" data-s="g" data-pillar="lead"><summary><span class="st g">Excellent</span><span class="nm">Funnel page · /order/audit-diagnostic</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>Check result</b>HTTP 200 · CTA yes · forms 1 · instant yes · 524 words</div>
+          <div class="res"><b>Check result</b>HTTP 200 · CTA yes · forms 1 · instant yes · 526 words</div>
           <div class="rec">
             <div class="rec-title-row"><b>Recommendation</b><button type="button" class="btn-copy" data-copy="This funnel page is live: HTTP 200, CTA or form in place.
 
@@ -2940,7 +2895,7 @@ Do not remove the lead / WhatsApp button in the next release. Keep menu links on
 
   <section class="card">
     <h2>Audit protocol</h2>
-    <p class="sub">The Erythro.ai lab checked erythro.ai in three languages (EN, RU, HE) and 10 funnel pages, on mobile (iPhone SE 375×667) and desktop.</p>
+    <p class="sub">The Erythro.ai lab checked erythro.ai in 3 site languages (EN, RU, HE) and 10 funnel pages, on mobile (iPhone SE 375×667) and desktop.</p>
     <div class="proto">
       <div class="stat"><b>230</b><span>checks</span></div>
       <div class="stat"><b>3</b><span>site languages</span></div>
@@ -2958,7 +2913,7 @@ Do not remove the lead / WhatsApp button in the next release. Keep menu links on
 
   <!-- order-slot -->
 
-                                                    <section class="cta">
+                                                      <section class="cta">
     <div>
       <h2>Implement AI Automation and Boost Website Conversion</h2>
       <p>Erythro.ai engineering team: push Core Web Vitals to 90+, deploy 24/7 AI lead capture agents, and bulletproof website stability.</p>
@@ -2967,6 +2922,7 @@ Do not remove the lead / WhatsApp button in the next release. Keep menu links on
     <a class="go" href="https://wa.me/972505308305">Chat on WhatsApp</a>
   </section>
 
+  <p class="report-disclaimer" style="max-width:960px;margin:28px auto 10px;padding:0 16px;font-size:12px;line-height:1.6;color:#6b6b6b;text-align:start">This report is for informational and advisory purposes only. It reflects the state of the website at the time of the automated scan and Erythro.ai’s expert assessment; it does not constitute a legal opinion, a guarantee of results, or a demand for urgent changes. The decision whether and when to implement the recommendations rests solely with the website owner.</p>
   <div class="foot">© 2026 Erythro.ai — Hi-Load Web Development &amp; AI Agents Automation · Commercial Executive Audit</div>
 </div>
 

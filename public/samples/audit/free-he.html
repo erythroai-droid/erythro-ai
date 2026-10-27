@@ -73,6 +73,7 @@ body { font-family: 'Heebo', system-ui, sans-serif; font-size: 16px; line-height
 .segs i { height: 3px; border-radius: 2px; background: var(--line); display: block; }
 .segs i.on-good { background: var(--good); }
 .segs i.on-warn { background: var(--warn); }
+.segs i.on-bad { background: var(--bad); }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
 .chip { background: var(--soft); border-radius: 999px; padding: 9px 16px; font-size: 15px; }
@@ -1044,6 +1045,47 @@ a.badge.crit:hover {
   flex-shrink: 0 !important;
   display: block !important;
 }
+.chip.chip-crit {
+  border-color: #fca5a5 !important;
+  background: #fff1f0 !important;
+  padding-inline-end: 10px !important;
+}
+.chip-crit-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin-inline-start: 2px !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: #e52421 !important;
+  color: #fff !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  line-height: 1.2 !important;
+}
+.tech-php-alert {
+  margin-top: 14px !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid #fca5a5 !important;
+  background: #fff1f0 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  color: #7f1d1d !important;
+}
+.tech-php-alert .tech-php-cta {
+  display: block !important;
+  margin-top: 10px !important;
+  color: #b91c1c !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+.tech-php-alert .tech-php-cta:hover {
+  color: #e52421 !important;
+}
 
 /* Official header logo styling */
 .logo {
@@ -1325,7 +1367,7 @@ body[dir="rtl"] .logo {
 /* === v2-polish:start === */
 :root:root:root { --bg: #eaeaea; --card: #f8f8f8; --soft: #ffffff; --line: #d6d6d6; --mute: #554f42; --mono: 'Heebo', system-ui, sans-serif; }
 :root:root:root body, :root:root:root body * { font-family: 'Heebo', system-ui, sans-serif; }
-:root:root:root .code-box, :root:root:root .code-box *, :root:root:root pre, :root:root:root code { font-family: 'IBM Plex Mono', 'Heebo', ui-monospace, Menlo, Consolas, monospace !important; }
+:root:root:root .code-box, :root:root:root .code-box *, :root:root:root pre, :root:root:root code { font-family: 'IBM Plex Mono', 'Heebo', ui-monospace, Menlo, Consolas, 'Segoe UI', Arial, monospace !important; }
 :root:root:root .wrap { gap: 40px !important; }
 :root:root:root .wrap > .logo { margin-bottom: -30px !important; }
 :root:root:root .card { background: #f8f8f8 !important; }
@@ -2001,6 +2043,9 @@ body[dir="rtl"] .logo {
   :root:root:root .filters, :root:root:root #empty { display: none !important; }
   /* keep the one-line footer on the last content page instead of a page of its own */
   :root:root:root .foot { padding-top: 0 !important; margin-top: -24px !important; font-size: 11px !important; break-before: avoid !important; page-break-before: avoid !important; }
+  /* advisory disclaimer sits right above the footer: its bottom margin absorbs the footer's -24px */
+  /* compact: with the footer it must fit the last content page, not open a page of its own */
+  :root:root:root .report-disclaimer { margin: 4px 0 26px !important; padding: 0 !important; font-size: 9px !important; line-height: 1.4 !important; break-inside: avoid; page-break-inside: avoid; break-before: avoid; page-break-before: avoid; }
   :root:root:root .check, :root:root:root .check::before, :root:root:root .check .chev, :root:root:root .check::details-content, :root:root:root .action, :root:root:root .chip { transition: none !important; animation: none !important; }
   * { transition: none !important; animation: none !important; }
 }
@@ -2028,12 +2073,12 @@ body[dir="rtl"] .logo {
   <div class="head">
     <div class="head-top">
       <span class="badge dark">ביקורת אתר אקספרס · Free</span>
-      <span class="badge" dir="ltr">26 OCT 2026 17:43 UTC</span>
+      <span class="badge" dir="ltr">27 OCT 2026 16:19 UTC</span>
       <span class="badge">שפה: HE</span>
     </div>
     <div class="site">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="16" cy="16" r="14"/><ellipse cx="16" cy="16" rx="6" ry="14"/><path d="M2 16h28M4 9h24M4 23h24"/></svg>
-      <span dir="ltr">erythro.ai</span>
+      erythro.ai
     </div>
   </div>
 
@@ -2041,13 +2086,13 @@ body[dir="rtl"] .logo {
     <div class="row"><h2>ציון כללי</h2><span class="badge">5 בדיקות · עמוד הבית</span></div>
     <div class="score" style="margin-top:28px">
       <div>
-        <div class="score-num">88<small dir="ltr">/100</small></div>
-        <p class="score-note">ציון 88 מתוך 100 — לפי בדיקה מהירה של עמוד הבית. הסולם החלש ביותר הוא "מהירות ו-UX מובייל" (62). בדוח פתוחות 5 בדיקות בסיס ו-Google Lighthouse; ביקורת מלאה (28 בדיקות, 3 שפות, עד 10 עמודים) עשויה לדייק את הציון.</p>
+        <div class="score-num">87<small dir="ltr">/100</small></div>
+        <p class="score-note">ציון 87 מתוך 100 — לפי בדיקה מהירה של עמוד הבית. הסולם החלש ביותר הוא "מהירות ו-UX מובייל" (65). בדוח פתוחות 5 בדיקות בסיס ו-Google Lighthouse; ביקורת מלאה (28 בדיקות, 3 שפות, עד 10 עמודים) עשויה לדייק את הציון.</p>
       </div>
       <div class="gauge">
         <svg viewBox="0 0 150 150" aria-hidden="true">
           <circle cx="75" cy="75" r="66" fill="none" stroke="#c9c9c9" stroke-width="3" stroke-dasharray="1.5 6" stroke-linecap="round"/>
-          <circle cx="75" cy="75" r="66" fill="none" stroke="#ff7900" stroke-width="7" stroke-linecap="round" stroke-dasharray="365 415"/>
+          <circle cx="75" cy="75" r="66" fill="none" stroke="#ff7900" stroke-width="7" stroke-linecap="round" stroke-dasharray="361 415"/>
         </svg>
         <div class="lbl"><span>דורש<br>תשומת לב</span></div>
       </div>
@@ -2059,17 +2104,17 @@ body[dir="rtl"] .logo {
     <div class="scales-head"><h2>תוצאות האבחון</h2><span class="mono">מדדים עיקריים</span></div>
     <div class="scale">
       <div class="row"><h3>מהירות ו-UX מובייל</h3><a href="#action-speed" class="badge warn" title="לצפייה בפתרון עבור: מהירות ו-UX מובייל">דורש תשומת לב ↓</a></div>
-      <div class="val"><b>62</b></div>
+      <div class="val"><b>65</b></div>
       <div class="segs"><i class="on-warn"></i><i class="on-warn"></i><i></i><i></i></div>
     </div>
     <div class="scale">
-      <div class="row"><h3>SEO ונראות</h3><a href="#diag-seo" class="badge grow" title="לצפייה בפתרון עבור: SEO ונראות">הזדמנות צמיחה אחת ↓</a></div>
+      <div class="row"><h3>SEO ונראות</h3><a href="#tiers" class="badge lock" title="פירוט הסולם — במסלולי Diagnostic ו-Pro">בביקורת המלאה ↓</a></div>
       <div class="val"><b>94</b></div>
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
     <div class="scale">
-      <div class="row"><h3>לידים וטפסים</h3><span class="badge ok">ללא הערות</span></div>
-      <div class="val"><b>100</b></div>
+      <div class="row"><h3>לידים וטפסים</h3><a href="#diag-lead" class="badge grow" title="לצפייה בפתרון עבור: לידים וטפסים">הזדמנות צמיחה אחת ↓</a></div>
+      <div class="val"><b>90</b></div>
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
     <div class="scale">
@@ -2078,7 +2123,7 @@ body[dir="rtl"] .logo {
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
     <div class="scale">
-      <div class="row"><h3>נראות AI וגילוי מותג</h3><a href="#tiers" class="badge lock" title="פירוט הסולם — במסלולי Diagnostic ו-Pro">בביקורת המלאה ↓</a></div>
+      <div class="row"><h3>נראות AI וגילוי מותג</h3><span class="badge ok">ללא הערות</span></div>
       <div class="val"><b>100</b></div>
       <div class="segs"><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i><i class="on-good"></i></div>
     </div>
@@ -2089,41 +2134,41 @@ body[dir="rtl"] .logo {
     <p class="sub">שלוש הבעיות שמשפיעות הכי הרבה על פניות ועל עלות הליד.</p>
     <div class="top3">
       <div class="t3"><div class="t3-idx">01</div><div>
-        <div class="t3-head"><h3>האצת Core Web Vitals ו-LCP לנייד</h3><div class="tags"><span class="tag">פגיעות המרה</span><span class="tag med">דורש תשומת לב</span></div></div>
+        <div class="t3-head"><h3>האצת Core Web Vitals ו-LCP מובייל</h3><div class="tags"><span class="tag">פגיעות המרה</span><span class="tag med">דורש תשומת לב</span></div></div>
         <div class="t3-rows">
-          <div class="t3-row problem"><b>בעיה</b><span>גם עם ממוצעים טובים, ניתן להביא את ה-LCP וה-INP בנייד ליעדים: 1.5 שניות ו-200 אלפיות שנייה.</span></div>
-          <div class="t3-row impact"><b>השפעה עסקית</b><span>כל 100 אלפיות שנייה נוספות של עיכוב מפחיתות המרה ומייקרות את עלות הליד.</span></div>
+          <div class="t3-row problem"><b>בעיה</b><span>אפילו עם ציונים טובים, LCP ו-INP מובייל יכולים להגיע ל-1.5s ו-200ms.</span></div>
+          <div class="t3-row impact"><b>השפעה עסקית</b><span>כל +100ms מוריד קונברסיה ומעלה עלות ליד.</span></div>
           <div class="t3-row solution"><b>פתרון מ-Erythro.ai</b><span><a href="#action-speed" class="t3-step-link">פתרון מוכן עם קוד — בשלב 1 של תוכנית הפעולה ↓</a></span></div>
         </div></div></div>
       <div class="t3"><div class="t3-idx">02</div><div>
-        <div class="t3-head"><h3>סינון וסיווג לידים נכנסים מבוסס AI</h3><div class="tags"><span class="tag">פוטנציאל המרה</span><span class="tag gold">הזדמנות לצמיחה</span></div></div>
+        <div class="t3-head"><h3>AI לסיווג לידים נכנסים</h3><div class="tags"><span class="tag">פוטנציאל המרה</span><span class="tag gold">הזדמנות לצמיחה</span></div></div>
         <div class="t3-rows">
-          <div class="t3-row problem"><b>בעיה</b><span>לידים מטופלים ידנית ללא סיווג וניתוב אוטומטיים.</span></div>
-          <div class="t3-row impact"><b>השפעה עסקית</b><span>זמן המענה הראשוני מתארך; לידים הולכים לאיבוד בין המייל ל-CRM.</span></div>
+          <div class="t3-row problem"><b>בעיה</b><span>לידים מטופלים ידנית ללא סיווג וניתוב אוטומטי.</span></div>
+          <div class="t3-row impact"><b>השפעה עסקית</b><span>זמן תגובה ראשון גדל; לידים נעלמים בין מייל ו-CRM.</span></div>
           <div class="t3-row solution locked"><b>פתרון מ-Erythro.ai</b><span class="t3-sol-locked"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><span>פתרון וקוד — ב-Pro. <a href="#tiers" class="t3-lock-link">השוואת מסלולים ↓</a></span></span></div>
         </div></div></div>
       <div class="t3"><div class="t3-idx">03</div><div>
-        <div class="t3-head"><h3>הרחבת משפך רב-לשוני</h3><div class="tags"><span class="tag">פוטנציאל המרה</span><span class="tag gold">הזדמנות לצמיחה</span></div></div>
+        <div class="t3-head"><h3>הרחבת צינור רב-לשוני</h3><div class="tags"><span class="tag">פוטנציאל המרה</span><span class="tag gold">הזדמנות לצמיחה</span></div></div>
         <div class="t3-rows">
-          <div class="t3-row problem"><b>בעיה</b><span>השפות עובדות אך חסרים משפכים ודפי נחיתה ייעודיים לכל שוק.</span></div>
-          <div class="t3-row impact"><b>השפעה עסקית</b><span>הצעה אחידה לכל השווקים ממירה פחות ממסעות לקוח מותאמים.</span></div>
+          <div class="t3-row problem"><b>בעיה</b><span>שפות עובדות אך חסרים תרחישי חימום ודפי נחיתה לכל שוק.</span></div>
+          <div class="t3-row impact"><b>השפעה עסקית</b><span>הצעה אחת לכל השווקים מנצחת פחות ממסלולים מקומיים.</span></div>
           <div class="t3-row solution locked"><b>פתרון מ-Erythro.ai</b><span class="t3-sol-locked"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><span>פתרון וקוד — ב-Pro. <a href="#tiers" class="t3-lock-link">השוואת מסלולים ↓</a></span></span></div>
         </div></div></div>
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="lighthouse">
     <div class="row"><h2>מהירות ו-Core Web Vitals</h2><span class="badge">Google Lighthouse</span></div>
     <div class="table-scroll">
       <table>
         <thead><tr><th>מדד</th><th>Mobile (iPhone SE)</th><th>Desktop</th></tr></thead>
         <tbody>
-          <tr><td>ביצועים</td><td><span class="p w">62</span></td><td><span class="p w">73</span></td></tr>
+          <tr><td>ביצועים</td><td><span class="p w">65</span></td><td><span class="p w">76</span></td></tr>
           <tr><td>נגישות</td><td><span class="p g">100</span></td><td><span class="p g">100</span></td></tr>
-          <tr><td>פרקטיקות מומלצות</td><td><span class="p g">96</span></td><td><span class="p g">96</span></td></tr>
+          <tr><td>פרקטיקות מומלצות</td><td><span class="p g">100</span></td><td><span class="p g">96</span></td></tr>
           <tr><td>SEO</td><td><span class="p g">100</span></td><td><span class="p g">100</span></td></tr>
-          <tr><td>FCP</td><td>3.8 s</td><td>0.6 s</td></tr>
-          <tr><td>LCP</td><td>6.4 s</td><td>1.6 s</td></tr>
+          <tr><td>FCP</td><td>3.5 s</td><td>0.6 s</td></tr>
+          <tr><td>LCP</td><td>6.3 s</td><td>1.7 s</td></tr>
           <tr><td>CLS</td><td>0</td><td>0.001</td></tr>
           <tr><td>עמודי המשפך</td><td colspan="2"><span class="p g">1/1</span></td></tr>
         </tbody>
@@ -2157,26 +2202,35 @@ body[dir="rtl"] .logo {
   <section class="card">
     <div class="row"><h2>טכנולוגיות שזוהו</h2></div>
     <div class="chips">
-      <!-- filled from audit_data.detected_technologies on next audit render -->
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></svg><span>Next.js</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2L22 20H2L12 2z"/></svg><span>Vercel</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#F38020" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M16.5088 16.8447c.1475-.5068.0908-.9707-.1553-1.3154-.2246-.3164-.6045-.499-1.0615-.5205l-8.6592-.1123a.1559.1559 0 0 1-.1333-.0713c-.0283-.042-.0351-.0986-.021-.1553.0278-.084.1123-.1484.2036-.1562l8.7359-.1123c1.0351-.0489 2.1601-.8868 2.5537-1.9136l.499-1.3013c.0215-.0561.0293-.1128.0147-.168-.5625-2.5463-2.835-4.4453-5.5499-4.4453-2.5039 0-4.6284 1.6177-5.3876 3.8614-.4927-.3658-1.1187-.5625-1.794-.499-1.2026.119-2.1665 1.083-2.2861 2.2856-.0283.31-.0069.6128.0635.894C1.5683 13.171 0 14.7754 0 16.752c0 .1748.0142.3515.0352.5273.0141.083.0844.1475.1689.1475h15.9814c.0909 0 .1758-.0645.2032-.1553l.12-.4268zm2.7568-5.5634c-.0771 0-.1611 0-.2383.0112-.0566 0-.1054.0415-.127.0976l-.3378 1.1744c-.1475.5068-.0918.9707.1543 1.3164.2256.3164.6055.498 1.0625.5195l1.8437.1133c.0557 0 .1055.0263.1329.0703.0283.043.0351.1074.0214.1562-.0283.084-.1132.1485-.204.1553l-1.921.1123c-1.041.0488-2.1582.8867-2.5527 1.914l-.1406.3585c-.0283.0713.0215.1416.0986.1416h6.5977c.0771 0 .1474-.0489.169-.126.1122-.4082.1757-.837.1757-1.2803 0-2.6025-2.125-4.727-4.7344-4.727"/></svg><span>Cloudflare</span></span>
+      <span class="chip"><span>Tailwind CSS</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="16" y="2" width="6" height="20" rx="3" fill="#F9AB00"/><rect x="9" y="8" width="6" height="14" rx="3" fill="#E37400"/><circle cx="4" cy="19" r="3" fill="#E37400"/></svg><span>Google Analytics 4</span></span>
+      <span class="chip"><span>Meta Pixel</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="#F38020"/><path d="M10 15.5l-3.5-3.5 1.41-1.41L10 12.67l6.09-6.09L17.5 8l-7.5 7.5z" fill="#ffffff"/></svg><span>Cloudflare Turnstile</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="#24A1DE" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg><span>Telegram</span></span>
+      <span class="chip"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="5" cy="7" r="3.2" fill="#005A9C"/><circle cx="19" cy="7" r="3.2" fill="#0FB5EE"/><circle cx="12" cy="18" r="3.2" fill="#CB3837"/><path d="M8 7h8M7 9.5l3.5 6M17 9.5l-3.5 6" stroke="#4a5568" stroke-width="1.6" stroke-linecap="round"/></svg><span>JSON-LD</span></span>
+      <span class="chip"><span>Open Graph</span></span>
     </div>
   </section>
 
   <section class="card">
     <div class="row"><h2>נתיב לליד</h2><span class="badge ok">תקין</span></div>
-    <p class="sub">פסק דין: בעמוד הבית אפשר להשאיר פנייה — הטופס והמסנג'רים עובדים.</p>
+    <p class="sub">פסק דין: בעמוד הבית אפשר להשאיר פנייה — יש טופס וערוץ תקשורת מיידי.</p>
     <div class="flow">
       <div class="flow-col">
         <h4>ערוצי פנייה</h4>
-        <div class="flow-in"><span class="pill ok">טופס בעמוד</span><span class="pill ok">טופס בלחיצה על כפתור</span><span class="pill ok">WhatsApp</span><span class="pill ok">Telegram</span><span class="pill ok">יועץ AI</span></div>
+        <div class="flow-in"><span class="pill ok">טופס בלחיצה על כפתור</span><span class="pill ok">Telegram</span></div>
       </div>
       <div class="flow-arrow">←</div>
       <div class="flow-col">
         <h4>מה הסוקר בודק</h4>
         <div class="flow-steps">
-          <div class="flow-step">HTTP 200 וללא soft-404 <span dir="ltr">10/10</span></div>
-          <div class="flow-step">CTA או טופס בעמוד <span>1/1</span></div>
-          <div class="flow-step">אנטי-ספאם: Turnstile, honeypot <span>OK</span></div>
-          <div class="flow-step">ערוץ תקשורת מיידי <span>OK</span></div>
+          <div class="flow-step">HTTP 200 וללא soft-404 <span dir="ltr">1/1</span></div>
+          <div class="flow-step">CTA או טופס בעמוד <span dir="ltr">1/1</span></div>
+          <div class="flow-step">אנטי-ספאם: Turnstile, honeypot, reCAPTCHA <span dir="ltr">OK</span></div>
+          <div class="flow-step">ערוץ תקשורת מיידי <span dir="ltr">OK</span></div>
         </div>
       </div>
       <div class="flow-arrow">←</div>
@@ -2200,16 +2254,6 @@ body[dir="rtl"] .logo {
         <a href="#tiers" class="tier-btn-secondary"><span class="bt-full">מה כלול ב-Diagnostic וב-Pro ↓</span><span class="bt-short">מה כלול במסלולים ↓</span></a>
       </div>
     </div>
-    <div class="tier-lock-card">
-      <div class="lock-header">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-        <span>נתיב ההמרה בכל המשפך (עד 10 עמודים)</span>
-      </div>
-      <p>אימות מלא של נתיב ההמרה, היעדר שגיאות 404 שקטות ותקינות טפסי לידים בכל דפי המשפך זמינים במסלולי Diagnostic ו-Pro.</p>
-      <div class="lock-actions">
-        <a href="#tiers" class="tier-btn-secondary"><span class="bt-full">מה כלול ב-Diagnostic וב-Pro ↓</span><span class="bt-short">מה כלול במסלולים ↓</span></a>
-      </div>
-    </div>
     <p class="note">איך סופרים את הדרך: טופס משובץ, טופס שנפתח אחרי לחיצה (Let’s Talk), צ׳אט ומסנג׳רים. כפתור בלי טופס הוא CTA, לא פער במשפך, אם הלחיצה פותחת טופס או WhatsApp.</p>
   </section>
 
@@ -2220,9 +2264,9 @@ body[dir="rtl"] .logo {
     <div class="actions">
       <div class="action" id="action-speed">
         <div>
-          <h3>האצת Core Web Vitals ו-LCP לנייד</h3>
+          <h3>האצת Core Web Vitals ו-LCP מובייל</h3>
           <div class="tags"><span class="tag">מהירות</span><span class="tag med">דורש תשומת לב</span></div>
-          <p>כל 100 אלפיות שנייה נוספות של עיכוב מפחיתות המרה ומייקרות את עלות הליד. דחיסת תמונות Next-Gen, CSS קריטי ומטמון CDN מבית Erythro.ai.</p>
+          <p>כל +100ms מוריד קונברסיה ומעלה עלות ליד. תמונות next-gen, CSS קריטי ו-CDN מ-Erythro.ai.</p>
           
     <div class="code-box">
       <div class="code-header">
@@ -2231,13 +2275,16 @@ body[dir="rtl"] .logo {
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
-          <code>src/app/(frontend)/layout.tsx:160-175</code>
+          <code>סימון תמונות ומטמון לקבצים סטטיים</code>
         </span>
-        <button type="button" class="btn-copy" data-copy="// src/app/(frontend)/layout.tsx:160-175
-// טעינה מוקדמת לתמונת LCP ולגופנים:
-&lt;link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high" /&gt;
-&lt;link rel="preconnect" href="https://fonts.googleapis.com" crossorigin /&gt;
-&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /&gt;" aria-label="Copy code">
+        <button type="button" class="btn-copy" data-copy="&lt;!-- פורמטים מודרניים עם JPEG כגיבוי ומידות קבועות (בלי קפיצת פריסה): --&gt;
+&lt;picture&gt;
+  &lt;source srcset="/images/hero.avif" type="image/avif"&gt;
+  &lt;source srcset="/images/hero.webp" type="image/webp"&gt;
+  &lt;img src="/images/hero.jpg" width="1200" height="630" alt="תיאור הבאנר" fetchpriority="high"&gt;
+&lt;/picture&gt;
+&lt;!-- כותרת HTTP לתמונות, CSS ו-JS (שרת או CDN):
+     Cache-Control: public, max-age=31536000, immutable --&gt;" aria-label="Copy code">
           <span class="copy-text">copy</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -2245,11 +2292,14 @@ body[dir="rtl"] .logo {
           </svg>
         </button>
       </div>
-      <pre><code>// src/app/(frontend)/layout.tsx:160-175
-// טעינה מוקדמת לתמונת LCP ולגופנים:
-&lt;link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high" /&gt;
-&lt;link rel="preconnect" href="https://fonts.googleapis.com" crossorigin /&gt;
-&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /&gt;</code></pre>
+      <pre><code>&lt;!-- פורמטים מודרניים עם JPEG כגיבוי ומידות קבועות (בלי קפיצת פריסה): --&gt;
+&lt;picture&gt;
+  &lt;source srcset="/images/hero.avif" type="image/avif"&gt;
+  &lt;source srcset="/images/hero.webp" type="image/webp"&gt;
+  &lt;img src="/images/hero.jpg" width="1200" height="630" alt="תיאור הבאנר" fetchpriority="high"&gt;
+&lt;/picture&gt;
+&lt;!-- כותרת HTTP לתמונות, CSS ו-JS (שרת או CDN):
+     Cache-Control: public, max-age=31536000, immutable --&gt;</code></pre>
     </div>
         </div>
         <div class="plus"><small>שלב</small>1</div>
@@ -2257,42 +2307,21 @@ body[dir="rtl"] .logo {
       <div class="tier-lock-card actions-locked">
         <div class="lock-header">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          <span>עוד 5 שלבים בתוכנית — עם קוד מוכן ב-Pro</span>
+          <span>עוד 2 שלבים בתוכנית — עם קוד מוכן ב-Pro</span>
         </div>
         <div class="action-locked">
           <div>
-            <h3>הנגשת ממשק WCAG 2.1 AA ותקן IS 5568</h3>
-            <div class="tags"><span class="tag">נגישות</span><span class="tag med">דורש תשומת לב</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>פתרון וקוד — ב-Pro</span></div>
+            <h3>הרחבת צינור רב-לשוני</h3>
+            <div class="tags"><span class="tag">SEO ומשפך</span><span class="tag gold">הזדמנות לצמיחה</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>פתרון וקוד — ב-Pro</span></div>
           </div>
           <div class="plus"><small>שלב</small>2</div>
         </div>
         <div class="action-locked">
           <div>
-            <h3>הרחבת משפך רב-לשוני</h3>
-            <div class="tags"><span class="tag">SEO ומשפך</span><span class="tag gold">הזדמנות לצמיחה</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>פתרון וקוד — ב-Pro</span></div>
-          </div>
-          <div class="plus"><small>שלב</small>3</div>
-        </div>
-        <div class="action-locked">
-          <div>
-            <h3>סינון וסיווג לידים נכנסים מבוסס AI</h3>
+            <h3>AI לסיווג לידים נכנסים</h3>
             <div class="tags"><span class="tag">טפסים והמרות</span><span class="tag gold">הזדמנות לצמיחה</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>פתרון וקוד — ב-Pro</span></div>
           </div>
-          <div class="plus"><small>שלב</small>4</div>
-        </div>
-        <div class="action-locked">
-          <div>
-            <h3>הגדרת כותרות אבטחת HTTP חיוניות</h3>
-            <div class="tags"><span class="tag">אבטחה ויציבות</span><span class="tag gold">הזדמנות לצמיחה</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>פתרון וקוד — ב-Pro</span></div>
-          </div>
-          <div class="plus"><small>שלב</small>5</div>
-        </div>
-        <div class="action-locked">
-          <div>
-            <h3>נראות AI במנועי חיפוש: llms.txt וסיגנלים</h3>
-            <div class="tags"><span class="tag">נראות AI</span><span class="tag gold">הזדמנות לצמיחה</span><span class="locked-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>פתרון וקוד — ב-Pro</span></div>
-          </div>
-          <div class="plus"><small>שלב</small>6</div>
+          <div class="plus"><small>שלב</small>3</div>
         </div>
         <div class="lock-actions">
           <a href="https://erythro.ai/order/audit-pro?lang=he" class="tier-btn-primary"><span class="bt-full">פתיחת התוכנית המלאה עם קוד ב-Pro · ₪490 ←</span><span class="bt-short">פתיחה ב-Pro · ₪490 ←</span></a>
@@ -2312,25 +2341,12 @@ body[dir="rtl"] .logo {
     </div>
     <p id="empty" hidden>אין פריטים בסטטוס זה.</p>
     <div class="checks" id="checks">
-      <details class="check" name="audit-checklist" data-s="w" data-pillar="a11y"><summary><span class="st w">דורש תשומת לב</span><span class="nm">נגישות WCAG 2.1 AA / IS 5568</span><span class="chev">⌄</span></summary>
+      <details class="check" name="audit-checklist" data-s="n" data-pillar="lead" id="diag-lead"><summary><span class="st n">הזדמנות לצמיחה</span><span class="nm">טפסי ליד, אנטי-ספאם ותגובה מיידית</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>תוצאת בדיקה</b>img בלי alt: 2; כפתורים בלי תווית: 0; axe-core: 0</div>
+          <div class="res"><b>תוצאת בדיקה</b>טפסים: 1 (בכפתור). Email: לא, טלפון: לא, submit: כן. אנטי-ספאם: Cloudflare Turnstile, Honeypot. ערוץ מיידי: WhatsApp/Telegram (1)</div>
           <div class="rec">
             <div class="rec-title-row"><b>המלצה</b></div>
-            <p>סגרו WCAG 2.1 AA ו-IS 5568: alt לכל img משמעותי, aria-label לכפתורי-אייקון, ניגודיות ופוקוס.
-
-הריצו axe-core ב-375px לפני ריליס.</p>
-            
-          </div>
-        </div></details>
-      <details class="check" name="audit-checklist" data-s="n" data-pillar="seo" id="diag-seo"><summary><span class="st n">הזדמנות לצמיחה</span><span class="nm">SEO, OpenGraph ותצוגה מקדימה במסנג'רים</span><span class="chev">⌄</span></summary>
-        <div class="body">
-          <div class="res"><b>תוצאת בדיקה</b>HE: title כן, description כן, og:image כן, canonical כן; hreflang חסר</div>
-          <div class="rec">
-            <div class="rec-title-row"><b>המלצה</b></div>
-            <p>סגרו תצוגה מקדימה ב-WhatsApp/Telegram/LinkedIn: title ו-description לכל שפה, og:image 1200×630, canonical ו-hreflang.
-
-html lang חייב להתאים לשפת העמוד.</p>
+            <p>הטופס מוגן, אבל חסר בו שדה אימייל או טלפון או כפתור שליחה. הוסיפו שדה קשר וכפתור שליחה ברור — אחרת אין עם מה לחזור לפונה.</p>
             
           </div>
         </div></details>
@@ -2345,14 +2361,12 @@ html lang חייב להתאים לשפת העמוד.</p>
             
           </div>
         </div></details>
-      <details class="check" name="audit-checklist" data-s="g" data-pillar="lead" id="diag-lead"><summary><span class="st g">מצוין</span><span class="nm">טפסי ליד, אנטי-ספאם ותגובה מיידית</span><span class="chev">⌄</span></summary>
+      <details class="check" name="audit-checklist" data-s="g" data-pillar="ai"><summary><span class="st g">מצוין</span><span class="nm">GA4 / dataLayer readiness</span><span class="chev">⌄</span></summary>
         <div class="body">
-          <div class="res"><b>תוצאת בדיקה</b>טפסים: 2 (בכפתור). Email: כן, טלפון: כן, submit: כן. אנטי-ספאם: Cloudflare Turnstile, Honeypot. ערוץ מיידי: צ'אט [class*="chat-launcher"]</div>
+          <div class="res"><b>תוצאת בדיקה</b>dataLayer + consent stub ב-head (GA4 G- ID נמצא)</div>
           <div class="rec">
             <div class="rec-title-row"><b>המלצה</b></div>
-            <p>לכידת לידים תקינה: טופס, אנטי-ספאם וערוץ מיידי במקום.
-
-אל תסירו honeypot, Turnstile/reCAPTCHA או wa.me (או צ'אט) בריליס הבא — הספאם עולה ולידים מהמובייל נעלמים.</p>
+            <p>dataLayer ו-Consent Mode stub כבר ב-&lt;head&gt;. אל תעבירו gtag('consent','default') מתחת לבאנר העוגיות — Google לא יתפוס הסכמה.</p>
             
           </div>
         </div></details>
@@ -2362,6 +2376,17 @@ html lang חייב להתאים לשפת העמוד.</p>
           <div class="rec">
             <div class="rec-title-row"><b>המלצה</b></div>
             <p>HTTPS וכותרות אבטחה במקום. אל תסירו HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy או Permissions-Policy בפריסה.</p>
+            
+          </div>
+        </div></details>
+      <details class="check" name="audit-checklist" data-s="g" data-pillar="sec"><summary><span class="st g">מצוין</span><span class="nm">יציבות ריצה (שגיאות JS ובקשות כושלות)</span><span class="chev">⌄</span></summary>
+        <div class="body">
+          <div class="res"><b>תוצאת בדיקה</b>לא נרשמו קריסות JS או תגובות 4xx/5xx</div>
+          <div class="rec">
+            <div class="rec-title-row"><b>המלצה</b></div>
+            <p>הריצה יציבה: אין PageError או 4xx/5xx ב-URL שנבדקו.
+
+השאירו ניטור console / PageError במשפך כדי שרגרסיה לא תגיע לטראפיק ממומן.</p>
             
           </div>
         </div></details>
@@ -2397,9 +2422,9 @@ html lang חייב להתאים לשפת העמוד.</p>
     <ul class="scope-list">
       <li><b>Google PageSpeed Insights</b>10 מדדים × 2 מכשירים: Performance, Accessibility, Best Practices, SEO, FCP, LCP, CLS, TBT, Speed Index, TTI.</li>
       <li><b>עמוד הבית</b>סטטוס HTTP ו-HTTPS, טפסים וערוצי קשר, טכנולוגיות שזוהו.</li>
-      <li><b>5 בדיקות בסיס</b>נגישות WCAG 2.1 AA / IS 5568; SEO, OpenGraph ותצוגה מקדימה במסנג'רים; גלילה אופקית לא רצויה (Overflow-X במובייל 375px); טפסי ליד, אנטי-ספאם ותגובה מיידית; HTTPS וכותרות אבטחת HTTP</li>
+      <li><b>5 בדיקות בסיס</b>טפסי ליד, אנטי-ספאם ותגובה מיידית; גלילה אופקית לא רצויה (Overflow-X במובייל 375px); GA4 / dataLayer readiness; HTTPS וכותרות אבטחת HTTP; יציבות ריצה (שגיאות JS ובקשות כושלות)</li>
     </ul>
-    <p class="note">Free הוא צילום מהיר של עמוד אחד. סריקת המשפך, שפות נוספות ו-AI Visibility אינם חלק מדוח זה.</p>
+    <p class="note">Free הוא צילום מהיר של עמוד אחד. סריקת המשפך, שפות נוספות ופירוט AI Visibility לפי קריטריונים אינם חלק מדוח זה: עבור AI Visibility מוצגים הציון המסכם והפערים שנמצאו, בלי סטטוס והמלצה לכל אחד מ-7 הקריטריונים.</p>
   </section>
 
   <section class="card tiers" id="tiers">
@@ -2425,7 +2450,7 @@ html lang חייב להתאים לשפת העמוד.</p>
         </tbody>
       </table>
     </div>
-    <p class="tiers-method">איך סופרים: 55 בדיקות לאתר כולו (20 מהן — AI Visibility, Agent Readiness וגישת בוטי AI), 28 לכל שפת אתר, 9 לכל עמוד משפך. Free: 5 בדיקות + 20 מדדי Lighthouse.</p>
+    <p class="tiers-method">איך סופרים: 55 בדיקות לאתר כולו (20 מהן — AI Visibility, Agent Readiness וגישת בוטי AI), 28 לכל שפת אתר, 9 לכל עמוד משפך, וב-Pro עוד 1 — Funnel review. Free: 5 בדיקות + 20 מדדי Lighthouse.</p>
     <div class="tiers-actions">
       <a class="tier-btn-secondary" href="https://erythro.ai/order/audit-diagnostic?lang=he"><span class="bt-full">הזמנת Diagnostic · ₪99</span><span class="bt-short">Diagnostic · ₪99</span></a>
       <a class="tier-btn-primary" href="https://erythro.ai/order/audit-pro?lang=he"><span class="bt-full">הזמנת Pro · ₪490</span><span class="bt-short">Pro · ₪490</span></a>
@@ -2439,12 +2464,11 @@ html lang חייב להתאים לשפת העמוד.</p>
       <div class="contacts"><a href="mailto:team@erythro.ai">team@erythro.ai</a><a href="tel:+972505308305" dir="ltr">+972 50 530 8305</a></div>
     </div>
     <div class="cta-buttons">
-        <a class="go sec" href="https://erythro.ai/order/audit-diagnostic?lang=he"><span class="bt-full">הזמנת Diagnostic · ₪99</span><span class="bt-short">Diagnostic · ₪99</span></a>
-        <a class="go" href="https://erythro.ai/order/audit-pro?lang=he"><span class="bt-full">הזמנת Pro · ₪490</span><span class="bt-short">Pro · ₪490</span></a>
         <a class="go sec" href="https://wa.me/972505308305"><span class="bt-full">הזמנת ייעוץ ב-WhatsApp</span><span class="bt-short">ייעוץ ב-WhatsApp</span></a>
       </div>
   </section>
 
+  <p class="report-disclaimer" style="max-width:960px;margin:28px auto 10px;padding:0 16px;font-size:12px;line-height:1.6;color:#6b6b6b;text-align:start">דוח זה נועד לצורכי מידע והמלצה בלבד. הוא משקף את מצב האתר בעת הבדיקה האוטומטית ואת ההערכה המקצועית של Erythro.ai, ואינו מהווה חוות דעת משפטית, התחייבות לתוצאות או דרישה לשינויים דחופים. ההחלטה אם ומתי ליישם את ההמלצות נתונה לשיקול דעתו של בעל האתר.</p>
   <div class="foot">© 2026 Erythro.ai — Hi-Load Web Development &amp; AI Agents Automation · Commercial Executive Audit</div>
 </div>
 
