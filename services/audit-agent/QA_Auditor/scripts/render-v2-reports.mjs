@@ -3972,14 +3972,14 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
     s = s.replace('</body>', `${NAV_SCRIPT}\n</body>`);
   }
 
-  // A scale badge must land on something that exists in this report: Diagnostic had no speed
-  // card (#diag-speed), Pro had no lead step (#action-lead) (AUD-230)
+  // Every in-report link must land on something that exists: scale badges and the checklist's
+  // "solution in the plan" links pointed at #diag-speed / #action-lead that were not rendered (AUD-230)
   const hasId = (id) => s.includes(`id="${id}"`);
-  s = s.replace(/<a href="#([a-z]+)-([a-z0-9-]+)" class="badge/g, (m, kind, pKey) => {
-    if (hasId(`${kind}-${pKey}`)) return m;
-    const fallback = [`diag-${pKey}`, `action-${pKey}`, pKey === 'speed' ? 'lighthouse' : '', 'checks', 'locked-checks']
+  s = s.replace(/href="#(action|diag)-([a-z0-9]+)((?:-[a-z0-9]+)*)"/g, (m, kind, pKey, rest) => {
+    if (hasId(`${kind}-${pKey}${rest}`)) return m;
+    const fallback = [`action-${pKey}`, `diag-${pKey}`, pKey === 'speed' ? 'lighthouse' : '', 'checks', 'locked-checks']
       .find((id) => id && hasId(id));
-    return fallback ? `<a href="#${fallback}" class="badge` : m;
+    return fallback ? `href="#${fallback}"` : m;
   });
 
   return s;
