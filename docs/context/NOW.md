@@ -5,6 +5,14 @@
 
 Этот файл — оперативная память сессии. Читать его первым. Закрытые пункты удалять, не копить журнал.
 
+## AUD-229: sitemap, языки сайта, шаг SEO (PIT-142) — `a859251`, воркер задеплоен 27.10 10:24 UTC, сверен
+
+- **Sitemap:** robots/sitemap по адресу, куда приводит главная (www → apex), затем по введённому; пути `/sitemap.xml`, `/sitemap_index.xml`, `/wp-sitemap.xml`, `/sitemap-index.xml`. gillemitzvot: sitemap найден (было ложное −10), robots.txt честно отсутствует.
+- **Языки сайта:** `seo_assets.siteLanguages` / `languageSwitcher` (html lang, hreflang, ссылки-переключатели, кнопки с ≥2 языками). Штраф и находка hreflang — только при >1 языке; запасная находка «мультиязычная воронка» не попадает к одноязычным. Проверено headless: gillemitzvot/bliainara/ikea-il — 1 язык, erythro.ai — ru/en/he (кнопки), wix/booking — много.
+- **Шаг SEO в плане:** по причине (robots/sitemap → `seo_index`, OG/canonical → `seo_og`, hreflang → `seo`), без причины — шага нет.
+- **Рантайм в Free:** по решению пользователя без адреса упавшего запроса; адрес — задача для Diagnostic/Pro.
+- AUD-226…229 удалены пользователем (тесты) — 500 на их ссылках и pro-offer POST 500 для 229 из-за этого; в плане: 404 вместо 500.
+
 ## AUD-228: шрифт иврита в коде и футер (воркер `e837265` задеплоен 27.10 09:54 UTC, сверен; сайт — ждёт PR в main)
 
 - **Засечки в сниппетах HE:** публичный CSP сайта (`style-src 'self'`) блокировал Google Fonts на `/api/audit/report/:id/html` → ни Heebo, ни IBM Plex Mono не грузились, иврит в коде падал в Courier New. `ae7ef05`: отдельный `AUDIT_REPORT_CONTENT_SECURITY_POLICY` в `next.config.ts` (Google Fonts + Cloudflare beacon) — **заработает только после деплоя сайта (PR → main)**. Запасная цепочка HE-кода `… Consolas, 'Segoe UI', Arial, monospace` в polish и 4 HE-шаблонах — на воркере.

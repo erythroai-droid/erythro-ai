@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-142 — "No sitemap" on a www URL and an "hreflang & OG" step for a Hebrew-only site
+
+**Tags:** `audit`, `seo`, `sitemap`, `hreflang`, `render-v2`
+**Seen:** 2026-10-27 — AUD-229 (gillemitzvot.co.il, WordPress + Yoast, Free HE)
+
+**Symptom:** SEO 74 with "no sitemap" (−10) although the site has a Yoast sitemap. Plan step 3 "hreflang и OpenGraph" for a site in Hebrew only with every OG tag present.
+
+**Cause:** (1) robots.txt and sitemap were fetched at the typed origin `www.` only; there `/sitemap.xml` is 404 (Yoast redirects only on the apex where the homepage lands) and `/sitemap_index.xml` was never tried. (2) "Multilingual" meant "audited in several locales" (`LOCALES=en,ru,he`), not "the site serves several languages". (3) The SEO filler step had one fixed title whatever pulled the scale down. (4) The "multilingual funnel" top-3 pad claims "locales work" for any site.
+
+**Fix:** robots/sitemap use the origin the homepage lands on, then the typed one, and try `/sitemap.xml`, `/sitemap_index.xml`, `/wp-sitemap.xml`, `/sitemap-index.xml`. The DOM scan records `seo_assets.siteLanguages` / `languageSwitcher` (html lang, hreflang, switcher links incl. `/il/he/`, `?lang=`, subdomains, and button switchers with ≥2 language labels). hreflang costs points and shows as a gap only when the site has >1 language. `seoCausesFromData()` picks the SEO step by cause (robots/sitemap → `seo_index`, OG/canonical → `seo_og`, hreflang → `seo`) or drops it. The multilingual pad is skipped for single-language sites.
+
+**Prevent:** Never treat the requested audit locales as the site's languages. Check HTTP resources at the landed origin. Every filler step must say which signal it fixes.
+
+---
+
 ## PIT-141 — Report snippets named our own Next.js files; detector allowed several CMS at once
 
 **Tags:** `audit`, `report`, `render-v2`, `tech-detect`
