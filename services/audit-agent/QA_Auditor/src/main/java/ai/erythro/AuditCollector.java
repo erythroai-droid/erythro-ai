@@ -165,6 +165,65 @@ public class AuditCollector {
             };
             const viewportMeta = document.querySelector('meta[name="viewport"]');
 
+            // Languages the site itself serves: html lang + hreflang + language-switcher links on this
+            // host (/en/, ?lang=en, en.site, hreflang/lang on <a>, "English"/"EN" text). The requested
+            // audit locales are not the site's languages: hreflang matters only for a multilingual site.
+            const langCode = (v) => {
+                const c = String(v || '').trim().toLowerCase().split(/[-_]/)[0];
+                return c === 'iw' ? 'he' : c;
+            };
+            const knownLangs = ['en', 'ru', 'he', 'ar', 'fr', 'de', 'es', 'it', 'pt', 'uk', 'tr', 'pl', 'nl', 'ro', 'am', 'zh', 'ja'];
+            const langNames = {
+                'english': 'en', 'русский': 'ru', 'עברית': 'he', 'العربية': 'ar', 'français': 'fr',
+                'deutsch': 'de', 'español': 'es', 'українська': 'uk', 'italiano': 'it', 'português': 'pt'
+            };
+            const bareHost = (h) => String(h || '').replace(/^www[.]/, '');
+            const myHost = bareHost(location.hostname);
+            const pageLang = langCode(document.documentElement.getAttribute('lang'));
+            const siteLangs = new Set(pageLang && knownLangs.includes(pageLang) ? [pageLang] : []);
+            Array.from(document.querySelectorAll('link[rel="alternate"][hreflang]')).forEach(l => {
+                const c = langCode(l.getAttribute('hreflang'));
+                if (knownLangs.includes(c)) siteLangs.add(c);
+            });
+            const switcherLangs = new Set();
+            Array.from(document.querySelectorAll('a[href]')).forEach(a => {
+                let u;
+                try { u = new URL(a.getAttribute('href'), location.href); } catch (e) { return; }
+                const h = bareHost(u.hostname);
+                const sub = u.hostname.split('.')[0].toLowerCase();
+                const sameSite = h === myHost || h.endsWith('.' + myHost) || myHost.endsWith('.' + h);
+                if (!sameSite) return;
+                const segs = u.pathname.split('/');
+                const seg = (segs[1] || '').toLowerCase();
+                // Country + language paths: /il/he/, /us/en/
+                const seg2 = seg.length === 2 ? (segs[2] || '').toLowerCase() : '';
+                const text = (a.textContent || '').trim().toLowerCase();
+                const candidates = [
+                    a.getAttribute('hreflang'), a.getAttribute('lang'),
+                    seg.length <= 5 ? seg : '',
+                    seg2.length <= 5 ? seg2 : '',
+                    u.searchParams.get('lang') || u.searchParams.get('locale') || u.searchParams.get('hl'),
+                    knownLangs.includes(sub) && h !== myHost ? sub : '',
+                    langNames[text] || (text.length === 2 ? text : '')
+                ];
+                for (const raw of candidates) {
+                    const c = langCode(raw);
+                    if (c && knownLangs.includes(c)) { switcherLangs.add(c); break; }
+                }
+            });
+            // Button switchers (cookie / JS, no links): two or more controls labelled with a language
+            const buttonLangs = new Set();
+            Array.from(document.querySelectorAll('button, [role="button"], [role="menuitem"], [role="option"], option, [data-lang], [data-locale]')).forEach(el => {
+                const attr = el.getAttribute('data-lang') || el.getAttribute('data-locale') || el.getAttribute('lang') || '';
+                const text = (el.textContent || '').trim().toLowerCase();
+                const c = langCode(attr) || langCode(langNames[text] || (text.length === 2 ? text : ''));
+                if (c && knownLangs.includes(c)) buttonLangs.add(c);
+            });
+            if (buttonLangs.size > 1) buttonLangs.forEach(c => switcherLangs.add(c));
+            // One link to the language the page is already in is not a switcher
+            const otherLangs = Array.from(switcherLangs).filter(c => c !== pageLang);
+            otherLangs.forEach(c => siteLangs.add(c));
+
             return {
                 lead_capture: {
                     formsCount: forms.length,
@@ -186,6 +245,8 @@ public class AuditCollector {
                     favicon: linkHref('link[rel="icon"], link[rel="shortcut icon"]'),
                     appleTouchIcon: linkHref('link[rel="apple-touch-icon"]'),
                     hreflangs: Array.from(document.querySelectorAll('link[rel="alternate"][hreflang]')).map(l => l.getAttribute('hreflang')),
+                    siteLanguages: Array.from(siteLangs),
+                    languageSwitcher: otherLangs.length > 0,
                     viewportMeta: viewportMeta ? viewportMeta.getAttribute('content') : null
                 }
             };
@@ -2427,7 +2488,12 @@ public class AuditCollector {
         }
         if (primarySeo != null && !hasOgImage) seoScore -= 8;
         if (primarySeo != null && !hasCanonical) seoScore -= 5;
-        if (locales.size() > 1 && hreflangs.isEmpty()) seoScore -= 6;
+        // hreflang is a gap only on a site that serves several languages (detected switcher /
+        // alternates), not because the audit was ordered in en+ru+he (AUD-229: a Hebrew-only site)
+        boolean multilingualSite = primaryAssets != null && primaryAssets.get("siteLanguages") instanceof List<?> siteLangs
+                ? siteLangs.size() > 1
+                : locales.size() > 1;
+        if (multilingualSite && hreflangs.isEmpty()) seoScore -= 6;
         if (primaryAssets != null && !hasFavicon) seoScore -= 3;
         seoScore = clamp(seoScore, 10, 100);
 
@@ -2577,7 +2643,7 @@ public class AuditCollector {
 
         List<ReportFindingsCatalog.BizFinding> bizFindings = ReportFindingsCatalog.buildAll(findingCtx, reportLang);
         bizFindings.sort(Comparator.comparingInt(ReportFindingsCatalog.BizFinding::severity).reversed());
-        scorecard.put("top_vulnerabilities", ReportFindingsCatalog.toTopVulnerabilities(bizFindings, reportLang));
+        scorecard.put("top_vulnerabilities", ReportFindingsCatalog.toTopVulnerabilities(bizFindings, reportLang, multilingualSite));
         scorecard.put("findings_total", bizFindings.size());
         return scorecard;
     }
@@ -3519,9 +3585,16 @@ public class AuditCollector {
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
 
+        // Where the homepage actually lands after redirects (www → apex, http → https): robots.txt and
+        // sitemap live there (AUD-229: www/sitemap.xml 404, apex/sitemap.xml → sitemap_index.xml 200)
+        String siteOrigin = origin;
         try {
             // Warm-up request so TTFB is not distorted by TLS handshake and cold cache
-            client.send(documentRequest(base), HttpResponse.BodyHandlers.discarding());
+            HttpResponse<Void> warm = client.send(documentRequest(base), HttpResponse.BodyHandlers.discarding());
+            URI landed = warm.uri();
+            if (landed != null && landed.getScheme() != null && landed.getAuthority() != null) {
+                siteOrigin = landed.getScheme() + "://" + landed.getAuthority();
+            }
 
             long startNs = System.nanoTime();
             HttpResponse<java.io.InputStream> response = client.send(documentRequest(base), HttpResponse.BodyHandlers.ofInputStream());
@@ -3540,7 +3613,7 @@ public class AuditCollector {
                     "server", "x-powered-by", "via", "cf-ray", "cf-cache-status", "cf-mitigated",
                     "x-vercel-id", "x-vercel-cache", "x-nextjs-cache", "x-nf-request-id",
                     "x-amz-cf-id", "x-cache", "x-shopify-stage", "x-shopid", "x-drupal-cache",
-                    "x-generator", "x-hostinger", "x-dns-prefetch-control")) {
+                    "x-drupal-dynamic-cache", "x-generator", "x-hostinger", "x-dns-prefetch-control")) {
                 response.headers().firstValue(name).ifPresent(v -> techHeaders.put(name, v));
             }
             infra.put("technology_headers", techHeaders);
@@ -3564,34 +3637,47 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
             infra.put("document_error", e.getMessage());
         }
 
-        List<String> sitemapCandidates = new ArrayList<>();
-        try {
-            HttpResponse<String> robots = client.send(documentRequest(URI.create(origin + "/robots.txt")),
-                    HttpResponse.BodyHandlers.ofString());
-            String body = robots.body() == null ? "" : robots.body();
-            // SPA hosts often answer 200 with index.html instead of a real robots.txt
-            boolean isRealRobots = robots.statusCode() == 200 && !body.stripLeading().startsWith("<");
-            infra.put("robots_txt_status", robots.statusCode());
-            infra.put("has_robots_txt", isRealRobots);
-            if (isRealRobots) {
-                for (String line : body.split("\\R")) {
-                    String trimmed = line.trim();
-                    if (trimmed.toLowerCase().startsWith("sitemap:")) {
-                        String url = trimmed.substring("sitemap:".length()).trim();
-                        if (!url.isEmpty()) sitemapCandidates.add(url);
-                    }
-                }
-            }
-            infra.put("robots_sitemap_directives", new ArrayList<>(sitemapCandidates));
-        } catch (Exception e) {
-            infra.put("has_robots_txt", false);
-            infra.put("robots_txt_status", "ERROR");
-            infra.put("robots_txt_error", e.getMessage());
-        }
+        infra.put("site_origin", siteOrigin);
+        // The landed origin first, then the typed one if it differs
+        List<String> origins = new ArrayList<>(List.of(siteOrigin));
+        if (!origins.contains(origin)) origins.add(origin);
 
-        String defaultSitemap = origin + "/sitemap.xml";
-        if (!sitemapCandidates.contains(defaultSitemap)) {
-            sitemapCandidates.add(defaultSitemap);
+        List<String> sitemapCandidates = new ArrayList<>();
+        Object robotsStatus = "ERROR";
+        boolean hasRobots = false;
+        for (String o : origins) {
+            try {
+                HttpResponse<String> robots = client.send(documentRequest(URI.create(o + "/robots.txt")),
+                        HttpResponse.BodyHandlers.ofString());
+                String body = robots.body() == null ? "" : robots.body();
+                // SPA hosts often answer 200 with index.html instead of a real robots.txt
+                boolean isRealRobots = robots.statusCode() == 200 && !body.stripLeading().startsWith("<");
+                robotsStatus = robots.statusCode();
+                if (isRealRobots) {
+                    hasRobots = true;
+                    for (String line : body.split("\\R")) {
+                        String trimmed = line.trim();
+                        if (trimmed.toLowerCase().startsWith("sitemap:")) {
+                            String url = trimmed.substring("sitemap:".length()).trim();
+                            if (!url.isEmpty()) sitemapCandidates.add(url);
+                        }
+                    }
+                    break;
+                }
+            } catch (Exception e) {
+                infra.put("robots_txt_error", e.getMessage());
+            }
+        }
+        infra.put("robots_txt_status", robotsStatus);
+        infra.put("has_robots_txt", hasRobots);
+        infra.put("robots_sitemap_directives", new ArrayList<>(sitemapCandidates));
+
+        // Standard locations when robots.txt names none: plain, Yoast / Rank Math index, WordPress core
+        for (String o : origins) {
+            for (String path : List.of("/sitemap.xml", "/sitemap_index.xml", "/wp-sitemap.xml", "/sitemap-index.xml")) {
+                String candidate = o + path;
+                if (!sitemapCandidates.contains(candidate)) sitemapCandidates.add(candidate);
+            }
         }
         boolean sitemapFound = false;
         Object lastStatus = "ERROR";
