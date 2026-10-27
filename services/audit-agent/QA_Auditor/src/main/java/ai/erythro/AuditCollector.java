@@ -2106,7 +2106,24 @@ public class AuditCollector {
             ));
         }
         boolean runtimeClean = uncaughtErrors.isEmpty() && failedNetwork.isEmpty();
-        checkRows.add(ReportTemplateGenerator.checkRow(
+        // Diagnostic/Pro name what failed (status + full URL, host included: AUD-229 was a third-party
+        // CDN 403); Free keeps the counts only (product decision 2026-10-27)
+        List<String> failedSamples = new ArrayList<>();
+        for (Map<String, Object> req : failedNetwork) {
+            if (failedSamples.size() == 3) break;
+            String url = String.valueOf(req.getOrDefault("url", ""));
+            if (url.length() > 120) url = url.substring(0, 117) + "…";
+            int hits = (int) asLong(req.get("hits"), 1);
+            failedSamples.add(req.get("status") + " " + url + (hits > 1 ? " ×" + hits : ""));
+        }
+        List<String> jsSamples = new ArrayList<>();
+        for (Map<String, Object> err : uncaughtErrors) {
+            if (jsSamples.size() == 2) break;
+            String msg = String.valueOf(err.getOrDefault("error", "")).split("\\R", 2)[0];
+            if (msg.length() > 120) msg = msg.substring(0, 117) + "…";
+            if (!msg.isBlank()) jsSamples.add(msg);
+        }
+        Map<String, String> runtimeRow = ReportTemplateGenerator.checkRow(
                 i18n.checkRuntime,
                 runtimeClean
                         ? ReportFindingsCatalog.tr(i18n.lang,
@@ -2121,7 +2138,21 @@ public class AuditCollector {
                 runtimeClean ? i18n.statusStable
                         : (uncaughtErrors.isEmpty() ? i18n.statusNeedsAttention : i18n.statusCritical),
                 "runtime"
-        ));
+        );
+        if (!runtimeClean) {
+            StringBuilder paid = new StringBuilder(runtimeRow.get("result"));
+            if (!failedSamples.isEmpty()) {
+                paid.append(ReportFindingsCatalog.tr(i18n.lang, ". Запросы: ", ". Requests: ", ". בקשות: "))
+                        .append(String.join("; ", failedSamples));
+            }
+            if (!jsSamples.isEmpty()) {
+                paid.append(ReportFindingsCatalog.tr(i18n.lang, ". JS: ", ". JS: ", ". JS: "))
+                        .append(String.join("; ", jsSamples));
+            }
+            runtimeRow.put("result_paid", paid.toString());
+            runtimeRow.put("rec_variant_paid", String.join("\n", failedSamples));
+        }
+        checkRows.add(runtimeRow);
 
         Map<String, Object> agentBrowse = (Map<String, Object>) finalReport.get("agent_browse");
         int pagesVisited = agentBrowse == null ? 0 : (int) asLong(agentBrowse.get("pages_visited"), 0);
@@ -3250,10 +3281,16 @@ public class AuditCollector {
                 + " only. Do NOT use Russian. Do NOT use Cyrillic letters (а-я, А-Я). "
                 + "Product names (WhatsApp, Telegram, GPTBot) may stay in Latin. ")
                 : "";
+        // Standard Hebrew marketing terms: AUD-230 Pro got the odd "משעול ההמרה" ("conversion trail")
+        String glossary = answerLang != null && answerLang.toLowerCase(Locale.ROOT).contains("hebrew")
+                ? "Hebrew terminology: write \"משפך המרה\" for the conversion funnel and \"נתיב המרה\" for the "
+                + "conversion path / user journey (Google Analytics Hebrew). Never use \"משעול\". "
+                + "Use \"ליד\" / \"פנייה\" for a lead. "
+                : "";
         return """
                 You are Erythro.ai's commercial QA agent. From the funnel crawl of %s, \
                 judge the path to a lead. Reply with strict JSON and no markdown. \
-                %sAll string values in the JSON MUST be in %s — never Russian/Cyrillic when the target language is Hebrew or English.
+                %s%sAll string values in the JSON MUST be in %s — never Russian/Cyrillic when the target language is Hebrew or English.
                 {"verdict":"short verdict, max 180 characters",\
                 "gaps":["up to 3 funnel gaps"],\
                 "priority_fix":"one priority fix"}
@@ -3264,7 +3301,7 @@ public class AuditCollector {
                 Flag a gap only if the visitor cannot submit a lead and has no instant channel.
                 Pages:
                 %s
-                """.formatted(targetUrl, langLock, answerLang, pagesBlock);
+                """.formatted(targetUrl, langLock, glossary, answerLang, pagesBlock);
     }
 
     @SuppressWarnings("unchecked")

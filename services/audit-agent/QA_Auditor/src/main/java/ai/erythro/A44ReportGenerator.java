@@ -1836,9 +1836,12 @@ public final class A44ReportGenerator {
         sb.append("<h3 class=\"check-name\">").append(esc(row.get("param"))).append("</h3></div>");
         sb.append("<div class=\"check-result ").append(status).append("\">");
         sb.append("<p class=\"check-result-label\">").append(esc(i18n.thCheckResult)).append("</p>");
-        sb.append("<p class=\"check-result-text\">").append(esc(row.get("result"))).append("</p></div>");
+        // Paid tiers may carry more detail (runtime: failing URLs); Free keeps the short result
+        String result = tier != A44Tier.FREE && row.get("result_paid") != null ? row.get("result_paid") : row.get("result");
+        sb.append("<p class=\"check-result-text\">").append(esc(result)).append("</p></div>");
         if (tier == A44Tier.PRO) {
-            sb.append(accordion(copy, assetBase, A44Recommendations.forCheck(id, status, i18n.lang, row.get("rec_variant")), true,
+            String variant = row.get("rec_variant_paid") != null ? row.get("rec_variant_paid") : row.get("rec_variant");
+            sb.append(accordion(copy, assetBase, A44Recommendations.forCheck(id, status, i18n.lang, variant), true,
                     "good".equals(status) ? copy.recImproveTitle : copy.recTitle));
             sb.append("<p class=\"check-pages\">").append(esc(String.format(copy.pagesChecked, pages))).append("</p>");
         } else if (tier == A44Tier.DIAGNOSTIC) {

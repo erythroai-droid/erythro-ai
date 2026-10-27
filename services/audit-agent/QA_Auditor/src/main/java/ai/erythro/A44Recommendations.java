@@ -22,7 +22,7 @@ final class A44Recommendations {
             case "content_signals" -> contentSignals(s, lang);
             case "markdown_neg" -> markdownNeg(s, lang);
             case "https" -> https(s, lang, variant);
-            case "runtime" -> runtime(s, lang);
+            case "runtime" -> runtime(s, lang, variant);
             case "seo" -> seo(s, lang);
             case "a11y" -> a11y(s, lang);
             case "ttfb" -> ttfb(s, lang);
@@ -399,6 +399,23 @@ final class A44Recommendations {
                 "Add the missing headers (server, CDN or hosting panel):\n",
                 "הוסיפו את הכותרות החסרות (שרת, CDN או לוח הבקרה של האחסון):\n")
                 + lines + cspNote;
+    }
+
+    /** {@code failed}: "status url" lines of the failing requests (Pro); null/blank for Free and old rows. */
+    private static String runtime(String status, String lang, String failed) {
+        if (!"good".equals(status) && failed != null && !failed.isBlank()) {
+            return ReportFindingsCatalog.tr(lang,
+                    "Запросы с ошибкой:\n" + failed + "\n\n"
+                            + "Свой файл — верните его или поправьте ссылку. Сторонний ресурс (CDN, шрифт, скрипт) с 403/404 — "
+                            + "замените ссылку на рабочую или отдавайте файл со своего сервера. После правки проверьте, что в консоли браузера нет ошибок.",
+                    "Failing requests:\n" + failed + "\n\n"
+                            + "Your own file: restore it or fix the link. A third-party resource (CDN, font, script) returning 403/404: "
+                            + "point to a working URL or serve the file from your server. Then check the browser console is clean.",
+                    "בקשות שנכשלו:\n" + failed + "\n\n"
+                            + "קובץ שלכם — החזירו אותו או תקנו את הקישור. משאב חיצוני (CDN, גופן, סקריפט) שמחזיר 403/404 — "
+                            + "החליפו לכתובת עובדת או הגישו את הקובץ מהשרת שלכם. אחרי התיקון ודאו שאין שגיאות בקונסול הדפדפן.");
+        }
+        return runtime(status, lang);
     }
 
     private static String runtime(String status, String lang) {
