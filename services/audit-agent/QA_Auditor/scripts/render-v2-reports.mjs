@@ -2475,13 +2475,16 @@ function renderReport(lang, tier = 'pro') {
   }
 
   // Severity of a pillar for top-3 and the action plan: 0 critical, 1 needs attention, 2 growth point.
-  // A critical check is always critical, otherwise the scale zone decides (a11y has no scale: its checks decide).
+  // A failing check sets the colour, so the plan matches the checklist as its legend promises
+  // (AUD-223: headers 0/6 were "needs attention" in the checklist but "critical" in the plan).
+  // Only with no failing check does the scale zone decide (a11y has no scale: its checks decide).
   const leadPath = leadPathFromData(data, tier);
   const sevForPillar = (pKey) => {
     // No form, messenger or chat: the "Путь к заявке" block says critical, the plan must agree
     if (pKey === 'lead' && leadPath.known && !leadPath.hasForm && !leadPath.instant) return 0;
     const issues = checks.filter((c) => c.pillar === pKey && c.status !== 'good');
     if (issues.some((c) => c.status === 'bad')) return 0;
+    if (issues.some((c) => c.status === 'warn')) return 1;
     const v = pillarScore[pKey];
     if (v == null) return issues.some((c) => c.status === 'warn') ? 1 : 2;
     const z = zoneOf(v);
