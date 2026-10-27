@@ -997,7 +997,10 @@ function renderCodeBox(solObj, lang) {
   if (!solObj) return '';
   const item = solObj[lang] || solObj.en || solObj.ru;
   const file = solObj.file;
-  const code = item.code;
+  // Snippets are written against erythro.ai; the client's copy must point at the audited site
+  let origin = '';
+  try { origin = new URL(data.target_url).origin; } catch (e) {}
+  const code = origin ? item.code.replaceAll('https://erythro.ai', origin) : item.code;
 
   return `
     <div class="code-box">
@@ -2819,11 +2822,15 @@ ${cards}
       targetHref = pKey === freeOpenPillar ? `#action-${pKey}` : `#diag-${pKey}`;
     } else if (tier === 'free') {
       // Only Step 1 has an anchor in Free; '#action-speed' was hardcoded and dead when Step 1 was not speed
+      // A weak scale must not land on an "Excellent" check (AUD-222: speed → overflow 0px, while
+      // the real issue was mobile LCP), so only a failing check counts; speed falls back to Lighthouse
+      const rc = renderedChecks.find((c) => c.pillar === pKey && c.status !== 'good' && c.anchorId);
       if (pKey === freeOpenPillar) {
         targetHref = `#action-${pKey}`;
+      } else if (rc) {
+        targetHref = `#${rc.anchorId}`;
       } else {
-        const rc = renderedChecks.find((c) => c.pillar === pKey);
-        targetHref = rc && rc.anchorId ? `#${rc.anchorId}` : '#locked-checks';
+        targetHref = pKey === 'speed' ? '#lighthouse' : '#locked-checks';
       }
     }
 
@@ -3063,6 +3070,12 @@ ${cards}
       s = s.slice(0, insPos) + '\n\n' + aiSectionHtml.trim() + s.slice(insPos);
     }
   }
+
+  // Lighthouse card anchor: the Free speed scale links here when no speed check fails
+  s = s.replace(
+    /<section class="card"(?![^>]*\bid=)([^>]*)>(\s*<div class="row"><h2>[^<]*<\/h2><span class="badge">Google Lighthouse<\/span>)/,
+    '<section class="card" id="lighthouse"$1>$2',
+  );
 
   // --- Funnel Path
   s = s.replace(/HTTP 200 (?:и отсутствие soft-404|and no soft-404|והיעדר soft-404) (?:<span dir="ltr">|<span>)[^<]*<\/span>/, `HTTP 200 ${lang === 'ru' ? 'и отсутствие soft-404' : lang === 'he' ? 'והיעדר soft-404' : 'and no soft-404'} <span>${funnelCount}</span>`);
