@@ -139,10 +139,16 @@ public final class ReportFindingsCatalog {
                                 "Клиент спрашивает ИИ «кто делает это в моём городе» — в ответе конкуренты. Сайт не попадает в рекомендации ChatGPT, Claude и Perplexity, рекламный бюджет не компенсирует потерянный AI-трафик.",
                                 "A buyer asks AI “who does this in my city” — rivals get named. The site never appears in ChatGPT, Claude or Perplexity, so ad spend cannot replace lost AI traffic.",
                                 "לקוח שואל את ה-AI «מי עושה את זה בעיר שלי» — עולה המתחרה. האתר לא נכנס להמלצות ChatGPT, Claude ו-Perplexity, ותקציב הפרסום לא מחליף תנועת AI שאבדה."),
-                        tr(lang,
+                        // The fix names the gaps found, not a fixed list (AUD-226 offered /llms.txt the site already had)
+                        gaps.isEmpty()
+                                ? tr(lang,
                                 "Erythro.ai закрывает контур AI Visibility: /llms.txt, MCP, /about, JSON-LD, Allow для AI-ботов, Content-Signal и markdown negotiation.",
                                 "Erythro.ai closes the AI Visibility loop: /llms.txt, MCP, /about, JSON-LD, Allow for AI bots, Content-Signal and markdown negotiation.",
-                                "Erythro.ai סוגר את מעגל AI Visibility: /llms.txt, MCP, /about, JSON-LD, Allow לבוטי AI, Content-Signal ו-markdown negotiation."),
+                                "Erythro.ai סוגר את מעגל AI Visibility: /llms.txt, MCP, /about, JSON-LD, Allow לבוטי AI, Content-Signal ו-markdown negotiation.")
+                                : tr(lang,
+                                "Erythro.ai закрывает каждый пробел из списка: " + String.join(", ", gaps) + ".",
+                                "Erythro.ai closes every gap listed: " + String.join(", ", gaps) + ".",
+                                "Erythro.ai סוגר כל פער ברשימה: " + String.join(", ", gaps) + "."),
                         true));
             }
         }
@@ -252,9 +258,13 @@ public final class ReportFindingsCatalog {
                             "Accessibility violations (WCAG 2.1 AA / IS 5568)",
                             "הפרות נגישות (WCAG 2.1 AA / IS 5568)"),
                     tr(lang,
-                            "axe-core обнаружил критичных и серьезных нарушений: " + ctx.seriousA11y + ".",
-                            "axe-core found critical/serious violations: " + ctx.seriousA11y + ".",
-                            "axe-core מצא הפרות קריטיות/חמורות: " + ctx.seriousA11y + "."),
+                            // Lighthouse Accessibility runs a subset of axe rules, so 100 there does not contradict this (AUD-226)
+                            "axe-core обнаружил критичных и серьезных нарушений: " + ctx.seriousA11y + ". "
+                                    + "Lighthouse проверяет только часть правил WCAG, поэтому его балл доступности может быть 100 и при этих нарушениях.",
+                            "axe-core found critical/serious violations: " + ctx.seriousA11y + ". "
+                                    + "Lighthouse runs only part of the WCAG rules, so its Accessibility score can be 100 despite these violations.",
+                            "axe-core מצא הפרות קריטיות/חמורות: " + ctx.seriousA11y + ". "
+                                    + "Lighthouse בודק רק חלק מכללי WCAG, ולכן ציון הנגישות שלו יכול להיות 100 גם עם ההפרות האלה."),
                     tr(lang,
                             "В Израиле доступность регулируется IS 5568 — нарушения несут юридический риск и штрафы.",
                             "In Israel IS 5568 applies — violations carry legal risk and fines.",

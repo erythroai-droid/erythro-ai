@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-140 — Audit flags "Disallow: / for AI bots", Shopify+Squarespace+Webflow and drops the lead step
+
+**Tags:** `audit`, `report`, `render-v2`, `robots`, `tech-detect`, `free`
+**Seen:** 2026-10-27 — AUD-226 (bliainara.co.il, OpenCart, Free HE)
+
+**Symptom:** (1) Top-3 said "robots Disallow: / לבוטי AI", while robots.txt was `User-agent: *` + empty `Disallow:`. (2) "Detected technologies" listed Shopify, Squarespace and Webflow at once. (3) The action plan had 3 steps; lead capture (scale 45, no form, WhatsApp only) had none. (4) The lead check was "Критично" while the "Путь к заявке" block said "Требует внимания", and its recommendation read "if no form … / if a form …". (5) The AI step's fix offered /llms.txt the site already had and pointed at `public/robots.txt:1-8`.
+
+**Cause:** (1) `robotsHasDisallowRoot` treated an empty `Disallow:` as a root block; RFC 9309 says it allows everything. (2) Platform rules matched the bare words `shopify` / `squarespace` / `webflow` anywhere in HTML+JS; Font Awesome ships `.fa-shopify` etc. (3) PIT-138 dropped the Turnstile filler step when there was no form (`contradicted.lead = isProtected || !hasForm`) instead of swapping it for "add a lead form". (4) Java lead status was `bad` for any `formsCount == 0` and the recommendation was keyed on status only. (5) The catalog fix text was a fixed list; snippets used Next.js paths.
+
+**Fix:** Empty `Disallow:` counts as allow-root; root block is `Disallow: /` or `/*`. Platform rules need a host or runtime marker (`cdn.shopify.com`, `myshopify.com`, `squarespace.com`, `sqsp.net`, `html[data-wf-site]`, `website-files.com`). Without a form the lead filler becomes "Добавить лид-форму…" with the `lead_form` snippet. No form + messenger/chat → `warn`; the row carries `rec_variant` (`no_form` / `unprotected` / `form_fields`) for a single-case recommendation. The AI fix names the gaps found; the robots snippet points at `/robots.txt`.
+
+**Prevent:** Detector rules never match a bare product name. A filler step contradicted by data is replaced by the step that fits the data, not removed. Check robots parsing against an empty `Disallow:`.
+
+---
+
 ## PIT-139 — Free checklist showed another client's checks (or nothing)
 
 **Tags:** `audit`, `report`, `render-v2`, `free`, `privacy`

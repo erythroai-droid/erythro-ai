@@ -1769,7 +1769,8 @@ public final class A44ReportGenerator {
         for (Map<String, String> row : rows) {
             String card = checkCard(row, copy, i18n, pages, A44Tier.FREE, assetBase, false);
             String rec = A44Recommendations.forCheck(
-                    String.valueOf(row.getOrDefault("id", "")), normalizeCheckStatus(row), i18n.lang);
+                    String.valueOf(row.getOrDefault("id", "")), normalizeCheckStatus(row), i18n.lang,
+                    row.get("rec_variant"));
             int end = card.lastIndexOf("</article>");
             sb.append(card, 0, end).append("<pre class=\"rec-body\">").append(esc(rec)).append("</pre></article>");
         }
@@ -1837,7 +1838,7 @@ public final class A44ReportGenerator {
         sb.append("<p class=\"check-result-label\">").append(esc(i18n.thCheckResult)).append("</p>");
         sb.append("<p class=\"check-result-text\">").append(esc(row.get("result"))).append("</p></div>");
         if (tier == A44Tier.PRO) {
-            sb.append(accordion(copy, assetBase, A44Recommendations.forCheck(id, status, i18n.lang), true,
+            sb.append(accordion(copy, assetBase, A44Recommendations.forCheck(id, status, i18n.lang, row.get("rec_variant")), true,
                     "good".equals(status) ? copy.recImproveTitle : copy.recTitle));
             sb.append("<p class=\"check-pages\">").append(esc(String.format(copy.pagesChecked, pages))).append("</p>");
         } else if (tier == A44Tier.DIAGNOSTIC) {
