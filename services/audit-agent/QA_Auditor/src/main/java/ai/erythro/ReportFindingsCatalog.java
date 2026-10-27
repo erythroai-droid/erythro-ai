@@ -80,7 +80,11 @@ public final class ReportFindingsCatalog {
             boolean aiMarkdownNegOk,
             boolean aiSitemapAgentOk,
             // Only a "check your site" start form: the contact step was not opened (AUD-231)
-            boolean entryFormOnly
+            boolean entryFormOnly,
+            // Diagnostic/Pro: what the start form opened (signup | signin | contact | oauth | started),
+            // null when it was not submitted or not recognised; its lead-check status (good | warn | bad | na)
+            String entryStepKind,
+            String entryStepStatus
     ) {}
 
     public static List<BizFinding> buildAll(Context ctx, String reportLang) {
@@ -172,6 +176,56 @@ public final class ReportFindingsCatalog {
                             "Подключение Cloudflare Turnstile и AI-фильтрации заявок Erythro.ai перед попаданием лида в CRM.",
                             "Cloudflare Turnstile plus Erythro.ai AI lead filtering before CRM.",
                             "Cloudflare Turnstile וסינון AI של Erythro.ai לפני CRM.")));
+        }
+        // Diagnostic/Pro submitted the "check your site" form and saw the step behind it (AUD-231 follow-up).
+        // Titles keep "форм" / "lead" / "טופס" so the renderer files them under the lead pillar.
+        if (ctx.entryFormOnly && "started".equals(ctx.entryStepKind)) {
+            findings.add(new BizFinding("bad".equals(ctx.entryStepStatus) ? 96 : 88,
+                    tr(lang, "Форма запуска работает для ботов: сервис стартует без регистрации",
+                            "The start form runs the service for bots: no sign-up, no lead",
+                            "טופס ההפעלה מריץ את השירות גם לבוטים: בלי הרשמה ובלי ליד"),
+                    tr(lang,
+                            "Аудит отправил форму запуска с адресом сайта, и сервис запустился сразу — без регистрации, контакта"
+                                    + ("bad".equals(ctx.entryStepStatus) ? " и защиты от ботов." : "; защита есть только на самой форме."),
+                            "The audit submitted the start form with the site's address and the service ran at once — no sign-up, no contact"
+                                    + ("bad".equals(ctx.entryStepStatus) ? " and no bot protection." : "; only the form itself is protected."),
+                            "הביקורת שלחה את טופס ההפעלה עם כתובת האתר והשירות רץ מיד — בלי הרשמה ובלי פרטי קשר"
+                                    + ("bad".equals(ctx.entryStepStatus) ? " וללא הגנה מבוטים." : "; ההגנה קיימת רק בטופס עצמו.")),
+                    tr(lang,
+                            "Боты тратят ваши ресурсы (серверы, API, лимиты), а живой посетитель уходит без следа: контакта для повторного касания нет.",
+                            "Bots spend your resources (servers, APIs, quotas), and a real visitor leaves without a trace: there is no contact to follow up.",
+                            "בוטים מנצלים את המשאבים שלכם (שרתים, API, מכסות), ומבקר אמיתי עוזב בלי להשאיר פרטי קשר למעקב."),
+                    tr(lang,
+                            "Erythro.ai ставит Cloudflare Turnstile на форму запуска и просит email до запуска (или вход через Google / Apple).",
+                            "Erythro.ai adds Cloudflare Turnstile to the start form and asks for an email before the run (or Google / Apple sign-in).",
+                            "Erythro.ai מוסיף Cloudflare Turnstile לטופס ההפעלה ומבקש email לפני ההרצה (או התחברות עם Google / Apple).")));
+        } else if (ctx.entryFormOnly && ctx.entryStepKind != null && !"good".equals(ctx.entryStepStatus)) {
+            boolean account = "signup".equals(ctx.entryStepKind) || "signin".equals(ctx.entryStepKind);
+            findings.add(new BizFinding(account ? 90 : 96,
+                    account
+                            ? tr(lang, "Форма регистрации после формы запуска открыта для ботов",
+                            "The sign-up step after the start form is open to bots (lead step)",
+                            "טופס ההרשמה אחרי טופס ההפעלה פתוח לבוטים")
+                            : tr(lang, "Лид-форма после формы запуска открыта для ботов",
+                            "The lead form after the start form is open to bots",
+                            "טופס הליד אחרי טופס ההפעלה פתוח לבוטים"),
+                    tr(lang,
+                            "Аудит отправил форму запуска с адресом сайта и дошёл до шага с контактом. На нём нет Cloudflare Turnstile, reCAPTCHA, hCaptcha, honeypot-ловушки или входа через Google / Apple.",
+                            "The audit submitted the start form with the site's address and reached the contact step. It has no Cloudflare Turnstile, reCAPTCHA, hCaptcha, honeypot or Google / Apple sign-in.",
+                            "הביקורת שלחה את טופס ההפעלה עם כתובת האתר והגיעה לשלב פרטי הקשר. אין בו Cloudflare Turnstile, ‏reCAPTCHA, ‏hCaptcha, ‏honeypot או התחברות עם Google / Apple."),
+                    account
+                            ? tr(lang,
+                            "Боты создают фиктивные аккаунты: база контактов засоряется, письма подтверждения бьют по репутации домена, бесплатные лимиты уходят ботам.",
+                            "Bots create fake accounts: the contact base fills with junk, confirmation emails hurt the domain's reputation and free quotas go to bots.",
+                            "בוטים פותחים חשבונות מזויפים: מאגר הקשרים מתמלא בזבל, מיילי אישור פוגעים במוניטין הדומיין ומכסות חינמיות הולכות לבוטים.")
+                            : tr(lang,
+                            "Менеджеры разбирают спам вместо звонков реальным клиентам, а email-рассылки уходят в папку «Спам».",
+                            "Managers sift spam instead of calling real clients; email deliverability drops.",
+                            "מנהלים מטפלים בספאם במקום בלקוחות; מיילים עלולים ללכת לספאם."),
+                    tr(lang,
+                            "Erythro.ai подключает Cloudflare Turnstile (или вход через Google / Apple) на шаге с контактом.",
+                            "Erythro.ai adds Cloudflare Turnstile (or Google / Apple sign-in) to the contact step.",
+                            "Erythro.ai מוסיף Cloudflare Turnstile (או התחברות עם Google / Apple) בשלב פרטי הקשר.")));
         }
         // A messenger link or chat widget is a working lead path: "visitor cannot leave a lead" would be false
         if (!ctx.hasForms && !ctx.hasInstantChannel && !ctx.entryFormOnly) {

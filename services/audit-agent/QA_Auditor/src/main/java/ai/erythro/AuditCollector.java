@@ -83,6 +83,128 @@ public class AuditCollector {
         SECURITY_HEADERS = Collections.unmodifiableMap(headers);
     }
 
+    /**
+     * A "check your site" form (one visible URL field + submit) starts the funnel: the contact is
+     * asked on the next step (sign-up), so it is neither a lead form nor one without anti-spam (AUD-231).
+     * Shared by the locale lead probe, the agent snapshot and the start-form submit.
+     */
+    private static final String IS_ENTRY_FORM_JS = """
+            const isEntryForm = (form) => {
+                if (form.querySelector('input[type="password"], input[type="email"], input[type="tel"], textarea, select')) return false;
+                const visible = Array.from(form.querySelectorAll(
+                    'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"])'))
+                    .filter(f => {
+                        const r = f.getBoundingClientRect();
+                        const st = getComputedStyle(f);
+                        return r.width > 0 && r.height > 0 && st.display !== 'none' && st.visibility !== 'hidden';
+                    });
+                if (visible.length !== 1) return false;
+                const bag = [
+                    visible[0].getAttribute('name'), visible[0].getAttribute('id'), visible[0].getAttribute('type'),
+                    visible[0].getAttribute('placeholder'), visible[0].getAttribute('aria-label'), visible[0].getAttribute('autocomplete')
+                ].filter(Boolean).join(' ').toLowerCase();
+                if (/mail|phone|почт|телефон|טלפון/.test(bag)) return false;
+                return (visible[0].getAttribute('type') || '').toLowerCase() === 'url'
+                    || /url|site|domain|сайт|домен|אתר|https?:|www[.]/.test(bag);
+            };
+        """;
+
+    /**
+     * Paid tiers: fills the homepage start form with the audited site's own origin and submits it once,
+     * so the agent can look at the contact step behind it. Returns false when there is no start form.
+     * Only the URL field is filled: no credentials, no account (the next page is only observed).
+     */
+    private static final String ENTRY_FORM_SUBMIT_SCRIPT = """
+        (origin) => {
+            /*IS_ENTRY_FORM*/
+            const form = Array.from(document.querySelectorAll('form')).find(isEntryForm);
+            if (!form) return false;
+            const field = Array.from(form.querySelectorAll(
+                'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"])'))
+                .find(f => f.getBoundingClientRect().width > 0);
+            if (!field) return false;
+            // Native setter + input event: React / Vue keep the value in state, not in the DOM attribute
+            const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+            setter.call(field, origin);
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            const submit = form.querySelector('button[type="submit"], input[type="submit"], button:not([type])');
+            if (typeof form.requestSubmit === 'function') form.requestSubmit(submit || undefined);
+            else if (submit) submit.click();
+            else form.submit();
+            return true;
+        }
+        """.replace("/*IS_ENTRY_FORM*/", IS_ENTRY_FORM_JS);
+
+    /**
+     * What opens after the start form: a sign-up / sign-in / contact form (its fields and anti-spam),
+     * OAuth buttons (Google / Apple), or the service running without asking for a contact.
+     */
+    private static final String ENTRY_STEP_SCRIPT = """
+        () => {
+            const shown = (el) => {
+                const r = el.getBoundingClientRect();
+                const st = getComputedStyle(el);
+                return r.width > 0 && r.height > 0 && st.display !== 'none' && st.visibility !== 'hidden';
+            };
+            const bagOf = (el) => [
+                el.getAttribute('name'), el.getAttribute('id'), el.getAttribute('placeholder'),
+                el.getAttribute('aria-label'), el.getAttribute('autocomplete'),
+                el.id ? (document.querySelector('label[for="' + CSS.escape(el.id) + '"]') || {}).textContent : ''
+            ].filter(Boolean).join(' ').toLowerCase();
+            const fields = Array.from(document.querySelectorAll('input, textarea')).filter(f =>
+                !['hidden', 'submit', 'button', 'checkbox', 'radio'].includes((f.getAttribute('type') || '').toLowerCase()) && shown(f));
+            const typeOf = (f) => (f.getAttribute('type') || '').toLowerCase();
+            const email = fields.some(f => typeOf(f) === 'email' || /mail|почт|דוא"ל|מייל/.test(bagOf(f)));
+            const phone = fields.some(f => typeOf(f) === 'tel' || /phone|телефон|טלפון/.test(bagOf(f)));
+            const password = fields.some(f => typeOf(f) === 'password');
+            const name = fields.some(f => typeOf(f) !== 'email' && /(^|[^a-z])(full_?name|first_?name|last_?name|name)([^a-z]|$)|имя|фио|שם/.test(bagOf(f))
+                && !/user_?name|domain|site|company/.test(bagOf(f)));
+            const markup = (document.documentElement.outerHTML || '').toLowerCase();
+            const providers = [];
+            if (markup.includes('turnstile') || typeof window.turnstile !== 'undefined') providers.push('Cloudflare Turnstile');
+            if (markup.includes('recaptcha') || typeof window.grecaptcha !== 'undefined') providers.push('reCAPTCHA');
+            if (markup.includes('hcaptcha') || typeof window.hcaptcha !== 'undefined') providers.push('hCaptcha');
+            const trap = Array.from(document.querySelectorAll('form input')).some(f => {
+                const n = (f.getAttribute('name') || '').toLowerCase();
+                return /honeypot|_gotcha|hp_/.test(n)
+                    || (typeOf(f) !== 'hidden' && !shown(f) && /website|url|company|fax/.test(n));
+            });
+            if (trap) providers.push('honeypot');
+            // OAuth: "Continue with Google", "Sign in with Apple", or a link to the provider's auth host
+            const oauthRe = /(google|apple|github|microsoft|facebook|linkedin)/i;
+            const oauth = new Set();
+            Array.from(document.querySelectorAll('a, button, [role="button"]')).filter(shown).forEach(el => {
+                const text = [el.innerText, el.getAttribute('aria-label'), el.getAttribute('title')].filter(Boolean).join(' ');
+                const href = el.getAttribute('href') || '';
+                const m = text.match(oauthRe) || href.match(oauthRe);
+                const authish = /continue|sign|log ?in|войти|вход|продолж|регистр|המשך|התחבר|הרשמ/i.test(text)
+                    || /oauth|accounts[.]google[.]com|appleid[.]apple[.]com|\\/auth\\/|provider=/i.test(href);
+                if (m && authish) oauth.add(m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase());
+            });
+            const text = (document.body ? document.body.innerText : '') || '';
+            const signupText = /sign ?up|create (an )?account|register|регистрац|создать (аккаунт|учётную)|зарегистр|הרשמה|צור חשבון/i.test(text);
+            const signinText = /sign ?in|log ?in|войти|вход в|התחבר/i.test(text);
+            const startedText = /analy[sz]ing|scanning|in progress|audit(ing)? (is )?running|your (report|results)|анализир|проверяем|идёт проверка|ваш отч[её]т|результат|מנתח|סורק|הדוח שלך/i.test(text);
+            let kind = 'unknown';
+            if ((email || name || phone) && password) kind = signupText || name ? 'signup' : 'signin';
+            else if (email || phone) kind = signupText ? 'signup' : signinText ? 'signin' : 'contact';
+            else if (oauth.size > 0) kind = 'oauth';
+            else if (startedText) kind = 'started';
+            return {
+                url: location.href,
+                kind: kind,
+                hasNameField: name,
+                hasEmailField: email,
+                hasPhoneField: phone,
+                hasPasswordField: password,
+                providers: providers,
+                oauth: Array.from(oauth),
+                isProtected: providers.length > 0 || oauth.size > 0
+            };
+        }
+        """;
+
     private static final String LEAD_AND_RTL_SCRIPT = """
         () => {
             const markup = (document.documentElement.outerHTML || '').toLowerCase();
@@ -112,23 +234,7 @@ public class AuditCollector {
                     'input:not([type="hidden"]):not([type="submit"]):not([type="button"]), textarea').length;
                 return !!marked && textFields <= 2;
             };
-            // A "check your site" form (one visible URL field + submit) starts the funnel: the contact is
-            // asked on the next step (sign-up), so it is neither a lead form nor one without anti-spam (AUD-231)
-            const isEntryForm = (form) => {
-                if (form.querySelector('input[type="password"], input[type="email"], input[type="tel"], textarea, select')) return false;
-                const visible = Array.from(form.querySelectorAll(
-                    'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"])'))
-                    .filter(f => {
-                        const r = f.getBoundingClientRect();
-                        const st = getComputedStyle(f);
-                        return r.width > 0 && r.height > 0 && st.display !== 'none' && st.visibility !== 'hidden';
-                    });
-                if (visible.length !== 1) return false;
-                const bag = attrBag(visible[0]);
-                if (/mail|phone|почт|телефон|טלפון/.test(bag)) return false;
-                return (visible[0].getAttribute('type') || '').toLowerCase() === 'url'
-                    || /url|site|domain|сайт|домен|אתר|https?:|www[.]/.test(bag);
-            };
+            /*IS_ENTRY_FORM*/
             const allForms = Array.from(document.querySelectorAll('form')).filter(f => !isSearchForm(f));
             const entryFormsCount = allForms.filter(isEntryForm).length;
             const forms = allForms.filter(f => !isEntryForm(f));
@@ -273,7 +379,7 @@ public class AuditCollector {
                 }
             };
         }
-        """;
+        """.replace("/*IS_ENTRY_FORM*/", IS_ENTRY_FORM_JS);
 
     private static final List<String> AI_CRAWLER_BOTS = List.of(
             "GPTBot", "ChatGPT-User", "ClaudeBot", "anthropic-ai",
@@ -623,8 +729,10 @@ public class AuditCollector {
                 return !(marked && textFields <= 2);
             });
             const forms = formList.length;
+            /*IS_ENTRY_FORM*/
+            const entryFormsCount = formList.filter(isEntryForm).length;
             // A lead form takes a contact (email / phone / name / message) and is not a login form
-            const leadForms = formList.filter(form => !form.querySelector('input[type="password"]')
+            const leadForms = formList.filter(form => !isEntryForm(form) && !form.querySelector('input[type="password"]')
                 && form.querySelector('input[type="email"], input[type="tel"], textarea, '
                     + 'input[name*="mail" i], input[name*="phone" i], input[name*="tel" i], input[name*="name" i]'));
             const pageMarkup = (document.documentElement.outerHTML || '').toLowerCase();
@@ -660,6 +768,7 @@ public class AuditCollector {
                 formsCount: forms,
                 leadFormsCount: leadForms.length,
                 leadFormsProtected: leadFormsProtected,
+                entryFormsCount: entryFormsCount,
                 formViaCta: false,
                 wordCount: words,
                 hasCta: hasCta,
@@ -672,7 +781,7 @@ public class AuditCollector {
                     || getComputedStyle(document.documentElement).direction
             };
         }
-        """;
+        """.replace("/*IS_ENTRY_FORM*/", IS_ENTRY_FORM_JS);
 
     private static final String HOMEPAGE_LINK_DISCOVERY_SCRIPT = """
         () => {
@@ -2071,9 +2180,12 @@ public class AuditCollector {
             }
             if (Boolean.TRUE.equals(funnelLead.get("instant"))) instantChannel = true;
             int effectiveForms = formsCount + (formsOnFunnelOnly ? (int) funnelLead.get("forms") : 0);
-            // Only a "check your site" form: the contact and its anti-spam sit on the next step,
-            // which the audit does not open, so the check is "not checked", not "no form" (AUD-231)
+            // Only a "check your site" form: the contact and its anti-spam sit on the next step.
+            // Free does not open it ("not checked", AUD-231); Diagnostic/Pro submit the form once and
+            // judge the step that opens (entry_step), "not checked" only when it was not recognised
             boolean entryOnly = effectiveForms == 0 && asLong(lead.get("entryFormsCount"), 0) > 0;
+            Map<String, Object> entryStep = entryOnly ? entryStep(finalReport) : null;
+            String entryStatus = entryOnly ? entryStepStatus(entryStep, isProtected) : null;
 
             StringBuilder leadDetail = new StringBuilder();
             int homeForms = (int) funnelLead.get("homeForms");
@@ -2096,6 +2208,8 @@ public class AuditCollector {
                         "No form on the homepage; lead forms on funnel pages: ",
                         "אין טופס בעמוד הבית; טפסי ליד בדפי המשפך: "))
                         .append(String.join(", ", funnelPages));
+            } else if (entryOnly && entryStep != null) {
+                leadDetail.append(entryStepDetail(entryStep, providers, i18n.lang));
             } else if (entryOnly) {
                 leadDetail.append(ReportFindingsCatalog.tr(i18n.lang,
                         "Форма запуска на главной (поле адреса сайта) — вход в воронку, контакт запрашивается на следующем шаге (регистрация или вход)",
@@ -2115,7 +2229,8 @@ public class AuditCollector {
                         .append(ReportFindingsCatalog.tr(i18n.lang, ", submit: ", ", submit: ", ", submit: "))
                         .append(yesNo(hasSubmit, i18n));
             }
-            leadDetail.append(ReportFindingsCatalog.tr(i18n.lang, ". Антиспам: ", ". Anti-spam: ", ". אנטי-ספאם: "))
+            // The step detail already names its anti-spam
+            if (entryStep == null) leadDetail.append(ReportFindingsCatalog.tr(i18n.lang, ". Антиспам: ", ". Anti-spam: ", ". אנטי-ספאם: "))
                     .append(entryOnly
                             ? ReportFindingsCatalog.tr(i18n.lang, "не проверен — он нужен на шаге с контактом",
                             "not checked — it belongs on the contact step", "לא נבדק — הוא נדרש בשלב פרטי הקשר")
@@ -2141,7 +2256,7 @@ public class AuditCollector {
 
             // No form but a messenger or chat still takes leads: needs attention, not critical
             // (matches the "Lead path" block and ReportFindingsCatalog, AUD-226)
-            String leadStatus = entryOnly ? "na"
+            String leadStatus = entryOnly ? entryStatus
                     : formsOk && isProtected ? "good"
                     : effectiveForms == 0 ? (instantChannel ? "warn" : "bad")
                     : (isProtected ? "warn" : "bad");
@@ -2157,7 +2272,7 @@ public class AuditCollector {
                     "lead"
             );
             // Picks the recommendation text: one case, not "if no form … / if a form …"
-            leadRow.put("rec_variant", entryOnly ? "entry"
+            leadRow.put("rec_variant", entryOnly ? entryRecVariant(entryStep, entryStatus)
                     : effectiveForms == 0 ? "no_form" : (isProtected ? "form_fields" : "unprotected"));
             checkRows.add(leadRow);
         }
@@ -2600,6 +2715,13 @@ public class AuditCollector {
         if (Boolean.TRUE.equals(funnelLead.get("instant"))) hasInstantChannel = true;
         // A start form leads to the contact step: a path, but its contact field and anti-spam are unknown
         boolean entryFormOnly = !hasForms && lead != null && asLong(lead.get("entryFormsCount"), 0) > 0;
+        // Diagnostic/Pro opened that step: its contact field and anti-spam are known now
+        Map<String, Object> entryStep = entryFormOnly ? entryStep(report) : null;
+        boolean entryStepProtected = false;
+        if (entryStepTakesContact(entryStep)) {
+            hasContactField = true;
+            entryStepProtected = Boolean.TRUE.equals(entryStep.get("isProtected"));
+        }
 
         int mobilePerformance = mobileScores != null && mobileScores.containsKey("performance")
                 ? ((Number) mobileScores.get("performance")).intValue()
@@ -2615,7 +2737,7 @@ public class AuditCollector {
         if (hasContactField) leadScore += 10;
         if (hasSubmit || entryFormOnly) leadScore += 5;
         // reCAPTCHA on a page with no form protects nothing (AUD-221 got +15 for zero forms)
-        if (isProtected && hasForms) leadScore += 15;
+        if ((isProtected && hasForms) || entryStepProtected) leadScore += 15;
         if (hasInstantChannel) leadScore += 10;
         // Broken JS blocks submit handlers, so runtime failures hit lead capture directly
         if (!uncaughtErrors.isEmpty()) leadScore -= 10;
@@ -2791,7 +2913,9 @@ public class AuditCollector {
                 aiContentSignalsOk,
                 aiMarkdownNegOk,
                 aiSitemapAgentOk,
-                entryFormOnly
+                entryFormOnly,
+                entryStep == null ? null : String.valueOf(entryStep.get("kind")),
+                entryStepStatus(entryStep, isProtected)
         );
 
         List<ReportFindingsCatalog.BizFinding> bizFindings = ReportFindingsCatalog.buildAll(findingCtx, reportLang);
@@ -3180,6 +3304,14 @@ public class AuditCollector {
         result.put("inner_pages_forms_total", formsOnInner);
         result.put("pages", visited);
 
+        // Diagnostic/Pro go past a "check your site" form to the contact step behind it; Free says it
+        // did not (AUD-231). After the crawl, so the submit cannot change what the other pages show.
+        Map<String, Object> homeVisit = visited.isEmpty() ? null : visited.get(0);
+        if (entryStepAllowed() && homeVisit != null && Boolean.TRUE.equals(homeVisit.get("ok"))
+                && asLong(homeVisit.get("entryFormsCount"), 0) > 0 && asLong(homeVisit.get("leadFormsCount"), 0) == 0) {
+            result.put("entry_step", probeEntryStep(page, targetUrl, origin));
+        }
+
         boolean shallowSite = candidates.size() <= 1;
         boolean missingContactPath = selected.stream().noneMatch(c -> {
             String bag = (c.get("path") + " " + c.get("text")).toLowerCase();
@@ -3200,6 +3332,69 @@ public class AuditCollector {
         System.out.printf("  Агентный просмотр: %d/%d страниц OK, кандидатов %d%n",
                 okCount, visited.size(), candidates.size());
         return result;
+    }
+
+    /**
+     * Only an explicit Diagnostic or Pro run goes past the start form. Free stops at it, and so does the
+     * local full package (no AUDIT_TIER): its one crawl also feeds Free, whose top-3 would get the
+     * sign-up finding while Free says it did not open that step.
+     */
+    private static boolean entryStepAllowed() {
+        String tier = System.getenv("AUDIT_TIER");
+        if (tier == null || tier.isBlank()) {
+            tier = System.getProperty("AUDIT_TIER", "");
+        }
+        tier = tier.trim();
+        return "DIAGNOSTIC".equalsIgnoreCase(tier) || "PRO".equalsIgnoreCase(tier);
+    }
+
+    /**
+     * Submits the homepage start form once with the site's own origin and records what opens
+     * (ENTRY_STEP_SCRIPT). Never fills the next step: no credentials, no account.
+     * Keys: submitted, from_url, url, kind (signup | signin | contact | oauth | started | unknown),
+     * hasNameField, hasEmailField, hasPhoneField, hasPasswordField, providers, oauth, isProtected.
+     */
+    @SuppressWarnings("unchecked")
+    static Map<String, Object> probeEntryStep(Page page, String targetUrl, String origin) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("from_url", targetUrl);
+        try {
+            page.navigate(targetUrl, new Page.NavigateOptions()
+                    .setWaitUntil(com.microsoft.playwright.options.WaitUntilState.DOMCONTENTLOADED)
+                    .setTimeout(45000));
+            page.waitForTimeout(1500);
+            boolean submitted = Boolean.TRUE.equals(page.evaluate(ENTRY_FORM_SUBMIT_SCRIPT, origin));
+            out.put("submitted", submitted);
+            if (!submitted) {
+                out.put("kind", "unknown");
+                return out;
+            }
+            // SPA route change or a full navigation; either way give the next step time to render
+            page.waitForTimeout(4000);
+            try {
+                page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED,
+                        new Page.WaitForLoadStateOptions().setTimeout(15000));
+            } catch (Exception ignored) {}
+            Map<String, Object> step;
+            try {
+                step = (Map<String, Object>) page.evaluate(ENTRY_STEP_SCRIPT);
+            } catch (Exception navigating) {
+                // "Execution context was destroyed": the page was still navigating
+                page.waitForTimeout(2500);
+                step = (Map<String, Object>) page.evaluate(ENTRY_STEP_SCRIPT);
+            }
+            out.putAll(step);
+            System.out.printf("  Форма запуска отправлена → %s: %s (поля: имя=%s email=%s пароль=%s; антиспам %s; OAuth %s)%n",
+                    step.get("url"), step.get("kind"), step.get("hasNameField"), step.get("hasEmailField"),
+                    step.get("hasPasswordField"), step.get("providers"), step.get("oauth"));
+        } catch (Exception e) {
+            String raw = e.getMessage() == null ? "" : e.getMessage();
+            out.putIfAbsent("submitted", false);
+            out.put("kind", "unknown");
+            out.put("error", raw.length() > 300 ? raw.substring(0, 300) : raw);
+            System.err.println("  [!] Форма запуска: шаг после отправки не открылся: " + raw);
+        }
+        return out;
     }
 
     private static Map<String, Object> candidate(String url, String path, String text, String source, long score) {
@@ -3773,6 +3968,95 @@ public class AuditCollector {
         out.put("allProtected", forms + homeForms > 0 && allProtected);
         out.put("instant", instant);
         return out;
+    }
+
+    /**
+     * The step behind the homepage start form (agent_browse.entry_step, Diagnostic/Pro), or null when
+     * the form was not submitted or the page that opened was not recognised.
+     */
+    @SuppressWarnings("unchecked")
+    static Map<String, Object> entryStep(Map<String, Object> report) {
+        if (report == null || !(report.get("agent_browse") instanceof Map<?, ?> browse)) return null;
+        if (!(browse.get("entry_step") instanceof Map<?, ?> step)) return null;
+        String kind = String.valueOf(step.get("kind"));
+        if (!Boolean.TRUE.equals(step.get("submitted")) || "unknown".equals(kind) || "null".equals(kind)) return null;
+        return (Map<String, Object>) step;
+    }
+
+    /** A step that asks for a contact (form or OAuth). "started" asks for none. */
+    static boolean entryStepTakesContact(Map<String, Object> step) {
+        return step != null && !"started".equals(String.valueOf(step.get("kind")));
+    }
+
+    /**
+     * Lead check status for a start form. Contact step with anti-spam or OAuth: good. Sign-up / sign-in
+     * without one: needs attention (an account step may still confirm the email, which the audit cannot
+     * see). A plain contact form without one: critical, like any lead form. The service running without
+     * a contact: bots spend the owner's resources — critical unless the start form itself is protected.
+     */
+    static String entryStepStatus(Map<String, Object> step, boolean startFormProtected) {
+        if (step == null) return "na";
+        String kind = String.valueOf(step.get("kind"));
+        if ("started".equals(kind)) return startFormProtected ? "warn" : "bad";
+        if (Boolean.TRUE.equals(step.get("isProtected"))) return "good";
+        return "contact".equals(kind) ? "bad" : "warn";
+    }
+
+    static String entryRecVariant(Map<String, Object> step, String status) {
+        if (step == null) return "entry";
+        if ("started".equals(String.valueOf(step.get("kind")))) return "entry_started";
+        return "good".equals(status) ? "entry_protected" : "entry_unprotected";
+    }
+
+    @SuppressWarnings("unchecked")
+    static String entryStepDetail(Map<String, Object> step, List<String> startProviders, String lang) {
+        String kind = String.valueOf(step.get("kind"));
+        String path = pathOf(String.valueOf(step.get("url")));
+        List<String> fields = new ArrayList<>();
+        if (Boolean.TRUE.equals(step.get("hasNameField"))) fields.add(ReportFindingsCatalog.tr(lang, "имя", "name", "שם"));
+        if (Boolean.TRUE.equals(step.get("hasEmailField"))) fields.add("email");
+        if (Boolean.TRUE.equals(step.get("hasPhoneField"))) fields.add(ReportFindingsCatalog.tr(lang, "телефон", "phone", "טלפון"));
+        if (Boolean.TRUE.equals(step.get("hasPasswordField"))) fields.add(ReportFindingsCatalog.tr(lang, "пароль", "password", "סיסמה"));
+        String fieldList = String.join(", ", fields);
+        List<String> providers = (List<String>) step.getOrDefault("providers", List.of());
+        List<String> oauth = (List<String>) step.getOrDefault("oauth", List.of());
+        String opened = switch (kind) {
+            case "signup" -> ReportFindingsCatalog.tr(lang,
+                    "открылась регистрация " + path + " (" + fieldList + ")",
+                    "a sign-up page opened, " + path + " (" + fieldList + ")",
+                    "נפתח דף הרשמה " + path + " (" + fieldList + ")");
+            case "signin" -> ReportFindingsCatalog.tr(lang,
+                    "открылся вход " + path + " (" + fieldList + ")",
+                    "a sign-in page opened, " + path + " (" + fieldList + ")",
+                    "נפתח דף התחברות " + path + " (" + fieldList + ")");
+            case "contact" -> ReportFindingsCatalog.tr(lang,
+                    "открылась форма контакта " + path + " (" + fieldList + ")",
+                    "a contact form opened, " + path + " (" + fieldList + ")",
+                    "נפתח טופס פרטי קשר " + path + " (" + fieldList + ")");
+            case "oauth" -> ReportFindingsCatalog.tr(lang,
+                    "открылся вход через " + String.join(" / ", oauth) + " " + path,
+                    "a " + String.join(" / ", oauth) + " sign-in opened, " + path,
+                    "נפתחה התחברות עם " + String.join(" / ", oauth) + " " + path);
+            default -> ReportFindingsCatalog.tr(lang,
+                    "сервис запустился без регистрации и без контакта (" + path + ")",
+                    "the service started without sign-up or a contact (" + path + ")",
+                    "השירות הופעל בלי הרשמה ובלי פרטי קשר (" + path + ")");
+        };
+        StringBuilder sb = new StringBuilder(ReportFindingsCatalog.tr(lang,
+                "Форма запуска на главной (поле адреса сайта) отправлена с адресом сайта: ",
+                "The homepage start form (site address field) was submitted with the site's address: ",
+                "טופס ההפעלה בעמוד הבית (שדה כתובת אתר) נשלח עם כתובת האתר: ")).append(opened);
+        List<String> protection = new ArrayList<>("started".equals(kind) ? startProviders : providers);
+        if (!"started".equals(kind) && !"oauth".equals(kind)) {
+            oauth.forEach(o -> protection.add(ReportFindingsCatalog.tr(lang, "вход через ", "sign-in with ", "התחברות עם ") + o));
+        }
+        sb.append("started".equals(kind)
+                        ? ReportFindingsCatalog.tr(lang, ". Антиспам на форме запуска: ", ". Anti-spam on the start form: ", ". אנטי-ספאם בטופס ההפעלה: ")
+                        : ReportFindingsCatalog.tr(lang, ". Антиспам на этом шаге: ", ". Anti-spam on this step: ", ". אנטי-ספאם בשלב הזה: "))
+                .append(protection.isEmpty()
+                        ? ReportFindingsCatalog.tr(lang, "не обнаружен", "not detected", "לא זוהה")
+                        : String.join(", ", protection));
+        return sb.toString();
     }
 
     /** The platform with the single highest score, or null when none matched or the top score is shared. */
