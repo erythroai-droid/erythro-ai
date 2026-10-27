@@ -234,11 +234,20 @@ final class ReportFullSignals {
                                 + ", עם CTA: " + cta + ", טפסים פנימיים: " + forms),
                 status);
 
+        // Two URLs with one path (/signup and /signup?next=…) get their query, not two identical rows
+        Map<String, Integer> pathCounts = new java.util.HashMap<>();
+        for (Map<String, Object> page : pages) {
+            pathCounts.merge(pathOf(str(page.get("url"))), 1, Integer::sum);
+        }
         int i = 0;
         for (Map<String, Object> page : pages) {
             i++;
             String url = str(page.get("url"));
             String path = pathOf(url);
+            if (pathCounts.getOrDefault(path, 0) > 1) {
+                String query = url.contains("?") ? url.substring(url.indexOf('?')) : "";
+                if (!query.isEmpty()) path += query.length() > 40 ? query.substring(0, 40) + "…" : query;
+            }
             boolean ok = bool(page.get("ok"));
             int http = (int) num(page.get("http_status"), 0);
             boolean soft = bool(page.get("soft404"));

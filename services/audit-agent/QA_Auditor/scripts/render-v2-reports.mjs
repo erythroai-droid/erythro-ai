@@ -2245,11 +2245,13 @@ function leadPathFromData(auditData, tier) {
   const isProtected = leads.some((l) => l.antiSpam?.isProtected || l.isProtected);
   // Only a "check your site" start form: the contact step (sign-up) is not opened, so neither
   // "no form" nor "form without anti-spam" can be claimed (AUD-231)
-  const entryForm = !hasForm && leads.some((l) => Number(l.entryFormsCount) > 0);
-  // Diagnostic/Pro submitted that form once and saw the step behind it (agent_browse.entry_step).
+  const startForm = leads.some((l) => Number(l.entryFormsCount) > 0);
+  const entryForm = !hasForm && startForm;
+  // Diagnostic/Pro submitted that form once and saw the step behind it (agent_browse.entry_step),
+  // also next to other lead forms (myblindspot.eu Pro: /whitepaper hid the open sign-up).
   // Free never reads it: Free says it did not check that step.
   const rawStep = tier === 'free' ? null : auditData?.agent_browse?.entry_step;
-  const entryStep = entryForm && rawStep && rawStep.submitted && rawStep.kind && rawStep.kind !== 'unknown'
+  const entryStep = startForm && rawStep && rawStep.submitted && rawStep.kind && rawStep.kind !== 'unknown'
     ? {
         kind: rawStep.kind,
         path: (() => { try { return new URL(rawStep.url).pathname; } catch (e) { return ''; } })(),
@@ -2273,7 +2275,7 @@ function leadPathFromData(auditData, tier) {
   return {
     known: leads.length > 0 || pages.length > 0,
     pages: pageCount, httpOk, pagesWithPath,
-    inlineForm, formViaCta, hasForm, isProtected, entryForm, entryStep,
+    inlineForm, formViaCta, hasForm, isProtected, startForm, entryForm, entryStep,
     whatsapp, telegram, otherMessenger, chat, instant,
   };
 }
@@ -3339,7 +3341,7 @@ ${cards}
   const contradicted = {
     // The step behind a start form decides it: protected contact step = nothing to fix
     lead: !leadNoForm && (leadPath.entryStep
-      ? leadPath.entryStep.takesContact && leadPath.entryStep.isProtected
+      ? leadPath.entryStep.takesContact && leadPath.entryStep.isProtected && (leadPath.isProtected || !leadPath.hasForm)
       : (leadPath.isProtected || !leadPath.hasForm)),
     sec: Array.isArray(missingHeaders) && missingHeaders.length === 0,
     seo: !!seoCauses && !seoPick,
@@ -3738,7 +3740,7 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
       : es.kind === 'oauth' ? T('вход через Google / Apple', 'Google / Apple sign-in', 'התחברות עם Google / Apple')
       : es.kind === 'started' ? T('запуск без регистрации', 'runs without sign-up', 'הפעלה בלי הרשמה')
       : T('регистрация', 'sign-up', 'הרשמה');
-    if (lp.entryForm) pills.push(pill(!es || es.takesContact, T(`Форма запуска → ${stepName}`, `Start form → ${stepName}`, `טופס הפעלה ← ${stepName}`)));
+    if (lp.entryForm || (lp.startForm && es)) pills.push(pill(!es || es.takesContact,T(`Форма запуска → ${stepName}`, `Start form → ${stepName}`, `טופס הפעלה ← ${stepName}`)));
     if (lp.whatsapp) pills.push(pill(true, 'WhatsApp'));
     if (lp.telegram) pills.push(pill(true, 'Telegram'));
     if (lp.otherMessenger) pills.push(pill(true, T('Мессенджер', 'Messenger', 'מסנג׳ר')));
@@ -3749,11 +3751,16 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
     const ratioSt = (n, d) => (d === 0 || n === d ? 'ok' : n === 0 ? 'bad' : 'warn');
     const none = T('нет', 'none', 'אין');
     const notChecked = tier === 'free' ? T('не проверено в Free', 'not checked in Free', 'לא נבדק ב-Free') : T('не проверено', 'not checked', 'לא נבדק');
-    const spam = es
+    const stepSpam = es
       ? (es.takesContact
         ? (es.isProtected ? ['OK', 'ok'] : [none, es.kind === 'contact' ? 'bad' : 'warn'])
         : (es.startProtected ? ['OK', 'ok'] : [none, 'bad']))
-      : lp.entryForm ? [notChecked, 'warn'] : !lp.hasForm ? ['—', 'ok'] : lp.isProtected ? ['OK', 'ok'] : [none, 'warn'];
+      : null;
+    const formSpam = lp.entryForm ? [notChecked, 'warn'] : !lp.hasForm ? ['—', 'ok'] : lp.isProtected ? ['OK', 'ok'] : [none, 'warn'];
+    const spamRank = { ok: 0, warn: 1, bad: 2 };
+    // Lead forms and the step behind a start form: the weaker of the two
+    const spam = !stepSpam ? formSpam : !lp.hasForm ? stepSpam
+      : spamRank[stepSpam[1]] >= spamRank[formSpam[1]] ? stepSpam : formSpam;
     const steps = [
       [T('HTTP 200 и отсутствие soft-404', 'HTTP 200, no soft-404', 'HTTP 200 וללא soft-404'), mark(`${lp.httpOk}/${lp.pages}`, ratioSt(lp.httpOk, lp.pages))],
       [T('CTA или форма на странице', 'CTA or form on page', 'CTA או טופס בעמוד'), mark(`${lp.pagesWithPath}/${lp.pages}`, ratioSt(lp.pagesWithPath, lp.pages))],
@@ -3774,9 +3781,14 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
         'פסק דין: לא ניתן היה לבדוק את העמוד — אין נתונים על טפסים ומסנג׳רים.');
     } else if (es) {
       // Same status as the Java lead check (AuditCollector.entryStepStatus)
-      const opened = T(`Вердикт: ${scopeTxt} есть форма запуска (поле адреса сайта). Аудит отправил её с адресом сайта`,
-        `Verdict: ${scopeTxt} there is a start form (site address field). The audit submitted it with the site's address`,
-        `פסק דין: ${scopeTxt} יש טופס הפעלה (שדה כתובת אתר). הביקורת שלחה אותו עם כתובת האתר`);
+      // Other lead forms on the funnel are named too: the sign-up step does not replace them
+      const forms = !lp.hasForm ? ''
+        : lp.isProtected
+          ? T(' лид-формы с антиспамом и', ' lead forms with anti-spam and', ' טפסי ליד עם אנטי-ספאם וגם')
+          : T(' лид-формы без антиспама и', ' lead forms without anti-spam and', ' טפסי ליד ללא אנטי-ספאם וגם');
+      const opened = T(`Вердикт: ${scopeTxt} есть${forms} форма запуска (поле адреса сайта). Аудит отправил её с адресом сайта`,
+        `Verdict: ${scopeTxt} there are${forms} a start form (site address field). The audit submitted it with the site's address`,
+        `פסק דין: ${scopeTxt} יש${forms} טופס הפעלה (שדה כתובת אתר). הביקורת שלחה אותו עם כתובת האתר`);
       const where = es.path ? ` (${es.path})` : '';
       let st;
       let tail;
@@ -3796,6 +3808,8 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
           ` — the "${stepName}" step opened${where}: it has no anti-spam (Turnstile, reCAPTCHA, hCaptcha, honeypot) and no Google / Apple sign-in.`,
           ` — נפתח שלב «${stepName}»${where}: אין בו אנטי-ספאם (Turnstile, ‏reCAPTCHA, ‏hCaptcha, ‏honeypot) ואין התחברות עם Google / Apple.`);
       }
+      // Lead forms without anti-spam keep the block at "needs attention" at least
+      if (lp.hasForm && !lp.isProtected && st === 'ok') st = 'warn';
       badge = st === 'ok' ? `<span class="badge ok">${T('Исправен', 'Operational', 'תקין')}</span>`
         : st === 'crit' ? `<span class="badge crit">${T('Критично', 'Critical', 'קריטי')}</span>`
         : `<span class="badge warn">${T('Требует внимания', 'Needs attention', 'דורש תשומת לב')}</span>`;
