@@ -587,13 +587,23 @@ public class AuditCollector {
             const title = (document.title || '').trim();
             const h1 = Array.from(document.querySelectorAll('h1'))
                 .map(h => h.innerText.trim()).filter(Boolean);
-            const forms = Array.from(document.querySelectorAll('form')).filter(form => {
+            const formList = Array.from(document.querySelectorAll('form')).filter(form => {
                 const marked = form.getAttribute('role') === 'search'
                     || form.querySelector('input[type="search"], input[name="s"], input[name="q"], input[name="search"]');
                 const textFields = form.querySelectorAll(
                     'input:not([type="hidden"]):not([type="submit"]):not([type="button"]), textarea').length;
                 return !(marked && textFields <= 2);
-            }).length;
+            });
+            const forms = formList.length;
+            // A lead form takes a contact (email / phone / name / message) and is not a login form
+            const leadForms = formList.filter(form => !form.querySelector('input[type="password"]')
+                && form.querySelector('input[type="email"], input[type="tel"], textarea, '
+                    + 'input[name*="mail" i], input[name*="phone" i], input[name*="tel" i], input[name*="name" i]'));
+            const pageMarkup = (document.documentElement.outerHTML || '').toLowerCase();
+            const leadFormsProtected = leadForms.length > 0 && (pageMarkup.includes('recaptcha')
+                || pageMarkup.includes('turnstile') || pageMarkup.includes('hcaptcha')
+                || typeof window.grecaptcha !== 'undefined' || typeof window.turnstile !== 'undefined'
+                || leadForms.some(form => form.querySelector('input[name*="honeypot" i], input[name="_gotcha"]')));
             const text = (document.body ? document.body.innerText : '') || '';
             const words = text.split(/\\s+/).filter(Boolean).length;
             const ctaRe = /(contact|связ|контакт|обсуд|начать|צור|קשר|whatsapp|wa\\.me|telegram|заявк|order|book|הזמנ|оставьте|let'?s talk|get started|start now|discuss)/i;
@@ -618,6 +628,8 @@ public class AuditCollector {
                 title: title.slice(0, 160),
                 h1: h1.slice(0, 3),
                 formsCount: forms,
+                leadFormsCount: leadForms.length,
+                leadFormsProtected: leadFormsProtected,
                 formViaCta: false,
                 wordCount: words,
                 hasCta: hasCta,
@@ -2013,9 +2025,26 @@ public class AuditCollector {
             boolean instantChannel = Boolean.TRUE.equals(lead.get("hasInstantContactChannel"));
             boolean hasChat = Boolean.TRUE.equals(lead.get("hasChatWidget"));
             List<String> messengers = (List<String>) lead.getOrDefault("messengerLinks", List.of());
+            // Diagnostic/Pro: no form on the homepage but lead forms on funnel pages is a working path,
+            // not "no forms found" (same rule as the scale and the "Путь к заявке" block)
+            Map<String, Object> funnelLead = funnelLeadForms(finalReport.get("agent_browse") instanceof Map
+                    ? (Map<String, Object>) finalReport.get("agent_browse") : null);
+            boolean formsOnFunnelOnly = formsCount == 0 && (int) funnelLead.get("forms") > 0;
+            if (formsOnFunnelOnly) {
+                formsOk = true;
+                isProtected = Boolean.TRUE.equals(funnelLead.get("allProtected"));
+            }
+            if (Boolean.TRUE.equals(funnelLead.get("instant"))) instantChannel = true;
+            int effectiveForms = formsCount + (formsOnFunnelOnly ? (int) funnelLead.get("forms") : 0);
 
             StringBuilder leadDetail = new StringBuilder();
-            if (formsCount == 0) {
+            if (formsOnFunnelOnly) {
+                leadDetail.append(ReportFindingsCatalog.tr(i18n.lang,
+                        "На главной форм нет; лид-формы на страницах воронки: ",
+                        "No form on the homepage; lead forms on funnel pages: ",
+                        "אין טופס בעמוד הבית; טפסי ליד בדפי המשפך: "))
+                        .append(String.join(", ", (List<String>) funnelLead.get("pages")));
+            } else if (formsCount == 0) {
                 leadDetail.append(ReportFindingsCatalog.tr(i18n.lang, "Формы не найдены", "No forms found", "לא נמצאו טפסים"));
             } else {
                 leadDetail.append(ReportFindingsCatalog.tr(i18n.lang, "Форм: ", "Forms: ", "טפסים: ")).append(formsCount);
@@ -2030,7 +2059,10 @@ public class AuditCollector {
                         .append(yesNo(hasSubmit, i18n));
             }
             leadDetail.append(ReportFindingsCatalog.tr(i18n.lang, ". Антиспам: ", ". Anti-spam: ", ". אנטי-ספאם: "))
-                    .append(isProtected ? String.join(", ", providers)
+                    .append(isProtected
+                            ? (formsOnFunnelOnly
+                            ? ReportFindingsCatalog.tr(i18n.lang, "есть на страницах с формами", "present on the form pages", "קיים בדפים עם טפסים")
+                            : String.join(", ", providers))
                             : ReportFindingsCatalog.tr(i18n.lang, "не обнаружен", "not detected", "לא זוהה"));
             if (instantChannel) {
                 leadDetail.append(hasChat
@@ -2050,7 +2082,7 @@ public class AuditCollector {
             // No form but a messenger or chat still takes leads: needs attention, not critical
             // (matches the "Lead path" block and ReportFindingsCatalog, AUD-226)
             String leadStatus = formsOk && isProtected ? "good"
-                    : formsCount == 0 ? (instantChannel ? "warn" : "bad")
+                    : effectiveForms == 0 ? (instantChannel ? "warn" : "bad")
                     : (isProtected ? "warn" : "bad");
             String leadLabel = "good".equals(leadStatus) ? i18n.statusWorks
                     : "warn".equals(leadStatus) ? i18n.statusNeedsAttention : i18n.statusCritical;
@@ -2062,7 +2094,7 @@ public class AuditCollector {
                     "lead"
             );
             // Picks the recommendation text: one case, not "if no form … / if a form …"
-            leadRow.put("rec_variant", formsCount == 0 ? "no_form" : (isProtected ? "form_fields" : "unprotected"));
+            leadRow.put("rec_variant", effectiveForms == 0 ? "no_form" : (isProtected ? "form_fields" : "unprotected"));
             checkRows.add(leadRow);
         }
         appendAiVisibilityCheckRows(checkRows, aiVisibility, infra, i18n);
@@ -2491,6 +2523,16 @@ public class AuditCollector {
         boolean hasSubmit = lead != null && Boolean.TRUE.equals(lead.get("hasSubmitButton"));
         boolean isProtected = lead != null && Boolean.TRUE.equals(lead.get("isProtected"));
         boolean hasInstantChannel = lead != null && Boolean.TRUE.equals(lead.get("hasInstantContactChannel"));
+        // Diagnostic/Pro: a lead form on a funnel page (contact, order) counts like one on the homepage
+        Map<String, Object> funnelLead = funnelLeadForms(report.get("agent_browse") instanceof Map
+                ? (Map<String, Object>) report.get("agent_browse") : null);
+        if (!hasForms && (int) funnelLead.get("forms") > 0) {
+            hasForms = true;
+            hasContactField = true;
+            hasSubmit = true;
+            isProtected = Boolean.TRUE.equals(funnelLead.get("allProtected"));
+        }
+        if (Boolean.TRUE.equals(funnelLead.get("instant"))) hasInstantChannel = true;
 
         int mobilePerformance = mobileScores != null && mobileScores.containsKey("performance")
                 ? ((Number) mobileScores.get("performance")).intValue()
@@ -2882,6 +2924,8 @@ public class AuditCollector {
             Map<String, Object> rescan = (Map<String, Object>) page.evaluate(AGENT_PAGE_SNAPSHOT_SCRIPT);
             if (asLong(rescan.get("formsCount"), 0) > 0) {
                 out.put("formsCount", rescan.get("formsCount"));
+                out.put("leadFormsCount", rescan.get("leadFormsCount"));
+                out.put("leadFormsProtected", rescan.get("leadFormsProtected"));
                 out.put("formViaCta", true);
                 out.put("triggerLabel", String.valueOf(triggerLabel));
                 out.put("hasCta", true);
@@ -3609,6 +3653,42 @@ public class AuditCollector {
         }
         ordered.addAll(out);
         return ordered;
+    }
+
+    /**
+     * Lead forms on the funnel pages beyond the homepage (agent crawl). Free crawls the homepage only,
+     * so it gets nothing here; Diagnostic/Pro judge the lead path by every page they open (AUD-bliainara:
+     * "no forms" and lead 45 while /contact/ and /orders/ had forms).
+     * Keys: pages (List of "path (n)"), forms (int), allProtected (boolean), instant (boolean).
+     */
+    @SuppressWarnings("unchecked")
+    static Map<String, Object> funnelLeadForms(Map<String, Object> agentBrowse) {
+        List<String> pages = new ArrayList<>();
+        int forms = 0;
+        boolean allProtected = true;
+        boolean instant = false;
+        Object raw = agentBrowse == null ? null : agentBrowse.get("pages");
+        if (raw instanceof List<?> list) {
+            for (Object o : list) {
+                if (!(o instanceof Map<?, ?> m)) continue;
+                Map<String, Object> p = (Map<String, Object>) m;
+                if ("homepage".equals(String.valueOf(p.get("source")))) continue;
+                if (!Boolean.TRUE.equals(p.get("ok"))) continue;
+                if (Boolean.TRUE.equals(p.get("hasInstantContactChannel"))) instant = true;
+                // Older snapshots have no leadFormsCount: do not guess from the raw form count
+                int n = (int) asLong(p.get("leadFormsCount"), 0);
+                if (n <= 0) continue;
+                forms += n;
+                if (!Boolean.TRUE.equals(p.get("leadFormsProtected"))) allProtected = false;
+                pages.add(pathOf(String.valueOf(p.get("url"))) + " (" + n + ")");
+            }
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("pages", pages);
+        out.put("forms", forms);
+        out.put("allProtected", forms > 0 && allProtected);
+        out.put("instant", instant);
+        return out;
     }
 
     /** The platform with the single highest score, or null when none matched or the top score is shared. */
