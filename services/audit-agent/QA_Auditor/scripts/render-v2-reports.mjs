@@ -2237,9 +2237,15 @@ function leadPathFromData(auditData, tier) {
   const instant = whatsapp || telegram || otherMessenger || chat
     || leads.some((l) => l.hasInstantContactChannel) || pages.some((p) => p.hasInstantContactChannel);
   const formViaCta = leads.some((l) => l.openedFromTrigger && l.formsCount > 0) || pages.some((p) => p.formViaCta);
-  const inlineForm = leads.some((l) => l.formsCount > 0 && !l.openedFromTrigger) || pages.some((p) => p.formsCount > 0 && !p.formViaCta);
+  // Agent snapshots count every form; leadFormsCount keeps only forms with a contact field (a start
+  // form is not one). Older snapshots have no leadFormsCount and keep the raw count.
+  const pageForms = (p) => (p.leadFormsCount != null ? Number(p.leadFormsCount) : Number(p.formsCount) || 0);
+  const inlineForm = leads.some((l) => l.formsCount > 0 && !l.openedFromTrigger) || pages.some((p) => pageForms(p) > 0 && !p.formViaCta);
   const hasForm = inlineForm || formViaCta;
   const isProtected = leads.some((l) => l.antiSpam?.isProtected || l.isProtected);
+  // Only a "check your site" start form: the contact step (sign-up) is not opened, so neither
+  // "no form" nor "form without anti-spam" can be claimed (AUD-231)
+  const entryForm = !hasForm && leads.some((l) => Number(l.entryFormsCount) > 0);
 
   // Without an agent snapshot the homepage still counts as one page, judged by lead_capture
   const pageCount = pages.length || (leads.length ? 1 : 0);
@@ -2249,13 +2255,13 @@ function leadPathFromData(auditData, tier) {
     : (httpStatus >= 200 && httpStatus < 400 ? pageCount : 0);
   const pagePath = (p) => p.formsCount > 0 || p.hasChatWidget || p.hasInstantContactChannel || (p.messengerLinks || []).length > 0;
   const pagesWithPath = pages.length
-    ? pages.filter((p, i) => pagePath(p) || (tier === 'free' && i === 0 && (hasForm || instant))).length
-    : (hasForm || instant ? pageCount : 0);
+    ? pages.filter((p, i) => pagePath(p) || (tier === 'free' && i === 0 && (hasForm || instant || entryForm))).length
+    : (hasForm || instant || entryForm ? pageCount : 0);
 
   return {
     known: leads.length > 0 || pages.length > 0,
     pages: pageCount, httpOk, pagesWithPath,
-    inlineForm, formViaCta, hasForm, isProtected,
+    inlineForm, formViaCta, hasForm, isProtected, entryForm,
     whatsapp, telegram, otherMessenger, chat, instant,
   };
 }
@@ -2355,6 +2361,11 @@ function classifyCheck(name) {
 // One colour scale for scores, the same as Lighthouse: 90+ green, 50–89 orange, below 50 red
 const zoneOf = (v) => (v >= 90 ? 'good' : v >= 50 ? 'warn' : 'bad');
 
+// 'na' = not checked in this run (lead: a start form only, the contact step is not opened).
+// It is shown, but it is not an issue: no counts, no plan step, no severity.
+const isIssue = (c) => c.status !== 'good' && c.status !== 'na';
+const STATUS_ORDER = { bad: 0, warn: 1, grow: 2, na: 3, good: 4 };
+
 // Free = homepage, one locale, 5 checks. Skip checks that need other locales, the funnel crawl
 // or AI Visibility (locked in Free); keep problems first, then cover speed/seo/lead/sec.
 const FREE_CHECK_LIMIT = 5;
@@ -2375,9 +2386,8 @@ function pickFreeChecks(checks, lang) {
     if (picked.length >= FREE_CHECK_LIMIT) break;
     if (!picked.includes(c)) picked.push(c);
   }
-  const order = { bad: 0, warn: 1, grow: 2, good: 3 };
   return picked
-    .sort((a, b) => order[a.status] - order[b.status] || checks.indexOf(a) - checks.indexOf(b))
+    .sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || checks.indexOf(a) - checks.indexOf(b))
     .map((c) => ({ ...c, result: freeLocaleResult(c.result, lang) }));
 }
 
@@ -2568,10 +2578,10 @@ function renderReport(lang, tier = 'pro') {
     // Broken funnel pages: critical while the crawl found any (no scale or check pillar of its own)
     if (pKey === 'funnel') return Number(data.agent_browse?.pages_broken) > 0 ? 0 : 1;
     // No form, messenger or chat: the "Путь к заявке" block says critical, the plan must agree
-    if (pKey === 'lead' && leadPath.known && !leadPath.hasForm && !leadPath.instant) return 0;
+    if (pKey === 'lead' && leadPath.known && !leadPath.hasForm && !leadPath.instant && !leadPath.entryForm) return 0;
     // No form but a messenger or chat: the block says "needs attention" (older Java runs marked the check bad)
     if (pKey === 'lead' && leadPath.known && !leadPath.hasForm && leadPath.instant) return 1;
-    const issues = checks.filter((c) => c.pillar === pKey && c.status !== 'good');
+    const issues = checks.filter((c) => c.pillar === pKey && isIssue(c));
     if (issues.some((c) => c.status === 'bad')) return 0;
     if (issues.some((c) => c.status === 'warn')) return 1;
     const v = pillarScore[pKey];
@@ -2580,9 +2590,8 @@ function renderReport(lang, tier = 'pro') {
     return z === 'bad' ? 0 : z === 'warn' ? 1 : 2;
   };
 
-  // Sort checks: bad -> warn -> grow -> good
-  const order = { bad: 0, warn: 1, grow: 2, good: 3 };
-  checks.sort((a, b) => order[a.status] - order[b.status]);
+  // Sort checks: bad -> warn -> grow -> na -> good
+  checks.sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
 
   // Determine which check gets the anchor id for each pillar
   const pillarKeys = ['speed', 'seo', 'lead', 'sec', 'ai'];
@@ -2605,12 +2614,24 @@ function renderReport(lang, tier = 'pro') {
     }
   }
 
-  const stCls = (st) => (st === 'good' ? 'g' : st === 'bad' ? 'c' : st === 'grow' ? 'n' : 'w');
+  const stCls = (st) => (st === 'good' ? 'g' : st === 'bad' ? 'c' : st === 'grow' || st === 'na' ? 'n' : 'w');
+  // Filter key: 'na' is grey like a growth point but must not show under the "growth point" filter
+  const stKey = (st) => (st === 'na' ? 'na' : stCls(st));
   const stTxt = (st) => {
+    if (st === 'na') {
+      if (tier === 'free') return lang === 'ru' ? 'Не проверено в Free' : lang === 'he' ? 'לא נבדק ב-Free' : 'Not checked in Free';
+      return lang === 'ru' ? 'Не проверено' : lang === 'he' ? 'לא נבדק' : 'Not checked';
+    }
     if (lang === 'ru') return st === 'good' ? 'Отлично' : st === 'bad' ? 'Критично' : st === 'grow' ? 'Точка роста' : 'Требует внимания';
     if (lang === 'he') return st === 'good' ? 'מצוין' : st === 'bad' ? 'קריטי' : st === 'grow' ? 'הזדמנות לצמיחה' : 'דורש תשומת לב';
     return st === 'good' ? 'Excellent' : st === 'bad' ? 'Critical' : st === 'grow' ? 'Growth opportunity' : 'Needs attention';
   };
+  // Free says outright what it did not check and where the full check is (product decision, AUD-231)
+  const naFreeNote = lang === 'ru'
+    ? 'В Free аудит не отправляет форму и не открывает шаг регистрации, поэтому защита этого шага не проверена. Полная проверка пути к заявке — в Diagnostic и Pro.'
+    : lang === 'he'
+    ? 'ב-Free הביקורת לא שולחת את הטופס ולא פותחת את שלב ההרשמה, ולכן ההגנה בשלב הזה לא נבדקה. בדיקה מלאה של נתיב הפנייה — ב-Diagnostic וב-Pro.'
+    : 'In Free the audit does not submit the form or open the sign-up step, so that step\'s protection is not checked. The full lead path check is in Diagnostic and Pro.';
   const lblRes = lang === 'ru' ? 'Результат проверки' : lang === 'he' ? 'תוצאת בדיקה' : 'Check result';
   const lblRec = lang === 'ru' ? 'Рекомендация' : lang === 'he' ? 'המלצה' : 'Recommendation';
   const planLinkText = lang === 'ru' ? 'Смотреть решение с кодом в плане действий ↓'
@@ -2630,7 +2651,7 @@ function renderReport(lang, tier = 'pro') {
           targetActionId = 'action-speed-cwv';
         }
         let actionLink = '';
-        if (c.status !== 'good') {
+        if (isIssue(c)) {
           if (tier === 'free') {
             // Free sells in one place (#tiers); only the open Step 1 gets a link from the checklist
             if (c.pillar === freeOpenPillar) {
@@ -2640,12 +2661,12 @@ function renderReport(lang, tier = 'pro') {
             actionLink = `<a href="#${targetActionId}" class="check-action-link">${planLinkText}</a>`;
           }
         }
-        return `      <details class="check" name="audit-checklist" data-s="${stCls(c.status)}" data-pillar="${c.pillar}"${c.anchorId ? ` id="${c.anchorId}"` : ''}><summary><span class="st ${stCls(c.status)}">${stTxt(c.status)}</span><span class="nm">${esc(c.name)}</span><span class="chev">⌄</span></summary>
+        return `      <details class="check" name="audit-checklist" data-s="${stKey(c.status)}" data-pillar="${c.pillar}"${c.anchorId ? ` id="${c.anchorId}"` : ''}><summary><span class="st ${stCls(c.status)}">${stTxt(c.status)}</span><span class="nm">${esc(c.name)}</span><span class="chev">⌄</span></summary>
         <div class="body">
           <div class="res"><b>${lblRes}</b>${esc(c.result)}</div>
           <div class="rec">
             <div class="rec-title-row"><b>${lblRec}</b>${tier === 'free' ? '' : copyBtn}</div>
-            <p>${esc(c.rec)}</p>
+            <p>${esc(c.rec)}</p>${c.status === 'na' && tier === 'free' ? `\n            <p>${esc(naFreeNote)}</p>` : ''}
             ${actionLink}
           </div>
         </div></details>`;
@@ -2742,12 +2763,11 @@ ${bulletsHtml}
       : lang === 'he' ? 'פירוט לכל אחד מ-7 הקריטריונים ו-Agent Readiness L1 — ב-Pro'
       : 'Breakdown of each of the 7 criteria and Agent Readiness L1 is in Pro';
     const aiTagTxt = lang === 'ru' ? 'Приоритет 2026' : lang === 'he' ? 'עדיפות 2026' : 'Priority 2026';
-    const rank = { bad: 0, warn: 1, grow: 2, good: 3 };
     const cards = ['ai', 'speed', 'seo', 'lead', 'sec', 'a11y'].map((p) => {
       const list = diagChecks.filter((c) => c.pillar === p);
       if (!list.length) return '';
-      const worst = list.slice().sort((a, b) => rank[a.status] - rank[b.status])[0].status;
-      const counts = ['bad', 'warn', 'grow', 'good']
+      const worst = list.slice().sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status])[0].status;
+      const counts = ['bad', 'warn', 'grow', 'na', 'good']
         .map((st) => [st, list.filter((c) => c.status === st).length])
         .filter(([, n]) => n)
         .map(([st, n]) => `<span class="sum-n ${stCls(st)}">${stTxt(st)} · ${n}</span>`)
@@ -2874,7 +2894,7 @@ ${cards}
         : 'Scale details are in Diagnostic and Pro';
       return `<a href="#tiers" class="badge lock" title="${lockTitle}">${lockTxt}</a>`;
     }
-    const issues = checks.filter((c) => c.pillar === pKey && c.status !== 'good');
+    const issues = checks.filter((c) => c.pillar === pKey && isIssue(c));
     const hasBad = issues.some((c) => c.status === 'bad');
     const count = issues.length;
 
@@ -3283,7 +3303,8 @@ ${cards}
   // the step's title drops it (Turnstile next to "anti-spam OK"). Without a form the lead step
   // becomes "add a lead form" instead of disappearing (AUD-226: lead 45, check failing, no step).
   const missingHeaders = data.infrastructure_and_security?.security_headers_missing;
-  const leadNoForm = leadPath.known && !leadPath.hasForm;
+  // A start form is a path to the contact step: no "add a lead form" step (AUD-231)
+  const leadNoForm = leadPath.known && !leadPath.hasForm && !leadPath.entryForm;
   // SEO step names the real cause, or is dropped when the data shows none (AUD-229)
   const seoCauses = seoCausesFromData(data);
   const seoPick = !seoCauses ? null
@@ -3314,7 +3335,7 @@ ${cards}
   diagnosticPillars.forEach((pKey) => {
     if (!actions.some((a) => a.pillarKey === pKey)) {
       const pillarChecks = checks.filter((c) => c.pillar === pKey);
-      const issues = pillarChecks.filter((c) => c.status !== 'good');
+      const issues = pillarChecks.filter(isIssue);
       const scaleWeak = pillarScore[pKey] != null && zoneOf(pillarScore[pKey]) !== 'good';
       if ((issues.length > 0 || scaleWeak) && !contradicted[pKey]) {
         const solKey = pKey === 'lead' && leadNoForm ? 'lead_form'
@@ -3694,6 +3715,7 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
     const pills = [];
     if (lp.inlineForm) pills.push(pill(true, T('Форма на странице', 'On-page form', 'טופס בעמוד')));
     if (lp.formViaCta) pills.push(pill(true, T('Форма по кнопке', 'Form on button click', 'טופס בלחיצה על כפתור')));
+    if (lp.entryForm) pills.push(pill(true, T('Форма запуска → регистрация', 'Start form → sign-up', 'טופס הפעלה ← הרשמה')));
     if (lp.whatsapp) pills.push(pill(true, 'WhatsApp'));
     if (lp.telegram) pills.push(pill(true, 'Telegram'));
     if (lp.otherMessenger) pills.push(pill(true, T('Мессенджер', 'Messenger', 'מסנג׳ר')));
@@ -3703,7 +3725,8 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
     const mark = (txt, st) => `<span${st === 'ok' ? '' : ` style="color:var(--${st === 'bad' ? 'bad' : 'warn'})"`}${lang === 'he' ? ' dir="ltr"' : ''}>${esc(txt)}</span>`;
     const ratioSt = (n, d) => (d === 0 || n === d ? 'ok' : n === 0 ? 'bad' : 'warn');
     const none = T('нет', 'none', 'אין');
-    const spam = !lp.hasForm ? ['—', 'ok'] : lp.isProtected ? ['OK', 'ok'] : [none, 'warn'];
+    const notChecked = tier === 'free' ? T('не проверено в Free', 'not checked in Free', 'לא נבדק ב-Free') : T('не проверено', 'not checked', 'לא נבדק');
+    const spam = lp.entryForm ? [notChecked, 'warn'] : !lp.hasForm ? ['—', 'ok'] : lp.isProtected ? ['OK', 'ok'] : [none, 'warn'];
     const steps = [
       [T('HTTP 200 и отсутствие soft-404', 'HTTP 200, no soft-404', 'HTTP 200 וללא soft-404'), mark(`${lp.httpOk}/${lp.pages}`, ratioSt(lp.httpOk, lp.pages))],
       [T('CTA или форма на странице', 'CTA or form on page', 'CTA או טופס בעמוד'), mark(`${lp.pagesWithPath}/${lp.pages}`, ratioSt(lp.pagesWithPath, lp.pages))],
@@ -3722,6 +3745,15 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
       flowVerdict = T('Вердикт: страницу не удалось проверить — данных о формах и мессенджерах нет.',
         'Verdict: the page could not be checked — there is no data on forms and messengers.',
         'פסק דין: לא ניתן היה לבדוק את העמוד — אין נתונים על טפסים ומסנג׳רים.');
+    } else if (lp.entryForm && !lp.instant) {
+      badge = `<span class="badge warn">${tier === 'free' ? T('Не проверено в Free', 'Not checked in Free', 'לא נבדק ב-Free') : T('Не проверено', 'Not checked', 'לא נבדק')}</span>`;
+      flowVerdict = tier === 'free'
+        ? T(`Вердикт: ${scopeTxt} есть форма запуска (поле адреса сайта), контакт запрашивается на следующем шаге — регистрации или входе. Free не отправляет форму и не открывает этот шаг, поэтому его защита от ботов не проверена. Полная проверка пути к заявке — в Diagnostic и Pro.`,
+          `Verdict: ${scopeTxt} there is a start form (site address field); the contact is asked on the next step — sign-up or sign-in. Free does not submit the form or open that step, so its bot protection is not checked. The full lead path check is in Diagnostic and Pro.`,
+          `פסק דין: ${scopeTxt} יש טופס הפעלה (שדה כתובת אתר); פרטי הקשר נדרשים בשלב הבא — הרשמה או התחברות. Free לא שולח את הטופס ולא פותח את השלב הזה, ולכן ההגנה שלו מבוטים לא נבדקה. בדיקה מלאה של נתיב הפנייה — ב-Diagnostic וב-Pro.`)
+        : T(`Вердикт: ${scopeTxt} есть форма запуска (поле адреса сайта), контакт запрашивается на следующем шаге — регистрации или входе. Аудит не отправляет форму, поэтому защита этого шага от ботов не проверена.`,
+          `Verdict: ${scopeTxt} there is a start form (site address field); the contact is asked on the next step — sign-up or sign-in. The audit does not submit the form, so that step's bot protection is not checked.`,
+          `פסק דין: ${scopeTxt} יש טופס הפעלה (שדה כתובת אתר); פרטי הקשר נדרשים בשלב הבא — הרשמה או התחברות. הביקורת לא שולחת את הטופס, ולכן ההגנה של השלב הזה מבוטים לא נבדקה.`);
     } else if (!lp.hasForm && !lp.instant) {
       badge = `<span class="badge crit">${T('Критично', 'Critical', 'קריטי')}</span>`;
       flowVerdict = T(`Вердикт: ${scopeTxt} заявку оставить нельзя — нет ни формы, ни мессенджера, ни чата.`,
@@ -3731,6 +3763,10 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
       badge = `<span class="badge warn">${T('Требует внимания', 'Needs attention', 'דורש תשומת לב')}</span>`;
       const gap = lp.pagesWithPath < lp.pages
         ? T(`путь к заявке есть на ${lp.pagesWithPath} из ${lp.pages} страниц`, `a lead path exists on ${lp.pagesWithPath} of ${lp.pages} pages`, `נתיב לפנייה קיים ב-${lp.pagesWithPath} מתוך ${lp.pages} עמודים`)
+        : lp.entryForm
+          ? (tier === 'free'
+            ? T('форма запуска ведёт к регистрации, защита этого шага не проверена в Free (полная проверка — в Diagnostic и Pro)', 'the start form leads to sign-up; that step\'s protection is not checked in Free (the full check is in Diagnostic and Pro)', 'טופס ההפעלה מוביל להרשמה; ההגנה בשלב הזה לא נבדקה ב-Free (בדיקה מלאה — ב-Diagnostic וב-Pro)')
+            : T('форма запуска ведёт к регистрации, защита этого шага не проверена', 'the start form leads to sign-up; that step\'s protection is not checked', 'טופס ההפעלה מוביל להרשמה; ההגנה בשלב הזה לא נבדקה'))
         : !lp.hasForm
           ? T('формы нет, заявку принимают только мессенджеры или чат', 'there is no form; only messengers or chat take leads', 'אין טופס; פניות מתקבלות רק במסנג׳ר או בצ׳אט')
           : T('форма есть, но нет мгновенного канала (мессенджер или чат)', 'there is a form but no instant channel (messenger or chat)', 'יש טופס, אבל אין ערוץ מיידי (מסנג׳ר או צ׳אט)');

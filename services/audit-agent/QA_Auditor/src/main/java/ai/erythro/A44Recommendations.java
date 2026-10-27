@@ -189,6 +189,18 @@ final class A44Recommendations {
     }
 
     private static String lead(String status, String lang, String variant) {
+        if ("entry".equals(variant)) {
+            return ReportFindingsCatalog.tr(lang,
+                    "Форма запуска ведёт посетителя к шагу, где он оставляет контакт (регистрация или вход). Защищать от ботов нужно этот шаг: "
+                            + "Cloudflare Turnstile, reCAPTCHA или вход через Google / Apple.\n\n"
+                            + "Убедитесь, что сервис не запускается до этого шага — иначе боты тратят ваши ресурсы без регистрации.",
+                    "The start form leads the visitor to the step where they leave a contact (sign-up or sign-in). That step is the one to protect from bots: "
+                            + "Cloudflare Turnstile, reCAPTCHA or Google / Apple sign-in.\n\n"
+                            + "Make sure the service does not run before that step, or bots spend your resources without signing up.",
+                    "טופס ההפעלה מוביל את המבקר לשלב שבו הוא משאיר פרטי קשר (הרשמה או התחברות). את השלב הזה צריך להגן מבוטים: "
+                            + "Cloudflare Turnstile, ‏reCAPTCHA או התחברות עם Google / Apple.\n\n"
+                            + "ודאו שהשירות לא מופעל לפני השלב הזה — אחרת בוטים מנצלים את המשאבים שלכם בלי להירשם.");
+        }
         if ("good".equals(status)) {
             return ReportFindingsCatalog.tr(lang,
                     "Лид-захват в норме: форма, антиспам и мгновенный канал на месте.\n\n"

@@ -78,7 +78,9 @@ public final class ReportFindingsCatalog {
             boolean aiVercelApplies,
             boolean aiContentSignalsOk,
             boolean aiMarkdownNegOk,
-            boolean aiSitemapAgentOk
+            boolean aiSitemapAgentOk,
+            // Only a "check your site" start form: the contact step was not opened (AUD-231)
+            boolean entryFormOnly
     ) {}
 
     public static List<BizFinding> buildAll(Context ctx, String reportLang) {
@@ -172,7 +174,7 @@ public final class ReportFindingsCatalog {
                             "Cloudflare Turnstile וסינון AI של Erythro.ai לפני CRM.")));
         }
         // A messenger link or chat widget is a working lead path: "visitor cannot leave a lead" would be false
-        if (!ctx.hasForms && !ctx.hasInstantChannel) {
+        if (!ctx.hasForms && !ctx.hasInstantChannel && !ctx.entryFormOnly) {
             findings.add(new BizFinding(99,
                     tr(lang, "На сайте нет формы захвата заявок",
                             "No lead capture form on the site",
@@ -580,7 +582,7 @@ public final class ReportFindingsCatalog {
                             "Fix routes, redirects and agent regression on key pages by Erythro.ai.",
                             "תיקון נתיבים, רידיירקטים וסריקת אגנט לעמודים מרכזיים מ-Erythro.ai.")));
         }
-        if (ctx.agentVisited > 1 && ctx.agentCtaInner == 0 && !ctx.hasForms) {
+        if (ctx.agentVisited > 1 && ctx.agentCtaInner == 0 && !ctx.hasForms && !ctx.entryFormOnly) {
             findings.add(new BizFinding(70,
                     tr(lang, "На внутренних страницах нет пути к заявке",
                             "Inner pages lack a path to submit a lead",

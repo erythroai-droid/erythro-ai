@@ -112,7 +112,26 @@ public class AuditCollector {
                     'input:not([type="hidden"]):not([type="submit"]):not([type="button"]), textarea').length;
                 return !!marked && textFields <= 2;
             };
-            const forms = Array.from(document.querySelectorAll('form')).filter(f => !isSearchForm(f));
+            // A "check your site" form (one visible URL field + submit) starts the funnel: the contact is
+            // asked on the next step (sign-up), so it is neither a lead form nor one without anti-spam (AUD-231)
+            const isEntryForm = (form) => {
+                if (form.querySelector('input[type="password"], input[type="email"], input[type="tel"], textarea, select')) return false;
+                const visible = Array.from(form.querySelectorAll(
+                    'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"])'))
+                    .filter(f => {
+                        const r = f.getBoundingClientRect();
+                        const st = getComputedStyle(f);
+                        return r.width > 0 && r.height > 0 && st.display !== 'none' && st.visibility !== 'hidden';
+                    });
+                if (visible.length !== 1) return false;
+                const bag = attrBag(visible[0]);
+                if (/mail|phone|почт|телефон|טלפון/.test(bag)) return false;
+                return (visible[0].getAttribute('type') || '').toLowerCase() === 'url'
+                    || /url|site|domain|сайт|домен|אתר|https?:|www[.]/.test(bag);
+            };
+            const allForms = Array.from(document.querySelectorAll('form')).filter(f => !isSearchForm(f));
+            const entryFormsCount = allForms.filter(isEntryForm).length;
+            const forms = allForms.filter(f => !isEntryForm(f));
             let hasHiddenTrap = false;
             const formDetails = forms.map(form => {
                 const fields = Array.from(form.querySelectorAll('input, textarea, select'));
@@ -229,6 +248,7 @@ public class AuditCollector {
             return {
                 lead_capture: {
                     formsCount: forms.length,
+                    entryFormsCount: entryFormsCount,
                     forms: formDetails,
                     antiSpam: { isProtected: providers.length > 0, providers: providers },
                     hasChatWidget: hasChatWidget,
@@ -311,8 +331,14 @@ public class AuditCollector {
             const allScriptText = inlineScripts + ' ' + externalScripts;
 
             const dataLayerPresent = typeof window.dataLayer !== 'undefined' || inlineScripts.includes('dataLayer');
-            const gtagConsentStub = (inlineScripts.includes('consent') || inlineScripts.includes('Consent'))
-                && (inlineScripts.includes('gtag') || inlineScripts.includes('dataLayer'));
+            // A bundled app sets consent from its JS, not an inline script (AUD-231: Vite SPA got
+            // "consent stub incomplete"), so the dataLayer entry gtag('consent', 'default', …) counts too
+            const consentDefaultQueued = Array.isArray(window.dataLayer) && window.dataLayer.some(e => {
+                try { const a = Array.from(e || []); return a[0] === 'consent' && a[1] === 'default'; } catch (_) { return false; }
+            });
+            const gtagConsentStub = consentDefaultQueued
+                || ((inlineScripts.includes('consent') || inlineScripts.includes('Consent'))
+                && (inlineScripts.includes('gtag') || inlineScripts.includes('dataLayer')));
             const ga4IdPresent = /G-[A-Z0-9]+/.test(allScriptText)
                 || allScriptText.includes('googletagmanager.com/gtag/js');
 
@@ -2045,6 +2071,9 @@ public class AuditCollector {
             }
             if (Boolean.TRUE.equals(funnelLead.get("instant"))) instantChannel = true;
             int effectiveForms = formsCount + (formsOnFunnelOnly ? (int) funnelLead.get("forms") : 0);
+            // Only a "check your site" form: the contact and its anti-spam sit on the next step,
+            // which the audit does not open, so the check is "not checked", not "no form" (AUD-231)
+            boolean entryOnly = effectiveForms == 0 && asLong(lead.get("entryFormsCount"), 0) > 0;
 
             StringBuilder leadDetail = new StringBuilder();
             int homeForms = (int) funnelLead.get("homeForms");
@@ -2067,6 +2096,11 @@ public class AuditCollector {
                         "No form on the homepage; lead forms on funnel pages: ",
                         "אין טופס בעמוד הבית; טפסי ליד בדפי המשפך: "))
                         .append(String.join(", ", funnelPages));
+            } else if (entryOnly) {
+                leadDetail.append(ReportFindingsCatalog.tr(i18n.lang,
+                        "Форма запуска на главной (поле адреса сайта) — вход в воронку, контакт запрашивается на следующем шаге (регистрация или вход)",
+                        "Homepage start form (site address field) is the funnel entry; the contact is asked on the next step (sign-up or sign-in)",
+                        "טופס הפעלה בעמוד הבית (שדה כתובת אתר) — כניסה למשפך; פרטי הקשר נדרשים בשלב הבא (הרשמה או התחברות)"));
             } else if (formsCount == 0) {
                 leadDetail.append(ReportFindingsCatalog.tr(i18n.lang, "Формы не найдены", "No forms found", "לא נמצאו טפסים"));
             } else {
@@ -2082,7 +2116,10 @@ public class AuditCollector {
                         .append(yesNo(hasSubmit, i18n));
             }
             leadDetail.append(ReportFindingsCatalog.tr(i18n.lang, ". Антиспам: ", ". Anti-spam: ", ". אנטי-ספאם: "))
-                    .append(isProtected
+                    .append(entryOnly
+                            ? ReportFindingsCatalog.tr(i18n.lang, "не проверен — он нужен на шаге с контактом",
+                            "not checked — it belongs on the contact step", "לא נבדק — הוא נדרש בשלב פרטי הקשר")
+                            : isProtected
                             ? (formsOnFunnelOnly
                             ? ReportFindingsCatalog.tr(i18n.lang, "есть на страницах с формами", "present on the form pages", "קיים בדפים עם טפסים")
                             : String.join(", ", providers))
@@ -2104,10 +2141,13 @@ public class AuditCollector {
 
             // No form but a messenger or chat still takes leads: needs attention, not critical
             // (matches the "Lead path" block and ReportFindingsCatalog, AUD-226)
-            String leadStatus = formsOk && isProtected ? "good"
+            String leadStatus = entryOnly ? "na"
+                    : formsOk && isProtected ? "good"
                     : effectiveForms == 0 ? (instantChannel ? "warn" : "bad")
                     : (isProtected ? "warn" : "bad");
-            String leadLabel = "good".equals(leadStatus) ? i18n.statusWorks
+            String leadLabel = "na".equals(leadStatus)
+                    ? ReportFindingsCatalog.tr(i18n.lang, "Не проверено", "Not checked", "לא נבדק")
+                    : "good".equals(leadStatus) ? i18n.statusWorks
                     : "warn".equals(leadStatus) ? i18n.statusNeedsAttention : i18n.statusCritical;
             Map<String, String> leadRow = ReportTemplateGenerator.checkRow(
                     i18n.checkLead,
@@ -2117,7 +2157,8 @@ public class AuditCollector {
                     "lead"
             );
             // Picks the recommendation text: one case, not "if no form … / if a form …"
-            leadRow.put("rec_variant", effectiveForms == 0 ? "no_form" : (isProtected ? "form_fields" : "unprotected"));
+            leadRow.put("rec_variant", entryOnly ? "entry"
+                    : effectiveForms == 0 ? "no_form" : (isProtected ? "form_fields" : "unprotected"));
             checkRows.add(leadRow);
         }
         appendAiVisibilityCheckRows(checkRows, aiVisibility, infra, i18n);
@@ -2375,11 +2416,12 @@ public class AuditCollector {
                 i18n.checkGa4,
                 gaOk
                         ? ReportFindingsCatalog.tr(i18n.lang,
-                        "dataLayer + consent stub в head (GA4 "
+                        // The stub may come from an app bundle, not <head> (AUD-231), so no "in head" claim
+                        "dataLayer + consent stub (Consent Mode default) (GA4 "
                                 + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID найден" : "stub only") + ")",
-                        "dataLayer + consent stub in head (GA4 "
+                        "dataLayer + consent stub (Consent Mode default) (GA4 "
                                 + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID found" : "stub only") + ")",
-                        "dataLayer + consent stub ב-head (GA4 "
+                        "dataLayer + consent stub (Consent Mode default) (GA4 "
                                 + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID נמצא" : "stub only") + ")")
                         : dataLayer
                                 ? ReportFindingsCatalog.tr(i18n.lang,
@@ -2556,6 +2598,8 @@ public class AuditCollector {
             isProtected = Boolean.TRUE.equals(funnelLead.get("allProtected"));
         }
         if (Boolean.TRUE.equals(funnelLead.get("instant"))) hasInstantChannel = true;
+        // A start form leads to the contact step: a path, but its contact field and anti-spam are unknown
+        boolean entryFormOnly = !hasForms && lead != null && asLong(lead.get("entryFormsCount"), 0) > 0;
 
         int mobilePerformance = mobileScores != null && mobileScores.containsKey("performance")
                 ? ((Number) mobileScores.get("performance")).intValue()
@@ -2567,9 +2611,9 @@ public class AuditCollector {
         speedScore = clamp(speedScore, 10, 100);
 
         int leadScore = 35;
-        if (hasForms) leadScore += 25;
+        if (hasForms || entryFormOnly) leadScore += 25;
         if (hasContactField) leadScore += 10;
-        if (hasSubmit) leadScore += 5;
+        if (hasSubmit || entryFormOnly) leadScore += 5;
         // reCAPTCHA on a page with no form protects nothing (AUD-221 got +15 for zero forms)
         if (isProtected && hasForms) leadScore += 15;
         if (hasInstantChannel) leadScore += 10;
@@ -2746,7 +2790,8 @@ public class AuditCollector {
                 aiVercelApplies,
                 aiContentSignalsOk,
                 aiMarkdownNegOk,
-                aiSitemapAgentOk
+                aiSitemapAgentOk,
+                entryFormOnly
         );
 
         List<ReportFindingsCatalog.BizFinding> bizFindings = ReportFindingsCatalog.buildAll(findingCtx, reportLang);
@@ -4535,7 +4580,7 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
     @SuppressWarnings("unchecked")
     private static Map<String, Object> aggregateLeadCapture(Map<String, Object> localeAudits) {
         Map<String, Object> aggregated = new LinkedHashMap<>();
-        long maxForms = 0;
+        long maxForms = 0, maxEntryForms = 0;
         boolean hasEmail = false, hasPhone = false, hasName = false, hasSubmit = false;
         boolean isProtected = false, hasChat = false, hasInstant = false, openedFromTrigger = false;
         Set<String> providers = new LinkedHashSet<>();
@@ -4550,6 +4595,7 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
             found = true;
             Map<String, Object> lead = (Map<String, Object>) leadObj;
             maxForms = Math.max(maxForms, asLong(lead.get("formsCount"), 0));
+            maxEntryForms = Math.max(maxEntryForms, asLong(lead.get("entryFormsCount"), 0));
 
             for (Object formObj : (List<Object>) lead.getOrDefault("forms", List.of())) {
                 if (!(formObj instanceof Map)) continue;
@@ -4584,6 +4630,7 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
         if (!found) return null;
 
         aggregated.put("formsCount", maxForms);
+        aggregated.put("entryFormsCount", maxEntryForms);
         aggregated.put("hasEmailField", hasEmail);
         aggregated.put("hasPhoneField", hasPhone);
         aggregated.put("hasNameField", hasName);
