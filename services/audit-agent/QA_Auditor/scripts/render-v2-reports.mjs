@@ -3602,7 +3602,8 @@ ${P.stats.map(([b, t]) => `      <div class="stat"><b>${b}</b><span>${t}</span><
       sec = sec.replace(/(<div class="row"><h2>[^<]*<\/h2>)\s*<span class="badge [a-z]+">[^<]*<\/span>/, `$1${badge}`);
       sec = sec.replace(/<p class="sub">[\s\S]*?<\/p>/, `<p class="sub">${esc(flowVerdict)}</p>`);
       sec = sec.replace(/<div class="flow-in">[\s\S]*?<\/div>/, `<div class="flow-in">${pills.join('')}</div>`);
-      sec = sec.replace(/<div class="flow-steps">[\s\S]*?<\/div>\s*<\/div>/, `<div class="flow-steps">\n${stepsHtml}\n        </div>\n      </div>`);
+      // The match ends at the last step's </div> plus the flow-steps </div>; the column </div> stays
+      sec = sec.replace(/<div class="flow-steps">[\s\S]*?<\/div>\s*<\/div>/, `<div class="flow-steps">\n${stepsHtml}\n        </div>`);
       s = s.slice(0, secStart) + sec + s.slice(secEnd);
     }
   }
