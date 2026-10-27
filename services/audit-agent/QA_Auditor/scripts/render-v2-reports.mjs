@@ -288,7 +288,7 @@ POST https://<ה-webhook-שלכם>/lead
       desc: 'Установка обязательных HTTP-заголовков безопасности (HSTS, NoSniff, SameOrigin)',
       code: `# Ответ сервера на каждую страницу. Полную Content-Security-Policy
 # собирают под сайт: начните с запрета встраивания в чужие фреймы.
-Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+Strict-Transport-Security: max-age=63072000; includeSubDomains
 Content-Security-Policy: frame-ancestors 'self'
 X-Frame-Options: SAMEORIGIN
 X-Content-Type-Options: nosniff
@@ -299,7 +299,7 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()`
       desc: 'Configuring mandatory HTTP security headers (HSTS, NoSniff, SameOrigin)',
       code: `# Server response for every page. A full Content-Security-Policy is built
 # per site: start by blocking embedding in foreign frames.
-Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+Strict-Transport-Security: max-age=63072000; includeSubDomains
 Content-Security-Policy: frame-ancestors 'self'
 X-Frame-Options: SAMEORIGIN
 X-Content-Type-Options: nosniff
@@ -310,7 +310,7 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()`
       desc: 'הגדרת כותרות אבטחת HTTP חיוניות (HSTS, NoSniff, SameOrigin)',
       code: `# תשובת השרת לכל דף. Content-Security-Policy מלאה נבנית לפי האתר:
 # התחילו בחסימת הטמעה במסגרות זרות.
-Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+Strict-Transport-Security: max-age=63072000; includeSubDomains
 Content-Security-Policy: frame-ancestors 'self'
 X-Frame-Options: SAMEORIGIN
 X-Content-Type-Options: nosniff
