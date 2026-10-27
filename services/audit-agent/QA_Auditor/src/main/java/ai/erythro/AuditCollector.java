@@ -2319,7 +2319,8 @@ public class AuditCollector {
         if (hasForms) leadScore += 25;
         if (hasContactField) leadScore += 10;
         if (hasSubmit) leadScore += 5;
-        if (isProtected) leadScore += 15;
+        // reCAPTCHA on a page with no form protects nothing (AUD-221 got +15 for zero forms)
+        if (isProtected && hasForms) leadScore += 15;
         if (hasInstantChannel) leadScore += 10;
         // Broken JS blocks submit handlers, so runtime failures hit lead capture directly
         if (!uncaughtErrors.isEmpty()) leadScore -= 10;

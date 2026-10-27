@@ -2818,8 +2818,9 @@ ${cards}
       // only Step 1 is open in the plan; other scales lead to their summary card
       targetHref = pKey === freeOpenPillar ? `#action-${pKey}` : `#diag-${pKey}`;
     } else if (tier === 'free') {
-      if (pKey === 'speed') {
-        targetHref = '#action-speed';
+      // Only Step 1 has an anchor in Free; '#action-speed' was hardcoded and dead when Step 1 was not speed
+      if (pKey === freeOpenPillar) {
+        targetHref = `#action-${pKey}`;
       } else {
         const rc = renderedChecks.find((c) => c.pillar === pKey);
         targetHref = rc && rc.anchorId ? `#${rc.anchorId}` : '#locked-checks';
@@ -3169,8 +3170,9 @@ ${cards}
   });
 
   // 2. Ensure all diagnostic pillars with issues or solutions are represented with distinct strategic tasks
-  // A filler step needs evidence: a failing check, or (no checks for the pillar) a scale outside the
-  // green zone. Data that contradicts the step's title drops it (Turnstile next to "anti-spam OK").
+  // A filler step needs evidence: a failing check or a scale outside the green zone (passing checks
+  // do not cancel a weak scale: AUD-221 had overflow OK but mobile LCP 17.3s). Data that contradicts
+  // the step's title drops it (Turnstile next to "anti-spam OK").
   const missingHeaders = data.infrastructure_and_security?.security_headers_missing;
   const contradicted = {
     lead: leadPath.isProtected || !leadPath.hasForm,
@@ -3181,7 +3183,7 @@ ${cards}
     if (!actions.some((a) => a.pillarKey === pKey)) {
       const pillarChecks = checks.filter((c) => c.pillar === pKey);
       const issues = pillarChecks.filter((c) => c.status !== 'good');
-      const scaleWeak = pillarChecks.length === 0 && pillarScore[pKey] != null && zoneOf(pillarScore[pKey]) !== 'good';
+      const scaleWeak = pillarScore[pKey] != null && zoneOf(pillarScore[pKey]) !== 'good';
       if ((issues.length > 0 || scaleWeak) && !contradicted[pKey]) {
         const sol = ACTION_CODE_SOLUTIONS[pKey];
         const solDesc = sol ? (sol[lang] || sol.ru).desc : '';

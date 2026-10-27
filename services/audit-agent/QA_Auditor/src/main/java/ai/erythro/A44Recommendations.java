@@ -170,13 +170,14 @@ final class A44Recommendations {
                     "לכידת לידים תקינה: טופס, אנטי-ספאם וערוץ מיידי במקום.\n\n"
                             + "אל תסירו honeypot, Turnstile/reCAPTCHA או wa.me (או צ'אט) בריליס הבא — הספאם עולה ולידים מהמובייל נעלמים.");
         }
+        // Status "bad" covers both "no form" and "form without anti-spam": the text must fit either
         return ReportFindingsCatalog.tr(lang,
-                "Подключите Cloudflare Turnstile и AI-фильтрацию заявок Erythro.ai до попадания лида в CRM.\n\n"
-                        + "Добавьте honeypot-поле и кнопку wa.me на ключевых страницах воронки, если нет чата или мессенджера.",
-                "Add Cloudflare Turnstile and Erythro.ai AI lead filtering before CRM.\n\n"
-                        + "Add a honeypot field and a wa.me button on key funnel pages if there is no chat or messenger.",
-                "חברו Cloudflare Turnstile וסינון AI של Erythro.ai לפני CRM.\n\n"
-                        + "הוסיפו honeypot וכפתור wa.me בדפי משפך מרכזיים אם אין צ'אט או מסנג'ר.");
+                "Если формы нет — добавьте короткую лид-форму (имя, телефон, отправка) и кнопку wa.me или чат.\n\n"
+                        + "Если форма есть — защитите её Cloudflare Turnstile или honeypot и подключите AI-фильтрацию заявок Erythro.ai до CRM.",
+                "No form: add a short lead form (name, phone, submit) and a wa.me button or chat.\n\n"
+                        + "Form in place: protect it with Cloudflare Turnstile or a honeypot and add Erythro.ai AI lead filtering before CRM.",
+                "אין טופס — הוסיפו טופס ליד קצר (שם, טלפון, שליחה) וכפתור wa.me או צ'אט.\n\n"
+                        + "יש טופס — הגנו עליו עם Cloudflare Turnstile או honeypot וחברו סינון AI של Erythro.ai לפני CRM.");
     }
 
     private static String llms(String status, String lang) {
