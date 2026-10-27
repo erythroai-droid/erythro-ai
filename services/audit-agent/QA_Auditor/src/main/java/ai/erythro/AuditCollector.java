@@ -137,6 +137,8 @@ public class AuditCollector {
             if (markup.includes('turnstile') || typeof window.turnstile !== 'undefined') providers.push('Cloudflare Turnstile');
             if (markup.includes('hcaptcha') || typeof window.hcaptcha !== 'undefined') providers.push('hCaptcha');
             if (hasHiddenTrap) providers.push('Honeypot');
+            // Built-in image CAPTCHA (OpenCart, Bitrix, Joomla): a "captcha" field inside a form
+            if (forms.some(form => form.querySelector('input[name*="captcha" i], img[src*="captcha" i]'))) providers.push('Image CAPTCHA');
 
             const chatSelectors = [
                 'iframe[src*="tawk"]', 'iframe[src*="crisp"]', 'iframe[src*="intercom"]',
@@ -603,7 +605,9 @@ public class AuditCollector {
             const leadFormsProtected = leadForms.length > 0 && (pageMarkup.includes('recaptcha')
                 || pageMarkup.includes('turnstile') || pageMarkup.includes('hcaptcha')
                 || typeof window.grecaptcha !== 'undefined' || typeof window.turnstile !== 'undefined'
-                || leadForms.some(form => form.querySelector('input[name*="honeypot" i], input[name="_gotcha"]')));
+                || leadForms.some(form => form.querySelector('input[name*="honeypot" i], input[name="_gotcha"]'))
+                // Built-in image CAPTCHA (OpenCart, Bitrix, Joomla): a "captcha" field in the form
+                || leadForms.some(form => form.querySelector('input[name*="captcha" i], img[src*="captcha" i]')));
             const text = (document.body ? document.body.innerText : '') || '';
             const words = text.split(/\\s+/).filter(Boolean).length;
             const ctaRe = /(contact|связ|контакт|обсуд|начать|צור|קשר|whatsapp|wa\\.me|telegram|заявк|order|book|הזמנ|оставьте|let'?s talk|get started|start now|discuss)/i;
@@ -2673,7 +2677,10 @@ public class AuditCollector {
         ReportFindingsCatalog.Context findingCtx = new ReportFindingsCatalog.Context(
                 hasForms,
                 isProtected,
-                asLong(lead != null ? lead.get("formsCount") : null, 0),
+                // Forms the finding talks about: homepage ones, else the funnel's lead forms ("0 forms" was wrong)
+                asLong(lead != null ? lead.get("formsCount") : null, 0) > 0
+                        ? asLong(lead.get("formsCount"), 0)
+                        : (int) funnelLead.get("forms"),
                 hasOverflow,
                 overflowPx,
                 overflowSelector,
@@ -3614,7 +3621,7 @@ public class AuditCollector {
                 if (anti instanceof Map<?, ?> antiMap && antiMap.get("providers") instanceof List<?> providers) {
                     for (Object p : providers) {
                         String name = String.valueOf(p);
-                        if ("Honeypot".equalsIgnoreCase(name)) continue;
+                        if ("Honeypot".equalsIgnoreCase(name) || "Image CAPTCHA".equalsIgnoreCase(name)) continue;
                         if (!name.isBlank()) out.add(name);
                     }
                 }
