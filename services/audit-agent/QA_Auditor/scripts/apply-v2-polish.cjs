@@ -775,7 +775,8 @@ ${R}.top3 .t3 .t3-rows { grid-column: 1 / -1; grid-row: 2; margin-top: 0; }
   /* keep the one-line footer on the last content page instead of a page of its own */
   ${R}.foot { padding-top: 0 !important; margin-top: -24px !important; font-size: 11px !important; break-before: avoid !important; page-break-before: avoid !important; }
   /* advisory disclaimer sits right above the footer: its bottom margin absorbs the footer's -24px */
-  ${R}.report-disclaimer { margin: 8px 0 32px !important; padding: 0 !important; font-size: 10.5px !important; break-inside: avoid; page-break-inside: avoid; }
+  /* compact: with the footer it must fit the last content page, not open a page of its own */
+  ${R}.report-disclaimer { margin: 4px 0 26px !important; padding: 0 !important; font-size: 9px !important; line-height: 1.4 !important; break-inside: avoid; page-break-inside: avoid; break-before: avoid; page-break-before: avoid; }
   ${R}.check, ${R}.check::before, ${R}.check .chev, ${R}.check::details-content, ${R}.action, ${R}.chip { transition: none !important; animation: none !important; }
   * { transition: none !important; animation: none !important; }
 }
