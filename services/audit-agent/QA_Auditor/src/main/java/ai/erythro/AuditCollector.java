@@ -2165,6 +2165,7 @@ public class AuditCollector {
             boolean hasSubmit = Boolean.TRUE.equals(lead.get("hasSubmitButton"));
             boolean formsOk = formsCount > 0 && hasSubmit && (hasEmail || hasPhone);
             boolean isProtected = Boolean.TRUE.equals(lead.get("isProtected"));
+            boolean homeProtected = isProtected;
             List<String> providers = (List<String>) lead.getOrDefault("providers", List.of());
             boolean instantChannel = Boolean.TRUE.equals(lead.get("hasInstantContactChannel"));
             boolean hasChat = Boolean.TRUE.equals(lead.get("hasChatWidget"));
@@ -2183,9 +2184,13 @@ public class AuditCollector {
             // Only a "check your site" form: the contact and its anti-spam sit on the next step.
             // Free does not open it ("not checked", AUD-231); Diagnostic/Pro submit the form once and
             // judge the step that opens (entry_step), "not checked" only when it was not recognised
-            boolean entryOnly = effectiveForms == 0 && asLong(lead.get("entryFormsCount"), 0) > 0;
-            Map<String, Object> entryStep = entryOnly ? entryStep(finalReport) : null;
-            String entryStatus = entryOnly ? entryStepStatus(entryStep, isProtected) : null;
+            boolean hasEntryForm = asLong(lead.get("entryFormsCount"), 0) > 0;
+            boolean entryOnly = effectiveForms == 0 && hasEntryForm;
+            // The step behind the start form is judged even when funnel pages have other lead forms:
+            // myblindspot.eu Pro hid its open sign-up behind the /whitepaper form
+            Map<String, Object> entryStep = hasEntryForm ? entryStep(finalReport) : null;
+            String entryStatus = entryOnly ? entryStepStatus(entryStep, isProtected)
+                    : entryStep != null ? entryStepStatus(entryStep, homeProtected) : null;
 
             StringBuilder leadDetail = new StringBuilder();
             int homeForms = (int) funnelLead.get("homeForms");
@@ -2203,7 +2208,12 @@ public class AuditCollector {
                             "; on funnel pages: ", "; בדפי המשפך: ")).append(String.join(", ", funnelPages));
                 }
             } else if (formsOnFunnelOnly) {
-                leadDetail.append(ReportFindingsCatalog.tr(i18n.lang,
+                leadDetail.append(hasEntryForm
+                        ? ReportFindingsCatalog.tr(i18n.lang,
+                        "На главной лид-формы нет (только форма запуска); лид-формы на страницах воронки: ",
+                        "No lead form on the homepage (only the start form); lead forms on funnel pages: ",
+                        "אין טופס ליד בעמוד הבית (רק טופס ההפעלה); טפסי ליד בדפי המשפך: ")
+                        : ReportFindingsCatalog.tr(i18n.lang,
                         "На главной форм нет; лид-формы на страницах воронки: ",
                         "No form on the homepage; lead forms on funnel pages: ",
                         "אין טופס בעמוד הבית; טפסי ליד בדפי המשפך: "))
@@ -2230,7 +2240,7 @@ public class AuditCollector {
                         .append(yesNo(hasSubmit, i18n));
             }
             // The step detail already names its anti-spam
-            if (entryStep == null) leadDetail.append(ReportFindingsCatalog.tr(i18n.lang, ". Антиспам: ", ". Anti-spam: ", ". אנטי-ספאם: "))
+            if (!entryOnly || entryStep == null) leadDetail.append(ReportFindingsCatalog.tr(i18n.lang, ". Антиспам: ", ". Anti-spam: ", ". אנטי-ספאם: "))
                     .append(entryOnly
                             ? ReportFindingsCatalog.tr(i18n.lang, "не проверен — он нужен на шаге с контактом",
                             "not checked — it belongs on the contact step", "לא נבדק — הוא נדרש בשלב פרטי הקשר")
@@ -2239,6 +2249,9 @@ public class AuditCollector {
                             ? ReportFindingsCatalog.tr(i18n.lang, "есть на страницах с формами", "present on the form pages", "קיים בדפים עם טפסים")
                             : String.join(", ", providers))
                             : ReportFindingsCatalog.tr(i18n.lang, "не обнаружен", "not detected", "לא זוהה"));
+            if (!entryOnly && entryStep != null) {
+                leadDetail.append(". ").append(entryStepDetail(entryStep, providers, i18n.lang));
+            }
             if (instantChannel) {
                 leadDetail.append(hasChat
                         ? ReportFindingsCatalog.tr(i18n.lang,
@@ -2256,10 +2269,12 @@ public class AuditCollector {
 
             // No form but a messenger or chat still takes leads: needs attention, not critical
             // (matches the "Lead path" block and ReportFindingsCatalog, AUD-226)
-            String leadStatus = entryOnly ? entryStatus
-                    : formsOk && isProtected ? "good"
+            String formsStatus = formsOk && isProtected ? "good"
                     : effectiveForms == 0 ? (instantChannel ? "warn" : "bad")
                     : (isProtected ? "warn" : "bad");
+            // Lead forms and a start form together: the worse of the two decides
+            boolean entryWorse = !entryOnly && entryStatus != null && statusRank(entryStatus) > statusRank(formsStatus);
+            String leadStatus = entryOnly ? entryStatus : entryWorse ? entryStatus : formsStatus;
             String leadLabel = "na".equals(leadStatus)
                     ? ReportFindingsCatalog.tr(i18n.lang, "Не проверено", "Not checked", "לא נבדק")
                     : "good".equals(leadStatus) ? i18n.statusWorks
@@ -2272,7 +2287,7 @@ public class AuditCollector {
                     "lead"
             );
             // Picks the recommendation text: one case, not "if no form … / if a form …"
-            leadRow.put("rec_variant", entryOnly ? entryRecVariant(entryStep, entryStatus)
+            leadRow.put("rec_variant", entryOnly || entryWorse ? entryRecVariant(entryStep, entryStatus)
                     : effectiveForms == 0 ? "no_form" : (isProtected ? "form_fields" : "unprotected"));
             checkRows.add(leadRow);
         }
@@ -2717,6 +2732,10 @@ public class AuditCollector {
         boolean entryFormOnly = !hasForms && lead != null && asLong(lead.get("entryFormsCount"), 0) > 0;
         // Diagnostic/Pro opened that step: its contact field and anti-spam are known now
         Map<String, Object> entryStep = entryFormOnly ? entryStep(report) : null;
+        // Findings judge that step even next to other lead forms (myblindspot.eu Pro: /whitepaper hid the sign-up)
+        Map<String, Object> entryStepSeen = lead != null && asLong(lead.get("entryFormsCount"), 0) > 0
+                ? entryStep(report) : null;
+        boolean homeStartProtected = lead != null && Boolean.TRUE.equals(lead.get("isProtected"));
         boolean entryStepProtected = false;
         if (entryStepTakesContact(entryStep)) {
             hasContactField = true;
@@ -2914,8 +2933,8 @@ public class AuditCollector {
                 aiMarkdownNegOk,
                 aiSitemapAgentOk,
                 entryFormOnly,
-                entryStep == null ? null : String.valueOf(entryStep.get("kind")),
-                entryStepStatus(entryStep, isProtected)
+                entryStepSeen == null ? null : String.valueOf(entryStepSeen.get("kind")),
+                entryStepStatus(entryStepSeen, entryFormOnly ? isProtected : homeStartProtected)
         );
 
         List<ReportFindingsCatalog.BizFinding> bizFindings = ReportFindingsCatalog.buildAll(findingCtx, reportLang);
@@ -4000,6 +4019,11 @@ public class AuditCollector {
         if ("started".equals(kind)) return startFormProtected ? "warn" : "bad";
         if (Boolean.TRUE.equals(step.get("isProtected"))) return "good";
         return "contact".equals(kind) ? "bad" : "warn";
+    }
+
+    /** Check status severity: bad > warn > good; "na" (not checked) never outranks a judged status. */
+    static int statusRank(String status) {
+        return "bad".equals(status) ? 3 : "warn".equals(status) ? 2 : "good".equals(status) ? 1 : 0;
     }
 
     static String entryRecVariant(Map<String, Object> step, String status) {

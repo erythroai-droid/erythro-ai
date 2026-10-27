@@ -82,7 +82,8 @@ public final class ReportFindingsCatalog {
             // Only a "check your site" start form: the contact step was not opened (AUD-231)
             boolean entryFormOnly,
             // Diagnostic/Pro: what the start form opened (signup | signin | contact | oauth | started),
-            // null when it was not submitted or not recognised; its lead-check status (good | warn | bad | na)
+            // null when it was not submitted or not recognised; its lead-check status (good | warn | bad | na).
+            // Set even when funnel pages have other lead forms: both findings are reported
             String entryStepKind,
             String entryStepStatus
     ) {}
@@ -179,7 +180,7 @@ public final class ReportFindingsCatalog {
         }
         // Diagnostic/Pro submitted the "check your site" form and saw the step behind it (AUD-231 follow-up).
         // Titles keep "форм" / "lead" / "טופס" so the renderer files them under the lead pillar.
-        if (ctx.entryFormOnly && "started".equals(ctx.entryStepKind)) {
+        if ("started".equals(ctx.entryStepKind)) {
             findings.add(new BizFinding("bad".equals(ctx.entryStepStatus) ? 96 : 88,
                     tr(lang, "Форма запуска работает для ботов: сервис стартует без регистрации",
                             "The start form runs the service for bots: no sign-up, no lead",
@@ -199,7 +200,7 @@ public final class ReportFindingsCatalog {
                             "Erythro.ai ставит Cloudflare Turnstile на форму запуска и просит email до запуска (или вход через Google / Apple).",
                             "Erythro.ai adds Cloudflare Turnstile to the start form and asks for an email before the run (or Google / Apple sign-in).",
                             "Erythro.ai מוסיף Cloudflare Turnstile לטופס ההפעלה ומבקש email לפני ההרצה (או התחברות עם Google / Apple).")));
-        } else if (ctx.entryFormOnly && ctx.entryStepKind != null && !"good".equals(ctx.entryStepStatus)) {
+        } else if (ctx.entryStepKind != null && !"good".equals(ctx.entryStepStatus)) {
             boolean account = "signup".equals(ctx.entryStepKind) || "signin".equals(ctx.entryStepKind);
             findings.add(new BizFinding(account ? 90 : 96,
                     account

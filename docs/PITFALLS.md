@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-145 — Pro hid the open sign-up behind another lead form (start form + /whitepaper)
+
+**Tags:** `audit`, `diagnostic`, `pro`, `lead-capture`, `render-v2`
+**Seen:** 2026-10-27 — myblindspot.eu, Diagnostic vs Pro RU (local runs on the worker's code)
+
+**Symptom:** Both tiers submitted the homepage start form and reached `/signup?domain=…` (name, email, password, no anti-spam, no OAuth). Diagnostic (5 pages) reported it: finding "Форма регистрации после формы запуска открыта для ботов", "Форма запуска → регистрация" in "Путь к заявке". Pro (10 pages) also crawled `/whitepaper`, a real email form without anti-spam, and said nothing about the sign-up: only "Лид-формы открыты для ботов", lead check "На главной форм нет". The dearer tier reported less. The checklist also had two identical rows "Страница воронки · /signup" (`/signup` and `/signup?next=…`).
+
+**Cause:** PIT-144 gated the step behind the start form on "no other lead form": `entryOnly = effectiveForms == 0 && …` in the lead check, `entryFormOnly` for the findings context (`ReportFindingsCatalog`), `entryForm = !hasForm && …` in `leadPathFromData`. Any lead form anywhere on the funnel switched the whole start-form branch off. Funnel page rows were labelled by path only.
+
+**Fix:** The step is read whenever the homepage has a start form (`entryStepSeen` / `entryStep` gated on `entryFormsCount > 0`), next to the other forms: the lead check appends the step detail and takes the worse status (`statusRank`), `rec_variant` follows the worse one; the start-form findings no longer require `entryFormOnly` (the lead score is unchanged); "Путь к заявке" shows both channels ("Форма на странице", "Форма запуска → регистрация"), names both in the verdict and takes the weaker anti-spam. "На главной лид-формы нет (только форма запуска)". Funnel rows whose path repeats show their query.
+
+**Prevent:** A branch that adds information must not be switched off by an unrelated signal. When a paid tier crawls more pages, it must report at least what the cheaper tier reports — compare Diagnostic and Pro on the same site after lead-capture changes.
+
+---
+
 ## PIT-144 — Free calls a "check your site" URL field an unprotected lead form; consent stub missed on SPAs
 
 **Tags:** `audit`, `free`, `lead-capture`, `ga4`, `render-v2`
@@ -2511,4 +2526,5 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Audit report order CTAs: always `?lang=` matching report locale (PIT-134)
 - [ ] Audit report status blocks ("Путь к заявке", verdicts, badges) only from audit_data; new catalog titles must classify in `classifyActionPillar` (PIT-138)
 - [ ] render-v2 reads only its own tier's Java HTML from this run; never fall back to another tier's file (PIT-139)
-- [ ] Lead check: a start form (URL field → sign-up) is `na` "not checked" in Free; Diagnostic/Pro submit it once with the site origin and judge the step that opens, never typing credentials (PIT-144)
+- [ ] Lead check: a start form (URL field → sign-up) is `na` "not checked" in Free; Diagnostic/Pro submit it once with the site origin and judge the step that opens, never typing credentials (PIT-144)
+- [ ] Start form next to other lead forms: Diagnostic/Pro still judge the step behind it and report both; a paid tier never reports less than a cheaper one (PIT-145)
