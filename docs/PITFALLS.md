@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-141 — Report snippets named our own Next.js files; detector allowed several CMS at once
+
+**Tags:** `audit`, `report`, `render-v2`, `tech-detect`
+**Seen:** 2026-10-27 — AUD-226 review (OpenCart site got `next.config.mjs:15-32`, `src/components/Footer.tsx:55-80`)
+
+**Symptom:** Every action-plan code box was titled with a file and line range from the erythro.ai repo, and the code was Next.js/React (`headers()`, `generateMetadata`, `<Turnstile>` component). A client on OpenCart, WordPress or Wix has none of those files. The detector could list Shopify, Squarespace and Webflow side by side.
+
+**Cause:** `ACTION_CODE_SOLUTIONS` was written against our own codebase. Platform rules were independent booleans with no notion that a site runs one CMS.
+
+**Fix:** Snippets are platform-neutral (HTML, HTTP headers, robots.txt, a JSON webhook example) and titled with a neutral place (`where`: "<head> страницы", "HTTP-заголовки (сервер, CDN или хостинг)"), never a file or line. Platform rules return a score (4 meta generator, 3 runtime object / platform-only markup, 2 own asset path or platform CDN); Java `pickPlatform` keeps the single best score and shows none on a tie. Asset paths count only when served by the audited host. Added OpenCart, Magento, PrestaShop, WooCommerce/Elementor (only under WordPress).
+
+**Prevent:** Automated reports never name the client's files: file-level analysis is manual-audit only, in every tier. A new platform rule needs a host, runtime or generator marker and goes into `platformRules`, not the free-form list.
+
+---
+
 ## PIT-140 — Audit flags "Disallow: / for AI bots", Shopify+Squarespace+Webflow and drops the lead step
 
 **Tags:** `audit`, `report`, `render-v2`, `robots`, `tech-detect`, `free`

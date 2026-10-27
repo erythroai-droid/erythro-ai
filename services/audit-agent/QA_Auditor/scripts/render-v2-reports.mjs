@@ -86,203 +86,177 @@ const FINDINGS_DICT = {
 };
 
 
+// Platform-neutral examples: no file paths or line numbers. The client's own files are read only in a
+// manual audit, never in an automated report, so a snippet must not pretend to know them (AUD-226).
 const ACTION_CODE_SOLUTIONS = {
   speed: {
-    file: 'src/app/(frontend)/layout.tsx:160-175',
+    where: { ru: '<head> страницы', en: 'Page <head>', he: '<head> של הדף' },
     ru: {
       desc: 'Предзагрузка ключевого LCP-баннера и шрифтов для ускорения первой отрисовки (цель LCP < 2.5s)',
-      code: `// src/app/(frontend)/layout.tsx:160-175
-// Предзагрузка LCP-изображения и шрифтов для ускорения первой отрисовки:
-<link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high" />
-<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />`
+      code: `<!-- Предзагрузка изображения первого экрана (LCP) и шрифтов. Путь — ваш баннер: -->
+<link rel="preload" as="image" href="/images/hero.webp" type="image/webp" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>`
     },
     en: {
       desc: 'Preload LCP hero image and fonts to accelerate largest contentful paint (target LCP < 2.5s)',
-      code: `// src/app/(frontend)/layout.tsx:160-175
-// Preload hero LCP image and critical fonts:
-<link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high" />
-<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />`
+      code: `<!-- Preload the above-the-fold (LCP) image and fonts. Use your own banner path: -->
+<link rel="preload" as="image" href="/images/hero.webp" type="image/webp" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>`
     },
     he: {
       desc: 'טעינה מוקדמת לתמונת LCP ולגופנים להאצת הציור הראשוני (יעד LCP < 2.5 שניות)',
-      code: `// src/app/(frontend)/layout.tsx:160-175
-// טעינה מוקדמת לתמונת LCP ולגופנים:
-<link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high" />
-<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />`
+      code: `<!-- טעינה מוקדמת לתמונת המסך הראשון (LCP) ולגופנים. הנתיב — הבאנר שלכם: -->
+<link rel="preload" as="image" href="/images/hero.webp" type="image/webp" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>`
     }
   },
   speed_cwv: {
-    file: 'next.config.mjs:8-22',
+    where: { ru: 'Разметка изображений и кэш статики', en: 'Image markup and static file cache', he: 'סימון תמונות ומטמון לקבצים סטטיים' },
     ru: {
       desc: 'Оптимизация форматов изображений (AVIF/WebP) и кэширования для ускорения LCP и INP',
-      code: `// next.config.mjs:8-22
-// Автоматическая оптимизация изображений и кэширование для Core Web Vitals:
-images: {
-  formats: ['image/avif', 'image/webp'],
-  minimumCacheTTL: 31536000,
-  deviceSizes: [375, 640, 750, 1080, 1200]
-},
-compress: true`
+      code: `<!-- Современные форматы с запасным JPEG и заданными размерами (без сдвига вёрстки): -->
+<picture>
+  <source srcset="/images/hero.avif" type="image/avif">
+  <source srcset="/images/hero.webp" type="image/webp">
+  <img src="/images/hero.jpg" width="1200" height="630" alt="Описание баннера" fetchpriority="high">
+</picture>
+<!-- HTTP-заголовок для изображений, CSS и JS (сервер или CDN):
+     Cache-Control: public, max-age=31536000, immutable -->`
     },
     en: {
       desc: 'Optimize image formats (AVIF/WebP) and cache headers to accelerate LCP and INP',
-      code: `// next.config.mjs:8-22
-// Automatic image optimization and cache TTL for Core Web Vitals:
-images: {
-  formats: ['image/avif', 'image/webp'],
-  minimumCacheTTL: 31536000,
-  deviceSizes: [375, 640, 750, 1080, 1200]
-},
-compress: true`
+      code: `<!-- Modern formats with a JPEG fallback and fixed dimensions (no layout shift): -->
+<picture>
+  <source srcset="/images/hero.avif" type="image/avif">
+  <source srcset="/images/hero.webp" type="image/webp">
+  <img src="/images/hero.jpg" width="1200" height="630" alt="Banner description" fetchpriority="high">
+</picture>
+<!-- HTTP header for images, CSS and JS (server or CDN):
+     Cache-Control: public, max-age=31536000, immutable -->`
     },
     he: {
       desc: 'אופטימיזציית פורמטי תמונות (AVIF/WebP) וכותרות שמירה במטמון להאצת LCP ו-INP',
-      code: `// next.config.mjs:8-22
-// אופטימיזציית תמונות מתקדמות ושמירה במטמון עבור Core Web Vitals:
-images: {
-  formats: ['image/avif', 'image/webp'],
-  minimumCacheTTL: 31536000,
-  deviceSizes: [375, 640, 750, 1080, 1200]
-},
-compress: true`
+      code: `<!-- פורמטים מודרניים עם JPEG כגיבוי ומידות קבועות (בלי קפיצת פריסה): -->
+<picture>
+  <source srcset="/images/hero.avif" type="image/avif">
+  <source srcset="/images/hero.webp" type="image/webp">
+  <img src="/images/hero.jpg" width="1200" height="630" alt="תיאור הבאנר" fetchpriority="high">
+</picture>
+<!-- כותרת HTTP לתמונות, CSS ו-JS (שרת או CDN):
+     Cache-Control: public, max-age=31536000, immutable -->`
     }
   },
   ai_lead: {
-    file: 'src/app/api/lead/qualify/route.ts:12-35',
+    where: { ru: 'Обработка заявки', en: 'Lead handling', he: 'טיפול בפנייה' },
     ru: {
       desc: 'Автоматическая AI-квалификация входящих заявок, скоринг и маршрутизация в CRM 24/7',
-      code: `// src/app/api/lead/qualify/route.ts:12-35
-// AI-квалификация входящих заявок и скоринг лидов 24/7:
-export async function POST(req: Request) {
-  const { name, contact, inquiry } = await req.json();
-  const lead = await erythroAI.qualify({ inquiry, threshold: 0.8 });
-  await crm.dispatch({ name, contact, priority: lead.score, channel: lead.intent });
-  return Response.json({ status: 'routed', priority: lead.priority });
-}`
+      code: `# Заявка с формы уходит на вебхук квалификации, затем в CRM:
+POST https://<ваш-вебхук>/lead
+{ "name": "…", "phone": "…", "message": "…", "page": "/contact" }
+
+# Ответ: приоритет и ответственный для менеджера
+{ "score": 0.86, "priority": "high", "route": "sales" }`
     },
     en: {
       desc: 'Automated AI lead qualification, scoring, and instant routing to CRM 24/7',
-      code: `// src/app/api/lead/qualify/route.ts:12-35
-// Automated AI lead qualification and routing 24/7:
-export async function POST(req: Request) {
-  const { name, contact, inquiry } = await req.json();
-  const lead = await erythroAI.qualify({ inquiry, threshold: 0.8 });
-  await crm.dispatch({ name, contact, priority: lead.score, channel: lead.intent });
-  return Response.json({ status: 'routed', priority: lead.priority });
-}`
+      code: `# The form posts the lead to a qualification webhook, then to CRM:
+POST https://<your-webhook>/lead
+{ "name": "…", "phone": "…", "message": "…", "page": "/contact" }
+
+# Response: priority and owner for the sales team
+{ "score": 0.86, "priority": "high", "route": "sales" }`
     },
     he: {
       desc: 'סינון וסיווג פניות אוטומטי מבוסס AI, ניקוד ושיגור מיידי ל-CRM 24/7',
-      code: `// src/app/api/lead/qualify/route.ts:12-35
-// סינון וסיווג פניות אוטומטי מבוסס AI ושיגור ל-CRM:
-export async function POST(req: Request) {
-  const { name, contact, inquiry } = await req.json();
-  const lead = await erythroAI.qualify({ inquiry, threshold: 0.8 });
-  await crm.dispatch({ name, contact, priority: lead.score, channel: lead.intent });
-  return Response.json({ status: 'routed', priority: lead.priority });
-}`
+      code: `# הטופס שולח את הפנייה ל-webhook לסיווג, ומשם ל-CRM:
+POST https://<ה-webhook-שלכם>/lead
+{ "name": "…", "phone": "…", "message": "…", "page": "/contact" }
+
+# תשובה: עדיפות ואחראי לצוות המכירות
+{ "score": 0.86, "priority": "high", "route": "sales" }`
     }
   },
   seo: {
-    file: 'src/app/(frontend)/layout.tsx:75-97',
+    where: { ru: '<head> страницы', en: 'Page <head>', he: '<head> של הדף' },
     ru: {
       desc: 'Настройка мультиязычных alternates (hreflang) и метатегов OpenGraph для локалей',
-      code: `// src/app/(frontend)/layout.tsx:75-97
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    alternates: {
-      canonical: '/',
-      languages: {
-        'en': '/?lang=en',
-        'ru': '/?lang=ru',
-        'he': '/?lang=he'
-      }
-    },
-    openGraph: {
-      images: [{ url: '/images/og-image.png', width: 1200, height: 630 }]
-    }
-  };
-}`
+      code: `<!-- Каноническая ссылка и языковые версии (адреса — ваши страницы каждой локали): -->
+<link rel="canonical" href="https://erythro.ai/">
+<link rel="alternate" hreflang="he" href="https://erythro.ai/he/">
+<link rel="alternate" hreflang="ru" href="https://erythro.ai/ru/">
+<link rel="alternate" hreflang="en" href="https://erythro.ai/en/">
+<link rel="alternate" hreflang="x-default" href="https://erythro.ai/">
+<!-- Превью ссылки в WhatsApp, Telegram, Facebook: -->
+<meta property="og:title" content="Название страницы">
+<meta property="og:description" content="Короткое описание">
+<meta property="og:image" content="https://erythro.ai/og-image.jpg">`
     },
     en: {
       desc: 'Multilingual alternates (hreflang) and OpenGraph metadata configuration across locales',
-      code: `// src/app/(frontend)/layout.tsx:75-97
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    alternates: {
-      canonical: '/',
-      languages: {
-        'en': '/?lang=en',
-        'ru': '/?lang=ru',
-        'he': '/?lang=he'
-      }
-    },
-    openGraph: {
-      images: [{ url: '/images/og-image.png', width: 1200, height: 630 }]
-    }
-  };
-}`
+      code: `<!-- Canonical link and language versions (use your own URL for each locale): -->
+<link rel="canonical" href="https://erythro.ai/">
+<link rel="alternate" hreflang="he" href="https://erythro.ai/he/">
+<link rel="alternate" hreflang="ru" href="https://erythro.ai/ru/">
+<link rel="alternate" hreflang="en" href="https://erythro.ai/en/">
+<link rel="alternate" hreflang="x-default" href="https://erythro.ai/">
+<!-- Link preview in WhatsApp, Telegram, Facebook: -->
+<meta property="og:title" content="Page title">
+<meta property="og:description" content="Short description">
+<meta property="og:image" content="https://erythro.ai/og-image.jpg">`
     },
     he: {
       desc: 'הגדרת קישורי alternates (hreflang) ומטא-נתוני OpenGraph לכל השפות',
-      code: `// src/app/(frontend)/layout.tsx:75-97
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    alternates: {
-      canonical: '/',
-      languages: {
-        'en': '/?lang=en',
-        'ru': '/?lang=ru',
-        'he': '/?lang=he'
-      }
-    },
-    openGraph: {
-      images: [{ url: '/images/og-image.png', width: 1200, height: 630 }]
-    }
-  };
-}`
+      code: `<!-- קישור קנוני וגרסאות שפה (הכתובות — הדפים שלכם בכל שפה): -->
+<link rel="canonical" href="https://erythro.ai/">
+<link rel="alternate" hreflang="he" href="https://erythro.ai/he/">
+<link rel="alternate" hreflang="ru" href="https://erythro.ai/ru/">
+<link rel="alternate" hreflang="en" href="https://erythro.ai/en/">
+<link rel="alternate" hreflang="x-default" href="https://erythro.ai/">
+<!-- תצוגת קישור ב-WhatsApp, Telegram, Facebook: -->
+<meta property="og:title" content="כותרת הדף">
+<meta property="og:description" content="תיאור קצר">
+<meta property="og:image" content="https://erythro.ai/og-image.jpg">`
     }
   },
   lead: {
-    file: 'src/components/ContactForm.tsx:42-65',
+    where: { ru: 'Лид-форма', en: 'Lead form', he: 'טופס ליד' },
     ru: {
       desc: 'Подключение защиты форм от спам-ботов через Cloudflare Turnstile и honeypot',
-      code: `// src/components/ContactForm.tsx:42-65
-import { Turnstile } from '@marsidev/react-turnstile';
-
-<Turnstile siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} onSuccess={setToken} />
-{/* Скрытая ловушка для спам-ботов: */}
-<input type="text" name="_gotcha" tabIndex={-1} autoComplete="off" style={{ display: 'none' }} />`
+      code: `<!-- Внутри формы: виджет Cloudflare Turnstile и скрытое поле-ловушка для ботов -->
+<div class="cf-turnstile" data-sitekey="<ваш-ключ>"></div>
+<input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"
+       style="position:absolute;left:-9999px">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<!-- На сервере: проверить токен Turnstile (siteverify) и отклонить заявку с заполненным полем-ловушкой -->`
     },
     en: {
       desc: 'Bot protection with Cloudflare Turnstile anti-spam and hidden honeypot trap',
-      code: `// src/components/ContactForm.tsx:42-65
-import { Turnstile } from '@marsidev/react-turnstile';
-
-<Turnstile siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} onSuccess={setToken} />
-{/* Hidden bot honeypot trap: */}
-<input type="text" name="_gotcha" tabIndex={-1} autoComplete="off" style={{ display: 'none' }} />`
+      code: `<!-- Inside the form: the Cloudflare Turnstile widget and a hidden bot trap field -->
+<div class="cf-turnstile" data-sitekey="<your-key>"></div>
+<input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"
+       style="position:absolute;left:-9999px">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<!-- On the server: verify the Turnstile token (siteverify) and reject leads with the trap field filled -->`
     },
     he: {
       desc: 'הגנה נגד ספאם באמצעות Cloudflare Turnstile ושדה מלכודת (honeypot)',
-      code: `// src/components/ContactForm.tsx:42-65
-import { Turnstile } from '@marsidev/react-turnstile';
-
-<Turnstile siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} onSuccess={setToken} />
-{/* שדה מלכודת נסתר לבוטים: */}
-<input type="text" name="_gotcha" tabIndex={-1} autoComplete="off" style={{ display: 'none' }} />`
+      code: `<!-- בתוך הטופס: הווידג'ט של Cloudflare Turnstile ושדה מלכודת נסתר לבוטים -->
+<div class="cf-turnstile" data-sitekey="<המפתח-שלכם>"></div>
+<input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"
+       style="position:absolute;left:-9999px">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<!-- בשרת: לאמת את טוקן Turnstile (siteverify) ולדחות פניות ששדה המלכודת בהן מלא -->`
     }
   },
   // "No lead form" finding: the Turnstile snippet above assumes a form already exists
   lead_form: {
-    file: 'index.html #contact',
+    where: { ru: 'Блок контактов', en: 'Contact block', he: 'אזור יצירת קשר' },
     ru: {
       desc: 'Короткая лид-форма на главной (имя, телефон, отправка) и резервный канал в WhatsApp',
-      code: `<!-- index.html · секция #contact -->
-<form id="contact" action="/lead" method="post">
+      code: `<form id="contact" action="/lead" method="post">
   <input name="name" autocomplete="name" placeholder="Имя" required>
   <input name="phone" type="tel" autocomplete="tel" placeholder="Телефон" required>
   <button type="submit">Получить консультацию</button>
@@ -291,8 +265,7 @@ import { Turnstile } from '@marsidev/react-turnstile';
     },
     en: {
       desc: 'A short homepage lead form (name, phone, submit) plus a WhatsApp fallback channel',
-      code: `<!-- index.html · #contact section -->
-<form id="contact" action="/lead" method="post">
+      code: `<form id="contact" action="/lead" method="post">
   <input name="name" autocomplete="name" placeholder="Name" required>
   <input name="phone" type="tel" autocomplete="tel" placeholder="Phone" required>
   <button type="submit">Get a consultation</button>
@@ -301,8 +274,7 @@ import { Turnstile } from '@marsidev/react-turnstile';
     },
     he: {
       desc: 'טופס ליד קצר בעמוד הבית (שם, טלפון, שליחה) וערוץ גיבוי ב-WhatsApp',
-      code: `<!-- index.html · אזור #contact -->
-<form id="contact" action="/lead" method="post">
+      code: `<form id="contact" action="/lead" method="post">
   <input name="name" autocomplete="name" placeholder="שם" required>
   <input name="phone" type="tel" autocomplete="tel" placeholder="טלפון" required>
   <button type="submit">לקבלת ייעוץ</button>
@@ -311,57 +283,46 @@ import { Turnstile } from '@marsidev/react-turnstile';
     }
   },
   sec: {
-    file: 'next.config.mjs:15-32',
+    where: { ru: 'HTTP-заголовки (сервер, CDN или хостинг)', en: 'HTTP headers (server, CDN or hosting)', he: 'כותרות HTTP (שרת, CDN או אחסון)' },
     ru: {
       desc: 'Установка обязательных HTTP-заголовков безопасности (HSTS, NoSniff, SameOrigin)',
-      code: `// next.config.mjs:15-32
-async headers() {
-  return [{
-    source: '/:path*',
-    headers: [
-      { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-      { key: 'X-Content-Type-Options', value: 'nosniff' },
-      { key: 'X-Frame-Options', value: 'SAMEORIGIN' }
-    ]
-  }];
-}`
+      code: `# Ответ сервера на каждую страницу. Полную Content-Security-Policy
+# собирают под сайт: начните с запрета встраивания в чужие фреймы.
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+Content-Security-Policy: frame-ancestors 'self'
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()`
     },
     en: {
       desc: 'Configuring mandatory HTTP security headers (HSTS, NoSniff, SameOrigin)',
-      code: `// next.config.mjs:15-32
-async headers() {
-  return [{
-    source: '/:path*',
-    headers: [
-      { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-      { key: 'X-Content-Type-Options', value: 'nosniff' },
-      { key: 'X-Frame-Options', value: 'SAMEORIGIN' }
-    ]
-  }];
-}`
+      code: `# Server response for every page. A full Content-Security-Policy is built
+# per site: start by blocking embedding in foreign frames.
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+Content-Security-Policy: frame-ancestors 'self'
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()`
     },
     he: {
       desc: 'הגדרת כותרות אבטחת HTTP חיוניות (HSTS, NoSniff, SameOrigin)',
-      code: `// next.config.mjs:15-32
-async headers() {
-  return [{
-    source: '/:path*',
-    headers: [
-      { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-      { key: 'X-Content-Type-Options', value: 'nosniff' },
-      { key: 'X-Frame-Options', value: 'SAMEORIGIN' }
-    ]
-  }];
-}`
+      code: `# תשובת השרת לכל דף. Content-Security-Policy מלאה נבנית לפי האתר:
+# התחילו בחסימת הטמעה במסגרות זרות.
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+Content-Security-Policy: frame-ancestors 'self'
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=()`
     }
   },
   ai: {
-    // Site root, not a Next.js path: the audited site may run any CMS (AUD-226 was OpenCart)
-    file: '/robots.txt',
+    where: { ru: 'robots.txt в корне сайта', en: 'robots.txt at the site root', he: 'robots.txt בשורש האתר' },
     ru: {
       desc: 'Разрешение цитирования AI-поисковиками (ChatGPT, Perplexity) и запрет несанкционированного обучения',
-      code: `# /robots.txt (корень сайта)
-User-agent: *
+      code: `User-agent: *
 Allow: /
 # Content-Signal: разрешение на цитирование в поиске, запрет на обучение моделей:
 Content-Signal: search=yes, ai-input=yes, ai-train=no
@@ -369,8 +330,7 @@ Sitemap: https://erythro.ai/sitemap.xml`
     },
     en: {
       desc: 'Permit AI search citations (ChatGPT, Perplexity) while blocking unauthorized model training',
-      code: `# /robots.txt (site root)
-User-agent: *
+      code: `User-agent: *
 Allow: /
 # Content-Signal: allow search citations, prohibit unauthorized model training:
 Content-Signal: search=yes, ai-input=yes, ai-train=no
@@ -378,8 +338,7 @@ Sitemap: https://erythro.ai/sitemap.xml`
     },
     he: {
       desc: 'אישור ציטוט במנועי חיפוש AI (ChatGPT, Perplexity) וחסימת אימון מודלים',
-      code: `# /robots.txt (שורש האתר)
-User-agent: *
+      code: `User-agent: *
 Allow: /
 # Content-Signal: אישור ציטוט בחיפוש, חסימת אימון מודלים:
 Content-Signal: search=yes, ai-input=yes, ai-train=no
@@ -387,35 +346,32 @@ Sitemap: https://erythro.ai/sitemap.xml`
     }
   },
   a11y: {
-    file: 'src/components/Footer.tsx:55-80',
+    where: { ru: 'Разметка изображений и кнопок', en: 'Image and button markup', he: 'סימון תמונות וכפתורים' },
     ru: {
       desc: 'Устранение замечаний доступности WCAG 2.1 AA / IS 5568: атрибуты alt и aria-label',
-      code: `// src/components/Footer.tsx:55-80
-// 1. Информативные alt-подписи для изображений:
-<Image src="/images/logo.svg" alt="Erythro.ai" width={140} height={40} />
-// 2. Четкие aria-label для кнопок-иконок без текста:
-<button type="button" aria-label="Консультация в WhatsApp" onClick={openWhatsApp}>
-  <WhatsAppIcon aria-hidden="true" />
+      code: `<!-- 1. Содержательный alt у информативных изображений (у декоративных — alt=""): -->
+<img src="/images/logo.svg" alt="Название компании" width="140" height="40">
+<!-- 2. Подпись у кнопки-иконки без текста: -->
+<button type="button" aria-label="Консультация в WhatsApp">
+  <svg aria-hidden="true" focusable="false">…</svg>
 </button>`
     },
     en: {
       desc: 'WCAG 2.1 AA / IS 5568 accessibility: alt attributes and accessible button labels',
-      code: `// src/components/Footer.tsx:55-80
-// 1. Informative alt attributes for images:
-<Image src="/images/logo.svg" alt="Erythro.ai" width={140} height={40} />
-// 2. Accessible labels for icon buttons:
-<button type="button" aria-label="WhatsApp consultation" onClick={openWhatsApp}>
-  <WhatsAppIcon aria-hidden="true" />
+      code: `<!-- 1. Meaningful alt on informative images (alt="" on decorative ones): -->
+<img src="/images/logo.svg" alt="Company name" width="140" height="40">
+<!-- 2. A label on an icon-only button: -->
+<button type="button" aria-label="WhatsApp consultation">
+  <svg aria-hidden="true" focusable="false">…</svg>
 </button>`
     },
     he: {
       desc: 'הנגשת WCAG 2.1 AA / תקן IS 5568: תיאורי alt לתמונות ותוויות aria-label לכפתורים',
-      code: `// src/components/Footer.tsx:55-80
-// 1. תיאורי alt לתמונות:
-<Image src="/images/logo.svg" alt="Erythro.ai" width={140} height={40} />
-// 2. תוויות נגישות לכפתורי אייקון:
-<button type="button" aria-label="ייעוץ ב-WhatsApp" onClick={openWhatsApp}>
-  <WhatsAppIcon aria-hidden="true" />
+      code: `<!-- 1. alt תיאורי לתמונות מידע (לתמונות קישוט — alt=""): -->
+<img src="/images/logo.svg" alt="שם החברה" width="140" height="40">
+<!-- 2. תווית לכפתור אייקון בלי טקסט: -->
+<button type="button" aria-label="ייעוץ ב-WhatsApp">
+  <svg aria-hidden="true" focusable="false">…</svg>
 </button>`
     }
   }
@@ -994,10 +950,16 @@ ${summaryHtml}
   </section>`;
 }
 
+// Where the example goes, in neutral words: never a file path or line range of the client's site
+function snippetWhere(solObj, lang) {
+  const w = solObj.where || {};
+  return w[lang] || w.en || w.ru || '';
+}
+
 function renderCodeBox(solObj, lang) {
   if (!solObj) return '';
   const item = solObj[lang] || solObj.en || solObj.ru;
-  const file = solObj.file;
+  const where = snippetWhere(solObj, lang);
   // Snippets are written against erythro.ai; the client's copy must point at the audited site
   let origin = '';
   try { origin = new URL(data.target_url).origin; } catch (e) {}
@@ -1011,7 +973,7 @@ function renderCodeBox(solObj, lang) {
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
-          <code>${esc(file)}</code>
+          <code>${esc(where)}</code>
         </span>
         <button type="button" class="btn-copy" data-copy="${esc(code)}" aria-label="Copy code">
           <span class="copy-text">copy</span>
@@ -1028,22 +990,22 @@ function renderCodeBox(solObj, lang) {
 function renderSpecBox(solObj, lang) {
   if (!solObj) return '';
   const item = solObj[lang] || solObj.en || solObj.ru;
-  const file = solObj.file;
+  const where = snippetWhere(solObj, lang);
   const desc = item.desc;
 
   const headerLbl = lang === 'ru' ? 'Техническое задание разработчику' : lang === 'he' ? 'מפרט טכני לפיתוח' : 'Developer Technical Specification';
   const proNote = lang === 'ru'
-    ? 'Готовый проверенный код со сниппетами и юнит-тестами доступен в тарифе Pro'
+    ? 'Примеры кода для каждого шага — в тарифе Pro'
     : lang === 'he'
-    ? 'קוד מוכן לסביבת ייצור ובדיקות יחידה זמינים במסלול Pro'
-    : 'Production-ready code snippets and unit tests available in Pro';
+    ? 'דוגמאות קוד לכל שלב — במסלול Pro'
+    : 'Code examples for every step are in Pro';
   const proLinkText = lang === 'ru' ? 'Смотреть в Pro (₪490) →' : lang === 'he' ? 'לצפייה ב-Pro (₪490) ←' : 'View in Pro (₪490) →';
 
   return `
     <div class="spec-box">
       <div class="spec-box-header">
         <span>${headerLbl}</span>
-        <code>${esc(file)}</code>
+        <code>${esc(where)}</code>
       </div>
       <div class="spec-box-body">${esc(desc)}</div>
       <div class="spec-box-pro-note">
@@ -2208,7 +2170,9 @@ const PHP_STACK_ALERT_TECH = new Set([
   'Drupal',
   'Joomla',
   'Bitrix',
-  // Magento / PrestaShop: add when the collector fingerprints them
+  'OpenCart',
+  'Magento',
+  'PrestaShop',
 ]);
 
 const PHP_WA_HREF = 'https://wa.me/972505308305';

@@ -299,13 +299,84 @@ public class AuditCollector {
                 catch (e) { return false; }
             };
 
+            const sel = (q) => {
+                try { return !!document.querySelector(q); }
+                catch (e) { return false; }
+            };
+            const gen = (s) => generator.includes(s);
+            // Paths served by this site itself (relative or same host): "/wp-content/" in a hotlinked
+            // image from another site says nothing about this one
+            const host = location.hostname.replace(/^www[.]/, '');
+            const ownPaths = Array.from(document.querySelectorAll('script[src], link[href], img[src]'))
+                .map(el => {
+                    try { return new URL(el.getAttribute('src') || el.getAttribute('href') || '', location.href); }
+                    catch (e) { return null; }
+                })
+                .filter(u => {
+                    if (!u) return false;
+                    const h = u.hostname.replace(/^www[.]/, '');
+                    return h === host || h.endsWith('.' + host);
+                })
+                .map(u => (u.pathname + u.search).toLowerCase());
+            const ownAsset = (s) => ownPaths.some(p => p.includes(s));
+            // A platform CDN host in a script, stylesheet or other src/href
+            const assetHost = (h) => scriptsLow.includes(h) || stylesheets.includes(h) || htmlLow.includes('//' + h);
+
+            // CMS, site builders and shop engines: a site runs exactly one. Never the bare product name
+            // (Font Awesome ships .fa-shopify / .fa-webflow, AUD-226). Score: 4 meta generator,
+            // 3 runtime object or platform-only markup, 2 own asset path or platform CDN.
+            // Java keeps the single best score and drops them all on a tie.
+            const platformRules = [
+                ['WordPress', () => gen('wordpress') ? 4 : sel('link[rel="https://api.w.org/"]') ? 3
+                    : (ownAsset('/wp-content/') || ownAsset('/wp-includes/')) ? 2 : 0],
+                ['Shopify', () => gen('shopify') ? 4
+                    : (win('ShopifyAnalytics') || (win('Shopify') && assetHost('cdn.shopify.com'))) ? 3
+                    : (assetHost('cdn.shopify.com') || assetHost('.myshopify.com')) ? 2 : 0],
+                ['Wix', () => gen('wix') ? 4 : win('wixBiSession') ? 3
+                    : (assetHost('static.wixstatic.com') || assetHost('static.parastorage.com')) ? 2 : 0],
+                ['Squarespace', () => gen('squarespace') ? 4
+                    : (htmlLow.includes('<!-- this is squarespace. -->') || win('Squarespace')) ? 3
+                    : (assetHost('static1.squarespace.com') || assetHost('assets.squarespace.com')
+                        || assetHost('sqsp.net')) ? 2 : 0],
+                ['Webflow', () => gen('webflow') ? 4 : (sel('html[data-wf-site]') || win('Webflow')) ? 3
+                    : assetHost('website-files.com') ? 2 : 0],
+                ['Tilda', () => gen('tilda') ? 4 : sel('[data-tilda-page-id]') ? 3
+                    : assetHost('tildacdn.') ? 2 : 0],
+                ['Drupal', () => gen('drupal') ? 4 : (win('Drupal') || win('drupalSettings')) ? 3
+                    : (ownAsset('/sites/default/files/') || ownAsset('/core/misc/drupal')) ? 2 : 0],
+                ['Joomla', () => gen('joomla') ? 4 : win('Joomla') ? 3
+                    : (ownAsset('/media/jui/') || ownAsset('/media/system/js/')) ? 2 : 0],
+                ['Ghost', () => gen('ghost') ? 4 : assetHost('.ghost.io') ? 2 : 0],
+                ['Bitrix', () => gen('bitrix') ? 4 : (win('BX') && ownAsset('/bitrix/')) ? 3
+                    : ownAsset('/bitrix/') ? 2 : 0],
+                ['OpenCart', () => gen('opencart') ? 4
+                    : (ownAsset('/catalog/view/') && links.includes('route=')) ? 3
+                    : (ownAsset('/catalog/view/') || links.includes('index.php?route=')) ? 2 : 0],
+                ['Magento', () => gen('magento') ? 4 : sel('script[type="text/x-magento-init"]') ? 3
+                    : (ownAsset('/static/frontend/') || ownAsset('/static/version')) ? 2 : 0],
+                ['PrestaShop', () => gen('prestashop') ? 4 : win('prestashop') ? 3
+                    : ownAsset('/modules/ps_') ? 2 : 0],
+                ['Payload CMS', () => (has('@payloadcms') || has('payloadcms')) ? 2 : 0],
+            ];
+            const platformScores = {};
+            for (const [name, score] of platformRules) {
+                try {
+                    const s = score();
+                    if (s > 0) platformScores[name] = s;
+                } catch (e) { /* ignore rule errors */ }
+            }
+            // WordPress plugins: shown only when Java settles on WordPress
+            const wpPlugins = [];
+            if (ownAsset('/plugins/woocommerce/') || sel('body.woocommerce, body.woocommerce-page')) wpPlugins.push('WooCommerce');
+            if (ownAsset('/plugins/elementor/') || sel('body.elementor-default, body.elementor-page')) wpPlugins.push('Elementor');
+
             // [name, test] — first match wins; order = report display order
             const rules = [
                 ['Next.js', () => win('__NEXT_DATA__') || !!document.getElementById('__NEXT_DATA__')
                     || has('/_next/static') || has('__next_f') || !!document.querySelector('[data-next-mark]')],
                 ['Nuxt.js', () => win('__NUXT__') || has('__nuxt') || has('/_nuxt/')],
                 ['Gatsby', () => win('___gatsby') || has('___gatsby') || !!document.getElementById('___gatsby')],
-                ['Astro', () => has('astro-') || !!document.querySelector('[data-astro-cid]')
+                ['Astro', () => sel('[data-astro-cid], astro-island') || ownAsset('/_astro/')
                     || generator.includes('astro')],
                 ['Remix', () => has('__remixcontext') || has('@remix-run')],
                 ['React', () => win('React') || win('ReactDOM') || has('react-dom')
@@ -313,26 +384,12 @@ public class AuditCollector {
                     || !!document.querySelector('#root [data-reactroot]')],
                 ['Vue.js', () => win('Vue') || win('__VUE__') || has('vue.runtime') || has('vue.min.js')
                     || !!document.querySelector('[data-v-app], [data-v-]')],
-                ['Angular', () => !!document.querySelector('[ng-version]') || win('ng')
+                ['Angular', () => !!document.querySelector('[ng-version]')
                     || has('angular.js') || has('@angular/')],
-                ['Svelte', () => has('svelte') || !!document.querySelector('[class*="svelte-"]')],
-                ['WordPress', () => has('wp-content') || has('wp-includes') || win('wp')
-                    || generator.includes('wordpress')],
-                // Platform rules need a host or runtime marker, not the bare word: Font Awesome ships
-                // .fa-shopify/.fa-squarespace/.fa-webflow icon classes (AUD-226, an OpenCart site)
-                ['Shopify', () => win('Shopify') || has('cdn.shopify.com') || has('myshopify.com')],
-                ['Wix', () => has('static.wixstatic.com') || has('wix.com') || win('wixBiSession')],
-                ['Squarespace', () => has('squarespace.com') || has('sqsp.net') || win('Squarespace')],
-                ['Webflow', () => !!document.querySelector('html[data-wf-site]') || has('website-files.com')
-                    || has('webflow.com') || win('Webflow')],
-                ['Tilda', () => has('tildacdn') || has('tilda') || win('tilda')],
-                ['Drupal', () => win('Drupal') || has('/sites/default/') || generator.includes('drupal')],
-                ['Joomla', () => win('Joomla') || has('/media/jui/') || generator.includes('joomla')],
-                ['Ghost', () => has('ghost.org') || generator.includes('ghost') || has('/ghost/')],
-                ['Bitrix', () => has('bitrix') || win('BX')],
-                ['Payload CMS', () => has('payloadcms') || has('@payloadcms') || has('/admin/payload')],
+                ['Svelte', () => sel('[class*="svelte-"]') || ownAsset('/_app/immutable/')],
                 ['jQuery', () => win('jQuery') || has('jquery.min') || has('/jquery.') || has('jquery-')],
-                ['GSAP', () => win('gsap') || win('GreenSock') || has('gsap') || has('greensock')],
+                ['GSAP', () => win('gsap') || win('GreenSock') || scriptsLow.includes('gsap')
+                    || scriptsLow.includes('greensock')],
                 ['Tailwind CSS', () => stylesheets.includes('tailwind') || has('tailwindcss')],
                 ['Bootstrap', () => win('bootstrap') || stylesheets.includes('bootstrap')
                     || has('bootstrap.min')],
@@ -341,8 +398,8 @@ public class AuditCollector {
                 ['Google Analytics 4', () => /G-[A-Z0-9]{6,}/.test(html + allJs)
                     || has('googletagmanager.com/gtag/js') || (win('gtag') && has('G-'))],
                 ['Meta Pixel', () => has('fbevents.js') || has('connect.facebook.net') || win('fbq')],
-                ['Yandex Metrica', () => has('mc.yandex.ru') || has('metrika') || win('ym')],
-                ['Hotjar', () => has('static.hotjar.com') || win('hj')],
+                ['Yandex Metrica', () => has('mc.yandex.ru') || has('metrika/tag.js') || win('ym')],
+                ['Hotjar', () => has('static.hotjar.com') || win('hjSiteSettings')],
                 ['Microsoft Clarity', () => has('clarity.ms') || win('clarity')],
                 ['Cloudflare Turnstile', () => has('challenges.cloudflare.com/turnstile')
                     || has('cf-turnstile') || win('turnstile')],
@@ -376,6 +433,8 @@ public class AuditCollector {
 
             return {
                 technologies: found.filter(n => !suppress.has(n)),
+                platformScores,
+                wpPlugins,
                 generator: generator || null,
                 cookieHints: [
                     cookies.includes('__cf') || cookies.includes('cf_') ? 'cloudflare-cookie' : null,
@@ -3330,11 +3389,30 @@ public class AuditCollector {
                 || techHeaders.getOrDefault("x-cache", "").contains("cloudfront")) {
             out.add("Amazon CloudFront");
         }
-        if (techHeaders.containsKey("x-shopify-stage") || techHeaders.containsKey("x-shopid")) {
-            out.add("Shopify");
+        // Platform (CMS / site builder / shop engine): a site runs one. DOM scores + header evidence,
+        // the single best score wins, a tie shows none: no guessing (AUD-226)
+        Map<String, Integer> platformScores = new LinkedHashMap<>();
+        if (techDom != null && techDom.get("platformScores") instanceof Map<?, ?> rawScores) {
+            for (Map.Entry<?, ?> e : rawScores.entrySet()) {
+                if (e.getKey() != null && e.getValue() instanceof Number n && n.intValue() > 0) {
+                    platformScores.put(String.valueOf(e.getKey()), n.intValue());
+                }
+            }
         }
-        if (techHeaders.containsKey("x-drupal-cache")) {
-            out.add("Drupal");
+        if (techHeaders.containsKey("x-shopify-stage") || techHeaders.containsKey("x-shopid")) {
+            platformScores.merge("Shopify", 3, Math::max);
+        }
+        if (techHeaders.containsKey("x-drupal-cache") || techHeaders.containsKey("x-drupal-dynamic-cache")) {
+            platformScores.merge("Drupal", 3, Math::max);
+        }
+        String platform = pickPlatform(platformScores);
+        if (platform != null) {
+            out.add(platform);
+            if ("WordPress".equals(platform) && techDom != null && techDom.get("wpPlugins") instanceof List<?> plugins) {
+                for (Object p : plugins) {
+                    if (p != null) out.add(String.valueOf(p));
+                }
+            }
         }
         String powered = techHeaders.getOrDefault("x-powered-by", "");
         if (powered.contains("express")) out.add("Express");
@@ -3379,8 +3457,8 @@ public class AuditCollector {
 
         List<String> preferred = List.of(
                 "Next.js", "Nuxt.js", "Gatsby", "Astro", "Remix", "React", "Vue.js", "Angular", "Svelte",
-                "WordPress", "Shopify", "Wix", "Squarespace", "Webflow", "Tilda", "Drupal", "Joomla",
-                "Ghost", "Bitrix", "Payload CMS",
+                "WordPress", "WooCommerce", "Elementor", "Shopify", "Wix", "Squarespace", "Webflow", "Tilda",
+                "Drupal", "Joomla", "Ghost", "Bitrix", "OpenCart", "Magento", "PrestaShop", "Payload CMS",
                 "Vercel", "Netlify", "Cloudflare", "Amazon CloudFront", "Hostinger", "Nginx", "Apache",
                 "LiteSpeed", "Express", "PHP", "ASP.NET",
                 "jQuery", "GSAP", "Tailwind CSS", "Bootstrap",
@@ -3396,6 +3474,24 @@ public class AuditCollector {
         }
         ordered.addAll(out);
         return ordered;
+    }
+
+    /** The platform with the single highest score, or null when none matched or the top score is shared. */
+    static String pickPlatform(Map<String, Integer> scores) {
+        String best = null;
+        int bestScore = 0;
+        boolean tie = false;
+        for (Map.Entry<String, Integer> e : scores.entrySet()) {
+            int s = e.getValue() == null ? 0 : e.getValue();
+            if (s > bestScore) {
+                best = e.getKey();
+                bestScore = s;
+                tie = false;
+            } else if (s == bestScore && s > 0) {
+                tie = true;
+            }
+        }
+        return tie ? null : best;
     }
 
     /** HTTP layer: TLS, TTFB, security headers, robots.txt and sitemap.xml. */
