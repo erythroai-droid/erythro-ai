@@ -403,7 +403,7 @@ export interface SolutionPlan {
    */
   checkoutMode?: ('order' | 'contact') | null;
   /**
-   * Stable id / order URL, e.g. "business-automation" → /order/business-automation
+   * Stable id / order URL, e.g. "business-automation" → /order/business-automation. No trailing spaces (PIT-119).
    */
   slug?: string | null;
   /**
@@ -869,7 +869,7 @@ export interface ContactSubmission {
    */
   reportAccessToken?: string | null;
   /**
-   * Inline HTML report for typical sizes (≤ ~2MB); larger reports stay in R2 only
+   * Inline HTML report for typical sizes (≤ ~2MB); larger reports stay in R2 only. Collapsed by default — Expand to view.
    */
   htmlResult?: string | null;
   /**
@@ -881,11 +881,11 @@ export interface ContactSubmission {
    */
   errorLast?: string | null;
   /**
-   * Ads LP free→Pro funnel (team@): scheduled (+15m) → sent → reminder_sent (72h) / skipped
+   * Free→Pro: scheduled (+15m) → sent → nudge_sent (−24h) → reminder_sent (72h). Paid Pro/Diagnostic: scheduled (+15m) → reminder_sent (dev offer). Or skipped.
    */
   proOfferStatus?: ('none' | 'scheduled' | 'sent' | 'nudge_sent' | 'reminder_sent' | 'skipped') | null;
   /**
-   * First commercial email due (report_sent + 15 min)
+   * First commercial email due (report_sent + 15 min; free Pro or paid development)
    */
   proOfferDueAt?: string | null;
   /**
@@ -909,7 +909,7 @@ export interface ContactSubmission {
    */
   proOfferReminderDueAt?: string | null;
   /**
-   * When the +72h development offer email was sent
+   * When the development offer was sent (+72h free funnel or +15m after paid audit)
    */
   proOfferReminderSentAt?: string | null;
   /**

@@ -32,12 +32,16 @@ Last updated: 2026-09-30.
 | `docs/architecture/ai-audit-architecture.md` | AI Audit pipeline (R2, worker) | One chunk per `##` | `audit`, `r2`, `n8n`, `infra` |
 | `docs/architecture/grow-audit-checkout.md` | Grow hosted checkout for paid audits | One chunk | `audit`, `grow`, `payment` |
 | `docs/architecture/audit-pro-offer-funnel.md` | Free→PRO email + Meta ads ₪390 checkout | One chunk | `audit`, `meta`, `email`, `funnel`, `team@` |
+| `docs/architecture/audit-report-pro-v2.md` | Pro v2 report (RU/EN/HE): design system, apply/render scripts, PDF rules, handoff | One chunk per `##` | `audit`, `report`, `pdf`, `rtl`, `pro-v2` |
+| `docs/architecture/audit-report-tier-scope.md` | What each report tier (Free/Diagnostic/Pro) may show; source of truth `orderPlans.ts` | One chunk per `##` | `audit`, `report`, `tiers`, `pricing` |
+| `docs/architecture/supabase-rls.md` | Supabase/Postgres Row Level Security rules | One chunk per `##` | `supabase`, `rls`, `security`, `postgres` |
 | `docs/architecture/payplus-audit-checkout.md` | Legacy PayPlus adapter; checkout uses Grow | One chunk | `audit`, `payplus`, `payment` |
 | `docs/architecture/r2-audit-storage.md` | R2 bucket + env for audit reports | One chunk | `r2`, `audit`, `storage` |
 | `docs/architecture/audit-rate-limiting.md` | 7-day audit rate limit & IP tracking | One chunk per `##` | `audit`, `rate-limit`, `anti-spam`, `ip` |
 | `docs/infrastructure/n8n-audit-reconcile.md` | Vercel Cron + n8n backup for stuck audits | One chunk | `n8n`, `audit`, `reconcile`, `cron`, `vps` |
 | `docs/infrastructure/n8n-email-autoresponder.md` | n8n email autoresponder for order@ & team@ | One chunk per `##` | `n8n`, `email`, `autoresponder`, `imap`, `smtp` |
 | `docs/infrastructure/vps-firewall-cloudflare-access.md` | VPS UFW + Cloudflare Access `/admin*` + DMARC quarantine→reject | One chunk per `##` | `security`, `access`, `zero-trust`, `dmarc`, `ufw`, `admin` |
+| `docs/infrastructure/supabase-data-api-grants.md` | Supabase Data API explicit GRANTs (deadline 2026-10-30) | One chunk per `##` | `supabase`, `grants`, `security`, `api` |
 | `docs/infrastructure/vps-docker-ports.md` | Hostinger VPS Docker publish rules (no 0.0.0.0) | One chunk | `vps`, `docker`, `ufw`, `security` |
 | `docs/architecture/r2-media-storage.md` | Payload media on R2 (bucket, public URL, Blob cutover) | One chunk per `##` | `r2`, `media`, `blob`, `storage` |
 | `docs/PLAN-deferred.md` | Deferred hardening / perf backlog | One chunk (whole file) | `deferred`, `security`, `dmarc`, `access`, `perf` |
