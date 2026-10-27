@@ -2797,11 +2797,13 @@ ${cards}
     let text = '';
     let cls = 'badge ok';
 
-    // a critical check is always red; otherwise the zone colours the badge; issues in the green zone are grey growth points
-    if (hasBad || zone === 'bad') {
+    // Same rule as the plan (sevForPillar): a failing check sets the colour, the zone only without one,
+    // so a red badge never lands on an orange check (AUD-224: security 43 → headers "needs attention")
+    const sev = sevForPillar(pKey);
+    if (hasBad || sev === 0) {
       cls = 'badge crit';
       text = count ? issuesTxt : (lang === 'ru' ? 'Критично ↓' : lang === 'he' ? 'קריטי ↓' : 'Critical ↓');
-    } else if (zone === 'warn') {
+    } else if (sev === 1 || zone === 'warn') {
       cls = 'badge warn';
       text = count ? issuesTxt : (lang === 'ru' ? 'Требует внимания ↓' : lang === 'he' ? 'דורש תשומת לב ↓' : 'Needs attention ↓');
     } else if (count) {
