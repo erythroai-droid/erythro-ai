@@ -1016,10 +1016,17 @@ function renderCodeBox(solObj, lang) {
   if (!solObj) return '';
   const item = solObj[lang] || solObj.en || solObj.ru;
   const where = snippetWhere(solObj, lang);
-  // Snippets are written against erythro.ai; the client's copy must point at the audited site
+  // Snippets are written against erythro.ai; the client's copy must point at the audited site:
+  // the origin the homepage lands on (www → apex) and the sitemap the collector actually found
+  // (AUD-230: www/sitemap.xml is 404, the real one is on the apex)
+  const infra = data.infrastructure_and_security || {};
   let origin = '';
-  try { origin = new URL(data.target_url).origin; } catch (e) {}
-  const code = origin ? item.code.replaceAll('https://erythro.ai', origin) : item.code;
+  try { origin = new URL(infra.site_origin || data.target_url).origin; } catch (e) {}
+  let code = item.code;
+  if (infra.has_sitemap_xml && infra.sitemap_url) {
+    code = code.replaceAll('https://erythro.ai/sitemap.xml', infra.sitemap_url);
+  }
+  if (origin) code = code.replaceAll('https://erythro.ai', origin);
 
   return `
     <div class="code-box">
