@@ -413,7 +413,10 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()`
 Allow: /
 # Content-Signal: разрешение на цитирование в поиске, запрет на обучение моделей:
 Content-Signal: search=yes, ai-input=yes, ai-train=no
-Sitemap: https://erythro.ai/sitemap.xml`
+Sitemap: https://erythro.ai/sitemap.xml`,
+      codeExisting: `# Добавьте строку в существующий robots.txt, в блок User-agent: *.
+# Остальные правила файла не меняйте:
+Content-Signal: search=yes, ai-input=yes, ai-train=no`
     },
     en: {
       desc: 'Permit AI search citations (ChatGPT, Perplexity) while blocking unauthorized model training',
@@ -421,7 +424,10 @@ Sitemap: https://erythro.ai/sitemap.xml`
 Allow: /
 # Content-Signal: allow search citations, prohibit unauthorized model training:
 Content-Signal: search=yes, ai-input=yes, ai-train=no
-Sitemap: https://erythro.ai/sitemap.xml`
+Sitemap: https://erythro.ai/sitemap.xml`,
+      codeExisting: `# Add this line to your existing robots.txt, in the User-agent: * group.
+# Keep the file's other rules as they are:
+Content-Signal: search=yes, ai-input=yes, ai-train=no`
     },
     he: {
       desc: 'אישור ציטוט במנועי חיפוש AI (ChatGPT, Perplexity) וחסימת אימון מודלים',
@@ -429,7 +435,10 @@ Sitemap: https://erythro.ai/sitemap.xml`
 Allow: /
 # Content-Signal: אישור ציטוט בחיפוש, חסימת אימון מודלים:
 Content-Signal: search=yes, ai-input=yes, ai-train=no
-Sitemap: https://erythro.ai/sitemap.xml`
+Sitemap: https://erythro.ai/sitemap.xml`,
+      codeExisting: `# הוסיפו את השורה ל-robots.txt הקיים, בקבוצת User-agent: *.
+# את שאר הכללים בקובץ השאירו כמו שהם:
+Content-Signal: search=yes, ai-input=yes, ai-train=no`
     }
   },
   a11y: {
@@ -1053,7 +1062,9 @@ function renderCodeBox(solObj, lang) {
   const infra = data.infrastructure_and_security || {};
   let origin = '';
   try { origin = new URL(infra.site_origin || data.target_url).origin; } catch (e) {}
-  let code = item.code;
+  // The site already has robots.txt: a full file would wipe its rules (WordPress /wp-admin/ etc.),
+  // so the snippet is the line to add (report 238, sirton.co.il)
+  let code = infra.has_robots_txt === true && item.codeExisting ? item.codeExisting : item.code;
   if (infra.has_sitemap_xml && infra.sitemap_url) {
     code = code.replaceAll('https://erythro.ai/sitemap.xml', infra.sitemap_url);
   }
