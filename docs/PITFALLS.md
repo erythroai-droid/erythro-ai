@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-147 — Worker redeployed from a CRLF worktree: render-v2 crashes, clients get the old Java report
+
+**Tags:** `audit`, `deploy`, `vps`, `render-v2`, `line-endings`
+**Seen:** 2026-10-30 — AUD-242 (bedek2.co.il, Free HE) arrived in the old Java template after the 08:07 UTC worker redeploy
+
+**Symptom:** Worker log: `Error: anchor end not found:     </div>\n  </section>` from `render-v2-reports.mjs`, then `render-v2-reports.mjs завершился с кодом: 1`; the run still ends `ok`, the email goes out with the fallback Java HTML (old design). Code in the container matched `main`.
+
+**Cause:** `deploy_audit_agent_only.py` was run from a fresh git worktree (`C:/dev/erythro-ai-ga4-text`). With `core.autocrlf=true` the worktree checkout wrote every text file with CRLF, and the script tars files as they are on disk. `render-v2-reports.mjs` cuts template blocks with LF anchors (`'    </div>\n  </section>'`); in CRLF templates `indexOf` fails. The main checkout happened to have LF templates, so earlier deploys from it worked.
+
+**Fix:** Redeployed from `git -c core.autocrlf=false archive origin/main services/audit-agent scripts/deploy_audit_agent_only.py` (LF) with `VPS_PASSWORD` from the main `.env.local`. Container templates = `origin/main` blobs, 0 CRLF files. Checked on the AUD-242 data in a copy inside the old container: CRLF templates crash, LF templates render all reports.
+
+**Prevent:** Deploy the worker only from LF files (a `git archive` with `core.autocrlf=false`, or a checkout whose templates have no `\r`). After every worker redeploy run one audit and grep the log for `render-v2-reports.mjs завершился с кодом`. `.gitattributes` now forces `eol=lf` for `services/audit-agent/**`, so new worktrees check it out with LF.
+
+---
+
 ## PIT-146 — English "stub" and an "in head" claim inside RU/HE text of the GA4 / Consent Mode check
 
 **Tags:** `audit`, `i18n`, `ga4`, `consent-mode`, `report-text`
@@ -2544,3 +2559,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Lead check: a start form (URL field → sign-up) is `na` "not checked" in Free; Diagnostic/Pro submit it once with the site origin and judge the step that opens, never typing credentials (PIT-144)
 - [ ] Start form next to other lead forms: Diagnostic/Pro still judge the step behind it and report both; a paid tier never reports less than a cheaper one (PIT-145)
 - [ ] RU/HE report text: no English "stub"/slang, no "in <head>" claim the collector did not measure (PIT-146)
+- [ ] Worker redeploy: ship LF files only (`git -c core.autocrlf=false archive`), never a CRLF worktree; after it, check one audit log for a render-v2 exit code (PIT-147)
