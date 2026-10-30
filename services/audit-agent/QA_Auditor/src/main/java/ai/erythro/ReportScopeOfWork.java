@@ -745,8 +745,9 @@ public final class ReportScopeOfWork {
                             + "{{HEADERS}} заголовков (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, "
                             + "Referrer-Policy, Permissions-Policy), ответы 4xx/5xx и runtime JS (console / PageError)",
                     "Индексация — robots.txt, sitemap.xml ({{SITEMAP}} URL в карте), директива Sitemap:; "
-                            + "правила для {{BOTS}} AI-ботов (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, "
-                            + "CCBot, Google-Extended, Applebot-Extended, PerplexityBot) и флаг severe_block",
+                            + "правила для {{BOTS}} AI-ботов: поиск и ответы (ChatGPT-User, PerplexityBot) "
+                            + "отдельно от обучения (GPTBot, ClaudeBot, anthropic-ai, CCBot, "
+                            + "Google-Extended, Applebot-Extended)",
                     "AI Visibility — GET /llms.txt, /.well-known/mcp, /api/mcp, /about; JSON-LD Organization/FAQ, "
                             + "link rel=describedby, dataLayer и Consent Mode по умолчанию. {{AI_SCORE}} критериев входят в балл scorecard; "
                             + "это не весь объём блока",
@@ -806,8 +807,9 @@ public final class ReportScopeOfWork {
                             + "{{HEADERS}} headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, "
                             + "Referrer-Policy, Permissions-Policy), 4xx/5xx and runtime JS (console / PageError)",
                     "Indexing — robots.txt, sitemap.xml ({{SITEMAP}} URLs in the map), Sitemap: directive; "
-                            + "rules for {{BOTS}} AI crawlers (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, "
-                            + "CCBot, Google-Extended, Applebot-Extended, PerplexityBot) and severe_block",
+                            + "rules for {{BOTS}} AI crawlers: search and answers (ChatGPT-User, PerplexityBot) "
+                            + "apart from training (GPTBot, ClaudeBot, anthropic-ai, CCBot, "
+                            + "Google-Extended, Applebot-Extended)",
                     "AI Visibility — GET /llms.txt, /.well-known/mcp, /api/mcp, /about; JSON-LD Organization/FAQ, "
                             + "rel=describedby, dataLayer and the Consent Mode default. {{AI_SCORE}} criteria feed the scorecard score; "
                             + "that is not the whole block",
@@ -867,8 +869,9 @@ public final class ReportScopeOfWork {
                             + "{{HEADERS}} כותרות (HSTS, CSP, X-Frame-Options, X-Content-Type-Options, "
                             + "Referrer-Policy, Permissions-Policy), 4xx/5xx ו-JS בזמן ריצה",
                     "אינדוקס — robots.txt, sitemap.xml ({{SITEMAP}} URL במפה), הנחיית Sitemap:; "
-                            + "כללים ל-{{BOTS}} בוטי AI (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, "
-                            + "CCBot, Google-Extended, Applebot-Extended, PerplexityBot) ו-severe_block",
+                            + "כללים ל-{{BOTS}} בוטי AI: חיפוש ותשובות (ChatGPT-User, PerplexityBot) "
+                            + "בנפרד מאימון (GPTBot, ClaudeBot, anthropic-ai, CCBot, "
+                            + "Google-Extended, Applebot-Extended)",
                     "AI Visibility — GET /llms.txt, /.well-known/mcp, /api/mcp, /about; JSON-LD, "
                             + "rel=describedby, dataLayer ו-consent. {{AI_SCORE}} קריטריונים לציון; זה לא כל הבלוק",
                     "Agent Readiness Level 1 — {{L1}} בדיקות (robots, sitemap לסוכנים, כללי בוטים, "

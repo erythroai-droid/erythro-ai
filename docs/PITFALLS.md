@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-148 — AI card on a Cloudflare WordPress site: real llms.txt "missing", second Content-Signal in Step 1, "AI does not see the brand"
+
+**Tags:** `audit`, `ai-visibility`, `robots`, `render-v2`, `report-text`
+**Seen:** 2026-10-30 — report 243, fast-taxi.co.il, Free HE
+
+**Symptom:** Top finding 01 "עוזרי AI לא מוצאים את האתר — Критично", AI Visibility 29/100. Gaps listed `/llms.txt` and "robots Disallow: / לבוטי AI"; text said ChatGPT, Claude and Gemini do not see the brand. Step 1 told the owner to add `Content-Signal: search=yes, ai-input=yes, ai-train=no` to robots.txt. On the site: `/llms.txt` is 200 `text/plain`, 37 KB, valid llmstxt.org; robots.txt is Cloudflare Managed and already has `Content-Signal: search=yes,ai-train=no,use=reference`; it blocks training crawlers (GPTBot, ClaudeBot, Google-Extended…), ChatGPT-User and PerplexityBot are open.
+
+**Cause:** (1) `fetchLlmsTxt` checked `body.stripLeading().startsWith("#")`; the file starts with a UTF-8 BOM, Java keeps U+FEFF and `stripLeading` does not remove it. (2) `renderCodeBox` picked `codeExisting` (the Content-Signal line) whenever robots.txt existed, without looking at `vercel_level1.content_signals.present`. (3) `parseRobotsAiAccess` set `severe_block` for any blocked AI bot, training crawlers included; the card text and the Pro engine cards called a training-only block invisibility ("ChatGPT Search (GPTBot)").
+
+**Fix:** `textBody()` strips a leading BOM for robots.txt, llms.txt, sitemap and markdown bodies. Bots split into `AI_ANSWER_BOTS` (ChatGPT-User, PerplexityBot) and `AI_TRAINING_BOTS`; `severe_block` only when an answer bot is blocked, `answer_blocked_bots` / `training_blocked_bots` in data, the checklist adds "обучение моделей закрыто (это не мешает ответам AI)". The AI finding says "не находят" only with a severe block, otherwise "ИИ-ассистентам не хватает данных о сайте". Step 1 with an existing robots.txt gives only what is missing: Content-Signal and/or a `Sitemap:` line, else an `/llms.txt` skeleton, else `link rel=describedby`, else no code. Pro engine cards: answer bot decides "Blocked", training-only shows "Обучение закрыто" (Gemini: Google-Extended affects Gemini app answers, not Search / AI Overviews).
+
+**Prevent:** Read text files from the web through `textBody()`. A code snippet for a file the site already has must be built from what the collector found in that file, never a fixed line. "Training closed" and "invisible to AI" are different findings: check which bot is blocked before writing a claim about answers.
+
+---
+
 ## PIT-147 — Worker redeployed from a CRLF worktree: render-v2 crashes, clients get the old Java report
 
 **Tags:** `audit`, `deploy`, `vps`, `render-v2`, `line-endings`
@@ -2560,3 +2575,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Start form next to other lead forms: Diagnostic/Pro still judge the step behind it and report both; a paid tier never reports less than a cheaper one (PIT-145)
 - [ ] RU/HE report text: no English "stub"/slang, no "in <head>" claim the collector did not measure (PIT-146)
 - [ ] Worker redeploy: ship LF files only (`git -c core.autocrlf=false archive`), never a CRLF worktree; after it, check one audit log for a render-v2 exit code (PIT-147)
+- [ ] Web text files through `textBody()` (BOM); Step 1 snippet only adds what the existing file lacks; a training-only robots block is not "AI does not see the site" (PIT-148)
