@@ -242,8 +242,8 @@ export function CalcHead({
   const sub = tCalc(isForm ? copy.heroSubForm : kind === 'waiting' ? copy.heroSubWait : copy.heroSubReady, locale)
 
   return (
-    <div className="flex h-full min-w-0 flex-1 flex-col justify-between gap-5 px-[22px] pb-6 pt-8 sm:px-8 lg:px-10 lg:pb-7 lg:pt-8">
-      <div className="flex flex-col gap-5">
+    <div className="flex h-full min-w-0 flex-1 flex-col justify-between gap-4 px-[22px] pb-5 pt-6 sm:px-7 lg:px-8 lg:pb-6 lg:pt-6">
+      <div className="flex flex-col gap-4">
         <div className={`items-center gap-2.5 ${children ? 'hidden' : 'flex'}`}>
           <span className="inline-flex items-center gap-1.5 rounded bg-[#1e1e1e] px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-wider text-[#ffe9c7]">
             <span className="size-1.5 rounded-full bg-[#e52421]" />
@@ -255,43 +255,62 @@ export function CalcHead({
           </span>
         </div>
         <h2
-          className={`m-0 font-semibold normal-case leading-[0.94] tracking-[-0.045em] text-[#1e1e1e] ${
-            children ? '[font-size:clamp(40px,min(6vw,8.5vh),110px)]' : '[font-size:clamp(52px,min(8.8vw,13vh),190px)]'
+          className={`m-0 font-bold normal-case leading-[0.93] tracking-[-0.04em] text-[#1e1e1e] ${
+            children
+              ? '[font-size:clamp(38px,min(5.2vw,7.5vh),86px)]'
+              : '[font-size:clamp(48px,min(6.5vw,9.5vh),108px)]'
           }`}
         >
-          <span className="block">{l1}</span>
-          <span className={`relative block w-fit max-w-full text-[#e52421] ${isForm ? '' : 'break-all text-[0.58em] leading-[1.1]'}`}>
-            <bdi>{isForm ? tCalc(copy.heroL2, locale) : domain}</bdi>
+          <span className="block">
+            {l1}{' '}
+            <span className="text-[#e52421]">
+              <bdi>{isForm ? tCalc(copy.heroL2, locale) : domain}</bdi>
+            </span>
           </span>
-          <span className="block text-[0.48em] font-semibold leading-[1.12] tracking-[-0.03em] text-[#1e1e1e]">{l3}</span>
+          <span className="block text-[#1e1e1e]">{l3}</span>
         </h2>
       </div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         {!children ? (
           <div className="flex flex-col gap-3">
-            <p className="m-0 max-w-[560px] text-base leading-[1.55] text-[#1e1e1e] sm:text-[17px]">{sub}</p>
-            <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs text-[#6b6254]">
-              <span className="inline-flex items-center gap-1.5 rounded bg-white px-2 py-0.5 border border-[#d6d6d6] text-[#1e1e1e]">
-                <span className="size-1.5 rounded-full bg-[#22bf16]" />
-                230+ ТЕСТОВ
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded bg-white px-2 py-0.5 border border-[#d6d6d6] text-[#1e1e1e]">
-                HEADLESS CHROME
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded bg-white px-2 py-0.5 border border-[#d6d6d6] text-[#1e1e1e]">
-                БЕЗ ДОСТУПА К GA
-              </span>
-            </div>
+            <p className="m-0 max-w-[560px] text-base leading-snug text-[#1e1e1e] sm:text-[17px]">{sub}</p>
+            {isForm ? (
+              <div className="flex flex-col gap-2 pt-0.5">
+                <p className="m-0 font-mono text-[11px] font-medium uppercase tracking-wider text-[#6b6254]">
+                  {tCalc(copy.step1ScopeTitle, locale)}
+                </p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {copy.step1Scopes.map((scope) => (
+                    <div
+                      key={scope.code}
+                      className="flex items-start gap-2 rounded-[6px] border border-[#d6d6d6] bg-white p-2.5 shadow-sm transition-colors hover:border-[#1e1e1e]"
+                    >
+                      <span className="mt-0.5 grid size-4.5 shrink-0 place-items-center rounded-[3px] bg-[#1e1e1e] font-mono text-[9px] font-bold text-white">
+                        ✓
+                      </span>
+                      <div className="min-w-0">
+                        <p className="m-0 text-xs font-semibold leading-tight text-[#1e1e1e]">
+                          {tCalc(scope.title, locale)}
+                        </p>
+                        <p className="m-0 mt-0.5 text-[11px] leading-tight text-[#6b6254]">
+                          {tCalc(scope.desc, locale)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
         {children}
         {showFacts ? (
-          <dl className="m-0 grid grid-cols-3 gap-2.5 sm:gap-3.5">
+          <dl className="m-0 grid grid-cols-3 gap-2.5 sm:gap-3">
             {copy.heroFacts.map((f, i) => (
               <div
                 key={f.big}
-                className="group relative flex flex-col justify-between rounded-[10px] border border-[#d6d6d6] bg-white p-3.5 sm:p-4 shadow-[0_1px_4px_rgba(0,0,0,0.03)] transition-all hover:border-[#1e1e1e]"
+                className="group relative flex flex-col justify-between rounded-[8px] border border-[#d6d6d6] bg-white p-3 sm:p-3.5 shadow-sm transition-all hover:border-[#1e1e1e]"
               >
                 <div className="flex items-center justify-between gap-1 pb-1">
                   <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#6b6254]">
@@ -304,10 +323,10 @@ export function CalcHead({
                     }`}
                   />
                 </div>
-                <dt className="text-[28px] sm:text-[38px] font-semibold leading-none tracking-[-0.03em] text-[#1e1e1e]">
+                <dt className="text-[26px] sm:text-[34px] font-semibold leading-none tracking-[-0.03em] text-[#1e1e1e]">
                   <bdi>{f.big}</bdi>
                 </dt>
-                <dd className="m-0 mt-2 text-[11px] font-medium uppercase leading-snug tracking-[0.03em] text-[#6b6254]">
+                <dd className="m-0 mt-1.5 text-[11px] font-medium uppercase leading-snug tracking-[0.03em] text-[#6b6254]">
                   {tCalc(f.label, locale)}
                 </dd>
               </div>
@@ -319,16 +338,11 @@ export function CalcHead({
   )
 }
 
-/** One-screen stage on a single shared backing: hero text on the start side, working area on the other, band at the bottom. */
+/** One-screen stage on a single shared backing: hero text on the start side, working area on the other. */
 export function CalcSplit({ locale, left, right }: { locale: string; left: React.ReactNode; right: React.ReactNode }) {
   return (
-    <section className="relative isolate flex flex-col overflow-hidden rounded-[10px] border border-[#e0e0e0] bg-[#f8f8f8] lg:min-h-[calc(100svh-170px)]">
-      {(['top-3 start-3', 'top-3 end-3'] as const).map((pos) => (
-        <svg key={pos} viewBox="0 0 12 12" aria-hidden className={`absolute ${pos} size-3 text-[#b4b4b4]`} fill="none" stroke="currentColor" strokeWidth="1">
-          <path d="M6 0v12M0 6h12" />
-        </svg>
-      ))}
-      <div className="grid flex-1 items-stretch lg:grid-cols-[1.02fr_1fr]">
+    <section className="relative isolate flex flex-col overflow-hidden rounded-[10px] border border-[#e0e0e0] bg-[#f8f8f8]">
+      <div className="grid flex-1 items-stretch lg:grid-cols-[1.08fr_1fr]">
         {left}
         <div className="flex min-w-0 flex-col bg-white border-t border-[#e0e0e0] lg:border-t-0 lg:border-s [&>*]:flex-1">{right}</div>
       </div>
@@ -339,7 +353,7 @@ export function CalcSplit({ locale, left, right }: { locale: string; left: React
 /** Step tracker: done steps ink, current step red, the rest grey. */
 export function CalcStepper({ locale, current }: { locale: string; current: 1 | 2 | 3 | 4 }) {
   return (
-    <ol className="m-0 grid list-none grid-cols-4 gap-2 p-0">
+    <ol className="m-0 grid list-none grid-cols-4 gap-1.5 p-0">
       {copy.stepper.map((label, i) => {
         const n = (i + 1) as 1 | 2 | 3 | 4
         const isCurrent = n === current
@@ -347,18 +361,18 @@ export function CalcStepper({ locale, current }: { locale: string; current: 1 | 
         return (
           <li
             key={n}
-            className={`flex min-w-0 flex-col gap-1.5 rounded-lg border p-2 sm:p-2.5 transition-colors ${
+            className={`flex min-w-0 flex-col gap-1 rounded-[4px] border p-2 transition-colors ${
               isCurrent
-                ? 'border-[#1e1e1e] bg-white shadow-sm ring-1 ring-[#1e1e1e]/5'
+                ? 'border-[#d6d6d6] bg-white shadow-sm border-t-2 border-t-[#e52421]'
                 : isPast
-                  ? 'border-[#d6d6d6] bg-[#fcfcfc]'
-                  : 'border-[#e8e8e8] bg-[#f9f9f9] opacity-70'
+                  ? 'border-[#e0e0e0] bg-[#fcfcfc]'
+                  : 'border-[#eaeaea] bg-[#f8f8f8] opacity-70'
             }`}
             aria-current={isCurrent ? 'step' : undefined}
           >
             <div className="flex items-center justify-between">
               <span
-                className={`flex size-5 items-center justify-center rounded-full font-mono text-[10px] font-bold ${
+                className={`flex size-4.5 items-center justify-center rounded-[3px] font-mono text-[10px] font-bold ${
                   isCurrent
                     ? 'bg-[#e52421] text-white'
                     : isPast
@@ -424,7 +438,7 @@ function Pill({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** Steps 1-2 of the form: the stepper, the active step in a white block, and "what you get" beside it. */
+/** Steps 1-2 of the form: the stepper and the active step in a white block. */
 export function CalcFormShell({
   locale,
   step,
@@ -436,7 +450,7 @@ export function CalcFormShell({
 }) {
   const isStep1 = step === 1
   return (
-    <section className={`${PANEL} flex h-full min-w-0 flex-col justify-center gap-5 sm:gap-6`}>
+    <section className={`${PANEL} flex h-full min-w-0 flex-col justify-center gap-3.5 sm:gap-4`}>
       <CardHead
         compact
         title={tCalc(isStep1 ? copy.step1Heading : copy.step2Heading, locale)}
@@ -445,8 +459,8 @@ export function CalcFormShell({
         no={`0${step}`}
       />
       <CalcStepper locale={locale} current={step} />
-      <div className={`${INNER} flex min-w-0 flex-col gap-5 px-5 py-6 sm:px-7 shadow-sm`}>
-        <div className="flex items-center justify-between border-b border-[#e8e8e8] pb-3 text-xs uppercase tracking-wider text-[#6b6254]">
+      <div className={`${INNER} flex min-w-0 flex-col gap-4 rounded-[6px] px-5 py-4 sm:px-6 shadow-sm`}>
+        <div className="flex items-center justify-between border-b border-[#e8e8e8] pb-2 text-xs uppercase tracking-wider text-[#6b6254]">
           <span className="flex items-center gap-2 font-mono font-medium text-[#1e1e1e]">
             <span className="size-2 rounded-full bg-[#22bf16] animate-pulse" />
             {tCalc(isStep1 ? copy.stepSite : copy.stepNumbers, locale)}
@@ -456,33 +470,6 @@ export function CalcFormShell({
           </span>
         </div>
         {children}
-        {isStep1 ? (
-          <div className="flex flex-col gap-2.5 border-t border-[#e8e8e8] pt-4">
-            <p className="m-0 font-mono text-[11px] uppercase tracking-wider text-[#6b6254]">
-              {tCalc(copy.step1ScopeTitle, locale)}
-            </p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {copy.step1Scopes.map((scope) => (
-                <div
-                  key={scope.code}
-                  className="flex items-start gap-2.5 rounded-lg border border-[#e8e8e8] bg-[#fafafa] p-2.5 transition-colors hover:border-[#1e1e1e] hover:bg-white"
-                >
-                  <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded bg-[#1e1e1e] font-mono text-[10px] font-bold text-white">
-                    ✓
-                  </span>
-                  <div className="min-w-0">
-                    <p className="m-0 text-xs font-semibold leading-tight text-[#1e1e1e]">
-                      {tCalc(scope.title, locale)}
-                    </p>
-                    <p className="m-0 mt-0.5 text-[11px] leading-tight text-[#6b6254]">
-                      {tCalc(scope.desc, locale)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
       </div>
     </section>
   )
