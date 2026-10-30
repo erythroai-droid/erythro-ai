@@ -2183,6 +2183,8 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 **Fix:** `appendGlyphs()` — in RTL phrases each Latin/digit run goes into its own `display:inline-flex;direction:ltr;unicode-bidi:isolate` box; used by every per-letter split (`renderChars`, `explodeToChars`, the AI-plate word and its white cover, the flip frame). The letter-by-letter frame sets `direction:ltr` on a Latin word's box. Checked in Chrome against native text layout.
 
+**Follow-up (outline behind the text):** the background outline is one SVG `<text>` inside the `dir="ltr"` stage, so the LTR paragraph put the words of «אוטומציית AI» in LTR order (Hebrew word left, AI right) — swapped against the foreground. `buildMaskedOutline` wraps Hebrew phrases in RLE…PDF (U+202B…U+202C) for the stroke and the mask text: word order as Hebrew reads, `x`/`getBBox` unchanged (checked in Chrome: bbox x 0, width 326 before and after; Hebrew-only phrases unchanged).
+
 **Prevent:** Never split mixed-script text into per-letter inline-block/flex items without grouping LTR runs; compare the visual order with the browser's own rendering of the same string.
 
 ---
