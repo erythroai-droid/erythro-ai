@@ -107,6 +107,8 @@ const nextConfig: NextConfig = {
   // Without tracing it, `docs/` is absent from the serverless bundle.
   outputFileTracingIncludes: {
     '/api/consult': ['./docs/consultant/erythro-knowledge-base.md'],
+    // Read with tracing off (turbopackIgnore) — only these A44 report icons, not the whole project.
+    '/api/audit/assets/[...path]': ['./public/templates/figma-assets/*'],
   },
   env: {
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: turnstileSiteKey,
