@@ -194,7 +194,6 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     <div className="flex w-full min-w-0 flex-1 flex-col gap-3 lg:gap-3.5">
       {stage.name === 'form' || stage.name === 'waiting' ? (
         <>
-        <CalcTags locale={locale} kind={stage.name} step={currentStep} />
         <CalcSplit
           locale={locale}
           left={<CalcHead locale={locale} kind={stage.name} domain={domain} />}
@@ -204,7 +203,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
         <CalcFormShell locale={locale} step={formStep}>
           {/* The audit form stays mounted on step 2 (hidden) so its values and validation survive. */}
           <div
-            className={`audit-calc-form-wrap ${formStep === 1 ? 'block' : 'hidden'} [&_.audit-pill-shell]:!rounded-xl [&_.audit-pill-shell]:!border-[#d6d6d6] [&_.audit-pill-shell]:!bg-white [&_.audit-pill-shell]:shadow-[0_1px_3px_rgba(0,0,0,0.03)] [&_.audit-pill-shell:focus-within]:!border-[#1e1e1e] [&_.audit-pill-shell:focus-within]:!ring-2 [&_.audit-pill-shell:focus-within]:!ring-[#1e1e1e]/10 [&_.audit-pill-shell]:transition-all [&_input]:!text-base [&_input]:!font-medium [&_input]:!text-[#1e1e1e] [&_input]:!placeholder-[#8f8a80]`}
+            className={`audit-calc-form-wrap ${formStep === 1 ? 'block' : 'hidden'} [&_.audit-pill-shell]:!rounded-xl [&_.audit-pill-shell]:!border-[#e2e8f0] [&_.audit-pill-shell]:!bg-[#f8fafc]/60 hover:[&_.audit-pill-shell]:!bg-white hover:[&_.audit-pill-shell]:!border-[#cbd5e1] [&_.audit-pill-shell]:shadow-[0_1px_2px_rgba(0,0,0,0.02)] [&_.audit-pill-shell:focus-within]:!border-[#0f172a] [&_.audit-pill-shell:focus-within]:!bg-white [&_.audit-pill-shell:focus-within]:!ring-4 [&_.audit-pill-shell:focus-within]:!ring-[#0f172a]/5 [&_.audit-pill-shell]:transition-all [&_input]:!text-base [&_input]:!font-medium [&_input]:!text-[#0f172a] [&_input]:!placeholder-[#94a3b8]`}
           >
             <AuditLpForm
               locale={locale}
@@ -234,19 +233,19 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
           ) : null}
           <div className="flex flex-col items-center gap-3.5 pt-1">
             <div id={SUBMIT_SLOT_ID} className="flex w-full justify-center empty:hidden [&_button]:!w-full" />
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-center text-[11px] font-medium uppercase tracking-[0.04em] text-[#6b6254]">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-center text-[11px] font-medium uppercase tracking-[0.04em] text-[#64748b]">
               <span className="inline-flex items-center gap-1.5">
-                <span className="font-bold text-[#22bf16]">✓</span>
+                <span className="font-bold text-[#10b981]">✓</span>
                 {tCalc(copy.step1Guarantee1, locale)}
               </span>
-              <span className="text-[#d6d6d6] max-sm:hidden">·</span>
+              <span className="text-[#cbd5e1] max-sm:hidden">·</span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="font-bold text-[#22bf16]">✓</span>
+                <span className="font-bold text-[#10b981]">✓</span>
                 {tCalc(copy.step1Guarantee2, locale)}
               </span>
-              <span className="text-[#d6d6d6] max-sm:hidden">·</span>
+              <span className="text-[#cbd5e1] max-sm:hidden">·</span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="font-bold text-[#22bf16]">✓</span>
+                <span className="font-bold text-[#10b981]">✓</span>
                 {tCalc(copy.step1Guarantee3, locale)}
               </span>
             </div>
@@ -254,7 +253,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               <button
                 type="button"
                 onClick={() => setFormStep(1)}
-                className="cursor-pointer border-0 bg-transparent p-0 text-sm text-[#6b6254] underline underline-offset-4 hover:text-[#1e1e1e]"
+                className="cursor-pointer border-0 bg-transparent p-0 text-sm text-[#64748b] underline underline-offset-4 hover:text-[#0f172a]"
               >
                 ← {tCalc(copy.back, locale)}
               </button>

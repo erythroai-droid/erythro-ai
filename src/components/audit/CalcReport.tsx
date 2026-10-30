@@ -32,21 +32,21 @@ import {
  * Colours, sizes and spacing are measured from the report (render-v2-reports.mjs); the site font is Inter only.
  */
 
-export const INK = '#1e1e1e'
-export const MUTE = '#6b6254'
-export const LINE = '#d6d6d6'
+export const INK = '#0f172a'
+export const MUTE = '#64748b'
+export const LINE = '#e2e8f0'
 export const BRAND = '#e52421'
 
-export const CARD = 'relative isolate overflow-hidden rounded-[10px] border border-[#e0e0e0] bg-[#f8f8f8] p-[22px] sm:p-8 lg:p-[60px]'
-/** Compact card for the right-hand panel of a one-screen stage, with ~50px padding on desktop. */
-export const PANEL = 'relative isolate px-[22px] py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-[50px]'
+export const CARD = 'relative isolate overflow-hidden rounded-[16px] border border-[#e2e8f0] bg-white p-[22px] sm:p-8 lg:p-[60px] shadow-[0_4px_24px_rgba(15,23,42,0.03)]'
+/** Compact card for the right-hand panel of a one-screen stage, with ~48px padding on desktop. */
+export const PANEL = 'relative isolate px-[22px] py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-[46px]'
 /** Outlined (hollow) giant lettering for background words and ghost numerals. */
-const GHOST_STROKE = '[-webkit-text-stroke:1.5px_#d6d6d6] text-transparent select-none'
+const GHOST_STROKE = '[-webkit-text-stroke:1.5px_#e2e8f0] text-transparent select-none'
 /** White block inside a card (report: flow, result box, tag). */
-export const INNER = 'rounded-[10px] border border-[#d6d6d6] bg-white'
+export const INNER = 'rounded-[16px] border border-[#e2e8f0] bg-white'
 /** Report tag / badge: 12px caps in a small bordered box. */
-export const TAG = 'inline-flex items-center gap-1 rounded border px-2 py-[3px] text-xs uppercase leading-[18px] tracking-[0.04em]'
-export const LABEL = 'text-xs uppercase tracking-[0.04em] text-[#6b6254]'
+export const TAG = 'inline-flex items-center gap-1 rounded-md border border-[#e2e8f0] px-2.5 py-[3px] text-xs uppercase leading-[18px] tracking-[0.04em] font-mono'
+export const LABEL = 'text-xs uppercase tracking-[0.04em] text-[#64748b]'
 
 const LEVEL_COLOR: Record<LightLevel, string> = { green: '#22bf16', yellow: '#ff7900', red: '#e52421' }
 /** Strong tag (report ".tag.med"): used in top-3 cards and check rows. */
@@ -92,12 +92,12 @@ function CardHead({
   return (
     <div className="flex items-start justify-between gap-6">
       <div className={`flex min-w-0 flex-col ${compact ? 'gap-3' : 'gap-4'}`}>
-        <CardTitle className={compact ? '!text-[26px] sm:!text-[30px] lg:!text-[34px]' : ''}>{title}</CardTitle>
-        {sub ? <p className="m-0 max-w-[620px] text-base leading-6 text-[#6b6254] sm:text-[17px]">{sub}</p> : null}
+        <CardTitle className={compact ? '!text-[26px] sm:!text-[30px] lg:!text-[34px] !text-[#0f172a]' : '!text-[#0f172a]'}>{title}</CardTitle>
+        {sub ? <p className="m-0 max-w-[620px] text-base leading-6 text-[#475569] sm:text-[17px]">{sub}</p> : null}
         {tag ? (
           <div className="flex flex-wrap items-center gap-2">
             <Tag>{tag}</Tag>
-            <span aria-hidden className="h-px w-10 bg-[#d6d6d6]" />
+            <span aria-hidden className="h-px w-10 bg-[#e2e8f0]" />
           </div>
         ) : null}
       </div>
@@ -205,20 +205,92 @@ export function CalcTags({ locale, kind, step }: { locale: string; kind: 'form' 
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className={`${TAG} border-[#1e1e1e] bg-[#1e1e1e] text-[#ffe9c7]`}>
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0f172a] bg-[#0f172a] px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-white shadow-2xs">
         {tCalc(kind === 'form' ? copy.sectionTitle : copy.badgeYours, locale)}
       </span>
-      <Tag>{fillCalc(tCalc(copy.stepOf, locale), { n: step, total: 4 })}</Tag>
-      {kind === 'ready' ? (
-        date ? <Tag>{fillCalc(tCalc(copy.checkedOn, locale), { d: date })}</Tag> : null
-      ) : (
-        <Tag>{tCalc(copy.headTagFree, locale)}</Tag>
-      )}
-      <span className="ms-auto inline-flex items-center gap-2 text-xs uppercase tracking-[0.04em] text-[#6b6254] max-sm:hidden">
-        <span aria-hidden className="size-2 animate-pulse rounded-full bg-[#22bf16] motion-reduce:animate-none" />
-        {tCalc(copy.heroLive, locale)}
+      <span className="inline-flex items-center rounded-full border border-[#e2e8f0] bg-white px-3 py-1 font-mono text-[11px] font-medium uppercase tracking-wider text-[#475569] shadow-2xs">
+        {fillCalc(tCalc(copy.stepOf, locale), { n: step, total: 4 })}
       </span>
+      {kind === 'ready' ? (
+        date ? (
+          <span className="inline-flex items-center rounded-full border border-[#e2e8f0] bg-white px-3 py-1 font-mono text-[11px] font-medium uppercase tracking-wider text-[#475569] shadow-2xs">
+            {fillCalc(tCalc(copy.checkedOn, locale), { d: date })}
+          </span>
+        ) : null
+      ) : (
+        <span className="inline-flex items-center rounded-full border border-[#e2e8f0] bg-white px-3 py-1 font-mono text-[11px] font-medium uppercase tracking-wider text-[#475569] shadow-2xs">
+          {tCalc(copy.headTagFree, locale)}
+        </span>
+      )}
     </div>
+  )
+}
+
+function ScopeBadge({ code }: { code: string }) {
+  if (code === 'CWV-01') {
+    return (
+      <span className="font-mono text-[9px] sm:text-[10px] font-bold text-[#2563eb] bg-[#eff6ff] border border-[#bfdbfe] px-1.5 py-0.5 rounded-[4px]">
+        LCP 0.8s
+      </span>
+    )
+  }
+  if (code === 'LEAD-02') {
+    return (
+      <span className="font-mono text-[9px] sm:text-[10px] font-bold text-[#059669] bg-[#ecfdf5] border border-[#a7f3d0] px-1.5 py-0.5 rounded-[4px]">
+        0 LEAKS
+      </span>
+    )
+  }
+  if (code === 'SEO-03') {
+    return (
+      <span className="font-mono text-[9px] sm:text-[10px] font-bold text-[#d97706] bg-[#fffbeb] border border-[#fde68a] px-1.5 py-0.5 rounded-[4px]">
+        INDEX 100%
+      </span>
+    )
+  }
+  return (
+    <span className="font-mono text-[9px] sm:text-[10px] font-bold text-[#7c3aed] bg-[#f5f3ff] border border-[#ddd6fe] px-1.5 py-0.5 rounded-[4px]">
+      LLM READY
+    </span>
+  )
+}
+
+function ScopeIcon({ code }: { code: string }) {
+  if (code === 'CWV-01') {
+    return (
+      <span className="grid size-7 shrink-0 place-items-center rounded-[6px] bg-[#eff6ff] text-[#2563eb] shadow-xs">
+        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </span>
+    )
+  }
+  if (code === 'LEAD-02') {
+    return (
+      <span className="grid size-7 shrink-0 place-items-center rounded-[6px] bg-[#ecfdf5] text-[#059669] shadow-xs">
+        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+          <circle cx="12" cy="12" r="8" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v4m0 8v4m-8-8h4m8 0h4" />
+        </svg>
+      </span>
+    )
+  }
+  if (code === 'SEO-03') {
+    return (
+      <span className="grid size-7 shrink-0 place-items-center rounded-[6px] bg-[#fffbeb] text-[#d97706] shadow-xs">
+        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35" />
+        </svg>
+      </span>
+    )
+  }
+  return (
+    <span className="grid size-7 shrink-0 place-items-center rounded-[6px] bg-[#f5f3ff] text-[#7c3aed] shadow-xs">
+      <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    </span>
   )
 }
 
@@ -242,23 +314,26 @@ export function CalcHead({
   const sub = tCalc(isForm ? copy.heroSubForm : kind === 'waiting' ? copy.heroSubWait : copy.heroSubReady, locale)
 
   return (
-    <div className="flex h-full min-w-0 flex-1 flex-col justify-between gap-6 px-[22px] py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-[50px]">
-      <div className="flex flex-col gap-4">
+    <div className="flex h-full min-w-0 flex-1 flex-col justify-between gap-4 px-6 py-6 sm:px-8 sm:py-7 lg:px-11 lg:py-[34px]">
+      <div className="flex flex-col gap-3">
         <div className={`items-center gap-2.5 ${children ? 'hidden' : 'flex'}`}>
-          <span className="inline-flex items-center gap-1.5 rounded bg-[#1e1e1e] px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-wider text-[#ffe9c7]">
-            <span className="size-1.5 rounded-full bg-[#e52421]" />
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#e2e8f0] bg-white px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#0f172a] shadow-2xs backdrop-blur-sm">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#e52421] opacity-75 motion-reduce:hidden" />
+              <span className="relative inline-flex size-2 rounded-full bg-[#e52421]" />
+            </span>
             {tCalc(copy.heroKicker, locale)}
           </span>
-          <span className="h-px w-6 bg-[#d6d6d6]" />
-          <span className="font-mono text-[11px] uppercase tracking-wider text-[#6b6254]">
+          <span className="h-px w-6 bg-[#cbd5e1]" />
+          <span className="font-mono text-[11px] uppercase tracking-wider text-[#64748b]">
             AUTONOMOUS CHROMIUM LAB
           </span>
         </div>
         <h2
-          className={`m-0 font-bold normal-case leading-[0.93] tracking-[-0.04em] text-[#1e1e1e] ${
+          className={`m-0 font-bold normal-case leading-[0.96] tracking-[-0.035em] text-[#0f172a] text-balance ${
             children
-              ? '[font-size:clamp(38px,min(5.2vw,7.5vh),86px)]'
-              : '[font-size:clamp(48px,min(6.5vw,9.5vh),108px)]'
+              ? '[font-size:clamp(36px,min(5vw,7.2vh),82px)]'
+              : '[font-size:clamp(44px,min(6.2vw,9vh),100px)]'
           }`}
         >
           <span className="block">
@@ -267,33 +342,34 @@ export function CalcHead({
               <bdi>{isForm ? tCalc(copy.heroL2, locale) : domain}</bdi>
             </span>
           </span>
-          <span className="block text-[#1e1e1e]">{l3}</span>
+          <span className="block text-[#0f172a]">{l3}</span>
         </h2>
       </div>
 
       <div className="flex flex-col gap-6">
         {!children ? (
           <div className="flex flex-col gap-4">
-            <p className="m-0 max-w-[560px] text-base leading-relaxed text-[#1e1e1e] sm:text-[17px]">{sub}</p>
+            <p className="m-0 max-w-[580px] text-base leading-relaxed text-[#475569] sm:text-[17px]">{sub}</p>
             {isForm ? (
               <div className="flex flex-col gap-2.5 pt-1">
-                <p className="m-0 font-mono text-[11px] uppercase tracking-wider text-[#6b6254]">
+                <p className="m-0 font-mono text-[11px] uppercase tracking-wider text-[#64748b] font-semibold">
                   {tCalc(copy.step1ScopeTitle, locale)}
                 </p>
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                   {copy.step1Scopes.map((scope) => (
                     <div
                       key={scope.code}
-                      className="flex items-start gap-2.5 rounded-[6px] border border-[#d6d6d6] bg-white p-3 shadow-sm transition-colors hover:border-[#1e1e1e]"
+                      className="group relative flex flex-col justify-between gap-2 rounded-[12px] border border-[#e2e8f0] bg-white p-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 hover:-translate-y-1 hover:border-[#0f172a]/20 hover:shadow-[0_8px_20px_rgba(15,23,42,0.06)] cursor-default"
                     >
-                      <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-[3px] bg-[#1e1e1e] font-mono text-[10px] font-bold text-white">
-                        ✓
-                      </span>
-                      <div className="min-w-0">
-                        <p className="m-0 text-[13px] font-semibold leading-tight text-[#1e1e1e]">
+                      <div className="flex items-center justify-between gap-2">
+                        <ScopeIcon code={scope.code} />
+                        <ScopeBadge code={scope.code} />
+                      </div>
+                      <div className="min-w-0 mt-0.5">
+                        <p className="m-0 text-[13px] font-semibold leading-tight text-[#0f172a]">
                           {tCalc(scope.title, locale)}
                         </p>
-                        <p className="m-0 mt-1 text-[11px] leading-tight text-[#6b6254]">
+                        <p className="m-0 mt-1 text-[11px] leading-snug text-[#64748b]">
                           {tCalc(scope.desc, locale)}
                         </p>
                       </div>
@@ -310,23 +386,23 @@ export function CalcHead({
             {copy.heroFacts.map((f, i) => (
               <div
                 key={f.big}
-                className="group relative flex flex-col justify-between rounded-[8px] border border-[#d6d6d6] bg-white p-3.5 sm:p-4 shadow-sm transition-all hover:border-[#1e1e1e]"
+                className="group relative flex flex-col justify-between rounded-[12px] border border-[#e2e8f0] bg-white p-3.5 sm:p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#cbd5e1] hover:shadow-xs"
               >
                 <div className="flex items-center justify-between gap-1 pb-1">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#6b6254]">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#64748b]">
                     {'tag' in f ? f.tag : `0${i + 1}`}
                   </span>
                   <span
                     aria-hidden
                     className={`size-1.5 rounded-full ${
-                      i === 0 ? 'bg-[#e52421]' : i === 1 ? 'bg-[#1e1e1e]' : 'bg-[#22bf16]'
+                      i === 0 ? 'bg-[#e52421]' : i === 1 ? 'bg-[#0f172a]' : 'bg-[#10b981]'
                     }`}
                   />
                 </div>
-                <dt className="text-[28px] sm:text-[38px] font-semibold leading-none tracking-[-0.03em] text-[#1e1e1e]">
+                <dt className="text-[28px] sm:text-[38px] font-bold leading-none tracking-[-0.03em] text-[#0f172a]">
                   <bdi>{f.big}</bdi>
                 </dt>
-                <dd className="m-0 mt-2 text-[11px] font-medium uppercase leading-snug tracking-[0.03em] text-[#6b6254]">
+                <dd className="m-0 mt-2 text-[11px] font-medium uppercase leading-snug tracking-[0.03em] text-[#64748b]">
                   {tCalc(f.label, locale)}
                 </dd>
               </div>
@@ -341,10 +417,10 @@ export function CalcHead({
 /** One-screen stage on a single shared backing: hero text on the start side, working area on the other. */
 export function CalcSplit({ locale, left, right }: { locale: string; left: React.ReactNode; right: React.ReactNode }) {
   return (
-    <section className="relative isolate flex flex-col flex-1 overflow-hidden rounded-[10px] border border-[#e0e0e0] bg-[#f8f8f8] lg:min-h-[calc(100svh-175px)]">
-      <div className="grid flex-1 items-stretch lg:grid-cols-[1.08fr_1fr]">
+    <section className="relative isolate flex flex-col flex-1 overflow-hidden rounded-[20px] border border-[#e2e8f0] bg-white/70 shadow-[0_4px_32px_rgba(15,23,42,0.04)] backdrop-blur-md lg:min-h-[calc(100svh-175px)]">
+      <div className="grid flex-1 items-stretch lg:grid-cols-[1.1fr_1fr]">
         {left}
-        <div className="flex min-w-0 flex-col bg-white border-t border-[#e0e0e0] lg:border-t-0 lg:border-s [&>*]:flex-1">{right}</div>
+        <div className="flex min-w-0 flex-col bg-white border-t border-[#e2e8f0] lg:border-t-0 lg:border-s lg:border-s-[#e2e8f0] [&>*]:flex-1">{right}</div>
       </div>
     </section>
   )
@@ -361,23 +437,23 @@ export function CalcStepper({ locale, current }: { locale: string; current: 1 | 
         return (
           <li
             key={n}
-            className={`flex min-w-0 flex-col gap-1 rounded-[4px] border p-2 transition-colors ${
+            className={`flex min-w-0 flex-col gap-1 rounded-[6px] border p-2 transition-all duration-200 ${
               isCurrent
-                ? 'border-[#d6d6d6] bg-white shadow-sm border-t-2 border-t-[#e52421]'
+                ? 'border-[#cbd5e1] bg-white shadow-xs border-t-2 border-t-[#e52421]'
                 : isPast
-                  ? 'border-[#e0e0e0] bg-[#fcfcfc]'
-                  : 'border-[#eaeaea] bg-[#f8f8f8] opacity-70'
+                  ? 'border-[#e2e8f0] bg-[#f8fafc]'
+                  : 'border-[#f1f5f9] bg-[#f8fafc]/60 opacity-60'
             }`}
             aria-current={isCurrent ? 'step' : undefined}
           >
             <div className="flex items-center justify-between">
               <span
-                className={`flex size-4.5 items-center justify-center rounded-[3px] font-mono text-[10px] font-bold ${
+                className={`flex size-4.5 items-center justify-center rounded-[4px] font-mono text-[10px] font-bold ${
                   isCurrent
                     ? 'bg-[#e52421] text-white'
                     : isPast
-                      ? 'bg-[#1e1e1e] text-white'
-                      : 'bg-[#d6d6d6] text-[#6b6254]'
+                      ? 'bg-[#0f172a] text-white'
+                      : 'bg-[#e2e8f0] text-[#64748b]'
                 }`}
               >
                 {isPast ? '✓' : `0${n}`}
@@ -390,7 +466,7 @@ export function CalcStepper({ locale, current }: { locale: string; current: 1 | 
             </div>
             <span
               className={`truncate text-xs leading-tight ${
-                isCurrent ? 'font-semibold text-[#1e1e1e]' : isPast ? 'font-medium text-[#1e1e1e]' : 'text-[#6b6254]'
+                isCurrent ? 'font-semibold text-[#0f172a]' : isPast ? 'font-medium text-[#0f172a]' : 'text-[#64748b]'
               }`}
             >
               {tCalc(label, locale)}
@@ -406,9 +482,9 @@ export function CalcStepper({ locale, current }: { locale: string; current: 1 | 
 export const OUTLINE_BTN =
   'flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-[#1e1e1e] bg-white px-[26px] text-sm font-semibold tracking-[0.01em] text-[#1e1e1e] transition-colors hover:bg-[#1e1e1e] hover:text-white disabled:cursor-wait disabled:opacity-70'
 
-/** High-contrast primary action button for the calculator audit launch. */
+/** High-contrast primary action button for the calculator audit launch (Ruby Action). */
 export const PRIMARY_BTN =
-  'group relative flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-full bg-[#1e1e1e] px-8 py-4 text-base font-semibold tracking-[0.02em] text-white shadow-[0_4px_16px_rgba(30,30,30,0.18)] transition-all duration-200 hover:bg-[#e52421] hover:shadow-[0_8px_24px_rgba(229,36,33,0.32)] active:scale-[0.99] disabled:cursor-wait disabled:opacity-70'
+  'group relative flex w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-[#e52421] px-8 py-4 text-base font-semibold tracking-[0.02em] text-white shadow-[0_4px_20px_rgba(229,36,33,0.28)] transition-all duration-200 hover:bg-[#d11d1a] hover:shadow-[0_8px_28px_rgba(229,36,33,0.42)] active:scale-[0.99] disabled:cursor-wait disabled:opacity-70'
 
 /** Report "flow-out" list: green ticks. */
 function TickList({ items }: { items: readonly string[] }) {
@@ -450,7 +526,7 @@ export function CalcFormShell({
 }) {
   const isStep1 = step === 1
   return (
-    <section className={`${PANEL} flex h-full min-w-0 flex-col justify-center gap-5 sm:gap-6`}>
+    <section className={`${PANEL} flex h-full min-w-0 flex-col justify-between gap-4 sm:gap-5`}>
       <CardHead
         compact
         title={tCalc(isStep1 ? copy.step1Heading : copy.step2Heading, locale)}
@@ -458,13 +534,13 @@ export function CalcFormShell({
         tag={fillCalc(tCalc(copy.stepOf, locale), { n: step, total: 4 })}
       />
       <CalcStepper locale={locale} current={step} />
-      <div className={`${INNER} flex min-w-0 flex-col gap-6 rounded-[12px] p-6 sm:p-8 lg:p-[50px] shadow-sm`}>
-        <div className="flex items-center justify-between border-b border-[#e8e8e8] pb-3 text-xs uppercase tracking-wider text-[#6b6254]">
-          <span className="flex items-center gap-2 font-mono font-medium text-[#1e1e1e]">
-            <span className="size-2 rounded-full bg-[#22bf16] animate-pulse" />
+      <div className={`${INNER} flex min-w-0 flex-col gap-5 rounded-[16px] border border-[#e2e8f0] bg-white p-5 sm:p-7 lg:p-[42px] shadow-[0_4px_24px_rgba(15,23,42,0.03)]`}>
+        <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3 text-xs uppercase tracking-wider text-[#64748b]">
+          <span className="flex items-center gap-2 font-mono font-medium text-[#0f172a]">
+            <span className="size-2 rounded-full bg-[#10b981] animate-pulse" />
             {tCalc(isStep1 ? copy.stepSite : copy.stepNumbers, locale)}
           </span>
-          <span className="font-mono text-[11px] rounded border border-[#d6d6d6] bg-[#f9f9f9] px-2 py-0.5 text-[#6b6254]">
+          <span className="font-mono text-[11px] font-semibold rounded-md border border-[#e2e8f0] bg-[#f8fafc] px-2.5 py-0.5 text-[#475569]">
             {isStep1 ? 'HEADLESS CHROMIUM' : 'REVENUE CONVERTER'}
           </span>
         </div>
