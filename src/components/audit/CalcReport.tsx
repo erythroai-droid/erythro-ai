@@ -314,10 +314,10 @@ export function CalcHead({
   const sub = tCalc(isForm ? copy.heroSubForm : kind === 'waiting' ? copy.heroSubWait : copy.heroSubReady, locale)
 
   return (
-    <div className="flex h-full min-w-0 flex-1 flex-col justify-between gap-4 px-6 py-6 sm:px-8 sm:py-7 lg:px-11 lg:py-[34px]">
-      <div className="flex flex-col gap-3">
+    <div className="flex flex-col justify-center gap-6 lg:gap-8 py-2">
+      <div className="flex flex-col gap-4">
         <div className={`items-center gap-2.5 ${children ? 'hidden' : 'flex'}`}>
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#e2e8f0] bg-white px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#0f172a] shadow-2xs backdrop-blur-sm">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#e2e8f0] bg-white px-3.5 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-[#0f172a] shadow-xs backdrop-blur-sm">
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#e52421] opacity-75 motion-reduce:hidden" />
               <span className="relative inline-flex size-2 rounded-full bg-[#e52421]" />
@@ -325,15 +325,16 @@ export function CalcHead({
             {tCalc(copy.heroKicker, locale)}
           </span>
           <span className="h-px w-6 bg-[#cbd5e1]" />
-          <span className="font-mono text-[11px] uppercase tracking-wider text-[#64748b]">
-            AUTONOMOUS CHROMIUM LAB
+          <span className="font-mono text-xs uppercase tracking-wider text-[#64748b]">
+            CHROMIUM LAB 2026
           </span>
         </div>
+
         <h2
-          className={`m-0 font-bold normal-case leading-[0.96] tracking-[-0.035em] text-[#0f172a] text-balance ${
+          className={`m-0 font-bold normal-case leading-[1.0] tracking-[-0.035em] text-[#0f172a] text-balance ${
             children
-              ? '[font-size:clamp(36px,min(5vw,7.2vh),82px)]'
-              : '[font-size:clamp(44px,min(6.2vw,9vh),100px)]'
+              ? '[font-size:clamp(36px,min(5vw,7.2vh),72px)]'
+              : '[font-size:clamp(44px,min(5.5vw,8.5vh),82px)]'
           }`}
         >
           <span className="block">
@@ -344,72 +345,28 @@ export function CalcHead({
           </span>
           <span className="block text-[#0f172a]">{l3}</span>
         </h2>
+
+        <p className="m-0 mt-2 max-w-[520px] text-lg sm:text-xl font-normal leading-relaxed text-[#475569]">
+          {sub}
+        </p>
       </div>
 
-      <div className="flex flex-col gap-6">
-        {!children ? (
-          <div className="flex flex-col gap-4">
-            <p className="m-0 max-w-[580px] text-base leading-relaxed text-[#475569] sm:text-[17px]">{sub}</p>
-            {isForm ? (
-              <div className="flex flex-col gap-2.5 pt-1">
-                <p className="m-0 font-mono text-[11px] uppercase tracking-wider text-[#64748b] font-semibold">
-                  {tCalc(copy.step1ScopeTitle, locale)}
-                </p>
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                  {copy.step1Scopes.map((scope) => (
-                    <div
-                      key={scope.code}
-                      className="group relative flex flex-col justify-between gap-2 rounded-[12px] border border-[#e2e8f0] bg-white p-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 hover:-translate-y-1 hover:border-[#0f172a]/20 hover:shadow-[0_8px_20px_rgba(15,23,42,0.06)] cursor-default"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <ScopeIcon code={scope.code} />
-                        <ScopeBadge code={scope.code} />
-                      </div>
-                      <div className="min-w-0 mt-0.5">
-                        <p className="m-0 text-[13px] font-semibold leading-tight text-[#0f172a]">
-                          {tCalc(scope.title, locale)}
-                        </p>
-                        <p className="m-0 mt-1 text-[11px] leading-snug text-[#64748b]">
-                          {tCalc(scope.desc, locale)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-        {children}
-        {showFacts ? (
-          <dl className="m-0 grid grid-cols-3 gap-3 sm:gap-4">
-            {copy.heroFacts.map((f, i) => (
-              <div
-                key={f.big}
-                className="group relative flex flex-col justify-between rounded-[12px] border border-[#e2e8f0] bg-white p-3.5 sm:p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#cbd5e1] hover:shadow-xs"
-              >
-                <div className="flex items-center justify-between gap-1 pb-1">
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#64748b]">
-                    {'tag' in f ? f.tag : `0${i + 1}`}
-                  </span>
-                  <span
-                    aria-hidden
-                    className={`size-1.5 rounded-full ${
-                      i === 0 ? 'bg-[#e52421]' : i === 1 ? 'bg-[#0f172a]' : 'bg-[#10b981]'
-                    }`}
-                  />
-                </div>
-                <dt className="text-[28px] sm:text-[38px] font-bold leading-none tracking-[-0.03em] text-[#0f172a]">
-                  <bdi>{f.big}</bdi>
-                </dt>
-                <dd className="m-0 mt-2 text-[11px] font-medium uppercase leading-snug tracking-[0.03em] text-[#64748b]">
-                  {tCalc(f.label, locale)}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
-      </div>
+      {children}
+
+      {showFacts ? (
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-6 border-t border-[#e2e8f0]/80 mt-2">
+          {copy.heroFacts.map((f, i) => (
+            <div key={f.big} className="flex items-baseline gap-2.5">
+              <span className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0f172a]">
+                <bdi>{f.big}</bdi>
+              </span>
+              <span className="text-xs font-mono uppercase tracking-wider text-[#64748b]">
+                {tCalc(f.label, locale)}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -417,10 +374,10 @@ export function CalcHead({
 /** One-screen stage on a single shared backing: hero text on the start side, working area on the other. */
 export function CalcSplit({ locale, left, right }: { locale: string; left: React.ReactNode; right: React.ReactNode }) {
   return (
-    <section className="relative isolate flex flex-col flex-1 overflow-hidden rounded-[20px] border border-[#e2e8f0] bg-white/70 shadow-[0_4px_32px_rgba(15,23,42,0.04)] backdrop-blur-md lg:min-h-[calc(100svh-175px)]">
-      <div className="grid flex-1 items-stretch lg:grid-cols-[1.1fr_1fr]">
-        {left}
-        <div className="flex min-w-0 flex-col bg-white border-t border-[#e2e8f0] lg:border-t-0 lg:border-s lg:border-s-[#e2e8f0] [&>*]:flex-1">{right}</div>
+    <section className="relative flex flex-1 flex-col justify-center py-4 lg:py-8 w-full max-w-[1360px] mx-auto px-4 sm:px-6">
+      <div className="grid flex-1 items-center gap-8 lg:gap-16 lg:grid-cols-[1.12fr_0.88fr]">
+        <div className="flex min-w-0 flex-col justify-center">{left}</div>
+        <div className="flex min-w-0 flex-col justify-center">{right}</div>
       </div>
     </section>
   )
@@ -514,7 +471,7 @@ function Pill({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** Steps 1-2 of the form: the stepper and the active step in a white block. */
+/** Steps 1-2 of the form: clean floating white panel (Mercury/Brex style). */
 export function CalcFormShell({
   locale,
   step,
@@ -526,27 +483,35 @@ export function CalcFormShell({
 }) {
   const isStep1 = step === 1
   return (
-    <section className={`${PANEL} flex h-full min-w-0 flex-col justify-between gap-4 sm:gap-5`}>
-      <CardHead
-        compact
-        title={tCalc(isStep1 ? copy.step1Heading : copy.step2Heading, locale)}
-        sub={tCalc(isStep1 ? copy.step1Sub : copy.step2Sub, locale)}
-        tag={fillCalc(tCalc(copy.stepOf, locale), { n: step, total: 4 })}
-      />
-      <CalcStepper locale={locale} current={step} />
-      <div className={`${INNER} flex min-w-0 flex-col gap-5 rounded-[16px] border border-[#e2e8f0] bg-white p-5 sm:p-7 lg:p-[42px] shadow-[0_4px_24px_rgba(15,23,42,0.03)]`}>
-        <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3 text-xs uppercase tracking-wider text-[#64748b]">
-          <span className="flex items-center gap-2 font-mono font-medium text-[#0f172a]">
-            <span className="size-2 rounded-full bg-[#10b981] animate-pulse" />
-            {tCalc(isStep1 ? copy.stepSite : copy.stepNumbers, locale)}
+    <div className="w-full rounded-[24px] border border-[#e2e8f0] bg-white p-7 sm:p-9 lg:p-11 shadow-[0_12px_40px_-8px_rgba(15,23,42,0.07)] flex flex-col gap-6">
+      <div className="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9]">
+        <div className="flex items-center gap-2.5">
+          <span className="relative flex size-2">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#10b981] opacity-75 motion-reduce:hidden" />
+            <span className="relative inline-flex size-2 rounded-full bg-[#10b981]" />
           </span>
-          <span className="font-mono text-[11px] font-semibold rounded-md border border-[#e2e8f0] bg-[#f8fafc] px-2.5 py-0.5 text-[#475569]">
-            {isStep1 ? 'HEADLESS CHROMIUM' : 'REVENUE CONVERTER'}
+          <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#0f172a]">
+            {isStep1
+              ? (locale === 'he' ? 'שלב 1 מתוך 4: האתר שלכם' : locale === 'ru' ? 'Шаг 1 из 4: Ваш сайт' : 'Step 1 of 4: Your Website')
+              : (locale === 'he' ? 'שלב 2 מתוך 4: נתוני הכנסה' : locale === 'ru' ? 'Шаг 2 из 4: Доход и клиенты' : 'Step 2 of 4: Revenue & Clients')}
           </span>
         </div>
+        <span className="font-mono text-xs font-semibold text-[#94a3b8]">0{step}/04</span>
+      </div>
+
+      <div>
+        <h3 className="m-0 text-2xl sm:text-[26px] font-bold text-[#0f172a] tracking-tight">
+          {tCalc(isStep1 ? copy.step1Heading : copy.step2Heading, locale)}
+        </h3>
+        <p className="m-0 mt-2 text-sm sm:text-base text-[#64748b] leading-relaxed">
+          {tCalc(isStep1 ? copy.step1Sub : copy.step2Sub, locale)}
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-5 pt-1">
         {children}
       </div>
-    </section>
+    </div>
   )
 }
 
