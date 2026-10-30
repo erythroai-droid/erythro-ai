@@ -193,6 +193,9 @@ const nextConfig: NextConfig = {
     inlineCss: true,
   },
   images: {
+    // Next 16 only accepts quality 75 unless listed: ServicesSection uses 65, the hero 70
+    // (HERO_IMAGE_QUALITY); anything else gets a 400 from /_next/image.
+    qualities: [65, 70, 75],
     localPatterns: [
       {
         pathname: '/api/media/file/**',
@@ -224,9 +227,8 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Next 16 builds with Turbopack by default; this config (client stub for resolveSignedURLKey)
+  // is webpack-only, so `dev` and `build` run with --webpack until it is ported.
   webpack: (webpackConfig, { isServer, webpack }) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],

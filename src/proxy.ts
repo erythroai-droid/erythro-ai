@@ -11,13 +11,14 @@ import {
 } from '@/lib/vercelHost'
 
 /**
- * Edge middleware for markdown negotiation + discovery Link header.
+ * Proxy (Next 16 name for middleware; runs on the Node.js runtime) for markdown negotiation
+ * + discovery Link header + audit LP host rewrites.
  *
  * Do NOT set NEXT_LOCALE here. A Set-Cookie on the response prevents Vercel/CDN
  * HTML cache (no s-maxage HIT). Locale is applied client-side via bootstrap +
  * useSitePrefs (see PIT-056). Ads audit LPs lock locale from the host instead.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const host = requestHost(request.headers, request.nextUrl.hostname)
   const auditLp = auditLpTargetFromHost(host)
