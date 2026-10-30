@@ -131,21 +131,41 @@ public final class ReportFindingsCatalog {
             }
             if (!gaps.isEmpty() || ctx.aiVisScore < 70) {
                 int sev = ctx.aiRobotsSevereBlock ? 97 : 94;
+                String gapList = String.join(", ", gaps);
+                // "Cannot find / do not see" only when robots.txt really closes the answer bots. With access
+                // open the gaps are missing signals, not invisibility (report 243, fast-taxi.co.il, PIT-148).
                 findings.add(new BizFinding(sev,
-                        tr(lang, "ИИ-ассистенты не находят ваш сайт",
+                        ctx.aiRobotsSevereBlock
+                                ? tr(lang, "ИИ-ассистенты не находят ваш сайт",
                                 "AI assistants cannot find your site",
-                                "עוזרי AI לא מוצאים את האתר"),
-                        tr(lang,
+                                "עוזרי AI לא מוצאים את האתר")
+                                : tr(lang, "ИИ-ассистентам не хватает данных о сайте",
+                                "AI assistants lack data about your site",
+                                "לעוזרי AI חסר מידע על האתר"),
+                        ctx.aiRobotsSevereBlock
+                                ? tr(lang,
                                 "AI Visibility " + ctx.aiVisScore + "/100. ChatGPT, Claude и Gemini не видят бренд: "
-                                        + (gaps.isEmpty() ? "неполный контур AI-discovery." : String.join(", ", gaps) + "."),
+                                        + (gaps.isEmpty() ? "неполный контур AI-discovery." : gapList + "."),
                                 "AI Visibility " + ctx.aiVisScore + "/100. ChatGPT, Claude and Gemini miss the brand: "
-                                        + (gaps.isEmpty() ? "incomplete AI-discovery surface." : String.join(", ", gaps) + "."),
+                                        + (gaps.isEmpty() ? "incomplete AI-discovery surface." : gapList + "."),
                                 "AI Visibility " + ctx.aiVisScore + "/100. ChatGPT, Claude ו-Gemini לא רואים את המותג: "
-                                        + (gaps.isEmpty() ? "משטח AI-discovery חלקי." : String.join(", ", gaps) + ".")),
-                        tr(lang,
+                                        + (gaps.isEmpty() ? "משטח AI-discovery חלקי." : gapList + "."))
+                                : tr(lang,
+                                "AI Visibility " + ctx.aiVisScore + "/100. Доступ AI-ботов к сайту открыт, но не хватает сигналов, по которым ChatGPT, Claude и Gemini понимают и цитируют сайт: "
+                                        + (gaps.isEmpty() ? "неполный контур AI-discovery." : gapList + "."),
+                                "AI Visibility " + ctx.aiVisScore + "/100. AI bots can reach the site, but it lacks the signals ChatGPT, Claude and Gemini use to understand and cite it: "
+                                        + (gaps.isEmpty() ? "incomplete AI-discovery surface." : gapList + "."),
+                                "AI Visibility " + ctx.aiVisScore + "/100. לבוטי AI יש גישה לאתר, אבל חסרים האותות שבעזרתם ChatGPT, Claude ו-Gemini מבינים את האתר ומצטטים אותו: "
+                                        + (gaps.isEmpty() ? "משטח AI-discovery חלקי." : gapList + ".")),
+                        ctx.aiRobotsSevereBlock
+                                ? tr(lang,
                                 "Клиент спрашивает ИИ «кто делает это в моём городе» — в ответе конкуренты. Сайт не попадает в рекомендации ChatGPT, Claude и Perplexity, рекламный бюджет не компенсирует потерянный AI-трафик.",
                                 "A buyer asks AI “who does this in my city” — rivals get named. The site never appears in ChatGPT, Claude or Perplexity, so ad spend cannot replace lost AI traffic.",
-                                "לקוח שואל את ה-AI «מי עושה את זה בעיר שלי» — עולה המתחרה. האתר לא נכנס להמלצות ChatGPT, Claude ו-Perplexity, ותקציב הפרסום לא מחליף תנועת AI שאבדה."),
+                                "לקוח שואל את ה-AI «מי עושה את זה בעיר שלי» — עולה המתחרה. האתר לא נכנס להמלצות ChatGPT, Claude ו-Perplexity, ותקציב הפרסום לא מחליף תנועת AI שאבדה.")
+                                : tr(lang,
+                                "Клиент спрашивает ИИ «кто делает это в моём городе». Чем меньше у модели проверенных фактов о сайте, тем чаще она называет конкурентов, чьи сайты описаны полнее.",
+                                "A buyer asks AI “who does this in my city”. The fewer verified facts a model has about the site, the more often it names rivals whose sites are described better.",
+                                "לקוח שואל את ה-AI «מי עושה את זה בעיר שלי». ככל שלמודל יש פחות עובדות מאומתות על האתר, הוא ממליץ יותר על מתחרים שהאתרים שלהם מתוארים טוב יותר."),
                         // The fix names the gaps found, not a fixed list (AUD-226 offered /llms.txt the site already had)
                         gaps.isEmpty()
                                 ? tr(lang,

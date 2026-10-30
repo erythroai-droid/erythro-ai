@@ -333,19 +333,22 @@ final class A44Recommendations {
     private static String robots(String status, String lang) {
         if ("good".equals(status)) {
             return ReportFindingsCatalog.tr(lang,
-                    "AI-боты в Allow, robots.txt и sitemap.xml на 200 OK.\n\n"
-                            + "Не включайте Cloudflare Managed robots.txt с Disallow: / — это severe_block для GPTBot и соседей.",
-                    "AI crawlers are Allow, robots.txt and sitemap.xml return 200.\n\n"
-                            + "Do not turn on Cloudflare Managed robots.txt with Disallow: / — that is a severe_block for GPTBot and peers.",
-                    "בוטי AI ב-Allow, robots.txt ו-sitemap.xml על 200.\n\n"
-                            + "אל תפעילו Cloudflare Managed robots.txt עם Disallow: / — זה severe_block ל-GPTBot ולשאר.");
+                    "Боты AI-поиска и ответов в Allow, robots.txt и sitemap.xml на 200 OK.\n\n"
+                            + "Закрыть обучение (GPTBot, ClaudeBot, Google-Extended) можно — ответам AI это не мешает. "
+                            + "Не закрывайте ChatGPT-User и PerplexityBot.",
+                    "AI search and answer bots are Allow, robots.txt and sitemap.xml return 200.\n\n"
+                            + "You may close training (GPTBot, ClaudeBot, Google-Extended) — it does not stop AI answers. "
+                            + "Do not close ChatGPT-User or PerplexityBot.",
+                    "בוטי חיפוש ותשובות AI ב-Allow, robots.txt ו-sitemap.xml על 200.\n\n"
+                            + "אפשר לחסום אימון (GPTBot, ClaudeBot, Google-Extended) — זה לא מונע תשובות AI. "
+                            + "אל תחסמו את ChatGPT-User ו-PerplexityBot.");
         }
         return ReportFindingsCatalog.tr(lang,
-                "Не закрывайте корень Disallow: / для GPTBot, ClaudeBot, CCBot и Google-Extended — это severe_block для AI Visibility.\n"
+                "Не закрывайте корень Disallow: / для ChatGPT-User и PerplexityBot — без них сайт не попадает в ответы AI.\n"
                         + "Держите robots.txt и sitemap.xml на 200 OK.",
-                "Do not add Disallow: / for GPTBot, ClaudeBot, CCBot or Google-Extended — that is a severe_block for AI Visibility.\n"
+                "Do not add Disallow: / for ChatGPT-User or PerplexityBot — without them the site stays out of AI answers.\n"
                         + "Keep robots.txt and sitemap.xml at 200 OK.",
-                "אל תסגרו Disallow: / ל-GPTBot, ClaudeBot, CCBot ו-Google-Extended — זה severe_block לנראות AI.\n"
+                "אל תסגרו Disallow: / ל-ChatGPT-User ו-PerplexityBot — בלעדיהם האתר לא מופיע בתשובות AI.\n"
                         + "שמרו robots.txt ו-sitemap.xml על 200 OK.");
     }
 
