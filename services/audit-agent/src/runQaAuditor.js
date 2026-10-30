@@ -21,6 +21,28 @@ export function planToTier(planSlug) {
   return { tier: 'FREE', folder: 'free', pageCap: 1 }
 }
 
+/**
+ * Scorecard keys written by AuditCollector.calculateExecutiveScorecard → short names.
+ * Returns undefined unless all five scales are numbers, so partial data is never stored.
+ * @param {Record<string, unknown>} card
+ */
+export function pickPillars(card) {
+  const map = {
+    speed: card?.speed_mobile_ux,
+    leads: card?.lead_gen_forms,
+    seo: card?.seo_visibility,
+    security: card?.security_stability,
+    ai: card?.ai_visibility,
+  }
+  const out = {}
+  for (const [key, value] of Object.entries(map)) {
+    const n = Number(value)
+    if (value == null || !Number.isFinite(n)) return undefined
+    out[key] = Math.round(Math.min(100, Math.max(0, n)))
+  }
+  return out
+}
+
 /** Paid commercial packs email a PDF; Free is HTML-only. */
 export function planAttachesPdf(planSlug) {
   const { tier } = planToTier(planSlug)
@@ -91,7 +113,8 @@ export async function runQaAuditor(input) {
       overallScore: score,
       targetUrl: raw.target_url || targetUrl,
       timestamp: raw.timestamp || null,
-      scales: card.scales || card.pillars || undefined,
+      // Five scorecard scales (0–100); read by the calculator LP via /api/audit/report/[id]
+      pillars: pickPillars(card),
       detectedTechnologies,
     }
   } catch (err) {

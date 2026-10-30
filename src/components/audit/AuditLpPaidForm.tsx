@@ -105,7 +105,7 @@ export default function AuditLpPaidForm({
   page = auditPage,
 }: {
   locale: string
-  product: Exclude<AuditLpProduct, 'free'>
+  product: Exclude<AuditLpProduct, 'free' | 'calc'>
   theme?: 'light' | 'dark'
   page?: AuditPageContent
 }) {

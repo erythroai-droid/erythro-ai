@@ -12,6 +12,7 @@ export function FormPillShell({
   hasError,
   clip = false,
   tall = false,
+  neon = false,
   children,
 }: {
   isLight: boolean
@@ -20,8 +21,24 @@ export function FormPillShell({
   clip?: boolean
   /** Multi-line fields keep a 24px radius instead of a capsule. */
   tall?: boolean
+  /** Dark glass field with a violet glow on focus (calculator LP). */
+  neon?: boolean
   children: React.ReactNode
 }) {
+  if (neon) {
+    return (
+      // An extra plate around the field: 10% white with a white edge. The field keeps its dark fill.
+      <div className="flex min-w-0 flex-col rounded-full border border-white/30 bg-white/10 p-1.5 backdrop-blur-sm">
+        <div
+          className={`audit-pill-shell flex min-w-0 flex-col rounded-full border bg-[#2f2f44] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-shadow focus-within:border-[#a855f7]/70 focus-within:shadow-[0_0_0_3px_rgba(168,85,247,0.22),0_0_24px_rgba(120,80,255,0.35)] ${
+            clip ? 'overflow-hidden' : 'overflow-visible'
+          } ${hasError ? 'border-erythro-500' : 'border-white/[0.08]'}`}
+        >
+          {children}
+        </div>
+      </div>
+    )
+  }
   return (
     <div
       className={`audit-pill-shell flex min-w-0 flex-col rounded-[24px] border ${
@@ -50,7 +67,10 @@ export function FormPillDivider({ isLight }: { isLight: boolean }) {
   )
 }
 
-export function formPillFieldClass(isLight: boolean) {
+export function formPillFieldClass(isLight: boolean, neon = false) {
+  if (neon) {
+    return 'h-12 w-full min-w-0 flex-1 border-0 bg-transparent ps-5 pe-4 text-sm font-light text-white outline-none placeholder:text-[#8c8fb0] rtl:placeholder:text-right sm:h-[54px]'
+  }
   return `h-12 w-full min-w-0 flex-1 border-0 bg-transparent ps-4 pe-4 text-sm outline-none sm:h-[52px] ${
     isLight
       ? 'text-coal-900 placeholder:text-coal-900/40'
