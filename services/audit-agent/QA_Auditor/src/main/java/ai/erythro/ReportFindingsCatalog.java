@@ -588,17 +588,17 @@ public final class ReportFindingsCatalog {
                             "No GA4 / dataLayer bootstrap",
                             "אין GA4 / dataLayer bootstrap"),
                     tr(lang,
-                            "window.dataLayer или consent stub не найден в head до cookie banner.",
-                            "window.dataLayer or consent stub missing in head before cookie banner.",
-                            "window.dataLayer או consent stub חסר ב-head לפני באנר עוגיות."),
+                            "window.dataLayer или Consent Mode по умолчанию не найден до баннера cookies.",
+                            "window.dataLayer or the Consent Mode default not found before the cookie banner.",
+                            "window.dataLayer או ברירת המחדל של Consent Mode לא נמצאו לפני באנר העוגיות."),
                     tr(lang,
-                            "Без Consent Mode stub теряются сигналы конверсии и атрибуция рекламы.",
-                            "Without Consent Mode stub conversion signals and ad attribution degrade.",
-                            "ללא Consent Mode stub — אותות קונברסיה ואטריביושן נפגעים."),
+                            "Без Consent Mode по умолчанию теряются сигналы конверсии и атрибуция рекламы.",
+                            "Without a Consent Mode default conversion signals and ad attribution degrade.",
+                            "ללא ברירת מחדל ל-Consent Mode — אותות קונברסיה ואטריביושן נפגעים."),
                     tr(lang,
-                            "Добавьте GA4 Consent Mode stub в head до cookie banner.",
-                            "Add GA4 Consent Mode stub in head before cookie banner.",
-                            "הוסף GA4 Consent Mode stub ב-head לפני באנר עוגיות.")));
+                            "Задайте GA4 Consent Mode по умолчанию в head до баннера cookies.",
+                            "Set the GA4 Consent Mode default in head before the cookie banner.",
+                            "הגדירו ברירת מחדל ל-GA4 Consent Mode ב-head לפני באנר העוגיות.")));
         }
         if (ctx.failedNetworkCount > 0) {
             String samples = formatFailedNetworkSamples(ctx.failedNetworkUrls);
