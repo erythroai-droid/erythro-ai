@@ -19,7 +19,9 @@ export const SITE_CONTENT_TAG = 'payload-content'
  */
 function revalidateContent(): void {
   try {
-    revalidateTag(SITE_CONTENT_TAG)
+    // Next 16 asks for a profile; { expire: 0 } keeps the old behaviour: a CMS edit is live on
+    // the next request, not served stale while it revalidates in the background.
+    revalidateTag(SITE_CONTENT_TAG, { expire: 0 })
     revalidatePath('/', 'layout')
     // Keep SEO endpoints in sync when services / portfolio / plans change.
     revalidatePath('/sitemap.xml')

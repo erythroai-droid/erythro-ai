@@ -5,8 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" pnpm db:clear-dev-push && cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" payload migrate && cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
-    "dev": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_DISABLE_PUSH=1 next dev",
+    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" pnpm db:clear-dev-push && cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" payload migrate && cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build --webpack",
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_DISABLE_PUSH=1 next dev --webpack",
     "db:ping": "cross-env NODE_OPTIONS=--no-deprecation node scripts/ping-db.mjs",
     "db:backup": "cross-env NODE_OPTIONS=--no-deprecation node scripts/backup-db.mjs",
     "db:clear-dev-push": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/clear-payload-dev-push.ts",
@@ -30,8 +30,8 @@
     "import:project": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/import-project/import-project.ts",
     "revalidate:site": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/import-project/revalidate-site.ts",
     "cf:contact-rate-limit": "node scripts/cloudflare-contact-rate-limit.mjs",
-    "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_DISABLE_PUSH=1 next dev",
-    "clean:dev": "rimraf .next && cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_DISABLE_PUSH=1 next dev -p 3003",
+    "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_DISABLE_PUSH=1 next dev --webpack",
+    "clean:dev": "rimraf .next && cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_DISABLE_PUSH=1 next dev --webpack -p 3003",
     "test:visual": "node check-ui.js",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
@@ -62,7 +62,7 @@
     "imapflow": "^2.5.8",
     "libphonenumber-js": "^1.13.12",
     "liquid-gooey": "^0.2.1",
-    "next": "15.5.27",
+    "next": "16.4.3",
     "nextjs-toploader": "^3.9.17",
     "nodemailer": "10.0.15",
     "payload": "3.90.2",
@@ -82,7 +82,7 @@
     "@vitejs/plugin-react": "4.5.2",
     "autoprefixer": "^10.5.0",
     "eslint": "^9.16.0",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "16.4.3",
     "jsdom": "28.0.0",
     "pg": "^8.22.0",
     "postcss": "8.5.29",
@@ -99,11 +99,6 @@
     "pnpm": "^9 || ^10"
   },
   "pnpm": {
-    "peerDependencyRules": {
-      "allowedVersions": {
-        "next": "15"
-      }
-    },
     "overrides": {
       "browserslist": "4.29.3",
       "brace-expansion@1": "1.1.21",
@@ -123,9 +118,6 @@
       "sharp",
       "esbuild",
       "unrs-resolver"
-    ],
-    "patchedDependencies": {
-      "next@15.5.27": "patches/next@15.5.27.patch"
-    }
+    ]
   }
 }

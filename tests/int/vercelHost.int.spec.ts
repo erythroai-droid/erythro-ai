@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { NextRequest } from 'next/server'
 import { GET as robotsGET } from '@/app/robots.txt/route'
 import sitemap, { staticSitemapFallback } from '@/app/sitemap'
-import { middleware } from '@/middleware'
+import { proxy } from '@/proxy'
 import {
   canonicalUrlForPath,
   isProductionAnalyticsHost,
@@ -74,12 +74,12 @@ describe('robots.txt', () => {
   })
 })
 
-describe('middleware vercel.app', () => {
+describe('proxy vercel.app', () => {
   it('sets X-Robots-Tag noindex on preview vercel.app without redirecting', () => {
     const req = new NextRequest('https://erythro-ai-git-feat-erythro-ai.vercel.app/about', {
       headers: { accept: 'text/html' },
     })
-    const res = middleware(req)
+    const res = proxy(req)
     expect(res.headers.get('x-robots-tag')).toBe('noindex, nofollow')
     expect(res.headers.get('location')).toBeNull()
   })
@@ -91,7 +91,7 @@ describe('middleware vercel.app', () => {
       const req = new NextRequest('https://erythro-ai.vercel.app/about', {
         headers: { accept: 'text/html' },
       })
-      const res = middleware(req)
+      const res = proxy(req)
       expect(res.status).toBe(308)
       expect(res.headers.get('location')).toBe('https://erythro.ai/about')
       expect(res.headers.get('x-robots-tag')).toBe('noindex, nofollow')
@@ -106,7 +106,7 @@ describe('middleware vercel.app', () => {
     process.env.VERCEL_ENV = 'production'
     try {
       const req = new NextRequest('https://erythro-ai.vercel.app/robots.txt')
-      const res = middleware(req)
+      const res = proxy(req)
       expect(res.status).not.toBe(308)
       expect(res.headers.get('x-robots-tag')).toBe('noindex, nofollow')
     } finally {
