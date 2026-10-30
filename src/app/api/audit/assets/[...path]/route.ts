@@ -28,19 +28,17 @@ type RouteParams = { params: Promise<{ path?: string[] }> }
 async function readLocalAsset(file: string): Promise<{ body: Buffer; contentType: string } | null> {
   const ext = file.includes('.') ? `.${file.split('.').pop()!.toLowerCase()}` : ''
   const contentType = FALLBACK_TYPES[ext] || 'application/octet-stream'
-  const candidates = [
-    path.join(process.cwd(), 'public', 'templates', 'figma-assets', file),
-    path.join(process.cwd(), 'templates', 'figma-assets', file),
-  ]
-  for (const candidate of candidates) {
-    try {
-      const body = await fs.readFile(candidate)
-      return { body, contentType }
-    } catch {
-      // try next
-    }
+  // `file` is checked against ALLOWED. Turbopack cannot trace a path built from it and pulled the
+  // whole project (public/videos…, 289 MB) into this function, so tracing is off here and the
+  // folder is listed in outputFileTracingIncludes (next.config.ts) instead.
+  try {
+    const body = await fs.readFile(
+      /* turbopackIgnore: true */ path.join(process.cwd(), 'public', 'templates', 'figma-assets', file),
+    )
+    return { body, contentType }
+  } catch {
+    return null
   }
-  return null
 }
 
 /**
