@@ -919,6 +919,11 @@ function buildMaskedOutline(opts: {
   // Inter has no hebrew glyphs — Heebo. Keep SVG direction LTR so bidi + getBBox
   // / mask align like English (rtl on <text> pushed ink outside the viewBox).
   const fontStack = rtlText ? resolveHeeboStack(fontFamily) : fontFamily
+  // ...but an LTR paragraph puts the words of a mixed phrase in LTR order: the outline behind
+  // «אוטומציית AI» showed the Hebrew word on the left, swapped against the foreground. A
+  // right-to-left embedding (RLE … PDF) orders the words as Hebrew reads and keeps x/getBBox as is.
+  // Letter tspans keep the plain text: the mask below must match their order.
+  const svgText = rtlText && !asLetters ? `‫${text}‬` : text
 
   host.replaceChildren()
   const svgNS = 'http://www.w3.org/2000/svg'
@@ -969,7 +974,7 @@ function buildMaskedOutline(opts: {
       letterEls.push(tspan)
     }
   } else {
-    strokeText.textContent = text
+    strokeText.textContent = svgText
   }
   svg.appendChild(strokeText)
   host.appendChild(svg)
@@ -1069,7 +1074,7 @@ function buildMaskedOutline(opts: {
   maskBg.setAttribute('fill', '#ffffff')
 
   const maskPunch = makeTextEl(outlineFontPx, '#000000', false, 0)
-  maskPunch.textContent = text
+  maskPunch.textContent = svgText
   maskPunch.setAttribute('x', strokeText.getAttribute('x') || '0')
   mask.appendChild(maskBg)
   mask.appendChild(maskPunch)
