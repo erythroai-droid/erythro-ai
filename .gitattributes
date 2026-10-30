@@ -1,0 +1,3 @@
+# The audit worker is deployed by tarring files as they are on disk (scripts/deploy_audit_agent_only.py).
+# render-v2-reports.mjs cuts templates with LF anchors, so a CRLF checkout breaks the report (PIT-147).
+services/audit-agent/** text=auto eol=lf
