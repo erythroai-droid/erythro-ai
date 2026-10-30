@@ -28,16 +28,20 @@ export default function AuditCalcClient({
     <SiteContentProvider value={content}>
       <div
         dir={locale === 'he' ? 'rtl' : 'ltr'}
-        className="min-h-screen bg-[#f3f3f3] font-sans text-[#1e1e1e]"
+        className="min-h-screen bg-[#eaeaea] font-sans text-[#1e1e1e]"
       >
-        <div className="mx-auto flex w-full max-w-[1170px] flex-col gap-4 px-4 pb-16 pt-6">
-          <header className="flex items-center justify-between gap-4 py-2">
-            <a
-              href={mainSiteUrl('/')}
-              className="flex items-center gap-2 text-[26px] font-semibold leading-none tracking-[-0.02em] text-[#1e1e1e] no-underline"
-            >
-              <i aria-hidden className="block size-3.5 rounded-full bg-[#e52421]" />
-              erythro.ai
+        <div className="flex w-full flex-col gap-4 px-3 pb-14 pt-3 sm:px-6 sm:pt-4 lg:px-10 lg:pb-16">
+          <header className="flex items-center justify-between gap-4">
+            {/* Official logo, the same file the site header uses on light backgrounds. */}
+            <a href={mainSiteUrl('/')} aria-label="Erythro.ai" dir="ltr" className="flex">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/logo/Logo_digital-on-light.svg"
+                alt="Erythro.ai"
+                width={235}
+                height={74}
+                className="h-[64px] w-auto sm:h-[80px] lg:h-[84px]"
+              />
             </a>
             <nav aria-label="Language" className="flex items-center gap-1">
               {AUDIT_LP_LOCALES.map((l) => (
@@ -45,10 +49,10 @@ export default function AuditCalcClient({
                   key={l}
                   href={auditLpHrefForLocale(l, 'calc')}
                   aria-current={l === locale ? 'true' : undefined}
-                  className={`rounded-full border px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.04em] no-underline transition-colors ${
+                  className={`rounded border px-2 py-[3px] text-xs uppercase tracking-[0.04em] no-underline transition-colors ${
                     l === locale
                       ? 'border-[#1e1e1e] bg-[#1e1e1e] text-white'
-                      : 'border-[#e8e8e8] bg-white text-[#1e1e1e] hover:border-[#1e1e1e]'
+                      : 'border-[#d6d6d6] bg-white text-[#1e1e1e] hover:border-[#1e1e1e]'
                   }`}
                 >
                   {l}

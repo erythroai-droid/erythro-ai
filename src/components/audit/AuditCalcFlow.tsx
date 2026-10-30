@@ -5,12 +5,16 @@ import AuditLpForm, { type AuditLpSubmitted } from '@/components/audit/AuditLpFo
 import {
   CARD,
   CalcCta,
+  CalcFormShell,
+  CalcHead,
   CalcNumbers,
   CalcResult,
-  CalcStepper,
+  CalcSplit,
+  CalcTags,
   CalcWaiting,
   CardTitle,
   OUTLINE_BTN,
+  PRIMARY_BTN,
   type CalcProgress,
 } from '@/components/audit/CalcReport'
 import { useSiteContent } from '@/components/SiteContentProvider'
@@ -187,32 +191,32 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     stage.name === 'form' ? formStep : stage.name === 'waiting' ? 3 : 4
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-4">
-      {stage.name !== 'failed' ? (
-        <section className={`${CARD} flex flex-col gap-6`}>
-          <CardTitle>{tCalc(copy.calcHeading, locale)}</CardTitle>
-          <p className="m-0 -mt-3 text-[15px] text-[#6b6254]">
-            {fillCalc(tCalc(copy.stepOf, locale), { n: currentStep, total: 4 })}
-          </p>
-          <CalcStepper locale={locale} current={currentStep} />
-        </section>
-      ) : null}
-
+    <div className="flex w-full min-w-0 flex-col gap-4 lg:gap-6">
+      {stage.name === 'form' || stage.name === 'waiting' ? (
+        <>
+        <CalcTags locale={locale} kind={stage.name} step={currentStep} />
+        <CalcSplit
+          locale={locale}
+          left={<CalcHead locale={locale} kind={stage.name} domain={domain} />}
+          right={
+            <>
       {stage.name === 'form' ? (
-        <section className={`${CARD} flex flex-col gap-8`}>
+        <CalcFormShell locale={locale} step={formStep}>
           {/* The audit form stays mounted on step 2 (hidden) so its values and validation survive. */}
-          <div className={formStep === 1 ? 'block' : 'hidden'}>
+          <div
+            className={`audit-calc-form-wrap ${formStep === 1 ? 'block' : 'hidden'} [&_.audit-pill-shell]:!rounded-xl [&_.audit-pill-shell]:!border-[#d6d6d6] [&_.audit-pill-shell]:!bg-white [&_.audit-pill-shell]:shadow-[0_1px_3px_rgba(0,0,0,0.03)] [&_.audit-pill-shell:focus-within]:!border-[#1e1e1e] [&_.audit-pill-shell:focus-within]:!ring-2 [&_.audit-pill-shell:focus-within]:!ring-[#1e1e1e]/10 [&_.audit-pill-shell]:transition-all [&_input]:!text-base [&_input]:!font-medium [&_input]:!text-[#1e1e1e] [&_input]:!placeholder-[#8f8a80]`}
+          >
             <AuditLpForm
               locale={locale}
               theme="light"
               page={page}
               bare
-              submitLabel={tCalc(formStep === 1 ? copy.next : copy.submit, locale)}
+              submitLabel={tCalc(formStep === 1 ? copy.nextStepCalc : copy.submit, locale)}
               holdSubmit={formStep === 1}
               onValidated={() => setFormStep(2)}
               onInvalid={() => setFormStep(1)}
               submitTargetId={SUBMIT_SLOT_ID}
-              submitClassName={OUTLINE_BTN}
+              submitClassName={PRIMARY_BTN}
               onSubmitted={(submitted) => {
                 setNow(Date.now())
                 setStage({ name: 'waiting', submitted, startedAt: Date.now() })
@@ -228,11 +232,24 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               onClients={setClients}
             />
           ) : null}
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-3.5 pt-1">
             <div id={SUBMIT_SLOT_ID} className="flex w-full justify-center empty:hidden [&_button]:!w-full" />
-            <p className="m-0 text-center text-[11px] font-medium uppercase tracking-[0.04em] text-[#6b6254]">
-              {tCalc(copy.badge, locale)}
-            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-center text-[11px] font-medium uppercase tracking-[0.04em] text-[#6b6254]">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="font-bold text-[#22bf16]">✓</span>
+                {tCalc(copy.step1Guarantee1, locale)}
+              </span>
+              <span className="text-[#d6d6d6] max-sm:hidden">·</span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="font-bold text-[#22bf16]">✓</span>
+                {tCalc(copy.step1Guarantee2, locale)}
+              </span>
+              <span className="text-[#d6d6d6] max-sm:hidden">·</span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="font-bold text-[#22bf16]">✓</span>
+                {tCalc(copy.step1Guarantee3, locale)}
+              </span>
+            </div>
             {formStep === 2 ? (
               <button
                 type="button"
@@ -243,10 +260,15 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </button>
             ) : null}
           </div>
-        </section>
+        </CalcFormShell>
       ) : null}
 
       {stage.name === 'waiting' ? <CalcWaiting locale={locale} domain={domain} progress={progress} /> : null}
+            </>
+          }
+        />
+        </>
+      ) : null}
 
       {stage.name === 'failed' ? (
         <section className={`${CARD} flex flex-col items-start gap-4`}>
@@ -276,6 +298,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
           clients={clients}
           approximate={report.pillars == null}
           reportHref={stage.name === 'ready' ? stage.submitted.reportHref : null}
+          waHref={waHref}
           onWaText={setWaText}
         />
       ) : null}
