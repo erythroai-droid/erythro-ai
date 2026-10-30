@@ -5,8 +5,33 @@ import {
   updateContactSubmission,
 } from './payload.js'
 import { sendClientAuditEmail } from './mail.js'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { detectBotChallenge } from './botChallenge.js'
 import { buildAuditPdfFilename, formatAuditOrderId } from './pdfFilename.js'
-import { planAttachesPdf, runQaAuditor } from './runQaAuditor.js'
+import { planAttachesPdf, planToTier, runQaAuditor } from './runQaAuditor.js'
+
+/**
+ * The page explaining that the site is behind bot protection, built from the approved report
+ * template of this tier and language (QA_Auditor/scripts/render-blocked-report.mjs, PIT-149).
+ */
+async function renderBlockedHtml({ targetUrl, locale, planSlug, challenge }) {
+  const qaDir = process.env.QA_AUDITOR_DIR?.trim() || '/app/QA_Auditor'
+  const mod = await import(pathToFileURL(path.join(qaDir, 'scripts', 'render-blocked-report.mjs')).href)
+  let site = targetUrl
+  try {
+    site = new URL(targetUrl).hostname.replace(/^www\./, '')
+  } catch {
+    /* keep the raw value */
+  }
+  return mod.renderBlockedReport({
+    site,
+    lang: String(locale || 'en').slice(0, 2).toLowerCase(),
+    tier: planToTier(planSlug).folder,
+    protection: challenge.protection,
+    status: challenge.status,
+  })
+}
 
 function siteBase() {
   return (
@@ -61,6 +86,67 @@ export async function runAuditJob(job) {
     await updateContactSubmission(submissionId, {
       auditStatus: 'in_progress',
     })
+
+    // A site behind a bot challenge would be audited as its empty challenge page (report 244):
+    // send the "could not check" page instead, no score, no PDF, no Pro offer (PIT-149)
+    const challenge = await detectBotChallenge(targetUrl)
+    if (challenge.error) {
+      console.warn(`[audit] submission=${submissionId} bot-challenge probe: ${challenge.error}`)
+    }
+    if (challenge.blocked) {
+      console.log(
+        `[audit] submission=${submissionId} blocked by bot protection: ${challenge.protection} ${challenge.status} — sending the blocked page`,
+      )
+      const html = await renderBlockedHtml({ targetUrl, locale, planSlug, challenge })
+      const uploaded = await uploadReportObject({
+        key: `audits/${submissionId}/${Date.now()}-blocked.html`,
+        body: html,
+        contentType: 'text/html; charset=utf-8',
+      })
+      const statusPageUrl = `${siteBase()}/audit/report/${submissionId}?k=${encodeURIComponent(reportAccessToken)}`
+      await updateContactSubmission(submissionId, {
+        auditStatus: 'report_sent',
+        reportUrl: statusPageUrl,
+        auditSummary: {
+          stub: false,
+          planSlug,
+          locale,
+          generatedAt: startedAt,
+          tier: planToTier(planSlug).folder,
+          reportLang: locale,
+          blocked: true,
+          protection: challenge.protection,
+          challengeStatus: challenge.status,
+          storageKey: uploaded.key,
+          pdfStorageKey: null,
+        },
+        htmlResult: html,
+        errorLast: null,
+      })
+      if (clientEmail && notifyClient) {
+        const mailed = await sendClientAuditEmail({
+          to: clientEmail,
+          clientName,
+          targetUrl,
+          statusPageUrl,
+          orderId: submissionId,
+          locale,
+          planSlug,
+          blocked: true,
+        })
+        console.log(
+          mailed.sent
+            ? `[audit] submission=${submissionId} blocked email sent to client`
+            : `[audit] submission=${submissionId} blocked email skipped: ${mailed.reason}`,
+        )
+      }
+      return {
+        ok: true,
+        blocked: true,
+        reportUrl: statusPageUrl,
+        orderId: formatAuditOrderId(submissionId),
+      }
+    }
 
     const result = await runQaAuditor({
       targetUrl,

@@ -54,6 +54,22 @@ function copyForLocale(locale, withPdf) {
   }
 }
 
+// The site answered the lab with a bot challenge: no report, the link explains what to do (PIT-149)
+const BLOCKED_COPY = {
+  ru: {
+    subject: (url, orderId) => `Аудит не выполнен (${orderId}) — ${url}`,
+    body: 'Мы не смогли проверить сайт: он закрыт защитой от ботов. Что сделать, чтобы мы проверили его заново, — по ссылке:',
+  },
+  he: {
+    subject: (url, orderId) => `הבדיקה לא בוצעה (${orderId}) — ${url}`,
+    body: 'לא הצלחנו לבדוק את האתר: הוא מוגן מפני בוטים. מה לעשות כדי שנבדוק אותו מחדש — בקישור:',
+  },
+  en: {
+    subject: (url, orderId) => `Audit not completed (${orderId}) — ${url}`,
+    body: 'We could not check your site: it is behind bot protection. What to do so we can check it again:',
+  },
+}
+
 /**
  * @param {{
  *   to: string,
@@ -65,6 +81,7 @@ function copyForLocale(locale, withPdf) {
  *   planSlug?: string,
  *   pdfBuffer?: Buffer | Uint8Array | null,
  *   pdfFilename?: string,
+ *   blocked?: boolean,
  * }} input
  */
 export async function sendClientAuditEmail(input) {
@@ -78,9 +95,11 @@ export async function sendClientAuditEmail(input) {
   }
 
   const locale = input.locale || 'en'
-  const pdfBuffer = input.pdfBuffer
+  const pdfBuffer = input.blocked ? null : input.pdfBuffer
   const withPdf = Boolean(pdfBuffer && pdfBuffer.length)
-  const copy = copyForLocale(locale, withPdf)
+  const copy = input.blocked
+    ? { ...copyForLocale(locale, false), ...BLOCKED_COPY[locale === 'ru' || locale === 'he' ? locale : 'en'] }
+    : copyForLocale(locale, withPdf)
   const orderId = formatAuditOrderId(input.orderId)
   const host = process.env.SMTP_HOST?.trim() || 'smtp.hostinger.com'
   const port = Number(process.env.SMTP_PORT || 465)

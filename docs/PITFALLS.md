@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-149 — Site behind a bot challenge audited as its empty challenge page
+
+**Tags:** `audit`, `worker`, `waf`, `bot-protection`, `report`
+**Seen:** 2026-10-30 — reports 244 and 200, shirielectric.co.il (Konimbo shop on CloudFront)
+
+**Symptom:** Free report: "На сайте нет формы захвата заявок — Критично", "Путь к заявке — Критично", "битые или пустые страницы 1/1", security headers 0/6, robots.txt and sitemap 202, AI 14/100, technologies only "Amazon CloudFront". From a normal IP the site is a shop with 4 forms and WhatsApp. Only the Lighthouse numbers were right (Google PSI fetches from its own IPs).
+
+**Cause:** From the VPS IP the site answers `HTTP 202`, `x-amzn-waf-action: challenge`, `Server: CloudFront`, empty body (AWS WAF bot challenge). Nothing in the worker or the collector recognised a site-wide challenge; every check ran against the empty page and produced findings.
+
+**Fix:** `services/audit-agent/src/botChallenge.js` — before the Java audit the worker GETs the homepage like a browser (redirects followed with the SSRF guard on each hop) and `classifyChallenge` looks only for strong signals: `x-amzn-waf-action: challenge|captcha`, `cf-mitigated: challenge`, or a challenge page (Cloudflare "Just a moment" / challenge-platform, DataDome, Imperva, Sucuri, Akamai) with status 202/403/429/503. On a challenge `runAuditJob` skips the audit, renders `render-blocked-report.mjs` (report styles, RU/EN/HE: "site is behind bot protection", lab IP 46.202.155.56 for an allowlist, WhatsApp, email), stores it as the report (`auditStatus: report_sent`, no `auditScore`, `auditSummary.blocked`), sends the "Аудит не выполнен" email without PDF and schedules no Pro offer. A network error is not a challenge: the normal audit runs.
+
+**Prevent:** An audit that could not see the site must not produce findings. When adding a check, ask what it reports if the page is a WAF/captcha page; compare against a fetch from a normal IP when a report looks implausible (no forms on a shop, 0/6 headers, everything 202).
+
+---
+
 ## PIT-148 — AI card on a Cloudflare WordPress site: real llms.txt "missing", second Content-Signal in Step 1, "AI does not see the brand"
 
 **Tags:** `audit`, `ai-visibility`, `robots`, `render-v2`, `report-text`
@@ -2576,3 +2591,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] RU/HE report text: no English "stub"/slang, no "in <head>" claim the collector did not measure (PIT-146)
 - [ ] Worker redeploy: ship LF files only (`git -c core.autocrlf=false archive`), never a CRLF worktree; after it, check one audit log for a render-v2 exit code (PIT-147)
 - [ ] Web text files through `textBody()` (BOM); Step 1 snippet only adds what the existing file lacks; a training-only robots block is not "AI does not see the site" (PIT-148)
+- [ ] Before the audit, check for a site-wide bot challenge (`detectBotChallenge`); on a challenge send the blocked page, never findings from the challenge page (PIT-149)
