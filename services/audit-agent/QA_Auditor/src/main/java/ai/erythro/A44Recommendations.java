@@ -352,26 +352,27 @@ final class A44Recommendations {
     private static String ga4(String status, String lang) {
         if ("good".equals(status)) {
             return ReportFindingsCatalog.tr(lang,
-                    "dataLayer и Consent Mode stub уже в <head>. Не переносите gtag('consent','default') ниже баннера cookies — иначе Google не зафиксирует согласие.",
-                    "dataLayer and the Consent Mode stub are already in <head>. Do not move gtag('consent','default') below the cookie banner — Google will miss consent.",
-                    "dataLayer ו-Consent Mode stub כבר ב-<head>. אל תעבירו gtag('consent','default') מתחת לבאנר העוגיות — Google לא יתפוס הסכמה.");
+                    // No "in <head>" claim: the default may come from an app bundle or a consent plugin (MI-003)
+                    "dataLayer и Consent Mode по умолчанию уже заданы. Не переносите gtag('consent','default') ниже баннера cookies — иначе Google не зафиксирует согласие.",
+                    "dataLayer and the Consent Mode default are already set. Do not move gtag('consent','default') below the cookie banner — Google will miss consent.",
+                    "dataLayer וברירת המחדל של Consent Mode כבר מוגדרים. אל תעבירו gtag('consent','default') מתחת לבאנר העוגיות — Google לא יתפוס הסכמה.");
         }
         return ReportFindingsCatalog.tr(lang,
-                "Добавьте Consent Mode stub в <head> до баннера cookies:\n\n"
+                "Задайте Consent Mode по умолчанию в <head> до баннера cookies:\n\n"
                         + "window.dataLayer = window.dataLayer || [];\n"
                         + "function gtag(){dataLayer.push(arguments);}\n"
                         + "gtag('consent', 'default', {\n"
                         + "  ad_storage: 'denied',\n"
                         + "  analytics_storage: 'denied'\n"
                         + "});",
-                "Add a Consent Mode stub in <head> before the cookie banner:\n\n"
+                "Set the Consent Mode default in <head> before the cookie banner:\n\n"
                         + "window.dataLayer = window.dataLayer || [];\n"
                         + "function gtag(){dataLayer.push(arguments);}\n"
                         + "gtag('consent', 'default', {\n"
                         + "  ad_storage: 'denied',\n"
                         + "  analytics_storage: 'denied'\n"
                         + "});",
-                "הוסיפו Consent Mode stub ב-<head> לפני באנר העוגיות:\n\n"
+                "הגדירו ברירת מחדל ל-Consent Mode ב-<head> לפני באנר העוגיות:\n\n"
                         + "window.dataLayer = window.dataLayer || [];\n"
                         + "function gtag(){dataLayer.push(arguments);}\n"
                         + "gtag('consent', 'default', {\n"

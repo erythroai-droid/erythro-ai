@@ -2546,18 +2546,19 @@ public class AuditCollector {
                 i18n.checkGa4,
                 gaOk
                         ? ReportFindingsCatalog.tr(i18n.lang,
-                        // The stub may come from an app bundle, not <head> (AUD-231), so no "in head" claim
-                        "dataLayer + consent stub (Consent Mode default) (GA4 "
-                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID найден" : "stub only") + ")",
-                        "dataLayer + consent stub (Consent Mode default) (GA4 "
-                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID found" : "stub only") + ")",
-                        "dataLayer + consent stub (Consent Mode default) (GA4 "
-                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID נמצא" : "stub only") + ")")
+                        // The default may come from an app bundle, not <head> (AUD-231), so no "in head" claim;
+                        // no English "stub" inside RU/HE text (MI-003)
+                        "dataLayer + Consent Mode по умолчанию (GA4: "
+                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "найден G- ID" : "G- ID не найден") + ")",
+                        "dataLayer + Consent Mode default (GA4: "
+                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID found" : "no G- ID") + ")",
+                        "dataLayer + Consent Mode כברירת מחדל (GA4: "
+                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "נמצא G- ID" : "לא נמצא G- ID") + ")")
                         : dataLayer
                                 ? ReportFindingsCatalog.tr(i18n.lang,
-                                "GA4 / dataLayer есть, consent stub неполный",
-                                "GA4 / dataLayer present, consent stub incomplete",
-                                "GA4 / dataLayer קיים, consent stub חלקי")
+                                "GA4 / dataLayer есть, Consent Mode по умолчанию задан не полностью",
+                                "GA4 / dataLayer present, Consent Mode default incomplete",
+                                "GA4 / dataLayer קיים, ברירת המחדל של Consent Mode חלקית")
                                 : ReportFindingsCatalog.tr(i18n.lang,
                                 "Нет сигналов dataLayer / gtag consent",
                                 "No dataLayer / gtag consent signals",

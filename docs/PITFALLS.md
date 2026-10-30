@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-146 — English "stub" and an "in head" claim inside RU/HE text of the GA4 / Consent Mode check
+
+**Tags:** `audit`, `i18n`, `ga4`, `consent-mode`, `report-text`
+**Seen:** 3 times — myblindspot.eu RU, report 238 (sirton.co.il HE), report 240 (bigcars.co.il HE); logged as MI-003 in `docs/audit/minor-issues.md`
+
+**Symptom:** The "GA4 / dataLayer readiness" row read "dataLayer + consent stub (Consent Mode default) (GA4 G- ID נמצא)" and in the recommendation "Consent Mode stub כבר ב-<head>" — English words inside RU/HE text, and a claim that the default sits in `<head>` even when it comes from an app bundle or a consent plugin (AUD-231).
+
+**Cause:** The RU/HE strings in `AuditCollector` (check row), `A44Recommendations.ga4`, `ReportFindingsCatalog` (GA4 finding) and `ReportScopeOfWork` were translated word by word from the English "consent stub" / "stub only".
+
+**Fix:** Localized wording without "stub": "Consent Mode по умолчанию" / "ברירת מחדל של Consent Mode"; the good state no longer says "in <head>" (the recommendation to add it still says <head>); "stub only" → "G- ID не найден" / "no G- ID" / "לא נמצא G- ID". Generated `audit_template_*` copies are not edited by hand — they refresh on the next render.
+
+**Prevent:** No English technical slang in RU/HE strings unless it is a name (Consent Mode, dataLayer). A "found" message must not assert where the code lives unless the collector measured it. Redeploy the VPS audit worker after Java text changes; samples on the site refresh only when rebuilt.
+
+---
+
 ## PIT-145 — Pro hid the open sign-up behind another lead form (start form + /whitepaper)
 
 **Tags:** `audit`, `diagnostic`, `pro`, `lead-capture`, `render-v2`
@@ -2528,3 +2543,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] render-v2 reads only its own tier's Java HTML from this run; never fall back to another tier's file (PIT-139)
 - [ ] Lead check: a start form (URL field → sign-up) is `na` "not checked" in Free; Diagnostic/Pro submit it once with the site origin and judge the step that opens, never typing credentials (PIT-144)
 - [ ] Start form next to other lead forms: Diagnostic/Pro still judge the step behind it and report both; a paid tier never reports less than a cheaper one (PIT-145)
+- [ ] RU/HE report text: no English "stub"/slang, no "in <head>" claim the collector did not measure (PIT-146)

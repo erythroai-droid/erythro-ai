@@ -748,7 +748,7 @@ public final class ReportScopeOfWork {
                             + "правила для {{BOTS}} AI-ботов (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, "
                             + "CCBot, Google-Extended, Applebot-Extended, PerplexityBot) и флаг severe_block",
                     "AI Visibility — GET /llms.txt, /.well-known/mcp, /api/mcp, /about; JSON-LD Organization/FAQ, "
-                            + "link rel=describedby, dataLayer и consent stub. {{AI_SCORE}} критериев входят в балл scorecard; "
+                            + "link rel=describedby, dataLayer и Consent Mode по умолчанию. {{AI_SCORE}} критериев входят в балл scorecard; "
                             + "это не весь объём блока",
                     "Agent Readiness Level 1 — {{L1}} отдельных проверок (валидный robots, sitemap для агентов, "
                             + "правила ботов, Content-Signal, markdown negotiation). Балл L1 не входит в {{AI_SCORE}} критериев AI Visibility",
@@ -809,7 +809,7 @@ public final class ReportScopeOfWork {
                             + "rules for {{BOTS}} AI crawlers (GPTBot, ChatGPT-User, ClaudeBot, anthropic-ai, "
                             + "CCBot, Google-Extended, Applebot-Extended, PerplexityBot) and severe_block",
                     "AI Visibility — GET /llms.txt, /.well-known/mcp, /api/mcp, /about; JSON-LD Organization/FAQ, "
-                            + "rel=describedby, dataLayer and consent stub. {{AI_SCORE}} criteria feed the scorecard score; "
+                            + "rel=describedby, dataLayer and the Consent Mode default. {{AI_SCORE}} criteria feed the scorecard score; "
                             + "that is not the whole block",
                     "Agent Readiness Level 1 — {{L1}} checks (valid robots, agent sitemap, crawler rules, "
                             + "Content-Signal, markdown negotiation). The L1 score is not part of the {{AI_SCORE}} AI Visibility criteria",
