@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-152 — Hebrew hero animation shows Latin words mirrored ("AI" → "IA")
+
+**Tags:** `frontend`, `rtl`, `bidi`, `hero`, `animation`
+**Seen:** 2026-10-30 — erythro.ai `?lang=he`, hero phrase «אוטומציית AI» (CMS text is correct)
+
+**Symptom:** In the hero text animation the Latin word reads backwards: «אוטומציית IA». Plain text elsewhere on the page is fine.
+
+**Cause:** `HeroMotionText.tsx` splits phrases into per-letter `display:inline-block` / flex spans for the kinetic effects. Each such span is an atomic, bidi-neutral item; an RTL container lays them out right-to-left, so the letters of a Latin run come out in reverse (same for `ב-AI`, `24/7`).
+
+**Fix:** `appendGlyphs()` — in RTL phrases each Latin/digit run goes into its own `display:inline-flex;direction:ltr;unicode-bidi:isolate` box; used by every per-letter split (`renderChars`, `explodeToChars`, the AI-plate word and its white cover, the flip frame). The letter-by-letter frame sets `direction:ltr` on a Latin word's box. Checked in Chrome against native text layout.
+
+**Prevent:** Never split mixed-script text into per-letter inline-block/flex items without grouping LTR runs; compare the visual order with the browser's own rendering of the same string.
+
+---
+
 ## PIT-151 — Vercel build fails in next/font: Google returns extensionless font URLs
 
 **Tags:** `build`, `vercel`, `next`, `fonts`, `pnpm-patch`
@@ -2628,3 +2643,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Before the audit, check for a site-wide bot challenge (`detectBotChallenge`); on a challenge send the blocked page, never findings from the challenge page (PIT-149)
 - [ ] Paid audit: check lab access from the worker before payment; a blocked paid run waits (30 min re-checks, 72 h) and alerts the team, never sends the blocked page (PIT-150)
 - [ ] next/font build crash `reading '1'` = extensionless Google font URL; keep `patches/next@15.5.27.patch` until next 16.4.3+ (PIT-151)
+- [ ] Per-letter spans in RTL text: wrap Latin/digit runs in a direction:ltr box (appendGlyphs), or they read mirrored (PIT-152)

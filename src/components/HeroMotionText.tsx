@@ -91,6 +91,51 @@ function containsRtlScript(text: string): boolean {
   return /[\u0590-\u05FF]/.test(text)
 }
 
+/** Latin / digit runs ("AI", "n8n", "24/7") that must read left-to-right inside Hebrew. */
+const LTR_RUN = /[A-Za-z0-9]+(?:[.+#&'\u2019:/_-][A-Za-z0-9]+)*/g
+
+/**
+ * Append one span per glyph (`makeGlyph`) and return them in text order.
+ *
+ * Per-glyph inline-block / flex items are bidi-neutral, so an RTL container lays them out
+ * right-to-left \u2014 fine for Hebrew, but a Latin word came out mirrored ("\u05D0\u05D5\u05D8\u05D5\u05DE\u05E6\u05D9\u05D9\u05EA AI" showed
+ * "IA"). In RTL text each Latin/digit run goes into its own `direction:ltr` box.
+ */
+function appendGlyphs(
+  host: HTMLElement,
+  text: string,
+  makeGlyph: (char: string) => HTMLElement,
+  // Direction of the whole phrase: a lone "AI" word still sits in an RTL container
+  rtl = containsRtlScript(text),
+): HTMLElement[] {
+  const glyphs: HTMLElement[] = []
+  const put = (target: HTMLElement, chunk: string) => {
+    for (const char of chunk) {
+      const span = makeGlyph(char)
+      target.appendChild(span)
+      glyphs.push(span)
+    }
+  }
+  if (!rtl) {
+    put(host, text)
+    return glyphs
+  }
+  let last = 0
+  for (const match of text.matchAll(LTR_RUN)) {
+    const start = match.index ?? 0
+    put(host, text.slice(last, start))
+    const run = document.createElement('span')
+    run.className = 'hero-motion-ltr-run'
+    run.style.cssText =
+      'display:inline-flex;align-items:baseline;direction:ltr;unicode-bidi:isolate;white-space:pre;line-height:inherit;'
+    put(run, match[0])
+    host.appendChild(run)
+    last = start + match[0].length
+  }
+  put(host, text.slice(last))
+  return glyphs
+}
+
 function longestWord(text: string): string {
   return text
     .trim()
@@ -271,6 +316,7 @@ function renderChars(host: HTMLElement, phrase: string): HTMLElement[] {
   host.replaceChildren()
   const frag = document.createDocumentFragment()
   const words = phrase.trim().split(/\s+/).filter(Boolean)
+  const rtl = containsRtlScript(phrase)
 
   words.forEach((word, wordIndex) => {
     const wordEl = document.createElement('span')
@@ -284,14 +330,19 @@ function renderChars(host: HTMLElement, phrase: string): HTMLElement[] {
       .filter(Boolean)
       .join(';')
 
-    for (const char of word) {
-      const span = document.createElement('span')
-      span.className = 'hero-motion-char inline-block'
-      span.style.whiteSpace = 'pre'
-      span.style.transformOrigin = '50% 50%'
-      span.textContent = char
-      wordEl.appendChild(span)
-    }
+    appendGlyphs(
+      wordEl,
+      word,
+      (char) => {
+        const span = document.createElement('span')
+        span.className = 'hero-motion-char inline-block'
+        span.style.whiteSpace = 'pre'
+        span.style.transformOrigin = '50% 50%'
+        span.textContent = char
+        return span
+      },
+      rtl,
+    )
     frag.appendChild(wordEl)
   })
 
@@ -459,16 +510,19 @@ function explodeToChars(el: HTMLElement): HTMLElement[] {
   ].join(';')
   el.textContent = ''
   el.style.padding = '0'
-  const chars: HTMLElement[] = []
-  for (const char of text) {
-    const span = document.createElement('span')
-    span.className = 'hero-motion-char'
-    span.style.cssText = charCss
-    span.textContent = char === ' ' ? '\u00A0' : char
-    el.appendChild(span)
-    chars.push(span)
-  }
-  return chars
+  return appendGlyphs(
+    el,
+    text,
+    (char) => {
+      const span = document.createElement('span')
+      span.className = 'hero-motion-char'
+      span.style.cssText = charCss
+      span.textContent = char === ' ' ? '\u00A0' : char
+      return span
+    },
+    // The element may hold only "AI" while it sits in a Hebrew (RTL) row
+    cs.direction === 'rtl' || containsRtlScript(text),
+  )
 }
 
 /** Soft blur exit for a whole phrase (no skew / sideways slam). */
@@ -1212,16 +1266,22 @@ async function playFrame2(opts: {
   // Glyphs exist from the start — splitting later caused a layout jerk before the flip
   const flipChars: HTMLElement[] = []
   if (autoText) {
-    for (const char of autoText) {
-      const span = document.createElement('span')
-      span.className = 'hero-motion-char'
-      span.style.cssText =
-        'display:inline-block;white-space:pre;transform-origin:50% 50%;line-height:1;letter-spacing:normal;'
-      span.style.color = '#ffffff'
-      span.textContent = char === ' ' ? '\u00A0' : char
-      autoEl.appendChild(span)
-      flipChars.push(span)
-    }
+    flipChars.push(
+      ...appendGlyphs(
+        autoEl,
+        autoText,
+        (char) => {
+          const span = document.createElement('span')
+          span.className = 'hero-motion-char'
+          span.style.cssText =
+            'display:inline-block;white-space:pre;transform-origin:50% 50%;line-height:1;letter-spacing:normal;'
+          span.style.color = '#ffffff'
+          span.textContent = char === ' ' ? '\u00A0' : char
+          return span
+        },
+        rtlText,
+      ),
+    )
   }
 
   plateWrap.appendChild(barEl)
@@ -1324,13 +1384,19 @@ async function playFrame2(opts: {
       'pointer-events:none',
       'display:inline-block',
     ].join(';')
-    for (const char of autoText) {
-      const span = document.createElement('span')
-      span.style.cssText =
-        'display:inline-block;white-space:pre;transform-origin:50% 50%;line-height:1;letter-spacing:normal;color:#ffffff;'
-      span.textContent = char === ' ' ? '\u00A0' : char
-      whiteCover.appendChild(span)
-    }
+    // Same glyph layout as autoEl, or the cover would not line up with the word under it
+    appendGlyphs(
+      whiteCover,
+      autoText,
+      (char) => {
+        const span = document.createElement('span')
+        span.style.cssText =
+          'display:inline-block;white-space:pre;transform-origin:50% 50%;line-height:1;letter-spacing:normal;color:#ffffff;'
+        span.textContent = char === ' ' ? '\u00A0' : char
+        return span
+      },
+      rtlText,
+    )
     plateWrap.appendChild(whiteCover)
     gsap.set(whiteCover, { clipPath: 'inset(0% 0 0% 0)' })
     // Base is fully covered — safe to go red with no visible change
@@ -1565,8 +1631,11 @@ async function playFrame3(opts: {
     ? `display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;max-width:${motionMaxTextWidth()}px;white-space:normal;line-height:1.12;text-align:center;gap:0 0.25em;direction:${rtlText ? 'rtl' : 'ltr'};`
     : `display:inline-flex;align-items:baseline;justify-content:flex-start;white-space:nowrap;line-height:1;direction:${rtlText ? 'rtl' : 'ltr'};`
 
+  // Letters here animate one by one, so a Latin word in a Hebrew phrase flips its own box to LTR
+  // instead of going through appendGlyphs (see there: per-letter flex items read mirrored in RTL)
+  const wordDir = (word: string) => (rtlText && !containsRtlScript(word) ? 'direction:ltr;' : '')
   const word1El = document.createElement('span')
-  word1El.style.cssText = 'display:inline-flex;align-items:baseline;line-height:1;'
+  word1El.style.cssText = `display:inline-flex;align-items:baseline;line-height:1;${wordDir(firstWord)}`
   const word2El = document.createElement('span')
   word2El.style.cssText = 'display:inline-flex;align-items:baseline;line-height:1;'
   const gapEl = document.createElement('span')
@@ -1755,7 +1824,7 @@ async function playFrame3(opts: {
     riseHost.style.cssText =
       'display:inline-block;overflow:hidden;vertical-align:baseline;white-space:nowrap;line-height:1;'
     const riseInner = document.createElement('span')
-    riseInner.style.cssText = 'display:inline-flex;align-items:baseline;line-height:1;'
+    riseInner.style.cssText = `display:inline-flex;align-items:baseline;line-height:1;${wordDir(secondWord)}`
 
     const secondChars = secondWord.split('').map((char) => {
       const el = makeChar(char)
@@ -2116,16 +2185,19 @@ async function playFrame4(opts: {
     .filter(Boolean)
     .join(';')
 
-  const flipChars: HTMLElement[] = []
-  for (const char of mainText) {
-    const span = document.createElement('span')
-    span.className = 'hero-motion-char'
-    span.style.cssText =
-      'display:inline-block;white-space:pre;transform-origin:50% 50%;line-height:1;letter-spacing:normal;color:#ffffff;'
-    span.textContent = char === ' ' ? '\u00A0' : char
-    textEl.appendChild(span)
-    flipChars.push(span)
-  }
+  const flipChars = appendGlyphs(
+    textEl,
+    mainText,
+    (char) => {
+      const span = document.createElement('span')
+      span.className = 'hero-motion-char'
+      span.style.cssText =
+        'display:inline-block;white-space:pre;transform-origin:50% 50%;line-height:1;letter-spacing:normal;color:#ffffff;'
+      span.textContent = char === ' ' ? '\u00A0' : char
+      return span
+    },
+    rtlText,
+  )
 
   box.appendChild(textEl)
   fgEl.appendChild(box)
