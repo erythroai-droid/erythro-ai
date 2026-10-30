@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import CookieConsent from '@/components/CookieConsent'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
@@ -14,6 +14,7 @@ import { auditCalcCopy as copy, tCalc } from '@/lib/auditCalcCopy'
 /**
  * Calculator LP, design 2: styled like the audit report, light theme only.
  * Header is the report's own: red dot + wordmark, language links.
+ * Fonts: Inter for Russian and English, Heebo for Hebrew.
  */
 export default function AuditCalcClient({
   locale,
@@ -24,11 +25,27 @@ export default function AuditCalcClient({
   content: SiteContent
   auditPageContent: AuditPageContent
 }) {
+  const isHebrew = locale === 'he'
+
+  useEffect(() => {
+    document.documentElement.lang = locale
+    document.documentElement.dir = isHebrew ? 'rtl' : 'ltr'
+  }, [locale, isHebrew])
+
   return (
     <SiteContentProvider value={content}>
       <div
-        dir={locale === 'he' ? 'rtl' : 'ltr'}
+        dir={isHebrew ? 'rtl' : 'ltr'}
+        lang={locale}
         className="min-h-screen bg-[#eaeaea] font-sans text-[#1e1e1e] flex flex-col justify-between"
+        style={{
+          fontFamily: isHebrew
+            ? 'var(--font-heebo), "Heebo", system-ui, sans-serif'
+            : 'var(--font-inter), var(--font-inter-cyrillic), "Inter", system-ui, sans-serif',
+          ['--font-sans' as string]: isHebrew
+            ? 'var(--font-heebo), "Heebo", system-ui, sans-serif'
+            : 'var(--font-inter), var(--font-inter-cyrillic), "Inter", system-ui, sans-serif',
+        }}
       >
         <div className="flex w-full flex-1 flex-col gap-3 px-3 pt-3 sm:px-6 sm:pt-4 lg:px-8 lg:gap-3.5">
           <header className="flex items-center justify-between gap-4">

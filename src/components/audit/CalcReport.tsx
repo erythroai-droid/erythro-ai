@@ -456,10 +456,9 @@ export function CalcFormShell({
         title={tCalc(isStep1 ? copy.step1Heading : copy.step2Heading, locale)}
         sub={tCalc(isStep1 ? copy.step1Sub : copy.step2Sub, locale)}
         tag={fillCalc(tCalc(copy.stepOf, locale), { n: step, total: 4 })}
-        no={`0${step}`}
       />
       <CalcStepper locale={locale} current={step} />
-      <div className={`${INNER} flex min-w-0 flex-col gap-5 rounded-[8px] px-6 py-6 sm:px-7 sm:py-7 shadow-sm`}>
+      <div className={`${INNER} flex min-w-0 flex-col gap-6 rounded-[12px] p-6 sm:p-8 lg:p-[50px] shadow-sm`}>
         <div className="flex items-center justify-between border-b border-[#e8e8e8] pb-3 text-xs uppercase tracking-wider text-[#6b6254]">
           <span className="flex items-center gap-2 font-mono font-medium text-[#1e1e1e]">
             <span className="size-2 rounded-full bg-[#22bf16] animate-pulse" />
