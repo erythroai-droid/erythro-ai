@@ -5,8 +5,9 @@
 // importMap references) and the server-only `resolveSignedURLKey`. The latter
 // imports the full Payload server bundle (-> undici -> `node:*` builtins),
 // which webpack cannot bundle for the browser and which is never executed
-// client-side. Tree-shaking does not drop it here, so client builds swap the
-// module for this no-op via NormalModuleReplacementPlugin (see next.config.ts).
+// client-side. Webpack's tree-shaking does not drop it, so webpack client builds
+// swap the module for this no-op via NormalModuleReplacementPlugin (see
+// next.config.ts). Turbopack, our default build, drops it by itself.
 export const resolveSignedURLKey = () => {
   throw new Error('resolveSignedURLKey is server-only and must not run in the browser')
 }

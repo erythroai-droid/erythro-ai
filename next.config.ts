@@ -227,8 +227,10 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Next 16 builds with Turbopack by default; this config (client stub for resolveSignedURLKey)
-  // is webpack-only, so `dev` and `build` run with --webpack until it is ported.
+  // Webpack-only, kept as the fallback for `next build --webpack`. Turbopack (default since
+  // Next 16, used by our scripts) tree-shakes the plugin-cloud-storage `utilities` barrel and needs
+  // neither the client stub nor extensionAlias (checked 30.10: no resolveSignedURLKey/undici in
+  // client chunks).
   webpack: (webpackConfig, { isServer, webpack }) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
