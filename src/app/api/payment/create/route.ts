@@ -13,6 +13,7 @@ import {
   parsePrice,
 } from '@/lib/orderPlans'
 import { normalizeAuditWebsite } from '@/lib/auditFormValidation'
+import { checkLabAccess, isPaidAuditCheckoutSlug } from '@/lib/auditLabAccess'
 import { createGrowPayment, isGrowConfigured, toGrowFullName, toGrowIsraeliMobile } from '@/lib/payments/grow'
 import { createMakeGrowPayment, isMakeGrowConfigured } from '@/lib/payments/makeGrow'
 import { signPaymentReturn } from '@/lib/payments/returnSig'
@@ -130,6 +131,19 @@ export async function POST(request: NextRequest) {
     if (!verifyProOfferCheckoutAccess(proOfferToken)) {
       return NextResponse.json({ code: 'promo_access_denied' }, { status: 403 })
     }
+  }
+
+  // A paid audit the lab cannot run must not be sold: re-check on the server what the form
+  // checked (PIT-150). An unanswered worker does not block — the paid run waits for access.
+  if (website && isPaidAuditCheckoutSlug(plan.slug)) {
+    const access = await checkLabAccess(website, 12_000)
+    if (access.checked && access.blocked) {
+      return NextResponse.json(
+        { ok: false, code: 'bot_protected', protection: access.protection },
+        { status: 409 },
+      )
+    }
+    if (!access.checked) console.warn(`[payment] lab access unknown: ${access.reason}`)
   }
 
   // Calculate amount server-side (trust nothing from client)

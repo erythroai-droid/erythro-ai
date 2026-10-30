@@ -2172,6 +2172,25 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-150 — Paid Diagnostic/Pro for a site the lab cannot open
+
+**Tags:** `audit`, `payment`, `worker`, `bot-protection`, `reconcile`
+**Seen:** 2026-10-30 — follow-up to PIT-149 (report 244): Free may get the "audit not completed" page, a client who paid must not
+
+**Symptom (risk):** A client pays ₪99/₪490, the worker meets a bot challenge (AWS WAF, Cloudflare…) and the paid result is the PIT-149 page "we could not check your site".
+
+**Cause:** The challenge was only seen after payment, and the site's own website check runs on Vercel, whose IPs a WAF may let through while it blocks the VPS lab IP.
+
+**Fix:**
+- Worker `POST /api/check-access` (secret + optional HMAC) runs `detectBotChallenge` from the lab IP.
+- Site: `src/lib/auditLabAccess.ts` (`checkLabAccess`, `isPaidAuditCheckoutSlug`). `/api/audit/check-website` with a paid `planSlug` asks the worker; `bot_protected` → field error "add IP 46.202.155.56 to the allowlist, then click again" (`useAuditFieldChecks(..., { planSlug })`, `OrderClient`, `AuditLpPaidForm`). `/api/payment/create` re-checks on the server and answers `409 code: bot_protected`. An unanswered worker never blocks the checkout.
+- Worker, paid run still blocked (protection turned on after payment): `waitForLabAccess` — order stays `in_progress` with `auditSummary.waitingAccess {since, lastCheck, checks, clientNotified}`; first time the client gets "payment received — open access" (no report, no PDF) and team@erythro.ai gets an alert; after 72 h → `failed` + second team alert.
+- Site cron `reconcileStuckAudits`: `waitingAccess` orders are re-queued every 30 min without spending `MAX_RECONCILE_RETRIES`.
+
+**Prevent:** Anything the client pays for must be checked before payment from the machine that will do the work, not from the web front. A paid result is never a "could not do it" page: wait, retry, tell the team.
+
+---
+
 ## PIT-149 — Site behind a bot challenge audited as its empty challenge page
 
 **Tags:** `audit`, `worker`, `waf`, `bot-protection`, `report`
@@ -2592,3 +2611,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Worker redeploy: ship LF files only (`git -c core.autocrlf=false archive`), never a CRLF worktree; after it, check one audit log for a render-v2 exit code (PIT-147)
 - [ ] Web text files through `textBody()` (BOM); Step 1 snippet only adds what the existing file lacks; a training-only robots block is not "AI does not see the site" (PIT-148)
 - [ ] Before the audit, check for a site-wide bot challenge (`detectBotChallenge`); on a challenge send the blocked page, never findings from the challenge page (PIT-149)
+- [ ] Paid audit: check lab access from the worker before payment; a blocked paid run waits (30 min re-checks, 72 h) and alerts the team, never sends the blocked page (PIT-150)
