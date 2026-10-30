@@ -1,0 +1,82 @@
+{{REPORT_HEAD}}
+<body>
+<div class="wrap">
+
+  {{LOGO}}
+
+  <div class="head">
+    <div class="head-top">
+      <span class="badge dark">{{TIER_BADGE}}</span>
+      <span class="badge">{{CHECKED_AT}}</span>
+      <span class="badge">{{LOCALE_BADGE}}</span>
+    </div>
+    <div class="site">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="16" cy="16" r="14"/><ellipse cx="16" cy="16" rx="6" ry="14"/><path d="M2 16h28M4 9h24M4 23h24"/></svg>
+      {{SITE}}
+    </div>
+  </div>
+
+  <section class="card blocked-card">
+    <div class="row"><h2>{{KICKER}}</h2><a href="#action-allowlist" class="badge crit" title="{{TODO_TITLE}}">{{STATUS}} ↓</a></div>
+    <h1 class="blocked-title">{{HEADLINE}}</h1>
+    <p class="sub">{{LEAD}}</p>
+    <div class="proto">
+      <div class="stat"><b>{{STAT_PROTECTION}}</b><span>{{STAT_PROTECTION_LABEL}}</span></div>
+      <div class="stat"><b dir="ltr">{{STAT_ANSWER}}</b><span>{{STAT_ANSWER_LABEL}}</span></div>
+      <div class="stat"><b>{{STAT_PAGES}}</b><span>{{STAT_PAGES_LABEL}}</span></div>
+      <div class="stat"><b>—</b><span>{{STAT_SCORE_LABEL}}</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>{{TODO_TITLE}}</h2>
+    <p class="sub">{{TODO_SUB}}</p>
+    <div class="actions">
+      <div class="action" id="action-allowlist">
+        <div>
+          <h3>{{STEP1_TITLE}}</h3>
+          <div class="tags"><span class="tag">{{STEP1_TAG}}</span><span class="tag crit">{{STEP1_SEV}}</span></div>
+          <p>{{STEP1_TEXT}}</p>
+          <div class="code-box">
+            <div class="code-header">
+              <span class="code-file">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <code>{{IP_LABEL}}</code>
+              </span>
+              <button type="button" class="btn-copy" data-copy="{{LAB_IP}}" aria-label="Copy IP">
+                <span class="copy-text">copy</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+            </div>
+            <pre><code>{{LAB_IP}}</code></pre>
+          </div>
+        </div>
+        <div class="plus"><small>{{STEP_WORD}}</small>1</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div>
+      <h2>{{CTA_TITLE}}</h2>
+      <p>{{CTA_TEXT}}</p>
+      <div class="contacts"><a href="mailto:{{EMAIL}}">{{EMAIL}}</a><a href="tel:+972505308305" dir="ltr">+972 50 530 8305</a></div>
+    </div>
+    <div class="cta-buttons">
+      <a class="go" href="{{WA_HREF}}"><span class="bt-full">{{WA_LABEL}}</span><span class="bt-short">{{WA_SHORT}}</span></a>
+    </div>
+  </section>
+
+  <p class="report-disclaimer" style="max-width:960px;margin:28px auto 10px;padding:0 16px;font-size:12px;line-height:1.6;color:#6b6b6b;text-align:start">{{DISCLAIMER}}</p>
+  <div class="foot">© {{YEAR}} Erythro.ai — Hi-Load Web Development &amp; AI Agents Automation · Commercial Executive Audit</div>
+</div>
+
+{{REPORT_SCRIPT}}
+</body>
+</html>
