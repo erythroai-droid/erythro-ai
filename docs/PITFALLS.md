@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-151 — Vercel build fails in next/font: Google returns extensionless font URLs
+
+**Tags:** `build`, `vercel`, `next`, `fonts`, `pnpm-patch`
+**Seen:** 2026-10-30 — preview builds of PR #350 failed twice; a no-cache redeploy passed
+
+**Symptom:** `next build` → `src/lib/fonts.ts — An error occurred in next/font. TypeError: Cannot read properties of null (reading '1')` at `@next/font/dist/google/loader.js:122` (Heebo). Not every build: the same request to Google sometimes returns normal `…/s/heebo/v28/….woff2` URLs and sometimes `https://fonts.gstatic.com/l/font?kit=…&skey=…&v=v28` without an extension.
+
+**Cause:** next 15.5.27 takes the file type with `/\.(woff|woff2|eot|ttf|otf)$/.exec(url)[1]`; an extensionless URL gives `null`. Fixed upstream in next 16.4.3 (vercel/next.js#99114); 15.5.28 (backport tag) does not have it. Payload 3.90.2 officially supports next `>=16.3.3`, not 15.5 (we run 15.5 via `pnpm.peerDependencyRules.allowedVersions`).
+
+**Fix:** `patches/next@15.5.27.patch` (`pnpm.patchedDependencies`) — backport of the 16.4.3 change: `findFontFilesInCss` returns `ext` from the URL path, else from the CSS `format()` hint, else `woff2`; `loader.js` uses it. Guard test `tests/int/nextFontGooglePatch.int.spec.ts`. On Windows with a non-ASCII user folder `pnpm patch-commit` writes `"a/C:/Users/…/patch-commit/<hash>/dist/…"` headers and then fails with `ERR_PNPM_INVALID_PATCH` — rewrite them to `a/dist/…` and run `pnpm install`.
+
+**Prevent:** Remove the patch when moving to next 16.4.3+ (the guard test keeps passing there). A build that fails in `next/font` with this stack is the Google flake, not the PR.
+
+---
+
 ## PIT-150 — Paid Diagnostic/Pro for a site the lab cannot open
 
 **Tags:** `audit`, `payment`, `worker`, `bot-protection`, `reconcile`
@@ -2612,3 +2627,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Web text files through `textBody()` (BOM); Step 1 snippet only adds what the existing file lacks; a training-only robots block is not "AI does not see the site" (PIT-148)
 - [ ] Before the audit, check for a site-wide bot challenge (`detectBotChallenge`); on a challenge send the blocked page, never findings from the challenge page (PIT-149)
 - [ ] Paid audit: check lab access from the worker before payment; a blocked paid run waits (30 min re-checks, 72 h) and alerts the team, never sends the blocked page (PIT-150)
+- [ ] next/font build crash `reading '1'` = extensionless Google font URL; keep `patches/next@15.5.27.patch` until next 16.4.3+ (PIT-151)
