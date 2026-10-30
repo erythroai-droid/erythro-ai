@@ -191,7 +191,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     stage.name === 'form' ? formStep : stage.name === 'waiting' ? 3 : 4
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-4 lg:gap-6">
+    <div className="flex w-full min-w-0 flex-1 flex-col gap-3 lg:gap-3.5">
       {stage.name === 'form' || stage.name === 'waiting' ? (
         <>
         <CalcTags locale={locale} kind={stage.name} step={currentStep} />

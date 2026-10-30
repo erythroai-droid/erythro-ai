@@ -28,9 +28,9 @@ export default function AuditCalcClient({
     <SiteContentProvider value={content}>
       <div
         dir={locale === 'he' ? 'rtl' : 'ltr'}
-        className="min-h-screen bg-[#eaeaea] font-sans text-[#1e1e1e]"
+        className="min-h-screen bg-[#eaeaea] font-sans text-[#1e1e1e] flex flex-col justify-between"
       >
-        <div className="flex w-full flex-col gap-2.5 px-3 pb-6 pt-2 sm:px-6 sm:pt-3 lg:px-8 lg:pb-8 lg:gap-3">
+        <div className="flex w-full flex-1 flex-col gap-3 px-3 pt-3 sm:px-6 sm:pt-4 lg:px-8 lg:gap-3.5">
           <header className="flex items-center justify-between gap-4">
             {/* Official logo, the same file the site header uses on light backgrounds. */}
             <a href={mainSiteUrl('/')} aria-label="Erythro.ai" dir="ltr" className="flex">
@@ -40,7 +40,7 @@ export default function AuditCalcClient({
                 alt="Erythro.ai"
                 width={235}
                 height={74}
-                className="h-[52px] w-auto sm:h-[60px] lg:h-[64px]"
+                className="h-[56px] w-auto sm:h-[64px] lg:h-[70px]"
               />
             </a>
             <nav aria-label="Language" className="flex items-center gap-1">
@@ -65,7 +65,7 @@ export default function AuditCalcClient({
           <AuditCalcFlow locale={locale} page={auditPageContent} />
         </div>
 
-        <div id="footer">
+        <div id="footer" className="py-6 sm:py-[28px] shrink-0">
           <AuditLpFooter locale={locale} theme="light" />
         </div>
 
