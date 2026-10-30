@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-153 — Top-3 ordered by internal weight, GA4 shown with two statuses, "1." in the accessibility card (MI-002, MI-006, MI-011)
+
+**Tags:** `audit`, `render-v2`, `top-3`, `status`, `wording`
+**Seen:** 2026-10-28…30 — reports 238, 239, 240 (HE), 243 (fast-taxi.co.il, Free HE); each reached 3 repeats (MI-011: 1, linked to MI-002)
+
+**Symptom:** (1) Top-3: a "growth point" card stood above "needs attention", and a worse finding (security headers 0/6, slow LCP) was left out; the action plan listed a different order. (2) Same report, same check: GA4 "Critical" in the checklist, "Growth opportunity" in the top-3 card and in plan Step 5. (3) Accessibility card: "axe-core found critical/serious violations: 1." read like broken list numbering.
+
+**Cause:** (1) `ReportFindingsCatalog.toTopVulnerabilities` picked 3 by the internal `BizFinding.severity` weight, while the card shows the status of its pillar (`sevForPillar` in `render-v2-reports.mjs`). (2) The GA4 finding is classified into the `seo` step (`classifyActionPillar`), the checklist row into the `ai` pillar (`classifyCheck`), so the card took the SEO scale's colour, not the row's. (3) The count was the last word of the sentence.
+
+**Fix:** Java also writes `executive_scorecard.top_candidates` (real findings in weight order, one AI card, no pads). render-v2 picks the top-3 from it by the shown status (ties by weight), AI Visibility stays in (replaces the least severe), growth pads still fill a short list; `finds` is built once, before the checklist, so Step 1 / Free's open step follow the same order. `sevIdx` takes the GA4 finding's status from the GA4 checklist row. The accessibility count sits inside the sentence: "(WCAG rules: N)" in RU/EN/HE. Old `audit_data.json` without `top_candidates` keeps Java's top-3.
+
+**Prevent:** Anything the report orders or colours must use the status the reader sees, not an internal weight; a finding and its checklist row must share one status source. Do not end a sentence with a bare number.
+
+---
+
 ## PIT-152 — Hebrew hero animation shows Latin words mirrored ("AI" → "IA")
 
 **Tags:** `frontend`, `rtl`, `bidi`, `hero`, `animation`
@@ -2646,3 +2661,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Paid audit: check lab access from the worker before payment; a blocked paid run waits (30 min re-checks, 72 h) and alerts the team, never sends the blocked page (PIT-150)
 - [ ] next/font build crash `reading '1'` = extensionless Google font URL; keep `patches/next@15.5.27.patch` until next 16.4.3+ (PIT-151)
 - [ ] Per-letter spans in RTL text: wrap Latin/digit runs in a direction:ltr box (appendGlyphs), or they read mirrored (PIT-152)
+- [ ] Top-3 and the plan follow the status the card shows (`top_candidates` + `sevIdx`); a finding takes its status from its checklist row (PIT-153)
