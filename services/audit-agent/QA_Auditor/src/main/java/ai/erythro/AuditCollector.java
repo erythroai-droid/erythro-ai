@@ -2952,6 +2952,7 @@ public class AuditCollector {
         List<ReportFindingsCatalog.BizFinding> bizFindings = ReportFindingsCatalog.buildAll(findingCtx, reportLang);
         bizFindings.sort(Comparator.comparingInt(ReportFindingsCatalog.BizFinding::severity).reversed());
         scorecard.put("top_vulnerabilities", ReportFindingsCatalog.toTopVulnerabilities(bizFindings, reportLang, multilingualSite));
+        scorecard.put("top_candidates", ReportFindingsCatalog.toTopCandidates(bizFindings));
         scorecard.put("findings_total", bizFindings.size());
         return scorecard;
     }
