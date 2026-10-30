@@ -70,6 +70,67 @@ const BLOCKED_COPY = {
   },
 }
 
+// Paid order, site closed to the lab: not a report — the audit waits for access and starts by
+// itself; the link is the order status page (PIT-150)
+const WAITING_COPY = {
+  ru: {
+    subject: (url, orderId) => `Оплата получена — откройте доступ для аудита (${orderId}) — ${url}`,
+    body: 'Оплата получена, но ваш сайт закрыт защитой от ботов, и лаборатория Erythro.ai не может его проверить. Добавьте IP 46.202.155.56 в allowlist вашей защиты (Cloudflare, AWS WAF, панель хостинга). Мы проверяем доступ каждые 30 минут и запустим аудит сразу, как он откроется; отчёт придёт на этот адрес. Статус заказа:',
+  },
+  he: {
+    subject: (url, orderId) => `התשלום התקבל — פתחו גישה לביקורת (${orderId}) — ${url}`,
+    body: 'התשלום התקבל, אבל האתר שלכם מוגן מפני בוטים והמעבדה של Erythro.ai לא יכולה לבדוק אותו. הוסיפו את ה-IP ‏46.202.155.56 לרשימת ההיתרים (allowlist) בהגנה שלכם (Cloudflare, AWS WAF, לוח הבקרה של האחסון). אנחנו בודקים את הגישה כל 30 דקות ונריץ את הביקורת ברגע שהיא תיפתח; הדוח יישלח לכתובת הזו. סטטוס ההזמנה:',
+  },
+  en: {
+    subject: (url, orderId) => `Payment received — open access for the audit (${orderId}) — ${url}`,
+    body: 'Payment received, but your site is behind bot protection and the Erythro.ai lab cannot check it. Add IP 46.202.155.56 to the allowlist of your protection (Cloudflare, AWS WAF, hosting panel). We check access every 30 minutes and start the audit as soon as it opens; the report will come to this address. Order status:',
+  },
+}
+
+const TEAM_ALERT_TO = 'team@erythro.ai'
+
+/**
+ * Internal alert: a paid audit is waiting for the client to open access (PIT-150).
+ * @param {{ orderId: string|number, targetUrl: string, planSlug?: string, clientEmail?: string, protection?: string, status?: string, expired?: boolean, statusPageUrl?: string }} input
+ */
+export async function sendTeamBlockedAlert(input) {
+  const pass = process.env.SMTP_PASS?.trim()
+  if (!pass) return { sent: false, reason: 'SMTP_PASS not set' }
+  const orderId = formatAuditOrderId(input.orderId)
+  const port = Number(process.env.SMTP_PORT || 465)
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST?.trim() || 'smtp.hostinger.com',
+    port,
+    secure: port === 465,
+    auth: { user: process.env.SMTP_USER?.trim() || MAILBOX, pass },
+  })
+  const head = input.expired
+    ? `72 часа без доступа: платный аудит ${orderId} не выполнен`
+    : `Платный аудит ${orderId} ждёт доступа: сайт закрыт защитой от ботов`
+  const text = [
+    head,
+    '',
+    `Сайт: ${input.targetUrl}`,
+    `Тариф: ${input.planSlug || '—'}`,
+    `Клиент: ${input.clientEmail || '—'}`,
+    `Защита: ${input.protection || '—'} (${input.status || '—'})`,
+    input.statusPageUrl ? `Статус заказа: ${input.statusPageUrl}` : '',
+    '',
+    input.expired
+      ? 'Заказ переведён в failed. Свяжитесь с клиентом: доступ для IP 46.202.155.56, перезапуск из админки или возврат.'
+      : 'Клиенту ушло письмо с просьбой добавить IP 46.202.155.56 в allowlist. Воркер проверяет доступ каждые 30 минут до 72 часов и сам запустит аудит.',
+  ].filter((l) => l !== null).join('\n')
+  await transporter.sendMail({
+    from: `"Erythro.ai audit agent" <${MAILBOX}>`,
+    to: TEAM_ALERT_TO,
+    subject: `[audit] ${head} — ${input.targetUrl}`,
+    text,
+    envelope: { from: MAILBOX, to: [TEAM_ALERT_TO] },
+    headers: { 'Auto-Submitted': 'auto-generated', 'X-Erythro-Audit-Order-Id': orderId },
+  })
+  return { sent: true }
+}
+
 /**
  * @param {{
  *   to: string,
@@ -82,6 +143,7 @@ const BLOCKED_COPY = {
  *   pdfBuffer?: Buffer | Uint8Array | null,
  *   pdfFilename?: string,
  *   blocked?: boolean,
+ *   waitingAccess?: boolean,
  * }} input
  */
 export async function sendClientAuditEmail(input) {
@@ -95,11 +157,14 @@ export async function sendClientAuditEmail(input) {
   }
 
   const locale = input.locale || 'en'
-  const pdfBuffer = input.blocked ? null : input.pdfBuffer
+  const pdfBuffer = input.blocked || input.waitingAccess ? null : input.pdfBuffer
   const withPdf = Boolean(pdfBuffer && pdfBuffer.length)
-  const copy = input.blocked
-    ? { ...copyForLocale(locale, false), ...BLOCKED_COPY[locale === 'ru' || locale === 'he' ? locale : 'en'] }
-    : copyForLocale(locale, withPdf)
+  const copyLang = locale === 'ru' || locale === 'he' ? locale : 'en'
+  const copy = input.waitingAccess
+    ? { ...copyForLocale(locale, false), ...WAITING_COPY[copyLang] }
+    : input.blocked
+      ? { ...copyForLocale(locale, false), ...BLOCKED_COPY[copyLang] }
+      : copyForLocale(locale, withPdf)
   const orderId = formatAuditOrderId(input.orderId)
   const host = process.env.SMTP_HOST?.trim() || 'smtp.hostinger.com'
   const port = Number(process.env.SMTP_PORT || 465)

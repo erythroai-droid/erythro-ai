@@ -11,6 +11,8 @@ import {
 export const DEFAULT_NEW_STALE_MINUTES = 2
 export const DEFAULT_IN_PROGRESS_STALE_MINUTES = 20
 export const MAX_RECONCILE_RETRIES = 3
+/** Paid audit waiting for the client to open access to the lab: re-check interval (PIT-150). */
+export const WAITING_ACCESS_RECHECK_MINUTES = 30
 const MAX_STALE_MINUTES = 120
 const SCAN_LIMIT = 25
 
@@ -36,6 +38,13 @@ export type ReconcileRunResult = {
 function clampStaleMinutes(value: number | undefined, fallback: number): number {
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return fallback
   return Math.min(Math.floor(value), MAX_STALE_MINUTES)
+}
+
+function waitingAccessOf(summary: unknown): { lastCheck?: string } | null {
+  if (!summary || typeof summary !== 'object') return null
+  const w = (summary as { waitingAccess?: unknown }).waitingAccess
+  if (!w || typeof w !== 'object' || (w as { expired?: unknown }).expired) return null
+  return w as { lastCheck?: string }
 }
 
 function cutoffIso(staleMinutes: number): string {
@@ -72,6 +81,7 @@ export async function reconcileStuckAudits(
     name?: unknown
     paymentStatus?: unknown
     paymentAmount?: unknown
+    auditSummary?: unknown
   }
   const docs: AuditDoc[] = []
 
@@ -138,6 +148,39 @@ export async function reconcileStuckAudits(
     const website = typeof doc.website === 'string' ? doc.website.trim() : ''
     if (!website) {
       results.push({ id: doc.id, action: 'skip', reason: 'no_website' })
+      continue
+    }
+
+    // Paid audit behind bot protection: the worker keeps it `in_progress` with
+    // auditSummary.waitingAccess and decides the 72 h limit itself. Re-check every 30 min
+    // without spending reconcile retries (PIT-150).
+    const waiting = waitingAccessOf(doc.auditSummary)
+    if (waiting) {
+      const last = Date.parse(waiting.lastCheck || '')
+      if (Number.isFinite(last) && Date.now() - last < WAITING_ACCESS_RECHECK_MINUTES * 60_000) {
+        results.push({ id: doc.id, action: 'skip', reason: 'waiting_access_recent' })
+        continue
+      }
+      const triggered = await triggerAuditAgent(
+        {
+          submissionId: doc.id,
+          targetUrl: website,
+          locale:
+            (typeof doc.auditLanguage === 'string' && doc.auditLanguage) ||
+            (typeof doc.locale === 'string' && doc.locale) ||
+            undefined,
+          planSlug: typeof doc.planSlug === 'string' ? doc.planSlug : undefined,
+          clientEmail: typeof doc.email === 'string' ? doc.email : undefined,
+          clientName: typeof doc.name === 'string' ? doc.name : undefined,
+        },
+        { attempts: 2 },
+      )
+      results.push({
+        id: doc.id,
+        action: 'recheck_access',
+        queued: triggered.ok,
+        reason: triggered.ok ? undefined : triggered.reason,
+      })
       continue
     }
 
