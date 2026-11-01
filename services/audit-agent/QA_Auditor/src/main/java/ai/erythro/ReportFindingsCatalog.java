@@ -336,11 +336,12 @@ public final class ReportFindingsCatalog {
                             "הפרות נגישות (WCAG 2.1 AA / IS 5568)"),
                     tr(lang,
                             // Lighthouse Accessibility runs a subset of axe rules, so 100 there does not contradict this (AUD-226)
-                            "axe-core обнаружил критичных и серьезных нарушений: " + ctx.seriousA11y + ". "
+                            // The count goes inside the sentence: a trailing "1." read as list numbering (MI-006)
+                            "axe-core обнаружил критичные и серьёзные нарушения (правил WCAG: " + ctx.seriousA11y + "). "
                                     + "Lighthouse проверяет только часть правил WCAG, поэтому его балл доступности может быть 100 и при этих нарушениях.",
-                            "axe-core found critical/serious violations: " + ctx.seriousA11y + ". "
+                            "axe-core found critical and serious violations (WCAG rules: " + ctx.seriousA11y + "). "
                                     + "Lighthouse runs only part of the WCAG rules, so its Accessibility score can be 100 despite these violations.",
-                            "axe-core מצא הפרות קריטיות/חמורות: " + ctx.seriousA11y + ". "
+                            "axe-core מצא הפרות קריטיות וחמורות (כללי WCAG: " + ctx.seriousA11y + "). "
                                     + "Lighthouse בודק רק חלק מכללי WCAG, ולכן ציון הנגישות שלו יכול להיות 100 גם עם ההפרות האלה."),
                     tr(lang,
                             "В Израиле доступность регулируется IS 5568 — нарушения несут юридический риск и штрафы.",
@@ -753,6 +754,25 @@ public final class ReportFindingsCatalog {
 
     public static List<Map<String, String>> toTopVulnerabilities(List<BizFinding> sortedFindings, String reportLang) {
         return toTopVulnerabilities(sortedFindings, reportLang, true);
+    }
+
+    /**
+     * Real findings in weight order, for the renderer to choose the top-3 by the status it shows
+     * (MI-002: the weight alone put a growth point above "needs attention" and left a worse one out).
+     * Same filters as {@link #toTopVulnerabilities}: no Israel-only items, one AI Visibility card; no pads.
+     */
+    public static List<Map<String, String>> toTopCandidates(List<BizFinding> sortedFindings) {
+        List<Map<String, String>> out = new ArrayList<>();
+        boolean aiTaken = false;
+        for (BizFinding f : sortedFindings) {
+            if (f.israelOnly() || (f.aiDiscovery() && aiTaken)) {
+                continue;
+            }
+            aiTaken |= f.aiDiscovery();
+            out.add(Map.of("title", f.title(), "issue", f.issue(), "impact", f.impact(), "solution", f.solution(),
+                    "ai", String.valueOf(f.aiDiscovery())));
+        }
+        return out;
     }
 
     /**

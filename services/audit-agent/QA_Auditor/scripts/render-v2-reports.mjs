@@ -2748,8 +2748,48 @@ function renderReport(lang, tier = 'pro') {
   const planLinkText = lang === 'ru' ? 'Смотреть решение с кодом в плане действий ↓'
     : lang === 'he' ? 'לצפייה בפתרון עם קוד בתוכנית הפעולה ↓'
     : 'View solution with code in action plan ↓';
+  // Top-3 and its severity (all tiers). The card shows the status of the finding's scale or check,
+  // so that status, not Java's internal weight, decides the order and what gets in (MI-002).
+  const mapFind = (v) => {
+    const origTitle = strip(v.title || '');
+    const tr = FINDINGS_DICT[origTitle]?.[lang];
+    return {
+      // pillar is classified from the original (RU) title, so every language copy gets the same plan
+      orig: origTitle,
+      title: tr ? tr.title : origTitle,
+      issue: tr ? tr.issue : strip(v.issue || ''),
+      impact: tr ? tr.impact : strip(v.impact || ''),
+      sol: tr ? tr.sol : strip(v.solution || v.sol || '')
+    };
+  };
+  // The GA4 finding belongs to the 'seo' step, but its checklist row sits in the 'ai' pillar: take the row's
+  // status, or the card said "growth point" next to "Critical" in the checklist (MI-011)
+  const ga4Check = checks.find((c) => /ga4|datalayer/i.test(c.name));
+  const sevIdx = (f) => {
+    const orig = f.orig || f.title;
+    if (/ga4/i.test(orig) && ga4Check && isIssue(ga4Check)) return ga4Check.status === 'bad' ? 0 : ga4Check.status === 'warn' ? 1 : 2;
+    return sevForPillar(classifyActionPillar(orig));
+  };
+  let finds = [];
+  if (sc && Array.isArray(sc.top_vulnerabilities) && sc.top_vulnerabilities.length > 0) {
+    const javaTop = sc.top_vulnerabilities.slice(0, 3).map(mapFind);
+    const cands = Array.isArray(sc.top_candidates) ? sc.top_candidates : [];
+    if (cands.length) {
+      const byStatus = (a, b) => a.k - b.k || a.i - b.i;
+      const ranked = cands.map((v, i) => { const f = mapFind(v); return { f, i, k: sevIdx(f), ai: v.ai === 'true' }; }).sort(byStatus);
+      let picked = ranked.slice(0, 3);
+      // AI Visibility always stays in the top-3 (product rule); it takes the place of the least severe one
+      const ai = ranked.find((r) => r.ai);
+      if (ai && !picked.includes(ai)) picked = [...picked.slice(0, 2), ai].sort(byStatus);
+      finds = picked.map((r) => r.f);
+      // Fewer than 3 real findings: the growth pads Java added fill the rest (kept on purpose)
+      for (const f of javaTop) if (finds.length < 3 && !finds.some((x) => x.orig === f.orig)) finds.push(f);
+    } else {
+      finds = javaTop; // audit_data.json from before top_candidates
+    }
+  }
   // Free opens Step 1 only: the action built from the first top-3 finding
-  const freeOpenPillar = classifyActionPillar((sc?.top_vulnerabilities?.[0]?.title) || 'speed');
+  const freeOpenPillar = classifyActionPillar(finds[0]?.orig || 'speed');
 
   const renderedChecks = tier === 'free' ? pickFreeChecks(checks, lang) : checks;
 
@@ -3101,22 +3141,8 @@ ${cards}
   }
   s = s.replace(/<p class="score-note">[\s\S]*?<\/p>/, `<p class="score-note">${scoreNote}</p>`);
 
-  // --- Top 3 findings
-  let finds = [];
-  if (sc && Array.isArray(sc.top_vulnerabilities) && sc.top_vulnerabilities.length > 0) {
-    finds = sc.top_vulnerabilities.slice(0, 3).map((v) => {
-      const origTitle = strip(v.title || '');
-      const tr = FINDINGS_DICT[origTitle]?.[lang];
-      return {
-        // pillar is classified from the original (RU) title, so every language copy gets the same plan
-        orig: origTitle,
-        title: tr ? tr.title : origTitle,
-        issue: tr ? tr.issue : strip(v.issue || ''),
-        impact: tr ? tr.impact : strip(v.impact || ''),
-        sol: tr ? tr.sol : strip(v.solution || v.sol || '')
-      };
-    });
-  } else {
+  // --- Top 3 findings (chosen above, before the checklist: Free's open step follows the first one)
+  if (!finds.length) {
     const findRe = /<article class="finding-card">([\s\S]*?)<\/article>/g;
     let fm;
     while ((fm = findRe.exec(pro))) {
@@ -3161,8 +3187,6 @@ ${cards}
   const lblImp = lang === 'ru' ? 'Потери бизнеса' : lang === 'he' ? 'השפעה עסקית' : 'Business loss';
   const lblSol = lang === 'ru' ? 'Решение от Erythro.ai' : lang === 'he' ? 'פתרון מ-Erythro.ai' : 'Erythro.ai solution';
 
-  // Free: severity follows the scale and the checklist (Pro/Diagnostic still use the fixed 0/1/2 order)
-  const sevIdx = (f) => sevForPillar(classifyActionPillar(f.orig || f.title));
   const lockIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
   const freeStep1Text = lang === 'ru' ? 'Готовое решение с кодом — в Шаге 1 плана действий ↓'
     : lang === 'he' ? 'פתרון מוכן עם קוד — בשלב 1 של תוכנית הפעולה ↓'
