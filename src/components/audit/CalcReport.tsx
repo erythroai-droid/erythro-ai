@@ -67,9 +67,9 @@ export type CalcProgress = { percent: number; remaining: number; overdue: boolea
 export function CardTitle({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <h2
-      className={`m-0 flex items-start text-[28px] font-medium normal-case leading-[1.08] tracking-[-0.035em] text-[#1e1e1e] sm:text-[38px] lg:text-[48px] ${className}`}
+      className={`m-0 flex items-stretch text-[28px] font-medium normal-case leading-[1.08] tracking-[-0.035em] text-[#1e1e1e] sm:text-[38px] lg:text-[48px] ${className}`}
     >
-      <span aria-hidden className="me-3 mt-[0.08em] inline-block h-[0.9em] w-[3px] shrink-0 rounded-sm bg-[#e52421] sm:me-4" />
+      <span aria-hidden className="me-3 mt-[calc((1lh-1.21em)/2+0.242em)] inline-block h-[0.727em] w-[2px] shrink-0 self-start bg-[#e52421] sm:me-4" />
       <span className="min-w-0 text-balance">{children}</span>
     </h2>
   )
@@ -82,22 +82,24 @@ function CardHead({
   sub,
   no,
   compact,
+  isDark = false,
 }: {
   title: React.ReactNode
   tag?: React.ReactNode
   sub?: React.ReactNode
   no?: string
   compact?: boolean
+  isDark?: boolean
 }) {
   return (
     <div className="flex items-start justify-between gap-6">
       <div className={`flex min-w-0 flex-col ${compact ? 'gap-3' : 'gap-4'}`}>
-        <CardTitle className={compact ? '!text-[26px] sm:!text-[30px] lg:!text-[34px] !text-[#0f172a]' : '!text-[#0f172a]'}>{title}</CardTitle>
-        {sub ? <p className="m-0 max-w-[620px] text-base leading-6 text-[#475569] sm:text-[17px]">{sub}</p> : null}
+        <CardTitle className={compact ? `!text-[26px] sm:!text-[30px] lg:!text-[34px] ${isDark ? '!text-white' : '!text-[#0f172a]'}` : isDark ? '!text-white' : '!text-[#0f172a]'}>{title}</CardTitle>
+        {sub ? <p className={`m-0 max-w-[620px] text-base leading-6 ${isDark ? 'text-white/70' : 'text-[#475569]'} sm:text-[17px]`}>{sub}</p> : null}
         {tag ? (
           <div className="flex flex-wrap items-center gap-2">
-            <Tag>{tag}</Tag>
-            <span aria-hidden className="h-px w-10 bg-[#e2e8f0]" />
+            <Tag isDark={isDark}>{tag}</Tag>
+            <span aria-hidden className={`h-px w-10 ${isDark ? 'bg-white/10' : 'bg-[#e2e8f0]'}`} />
           </div>
         ) : null}
       </div>
@@ -114,8 +116,8 @@ function CardHead({
   )
 }
 
-function Tag({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <span className={`${TAG} border-[#d6d6d6] bg-white text-[#1e1e1e] ${className}`}>{children}</span>
+function Tag({ children, className = '', isDark = false }: { children: React.ReactNode; className?: string; isDark?: boolean }) {
+  return <span className={`${TAG} ${isDark ? 'border-white/10 bg-white/10 text-white' : 'border-[#d6d6d6] bg-white text-[#1e1e1e]'} ${className}`}>{children}</span>
 }
 
 function intlTag(locale: string): string {
@@ -294,6 +296,248 @@ function ScopeIcon({ code }: { code: string }) {
   )
 }
 
+/** Spacious Duralux-style modern 3-pillar breakdown: light pastel accents, breathing room, strict 10px radius, fills width. */
+export function CalcHeroPillars({ locale }: { locale: string }) {
+  const isRu = locale === 'ru'
+  const isHe = locale === 'he'
+
+  const items = [
+    {
+      id: 'traffic',
+      badge: isHe ? '40%- קליקים' : isRu ? '−40% кликов' : '−40% clicks',
+      title: isHe ? 'בזבוז תנועה ממומנת' : isRu ? 'Слив платного трафика' : 'Wasted ad traffic',
+      desc: isHe
+        ? 'גולשים נוטשים כשהעמוד במובייל נטען מעל 2.5 שניות.'
+        : isRu
+          ? 'Клиенты уходят, если мобильная страница открывается дольше 2.5 секунд.'
+          : 'Visitors bounce when mobile pages take over 2.5s to load.',
+      impactLabel: isHe ? 'הפסד:' : isRu ? 'ПОТЕРИ:' : 'LOSS:',
+      impactVal: isHe ? 'בזבוז תקציב' : isRu ? 'СЛИВ БЮДЖЕТА' : 'BUDGET DRAIN',
+      imageSrc: '/images/calc/problem-traffic.jpg',
+    },
+    {
+      id: 'leads',
+      badge: isHe ? 'שגיאות טפסים' : isRu ? 'Сбои форм' : 'Form glitches',
+      title: isHe ? 'שיבושי טפסי לידים' : isRu ? 'Срыв заявок в формах' : 'Broken lead forms',
+      desc: isHe
+        ? 'שגיאות ולידציה, קפצ׳ה ושיבושי מובייל חוסמים פניות מלהגיע ל-CRM.'
+        : isRu
+          ? 'Ошибки валидации, капчи и мобильной вёрстки срывают отправку лидов в CRM.'
+          : 'Validation bugs, captchas, and mobile glitches drop leads before CRM.',
+      impactLabel: isHe ? 'הפסד:' : isRu ? 'ПОТЕРИ:' : 'LOSS:',
+      impactVal: isHe ? 'אובדן לידים' : isRu ? 'СОРВАННЫЕ ЛИДЫ' : 'LOST LEADS',
+      imageSrc: '/images/calc/problem-leads.jpg',
+    },
+    {
+      id: 'ai',
+      badge: isHe ? '0 מתוך 8 AI' : isRu ? '0 из 8 AI' : '0 of 8 AI',
+      title: isHe ? 'עיוורון AI וחיפוש' : isRu ? 'Слепая зона AI и поиска' : 'AI & search blindspots',
+      desc: isHe
+        ? 'האתר שקוף לתשובות ChatGPT עם פגיעה באמינות מאזהרות דפדפן.'
+        : isRu
+          ? 'Сайт невидим для ответов ChatGPT, а предупреждения безопасности отпугивают клиентов.'
+          : 'Site is invisible to ChatGPT answers with lost trust from browser warnings.',
+      impactLabel: isHe ? 'הפסד:' : isRu ? 'ПОТЕРИ:' : 'LOSS:',
+      impactVal: isHe ? 'אפס תנועה מ-AI' : isRu ? 'НУЛЕВОЙ СПРОС С AI' : 'ZERO AI DEMAND',
+      imageSrc: '/images/calc/problem-ai.jpg',
+    },
+  ]
+
+  return (
+    <div className="w-full max-w-full sm:max-w-[92%] lg:max-w-[88%] xl:max-w-[85%] mt-auto text-start select-none">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-[30px] w-full items-stretch">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            className="flex flex-col justify-between overflow-hidden rounded-[10px] border border-[#cbd5e1] bg-white shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition-all hover:border-[#94a3b8] hover:shadow-[0_4px_16px_rgba(15,23,42,0.08)]"
+          >
+            {/* Top Media Thumbnail - reduced by 20% */}
+            <div className="relative h-[144px] sm:h-[156px] lg:h-[160px] xl:h-[180px] 2xl:h-[195px] w-full overflow-hidden bg-slate-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.imageSrc}
+                alt={item.title}
+                className="size-full object-cover object-center transition-transform duration-300 hover:scale-105"
+              />
+              <span className="absolute top-2 end-2 rounded-[3px] bg-[#e52421] px-2 py-0.5 font-mono text-[9px] sm:text-[9.5px] font-bold tracking-tight text-white shadow-xs">
+                {item.badge}
+              </span>
+            </div>
+
+            {/* Card Content & Structured Split Loss Bar */}
+            <div className="flex flex-1 flex-col justify-between p-3 sm:p-3.5 xl:p-4">
+              <div>
+                <h4 className="m-0 text-[12px] sm:text-[12.5px] xl:text-[13px] font-bold uppercase leading-snug tracking-tight text-[#0f172a]">
+                  {item.title}
+                </h4>
+                <p className="m-0 mt-1 text-[11px] sm:text-[11.5px] leading-snug text-[#475569]">
+                  {item.desc}
+                </p>
+              </div>
+
+              {/* Split bottom footer with 20px extra margin after text */}
+              <div className="mt-[32px] flex items-center justify-between border-t border-[#f1f5f9] pt-2 text-[10.5px]">
+                <span className="font-mono text-[9.5px] sm:text-[10px] font-bold tracking-wider text-[#64748b]">
+                  {item.impactLabel}
+                </span>
+                <span className="rounded-[3px] bg-[#0f172a] px-2.5 py-1 font-mono text-[9px] sm:text-[9.5px] font-bold uppercase tracking-wider text-white shadow-2xs">
+                  {item.impactVal}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** 5 concrete statistics values in ITSUA technical grid format across full width. */
+export function CalcHeroStatsBar({ locale }: { locale: string }) {
+  const isRu = locale === 'ru'
+  const isHe = locale === 'he'
+
+  const stats = [
+    {
+      category: isHe ? 'תקציב' : isRu ? 'РЕКЛАМА' : 'BUDGET',
+      val: '35%',
+      label: isHe ? 'דליפת תקציב פרסום' : isRu ? 'Утечка бюджета на рекламу' : 'Wasted ad budget',
+    },
+    {
+      category: isHe ? 'מהירות' : isRu ? 'СКОРОСТЬ' : 'SPEED',
+      val: isHe ? '>2.5 שנ׳' : isRu ? '>2.5 с' : '>2.5 s',
+      label: isHe ? 'סף נטישה במובייל' : isRu ? 'Порог ухода с мобильного' : 'Mobile bounce threshold',
+    },
+    {
+      category: isHe ? 'בדיקות' : isRu ? 'ПРОВЕРКИ' : 'CHECKS',
+      val: '230+',
+      label: isHe ? 'בדיקות משפך אוטומטיות' : isRu ? 'Тестов воронки сайта' : 'Automated funnel checks',
+    },
+    {
+      category: isHe ? 'תוצאה' : isRu ? 'РЕЗУЛЬТАТ' : 'RESULT',
+      val: isHe ? '5 דק׳' : isRu ? '5 мин' : '5 min',
+      label: isHe ? 'זמן חישוב מדויק' : isRu ? 'Время точного расчёта' : 'Audit calculation time',
+    },
+    {
+      category: isHe ? 'בלי ספאם' : isRu ? 'КОМФОРТ' : 'NO SPAM',
+      val: '0',
+      label: isHe ? 'שיחות מכירה מציקות' : isRu ? 'Навязчивых звонков' : 'Pushy sales calls',
+    },
+  ]
+
+  return (
+    <div className="w-full select-none">
+      <div className="grid grid-cols-2 lg:grid-cols-5 divide-y lg:divide-y-0 lg:divide-x divide-[#cbd5e1] rtl:divide-x-reverse w-full">
+        {stats.map((s, i) => (
+          <div
+            key={i}
+            className={`flex flex-col items-center justify-center text-center px-2 sm:px-4 py-4 sm:py-5 lg:py-6 w-full ${
+              i === 4 ? 'col-span-2 lg:col-span-1' : ''
+            } ${
+              i % 2 === 1 && i !== 4 ? 'border-s border-[#cbd5e1] lg:border-s-0' : ''
+            }`}
+          >
+            {/* The outer grid/border stays fixed; only the digits & labels animate in */}
+            <div className="flex flex-col items-center justify-center w-full animate-hero-up">
+              <span className="font-mono text-[9.5px] sm:text-[10px] xl:text-[10.5px] font-semibold uppercase tracking-wider text-[#64748b]">
+                {s.category}
+              </span>
+              <div className="mt-1 sm:mt-1.5 text-[28px] sm:text-[34px] md:text-[38px] xl:text-[44px] font-black tracking-tight text-[#0f172a] leading-none">
+                <bdi>{s.val}</bdi>
+              </div>
+              <div className="mt-1.5 font-mono text-[10px] sm:text-[10.5px] xl:text-[11px] uppercase tracking-wider text-[#475569] whitespace-nowrap">
+                {s.label}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** Big graphic curved arrow pointing from the hero headline to the form card, dynamically centered in the space between them. */
+export function CalcHeroBigArrow() {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [style, setStyle] = useState<{ left?: string; transform?: string; width?: string }>({})
+
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+
+    const update = () => {
+      const parent = el.offsetParent as HTMLElement | null
+      if (!parent) return
+
+      const h2 = parent.querySelector('h2')
+      const form = parent.querySelector('form')
+      if (!h2 || !form) return
+
+      const parentRect = parent.getBoundingClientRect()
+      const formRect = form.getBoundingClientRect()
+      const isRtl = document.documentElement.dir === 'rtl'
+
+      // Measure line 1 of headline text
+      const span1 = h2.children[0] as HTMLElement | undefined
+      let headlineEdge: number
+      if (span1) {
+        const range = document.createRange()
+        range.selectNodeContents(span1)
+        const line1Rect = range.getBoundingClientRect()
+        headlineEdge = isRtl ? line1Rect.left : line1Rect.right
+      } else {
+        const h2Rect = h2.getBoundingClientRect()
+        headlineEdge = isRtl ? h2Rect.left : h2Rect.right
+      }
+
+      const formEdge = isRtl ? formRect.right : formRect.left
+      const rawDistance = isRtl ? (headlineEdge - formEdge) : (formEdge - headlineEdge)
+      const center = (headlineEdge + formEdge) / 2
+      const relCenter = center - parentRect.left
+
+      // Dynamic responsive width: larger on wide screens (up to 260px), safely scaled on narrower spaces
+      const targetW = Math.min(260, Math.max(140, Math.round(Math.max(130, rawDistance - 36) * 0.82)))
+
+      setStyle({
+        left: `${relCenter}px`,
+        transform: isRtl ? 'translateX(-50%) scaleX(-1)' : 'translateX(-50%)',
+        width: `${targetW}px`,
+      })
+    }
+
+    update()
+    window.addEventListener('resize', update)
+    const ro = new ResizeObserver(update)
+    if (el.offsetParent) ro.observe(el.offsetParent)
+
+    return () => {
+      window.removeEventListener('resize', update)
+      ro.disconnect()
+    }
+  }, [])
+
+  return (
+    <div
+      ref={wrapRef}
+      style={{
+        left: style.left ?? '50%',
+        transform: style.transform ?? 'translateX(-50%)',
+        width: style.width ?? '220px',
+      }}
+      className="hidden lg:block absolute top-[15px] xl:top-[22px] pointer-events-none select-none z-10"
+      aria-hidden="true"
+    >
+      <img
+        src="/images/calc/hero-arrow-purple.png"
+        alt=""
+        width={891}
+        height={316}
+        className="w-full h-auto drop-shadow-[0_3px_12px_rgba(72,64,187,0.22)]"
+      />
+    </div>
+  )
+}
+
 /** Hero text of a stage: giant headline, lead and facts. Sits directly on the shared backing, no card of its own. */
 export function CalcHead({
   locale,
@@ -301,12 +545,14 @@ export function CalcHead({
   domain,
   children,
   showFacts = true,
+  compact = false,
 }: {
   locale: string
   kind: 'form' | 'waiting' | 'ready'
   domain: string
   children?: React.ReactNode
   showFacts?: boolean
+  compact?: boolean
 }) {
   const isForm = kind === 'form'
   const l1 = tCalc(isForm ? copy.heroL1 : kind === 'waiting' ? copy.heroWaitL1 : copy.heroReadyL1, locale)
@@ -314,10 +560,16 @@ export function CalcHead({
   const sub = tCalc(isForm ? copy.heroSubForm : kind === 'waiting' ? copy.heroSubWait : copy.heroSubReady, locale)
 
   return (
-    <div className="flex flex-col justify-center gap-6 lg:gap-8 py-2">
-      <div className="flex flex-col gap-4">
-        <div className={`items-center gap-2.5 ${children ? 'hidden' : 'flex'}`}>
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#e2e8f0] bg-white px-3.5 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-[#0f172a] shadow-xs backdrop-blur-sm">
+    <div
+      className={`flex flex-col ${
+        compact
+          ? 'h-full justify-between gap-4 sm:gap-6'
+          : 'justify-center gap-6 lg:gap-8 py-2'
+      }`}
+    >
+      <div className={`flex flex-col ${compact ? 'gap-2 sm:gap-2.5' : 'gap-4'}`}>
+        <div className={`items-center gap-2.5 ${children || compact ? 'hidden' : 'flex'}`}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#e2e8f0] bg-white/90 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#0f172a] shadow-xs backdrop-blur-sm">
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#e52421] opacity-75 motion-reduce:hidden" />
               <span className="relative inline-flex size-2 rounded-full bg-[#e52421]" />
@@ -331,10 +583,12 @@ export function CalcHead({
         </div>
 
         <h2
-          className={`m-0 font-bold normal-case leading-[1.0] tracking-[-0.035em] text-[#0f172a] text-balance ${
-            children
-              ? '[font-size:clamp(36px,min(5vw,7.2vh),72px)]'
-              : '[font-size:clamp(44px,min(5.5vw,8.5vh),82px)]'
+          className={`m-0 font-bold normal-case leading-[1.03] tracking-[-0.035em] text-[#0f172a] text-balance ${
+            compact
+              ? 'text-[40px] leading-[1.02] sm:text-6xl lg:min-w-0 lg:max-w-none lg:text-start lg:text-[clamp(44px,calc((100cqw-clamp(320px,38cqw,470px)-32px)/9.5),92px)]'
+              : children
+                ? '[font-size:clamp(36px,min(5vw,7.2vh),72px)]'
+                : '[font-size:clamp(44px,min(5.5vw,8.5vh),82px)]'
           }`}
         >
           <span className="block">
@@ -346,21 +600,39 @@ export function CalcHead({
           <span className="block text-[#0f172a]">{l3}</span>
         </h2>
 
-        <p className="m-0 mt-2 max-w-[520px] text-lg sm:text-xl font-normal leading-relaxed text-[#475569]">
-          {sub}
-        </p>
+        {/* First screen: subtitle with red accent badge */}
+        {compact && isForm ? (
+          <p className="m-0 mt-2 sm:mt-2.5 text-sm sm:text-base lg:text-[15px] xl:text-[16px] text-[#475569] font-normal leading-relaxed max-w-[580px] xl:max-w-none xl:whitespace-nowrap">
+            {tCalc(copy.heroSubLossPrefix, locale)}
+            <span className="inline-block whitespace-nowrap rounded-[2px] bg-[#e52421] px-1.5 py-0.5 text-xs sm:text-[13px] font-bold text-white tracking-normal leading-tight mx-1 align-baseline">
+              {tCalc(copy.heroSubLossBadge, locale)}
+            </span>
+            {tCalc(copy.heroSubLossSuffix, locale)}
+          </p>
+        ) : !compact ? (
+          <p className="m-0 font-normal leading-relaxed text-[#475569] mt-2 max-w-[520px] text-lg sm:text-xl">
+            {sub}
+          </p>
+        ) : null}
       </div>
+
+      {compact && isForm ? (
+        <CalcHeroPillars locale={locale} />
+      ) : null}
 
       {children}
 
-      {showFacts ? (
+      {showFacts && !compact ? (
         <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-6 border-t border-[#e2e8f0]/80 mt-2">
           {copy.heroFacts.map((f, i) => (
-            <div key={f.big} className="flex items-baseline gap-2.5">
-              <span className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0f172a]">
+            <div
+              key={f.big}
+              className="group flex items-baseline gap-2.5 transition-transform duration-200 hover:-translate-y-0.5 cursor-default"
+            >
+              <span className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0f172a] transition-colors group-hover:text-[#e52421]">
                 <bdi>{f.big}</bdi>
               </span>
-              <span className="text-xs font-mono uppercase tracking-wider text-[#64748b]">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#64748b] transition-colors group-hover:text-[#e52421]">
                 {tCalc(f.label, locale)}
               </span>
             </div>
@@ -471,7 +743,130 @@ function Pill({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** Steps 1-2 of the form: clean floating white panel (Mercury/Brex style). */
+/** Vertical step-by-step tracker situated right on the dividing boundary between the two columns. */
+export function CalcVerticalStepper({
+  locale,
+  step,
+  stageName,
+}: {
+  locale: string
+  step: 1 | 2
+  stageName: string
+}) {
+  const steps = [
+    { id: 1, label: locale === 'he' ? 'אתר' : locale === 'ru' ? 'Сайт' : 'Site' },
+    { id: 2, label: locale === 'he' ? 'הכנסות' : locale === 'ru' ? 'Доход' : 'Revenue' },
+    { id: 3, label: locale === 'he' ? 'בדיקה' : locale === 'ru' ? 'Тест' : 'Audit' },
+    { id: 4, label: locale === 'he' ? 'דוח' : locale === 'ru' ? 'Отчёт' : 'Report' },
+  ]
+
+  const activeStep = stageName === 'ready' ? 4 : stageName === 'waiting' ? 3 : step
+
+  return (
+    <div
+      aria-label="Progress tracker"
+      className="hidden lg:flex absolute inset-y-0 start-[58%] xl:start-[60%] 2xl:start-[62%] -translate-x-1/2 rtl:translate-x-1/2 z-30 flex-col items-center justify-center select-none pointer-events-none"
+    >
+      {/* Continuous vertical line spanning the full height of the screen along the boundary */}
+      <div className="absolute inset-y-0 w-[2px] bg-white/60 left-1/2 -translate-x-1/2 z-0 shadow-xs" />
+
+      {/* 4 Step Badges spaced vertically along the boundary line */}
+      <div className="relative z-10 flex flex-col items-center justify-between gap-10 xl:gap-14 py-6">
+        {steps.map((s) => {
+          const isActive = activeStep === s.id
+          const isDone = activeStep > s.id
+
+          return (
+            <div
+              key={s.id}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.14)] transition-all duration-300 pointer-events-auto ${
+                isActive
+                  ? 'bg-white border-2 border-[#4840bb] shadow-[0_6px_24px_rgba(72,64,187,0.35)] scale-110 ring-4 ring-[#4840bb]/20'
+                  : isDone
+                    ? 'bg-white border border-emerald-400 text-emerald-700 shadow-sm'
+                    : 'bg-white/95 border border-[#e2e8f0] text-[#94a3b8] shadow-xs'
+              }`}
+            >
+              <span
+                className={`flex size-5 items-center justify-center rounded-full font-mono text-[10px] font-bold ${
+                  isActive
+                    ? 'bg-[#4840bb] text-white shadow-xs'
+                    : isDone
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-[#f1f5f9] text-[#94a3b8]'
+                }`}
+              >
+                {isDone ? '✓' : `0${s.id}`}
+              </span>
+              <span
+                className={`text-xs font-bold tracking-tight whitespace-nowrap ${
+                  isActive
+                    ? 'text-[#0f172a]'
+                    : isDone
+                      ? 'text-emerald-700'
+                      : 'text-[#64748b]'
+                }`}
+              >
+                {s.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+export function CalcConsoleStepper({
+  locale,
+  step,
+  stageName,
+}: {
+  locale: string
+  step: 1 | 2
+  stageName: string
+}) {
+  const steps = [
+    { id: 1, label: locale === 'he' ? 'אתר' : locale === 'ru' ? 'Сайт' : 'Site' },
+    { id: 2, label: locale === 'he' ? 'הכנסות' : locale === 'ru' ? 'Доход' : 'Revenue' },
+    { id: 3, label: locale === 'he' ? 'בדיקה' : locale === 'ru' ? 'Тест' : 'Audit' },
+    { id: 4, label: locale === 'he' ? 'דוח' : locale === 'ru' ? 'Отчёт' : 'Report' },
+  ]
+
+  const activeStep = stageName === 'ready' ? 4 : stageName === 'waiting' ? 3 : step
+
+  return (
+    <div className="w-full max-w-[470px] mx-auto mb-3.5 select-none">
+      <div className="grid grid-cols-4 gap-1.5 p-1 rounded-[10px] bg-coal-500/80 border border-white/10 backdrop-blur-sm shadow-xs">
+        {steps.map((s) => {
+          const isActive = activeStep === s.id
+          const isDone = activeStep > s.id
+          return (
+            <div
+              key={s.id}
+              className={`flex items-center justify-center gap-1.5 text-center py-2 px-1.5 rounded-[7px] transition-all duration-200 ${
+                isActive
+                  ? 'bg-white text-coal-900 shadow-sm font-bold'
+                  : isDone
+                    ? 'bg-emerald-500 text-white font-bold shadow-2xs'
+                    : 'bg-transparent text-white/50 hover:text-white font-medium'
+              }`}
+            >
+              <span className={`font-mono text-[10px] font-bold ${isActive ? 'text-coal-900' : isDone ? 'text-white' : 'text-white/50'}`}>
+                {isDone ? '✓' : `0${s.id}`}
+              </span>
+              <span className={`text-[11.5px] sm:text-xs font-bold leading-tight truncate ${isActive ? 'text-coal-900' : 'text-white/80'}`}>
+                {s.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/** Steps 1-2 of the form: clean floating white panel with audit report top red border (Mercury/Brex/Report style). */
 export function CalcFormShell({
   locale,
   step,
@@ -482,33 +877,54 @@ export function CalcFormShell({
   children: React.ReactNode
 }) {
   const isStep1 = step === 1
+  const steps = [
+    { id: 1, label: locale === 'he' ? 'אתר' : locale === 'ru' ? 'Сайт' : 'Site' },
+    { id: 2, label: locale === 'he' ? 'הכנסות' : locale === 'ru' ? 'Доход' : 'Revenue' },
+    { id: 3, label: locale === 'he' ? 'בדיקה' : locale === 'ru' ? 'Тест' : 'Audit' },
+    { id: 4, label: locale === 'he' ? 'דוח' : locale === 'ru' ? 'Отчёт' : 'Report' },
+  ]
+
   return (
-    <div className="w-full rounded-[24px] border border-[#e2e8f0] bg-white p-7 sm:p-9 lg:p-11 shadow-[0_12px_40px_-8px_rgba(15,23,42,0.07)] flex flex-col gap-6">
-      <div className="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9]">
-        <div className="flex items-center gap-2.5">
-          <span className="relative flex size-2">
-            <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#10b981] opacity-75 motion-reduce:hidden" />
-            <span className="relative inline-flex size-2 rounded-full bg-[#10b981]" />
-          </span>
-          <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#0f172a]">
-            {isStep1
-              ? (locale === 'he' ? 'שלב 1 מתוך 4: האתר שלכם' : locale === 'ru' ? 'Шаг 1 из 4: Ваш сайт' : 'Step 1 of 4: Your Website')
-              : (locale === 'he' ? 'שלב 2 מתוך 4: נתוני הכנסה' : locale === 'ru' ? 'Шаг 2 из 4: Доход и клиенты' : 'Step 2 of 4: Revenue & Clients')}
-          </span>
+    <div className="w-full relative overflow-hidden rounded-[10px] border border-[#e2e8f0] border-t-[4px] border-t-[#4840bb] bg-white p-5 sm:p-7 lg:p-6 shadow-[0_16px_48px_-12px_rgba(72,64,187,0.18),0_4px_16px_rgba(15,23,42,0.04)] flex flex-col gap-4 sm:gap-5 lg:gap-3.5">
+      {/* Step-by-Step interactive 4-segment tracker */}
+      <div className="w-full pb-3 border-b border-[#f1f5f9]">
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+          {steps.map((s) => {
+            const isActive = step === s.id
+            const isDone = step > s.id
+            return (
+              <div
+                key={s.id}
+                className={`flex flex-col items-center justify-center text-center py-1.5 px-1 rounded-[6px] transition-all ${
+                  isActive
+                    ? 'bg-[#4840bb]/10 border border-[#4840bb]/35 text-[#4840bb]'
+                    : isDone
+                      ? 'bg-[#10b981]/10 text-[#10b981]'
+                      : 'bg-[#f8fafc] text-[#94a3b8]'
+                }`}
+              >
+                <span className={`font-mono text-[9.5px] sm:text-[10px] font-bold ${isActive ? 'text-[#4840bb]' : isDone ? 'text-[#10b981]' : 'text-[#94a3b8]'}`}>
+                  {isDone ? '✓' : `0${s.id}`}
+                </span>
+                <span className={`text-[11px] font-bold leading-tight ${isActive ? 'text-[#0f172a]' : isDone ? 'text-[#10b981]' : 'text-[#64748b]'}`}>
+                  {s.label}
+                </span>
+              </div>
+            )
+          })}
         </div>
-        <span className="font-mono text-xs font-semibold text-[#94a3b8]">0{step}/04</span>
       </div>
 
       <div>
-        <h3 className="m-0 text-2xl sm:text-[26px] font-bold text-[#0f172a] tracking-tight">
+        <h3 className="m-0 flex items-stretch gap-3 before:block before:w-[2px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#e52421] text-lg sm:text-xl lg:text-2xl font-bold text-[#0f172a] tracking-tight">
           {tCalc(isStep1 ? copy.step1Heading : copy.step2Heading, locale)}
         </h3>
-        <p className="m-0 mt-2 text-sm sm:text-base text-[#64748b] leading-relaxed">
+        <p className="m-0 mt-1 text-[11px] sm:text-xs text-[#5b6b80] leading-relaxed">
           {tCalc(isStep1 ? copy.step1Sub : copy.step2Sub, locale)}
         </p>
       </div>
 
-      <div className="flex flex-col gap-5 pt-1">
+      <div className="flex flex-col gap-4 pt-0.5">
         {children}
       </div>
     </div>
@@ -522,13 +938,16 @@ export function CalcNumbers({
   clients,
   onRevenue,
   onClients,
+  theme = 'light',
 }: {
   locale: string
   revenue: number | null
   clients: number | null
   onRevenue: (v: number) => void
   onClients: (v: number | null) => void
+  theme?: 'light' | 'dark'
 }) {
+  const isDark = theme === 'dark'
   const id = useId()
   const pos = revenue == null ? 0 : revenueToSlider(revenue)
   const pct = pos / 10
@@ -536,13 +955,13 @@ export function CalcNumbers({
     '[&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#e52421] [&::-webkit-slider-thumb]:shadow-[0_0_0_1px_#e52421] [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#e52421]'
 
   return (
-    <div className="flex min-w-0 flex-col gap-8">
-      <div className="flex flex-col gap-3">
+    <div className="flex min-w-0 flex-col gap-6 sm:gap-7">
+      <div className="flex flex-col gap-2.5">
         <div className="flex items-end justify-between gap-3">
-          <label htmlFor={`${id}-rev`} className="text-base text-[#1e1e1e]">
+          <label htmlFor={`${id}-rev`} className={`text-sm sm:text-base font-medium ${isDark ? 'text-white/90' : 'text-[#1e1e1e]'}`}>
             {tCalc(copy.sliderRevenue, locale)}
           </label>
-          <bdi className="text-[28px] font-medium leading-none tracking-[-0.02em] tabular-nums text-[#1e1e1e]" aria-hidden>
+          <bdi className={`text-2xl sm:text-[28px] font-bold leading-none tracking-[-0.02em] tabular-nums ${isDark ? 'text-white' : 'text-[#1e1e1e]'}`} aria-hidden>
             {revenue == null ? '—' : formatIls(revenue, locale)}
           </bdi>
         </div>
@@ -556,10 +975,14 @@ export function CalcNumbers({
             value={pos}
             onChange={(e) => onRevenue(sliderToRevenue(Number(e.target.value)))}
             aria-valuetext={revenue == null ? '' : formatIls(revenue, locale)}
-            className={`h-[3px] w-full cursor-pointer appearance-none rounded-sm ${thumb}`}
-            style={{ background: `linear-gradient(to right, ${BRAND} ${pct}%, ${LINE} ${pct}%)` }}
+            className={`h-[4px] w-full cursor-pointer appearance-none rounded-sm ${thumb}`}
+            style={{
+              background: isDark
+                ? `linear-gradient(to right, ${BRAND} ${pct}%, rgba(255,255,255,0.2) ${pct}%)`
+                : `linear-gradient(to right, ${BRAND} ${pct}%, ${LINE} ${pct}%)`,
+            }}
           />
-          <div className="flex justify-between text-[12px] tabular-nums text-[#6b6254]">
+          <div className={`flex justify-between text-[11px] sm:text-[12px] tabular-nums ${isDark ? 'text-white/60' : 'text-[#6b6254]'}`}>
             <span>{compact(REVENUE_SLIDER.min, locale)} ₪</span>
             <span>{compact(100_000, locale)} ₪</span>
             <span>{compact(REVENUE_SLIDER.max, locale)} ₪</span>
@@ -567,8 +990,8 @@ export function CalcNumbers({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <span id={`${id}-cl`} className="text-base text-[#1e1e1e]">
+      <div className="flex flex-col gap-2.5">
+        <span id={`${id}-cl`} className={`text-sm sm:text-base font-medium ${isDark ? 'text-white/90' : 'text-[#1e1e1e]'}`}>
           {tCalc(copy.clientsLabel, locale)}
         </span>
         <div role="radiogroup" aria-labelledby={`${id}-cl`} className="flex flex-wrap gap-2">
@@ -581,10 +1004,14 @@ export function CalcNumbers({
                 role="radio"
                 aria-checked={on}
                 onClick={() => onClients(on ? null : v)}
-                className={`cursor-pointer rounded-full border px-4 py-2 text-sm font-medium tabular-nums transition-colors ${
-                  on
-                    ? 'border-[#1e1e1e] bg-[#1e1e1e] text-white'
-                    : 'border-[#d6d6d6] bg-white text-[#1e1e1e] hover:border-[#1e1e1e]'
+                className={`cursor-pointer rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-semibold tabular-nums transition-all ${
+                  isDark
+                    ? on
+                      ? 'border-[#e52421] bg-[#e52421] text-white shadow-md'
+                      : 'border-white/20 bg-white/10 text-white/80 hover:border-white/40 hover:bg-white/20'
+                    : on
+                      ? 'border-[#1e1e1e] bg-[#1e1e1e] text-white'
+                      : 'border-[#d6d6d6] bg-white text-[#1e1e1e] hover:border-[#1e1e1e]'
                 }`}
               >
                 <bdi dir="ltr">{v === CLIENT_PRESETS[CLIENT_PRESETS.length - 1] ? `${v}+` : v}</bdi>
@@ -602,11 +1029,14 @@ export function CalcWaiting({
   locale,
   domain,
   progress,
+  theme = 'light',
 }: {
   locale: string
   domain: string
   progress: CalcProgress
+  theme?: 'light' | 'dark'
 }) {
+  const isDark = theme === 'dark'
   const stages = copy.progressStages
   const current = Math.min(stages.length - 1, Math.floor((progress.percent / 100) * stages.length))
   const remaining = progress.overdue
@@ -616,25 +1046,31 @@ export function CalcWaiting({
     !progress.overdue && progress.remaining > 0 ? `≈ ${progress.remaining} ${tCalc(copy.minShort, locale)}` : '…'
 
   return (
-    <section className={`${PANEL} flex h-full min-w-0 flex-col justify-center gap-4`}>
-      <CardHead compact title={fillCalc(tCalc(copy.waitingTitle, locale), { domain })} tag={tCalc(copy.waitingTag, locale)} no="03" />
+    <section className={`flex h-full min-w-0 flex-col justify-center gap-4 ${isDark ? 'p-0 text-white' : `${PANEL}`}`}>
+      <CardHead
+        compact
+        title={fillCalc(tCalc(copy.waitingTitle, locale), { domain })}
+        tag={tCalc(copy.waitingTag, locale)}
+        no="03"
+        isDark={isDark}
+      />
 
       <div className="flex flex-wrap items-center justify-between gap-6">
         <div className="min-w-0">
-          <div className="text-[56px] font-medium leading-none tracking-[-0.04em] text-[#1e1e1e] sm:text-[72px]">
+          <div className={`text-[56px] font-medium leading-none tracking-[-0.04em] sm:text-[72px] ${isDark ? 'text-white' : 'text-[#1e1e1e]'}`}>
             <bdi>{Math.round(progress.percent)}</bdi>
-            <small className="ms-1 text-[22px] font-normal tracking-normal text-[#6b6254]">%</small>
+            <small className={`ms-1 text-[22px] font-normal tracking-normal ${isDark ? 'text-white/60' : 'text-[#6b6254]'}`}>%</small>
           </div>
-          <p role="status" aria-live="polite" className="m-0 mt-3.5 max-w-[520px] text-base text-[#6b6254]">
+          <p role="status" aria-live="polite" className={`m-0 mt-3.5 max-w-[520px] text-base ${isDark ? 'text-white/70' : 'text-[#6b6254]'}`}>
             {remaining}
           </p>
         </div>
         <Gauge fraction={progress.percent / 100} label={ringLabel} color={BRAND} />
       </div>
 
-      <div className="border-t border-[#d6d6d6]" />
+      <div className={`border-t ${isDark ? 'border-white/10' : 'border-[#d6d6d6]'}`} />
 
-      <div className={`flex flex-col gap-3 px-5 py-4 sm:px-6 ${INNER}`}>
+      <div className={`flex flex-col gap-3 px-5 py-4 sm:px-6 ${isDark ? 'rounded-[10px] border border-white/10 bg-coal-900/60' : INNER}`}>
         <div>
           <FlowLabel>{tCalc(copy.flowIn, locale)}</FlowLabel>
           <div className="flex flex-wrap items-start gap-2">
@@ -652,9 +1088,13 @@ export function CalcWaiting({
               return (
                 <li
                   key={i}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-[#d6d6d6] bg-[#f8f8f8] px-3.5 py-2.5 text-[15px] leading-snug"
+                  className={`flex items-center justify-between gap-3 rounded-lg border px-3.5 py-2.5 text-[15px] leading-snug ${
+                    isDark
+                      ? 'border-white/10 bg-coal-800/80 text-white'
+                      : 'border-[#d6d6d6] bg-[#f8f8f8]'
+                  }`}
                 >
-                  <span className={done || active ? 'text-[#1e1e1e]' : 'text-[#6b6254]'}>
+                  <span className={done || active ? (isDark ? 'text-white' : 'text-[#1e1e1e]') : (isDark ? 'text-white/60' : 'text-[#6b6254]')}>
                     {tCalc(label, locale).replace(/…$/, '')}
                   </span>
                   {done ? (
@@ -903,7 +1343,7 @@ export function CalcResult({
                   <bdi>{String(i + 1).padStart(2, '0')}</bdi>
                 </div>
                 <div className="min-w-0">
-                  <h3 className="m-0 text-lg font-medium normal-case leading-[30px] tracking-normal text-[#1e1e1e] sm:text-xl">
+                  <h3 className="m-0 flex items-stretch gap-3 before:block before:w-[2px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#e52421] text-lg font-medium normal-case leading-[30px] tracking-normal text-[#1e1e1e] sm:text-xl">
                     {tCalc(copy.areaTitle[area], locale)}
                   </h3>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -1099,7 +1539,7 @@ function CalcSprint({ locale, areas }: { locale: string; areas: CalcArea[] }) {
       className="grid scroll-mt-6 gap-6 rounded-[10px] border border-s-4 border-[#d6d6d6] border-s-[#e8650a] bg-white px-5 py-6 sm:grid-cols-[1fr_auto] sm:px-7 sm:py-[26px]"
     >
       <div className="min-w-0">
-        <h3 className="m-0 text-[19px] font-semibold normal-case leading-[1.35] tracking-normal text-[#1e1e1e]">
+        <h3 className="m-0 flex items-stretch gap-3 before:block before:w-[2px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#e52421] text-[19px] font-semibold normal-case leading-[1.35] tracking-normal text-[#1e1e1e]">
           {tCalc(copy.sprintTitle, locale)}
         </h3>
         <div className="mt-2.5 flex flex-wrap gap-2">

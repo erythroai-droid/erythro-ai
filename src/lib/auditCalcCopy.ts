@@ -264,14 +264,14 @@ export const auditCalcCopy = {
     he: 'הגדרת ביקורת מהירה',
   } satisfies Localized,
   step1Heading: {
-    en: 'Express Audit Setup',
-    ru: 'Запуск экспресс-аудита',
-    he: 'הגדרת ביקורת מהירה',
+    en: 'Revenue Leak Calculation',
+    ru: 'Расчёт финансовых утечек',
+    he: 'חישוב דליפות הכנסה',
   } satisfies Localized,
   step1Sub: {
-    en: 'Enter your website and email. Our automated lab will run 230+ tests on your homepage.',
-    ru: 'Укажите сайт и email — автоматическая лаборатория проверит 230+ параметров главной страницы.',
-    he: 'הזינו כתובת אתר ומייל — מעבדת הבדיקה תריץ 230+ בדיקות אוטומטיות של דף הבית.',
+    en: 'Enter your website and email to calculate monthly revenue loss and drop-off points.',
+    ru: 'Укажите сайт и email, чтобы рассчитать ежемесячные потери бюджета и точки срыва заявок.',
+    he: 'הזינו כתובת אתר ומייל כדי לחשב אובדן הכנסות חודשי ומוקדי נשירת לקוחות.',
   } satisfies Localized,
   step2Heading: {
     en: 'Revenue & Business Scale',
@@ -315,12 +315,12 @@ export const auditCalcCopy = {
     },
   ],
   step1Guarantee1: { en: '0 ₪ · No card needed', ru: '0 ₪ · Без оплаты и карты', he: '0 ₪ · ללא צורך בכרטיס' } satisfies Localized,
-  step1Guarantee2: { en: 'No admin access required', ru: 'Без доступа к админке', he: 'ללא גישה למערכת הניהול' } satisfies Localized,
+  step1Guarantee2: { en: '1 domain / 7 days', ru: '1 домен / 7 дней', he: 'דומיין 1 / 7 ימים' } satisfies Localized,
   step1Guarantee3: { en: 'Full report sent to email', ru: 'Отчёт придёт и на почту', he: 'הדוח יישלח גם למייל' } satisfies Localized,
   nextStepCalc: {
-    en: 'Next: revenue & loss calculation →',
-    ru: 'Далее: доход и расчёт потерь →',
-    he: 'המשך: הכנסות וחישוב הפсדים ←',
+    en: 'Next step →',
+    ru: 'Следующий шаг →',
+    he: 'השלב הבא ←',
   } satisfies Localized,
   calcHint: {
     en: 'Enter your numbers: the estimate is based on the audit of your site.',
@@ -699,6 +699,107 @@ export const auditCalcCopy = {
     ru: 'Проверим скорость, формы, видимость в поиске и безопасность, а каждый дефект переведём в шекели в месяц.',
     he: 'נבדוק מהירות, טפסים, נראות בחיפוש ואבטחה, ונהפוך כל ליקוי לשקלים בחודש.',
   } satisfies Localized,
+  heroSubLossPrefix: {
+    en: 'Every ad click is paid for, but ',
+    ru: 'Вы платите за каждый клик, но ',
+    he: 'אתם משלמים על כל קליק, אך ',
+  } satisfies Localized,
+  heroSubLossBadge: {
+    en: 'up to 35% of ad budget is lost',
+    ru: 'до 35% бюджета сгорает',
+    he: 'עד 35% מהתקציב יורד לטמיון',
+  } satisfies Localized,
+  heroSubLossSuffix: {
+    en: ' on hidden funnel leaks.',
+    ru: ' из-за скрытых сбоев воронки.',
+    he: ' בגלל ליקויים סמויים במשפך.',
+  } satisfies Localized,
+  heroFinancialLeaks: [
+    {
+      icon: 'ad',
+      tag: {
+        en: '−40% CLICKS',
+        ru: '−40% КЛИКОВ',
+        he: '40%- קליקים',
+      },
+      title: {
+        en: 'Wasted ad traffic',
+        ru: 'Слив платного трафика',
+        he: 'בזבוז תנועה ממומנת',
+      },
+      desc: {
+        en: 'Up to 40% of paid clicks bounce when mobile pages take >2.5s to load.',
+        ru: 'До 40% платных кликов теряются при медленной загрузке (>2.5 с) на смартфонах.',
+        he: 'עד 40% מהקליקים הממומנים אובדים כאשר דפי מובייל נטענים מעל 2.5 שניות.',
+      },
+      impactLabel: {
+        en: 'Loss:',
+        ru: 'Потери:',
+        he: 'הפסד:',
+      },
+      impactVal: {
+        en: 'wasted ad spend',
+        ru: 'бюджет впустую',
+        he: 'תקציב מבוזבז',
+      },
+    },
+    {
+      icon: 'lead',
+      tag: {
+        en: 'SCRIPT ERRORS',
+        ru: 'СБОИ СКРИПТОВ',
+        he: 'שגיאות סקריפט',
+      },
+      title: {
+        en: 'Broken lead forms',
+        ru: 'Срыв заявок в формах',
+        he: 'שיבושי טפסי לידים',
+      },
+      desc: {
+        en: 'Silent script crashes, captchas, and mobile keyboard overlap block leads from reaching CRM.',
+        ru: 'Скрытые ошибки скриптов, капчи и перекрытие полей клавиатурой срывают заявки мимо CRM.',
+        he: 'שגיאות סקריפט סמויות, קפצ׳ה ושיבושי מקלדת בנייד מונעים הגעת פניות ל-CRM.',
+      },
+      impactLabel: {
+        en: 'Loss:',
+        ru: 'Потери:',
+        he: 'הפסד:',
+      },
+      impactVal: {
+        en: 'lost sales & leads',
+        ru: 'упущенные продажи',
+        he: 'אובדן מכירות',
+      },
+    },
+    {
+      icon: 'ai',
+      tag: {
+        en: '0 OF 8 AI BOTS',
+        ru: '0 ИЗ 8 AI-БОТОВ',
+        he: '0 מתוך 8 בוטים',
+      },
+      title: {
+        en: 'AI & search blindspots',
+        ru: 'Слепая зона AI и поиска',
+        he: 'עיוורון AI וחיפוש',
+      },
+      desc: {
+        en: 'Site is invisible to ChatGPT answers with lost trust from browser warnings.',
+        ru: 'Сайт невидим для ответов ChatGPT, а предупреждения браузера отпугивают клиентов.',
+        he: 'האתר שקוף לתשובות ChatGPT עם פגיעה באמינות מאזהרות דפדפן.',
+      },
+      impactLabel: {
+        en: 'Loss:',
+        ru: 'Потери:',
+        he: 'הפסד:',
+      },
+      impactVal: {
+        en: 'zero AI traffic',
+        ru: 'нулевой спрос с AI',
+        he: 'אפס תנועה מ-AI',
+      },
+    },
+  ] as const,
   heroSubWait: {
     en: 'The auditor opens your homepage on a phone and a desktop and counts every lost inquiry.',
     ru: 'Аудитор открывает вашу главную на телефоне и компьютере и считает каждую потерянную заявку.',

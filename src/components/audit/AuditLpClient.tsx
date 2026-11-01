@@ -253,8 +253,8 @@ export function AuditLpFooter({ locale, theme }: { locale: string; theme: 'light
             <a
               key={link.id}
               href={mainSiteUrl(link.href)}
-              className={`text-xs uppercase leading-[1.5] transition-colors hover:text-gold-500 ${
-                isLight ? 'text-coal-900' : 'text-white'
+              className={`text-xs uppercase leading-[1.5] transition-colors ${
+                isLight ? 'text-coal-900 hover:text-[#e52421]' : 'text-white hover:text-gold-500'
               }`}
             >
               {t(link.label)}
@@ -263,8 +263,8 @@ export function AuditLpFooter({ locale, theme }: { locale: string; theme: 'light
           <button
             type="button"
             onClick={openConsentSettings}
-            className={`cursor-pointer text-xs uppercase leading-[1.5] transition-colors hover:text-gold-500 ${
-              isLight ? 'text-coal-900' : 'text-white'
+            className={`cursor-pointer text-xs uppercase leading-[1.5] transition-colors ${
+              isLight ? 'text-coal-900 hover:text-[#e52421]' : 'text-white hover:text-gold-500'
             }`}
           >
             {cookieSettingsLabel}

@@ -209,6 +209,7 @@ export default function AuditLpForm({
   submitClassName,
   neon = false,
   showName = false,
+  websiteFirst = false,
   holdSubmit = false,
   onValidated,
   onInvalid,
@@ -217,6 +218,8 @@ export default function AuditLpForm({
   locale: string
   theme?: 'light' | 'dark'
   page?: AuditPageContent
+  /** Put website input above email input. */
+  websiteFirst?: boolean
   /** Replaces the default card heading. */
   kicker?: string
   /** Fields and submit only: no card, heading, beam, privacy notice or side links. For embedding in another card. */
@@ -552,74 +555,150 @@ export default function AuditLpForm({
                 </div>
               ) : null}
 
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <FormPillShell isLight={isLight} neon={neon} clip hasError={Boolean(fieldErrors.email)}>
-                  <div className="relative min-w-0 flex-1">
-                    <label htmlFor="audit-lp-email" className="sr-only">
-                      {tForm(contactForm.email)}
-                    </label>
-                    <input
-                      id="audit-lp-email"
-                      name="email"
-                      type="email"
-                      inputMode="email"
-                      required
-                      value={values.email}
-                      onChange={handleChange}
-                      onBlur={blurEmail}
-                      placeholder={requiredPlaceholder(tForm(contactForm.email))}
-                      className={`${pillFieldClass} ${fieldOk.email ? 'pe-10' : 'pe-4'}`}
-                      autoComplete="email"
-                      autoCapitalize="off"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      aria-required="true"
-                      aria-invalid={Boolean(fieldErrors.email) || undefined}
-                      aria-describedby={fieldErrors.email ? 'audit-lp-email-error' : undefined}
-                    />
-                    <FieldOkCheck show={Boolean(fieldOk.email)} isLight={isLight} />
+              {/* Email and Website fields (order configurable via websiteFirst) */}
+              {websiteFirst ? (
+                <>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <FormPillShell isLight={isLight} neon={neon} clip hasError={Boolean(fieldErrors.website)}>
+                      <div className="relative min-w-0 flex-1">
+                        <label htmlFor="audit-lp-website" className="sr-only">
+                          {tAudit(page.form.website, locale)}
+                        </label>
+                        <input
+                          id="audit-lp-website"
+                          name="website"
+                          type="url"
+                          inputMode="url"
+                          required
+                          value={values.website}
+                          onChange={handleChange}
+                          onBlur={blurWebsite}
+                          placeholder={requiredPlaceholder(tAudit(page.form.website, locale))}
+                          className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'} ${
+                            locale === 'he' ? 'text-right placeholder:text-right' : ''
+                          }`}
+                          autoComplete="url"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          dir="ltr"
+                          aria-required="true"
+                          aria-invalid={Boolean(fieldErrors.website) || undefined}
+                          aria-describedby={fieldErrors.website ? 'audit-lp-website-error' : undefined}
+                        />
+                        <FieldOkCheck
+                          show={Boolean(fieldOk.website)}
+                          checking={checkingWebsite}
+                          isLight={isLight}
+                        />
+                      </div>
+                    </FormPillShell>
+                    {renderFieldError('website', 'audit-lp-website-error')}
                   </div>
-                </FormPillShell>
-                {fieldErrors.email ? renderFieldError('email', 'audit-lp-email-error') : null}
-              </div>
 
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <FormPillShell isLight={isLight} neon={neon} clip hasError={Boolean(fieldErrors.website)}>
-                  <div className="relative min-w-0 flex-1">
-                    <label htmlFor="audit-lp-website" className="sr-only">
-                      {tAudit(page.form.website, locale)}
-                    </label>
-                    <input
-                      id="audit-lp-website"
-                      name="website"
-                      type="url"
-                      inputMode="url"
-                      required
-                      value={values.website}
-                      onChange={handleChange}
-                      onBlur={blurWebsite}
-                      placeholder={requiredPlaceholder(tAudit(page.form.website, locale))}
-                      className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'} ${
-                        locale === 'he' ? 'text-right placeholder:text-right' : ''
-                      }`}
-                      autoComplete="url"
-                      autoCapitalize="off"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      dir="ltr"
-                      aria-required="true"
-                      aria-invalid={Boolean(fieldErrors.website) || undefined}
-                      aria-describedby={fieldErrors.website ? 'audit-lp-website-error' : undefined}
-                    />
-                    <FieldOkCheck
-                      show={Boolean(fieldOk.website)}
-                      checking={checkingWebsite}
-                      isLight={isLight}
-                    />
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <FormPillShell isLight={isLight} neon={neon} clip hasError={Boolean(fieldErrors.email)}>
+                      <div className="relative min-w-0 flex-1">
+                        <label htmlFor="audit-lp-email" className="sr-only">
+                          {tForm(contactForm.email)}
+                        </label>
+                        <input
+                          id="audit-lp-email"
+                          name="email"
+                          type="email"
+                          inputMode="email"
+                          required
+                          value={values.email}
+                          onChange={handleChange}
+                          onBlur={blurEmail}
+                          placeholder={requiredPlaceholder(tForm(contactForm.email))}
+                          className={`${pillFieldClass} ${fieldOk.email ? 'pe-10' : 'pe-4'}`}
+                          autoComplete="email"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          aria-required="true"
+                          aria-invalid={Boolean(fieldErrors.email) || undefined}
+                          aria-describedby={fieldErrors.email ? 'audit-lp-email-error' : undefined}
+                        />
+                        <FieldOkCheck show={Boolean(fieldOk.email)} isLight={isLight} />
+                      </div>
+                    </FormPillShell>
+                    {fieldErrors.email ? renderFieldError('email', 'audit-lp-email-error') : null}
                   </div>
-                </FormPillShell>
-                {renderFieldError('website', 'audit-lp-website-error')}
-              </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <FormPillShell isLight={isLight} neon={neon} clip hasError={Boolean(fieldErrors.email)}>
+                      <div className="relative min-w-0 flex-1">
+                        <label htmlFor="audit-lp-email" className="sr-only">
+                          {tForm(contactForm.email)}
+                        </label>
+                        <input
+                          id="audit-lp-email"
+                          name="email"
+                          type="email"
+                          inputMode="email"
+                          required
+                          value={values.email}
+                          onChange={handleChange}
+                          onBlur={blurEmail}
+                          placeholder={requiredPlaceholder(tForm(contactForm.email))}
+                          className={`${pillFieldClass} ${fieldOk.email ? 'pe-10' : 'pe-4'}`}
+                          autoComplete="email"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          aria-required="true"
+                          aria-invalid={Boolean(fieldErrors.email) || undefined}
+                          aria-describedby={fieldErrors.email ? 'audit-lp-email-error' : undefined}
+                        />
+                        <FieldOkCheck show={Boolean(fieldOk.email)} isLight={isLight} />
+                      </div>
+                    </FormPillShell>
+                    {fieldErrors.email ? renderFieldError('email', 'audit-lp-email-error') : null}
+                  </div>
+
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <FormPillShell isLight={isLight} neon={neon} clip hasError={Boolean(fieldErrors.website)}>
+                      <div className="relative min-w-0 flex-1">
+                        <label htmlFor="audit-lp-website" className="sr-only">
+                          {tAudit(page.form.website, locale)}
+                        </label>
+                        <input
+                          id="audit-lp-website"
+                          name="website"
+                          type="url"
+                          inputMode="url"
+                          required
+                          value={values.website}
+                          onChange={handleChange}
+                          onBlur={blurWebsite}
+                          placeholder={requiredPlaceholder(tAudit(page.form.website, locale))}
+                          className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'} ${
+                            locale === 'he' ? 'text-right placeholder:text-right' : ''
+                          }`}
+                          autoComplete="url"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          dir="ltr"
+                          aria-required="true"
+                          aria-invalid={Boolean(fieldErrors.website) || undefined}
+                          aria-describedby={fieldErrors.website ? 'audit-lp-website-error' : undefined}
+                        />
+                        <FieldOkCheck
+                          show={Boolean(fieldOk.website)}
+                          checking={checkingWebsite}
+                          isLight={isLight}
+                        />
+                      </div>
+                    </FormPillShell>
+                    {renderFieldError('website', 'audit-lp-website-error')}
+                  </div>
+                </>
+              )}
 
               {submitTargetId ? null : submitButton}
             </div>

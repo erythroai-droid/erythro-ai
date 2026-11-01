@@ -1,0 +1,162 @@
+<svg width="1440" height="900" viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background styling -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1440" y2="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#F8F9FB"/>
+      <stop offset="100%" stopColor="#F1F5F9"/>
+    </linearGradient>
+
+    <!-- Deep card shadow -->
+    <filter id="cardShadow" x="800" y="140" width="580" height="600" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="16"/>
+      <feGaussianBlur stdDeviation="24"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.0588 0 0 0 0 0.0902 0 0 0 0 0.1647 0 0 0 0.08 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+    </filter>
+
+    <!-- Button shadow -->
+    <filter id="btnShadow" x="0" y="0" width="100%" height="100%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#E52421" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- 1. Background Canvas -->
+  <rect width="1440" height="900" fill="url(#bgGrad)"/>
+
+  <!-- Subtle Ambient Glows -->
+  <circle cx="100" cy="80" r="280" fill="#E52421" fill-opacity="0.035" filter="blur(80px)"/>
+  <circle cx="1200" cy="240" r="320" fill="#3B82F6" fill-opacity="0.03" filter="blur(90px)"/>
+  <circle cx="600" cy="780" r="260" fill="#10B981" fill-opacity="0.025" filter="blur(80px)"/>
+
+  <!-- 2. Header (Padding 40px) -->
+  <g id="Header" transform="translate(48, 36)">
+    <!-- Brand Logo -->
+    <g id="Logo">
+      <circle cx="6" cy="16" r="6" fill="#E52421"/>
+      <text x="20" y="24" fill="#0F172A" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="-0.02em">erythro.ai</text>
+    </g>
+
+    <!-- Header Actions -->
+    <g id="Header-Actions" transform="translate(1020, 0)">
+      <!-- Telemetry Live Pill -->
+      <g id="Telemetry-Pill">
+        <rect x="0" y="2" width="180" height="32" rx="16" fill="#FFFFFF" fill-opacity="0.85" stroke="#E2E8F0" stroke-width="1"/>
+        <circle cx="18" cy="18" r="3.5" fill="#10B981"/>
+        <text x="28" y="22" fill="#475569" font-family="monospace" font-size="11" font-weight="600" letter-spacing="0.04em">CHROMIUM LAB ОНЛАЙН</text>
+      </g>
+
+      <!-- Language Selector -->
+      <g id="Lang-Selector" transform="translate(196, 2)">
+        <rect x="0" y="0" width="128" height="32" rx="16" fill="#FFFFFF" fill-opacity="0.9" stroke="#E2E8F0" stroke-width="1"/>
+        <!-- Active RU -->
+        <rect x="3" y="3" width="38" height="26" rx="13" fill="#0F172A"/>
+        <text x="14" y="20" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700">RU</text>
+        <!-- Inactive EN -->
+        <text x="54" y="20" fill="#64748B" font-family="Inter, sans-serif" font-size="11" font-weight="600">EN</text>
+        <!-- Inactive HE -->
+        <text x="94" y="20" fill="#64748B" font-family="Inter, sans-serif" font-size="11" font-weight="600">HE</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- 3. Main Hero Split (Center Grid, Y = 160) -->
+  <g id="Hero-Section" transform="translate(64, 150)">
+
+    <!-- ==================== LEFT COLUMN: OPEN HERO ==================== -->
+    <g id="Left-Hero-Column" transform="translate(0, 20)">
+      <!-- Kicker chip -->
+      <g id="Kicker-Chip">
+        <rect x="0" y="0" width="360" height="30" rx="15" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+        <circle cx="16" cy="15" r="3.5" fill="#E52421"/>
+        <text x="28" y="19" fill="#0F172A" font-family="monospace" font-size="11" font-weight="700" letter-spacing="0.05em">ЭКСПРЕСС-АУДИТ САЙТА · CHROMIUM LAB 2026</text>
+      </g>
+
+      <!-- H1 Title -->
+      <g id="H1-Title" transform="translate(0, 56)">
+        <text x="0" y="60" fill="#0F172A" font-family="Inter, system-ui, sans-serif" font-size="62" font-weight="800" letter-spacing="-0.035em">СКОЛЬКО ДЕНЕГ</text>
+        <text x="0" y="132" fill="#0F172A" font-family="Inter, system-ui, sans-serif" font-size="62" font-weight="800" letter-spacing="-0.035em">ТЕРЯЕТ ВАШ <tspan fill="#E52421">САЙТ</tspan></text>
+      </g>
+
+      <!-- Subtitle -->
+      <g id="Subtitle" transform="translate(0, 225)">
+        <text x="0" y="24" fill="#475569" font-family="Inter, system-ui, sans-serif" font-size="19" font-weight="400" line-height="30">
+          <tspan x="0" dy="0">Экспресс-аудит воронки и точный расчет упущенной</tspan>
+          <tspan x="0" dy="30">выгоды. Без домыслов — только цифры и факты конверсии.</tspan>
+        </text>
+      </g>
+
+      <!-- Divider line -->
+      <line x1="0" y1="325" x2="560" y2="325" stroke="#E2E8F0" stroke-width="1"/>
+
+      <!-- 3 Metrics row -->
+      <g id="Metrics-Row" transform="translate(0, 355)">
+        <!-- Metric 1 -->
+        <g id="Metric-Tests">
+          <text x="0" y="32" fill="#0F172A" font-family="Inter, sans-serif" font-size="32" font-weight="800" letter-spacing="-0.02em">230+</text>
+          <text x="96" y="28" fill="#64748B" font-family="monospace" font-size="11" font-weight="700" letter-spacing="0.05em">ТЕСТОВ</text>
+        </g>
+        <!-- Metric 2 -->
+        <g id="Metric-Time" transform="translate(190, 0)">
+          <text x="0" y="32" fill="#0F172A" font-family="Inter, sans-serif" font-size="32" font-weight="800" letter-spacing="-0.02em">5 МИН</text>
+          <text x="108" y="28" fill="#64748B" font-family="monospace" font-size="11" font-weight="700" letter-spacing="0.05em">РАСЧЁТ</text>
+        </g>
+        <!-- Metric 3 -->
+        <g id="Metric-Price" transform="translate(390, 0)">
+          <text x="0" y="32" fill="#0F172A" font-family="Inter, sans-serif" font-size="32" font-weight="800" letter-spacing="-0.02em">0 ₪</text>
+          <text x="64" y="28" fill="#64748B" font-family="monospace" font-size="11" font-weight="700" letter-spacing="0.05em">БЕСПЛАТНО</text>
+        </g>
+      </g>
+    </g>
+
+
+    <!-- ==================== RIGHT COLUMN: FLOATING FORM CARD ==================== -->
+    <g id="Right-Form-Card" transform="translate(740, 0)" filter="url(#cardShadow)">
+      <!-- Main Card Base -->
+      <rect x="0" y="0" width="530" height="520" rx="24" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+
+      <!-- Top Red Border (Audit Report Signature Accent) -->
+      <rect x="0" y="0" width="530" height="4" rx="2" fill="#E52421"/>
+
+      <g id="Card-Content" transform="translate(42, 38)">
+        <!-- Step Telemetry Header -->
+        <g id="Step-Telemetry">
+          <circle cx="5" cy="8" r="3.5" fill="#E52421"/>
+          <text x="16" y="12" fill="#64748B" font-family="monospace" font-size="12" font-weight="700" letter-spacing="0.04em">ЭКСПРЕСС-ЗАПУСК · ШАГ 1 ИЗ 2</text>
+        </g>
+
+        <!-- Card Title -->
+        <text x="0" y="52" fill="#0F172A" font-family="Inter, system-ui, sans-serif" font-size="25" font-weight="800" letter-spacing="-0.02em">Адрес вашего сайта</text>
+
+        <!-- Input 1: Email -->
+        <g id="Field-Email" transform="translate(0, 80)">
+          <rect x="0" y="0" width="446" height="64" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="18" y="24" fill="#94A3B8" font-family="monospace" font-size="10" font-weight="700" letter-spacing="0.06em">EMAIL</text>
+          <text x="18" y="47" fill="#0F172A" font-family="Inter, sans-serif" font-size="15" font-weight="500">founder@company.com</text>
+        </g>
+
+        <!-- Input 2: Website URL (Focused State with Ruby Accent) -->
+        <g id="Field-URL" transform="translate(0, 160)">
+          <rect x="0" y="0" width="446" height="64" rx="14" fill="#FFFFFF" stroke="#E52421" stroke-width="2"/>
+          <text x="18" y="24" fill="#E52421" font-family="monospace" font-size="10" font-weight="700" letter-spacing="0.06em">АДРЕС САЙТА *</text>
+          <text x="18" y="47" fill="#0F172A" font-family="Inter, sans-serif" font-size="15" font-weight="500">https://example.com</text>
+        </g>
+
+        <!-- Primary Action Button (Ruby Accent) -->
+        <g id="Submit-Button" transform="translate(0, 246)">
+          <rect x="0" y="0" width="446" height="56" rx="14" fill="#E52421"/>
+          <text x="145" y="35" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="16" font-weight="700" letter-spacing="0.01em">Рассчитать потери →</text>
+        </g>
+
+        <!-- Guarantee / Disclaimer line -->
+        <g id="Disclaimer" transform="translate(0, 328)">
+          <text x="223" y="16" fill="#94A3B8" font-family="Inter, sans-serif" font-size="12" font-weight="500" text-anchor="middle">
+            Конфиденциально · Без карты · Отчёт придёт и на почту
+          </text>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

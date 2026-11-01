@@ -47,9 +47,9 @@ export function FormPillShell({
         hasError
           ? 'border-erythro-500'
           : isLight
-            ? 'border-coal-900/15'
+            ? 'border-[#94a3b8] hover:border-[#64748b] focus-within:border-[#e52421] focus-within:ring-2 focus-within:ring-[#e52421]/15'
             : 'border-white/15'
-      } ${isLight ? 'bg-white' : 'bg-white/[0.04]'}`}
+      } ${isLight ? 'bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]' : 'bg-white/[0.04]'}`}
     >
       {children}
     </div>
@@ -73,7 +73,7 @@ export function formPillFieldClass(isLight: boolean, neon = false) {
   }
   return `h-12 w-full min-w-0 flex-1 border-0 bg-transparent ps-4 pe-4 text-sm outline-none sm:h-[52px] ${
     isLight
-      ? 'text-coal-900 placeholder:text-coal-900/40'
+      ? 'text-[#0f172a] placeholder:text-[#64748b]'
       : 'text-white placeholder:text-white/40'
   } rtl:placeholder:text-right focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500`
 }
@@ -81,7 +81,7 @@ export function formPillFieldClass(isLight: boolean, neon = false) {
 export function formPillTextareaClass(isLight: boolean) {
   return `min-h-[120px] w-full min-w-0 flex-1 resize-none border-0 bg-transparent px-4 py-3 text-sm outline-none ${
     isLight
-      ? 'text-coal-900 placeholder:text-coal-900/40'
+      ? 'text-[#0f172a] placeholder:text-[#64748b]'
       : 'text-white placeholder:text-white/40'
   } rtl:placeholder:text-right focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-erythro-500`
 }
