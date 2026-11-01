@@ -138,6 +138,26 @@ export const auditCalcCopy = {
     ru: 'Ввести другой адрес',
     he: 'להזין כתובת אחרת',
   } satisfies Localized,
+  failedLeadWithDomain: {
+    en: 'Could not complete the audit for {domain}.',
+    ru: 'Не удалось завершить аудит для {domain}.',
+    he: 'לא ניתן היה להשלים את הביקורת עבור {domain}.',
+  } satisfies Localized,
+  failedLead: {
+    en: 'Could not complete the audit.',
+    ru: 'Не удалось завершить аудит.',
+    he: 'לא ניתן היה להשלים את הביקורת.',
+  } satisfies Localized,
+  failedHint: {
+    en: 'Check the URL and try again, or chat with our engineer.',
+    ru: 'Проверьте адрес сайта и повторите попытку или напишите инженеру.',
+    he: 'בדקו את כתובת האתר ונסו שוב, או דברו עם המהנדס שלנו.',
+  } satisfies Localized,
+  chatWithEngineer: {
+    en: 'Chat with engineer',
+    ru: 'Написать инженеру',
+    he: 'צ׳אט עם מהנדס',
+  } satisfies Localized,
 
   resultKicker: {
     en: 'Diagnosis',
