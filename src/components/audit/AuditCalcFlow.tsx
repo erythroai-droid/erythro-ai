@@ -373,7 +373,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
             <p className="m-0 mt-2.5 sm:mt-3 ms-0 lg:ms-[20px] text-xs sm:text-sm lg:text-[13.5px] xl:text-[14.5px] text-[#475569] leading-relaxed max-w-2xl">
               {tCalc(copy.heroSubFormPrefix, locale)}
-              <span className="inline-block whitespace-nowrap rounded-[3px] bg-[#e52421] px-1.5 py-0.5 font-bold text-white shadow-xs align-baseline">
+              <span className="inline-block whitespace-nowrap rounded-none bg-[#e52421] px-1.5 py-0.5 font-bold text-white shadow-xs align-baseline">
                 {tCalc(copy.heroSubFormHighlight, locale)}
               </span>
               .
