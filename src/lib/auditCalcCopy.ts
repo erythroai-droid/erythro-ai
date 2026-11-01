@@ -401,7 +401,7 @@ export const auditCalcCopy = {
     { en: '01 · Site & Email', ru: '01 · Сайт и почта', he: '01 · אתר ומייל' },
     { en: '02 · Revenue & Scale', ru: '02 · Доход и чек', he: '02 · הכנסות ולקוחות' },
     { en: '03 · Lab Analysis', ru: '03 · Анализ лаборатории', he: '03 · ניתוח מעבדה' },
-    { en: '04 · Loss Report', ru: '04 · Отчёт о потерях', he: '04 · דוח הפסדים' },
+    { en: '04 · Bottlenecks & Growth', ru: '04 · Проблемы и точки роста', he: '04 · אבחון כשלים ושיפור' },
   ] as const,
   stepOf: { en: 'Step {n} of {total}', ru: 'Шаг {n} из {total}', he: 'שלב {n} מתוך {total}' } satisfies Localized,
   next: { en: 'Next step', ru: 'Следующий шаг', he: 'השלב הבא' } satisfies Localized,
@@ -554,20 +554,282 @@ export const auditCalcCopy = {
     he: 'רק הודעות, בלי שיחות.',
   } satisfies Localized,
   waMessageWithLoss: {
-    en: 'Hello, the calculator showed a loss of {amount}/month for {domain}. How can we fix this?',
-    ru: 'Здравствуйте, калькулятор показал потерю {amount}/мес по сайту {domain}. Как это исправить?',
-    he: 'שלום, המחשבון הראה הפסד של {amount} לחודש באתר {domain}. איך אפשר לתקן את זה?',
+    en: 'Hello! The audit for {domain} identified key funnel barriers and up to {percent}% inquiry loss. How can we eliminate them?',
+    ru: 'Здравствуйте! Прошёл аудит сайта {domain}. Обнаружены сбои в воронке и потери до {percent}% обращений. Как их устранить?',
+    he: 'שלום! ביצעתי ביקורת לאתר {domain}. אותרו כשלי משפך ואובדן של עד {percent}% מהפניות. איך ניתן לתקן זאת?',
   } satisfies Localized,
   waMessageNoLoss: {
-    en: 'Hello, I ran the audit for {domain}. Can you send a plan to improve it?',
-    ru: 'Здравствуйте, я прошёл аудит сайта {domain}. Пришлите, пожалуйста, план улучшений.',
-    he: 'שלום, עשיתי ביקורת לאתר {domain}. אפשר לקבל תוכנית שיפור?',
+    en: 'Hello! I completed the audit for {domain}. Could you send an engineering plan to optimize the funnel?',
+    ru: 'Здравствуйте! Прошёл аудит сайта {domain}. Пришлите, пожалуйста, инженерный план улучшений воронки.',
+    he: 'שלום! ביצעתי ביקורת לאתר {domain}. אפשר לקבל תוכנית הנדסית לשיפור משפך ההמרה?',
   } satisfies Localized,
 
   detailsSummary: {
     en: 'See the technical data behind the estimate',
     ru: 'Посмотреть технические данные, на которых строится оценка',
     he: 'לצפייה בנתונים הטכניים שמאחורי ההערכה',
+  } satisfies Localized,
+
+  /* ---- Step 4: Executive Problem & Bottlenecks View ---- */
+  step4Kicker: {
+    en: '§ 04 — FUNNEL DIAGNOSTIC RESULTS',
+    ru: '§ 04 — РЕЗУЛЬТАТЫ ДИАГНОСТИКИ ВОРОНКИ',
+    he: '§ 04 — תוצאות אבחון משפך ההמרה',
+  } satisfies Localized,
+  step4HeroL1: {
+    en: 'KEY BOTTLENECKS',
+    ru: 'ОБНАРУЖЕНЫ КЛЮЧЕВЫЕ',
+    he: 'אותרו כשלים מרכזיים',
+  } satisfies Localized,
+  step4HeroL2: {
+    en: 'IN THE WEBSITE FUNNEL',
+    ru: 'СБОИ ВОРОНКИ САЙТА',
+    he: 'במשפך ההמרה של האתר',
+  } satisfies Localized,
+  step4SubPrefix: {
+    en: 'Chromium Audit Lab tested the website across 230+ parameters, probing user journeys and ',
+    ru: 'Лаборатория Chromium проверила сайт по 230+ параметрам, протестировала путь клиента и ',
+    he: 'מעבדת Chromium בדקה את האתר בלמעלה מ-230 פרמטרים, בחנה את מסלול המשתמש ו-',
+  } satisfies Localized,
+  step4SubHighlight: {
+    en: 'identifying critical bottlenecks',
+    ru: 'выявила ключевые сбои воронки',
+    he: 'איתרה נקודות כשל קריטיות',
+  } satisfies Localized,
+  step4Title: {
+    en: 'KEY FUNNEL BREAKDOWNS IDENTIFIED',
+    ru: 'ОБНАРУЖЕНЫ КЛЮЧЕВЫЕ СБОИ ВОРОНКИ',
+    he: 'אותרו הכשלים המרכזיים במשפך ההמרה',
+  } satisfies Localized,
+  step4Subtitle: {
+    en: 'Chromium Audit Lab tested the website across 230+ parameters. Critical barriers were found causing a loss of up to {percent}% of potential customer inquiries. Below is the 5-area diagnosis and remediation plan.',
+    ru: 'Лаборатория Chromium протестировала сайт по 230+ параметрам. Обнаружены критические барьеры, из-за которых теряется до {percent}% потенциальных обращений. Ниже — детальный разбор уязвимостей и план их устранения.',
+    he: 'מעבדת Chromium בדקה את האתר בלמעלה מ-230 פרמטרים. אותרו כשלים קריטיים הגורמים לאובדן של עד {percent}% מהפניות הפוטנציאליות. להלן ניתוח נקודות התורפה ותוכנית תיקון הנדסית.',
+  } satisfies Localized,
+  step4OverallScore: {
+    en: 'Overall Health Score',
+    ru: 'Общий индекс здоровья сайта',
+    he: 'מדד בריאות האתר הכולל',
+  } satisfies Localized,
+  overallHealthTitle: {
+    en: 'Overall Health Index',
+    ru: 'Индекс здоровья сайта',
+    he: 'מדד בריאות האתר',
+  } satisfies Localized,
+  kpiLossTitle: {
+    en: 'Conversion loss',
+    ru: 'Потери конверсии',
+    he: 'אובדן המרה',
+  } satisfies Localized,
+  step4CardLossKicker: {
+    en: 'Critical Funnel Leak',
+    ru: 'Ключевая утечка',
+    he: 'נקודת כשל מרכזית',
+  } satisfies Localized,
+  step4CardHealthKicker: {
+    en: 'Audit Result',
+    ru: 'Результат аудита',
+    he: 'תוצאת הביקורת',
+  } satisfies Localized,
+  step4FrictionSpeed: {
+    en: 'Speed & mobile UX',
+    ru: 'Задержки и скорость',
+    he: 'מהירות וחוויית מובייל',
+  } satisfies Localized,
+  step4FrictionForms: {
+    en: 'Form & CTA glitches',
+    ru: 'Сбои на формах и CTA',
+    he: 'שיבושי טפסים ו-CTA',
+  } satisfies Localized,
+  step4FrictionVisibility: {
+    en: 'Search & AI drop-off',
+    ru: 'Потери в поиске и AI',
+    he: 'אובדן בחיפוש ו-AI',
+  } satisfies Localized,
+  step4FrictionSecurity: {
+    en: 'Security & trust flaws',
+    ru: 'Уязвимости и сбои SSL',
+    he: 'כשלי אבטחה ו-SSL',
+  } satisfies Localized,
+  step4TotalLossBadge: {
+    en: 'Sum: {p}% losses',
+    ru: 'В сумме: {p}% потерь',
+    he: 'סך הכול: {p}% איבוד',
+  } satisfies Localized,
+  step4LostClientsLabel: {
+    en: 'Clients at risk:',
+    ru: 'Потери клиентов:',
+    he: 'אובדן לקוחות:',
+  } satisfies Localized,
+  step4PriorityLabel: {
+    en: 'Priority:',
+    ru: 'Приоритет:',
+    he: 'עדיפות:',
+  } satisfies Localized,
+  step4PriorityVal: {
+    en: 'Fix bottleneck sprint',
+    ru: 'Устранение узких мест',
+    he: 'ספרינט תיקון כשלים',
+  } satisfies Localized,
+  step3TestsBadge: {
+    en: '230+ funnel tests',
+    ru: '230+ тестов воронки',
+    he: '230+ בדיקות משפך',
+  } satisfies Localized,
+  step4HealthLabel: {
+    green: { en: 'Optimal condition', ru: 'В норме', he: 'מצב תקין' },
+    yellow: { en: 'Needs attention', ru: 'Требует внимания', he: 'דורש תשומת לב' },
+    red: { en: 'Critical breakdowns', ru: 'Критическое состояние', he: 'מצב קריטי' },
+  } satisfies Record<LightLevel, Localized>,
+  step4LossMetricLabel: {
+    en: 'Conversion loss',
+    ru: 'Потери конверсии',
+    he: 'אובדן המרה',
+  } satisfies Localized,
+  step4LossMetricVal: {
+    en: 'up to {p}% of inquiries',
+    ru: 'до {p}% обращений',
+    he: 'עד {p}% מהפניות',
+  } satisfies Localized,
+  step4LossMetricSub: {
+    en: 'lost at funnel friction points',
+    ru: 'отсекаются на этапах воронки',
+    he: 'נושרים במחסומי המשפך',
+  } satisfies Localized,
+  step4IssuesMetricLabel: {
+    en: 'Critical bottlenecks',
+    ru: 'Критических сбоев',
+    he: 'כשלים קריטיים',
+  } satisfies Localized,
+  step4IssuesMetricVal: {
+    en: '{n} priority zones',
+    ru: '{n} ключевые точки',
+    he: '{n} נקודות תורפה',
+  } satisfies Localized,
+  step4IssuesMetricSub: {
+    en: 'require immediate sprint fixes',
+    ru: 'требуют первоочередного спринта',
+    he: 'דורשים תיקון הנדסי מיידי',
+  } satisfies Localized,
+  step4TestsMetricLabel: {
+    en: 'Tests completed',
+    ru: 'Тестов пройдено',
+    he: 'בדיקות שבוצעו',
+  } satisfies Localized,
+  step4TestsMetricVal: {
+    en: '230+ checks',
+    ru: '230+ проверок воронки',
+    he: '230+ בדיקות משפך',
+  } satisfies Localized,
+  step4TestsMetricSub: {
+    en: 'mobile, desktop, SEO & AI',
+    ru: 'смартфоны, ПК, поисковики и AI',
+    he: 'מובייל, מחשב, חיפוש ו-AI',
+  } satisfies Localized,
+  step4UpsideMetricLabel: {
+    en: 'Growth upside',
+    ru: 'Потенциал роста',
+    he: 'פוטנציאל צמיחה',
+  } satisfies Localized,
+  step4UpsideMetricVal: {
+    en: '+{p}% in new inquiries',
+    ru: '+{p}% к объёму заявок',
+    he: '+{p}% לגידול בפניות',
+  } satisfies Localized,
+  step4UpsideMetricSub: {
+    en: 'after eliminating bottlenecks',
+    ru: 'после устранения узких мест',
+    he: 'לאחר הסרת צווארי הבקבוק',
+  } satisfies Localized,
+  step4RevenueNote: {
+    en: 'Estimated unrealized volume based on stated revenue ({rev}): ≈ −{monthly}/mo (−{yearly}/yr)',
+    ru: 'Ориентир недополученного объёма при указанном обороте ({rev}): ≈ −{monthly}/мес (−{yearly}/год)',
+    he: 'אומדן מחזור שלא מומש לפי ההכנסה שצוינה ({rev}): ≈ −{monthly} לחודש (−{yearly} לשנה)',
+  } satisfies Localized,
+  googleVerifyBadge: {
+    en: 'Official Google Lighthouse & Web Vitals Data',
+    ru: 'Официальные данные Google Lighthouse & Web Vitals',
+    he: 'נתוני Google Lighthouse ו-Web Vitals רשמיים',
+  } satisfies Localized,
+  googleVerifyTitle: {
+    en: 'Independent Google PageSpeed Insights Verification',
+    ru: 'Независимая проверка в Google PageSpeed Insights',
+    he: 'אימות עצמאי ב-Google PageSpeed Insights',
+  } satisfies Localized,
+  googleVerifyText: {
+    en: 'All speed, Cumulative Layout Shift (CLS), and mobile responsiveness metrics are captured by the Chromium engine following Google Lighthouse standards. You can open Google’s official tool to verify the precision of our data.',
+    ru: 'Все показатели скорости, стабильности вёрстки (CLS) и отклика на смартфонах замерены движком Chromium по стандартам Google Lighthouse. Вы можете в один клик открыть официальный сервис Google и убедиться в точности наших расчетов.',
+    he: 'כל מדדי המהירות, יציבות העימוד (CLS) ותגובתיות המובייל נמדדו באמצעות מנוע Chromium לפי תקני Google Lighthouse. באפשרותכם לפתוח בלחיצה אחת את הכלי הרשמי של גוגל ולוודא את דיוק הנתונים.',
+  } satisfies Localized,
+  googleVerifyBtn: {
+    en: 'Verify {domain} in Google PageSpeed Insights ↗',
+    ru: 'Проверить {domain} в Google PageSpeed Insights ↗',
+    he: 'בדיקת {domain} ב-Google PageSpeed Insights ↗',
+  } satisfies Localized,
+  googleVerifyHint: {
+    en: 'Opens in a new tab on Google’s official analysis server',
+    ru: 'Откроется в новой вкладке на официальном сервере Google',
+    he: 'ייפתח בלשונית חדשה בשרת הבדיקות הרשמי של Google',
+  } satisfies Localized,
+  step4DiagnosticScalesTitle: {
+    en: '5-Area Diagnostic Results',
+    ru: 'Результаты диагностики по 5 направлениям',
+    he: 'תוצאות אבחון ב-5 תחומים',
+  } satisfies Localized,
+  step4DiagnosticScalesSub: {
+    en: 'Detailed health breakdown across mobile speed, lead intake, search discoverability, and AI readiness.',
+    ru: 'Детальный срез показателей скорости, приёма заявок, безопасности, поисковой видимости и готовности к AI-поиску.',
+    he: 'פילוח מפורט של מהירות מובייל, קליטת פניות, אבטחה, נראות במנועי חיפוש ומוכנות לעוזרי AI.',
+  } satisfies Localized,
+  step4Top3Title: {
+    en: 'Top 3 Critical Conversion Bottlenecks',
+    ru: 'Топ-3 ключевые проблемы конверсии',
+    he: '3 נקודות התורפה המרכזיות בהמרה',
+  } satisfies Localized,
+  step4Top3Sub: {
+    en: 'Critical bottlenecks causing the greatest customer drop-off before reaching contact forms',
+    ru: 'Узкие места в воронке, которые отсекают больше всего потенциальных клиентов перед отправкой заявки',
+    he: 'צווארי הבקבוק במשפך הגורמים לנשירת הלקוחות הגבוהה ביותר טרם השלמת הפנייה',
+  } satisfies Localized,
+  step4RowProblem: {
+    en: 'Where the breakdown occurs',
+    ru: 'Где возник сбой',
+    he: 'היכן אירע הכשל',
+  } satisfies Localized,
+  step4RowImpact: {
+    en: 'Conversion impact',
+    ru: 'Влияние на конверсию',
+    he: 'השפעה על ההמרה',
+  } satisfies Localized,
+  step4RowSolution: {
+    en: 'Engineering solution',
+    ru: 'Инженерное решение',
+    he: 'פתרון הנדסי',
+  } satisfies Localized,
+  step4FullChecklistTitle: {
+    en: 'Full Audit Checklist (230+ Parameters)',
+    ru: 'Полный чеклист аудита (230+ тестов)',
+    he: 'צ׳ק-ליסט בדיקה מלא (230+ פרמטרים)',
+  } satisfies Localized,
+  step4FullChecklistSub: {
+    en: 'Interactive inspection across all technical diagnostic criteria',
+    ru: 'Интерактивная проверка по всем критериям технической диагностики',
+    he: 'בדיקה אינטראקטיבית בכל מדדי האבחון הטכני',
+  } satisfies Localized,
+  step4AuditProtocolTitle: {
+    en: 'Audit Protocol & Calculation Methodology',
+    ru: 'Протокол выполненного аудита и методика расчёта',
+    he: 'פרוטוקול הביקורת ומתודולוגיית החישוב',
+  } satisfies Localized,
+  step4AuditProtocolSub: {
+    en: 'Detailed engineering protocol generated by Chromium Audit Lab',
+    ru: 'Инженерный протокол тестирования лаборатории Chromium',
+    he: 'פרוטוקול הנדסי שהופק על ידי מעבדת Chromium',
+  } satisfies Localized,
+  step4SprintCta: {
+    en: 'Fix Sprint: Eliminate all identified funnel bottlenecks in 3–5 days',
+    ru: 'Спринт исправлений: устраняем все найденные сбои воронки за 3–5 дней',
+    he: 'ספרינט תיקונים: ביטול כל כשלי המשפך שאותרו תוך 3–5 ימים',
   } satisfies Localized,
   scaleSpeed: { en: 'Speed & Mobile UX', ru: 'Скорость и мобильный UX', he: 'מהירות ו-UX למובייל' } satisfies Localized,
   scaleLeads: { en: 'Lead gen & Forms', ru: 'Лиды и формы', he: 'לידים וטפסים' } satisfies Localized,
@@ -849,9 +1111,9 @@ export const auditCalcCopy = {
     he: 'דפדפן Chromium פועל: מדמים גלישה במובייל ובמחשב, בודקים את המשפך ו-',
   } satisfies Localized,
   heroStep3SubHighlight: {
-    en: 'detecting revenue leaks',
-    ru: 'ищем финансовые утечки',
-    he: 'מאתרים דליפות כספיות',
+    en: 'identifying critical bottlenecks',
+    ru: 'выявляем критические сбои',
+    he: 'מזהים נקודות כשל קריטיות',
   } satisfies Localized,
   step3EngineBadge: {
     en: 'Chromium Engine 2026: Active',

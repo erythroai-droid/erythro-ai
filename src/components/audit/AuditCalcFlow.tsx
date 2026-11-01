@@ -74,19 +74,19 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
       1: 'Ввод сайта и контактов',
       2: 'Доход и параметры бизнеса',
       3: 'Анализ воронки и аудит',
-      4: 'Расчёт финансовых утечек',
+      4: 'Анализ проблем и точки роста',
     },
     en: {
       1: 'Enter website & contacts',
       2: 'Business & revenue metrics',
       3: 'Funnel analysis & audit',
-      4: 'Revenue leakage report',
+      4: 'Funnel bottlenecks & growth plan',
     },
     he: {
       1: 'הזנת אתר ופרטי קשר',
       2: 'הכנסות ופרמטרי עסק',
       3: 'ניתוח משפך ובדיקה',
-      4: 'דוח חישוב הפסדים',
+      4: 'אבחון כשלים ותוכנית שיפור',
     },
   }
 
@@ -102,10 +102,11 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     if (c > 0) setClients(c)
     const preview = q.get('preview')
     if (!preview) return
+    const siteParam = q.get('site') || q.get('website') || 'https://fast-taxi.co.il'
     const submitted: AuditLpSubmitted = {
       id: 0,
       accessKey: null,
-      website: 'https://www.mysite.co.il',
+      website: siteParam,
       reportHref: null,
     }
     if (preview === 'ready') {
@@ -223,47 +224,6 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
   const waNumber = phone.replace(/[^0-9]/g, '')
   const waHref = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}` : ''
 
-  // Ready view (full results)
-  if (stage.name === 'ready' && report && pillars) {
-    return (
-      <div className="flex flex-col gap-6 lg:gap-8 max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-12 py-6">
-        <header className="flex items-center justify-between gap-4 py-2 border-b border-[#e2e8f0]">
-          <a href={mainSiteUrl('/')} aria-label="Erythro.ai" dir="ltr" className="flex transition-opacity hover:opacity-90">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logo/Logo_digital-on-light.svg" alt="Erythro.ai" width={235} height={74} className="h-[48px] sm:h-[56px] w-auto" />
-          </a>
-          <nav aria-label="Language" className="flex items-center gap-0.5 rounded-full border border-[#e2e8f0] bg-white p-1">
-            {AUDIT_LP_LOCALES.map((l) => (
-              <a
-                key={l}
-                href={auditLpHrefForLocale(l, 'calc')}
-                aria-current={l === locale ? 'true' : undefined}
-                className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.04em] no-underline transition-all ${
-                  l === locale ? 'bg-[#0f172a] text-white' : 'text-[#64748b] hover:text-[#e52421]'
-                }`}
-              >
-                {l}
-              </a>
-            ))}
-          </nav>
-        </header>
-
-        <CalcResult
-          locale={locale}
-          domain={domain}
-          pillars={pillars}
-          revenue={revenue}
-          clients={clients}
-          approximate={report.pillars == null}
-          reportHref={stage.submitted.reportHref}
-          waHref={waHref}
-          onWaText={setWaText}
-        />
-        <CalcCta locale={locale} waHref={waHref} locked={false} showNote={true} />
-      </div>
-    )
-  }
-
   // Failed view
   if (stage.name === 'failed') {
     return (
@@ -303,7 +263,13 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
   // ITSUA-INSPIRED TECHNICAL STUDIO LAYOUT
   return (
-    <div className="relative isolate min-h-screen lg:min-h-screen [@media(min-height:720px)_and_(min-width:1024px)]:h-screen [@media(min-height:720px)_and_(min-width:1024px)]:max-h-screen [@media(min-height:720px)_and_(min-width:1024px)]:overflow-hidden flex flex-col justify-between w-full bg-transparent text-[#0f172a] overflow-x-hidden overflow-y-auto selection:bg-[#e52421]/15 selection:text-[#e52421]">
+    <div
+      className={`relative isolate min-h-screen flex flex-col justify-between w-full bg-transparent text-[#0f172a] overflow-x-hidden overflow-y-auto selection:bg-[#e52421]/15 selection:text-[#e52421] ${
+        stage.name === 'ready'
+          ? ''
+          : 'lg:min-h-screen [@media(min-height:720px)_and_(min-width:1024px)]:h-screen [@media(min-height:720px)_and_(min-width:1024px)]:max-h-screen [@media(min-height:720px)_and_(min-width:1024px)]:overflow-hidden'
+      }`}
+    >
       {/* ================= 1. TOP BAR (FULL WIDTH) ================= */}
       <header className="w-full border-b border-[#cbd5e1] bg-white/70 backdrop-blur-xs px-5 sm:px-8 lg:px-12 py-2.5 sm:py-3 lg:py-2.5 flex items-center justify-between gap-4 shrink-0 z-20 animate-hero-fade">
         <a href={mainSiteUrl('/')} aria-label="Erythro.ai" dir="ltr" className="flex transition-opacity hover:opacity-90">
@@ -349,8 +315,26 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
         </nav>
       </header>
 
-      {/* ================= 2. MAIN HERO: 2-COLUMN SPLIT ================= */}
-      <main className="w-full flex-1 min-h-0 flex items-center justify-center px-4 sm:px-8 lg:px-10 xl:px-12 2xl:px-14 pt-7 sm:pt-9 md:pt-11 pb-9 sm:pb-11 md:pb-13 lg:py-1 xl:py-2">
+      {/* ================= 2. MAIN CONTENT ================= */}
+      {stage.name === 'ready' && report && pillars ? (
+        <main className="w-full flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-10 xl:px-12 2xl:px-14 py-8 sm:py-10 lg:py-14 animate-hero-fade">
+          <div className="w-full max-w-[1536px] xl:max-w-[1680px] 2xl:max-w-[1760px] mx-auto">
+            <CalcResult
+              locale={locale}
+              domain={domain}
+              websiteUrl={stage.submitted.website}
+              pillars={pillars}
+              revenue={revenue}
+              clients={clients}
+              approximate={report.pillars == null}
+              reportHref={stage.submitted.reportHref || report.readyHtmlUrl}
+              waHref={waHref}
+              onWaText={setWaText}
+            />
+          </div>
+        </main>
+      ) : (
+        <main className="w-full flex-1 min-h-0 flex items-center justify-center px-4 sm:px-8 lg:px-10 xl:px-12 2xl:px-14 pt-7 sm:pt-9 md:pt-11 pb-9 sm:pb-11 md:pb-13 lg:py-1 xl:py-2">
         <div className="w-full max-w-[1536px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-11 md:gap-13 lg:gap-6 xl:gap-10 2xl:gap-12 items-center">
           {/* Left Column (Desktop Left / Mobile 2nd): Big Title & Subtitle - ENTERS FROM LEFT */}
           <div key={`hero-left-${currentStep}`} className="order-2 lg:order-1 lg:col-span-7 xl:col-span-7 flex flex-col justify-center text-start lg:-ms-2 xl:-ms-4 animate-hero-left">
@@ -715,6 +699,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
           </div>
         </div>
       </main>
+      )}
 
       {/* ================= 3. FULL-WIDTH STATS BAR (ITSUA TECHNICAL STYLE) - BORDERS SOLID, NUMBERS CASCADE ================= */}
       <section className="w-full shrink-0 border-t border-b border-[#cbd5e1] bg-white/60">
