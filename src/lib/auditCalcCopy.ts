@@ -706,9 +706,9 @@ export const auditCalcCopy = {
 
   /* ---- hero (giant headings, background words) ---- */
   heroKicker: {
-    en: 'Quick Website Performance Audit',
-    ru: 'Экспресс-диагностика эффективности сайта',
-    he: 'אבחון מהיר לביצועי האתר',
+    en: 'AI Online Audit',
+    ru: 'AI-онлайн-аудит',
+    he: 'בדיקת AI אונליין',
   } satisfies Localized,
   heroLive: { en: 'Auditor online', ru: 'Аудитор онлайн', he: 'הבודק מחובר' } satisfies Localized,
   heroL1: { en: 'How much', ru: 'Сколько', he: 'כמה' } satisfies Localized,

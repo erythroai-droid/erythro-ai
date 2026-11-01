@@ -349,17 +349,17 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
       </header>
 
       {/* ================= 2. MAIN HERO: 2-COLUMN SPLIT ================= */}
-      <main className="w-full flex-1 min-h-0 flex items-center justify-center px-4 sm:px-8 lg:px-12 xl:px-14 py-3 sm:py-6 lg:py-2">
-        <div className="w-full max-w-[1536px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12 items-center">
+      <main className="w-full flex-1 min-h-0 flex items-center justify-center px-4 sm:px-8 lg:px-12 xl:px-14 py-2 sm:py-4 lg:py-1">
+        <div className="w-full max-w-[1536px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 xl:gap-12 items-center">
           {/* Left Column (Desktop Left / Mobile 2nd): Big Title & Subtitle - ENTERS FROM LEFT */}
           <div className="order-2 lg:order-1 lg:col-span-7 xl:col-span-7 flex flex-col justify-center text-start lg:-ms-2 xl:-ms-4 animate-hero-left">
-            <div className="inline-flex items-center gap-2 font-mono text-[10.5px] sm:text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-2 sm:mb-3">
+            <div className="inline-flex items-center gap-2 font-mono text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-1.5 sm:mb-2">
               <span className="text-[#e52421]">§ 01</span>
               <span>—</span>
               <span>{tCalc(copy.heroKicker, locale)}</span>
             </div>
 
-            <h2 className="m-0 font-black uppercase leading-[1.04] sm:leading-[1.03] lg:leading-[1.02] tracking-[-0.035em] text-[#0f172a] text-[34px] sm:text-[46px] lg:text-[54px] xl:text-[66px] 2xl:text-[76px] text-balance">
+            <h2 className="m-0 font-black uppercase leading-[1.04] sm:leading-[1.03] lg:leading-[1.02] tracking-[-0.035em] text-[#0f172a] text-[32px] sm:text-[42px] lg:text-[48px] xl:text-[58px] 2xl:text-[66px] text-balance">
               <span className="block">
                 {tCalc(copy.heroL1, locale)}&nbsp;
                 <span className="text-[#e52421]">
@@ -371,11 +371,11 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </span>
             </h2>
 
-            <p className="m-0 mt-3 sm:mt-4 ms-0 lg:ms-[20px] text-xs sm:text-sm lg:text-[14px] xl:text-[15px] text-[#475569] leading-relaxed max-w-2xl">
+            <p className="m-0 mt-2.5 sm:mt-3 ms-0 lg:ms-[20px] text-xs sm:text-sm lg:text-[13.5px] xl:text-[14.5px] text-[#475569] leading-relaxed max-w-2xl">
               {tCalc(copy.heroSubForm, locale)}
             </p>
 
-            <div className="mt-3.5 sm:mt-5 ms-0 lg:ms-[20px] flex flex-wrap items-center gap-3 text-xs font-mono text-[#64748b]">
+            <div className="mt-3 sm:mt-4 ms-0 lg:ms-[20px] flex flex-wrap items-center gap-3 text-xs font-mono text-[#64748b]">
               <span className="inline-flex items-center gap-1.5">
                 <span className="size-1.5 rounded-full bg-[#a855f7]" />
                 {locale === 'he' ? 'ללא צורך בגישת ניהול' : locale === 'ru' ? 'Без доступа к админке' : 'No admin access needed'}
@@ -390,14 +390,14 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
           {/* Right Column (Desktop Right / Mobile 1st): Step-by-Step Tracker + Focused Form Card - ENTERS FROM RIGHT */}
           <div className="order-1 lg:order-2 lg:col-span-5 xl:col-span-5 flex flex-col items-center lg:items-end w-full animate-hero-right">
-            <div className="w-full max-w-[450px] flex flex-col gap-3 sm:gap-4">
+            <div className="w-full max-w-[440px] flex flex-col gap-2.5 sm:gap-3">
               {/* Step-by-Step tracker above the form */}
-              <div className="w-full flex flex-col gap-1.5 shrink-0">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-6 sm:size-7 shrink-0 items-center justify-center rounded-[3px] bg-[#a855f7] font-sans text-xs sm:text-sm font-bold text-white shadow-xs">
+              <div className="w-full flex flex-col gap-1 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-[3px] bg-[#a855f7] font-sans text-xs font-bold text-white shadow-xs">
                     {currentStep}
                   </span>
-                  <span className="text-sm sm:text-base lg:text-lg font-bold tracking-tight text-[#0f172a]">
+                  <span className="text-sm sm:text-base font-bold tracking-tight text-[#0f172a]">
                     {stepLabels[locale]?.[currentStep as 1 | 2 | 3 | 4] || stepLabels.ru[currentStep as 1 | 2 | 3 | 4]}
                   </span>
                 </div>
@@ -410,7 +410,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] sm:text-xs text-[#334155] font-semibold">
+                <div className="flex items-center justify-between text-[11px] text-[#334155] font-semibold">
                   <span>
                     {locale === 'he'
                       ? `שלב ${currentStep} מתוך 4`
@@ -425,23 +425,23 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </div>
 
               {stage.name === 'form' ? (
-                <div className="w-full rounded-[16px] sm:rounded-[20px] border border-[#cbd5e1] border-t-[3px] border-t-[#a855f7] bg-white p-5 sm:p-6 lg:p-6 flex flex-col gap-3.5 sm:gap-4 text-[#0f172a] shadow-[0_16px_40px_-10px_rgba(168,85,247,0.20),0_4px_16px_rgba(168,85,247,0.10)]">
+                <div className="w-full rounded-[16px] sm:rounded-[20px] border border-[#cbd5e1] border-t-[3px] border-t-[#a855f7] bg-white p-4 sm:p-5 lg:p-5 flex flex-col gap-3 text-[#0f172a] shadow-[0_16px_40px_-10px_rgba(168,85,247,0.20),0_4px_16px_rgba(168,85,247,0.10)]">
                   {/* Form heading inside the form card */}
                   {formStep === 1 ? (
                     <div>
-                      <h3 className="m-0 flex items-stretch gap-2.5 before:block before:w-[3px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#e52421] text-lg sm:text-xl lg:text-2xl font-bold text-[#0f172a] tracking-tight">
+                      <h3 className="m-0 flex items-stretch gap-2 before:block before:w-[3px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#e52421] text-base sm:text-lg lg:text-xl font-bold text-[#0f172a] tracking-tight">
                         {tCalc(copy.step1Heading, locale)}
                       </h3>
-                      <p className="m-0 mt-1.5 text-xs sm:text-[13px] text-[#475569] leading-relaxed">
+                      <p className="m-0 mt-1 text-xs text-[#475569] leading-relaxed">
                         {tCalc(copy.step1Sub, locale)}
                       </p>
                     </div>
                   ) : (
                     <div>
-                      <h3 className="m-0 flex items-stretch gap-2.5 before:block before:w-[3px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#e52421] text-lg sm:text-xl lg:text-2xl font-bold text-[#0f172a] tracking-tight">
+                      <h3 className="m-0 flex items-stretch gap-2 before:block before:w-[3px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#e52421] text-base sm:text-lg lg:text-xl font-bold text-[#0f172a] tracking-tight">
                         {tCalc(copy.step2Heading, locale)}
                       </h3>
-                      <p className="m-0 mt-1.5 text-xs sm:text-[13px] text-[#475569] leading-relaxed">
+                      <p className="m-0 mt-1 text-xs text-[#475569] leading-relaxed">
                         {tCalc(copy.step2Sub, locale)}
                       </p>
                     </div>
