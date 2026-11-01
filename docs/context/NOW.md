@@ -1,15 +1,15 @@
 # Latest changes
 
-Обновлено: 2026-11-01 (фикс pin AI Visibility на главной)  
-Статус: Локальный фикс готов, не закоммичен / не задеплоен
+Обновлено: 2026-11-01 (фикс pin AI Visibility запушен)  
+Статус: Ветка `cursor/fix-ai-visibility-pin` запушена, не задеплоена
 
 ---
 
 ## 1. Home AI Visibility pin — фикс «уезжает вверх» (текущий этап)
 - **Проблема:** Блок AI Visibility (`#ai-audit`) при скролле отпускал GSAP-pin слишком рано и уезжал вверх вместо того, чтобы стоять, пока Cases («наши работы») наезжает — как Cases → Services.
 - **Причина:** `ai-audit-pin` имел `end: '+=180%'` при Cases lead-in `160vh`. У `cases-pin` для того же паттерна — `+=260%`.
-- **Фикс:** `src/components/AiAuditHomeSection.tsx` — `end: '+=260%'` + пустой scrub-hold после settle, чтобы clip/settle закончились в lead-in, а остаток пина был комнатой для наезда Cases. PIT-154.
-- **Следующий шаг:** Проверить на desktop (≥1024) локально или после деплоя: AI Visibility стоит, Cases наезжает сверху. Коммит — по просьбе.
+- **Фикс:** `src/components/AiAuditHomeSection.tsx` — `end: '+=260%'` + пустой scrub-hold после settle; PIT-154. Ветка `cursor/fix-ai-visibility-pin`.
+- **Следующий шаг:** PR → merge → проверить на desktop (≥1024) после деплоя.
 
 ---
 
