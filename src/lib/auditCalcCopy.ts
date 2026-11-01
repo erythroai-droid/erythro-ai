@@ -705,7 +705,11 @@ export const auditCalcCopy = {
   statusOk: { en: 'OK', ru: 'OK', he: 'OK' } satisfies Localized,
 
   /* ---- hero (giant headings, background words) ---- */
-  heroKicker: { en: 'Revenue leak audit', ru: 'Аудит утечек выручки', he: 'ביקורת דליפות הכנסה' } satisfies Localized,
+  heroKicker: {
+    en: 'Quick Website Performance Audit',
+    ru: 'Экспресс-диагностика эффективности сайта',
+    he: 'אבחון מהיר לביצועי האתר',
+  } satisfies Localized,
   heroLive: { en: 'Auditor online', ru: 'Аудитор онлайн', he: 'הבודק מחובר' } satisfies Localized,
   heroL1: { en: 'How much', ru: 'Сколько', he: 'כמה' } satisfies Localized,
   heroL2: { en: 'money', ru: 'денег', he: 'כסף' } satisfies Localized,
@@ -715,9 +719,9 @@ export const auditCalcCopy = {
   heroReadyL1: { en: 'Done,', ru: 'Готово,', he: 'מוכן,' } satisfies Localized,
   heroReadyL3: { en: 'here is where the money leaks', ru: 'вот где утекают деньги', he: 'כאן הכסף מדלף' } satisfies Localized,
   heroSubForm: {
-    en: 'We check speed, forms, search visibility and security, then turn every defect into shekels per month.',
-    ru: 'Проверим скорость, формы, видимость в поиске и безопасность, а каждый дефект переведём в шекели в месяц.',
-    he: 'נבדוק מהירות, טפסים, נראות בחיפוש ואבטחה, ונהפוך כל ליקוי לשקלים בחודש.',
+    en: 'We audit mobile speed, checkout flow, and visibility across Google, ChatGPT, and Perplexity — and calculate your lost revenue.',
+    ru: 'Проверяем мобильную скорость, работу заказа и видимость в Google, ChatGPT, Perplexity — рассчитаем сумму упущенной выгоды.',
+    he: 'בודקים מהירות במובייל, תקינות תהליך ההזמנה ונראות ב-Google,‏ ChatGPT ו-Perplexity — ומחשבים את ההכנסות האבודות שלכם.',
   } satisfies Localized,
   heroSubLossPrefix: {
     en: 'Every ad click is paid for, but ',

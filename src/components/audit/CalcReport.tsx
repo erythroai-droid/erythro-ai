@@ -399,29 +399,29 @@ export function CalcHeroStatsBar({ locale }: { locale: string }) {
 
   const stats = [
     {
-      category: isHe ? 'תקציב' : isRu ? 'РЕКЛАМА' : 'BUDGET',
-      val: '35%',
-      label: isHe ? 'דליפת תקציב פרסום' : isRu ? 'Утечка бюджета на рекламу' : 'Wasted ad budget',
+      category: isHe ? 'פרסום' : isRu ? 'РЕКЛАМА' : 'ADS BUDGET',
+      val: isHe ? 'עד 35%' : isRu ? 'до 35%' : 'up to 35%',
+      label: isHe ? 'מתקציב הפרסום הולך לקליקים ללא לידים' : isRu ? 'Рекламного бюджета уходит на клики без заявок' : 'Ad spend wasted on non-converting clicks',
+    },
+    {
+      category: isHe ? 'סמארטפונים' : isRu ? 'СМАРТФОНЫ' : 'SMARTPHONES',
+      val: isHe ? '>2.5 שנ׳' : isRu ? '>2.5 с' : '>2.5 s',
+      label: isHe ? 'זמן טעינה שלאחריו הגולשים עוזבים את האתר' : isRu ? 'Время загрузки, после которого клиент закрывает сайт' : 'Load time after which visitors leave the site',
+    },
+    {
+      category: isHe ? 'טסטים' : isRu ? 'ТЕСТЫ' : 'TESTS',
+      val: '230+',
+      label: isHe ? 'בדיקות אוטומטיות לקוד, טפסי הזמנה ו-SEO + GEO' : isRu ? 'Автоматических проверок кода, форм заказа и SEO + гео' : 'Automated checks of code, checkout forms & SEO + GEO',
     },
     {
       category: isHe ? 'מהירות' : isRu ? 'СКОРОСТЬ' : 'SPEED',
-      val: isHe ? '>2.5 שנ׳' : isRu ? '>2.5 с' : '>2.5 s',
-      label: isHe ? 'סף נטישה במובייל' : isRu ? 'Порог ухода с мобильного' : 'Mobile bounce threshold',
+      val: isHe ? '5 דקות' : isRu ? '5 минут' : '5 min',
+      label: isHe ? 'זמן לאבחון אונליין מלא של האתר' : isRu ? 'Время полной онлайн-диагностики сайта' : 'Time for complete online site diagnostics',
     },
     {
-      category: isHe ? 'בדיקות' : isRu ? 'ПРОВЕРКИ' : 'CHECKS',
-      val: '230+',
-      label: isHe ? 'בדיקות משפך אוטומטיות' : isRu ? 'Тестов воронки сайта' : 'Automated funnel checks',
-    },
-    {
-      category: isHe ? 'תוצאה' : isRu ? 'РЕЗУЛЬТАТ' : 'RESULT',
-      val: isHe ? '5 דק׳' : isRu ? '5 мин' : '5 min',
-      label: isHe ? 'זמן חישוב מדויק' : isRu ? 'Время точного расчёта' : 'Audit calculation time',
-    },
-    {
-      category: isHe ? 'בלי ספאם' : isRu ? 'КОМФОРТ' : 'NO SPAM',
+      category: isHe ? 'בלי ספאם' : isRu ? 'БЕЗ СПАМА' : 'NO SPAM',
       val: '0',
-      label: isHe ? 'שיחות מכירה מציקות' : isRu ? 'Навязчивых звонков' : 'Pushy sales calls',
+      label: isHe ? 'שיחות מנציגים, הדוח יישלח למייל' : isRu ? 'Звонков от менеджеров, отчёт придёт на почту' : 'Calls from sales reps, report sent to your email',
     },
   ]
 
