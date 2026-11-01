@@ -376,7 +376,6 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               <span className="inline-block whitespace-nowrap rounded-none bg-[#e52421] px-1.5 py-0.5 font-bold text-white shadow-xs align-baseline">
                 {tCalc(copy.heroSubFormHighlight, locale)}
               </span>
-              .
             </p>
 
             <div className="mt-3 sm:mt-4 ms-0 lg:ms-[20px] flex flex-wrap items-center gap-3 text-xs font-mono text-[#64748b]">
