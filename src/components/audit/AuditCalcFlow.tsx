@@ -349,8 +349,8 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
       </header>
 
       {/* ================= 2. MAIN HERO: 2-COLUMN SPLIT ================= */}
-      <main className="w-full flex-1 min-h-0 flex items-center justify-center px-4 sm:px-8 lg:px-12 xl:px-14 py-2 sm:py-4 lg:py-1">
-        <div className="w-full max-w-[1536px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 xl:gap-12 items-center">
+      <main className="w-full flex-1 min-h-0 flex items-center justify-center px-4 sm:px-8 lg:px-12 xl:px-14 pt-7 sm:pt-9 md:pt-11 lg:pt-1 pb-9 sm:pb-11 md:pb-14 lg:pb-1">
+        <div className="w-full max-w-[1536px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-11 md:gap-13 lg:gap-8 xl:gap-12 items-center">
           {/* Left Column (Desktop Left / Mobile 2nd): Big Title & Subtitle - ENTERS FROM LEFT */}
           <div className="order-2 lg:order-1 lg:col-span-7 xl:col-span-7 flex flex-col justify-center text-start lg:-ms-2 xl:-ms-4 animate-hero-left">
             <div className="inline-flex items-center gap-2 font-mono text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-1.5 sm:mb-2">
@@ -371,14 +371,14 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </span>
             </h2>
 
-            <p className="m-0 mt-2.5 sm:mt-3 ms-0 lg:ms-[20px] text-xs sm:text-sm lg:text-[13.5px] xl:text-[14.5px] text-[#475569] leading-relaxed max-w-2xl">
+            <p className="m-0 mt-3 sm:mt-3.5 lg:mt-2.5 ms-0 lg:ms-[20px] text-xs sm:text-sm lg:text-[13.5px] xl:text-[14.5px] text-[#475569] leading-relaxed max-w-2xl">
               {tCalc(copy.heroSubFormPrefix, locale)}
               <span className="inline-block whitespace-nowrap rounded-none bg-[#e52421] px-1.5 py-0.5 font-bold text-white shadow-xs align-baseline">
                 {tCalc(copy.heroSubFormHighlight, locale)}
               </span>
             </p>
 
-            <div className="mt-3 sm:mt-4 ms-0 lg:ms-[20px] flex flex-wrap items-center gap-3 text-xs font-mono text-[#64748b]">
+            <div className="mt-3.5 sm:mt-4.5 lg:mt-3 ms-0 lg:ms-[20px] flex flex-wrap items-center gap-3 text-xs font-mono text-[#64748b]">
               <span className="inline-flex items-center gap-1.5">
                 <span className="size-1.5 rounded-full bg-[#a855f7]" />
                 {locale === 'he' ? 'ללא צורך בגישת ניהול' : locale === 'ru' ? 'Без доступа к админке' : 'No admin access needed'}
