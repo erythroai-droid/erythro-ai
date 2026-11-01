@@ -431,7 +431,7 @@ export function CalcHeroStatsBar({ locale }: { locale: string }) {
         {stats.map((s, i) => (
           <div
             key={i}
-            className={`flex flex-col items-center justify-center text-center px-2 sm:px-4 py-4 sm:py-5 lg:py-6 w-full ${
+            className={`flex flex-col items-center justify-center text-center px-2 sm:px-3 py-2 sm:py-2.5 lg:py-3 w-full ${
               i === 4 ? 'col-span-2 lg:col-span-1' : ''
             } ${
               i % 2 === 1 && i !== 4 ? 'border-s border-[#cbd5e1] lg:border-s-0' : ''
@@ -439,13 +439,13 @@ export function CalcHeroStatsBar({ locale }: { locale: string }) {
           >
             {/* The outer grid/border stays fixed; only the digits & labels animate in */}
             <div className="flex flex-col items-center justify-center w-full animate-hero-up">
-              <span className="font-mono text-[9.5px] sm:text-[10px] xl:text-[10.5px] font-semibold uppercase tracking-wider text-[#64748b]">
+              <span className="font-mono text-[9px] sm:text-[9.5px] xl:text-[10px] font-semibold uppercase tracking-wider text-[#64748b]">
                 {s.category}
               </span>
-              <div className="mt-1 sm:mt-1.5 text-[28px] sm:text-[34px] md:text-[38px] xl:text-[44px] font-black tracking-tight text-[#0f172a] leading-none">
+              <div className="mt-0.5 text-[24px] sm:text-[28px] md:text-[32px] xl:text-[36px] font-black tracking-tight text-[#0f172a] leading-none">
                 <bdi>{s.val}</bdi>
               </div>
-              <div className="mt-1.5 font-mono text-[10px] sm:text-[10.5px] xl:text-[11px] uppercase tracking-wider text-[#475569] whitespace-nowrap">
+              <div className="mt-1 font-mono text-[9px] sm:text-[9.5px] xl:text-[10px] uppercase tracking-wider text-[#475569] leading-tight text-balance max-w-[220px]">
                 {s.label}
               </div>
             </div>
