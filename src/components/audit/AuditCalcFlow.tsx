@@ -405,7 +405,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                 {/* Progress Line */}
                 <div className="h-[3px] w-full overflow-hidden rounded-[2px] bg-[#cbd5e1]">
                   <div
-                    className="h-full rounded-[2px] bg-[#0f172a] transition-all duration-300"
+                    className="h-full rounded-[2px] bg-[#a855f7] transition-all duration-300"
                     style={{ width: `${(currentStep / 4) * 100}%` }}
                   />
                 </div>
