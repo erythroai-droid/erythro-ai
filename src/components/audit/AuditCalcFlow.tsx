@@ -390,11 +390,11 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
           {/* Right Column (Desktop Right / Mobile 1st): Step-by-Step Tracker + Focused Form Card - ENTERS FROM RIGHT */}
           <div className="order-1 lg:order-2 lg:col-span-5 xl:col-span-5 flex flex-col items-center lg:items-end w-full animate-hero-right">
-            <div className="w-full max-w-[440px] flex flex-col gap-2.5 sm:gap-3">
+            <div className="w-full max-w-[440px] flex flex-col gap-4 sm:gap-5 lg:gap-5.5">
               {/* Step-by-Step tracker above the form */}
-              <div className="w-full flex flex-col gap-1 shrink-0">
+              <div className="w-full flex flex-col gap-1.5 shrink-0">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-[3px] bg-[#a855f7] font-sans text-xs font-bold text-white shadow-xs">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-[3px] bg-[#e52421] font-sans text-xs font-bold text-white shadow-xs">
                     {currentStep}
                   </span>
                   <span className="text-sm sm:text-base font-bold tracking-tight text-[#0f172a]">
@@ -405,7 +405,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                 {/* Progress Line */}
                 <div className="h-[3px] w-full overflow-hidden rounded-[2px] bg-[#cbd5e1]">
                   <div
-                    className="h-full rounded-[2px] bg-[#a855f7] transition-all duration-300"
+                    className="h-full rounded-[2px] bg-[#0f172a] transition-all duration-300"
                     style={{ width: `${(currentStep / 4) * 100}%` }}
                   />
                 </div>
