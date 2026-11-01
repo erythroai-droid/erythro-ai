@@ -155,15 +155,22 @@ export function parseMoneyInput(raw: string): number {
  */
 export const TYPICAL_PILLARS: AuditPillars = { speed: 45, leads: 55, seo: 60, security: 65, ai: 40 }
 
-/** Monthly revenue slider, ₪. Log scale so ₪10k and ₪1M are both easy to hit. */
-export const REVENUE_SLIDER = { min: 10_000, max: 1_000_000, step: 1, default: 150_000 } as const
+/** Monthly revenue slider, ₪. Log scale so ₪1k and ₪1M are both easy to hit. */
+export const REVENUE_SLIDER = { min: 1_000, max: 1_000_000, step: 1, default: 150_000 } as const
 
 /** Visitors-per-month toggle presets. */
 export const VISITOR_PRESETS = [1_000, 5_000, 10_000, 25_000, 50_000, 100_000] as const
 
 function niceRound(value: number): number {
-  const step = value >= 100_000 ? 10_000 : value >= 20_000 ? 5_000 : 1_000
-  return Math.round(value / step) * step
+  const step =
+    value >= 100_000
+      ? 10_000
+      : value >= 20_000
+        ? 5_000
+        : value >= 5_000
+          ? 1_000
+          : 500
+  return Math.max(REVENUE_SLIDER.min, Math.round(value / step) * step)
 }
 
 /** Slider position 0–1000 → monthly revenue on a log scale, rounded to a readable number. */

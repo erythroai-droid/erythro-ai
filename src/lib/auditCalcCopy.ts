@@ -406,6 +406,21 @@ export const auditCalcCopy = {
   stepOf: { en: 'Step {n} of {total}', ru: 'Шаг {n} из {total}', he: 'שלב {n} מתוך {total}' } satisfies Localized,
   next: { en: 'Next step', ru: 'Следующий шаг', he: 'השלב הבא' } satisfies Localized,
   back: { en: 'Back', ru: 'Назад', he: 'חזרה' } satisfies Localized,
+  backToPreviousStep: {
+    en: 'Back to previous step',
+    ru: 'Вернуться на шаг назад',
+    he: 'חזרה לשלב הקודם',
+  } satisfies Localized,
+  skipStep: {
+    en: 'Skip this step',
+    ru: 'Пропустить шаг',
+    he: 'דילוג על שלב זה',
+  } satisfies Localized,
+  clearValues: {
+    en: 'Clear values',
+    ru: 'Очистить значения',
+    he: 'איפוס נתונים',
+  } satisfies Localized,
   perYear: { en: 'per year', ru: 'в год', he: 'בשנה' } satisfies Localized,
   progressStages: [
     { en: 'Checking speed on phones…', ru: 'Проверяем скорость на телефоне…', he: 'בודקים מהירות בטלפון…' },
@@ -732,6 +747,66 @@ export const auditCalcCopy = {
     en: 'lost revenue',
     ru: 'упущенной выгоды',
     he: 'ההכנסות האבודות שלכם',
+  } satisfies Localized,
+  heroStep2Kicker: {
+    en: 'Business Scale & Metrics',
+    ru: 'Масштаб бизнеса и доход',
+    he: 'נתוני עסק והכנסות',
+  } satisfies Localized,
+  heroStep2L1: {
+    en: 'HOW MUCH IS EVERY',
+    ru: 'СКОЛЬКО СТОИТ',
+    he: 'כמה עולה לכם',
+  } satisfies Localized,
+  heroStep2L2: {
+    en: 'FUNNEL BREAKDOWN',
+    ru: 'КАЖДЫЙ СБОЙ',
+    he: 'כל כשל',
+  } satisfies Localized,
+  heroStep2L3: {
+    en: 'COSTING YOU?',
+    ru: 'В ВАШЕЙ ВОРОНКЕ?',
+    he: 'במשפך ההמרה?',
+  } satisfies Localized,
+  heroStep2SubPrefix: {
+    en: 'Enter your business metrics to translate website errors ',
+    ru: 'Укажите параметры бизнеса, чтобы перевести ошибки сайта ',
+    he: 'הזינו מדדים עסקיים כדי לתרגם שגיאות באתר ',
+  } satisfies Localized,
+  heroStep2SubHighlight: {
+    en: 'into actual revenue loss',
+    ru: 'в реальные суммы потерь',
+    he: 'להפסדים כספיים בפועל',
+  } satisfies Localized,
+  step2OptionalBadge: {
+    en: 'Optional step',
+    ru: 'Необязательный шаг',
+    he: 'שלב רשות',
+  } satisfies Localized,
+  step2PercentBadge: {
+    en: 'Available in % calculation',
+    ru: 'Доступен расчёт только в %',
+    he: 'זמין לחישוב ב-% בלבד',
+  } satisfies Localized,
+  step2SkipBtn: {
+    en: 'Skip step (calculate in %)',
+    ru: 'Пропустить шаг (расчёт в %)',
+    he: 'דילוג על השלב (חישוב ב-%)',
+  } satisfies Localized,
+  step2SkipCheckbox: {
+    en: 'Calculate in % only (skip revenue)',
+    ru: 'Рассчитать только в процентах (без ввода выручки)',
+    he: 'חישוב באחוזים בלבד (ללא הזנת הכנסות)',
+  } satisfies Localized,
+  submitPercent: {
+    en: 'Calculate losses in %',
+    ru: 'Рассчитать потери в %',
+    he: 'חשבו הפסדים ב-%',
+  } satisfies Localized,
+  submitMoney: {
+    en: 'Calculate losses in ₪',
+    ru: 'Рассчитать потери в ₪',
+    he: 'חשבו הפסדים בש״ח',
   } satisfies Localized,
   heroSubLossPrefix: {
     en: 'Every ad click is paid for, but ',

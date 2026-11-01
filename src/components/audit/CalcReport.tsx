@@ -431,7 +431,7 @@ export function CalcHeroStatsBar({ locale }: { locale: string }) {
         {stats.map((s, i) => (
           <div
             key={i}
-            className={`flex flex-col items-center justify-center text-center px-2 sm:px-4 py-3.5 sm:py-4.5 lg:py-5 w-full ${
+            className={`flex flex-col items-center justify-center text-center px-2 sm:px-4 py-3 sm:py-3.5 lg:py-2.5 xl:py-3.5 2xl:py-4.5 w-full ${
               i === 4 ? 'col-span-2 lg:col-span-1' : ''
             } ${
               i % 2 === 1 && i !== 4 ? 'border-s border-[#cbd5e1] lg:border-s-0' : ''
@@ -439,13 +439,13 @@ export function CalcHeroStatsBar({ locale }: { locale: string }) {
           >
             {/* The outer grid/border stays fixed; only the digits & labels animate in */}
             <div className="flex flex-col items-center justify-center w-full animate-hero-up">
-              <span className="font-mono text-[9.5px] sm:text-[10px] xl:text-[10.5px] font-semibold uppercase tracking-wider text-[#64748b]">
+              <span className="font-mono text-[9px] sm:text-[9.5px] xl:text-[10px] font-semibold uppercase text-[#64748b]">
                 {s.category}
               </span>
-              <div className="mt-1 sm:mt-1.5 text-[28px] sm:text-[32px] md:text-[36px] xl:text-[40px] font-black tracking-tight text-[#0f172a] leading-none">
+              <div className="mt-0.5 sm:mt-1 text-[24px] sm:text-[28px] lg:text-[24px] xl:text-[30px] 2xl:text-[36px] font-black text-[#0f172a] leading-none">
                 <bdi>{s.val}</bdi>
               </div>
-              <div className="mt-1.5 sm:mt-2 font-mono text-[9.5px] sm:text-[10px] xl:text-[10.5px] uppercase tracking-wider text-[#475569] leading-snug text-balance max-w-[240px]">
+              <div className="mt-1 sm:mt-1.5 font-mono text-[9px] sm:text-[9.5px] xl:text-[10px] uppercase text-[#475569] leading-snug text-balance max-w-[220px]">
                 {s.label}
               </div>
             </div>
@@ -938,63 +938,115 @@ export function CalcNumbers({
   clients,
   onRevenue,
   onClients,
+  onReset,
   theme = 'light',
+  disabled = false,
 }: {
   locale: string
   revenue: number | null
   clients: number | null
-  onRevenue: (v: number) => void
+  onRevenue: (v: number | null) => void
   onClients: (v: number | null) => void
+  onReset?: () => void
   theme?: 'light' | 'dark'
+  disabled?: boolean
 }) {
   const isDark = theme === 'dark'
+  const isRtl = locale === 'he'
   const id = useId()
   const pos = revenue == null ? 0 : revenueToSlider(revenue)
   const pct = pos / 10
+  const gradientDir = isRtl ? 'to left' : 'to right'
+  const hasValues = revenue != null || clients != null
+  const handleReset = () => {
+    if (onReset) {
+      onReset()
+    } else {
+      onRevenue(null)
+      onClients(null)
+    }
+  }
   const thumb =
-    '[&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#e52421] [&::-webkit-slider-thumb]:shadow-[0_0_0_1px_#e52421] [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#e52421]'
+    '[&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[2.5px] [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#e52421] [&::-webkit-slider-thumb]:shadow-[0_2px_8px_rgba(229,36,33,0.45)] hover:[&::-webkit-slider-thumb]:scale-110 transition-transform [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[2.5px] [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#e52421]'
 
   return (
-    <div className="flex min-w-0 flex-col gap-6 sm:gap-7">
-      <div className="flex flex-col gap-2.5">
-        <div className="flex items-end justify-between gap-3">
-          <label htmlFor={`${id}-rev`} className={`text-sm sm:text-base font-medium ${isDark ? 'text-white/90' : 'text-[#1e1e1e]'}`}>
+    <div className={`flex min-w-0 flex-col gap-3.5 sm:gap-4 lg:gap-3 xl:gap-4 transition-opacity duration-200 ${disabled ? 'opacity-35 pointer-events-none select-none' : ''}`}>
+      {/* 1. Monthly Revenue Slider Block */}
+      <div className="flex flex-col gap-[15px]">
+        <div className="flex items-center justify-between gap-2">
+          <label htmlFor={`${id}-rev`} className={`font-mono text-[11px] sm:text-xs font-bold uppercase ${isDark ? 'text-white/80' : 'text-[#475569]'}`}>
             {tCalc(copy.sliderRevenue, locale)}
           </label>
-          <bdi className={`text-2xl sm:text-[28px] font-bold leading-none tracking-[-0.02em] tabular-nums ${isDark ? 'text-white' : 'text-[#1e1e1e]'}`} aria-hidden>
-            {revenue == null ? '—' : formatIls(revenue, locale)}
-          </bdi>
+          <div className="flex items-center gap-1.5">
+            {hasValues && !disabled ? (
+              <div className="relative group/clear flex items-center">
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  title={tCalc(copy.clearValues, locale)}
+                  aria-label={tCalc(copy.clearValues, locale)}
+                  className={`cursor-pointer relative flex size-4 sm:size-4.5 items-center justify-center rounded-full border transition-all duration-150 after:absolute after:-inset-2 after:content-[''] ${
+                    isDark
+                      ? 'border-white/20 bg-white/10 text-white/60 hover:bg-[#e52421] hover:border-[#e52421] hover:text-white'
+                      : 'border-[#cbd5e1] bg-[#f8fafc] text-[#64748b] hover:bg-[#e52421] hover:border-[#e52421] hover:text-white'
+                  }`}
+                >
+                  <svg className="size-2" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <line x1="3" y1="3" x2="7" y2="7" />
+                    <line x1="7" y1="3" x2="3" y2="7" />
+                  </svg>
+                </button>
+                {/* Floating tooltip on hover/focus */}
+                <div
+                  role="tooltip"
+                  className="pointer-events-none absolute bottom-full mb-1.5 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 opacity-0 group-hover/clear:opacity-100 group-focus-within/clear:opacity-100 transition-opacity duration-150 z-30"
+                >
+                  <div className="whitespace-nowrap rounded-[4px] bg-[#0f172a] px-2 py-0.5 text-[10px] font-mono font-medium text-white shadow-md">
+                    {tCalc(copy.clearValues, locale)}
+                  </div>
+                  <div className="mx-auto size-0 border-x-[3px] border-x-transparent border-t-[3px] border-t-[#0f172a]" />
+                </div>
+              </div>
+            ) : null}
+            <div className="flex items-center gap-1.5 rounded-[6px] border border-[#cbd5e1] bg-[#f8fafc] px-2.5 py-0.5 font-mono text-sm sm:text-base font-black text-[#0f172a] tabular-nums whitespace-nowrap">
+              <bdi>{revenue == null ? '—' : formatIls(revenue, locale)}</bdi>
+            </div>
+          </div>
         </div>
-        <div dir="ltr" className="flex flex-col gap-2">
+
+        <div dir={isRtl ? 'rtl' : 'ltr'} className="flex flex-col gap-1.5">
           <input
             id={`${id}-rev`}
             type="range"
+            dir={isRtl ? 'rtl' : 'ltr'}
             min={0}
             max={1000}
             step={1}
             value={pos}
+            disabled={disabled}
             onChange={(e) => onRevenue(sliderToRevenue(Number(e.target.value)))}
             aria-valuetext={revenue == null ? '' : formatIls(revenue, locale)}
-            className={`h-[4px] w-full cursor-pointer appearance-none rounded-sm ${thumb}`}
+            className={`h-[5px] w-full cursor-pointer appearance-none rounded-full ${thumb}`}
             style={{
               background: isDark
-                ? `linear-gradient(to right, ${BRAND} ${pct}%, rgba(255,255,255,0.2) ${pct}%)`
-                : `linear-gradient(to right, ${BRAND} ${pct}%, ${LINE} ${pct}%)`,
+                ? `linear-gradient(${gradientDir}, ${BRAND} ${pct}%, rgba(255,255,255,0.2) ${pct}%)`
+                : `linear-gradient(${gradientDir}, ${BRAND} ${pct}%, #cbd5e1 ${pct}%)`,
             }}
           />
-          <div className={`flex justify-between text-[11px] sm:text-[12px] tabular-nums ${isDark ? 'text-white/60' : 'text-[#6b6254]'}`}>
+          <div className={`flex justify-between font-mono text-[10px] sm:text-[10.5px] tabular-nums ${isDark ? 'text-white/60' : 'text-[#64748b]'}`}>
             <span>{compact(REVENUE_SLIDER.min, locale)} ₪</span>
-            <span>{compact(100_000, locale)} ₪</span>
+            <span>{compact(50_000, locale)} ₪</span>
             <span>{compact(REVENUE_SLIDER.max, locale)} ₪</span>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2.5">
-        <span id={`${id}-cl`} className={`text-sm sm:text-base font-medium ${isDark ? 'text-white/90' : 'text-[#1e1e1e]'}`}>
+      {/* 2. Customer Presets Block */}
+      <div className="flex flex-col gap-2">
+        <span id={`${id}-cl`} className={`font-mono text-[11px] sm:text-xs font-bold uppercase ${isDark ? 'text-white/80' : 'text-[#475569]'}`}>
           {tCalc(copy.clientsLabel, locale)}
         </span>
-        <div role="radiogroup" aria-labelledby={`${id}-cl`} className="flex flex-wrap gap-2">
+        <div role="radiogroup" aria-labelledby={`${id}-cl`} className="grid grid-cols-6 gap-1.5 sm:gap-2">
           {CLIENT_PRESETS.map((v) => {
             const on = v === clients
             return (
@@ -1002,16 +1054,17 @@ export function CalcNumbers({
                 key={v}
                 type="button"
                 role="radio"
+                disabled={disabled}
                 aria-checked={on}
                 onClick={() => onClients(on ? null : v)}
-                className={`cursor-pointer rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-semibold tabular-nums transition-all ${
+                className={`cursor-pointer rounded-[6px] border py-1 sm:py-1.5 xl:py-2 text-xs sm:text-[13px] font-mono font-bold tabular-nums text-center transition-all ${
                   isDark
                     ? on
-                      ? 'border-[#e52421] bg-[#e52421] text-white shadow-md'
+                      ? 'border-[#e52421] bg-[#e52421] text-white'
                       : 'border-white/20 bg-white/10 text-white/80 hover:border-white/40 hover:bg-white/20'
                     : on
-                      ? 'border-[#1e1e1e] bg-[#1e1e1e] text-white'
-                      : 'border-[#d6d6d6] bg-white text-[#1e1e1e] hover:border-[#1e1e1e]'
+                      ? 'border-[#e52421] bg-[#e52421] text-white scale-[1.02]'
+                      : 'border-[#cbd5e1] bg-[#f8fafc] text-[#334155] hover:border-[#94a3b8] hover:bg-white hover:text-[#0f172a]'
                 }`}
               >
                 <bdi dir="ltr">{v === CLIENT_PRESETS[CLIENT_PRESETS.length - 1] ? `${v}+` : v}</bdi>
