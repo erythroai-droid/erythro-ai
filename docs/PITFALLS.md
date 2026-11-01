@@ -2172,6 +2172,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-154 — Home AI Visibility pin ends too early (section scrolls up under Cases)
+
+**Tags:** `gsap`, `scroll`, `home`, `ai-audit`, `pin`
+**Seen:** 2026-11-01 — erythro.ai home, desktop: AI Visibility («נראות ב-AI» / `#ai-audit`) slides up instead of staying while Cases overlays
+
+**Symptom:** After the AI Visibility settle, further scroll makes the block leave the viewport upward. Cases («наши работы») does not cleanly slide over a pinned plate the way Services slides over Cases.
+
+**Cause:** `ai-audit-pin` used `end: '+=180%'` with `pinSpacing: false`, while Cases still has a `160vh` lead-in spacer. Pin release happens almost as soon as the Cases panel arrives, so the section returns to document flow and rides up. The working Cases → Services pair uses `cases-pin` `end: '+=260%'` against the same `160vh` Services lead-in.
+
+**Fix:** In `AiAuditHomeSection.tsx`, set `end: '+=260%'` and add an empty scrub hold after the settle tween so clip-open + settle finish during the Cases lead-in; the rest of the pin is overlay room only.
+
+**Prevent:** For every `pinSpacing: false` home stack pair, pin `end` must cover the next section’s lead-in **plus** overlay (~`+=260%` when lead-in is `160vh`). Do not shorten the upstream pin without shrinking the downstream spacer.
+
+---
+
 ## PIT-153 — Top-3 ordered by internal weight, GA4 shown with two statuses, "1." in the accessibility card (MI-002, MI-006, MI-011)
 
 **Tags:** `audit`, `render-v2`, `top-3`, `status`, `wording`
@@ -2662,3 +2677,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] next/font build crash `reading '1'` = extensionless Google font URL; keep `patches/next@15.5.27.patch` until next 16.4.3+ (PIT-151)
 - [ ] Per-letter spans in RTL text: wrap Latin/digit runs in a direction:ltr box (appendGlyphs), or they read mirrored (PIT-152)
 - [ ] Top-3 and the plan follow the status the card shows (`top_candidates` + `sevIdx`); a finding takes its status from its checklist row (PIT-153)
+- [ ] Home pin + lead-in: upstream `pinSpacing: false` end must cover next section’s `160vh` lead-in + overlay (`+=260%`, PIT-154)
