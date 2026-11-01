@@ -1077,7 +1077,7 @@ export function CalcNumbers({
   )
 }
 
-/** Audit in progress: percent + ring, then the report's "flow" block: what we check → what the auditor does → what you get. */
+/** Audit in progress: technical ITSUA studio layout with progress bar, stages checklist and live terminal line. */
 export function CalcWaiting({
   locale,
   domain,
@@ -1094,77 +1094,156 @@ export function CalcWaiting({
   const current = Math.min(stages.length - 1, Math.floor((progress.percent / 100) * stages.length))
   const remaining = progress.overdue
     ? tCalc(copy.waitingLong, locale)
-    : `${progress.remaining > 0 ? `${fillCalc(tCalc(copy.waitingRemaining, locale), { n: progress.remaining })}. ` : ''}${tCalc(copy.waitingShort, locale)}`
-  const ringLabel =
-    !progress.overdue && progress.remaining > 0 ? `≈ ${progress.remaining} ${tCalc(copy.minShort, locale)}` : '…'
+    : progress.remaining > 0
+      ? fillCalc(tCalc(copy.waitingRemaining, locale), { n: progress.remaining })
+      : tCalc(copy.waitingShort, locale)
+
+  const isRtl = locale === 'he'
 
   return (
-    <section className={`flex h-full min-w-0 flex-col justify-center gap-4 ${isDark ? 'p-0 text-white' : `${PANEL}`}`}>
-      <CardHead
-        compact
-        title={fillCalc(tCalc(copy.waitingTitle, locale), { domain })}
-        tag={tCalc(copy.waitingTag, locale)}
-        no="03"
-        isDark={isDark}
-      />
+    <div className={`flex flex-col gap-3.5 sm:gap-4.5 ${isDark ? 'text-white' : 'text-[#0f172a]'}`}>
+      {/* 1. Card Heading with red indicator and auto-wrapping / truncating domain badge */}
+      <div className="flex flex-col gap-1 w-full">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 min-w-0">
+          <h3 className="m-0 flex items-center gap-2 text-base sm:text-lg lg:text-[18.5px] font-bold text-[#0f172a] shrink-0">
+            <span className="inline-block w-[3px] h-4 bg-[#e52421] rounded-full shrink-0" />
+            <span>{tCalc(copy.step3CardHeading, locale)}</span>
+          </h3>
 
-      <div className="flex flex-wrap items-center justify-between gap-6">
-        <div className="min-w-0">
-          <div className={`text-[56px] font-medium leading-none tracking-[-0.04em] sm:text-[72px] ${isDark ? 'text-white' : 'text-[#1e1e1e]'}`}>
-            <bdi>{Math.round(progress.percent)}</bdi>
-            <small className={`ms-1 text-[22px] font-normal tracking-normal ${isDark ? 'text-white/60' : 'text-[#6b6254]'}`}>%</small>
-          </div>
-          <p role="status" aria-live="polite" className={`m-0 mt-3.5 max-w-[520px] text-base ${isDark ? 'text-white/70' : 'text-[#6b6254]'}`}>
-            {remaining}
-          </p>
+          {domain ? (
+            <span
+              dir="ltr"
+              title={domain}
+              className="inline-flex max-w-full sm:max-w-[220px] items-center rounded-[5px] border border-[#cbd5e1] bg-[#f8fafc] px-2.5 py-1 font-mono text-[11px] font-semibold text-[#0f172a] truncate"
+            >
+              <span className="truncate">{domain}</span>
+            </span>
+          ) : null}
         </div>
-        <Gauge fraction={progress.percent / 100} label={ringLabel} color={BRAND} />
+        <p className="m-0 text-xs sm:text-[12.5px] text-[#475569] leading-relaxed">
+          {tCalc(copy.step3CardSub, locale)}
+        </p>
       </div>
 
-      <div className={`border-t ${isDark ? 'border-white/10' : 'border-[#d6d6d6]'}`} />
+      {/* 2. Progress Numbers + Dynamic Progress Bar (identical h-[3px] to step tracker) */}
+      <div className="rounded-[12px] border border-[#cbd5e1] border-s-[3.5px] border-s-[#a855f7] bg-[#f8fafc] p-3 sm:p-3.5 flex flex-col gap-2 sm:gap-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 min-w-0">
+          <div className="flex items-baseline gap-1.5 shrink-0">
+            <span className="font-mono text-2xl sm:text-3xl font-extrabold text-[#0f172a] tracking-tight">
+              <bdi>{Math.round(progress.percent)}</bdi>
+            </span>
+            <span className="font-mono text-sm font-semibold text-[#64748b]">%</span>
+          </div>
 
-      <div className={`flex flex-col gap-3 px-5 py-4 sm:px-6 ${isDark ? 'rounded-[10px] border border-white/10 bg-coal-900/60' : INNER}`}>
-        <div>
-          <FlowLabel>{tCalc(copy.flowIn, locale)}</FlowLabel>
-          <div className="flex flex-wrap items-start gap-2">
-            <Pill>{domain}</Pill>
-            <Pill>{tCalc(copy.pillHome, locale)}</Pill>
-            <Pill>{tCalc(copy.pillMobile, locale)}</Pill>
+          <div className="flex items-center gap-2 font-mono text-xs sm:text-[12.5px] text-[#64748b] min-w-0 max-w-full">
+            <span className="relative flex size-2 shrink-0">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#a855f7] opacity-75 motion-reduce:hidden" />
+              <span className="relative inline-flex size-2 rounded-full bg-[#a855f7]" />
+            </span>
+            <span className="leading-tight truncate sm:whitespace-normal">{remaining}</span>
           </div>
         </div>
-        <div>
-          <FlowLabel>{tCalc(copy.flowSteps, locale)}</FlowLabel>
-          <ul className="m-0 grid list-none grid-cols-1 gap-2 p-0 sm:grid-cols-2">
-            {stages.map((label, i) => {
-              const done = i < current || progress.percent >= 100
-              const active = i === current && !done
-              return (
-                <li
-                  key={i}
-                  className={`flex items-center justify-between gap-3 rounded-lg border px-3.5 py-2.5 text-[15px] leading-snug ${
-                    isDark
-                      ? 'border-white/10 bg-coal-800/80 text-white'
-                      : 'border-[#d6d6d6] bg-[#f8f8f8]'
-                  }`}
-                >
-                  <span className={done || active ? (isDark ? 'text-white' : 'text-[#1e1e1e]') : (isDark ? 'text-white/60' : 'text-[#6b6254]')}>
-                    {tCalc(label, locale).replace(/…$/, '')}
-                  </span>
-                  {done ? (
-                    <span className="text-[11px] font-medium text-[#22bf16]">{tCalc(copy.statusOk, locale)}</span>
-                  ) : active ? (
-                    <span
-                      aria-hidden
-                      className="size-2 shrink-0 animate-pulse rounded-full bg-[#ff7900] motion-reduce:animate-none"
-                    />
-                  ) : null}
-                </li>
-              )
-            })}
-          </ul>
+
+        {/* Progress Track: identical thickness to step-by-step tracker */}
+        <div className="h-[3px] w-full overflow-hidden rounded-[2px] bg-[#cbd5e1] relative">
+          <div
+            className={`h-full rounded-[2px] transition-all duration-500 ${
+              isRtl
+                ? 'bg-gradient-to-l from-[#a855f7] to-[#e52421]'
+                : 'bg-gradient-to-r from-[#a855f7] to-[#e52421]'
+            }`}
+            style={{ width: `${Math.max(4, Math.min(100, progress.percent))}%` }}
+          />
         </div>
       </div>
-    </section>
+
+      {/* 3. Stages Checklist (4 items) */}
+      <div className="flex flex-col gap-1.5 sm:gap-2">
+        {stages.map((label, i) => {
+          const done = i < current || progress.percent >= 100
+          const active = i === current && !done
+          return (
+            <div
+              key={i}
+              className={`flex items-center justify-between gap-3 rounded-[8px] border px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs transition-all duration-200 ${
+                active
+                  ? 'border-[#a855f7] bg-[#faf5ff] text-[#0f172a] font-medium shadow-xs'
+                  : done
+                    ? 'border-[#bbf7d0] bg-[#f0fdf4] text-[#166534]'
+                    : 'border-[#e2e8f0] bg-white text-[#94a3b8]'
+              }`}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className={`font-mono text-[11px] shrink-0 ${done ? 'text-emerald-700/60' : 'text-[#94a3b8]'}`}>
+                  0{i + 1}
+                </span>
+                <span className="truncate">
+                  {tCalc(label, locale).replace(/[:…]+$/, '')}
+                </span>
+              </div>
+
+              {done ? (
+                <span className="flex items-center gap-1 font-mono text-[11px] font-bold text-emerald-700 shrink-0">
+                  <span>✓</span>
+                  <span>OK</span>
+                </span>
+              ) : active ? (
+                <span className="flex items-center gap-1.5 font-mono text-[10.5px] font-bold text-[#a855f7] uppercase shrink-0">
+                  <span className="size-1.5 rounded-full bg-[#a855f7] animate-pulse" />
+                  <span>{locale === 'he' ? 'בבדיקה' : locale === 'ru' ? 'Тест...' : 'Scanning'}</span>
+                </span>
+              ) : (
+                <span className="font-mono text-[11px] text-[#cbd5e1] shrink-0">
+                  —
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* 4. What's in your report teaser: 3 compact horizontal blocks in 1 row */}
+      <div className="rounded-[10px] border border-[#e2e8f0] bg-[#f8fafc]/90 p-2.5 sm:p-3 flex flex-col gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#64748b]">
+          <span className="size-1.5 rounded-full bg-[#a855f7]" />
+          <span>{tCalc(copy.step3DeliverablesHeader, locale)}</span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+          <div className="rounded-[7px] border border-[#cbd5e1]/70 border-s-[3px] border-s-[#e52421] bg-white px-2 py-1.5 sm:py-2 flex flex-col text-start min-w-0">
+            <span className="font-bold text-[11px] sm:text-xs text-[#0f172a] leading-tight truncate">
+              {tCalc(copy.step3Deliverable1Title, locale)}
+            </span>
+            <span className="text-[10px] text-[#64748b] leading-tight mt-0.5 truncate">
+              {tCalc(copy.step3Deliverable1Sub, locale)}
+            </span>
+          </div>
+
+          <div className="rounded-[7px] border border-[#cbd5e1]/70 border-s-[3px] border-s-[#e07a5f] bg-white px-2 py-1.5 sm:py-2 flex flex-col text-start min-w-0">
+            <span className="font-bold text-[11px] sm:text-xs text-[#0f172a] leading-tight truncate">
+              {tCalc(copy.step3Deliverable2Title, locale)}
+            </span>
+            <span className="text-[10px] text-[#64748b] leading-tight mt-0.5 truncate">
+              {tCalc(copy.step3Deliverable2Sub, locale)}
+            </span>
+          </div>
+
+          <div className="rounded-[7px] border border-[#cbd5e1]/70 border-s-[3px] border-s-emerald-500 bg-white px-2 py-1.5 sm:py-2 flex flex-col text-start min-w-0">
+            <span className="font-bold text-[11px] sm:text-xs text-[#0f172a] leading-tight truncate">
+              {tCalc(copy.step3Deliverable3Title, locale)}
+            </span>
+            <span className="text-[10px] text-[#64748b] leading-tight mt-0.5 truncate">
+              {tCalc(copy.step3Deliverable3Sub, locale)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Do Not Close Tab Notice */}
+      <p className="m-0 text-center font-mono text-[10.5px] sm:text-[11px] text-[#64748b] leading-tight pt-0.5">
+        {tCalc(copy.step3DoNotClose, locale)}
+      </p>
+    </div>
   )
 }
 

@@ -67,9 +67,9 @@ export const auditCalcCopy = {
         he: 'בודקים את האתר',
       },
       body: {
-        en: 'A real audit of your homepage: mobile speed, forms, security and visibility in search and AI.',
-        ru: 'Реальный аудит главной: скорость на телефоне, формы, безопасность и видимость в поиске и AI.',
-        he: 'ביקורת אמיתית של דף הבית: מהירות במובייל, טפסים, אבטחה ונראות בחיפוש וב-AI.',
+        en: 'A real audit of your homepage: mobile & desktop speed, forms, security and visibility in search and AI.',
+        ru: 'Реальный аудит главной: скорость на смартфонах и ПК, формы, безопасность и видимость в поиске и AI.',
+        he: 'ביקורת אמיתית של דף הבית: מהירות במובייל ובמחשב, טפסים, אבטחה ונראות בחיפוש וב-AI.',
       },
     },
     {
@@ -423,7 +423,7 @@ export const auditCalcCopy = {
   } satisfies Localized,
   perYear: { en: 'per year', ru: 'в год', he: 'בשנה' } satisfies Localized,
   progressStages: [
-    { en: 'Checking speed on phones…', ru: 'Проверяем скорость на телефоне…', he: 'בודקים מהירות בטלפון…' },
+    { en: 'Checking speed: mobile & desktop…', ru: 'Проверяем скорость: смартфоны и десктоп…', he: 'בודקים מהירות במובייל ובמחשב…' },
     { en: 'Checking forms and inquiries…', ru: 'Проверяем формы и заявки…', he: 'בודקים טפסים ופניות…' },
     { en: 'Checking Google and AI visibility…', ru: 'Проверяем видимость в Google и AI…', he: 'בודקים נראות בגוגל וב-AI…' },
     { en: 'Counting your losses…', ru: 'Считаем ваши потери…', he: 'מחשבים את ההפסדים…' },
@@ -822,6 +822,111 @@ export const auditCalcCopy = {
     en: ' on hidden funnel leaks.',
     ru: ' из-за скрытых сбоев воронки.',
     he: ' בגלל ליקויים סמויים במשפך.',
+  } satisfies Localized,
+  heroStep3Kicker: {
+    en: 'Chromium Audit Lab',
+    ru: 'Chromium Audit Lab',
+    he: 'Chromium Audit Lab',
+  } satisfies Localized,
+  heroStep3L1: {
+    en: 'AUDITING WEBSITE',
+    ru: 'ПРОВЕРЯЕМ САЙТ',
+    he: 'בודקים את האתר',
+  } satisfies Localized,
+  heroStep3L2: {
+    en: 'IN REAL TIME',
+    ru: 'ПРЯМО СЕЙЧАС',
+    he: 'ממש עכשיו',
+  } satisfies Localized,
+  heroStep3L3: {
+    en: 'ACROSS 230+ METRICS',
+    ru: 'ПО 230+ ПАРАМЕТРАМ',
+    he: 'לפי 230+ פרמטרים',
+  } satisfies Localized,
+  heroStep3SubPrefix: {
+    en: 'Chromium browser running: simulating mobile and desktop visits, probing funnel and ',
+    ru: 'Запущен браузер Chromium: эмулируем визиты со смартфонов и ПК, тестируем воронку и ',
+    he: 'דפדפן Chromium פועל: מדמים גלישה במובייל ובמחשב, בודקים את המשפך ו-',
+  } satisfies Localized,
+  heroStep3SubHighlight: {
+    en: 'detecting revenue leaks',
+    ru: 'ищем финансовые утечки',
+    he: 'מאתרים דליפות כספיות',
+  } satisfies Localized,
+  step3EngineBadge: {
+    en: 'Chromium Engine 2026: Active',
+    ru: 'Chromium Engine 2026: Активен',
+    he: 'מנוע כרומיום 2026: פעיל',
+  } satisfies Localized,
+  step3AutoEmailBadge: {
+    en: 'Report copy sent to email',
+    ru: 'Дубликат уйдёт на email',
+    he: 'עותק יישלח לאימייל',
+  } satisfies Localized,
+  step3CardHeading: {
+    en: 'Funnel Analysis & Audit',
+    ru: 'Анализ воронки и аудит',
+    he: 'ניתוח משפך ובדיקה',
+  } satisfies Localized,
+  step3CardSub: {
+    en: 'Automated site scan in our cloud browser lab',
+    ru: 'Автоматическая проверка в облачной лаборатории',
+    he: 'בדיקה אוטומטית של האתר במעבדת ענן',
+  } satisfies Localized,
+  step3DoNotClose: {
+    en: 'Keep this tab open: results appear automatically',
+    ru: 'Не закрывайте вкладку: страница обновится сама',
+    he: 'נא לא לסגור את הלשונית: התוצאות יופיעו אוטומטית',
+  } satisfies Localized,
+  step3DeliverablesHeader: {
+    en: 'What you’ll get in your report:',
+    ru: 'Что войдёт в ваш отчёт:',
+    he: 'מה יכלול הדוח שלכם:',
+  } satisfies Localized,
+  step3Deliverable1Title: {
+    en: 'Lost revenue',
+    ru: 'Сумма потерь',
+    he: 'חישוב הפסדים',
+  } satisfies Localized,
+  step3Deliverable1Desc: {
+    en: 'exact revenue leakage in ₪ or % across your funnel',
+    ru: 'точный расчёт утечек выручки в ₪ или % по воронке',
+    he: 'אומדן דליפת הכנסות מדויק בש״ח או ב-% לאורך המשפך',
+  } satisfies Localized,
+  step3Deliverable2Title: {
+    en: '230+ checks',
+    ru: '230+ тестов',
+    he: '230+ בדיקות',
+  } satisfies Localized,
+  step3Deliverable2Desc: {
+    en: 'speed on mobile & desktop, order forms, SEO & AI',
+    ru: 'скорость на смартфонах и ПК, формы заказа, SEO и AI',
+    he: 'מהירות במובייל ובמחשב, טפסי הזמנה, SEO ו-AI',
+  } satisfies Localized,
+  step3Deliverable3Title: {
+    en: 'Action plan',
+    ru: 'План исправлений',
+    he: 'תוכנית פעולה',
+  } satisfies Localized,
+  step3Deliverable3Desc: {
+    en: 'prioritized step-by-step sprint for your developers',
+    ru: 'пошаговый спринт доработок с приоритетами для разработчиков',
+    he: 'ספרינט משימות מתועדף וממוקד למפתחים',
+  } satisfies Localized,
+  step3Deliverable1Sub: {
+    en: 'in ₪ or %',
+    ru: 'в ₪ или в %',
+    he: 'בש״ח או %',
+  } satisfies Localized,
+  step3Deliverable2Sub: {
+    en: 'mobile, SEO, AI',
+    ru: 'ПК, мобайл, AI',
+    he: 'מובייל, SEO, AI',
+  } satisfies Localized,
+  step3Deliverable3Sub: {
+    en: 'dev sprint',
+    ru: 'спринт для Dev',
+    he: 'ספרינט למפתחים',
   } satisfies Localized,
   heroFinancialLeaks: [
     {

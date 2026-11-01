@@ -350,58 +350,126 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
       </header>
 
       {/* ================= 2. MAIN HERO: 2-COLUMN SPLIT ================= */}
-      <main className="w-full flex-1 min-h-0 flex items-center justify-center px-4 sm:px-8 lg:px-10 xl:px-12 2xl:px-14 pt-7 sm:pt-9 md:pt-11 lg:py-1 xl:py-2">
+      <main className="w-full flex-1 min-h-0 flex items-center justify-center px-4 sm:px-8 lg:px-10 xl:px-12 2xl:px-14 pt-7 sm:pt-9 md:pt-11 pb-9 sm:pb-11 md:pb-13 lg:py-1 xl:py-2">
         <div className="w-full max-w-[1536px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-11 md:gap-13 lg:gap-6 xl:gap-10 2xl:gap-12 items-center">
           {/* Left Column (Desktop Left / Mobile 2nd): Big Title & Subtitle - ENTERS FROM LEFT */}
-          <div key={`hero-left-${formStep}`} className="order-2 lg:order-1 lg:col-span-7 xl:col-span-7 flex flex-col justify-center text-start lg:-ms-2 xl:-ms-4 animate-hero-left">
+          <div key={`hero-left-${currentStep}`} className="order-2 lg:order-1 lg:col-span-7 xl:col-span-7 flex flex-col justify-center text-start lg:-ms-2 xl:-ms-4 animate-hero-left">
             <div className="inline-flex items-center gap-2 font-mono text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-1.5 sm:mb-2">
-              <span className="text-[#e52421]">{formStep === 1 ? '§ 01' : '§ 02'}</span>
+              <span className="text-[#e52421]">
+                {currentStep === 1 ? '§ 01' : currentStep === 2 ? '§ 02' : '§ 03'}
+              </span>
               <span>—</span>
-              <span>{tCalc(formStep === 1 ? copy.heroKicker : copy.heroStep2Kicker, locale)}</span>
+              <span>
+                {tCalc(
+                  currentStep === 1
+                    ? copy.heroKicker
+                    : currentStep === 2
+                      ? copy.heroStep2Kicker
+                      : copy.heroStep3Kicker,
+                  locale,
+                )}
+              </span>
             </div>
 
             <h2 className="m-0 font-black uppercase leading-[1.04] sm:leading-[1.03] lg:leading-[1.02] tracking-[-0.035em] text-[#0f172a] text-[32px] sm:text-[42px] lg:text-[48px] xl:text-[58px] 2xl:text-[66px] text-balance">
               <span className="block">
-                {tCalc(formStep === 1 ? copy.heroL1 : copy.heroStep2L1, locale)}&nbsp;
+                {tCalc(
+                  currentStep === 1
+                    ? copy.heroL1
+                    : currentStep === 2
+                      ? copy.heroStep2L1
+                      : copy.heroStep3L1,
+                  locale,
+                )}&nbsp;
                 <span className="text-[#e52421]">
-                  <bdi>{tCalc(formStep === 1 ? copy.heroL2 : copy.heroStep2L2, locale)}</bdi>
+                  <bdi>
+                    {tCalc(
+                      currentStep === 1
+                        ? copy.heroL2
+                        : currentStep === 2
+                          ? copy.heroStep2L2
+                          : copy.heroStep3L2,
+                      locale,
+                    )}
+                  </bdi>
                 </span>
               </span>
               <span className="block text-[#0f172a]">
-                {tCalc(formStep === 1 ? copy.heroL3 : copy.heroStep2L3, locale)}
+                {tCalc(
+                  currentStep === 1
+                    ? copy.heroL3
+                    : currentStep === 2
+                      ? copy.heroStep2L3
+                      : copy.heroStep3L3,
+                  locale,
+                )}
               </span>
             </h2>
 
-            <p className="m-0 mt-3 sm:mt-3.5 lg:mt-2.5 ms-0 lg:ms-[20px] text-xs sm:text-sm lg:text-[13.5px] xl:text-[14.5px] text-[#475569] leading-relaxed max-w-2xl">
-              {tCalc(formStep === 1 ? copy.heroSubFormPrefix : copy.heroStep2SubPrefix, locale)}
+            <p className="m-0 mt-3 sm:mt-3.5 lg:mt-2.5 text-xs sm:text-sm lg:text-[13.5px] xl:text-[14.5px] text-[#475569] leading-relaxed max-w-2xl">
+              {tCalc(
+                currentStep === 1
+                  ? copy.heroSubFormPrefix
+                  : currentStep === 2
+                    ? copy.heroStep2SubPrefix
+                    : copy.heroStep3SubPrefix,
+                locale,
+              )}
               <span className="inline-block whitespace-nowrap rounded-none bg-[#e52421] px-1.5 py-0.5 font-bold text-white shadow-xs align-baseline">
-                {tCalc(formStep === 1 ? copy.heroSubFormHighlight : copy.heroStep2SubHighlight, locale)}
+                {tCalc(
+                  currentStep === 1
+                    ? copy.heroSubFormHighlight
+                    : currentStep === 2
+                      ? copy.heroStep2SubHighlight
+                      : copy.heroStep3SubHighlight,
+                  locale,
+                )}
               </span>
             </p>
 
-            <div className="mt-3.5 sm:mt-4.5 lg:mt-3 ms-0 lg:ms-[20px] flex flex-wrap items-center gap-3 text-xs font-mono text-[#64748b]">
-              {formStep === 1 ? (
+            <div className="mt-3.5 sm:mt-4.5 lg:mt-3 flex flex-wrap items-center gap-x-2.5 sm:gap-x-3 gap-y-1 sm:gap-y-1.5 text-xs font-mono text-[#64748b]">
+              {currentStep === 1 ? (
                 <>
                   <span className="inline-flex items-center gap-1.5">
                     <span className="size-1.5 rounded-full bg-[#a855f7]" />
                     {locale === 'he' ? 'ללא צורך בגישת ניהול' : locale === 'ru' ? 'Без доступа к админке' : 'No admin access needed'}
                   </span>
-                  <span className="text-[#cbd5e1]">/</span>
+                  <span className="hidden sm:inline text-[#cbd5e1]">/</span>
                   <span className="inline-flex items-center gap-1.5">
                     <span className="size-1.5 rounded-full bg-emerald-500" />
                     {locale === 'he' ? 'אודיט מהיר חינם' : locale === 'ru' ? 'Бесплатный экспресс-аудит' : 'Free Quick Audit'}
                   </span>
                 </>
-              ) : (
+              ) : currentStep === 2 ? (
                 <>
                   <span className="inline-flex items-center gap-1.5">
                     <span className="size-1.5 rounded-full bg-[#a855f7]" />
                     {tCalc(copy.step2OptionalBadge, locale)}
                   </span>
-                  <span className="text-[#cbd5e1]">/</span>
+                  <span className="hidden sm:inline text-[#cbd5e1]">/</span>
                   <span className="inline-flex items-center gap-1.5">
                     <span className="size-1.5 rounded-full bg-emerald-500" />
                     {tCalc(copy.step2PercentBadge, locale)}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="relative flex size-1.5">
+                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-75 motion-reduce:hidden" />
+                      <span className="relative inline-flex size-1.5 rounded-full bg-emerald-500" />
+                    </span>
+                    {tCalc(copy.step3EngineBadge, locale)}
+                  </span>
+                  <span className="hidden sm:inline text-[#cbd5e1]">/</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-[#e07a5f]" />
+                    {locale === 'he' ? '230+ בדיקות אוטומטיות' : locale === 'ru' ? '230+ тестов воронки' : '230+ funnel tests'}
+                  </span>
+                  <span className="hidden sm:inline text-[#cbd5e1]">/</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-[#64748b]" />
+                    {tCalc(copy.step3AutoEmailBadge, locale)}
                   </span>
                 </>
               )}
@@ -410,7 +478,11 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
           {/* Right Column (Desktop Right / Mobile 1st): Step-by-Step Tracker + Focused Form Card - ENTERS FROM RIGHT */}
           <div className="order-1 lg:order-2 lg:col-span-5 xl:col-span-5 flex flex-col items-center lg:items-end w-full animate-hero-right">
-            <div className={`w-full flex flex-col gap-3 sm:gap-4 lg:gap-3 xl:gap-4.5 ${formStep === 2 ? 'max-w-[440px] sm:max-w-[460px] lg:max-w-[420px] xl:max-w-[460px]' : 'max-w-[440px]'}`}>
+            <div className={`w-full flex flex-col gap-3 sm:gap-4 lg:gap-3 xl:gap-4.5 ${
+              currentStep === 2 || currentStep === 3
+                ? 'max-w-[440px] sm:max-w-[470px] lg:max-w-[440px] xl:max-w-[480px]'
+                : 'max-w-[440px]'
+            }`}>
               {/* Step-by-Step tracker above the form */}
               <div className="w-full flex flex-col gap-1.5 shrink-0">
                 <div className="flex items-center gap-2.5">
@@ -635,7 +707,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               ) : null}
 
               {stage.name === 'waiting' ? (
-                <div className="w-full rounded-[20px] border border-[#cbd5e1] border-t-[3px] border-t-[#a855f7] bg-white p-6 sm:p-8 flex flex-col gap-5 text-[#0f172a] shadow-[0_20px_50px_-10px_rgba(168,85,247,0.22),0_4px_20px_rgba(168,85,247,0.12)]">
+                <div className="w-full rounded-[16px] sm:rounded-[20px] border border-[#cbd5e1] border-t-[3px] border-t-[#a855f7] bg-white text-[#0f172a] shadow-[0_16px_40px_-10px_rgba(168,85,247,0.20),0_4px_16px_rgba(168,85,247,0.10)] transition-all duration-300 p-4 sm:p-5 lg:p-4.5 xl:p-5 flex flex-col gap-3">
                   <CalcWaiting locale={locale} domain={domain} progress={progress} theme="light" />
                 </div>
               ) : null}
