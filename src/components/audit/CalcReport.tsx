@@ -411,7 +411,7 @@ export function CalcHeroStatsBar({ locale }: { locale: string }) {
     {
       category: isHe ? 'טסטים' : isRu ? 'ТЕСТЫ' : 'TESTS',
       val: '230+',
-      label: isHe ? 'בדיקות אוטומטיות לקוד, טפסי הזמנה ו-SEO + GEO' : isRu ? 'Автоматических проверок кода, форм заказа и SEO + гео' : 'Automated checks of code, checkout forms & SEO + GEO',
+      label: isHe ? 'בדיקות אוטומטיות לקוד, טפסי הזמנה ו-SEO + GEO' : isRu ? 'Автоматических проверок кода, форм заказа и SEO + GEO' : 'Automated checks of code, checkout forms & SEO + GEO',
     },
     {
       category: isHe ? 'מהירות' : isRu ? 'СКОРОСТЬ' : 'SPEED',
