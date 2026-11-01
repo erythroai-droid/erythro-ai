@@ -723,6 +723,16 @@ export const auditCalcCopy = {
     ru: 'Проверяем мобильную скорость, работу заказа и видимость в Google, ChatGPT, Perplexity — рассчитаем сумму упущенной выгоды.',
     he: 'בודקים מהירות במובייל, תקינות תהליך ההזמנה ונראות ב-Google,‏ ChatGPT ו-Perplexity — ומחשבים את ההכנסות האבודות שלכם.',
   } satisfies Localized,
+  heroSubFormPrefix: {
+    en: 'We audit mobile speed, checkout flow, and visibility across Google, ChatGPT, and Perplexity — and calculate your ',
+    ru: 'Проверяем мобильную скорость, работу заказа и видимость в Google, ChatGPT, Perplexity — рассчитаем сумму ',
+    he: 'בודקים מהירות במובייל, תקינות תהליך ההזמנה ונראות ב-Google,‏ ChatGPT ו-Perplexity — ומחשבים את ',
+  } satisfies Localized,
+  heroSubFormHighlight: {
+    en: 'lost revenue',
+    ru: 'упущенной выгоды',
+    he: 'ההכנסות האבודות שלכם',
+  } satisfies Localized,
   heroSubLossPrefix: {
     en: 'Every ad click is paid for, but ',
     ru: 'Вы платите за каждый клик, но ',
