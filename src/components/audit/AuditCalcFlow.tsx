@@ -6,10 +6,12 @@ import AuditLpForm, { AUDIT_BEAM_PROPS, type AuditLpSubmitted } from '@/componen
 import {
   CARD,
   CalcCta,
+  CalcHeroStatsBar,
   CalcNumbers,
   CalcResult,
   CalcWaiting,
   CardTitle,
+  LILAC,
   OUTLINE_BTN,
   PRIMARY_BTN,
   type CalcProgress,
@@ -276,12 +278,40 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     }
   }, [])
 
+  // Tracker above the glass form: white on the dark panel, an almost white fill like the loss bars of the step 4 hero
+  const tracker = (
+    <div className="w-full flex flex-col gap-2 shrink-0">
+      <div className="flex items-center gap-2.5">
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/15 text-xs font-bold tabular-nums text-white">
+          {currentStep}
+        </span>
+        <span className="text-base font-bold leading-[1.3] text-white">
+          {stepLabels[locale]?.[currentStep as 1 | 2 | 3 | 4] || stepLabels.ru[currentStep as 1 | 2 | 3 | 4]}
+        </span>
+      </div>
+
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/15">
+        <div
+          className="h-full rounded-full transition-[width] duration-500 ease-out motion-reduce:transition-none"
+          style={{ width: `${(currentStep / 4) * 100}%`, background: '#f1f5f9' }}
+        />
+      </div>
+
+      <div className="flex items-center justify-between text-xs font-medium text-white/60">
+        <span>
+          {locale === 'he' ? `שלב ${currentStep} מתוך 4` : locale === 'ru' ? `Шаг ${currentStep} из 4` : `Step ${currentStep} of 4`}
+        </span>
+        <span className="tabular-nums">{currentStep * 25}%</span>
+      </div>
+    </div>
+  )
+
   // ITSUA-INSPIRED TECHNICAL STUDIO LAYOUT
   return (
     <div
-      className={`relative isolate min-h-screen flex flex-col justify-between w-full bg-transparent text-[#0f172a] overflow-x-hidden overflow-y-auto selection:bg-[#e52421]/15 selection:text-[#e52421] ${
+      className={`relative isolate min-h-screen flex flex-col justify-between w-full !bg-[#eaeaea] text-[#1e1e1e] overflow-x-hidden overflow-y-auto selection:bg-[#e52421]/15 selection:text-[#e52421] ${
         stage.name === 'ready'
-          ? '!bg-[#eaeaea]'
+          ? ''
           : 'lg:min-h-screen [@media(min-height:720px)_and_(min-width:1024px)]:h-screen [@media(min-height:720px)_and_(min-width:1024px)]:max-h-screen [@media(min-height:720px)_and_(min-width:1024px)]:overflow-hidden'
       }`}
     >
@@ -300,15 +330,15 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
         {/* Live Chromium Lab Badge on top bar with GREEN pulsing indicator */}
         <div className="hidden sm:flex items-center gap-2.5 select-none">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#cbd5e1] bg-white px-2.5 py-0.5 font-mono text-[9.5px] sm:text-[10px] font-semibold uppercase tracking-wider text-[#0f172a]">
+          <span className="inline-flex items-center gap-1.5 rounded-[4px] border-[0.75px] border-[#e0e0e0] bg-white px-2 py-[3px] text-[11px] font-medium uppercase leading-4 tracking-[0.04em] text-[#1e1e1e]">
             <span className="relative flex size-1.5">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-75 motion-reduce:hidden" />
-              <span className="relative inline-flex size-1.5 rounded-full bg-emerald-500" />
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#86efac] opacity-75 motion-reduce:hidden" />
+              <span className="relative inline-flex size-1.5 rounded-full bg-[#86efac]" />
             </span>
             {tCalc(copy.heroKicker, locale)}
           </span>
           <span className="h-px w-5 bg-[#cbd5e1]" />
-          <span className="font-mono text-[9.5px] sm:text-[10px] uppercase tracking-wider text-[#64748b]">
+          <span className="text-[11px] uppercase leading-4 tracking-[0.04em] text-[#64748b]">
             CHROMIUM LAB 2026
           </span>
         </div>
@@ -350,15 +380,20 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
           </div>
         </main>
       ) : (
-        <main className="w-full flex-1 min-h-0 flex items-center justify-center px-4 sm:px-8 lg:px-10 xl:px-12 2xl:px-14 pt-7 sm:pt-9 md:pt-11 pb-9 sm:pb-11 md:pb-13 lg:py-1 xl:py-2">
-        <div className="w-full max-w-[1536px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-11 md:gap-13 lg:gap-6 xl:gap-10 2xl:gap-12 items-center">
-          {/* Left Column (Desktop Left / Mobile 2nd): Big Title & Subtitle - ENTERS FROM LEFT */}
-          <div key={`hero-left-${currentStep}`} className="order-2 lg:order-1 lg:col-span-7 xl:col-span-7 flex flex-col justify-center text-start lg:-ms-2 xl:-ms-4 animate-hero-left">
-            <div className="inline-flex items-center gap-2 font-mono text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-[#64748b] mb-1.5 sm:mb-2">
-              <span className="text-[#e52421]">
-                {currentStep === 1 ? '§ 01' : currentStep === 2 ? '§ 02' : '§ 03'}
-              </span>
-              <span>—</span>
+        <main className="calc-loss-flow relative isolate overflow-hidden w-full flex-1 min-h-0 flex flex-col text-white pt-7 sm:pt-9 md:pt-11 pb-0 lg:pt-1 xl:pt-2">
+        {/* Same deep lilac panel and slow glows as the loss hero of step 4 */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+          <div className="calc-lq-blob calc-loss-a" />
+          <div className="calc-lq-blob calc-loss-b" />
+          <div className="calc-lq-blob calc-loss-c" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#150f26]/10 via-transparent to-[#150f26]/40" />
+        </div>
+        <div className="my-auto w-full max-w-[1536px] mx-auto px-4 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] xl:grid-cols-[minmax(0,1fr)_minmax(0,480px)] gap-8 sm:gap-11 md:gap-13 lg:gap-12 xl:gap-16 items-center">
+          {/* Left column (desktop left / mobile first): big title and subtitle, enters from the left */}
+          <div key={`hero-left-${currentStep}`} className="order-1 flex flex-col justify-center text-start animate-hero-left">
+            {/* Kicker as the domain chip of the step 4 hero: translucent white on the dark panel */}
+            <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-[4px] border-[0.75px] border-white/25 bg-white/10 px-2 py-[3px] text-xs font-medium uppercase leading-[18px] tracking-[0.04em] text-white sm:mb-7">
+              <span className="relative flex size-1.5"><span className="absolute inline-flex size-full animate-ping rounded-full bg-[#86efac] opacity-75 motion-reduce:hidden" /><span className="relative inline-flex size-1.5 rounded-full bg-[#86efac]" /></span>
               <span>
                 {tCalc(
                   currentStep === 1
@@ -371,8 +406,9 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </span>
             </div>
 
-            <h2 className="m-0 font-black uppercase leading-[1.04] sm:leading-[1.03] lg:leading-[1.02] tracking-[-0.035em] text-[#0f172a] text-[32px] sm:text-[42px] lg:text-[48px] xl:text-[58px] 2xl:text-[66px] text-balance">
-              <span className="block">
+            <h2 className="m-0 font-black uppercase leading-[1.04] sm:leading-[1.03] lg:leading-[1.02] tracking-[-0.035em] text-white text-[clamp(26px,10vw,38px)] sm:text-[52px] lg:text-[56px] xl:text-[68px] 2xl:text-[80px] text-balance">
+              {/* One run of text: lines break by width, not after each phrase */}
+              <span>
                 {tCalc(
                   currentStep === 1
                     ? copy.heroL1
@@ -380,8 +416,8 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                       ? copy.heroStep2L1
                       : copy.heroStep3L1,
                   locale,
-                )}&nbsp;
-                <span className="text-[#e52421]">
+                )}{' '}
+                <span className="text-[#ff4542] [text-shadow:0_6px_40px_rgba(229,36,33,0.45)]">
                   <bdi>
                     {tCalc(
                       currentStep === 1
@@ -393,8 +429,8 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                     )}
                   </bdi>
                 </span>
-              </span>
-              <span className="block text-[#0f172a]">
+              </span>{' '}
+              <span>
                 {tCalc(
                   currentStep === 1
                     ? copy.heroL3
@@ -406,7 +442,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </span>
             </h2>
 
-            <p className="m-0 mt-3 sm:mt-3.5 lg:mt-2.5 text-xs sm:text-sm lg:text-[13.5px] xl:text-[14.5px] text-[#475569] leading-relaxed max-w-2xl">
+            <p className="m-0 mt-5 sm:mt-6 max-w-2xl text-base leading-[1.6] text-white/75 sm:text-lg lg:text-base xl:text-lg">
               {tCalc(
                 currentStep === 1
                   ? copy.heroSubFormPrefix
@@ -415,7 +451,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                     : copy.heroStep3SubPrefix,
                 locale,
               )}
-              <span className="inline-block whitespace-nowrap rounded-none bg-[#e52421] px-1.5 py-0.5 font-bold text-white shadow-xs align-baseline">
+              <span className="inline-block whitespace-nowrap rounded-[3px] bg-[#e52421] px-1.5 font-bold text-white align-baseline">
                 {tCalc(
                   currentStep === 1
                     ? copy.heroSubFormHighlight
@@ -427,48 +463,44 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </span>
             </p>
 
-            <div className="mt-3.5 sm:mt-4.5 lg:mt-3 flex flex-wrap items-center gap-x-2.5 sm:gap-x-3 gap-y-1 sm:gap-y-1.5 text-xs font-mono text-[#64748b]">
+            <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/70">
               {currentStep === 1 ? (
                 <>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-[#a855f7]" />
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-1.5 rounded-full" style={{ background: LILAC.mid }} />
                     {locale === 'he' ? 'ללא צורך בגישת ניהול' : locale === 'ru' ? 'Без доступа к админке' : 'No admin access needed'}
                   </span>
-                  <span className="hidden sm:inline text-[#cbd5e1]">/</span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-emerald-500" />
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-1.5 rounded-full bg-[#86efac]" />
                     {locale === 'he' ? 'אודיט מהיר חינם' : locale === 'ru' ? 'Бесплатный экспресс-аудит' : 'Free Quick Audit'}
                   </span>
                 </>
               ) : currentStep === 2 ? (
                 <>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-[#a855f7]" />
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-1.5 rounded-full bg-[#c4b5fd]" />
                     {tCalc(copy.step2OptionalBadge, locale)}
                   </span>
-                  <span className="hidden sm:inline text-[#cbd5e1]">/</span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-emerald-500" />
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-1.5 rounded-full bg-[#86efac]" />
                     {tCalc(copy.step2PercentBadge, locale)}
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-2">
                     <span className="relative flex size-1.5">
-                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-75 motion-reduce:hidden" />
-                      <span className="relative inline-flex size-1.5 rounded-full bg-emerald-500" />
+                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#86efac] opacity-75 motion-reduce:hidden" />
+                      <span className="relative inline-flex size-1.5 rounded-full bg-[#86efac]" />
                     </span>
                     {tCalc(copy.step3EngineBadge, locale)}
                   </span>
-                  <span className="hidden sm:inline text-[#cbd5e1]">/</span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-[#e07a5f]" />
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-1.5 rounded-full bg-[#ff4542]" />
                     {locale === 'he' ? '230+ בדיקות אוטומטיות' : locale === 'ru' ? '230+ тестов воронки' : '230+ funnel tests'}
                   </span>
-                  <span className="hidden sm:inline text-[#cbd5e1]">/</span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-[#64748b]" />
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-1.5 rounded-full bg-white/50" />
                     {tCalc(copy.step3AutoEmailBadge, locale)}
                   </span>
                 </>
@@ -476,66 +508,36 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
             </div>
           </div>
 
-          {/* Right Column (Desktop Right / Mobile 1st): Step-by-Step Tracker + Focused Form Card - ENTERS FROM RIGHT */}
-          <div className="order-1 lg:order-2 lg:col-span-5 xl:col-span-5 flex flex-col items-center lg:items-end w-full animate-hero-right">
+          {/* Right column (desktop right / mobile under the title): step tracker and form card, enters from the right */}
+          <div className="order-2 flex flex-col items-center lg:items-stretch w-full animate-hero-right">
             <div className={`w-full flex flex-col gap-3 sm:gap-4 lg:gap-3 xl:gap-4.5 ${
               currentStep === 2 || currentStep === 3
                 ? 'max-w-[440px] sm:max-w-[470px] lg:max-w-[440px] xl:max-w-[480px]'
-                : 'max-w-[440px]'
+                : 'max-w-[440px] xl:max-w-[480px]'
             }`}>
-              {/* Step-by-Step tracker above the form */}
-              <div className="w-full flex flex-col gap-1.5 shrink-0">
-                <div className="flex items-center gap-2.5">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-[3px] bg-[#e52421] font-sans text-xs font-bold text-white shadow-xs">
-                    {currentStep}
-                  </span>
-                  <span className="text-sm sm:text-base font-bold text-[#0f172a]">
-                    {stepLabels[locale]?.[currentStep as 1 | 2 | 3 | 4] || stepLabels.ru[currentStep as 1 | 2 | 3 | 4]}
-                  </span>
-                </div>
-
-                {/* Progress Line */}
-                <div className="h-[3px] w-full overflow-hidden rounded-[2px] bg-[#cbd5e1]">
-                  <div
-                    className="h-full rounded-[2px] bg-[#a855f7] transition-all duration-300"
-                    style={{ width: `${(currentStep / 4) * 100}%` }}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] text-[#334155] font-semibold">
-                  <span>
-                    {locale === 'he'
-                      ? `שלב ${currentStep} מתוך 4`
-                      : locale === 'ru'
-                        ? `Шаг ${currentStep} из 4`
-                        : `Step ${currentStep} of 4`}
-                  </span>
-                  <span className="text-[11px] font-mono text-[#64748b]">
-                    {currentStep * 25}%
-                  </span>
-                </div>
-              </div>
+              {tracker}
 
               {stage.name === 'form' ? (
-                <div className={`w-full rounded-[16px] sm:rounded-[20px] border border-[#cbd5e1] border-t-[3px] border-t-[#a855f7] bg-white text-[#0f172a] shadow-[0_16px_40px_-10px_rgba(168,85,247,0.20),0_4px_16px_rgba(168,85,247,0.10)] transition-all duration-300 ${
-                  formStep === 2 ? 'p-4 sm:p-5 lg:p-4 xl:p-5.5 flex flex-col gap-2.5 sm:gap-3 lg:gap-2.5 xl:gap-3.5' : 'p-4 sm:p-5 lg:p-4.5 flex flex-col gap-3'
+                /* Form card in glassmorphism on the dark hero panel: translucent white, blur, thin light edge */
+                <div className={`w-full rounded-[20px] border border-white/20 bg-white/[0.08] text-white shadow-[0_8px_24px_-14px_rgba(10,6,25,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl transition-all duration-300 ${
+                  formStep === 2 ? 'p-6 sm:p-8 lg:p-6 flex flex-col gap-3 lg:gap-2.5 xl:gap-3' : 'p-6 sm:p-8 lg:p-7 xl:p-8 flex flex-col gap-4'
                 }`}>
                   {/* Form heading inside the form card */}
                   {formStep === 1 ? (
                     <div>
-                      <h3 className="m-0 flex items-stretch gap-2 before:block before:w-[3px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#e52421] text-base sm:text-lg lg:text-xl font-bold text-[#0f172a]">
+                      <h3 className="m-0 flex items-stretch gap-3 before:block before:w-[2px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#ff4542] text-lg font-bold leading-[1.3] tracking-[-0.01em] text-white sm:text-xl">
                         {tCalc(copy.step1Heading, locale)}
                       </h3>
-                      <p className="m-0 mt-1 text-xs text-[#475569] leading-relaxed">
+                      <p className="m-0 mt-1.5 text-sm leading-[1.5] text-white/70">
                         {tCalc(copy.step1Sub, locale)}
                       </p>
                     </div>
                   ) : (
                     <div>
-                      <h3 className="m-0 flex items-stretch gap-2 before:block before:w-[3px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#e52421] text-base sm:text-lg lg:text-xl font-bold text-[#0f172a]">
+                      <h3 className="m-0 flex items-stretch gap-3 before:block before:w-[2px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#ff4542] text-lg font-bold leading-[1.3] tracking-[-0.01em] text-white sm:text-xl">
                         {tCalc(copy.step2Heading, locale)}
                       </h3>
-                      <p className="m-0 mt-1 text-xs text-[#475569] leading-relaxed">
+                      <p className="m-0 mt-1.5 text-sm leading-[1.5] text-white/70">
                         {tCalc(copy.step2Sub, locale)}
                       </p>
                     </div>
@@ -545,7 +547,8 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                   <div className={formStep === 1 ? 'block' : 'hidden'}>
                     <AuditLpForm
                       locale={locale}
-                      theme="light"
+                      theme="dark"
+                      neon
                       page={page}
                       bare
                       websiteFirst
@@ -587,7 +590,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                           setRevenue(null)
                           setClients(null)
                         }}
-                        theme="light"
+                        theme="dark"
                         disabled={skipToPercent}
                       />
 
@@ -604,27 +607,28 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                             setClients(null)
                           }
                         }}
-                        className={`group w-full flex items-center justify-between rounded-[8px] border border-s-[3px] sm:border-s-[3.5px] border-s-[#a855f7] p-2 sm:p-2.5 transition-all duration-200 cursor-pointer ${
+                        className={`group w-full flex items-center justify-between gap-3 rounded-[12px] border p-3 sm:p-3.5 lg:p-2.5 text-start transition-all duration-200 cursor-pointer ${
                           skipToPercent
-                            ? 'border-[#a855f7] bg-[#faf5ff] text-[#0f172a]'
-                            : 'border-[#cbd5e1] bg-[#f8fafc] text-[#475569] hover:border-[#94a3b8] hover:border-s-[#a855f7] hover:bg-white'
+                            ? 'border-[#c4b5fd]/60 bg-[#8b74c7]/25'
+                            : 'border-white/15 bg-white/[0.06] hover:border-white/30 hover:bg-white/10'
                         }`}
                       >
-                        <div className="flex items-center gap-2.5 text-start">
+                        <div className="flex items-center gap-3 text-start">
+                          {/* Glass checkbox: lilac fill with a check when on */}
                           <span
-                            className={`flex size-4.5 shrink-0 items-center justify-center rounded-[4px] border text-[11px] font-bold transition-all ${
+                            className={`flex size-5 shrink-0 items-center justify-center rounded-[5px] border transition-all ${
                               skipToPercent
-                                ? 'border-[#a855f7] bg-[#a855f7] text-white shadow-xs'
-                                : 'border-[#cbd5e1] bg-white text-transparent group-hover:border-[#94a3b8]'
+                                ? 'border-[#c4b5fd] bg-[#8b74c7] text-white'
+                                : 'border-white/30 bg-white/5 text-transparent group-hover:border-white/50'
                             }`}
                           >
-                            ✓
+                            <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
                           </span>
                           <div className="flex flex-col">
-                            <span className="text-xs sm:text-[12.5px] font-bold text-[#0f172a] leading-snug">
+                            <span className="text-sm font-semibold leading-snug text-white">
                               {tCalc(copy.step2SkipCheckbox, locale)}
                             </span>
-                            <span className="text-[10px] sm:text-[10.5px] text-[#64748b] leading-tight mt-0.5">
+                            <span className="mt-0.5 text-xs leading-snug text-white/60">
                               {locale === 'he'
                                 ? 'חישוב נתוני נשירה באחוזים בלבד ללא המרה לשקלים'
                                 : locale === 'ru'
@@ -634,10 +638,10 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                           </div>
                         </div>
                         <span
-                          className={`font-mono text-[10px] sm:text-[10.5px] font-bold uppercase px-2 py-0.5 rounded-[4px] shrink-0 ms-2 transition-colors ${
+                          className={`flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-bold transition-colors ${
                             skipToPercent
-                              ? 'bg-[#a855f7]/15 text-[#7e22ce]'
-                              : 'bg-[#e2e8f0] text-[#64748b]'
+                              ? 'border-[#c4b5fd]/60 bg-[#8b74c7] text-white'
+                              : 'border-white/20 bg-white/10 text-white/80'
                           }`}
                         >
                           {skipToPercent ? '%' : '₪'}
@@ -654,21 +658,13 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                     <div id={SUBMIT_SLOT_ID} className="flex w-full justify-center h-[46px] sm:h-[48px] lg:h-[48px] xl:h-[52px] [&_button]:!w-full [&_button]:!text-sm [&_button]:!font-medium [&_button]:!uppercase" />
 
                     {formStep === 1 ? (
-                      <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-[10.5px] sm:text-[11px] font-medium text-[#334155]">
-                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                          <span className="font-bold text-emerald-600">✓</span>
-                          {tCalc(copy.step1Guarantee1, locale)}
-                        </span>
-                        <span className="text-[#94a3b8]">·</span>
-                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                          <span className="font-bold text-emerald-600">✓</span>
-                          {tCalc(copy.step1Guarantee2, locale)}
-                        </span>
-                        <span className="text-[#94a3b8]">·</span>
-                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                          <span className="font-bold text-emerald-600">✓</span>
-                          {tCalc(copy.step1Guarantee3, locale)}
-                        </span>
+                      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-center text-xs font-medium text-white/75">
+                        {[copy.step1Guarantee1, copy.step1Guarantee2, copy.step1Guarantee3].map((g) => (
+                          <span key={g.en} className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                            <svg className="size-3.5 shrink-0 text-[#86efac]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+                            {tCalc(g, locale)}
+                          </span>
+                        ))}
                       </div>
                     ) : (
                       <div className="flex items-center justify-between w-full px-1 pt-0.5">
@@ -678,9 +674,9 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                             setFormStep(1)
                             setSkipToPercent(false)
                           }}
-                          className="cursor-pointer inline-flex items-center gap-1.5 rounded-[6px] border border-transparent px-2 py-1 font-mono text-[11px] sm:text-xs font-semibold text-[#64748b] hover:text-[#0f172a] hover:bg-[#f1f5f9] transition-all"
+                          className="cursor-pointer inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                         >
-                          <span aria-hidden="true" className="rtl:rotate-180 text-[10px]">←</span>
+                          <span aria-hidden="true" className="rtl:rotate-180">←</span>
                           <span>{tCalc(copy.backToPreviousStep, locale)}</span>
                         </button>
 
@@ -695,10 +691,10 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                               btn?.click()
                             }, 0)
                           }}
-                          className="cursor-pointer inline-flex items-center gap-1.5 rounded-[6px] border border-transparent px-2 py-1 font-mono text-[11px] sm:text-xs font-semibold text-[#64748b] hover:text-[#e52421] hover:bg-[#fff1f2] transition-all"
+                          className="cursor-pointer inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                         >
                           <span>{tCalc(copy.skipStep, locale)}</span>
-                          <span aria-hidden="true" className="rtl:rotate-180 text-[10px]">→</span>
+                          <span aria-hidden="true" className="rtl:rotate-180">→</span>
                         </button>
                       </div>
                     )}
@@ -707,13 +703,17 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               ) : null}
 
               {stage.name === 'waiting' ? (
-                <div className="w-full rounded-[16px] sm:rounded-[20px] border border-[#cbd5e1] border-t-[3px] border-t-[#a855f7] bg-white text-[#0f172a] shadow-[0_16px_40px_-10px_rgba(168,85,247,0.20),0_4px_16px_rgba(168,85,247,0.10)] transition-all duration-300 p-4 sm:p-5 lg:p-4.5 xl:p-5 flex flex-col gap-3">
-                  <CalcWaiting locale={locale} domain={domain} progress={progress} theme="light" />
+                <div className="w-full rounded-[20px] border border-white/20 bg-white/[0.08] text-white shadow-[0_8px_24px_-14px_rgba(10,6,25,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl p-6 sm:p-8 lg:p-7 xl:p-8 flex flex-col gap-3">
+                  <CalcWaiting locale={locale} domain={domain} progress={progress} theme="dark" />
                 </div>
               ) : null}
             </div>
           </div>
         </div>
+        {/* Key numbers under the hero: edge to edge on the same dark panel, five equal columns (steps 1–3 only) */}
+        <section className="mt-8 w-full shrink-0 border-t border-white/10 sm:mt-10 lg:mt-2">
+          <CalcHeroStatsBar locale={locale} dark />
+        </section>
       </main>
       )}
 

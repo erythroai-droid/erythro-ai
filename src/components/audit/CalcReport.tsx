@@ -372,7 +372,7 @@ export function CalcHeroPillars({ locale }: { locale: string }) {
 }
 
 /** 5 concrete statistics values in ITSUA technical grid format across full width. */
-export function CalcHeroStatsBar({ locale }: { locale: string }) {
+export function CalcHeroStatsBar({ locale, dark = false }: { locale: string; dark?: boolean }) {
   const isRu = locale === 'ru'
   const isHe = locale === 'he'
 
@@ -406,23 +406,24 @@ export function CalcHeroStatsBar({ locale }: { locale: string }) {
 
   return (
     <div className="w-full select-none">
-      <div className="grid grid-cols-2 lg:grid-cols-5 w-full">
+      {/* Dark: thin white dividers between the numbers, as the stat tiles of the step 4 hero */}
+      <div className={`grid grid-cols-2 lg:grid-cols-[repeat(5,minmax(0,1fr))] w-full ${dark ? 'divide-white/10 max-lg:[&>*:nth-child(-n+4)]:border-b max-lg:[&>*:nth-child(odd)]:border-e lg:divide-x rtl:lg:divide-x-reverse [&>*]:border-white/10' : ''}`}>
         {stats.map((s, i) => (
           <div
             key={i}
-            className={`flex flex-col items-center justify-center text-center px-2 sm:px-4 py-3 sm:py-3.5 lg:py-2.5 xl:py-3.5 2xl:py-4.5 w-full ${
-              i === 4 ? 'col-span-2 lg:col-span-1' : ''
+            className={`flex flex-col items-center justify-center text-center px-2 sm:px-4 py-3 sm:py-3.5 lg:py-2 2xl:py-4 w-full ${
+              i === 4 ? `col-span-2 lg:col-span-1 ${dark ? 'max-lg:!border-e-0' : ''}` : ''
             }`}
           >
             {/* The outer grid/border stays fixed; only the digits & labels animate in */}
             <div className="flex flex-col items-center justify-center w-full animate-hero-up">
-              <span className="text-[9px] sm:text-[9.5px] xl:text-[10px] font-semibold uppercase text-[#64748b]">
+              <span className={`text-[10px] xl:text-[11px] font-semibold uppercase tracking-[0.04em] ${dark ? 'text-white/55' : 'text-[#64748b]'}`}>
                 {s.category}
               </span>
-              <div className="mt-0.5 sm:mt-1 text-[24px] sm:text-[28px] lg:text-[24px] xl:text-[30px] 2xl:text-[36px] font-black text-[#0f172a] leading-none">
+              <div className={`mt-1 text-[24px] sm:text-[28px] lg:text-[24px] xl:text-[30px] 2xl:text-[36px] font-black leading-none tracking-[-0.02em] ${dark ? (i === 0 ? 'text-[#ff4542]' : 'text-white') : 'text-[#0f172a]'}`}>
                 <bdi>{s.val}</bdi>
               </div>
-              <div className="mt-1 sm:mt-1.5 text-[9px] sm:text-[9.5px] xl:text-[10px] uppercase text-[#475569] leading-snug text-balance max-w-[220px]">
+              <div className={`mt-1.5 leading-snug text-balance max-w-[240px] ${dark ? 'text-xs text-white/60' : 'text-[10px] xl:text-[11px] uppercase text-[#475569]'}`}>
                 {s.label}
               </div>
             </div>
@@ -932,11 +933,11 @@ export function CalcNumbers({
     '[&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[2.5px] [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#e52421] [&::-webkit-slider-thumb]:shadow-[0_2px_8px_rgba(229,36,33,0.45)] hover:[&::-webkit-slider-thumb]:scale-110 transition-transform [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:cursor-grab [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[2.5px] [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#e52421]'
 
   return (
-    <div className={`flex min-w-0 flex-col gap-3.5 sm:gap-4 lg:gap-3 xl:gap-4 transition-opacity duration-200 ${disabled ? 'opacity-35 pointer-events-none select-none' : ''}`}>
+    <div className={`flex min-w-0 flex-col gap-3.5 sm:gap-4 lg:gap-3 transition-opacity duration-200 ${disabled ? 'opacity-35 pointer-events-none select-none' : ''}`}>
       {/* 1. Monthly Revenue Slider Block */}
       <div className="flex flex-col gap-[15px]">
         <div className="flex items-center justify-between gap-2">
-          <label htmlFor={`${id}-rev`} className={`font-mono text-[11px] sm:text-xs font-bold uppercase ${isDark ? 'text-white/80' : 'text-[#475569]'}`}>
+          <label htmlFor={`${id}-rev`} className={`text-xs font-semibold uppercase tracking-[0.04em] ${isDark ? 'text-white/70' : 'text-[#475569]'}`}>
             {tCalc(copy.sliderRevenue, locale)}
           </label>
           <div className="flex items-center gap-1.5">
@@ -963,14 +964,14 @@ export function CalcNumbers({
                   role="tooltip"
                   className="pointer-events-none absolute bottom-full mb-1.5 start-1/2 -translate-x-1/2 rtl:translate-x-1/2 opacity-0 group-hover/clear:opacity-100 group-focus-within/clear:opacity-100 transition-opacity duration-150 z-30"
                 >
-                  <div className="whitespace-nowrap rounded-[4px] bg-[#0f172a] px-2 py-0.5 text-[10px] font-mono font-medium text-white shadow-md">
+                  <div className="whitespace-nowrap rounded-[4px] bg-[#0f172a] px-2 py-0.5 text-[11px] font-medium text-white shadow-md">
                     {tCalc(copy.clearValues, locale)}
                   </div>
                   <div className="mx-auto size-0 border-x-[3px] border-x-transparent border-t-[3px] border-t-[#0f172a]" />
                 </div>
               </div>
             ) : null}
-            <div className="flex items-center gap-1.5 rounded-[6px] border border-[#cbd5e1] bg-[#f8fafc] px-2.5 py-0.5 font-mono text-sm sm:text-base font-black text-[#0f172a] tabular-nums whitespace-nowrap">
+            <div className={`flex items-center gap-1.5 rounded-[6px] border px-2.5 py-0.5 text-base font-bold tabular-nums whitespace-nowrap ${isDark ? 'border-white/20 bg-white/10 text-white' : 'border-[#cbd5e1] bg-[#f8fafc] text-[#0f172a]'}`}>
               <bdi>{revenue == null ? '—' : formatIls(revenue, locale)}</bdi>
             </div>
           </div>
@@ -995,7 +996,7 @@ export function CalcNumbers({
                 : `linear-gradient(${gradientDir}, ${BRAND} ${pct}%, #cbd5e1 ${pct}%)`,
             }}
           />
-          <div className={`flex justify-between font-mono text-[10px] sm:text-[10.5px] tabular-nums ${isDark ? 'text-white/60' : 'text-[#64748b]'}`}>
+          <div className={`flex justify-between text-[11px] tabular-nums ${isDark ? 'text-white/55' : 'text-[#64748b]'}`}>
             <span>{compact(REVENUE_SLIDER.min, locale)} ₪</span>
             <span>{compact(50_000, locale)} ₪</span>
             <span>{compact(REVENUE_SLIDER.max, locale)} ₪</span>
@@ -1004,8 +1005,8 @@ export function CalcNumbers({
       </div>
 
       {/* 2. Customer Presets Block */}
-      <div className="flex flex-col gap-2">
-        <span id={`${id}-cl`} className={`font-mono text-[11px] sm:text-xs font-bold uppercase ${isDark ? 'text-white/80' : 'text-[#475569]'}`}>
+      <div className="flex flex-col gap-2 lg:gap-1.5">
+        <span id={`${id}-cl`} className={`text-xs font-semibold uppercase tracking-[0.04em] ${isDark ? 'text-white/70' : 'text-[#475569]'}`}>
           {tCalc(copy.clientsLabel, locale)}
         </span>
         <div role="radiogroup" aria-labelledby={`${id}-cl`} className="grid grid-cols-6 gap-1.5 sm:gap-2">
@@ -1019,11 +1020,11 @@ export function CalcNumbers({
                 disabled={disabled}
                 aria-checked={on}
                 onClick={() => onClients(on ? null : v)}
-                className={`cursor-pointer rounded-[6px] border py-1 sm:py-1.5 xl:py-2 text-xs sm:text-[13px] font-mono font-bold tabular-nums text-center transition-all ${
+                className={`cursor-pointer rounded-[8px] border py-2 text-[13px] font-semibold tabular-nums text-center transition-all ${
                   isDark
                     ? on
                       ? 'border-[#e52421] bg-[#e52421] text-white'
-                      : 'border-white/20 bg-white/10 text-white/80 hover:border-white/40 hover:bg-white/20'
+                      : 'border-white/15 bg-white/[0.06] text-white/85 hover:border-white/35 hover:bg-white/15'
                     : on
                       ? 'border-[#e52421] bg-[#e52421] text-white scale-[1.02]'
                       : 'border-[#cbd5e1] bg-[#f8fafc] text-[#334155] hover:border-[#94a3b8] hover:bg-white hover:text-[#0f172a]'
@@ -1060,151 +1061,126 @@ export function CalcWaiting({
       ? fillCalc(tCalc(copy.waitingRemaining, locale), { n: progress.remaining })
       : tCalc(copy.waitingShort, locale)
 
-  const isRtl = locale === 'he'
+  // Dark glass by default (the calculator hero); the light variant keeps the report colours
+  const ink = isDark ? 'text-white' : 'text-[#1e1e1e]'
+  const muted = isDark ? 'text-white/60' : 'text-[#64748b]'
+  const tile = isDark ? 'border-white/15 bg-white/[0.06]' : 'border-[#e0e0e0] bg-[#f8f8f8]'
 
   return (
-    <div className={`flex flex-col gap-3.5 sm:gap-4.5 ${isDark ? 'text-white' : 'text-[#0f172a]'}`}>
-      {/* 1. Card Heading with red indicator and auto-wrapping / truncating domain badge */}
-      <div className="flex flex-col gap-1 w-full">
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 min-w-0">
-          <h3 className="m-0 flex items-center gap-2 text-base sm:text-lg lg:text-[18.5px] font-bold text-[#0f172a] shrink-0">
-            <span className="inline-block w-[3px] h-4 bg-[#e52421] rounded-full shrink-0" />
-            <span>{tCalc(copy.step3CardHeading, locale)}</span>
-          </h3>
-
+    <div className={`flex flex-col gap-4 sm:gap-5 lg:gap-3 xl:gap-3.5 ${ink}`}>
+      {/* 1. Domain chip and what is running (the step name is already in the tracker above the card) */}
+      <div className="flex w-full flex-col gap-1.5">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2">
           {domain ? (
             <span
               dir="ltr"
               title={domain}
-              className="inline-flex max-w-full sm:max-w-[220px] items-center rounded-[5px] border border-[#cbd5e1] bg-[#f8fafc] px-2.5 py-1 font-mono text-[11px] font-semibold text-[#0f172a] truncate"
+              className={`inline-flex max-w-full items-center gap-1.5 truncate rounded-[4px] border-[0.75px] px-2 py-[3px] text-xs sm:max-w-[220px] ${isDark ? 'border-white/25 bg-white/10 text-white' : 'border-[#e0e0e0] bg-white text-[#1e1e1e]'}`}
             >
               <span className="truncate">{domain}</span>
             </span>
           ) : null}
         </div>
-        <p className="m-0 text-xs sm:text-[12.5px] text-[#475569] leading-relaxed">
-          {tCalc(copy.step3CardSub, locale)}
-        </p>
+        <p className={`m-0 text-sm leading-[1.5] ${muted}`}>{tCalc(copy.step3CardSub, locale)}</p>
       </div>
 
-      {/* 2. Progress Numbers + Dynamic Progress Bar (identical h-[3px] to step tracker) */}
-      <div className="rounded-[12px] border border-[#cbd5e1] border-s-[3.5px] border-s-[#a855f7] bg-[#f8fafc] p-3 sm:p-3.5 flex flex-col gap-2 sm:gap-2.5">
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 min-w-0">
-          <div className="flex items-baseline gap-1.5 shrink-0">
-            <span className="font-mono text-2xl sm:text-3xl font-extrabold text-[#0f172a] tracking-tight">
+      {/* 2. Percent done, time left and the progress bar (almost white fill, as the step tracker) */}
+      <div className={`flex flex-col gap-3 rounded-[12px] border p-4 lg:gap-2 lg:p-3 ${tile}`}>
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+          <div className="flex shrink-0 items-baseline gap-1">
+            <span className={`text-[32px] font-black leading-none tracking-[-0.03em] tabular-nums ${ink}`}>
               <bdi>{Math.round(progress.percent)}</bdi>
             </span>
-            <span className="font-mono text-sm font-semibold text-[#64748b]">%</span>
+            <span className={`text-base font-bold ${muted}`}>%</span>
           </div>
 
-          <div className="flex items-center gap-2 font-mono text-xs sm:text-[12.5px] text-[#64748b] min-w-0 max-w-full">
+          <div className={`flex min-w-0 max-w-full items-center gap-2 text-[13px] ${muted}`}>
             <span className="relative flex size-2 shrink-0">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#a855f7] opacity-75 motion-reduce:hidden" />
-              <span className="relative inline-flex size-2 rounded-full bg-[#a855f7]" />
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#86efac] opacity-75 motion-reduce:hidden" />
+              <span className="relative inline-flex size-2 rounded-full bg-[#86efac]" />
             </span>
-            <span className="leading-tight truncate sm:whitespace-normal">{remaining}</span>
+            <span className="truncate leading-tight sm:whitespace-normal">{remaining}</span>
           </div>
         </div>
 
-        {/* Progress Track: identical thickness to step-by-step tracker */}
-        <div className="h-[3px] w-full overflow-hidden rounded-[2px] bg-[#cbd5e1] relative">
+        <div className={`relative h-1.5 w-full overflow-hidden rounded-full ${isDark ? 'bg-white/15' : 'bg-[#e0e0e0]'}`}>
           <div
-            className={`h-full rounded-[2px] transition-all duration-500 ${
-              isRtl
-                ? 'bg-gradient-to-l from-[#a855f7] to-[#e52421]'
-                : 'bg-gradient-to-r from-[#a855f7] to-[#e52421]'
-            }`}
-            style={{ width: `${Math.max(4, Math.min(100, progress.percent))}%` }}
+            className="h-full rounded-full transition-[width] duration-500"
+            style={{ width: `${Math.max(4, Math.min(100, progress.percent))}%`, background: isDark ? '#f1f5f9' : '#8b74c7' }}
           />
         </div>
       </div>
 
-      {/* 3. Stages Checklist (4 items) */}
-      <div className="flex flex-col gap-1.5 sm:gap-2">
+      {/* 3. Stages: done in mint, the running one in lilac, the rest dimmed */}
+      <div className="flex flex-col gap-2 lg:gap-1.5">
         {stages.map((label, i) => {
           const done = i < current || progress.percent >= 100
           const active = i === current && !done
           return (
             <div
               key={i}
-              className={`flex items-center justify-between gap-3 rounded-[8px] border px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs transition-all duration-200 ${
+              className={`flex items-center justify-between gap-3 rounded-[10px] border px-3.5 py-2.5 text-[13px] transition-all duration-200 lg:py-1.5 ${
                 active
-                  ? 'border-[#a855f7] bg-[#faf5ff] text-[#0f172a] font-medium shadow-xs'
+                  ? isDark
+                    ? 'border-[#c4b5fd]/50 bg-[#8b74c7]/25 font-medium text-white'
+                    : 'border-[#d6cfe6] bg-[#f1edfa] font-medium text-[#3d2c66]'
                   : done
-                    ? 'border-[#bbf7d0] bg-[#f0fdf4] text-[#166534]'
-                    : 'border-[#e2e8f0] bg-white text-[#94a3b8]'
+                    ? isDark
+                      ? 'border-white/10 bg-white/[0.04] text-white/80'
+                      : 'border-[#cfeccb] bg-[#eef9ec] text-[#1d7a12]'
+                    : isDark
+                      ? 'border-white/10 bg-transparent text-white/40'
+                      : 'border-[#e0e0e0] bg-white text-[#94a3b8]'
               }`}
             >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className={`font-mono text-[11px] shrink-0 ${done ? 'text-emerald-700/60' : 'text-[#94a3b8]'}`}>
-                  0{i + 1}
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span
+                  className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold tabular-nums ${
+                    done ? 'bg-[#86efac] text-[#14532d]' : active ? 'bg-[#8b74c7] text-white' : isDark ? 'border border-white/20 text-white/50' : 'border border-[#e0e0e0] text-[#94a3b8]'
+                  }`}
+                >
+                  {done ? (
+                    <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+                  ) : (
+                    i + 1
+                  )}
                 </span>
-                <span className="truncate">
-                  {tCalc(label, locale).replace(/[:…]+$/, '')}
-                </span>
+                <span className="truncate">{tCalc(label, locale).replace(/[:…]+$/, '')}</span>
               </div>
 
-              {done ? (
-                <span className="flex items-center gap-1 font-mono text-[11px] font-bold text-emerald-700 shrink-0">
-                  <span>✓</span>
-                  <span>OK</span>
+              {active ? (
+                <span className={`flex shrink-0 items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.04em] ${isDark ? 'text-[#c4b5fd]' : 'text-[#54408a]'}`}>
+                  <span className="size-1.5 animate-pulse rounded-full bg-current" />
+                  <span className="hidden sm:inline">{locale === 'he' ? 'בבדיקה' : locale === 'ru' ? 'Проверяем' : 'Scanning'}</span>
                 </span>
-              ) : active ? (
-                <span className="flex items-center gap-1.5 font-mono text-[10.5px] font-bold text-[#a855f7] uppercase shrink-0">
-                  <span className="size-1.5 rounded-full bg-[#a855f7] animate-pulse" />
-                  <span>{locale === 'he' ? 'בבדיקה' : locale === 'ru' ? 'Тест...' : 'Scanning'}</span>
-                </span>
-              ) : (
-                <span className="font-mono text-[11px] text-[#cbd5e1] shrink-0">
-                  —
-                </span>
-              )}
+              ) : null}
             </div>
           )
         })}
       </div>
 
-      {/* 4. What's in your report teaser: 3 compact horizontal blocks in 1 row */}
-      <div className="rounded-[10px] border border-[#e2e8f0] bg-[#f8fafc]/90 p-2.5 sm:p-3 flex flex-col gap-1.5 sm:gap-2">
-        <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#64748b]">
-          <span className="size-1.5 rounded-full bg-[#a855f7]" />
-          <span>{tCalc(copy.step3DeliverablesHeader, locale)}</span>
-        </div>
-
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-          <div className="rounded-[7px] border border-[#cbd5e1]/70 border-s-[3px] border-s-[#e52421] bg-white px-2 py-1.5 sm:py-2 flex flex-col text-start min-w-0">
-            <span className="font-bold text-[11px] sm:text-xs text-[#0f172a] leading-tight truncate">
-              {tCalc(copy.step3Deliverable1Title, locale)}
-            </span>
-            <span className="text-[10px] text-[#64748b] leading-tight mt-0.5 truncate">
-              {tCalc(copy.step3Deliverable1Sub, locale)}
-            </span>
-          </div>
-
-          <div className="rounded-[7px] border border-[#cbd5e1]/70 border-s-[3px] border-s-[#e07a5f] bg-white px-2 py-1.5 sm:py-2 flex flex-col text-start min-w-0">
-            <span className="font-bold text-[11px] sm:text-xs text-[#0f172a] leading-tight truncate">
-              {tCalc(copy.step3Deliverable2Title, locale)}
-            </span>
-            <span className="text-[10px] text-[#64748b] leading-tight mt-0.5 truncate">
-              {tCalc(copy.step3Deliverable2Sub, locale)}
-            </span>
-          </div>
-
-          <div className="rounded-[7px] border border-[#cbd5e1]/70 border-s-[3px] border-s-emerald-500 bg-white px-2 py-1.5 sm:py-2 flex flex-col text-start min-w-0">
-            <span className="font-bold text-[11px] sm:text-xs text-[#0f172a] leading-tight truncate">
-              {tCalc(copy.step3Deliverable3Title, locale)}
-            </span>
-            <span className="text-[10px] text-[#64748b] leading-tight mt-0.5 truncate">
-              {tCalc(copy.step3Deliverable3Sub, locale)}
-            </span>
-          </div>
+      {/* 4. What the report will hold: three light glass tiles, each with a small mint check (no coloured edges) */}
+      <div className="flex flex-col gap-2 lg:gap-1.5">
+        <span className={`text-xs font-semibold uppercase tracking-[0.04em] ${muted}`}>{tCalc(copy.step3DeliverablesHeader, locale)}</span>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          {[
+            { t: copy.step3Deliverable1Title, s: copy.step3Deliverable1Sub },
+            { t: copy.step3Deliverable2Title, s: copy.step3Deliverable2Sub },
+            { t: copy.step3Deliverable3Title, s: copy.step3Deliverable3Sub },
+          ].map((d) => (
+            <div key={d.t.en} className={`flex min-w-0 items-start gap-2 rounded-[8px] border px-2.5 py-2 text-start ${isDark ? 'border-white/20 bg-white/[0.12]' : tile}`}>
+              <svg className="mt-px size-3.5 shrink-0 text-[#86efac]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+              <span className="flex min-w-0 flex-col">
+                <span className={`text-xs font-bold leading-tight sm:truncate ${ink}`}>{tCalc(d.t, locale)}</span>
+                <span className={`mt-0.5 text-[11px] leading-tight sm:truncate ${muted}`}>{tCalc(d.s, locale)}</span>
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* 5. Do Not Close Tab Notice */}
-      <p className="m-0 text-center font-mono text-[10.5px] sm:text-[11px] text-[#64748b] leading-tight pt-0.5">
-        {tCalc(copy.step3DoNotClose, locale)}
-      </p>
+      {/* 5. Keep-the-tab-open note */}
+      <p className={`m-0 text-center text-xs leading-[1.5] ${muted}`}>{tCalc(copy.step3DoNotClose, locale)}</p>
     </div>
   )
 }
@@ -1484,7 +1460,7 @@ function LossHero({
 const CORAL = '#ff4542'
 
 /* Lilac from the loss panel, reused as the report's second brand colour below it. */
-const LILAC = { deep: '#3d2c66', base: '#54408a', mid: '#8b74c7', soft: '#f1edfa', wash: '#f9f7fd', ring: '#d6cfe6' } as const
+export const LILAC = { deep: '#3d2c66', base: '#54408a', mid: '#8b74c7', soft: '#f1edfa', wash: '#f9f7fd', ring: '#d6cfe6' } as const
 
 /** Smooth in-page jump to an element id (instant when the visitor prefers reduced motion). */
 function scrollToId(e: React.MouseEvent, id: string) {
@@ -2397,11 +2373,28 @@ export function CalcCta({
   return (
     <>
       <section className="relative isolate flex flex-col items-center gap-4 px-[22px] py-2 text-center sm:gap-6 sm:px-8 sm:py-20 lg:px-[60px] lg:py-28">
-        <h2 className="m-0 font-semibold normal-case leading-[0.98] tracking-[-0.045em] text-[#1e1e1e] [font-size:clamp(36px,7.2vw,96px)]">
-          <span className="block">{tCalc(copy.ctaL1, locale)}</span>
-          <span className="block text-[#e52421]">{tCalc(copy.ctaL2, locale)}</span>
-        </h2>
-        <p className="m-0 max-w-[560px] text-base leading-6 text-[#6b6254] sm:text-lg">{tCalc(copy.ctaBody, locale)}</p>
+        {/* The red line sets the width: the first line is taken out of sizing (zero width, centred overflow),
+            so the plate and the text under it are exactly as wide as "get inquiries back" */}
+        <div className="flex w-fit max-w-full flex-col items-stretch gap-4 sm:gap-6">
+          <h2 className="m-0 font-semibold normal-case leading-[0.98] tracking-[-0.045em] text-[#1e1e1e] [font-size:clamp(36px,7.2vw,96px)]">
+            <span className="flex w-0 min-w-full justify-center whitespace-nowrap">{tCalc(copy.ctaL1, locale)}</span>
+            <span className="block whitespace-nowrap text-[#e52421]">{tCalc(copy.ctaL2, locale)}</span>
+          </h2>
+          {/* Fix total on the blue of the "we close the leaks" sprint panel, the amount in white with the shekel sign first */}
+          <div className="calc-fix-flow relative isolate flex w-0 min-w-full flex-col items-center gap-1.5 overflow-hidden rounded-[14px] px-6 py-5 text-white sm:py-7">
+            <span className="text-xs font-semibold uppercase tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotal, locale)}</span>
+            <b className="text-[40px] font-black leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[52px]">
+              <bdi dir="ltr">
+                <span className="me-1 align-[0.3em] text-[0.55em] font-bold">₪</span>
+                {formatIls(SPRINT_PRICE_ILS, locale).replace('₪', '').trim()}
+              </bdi>
+              <span aria-hidden className="ms-0.5 align-super text-[0.45em] font-bold text-white/60">*</span>
+            </b>
+            <span className="text-xs leading-[1.5] text-white/65">{tCalc(copy.step4FixEstimateNote, locale)}</span>
+          </div>
+          {/* Same width as the plate; zero intrinsic width so it never widens the column, only fills it */}
+          <p className="m-0 w-0 min-w-full text-sm leading-[1.5] text-[#6b6254] sm:text-base">{tCalc(copy.ctaBody, locale)}</p>
+        </div>
         {waHref && locked ? (
           <button
             type="button"
