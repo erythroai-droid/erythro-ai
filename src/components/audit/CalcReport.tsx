@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   auditCalcCopy as copy,
   fillCalc,
@@ -8,6 +9,7 @@ import {
   formatPercent,
   tCalc,
   type CalcArea,
+  type Localized,
 } from '@/lib/auditCalcCopy'
 import {
   CLIENT_PRESETS,
@@ -1257,6 +1259,547 @@ function Stat({ value, label }: { value: React.ReactNode; label: string }) {
   )
 }
 
+type FunnelStage = {
+  key: CalcArea
+  short: Localized
+  title: Localized
+  action: Localized
+  issue: Localized
+  loss: number
+  /** ₪ per month lost at this stage; 0 when revenue is unknown. */
+  money: number
+  score: number
+  href?: string
+}
+
+/* Report 243 tokens: hairline borders, 4px caps badges, white action cards with #d6d6d6, red step blocks. */
+const REPORT_BADGE = 'inline-flex w-fit items-center rounded-[4px] border-[0.75px] px-2 py-[3px] text-xs uppercase leading-[18px] tracking-[0.04em]'
+const BADGE_TONE = {
+  crit: 'border-[#fca5a5] bg-[#fff1f0] text-[#b91c1c]',
+  warn: 'border-[#f8dcc0] bg-[#fff6ec] text-[#9a4a00]',
+  ok: 'border-[#cfeccb] bg-[#eef9ec] text-[#1d7a12]',
+  plain: 'border-[#d6d6d6] bg-white text-[#1e1e1e]',
+} as const
+
+function lossTone(loss: number): keyof typeof BADGE_TONE {
+  return loss >= 10 ? 'crit' : loss > 0 ? 'warn' : 'ok'
+}
+
+/** "−₪8,600" or "−13%": a stage's loss in money when revenue is known, else in visitors. */
+function stageLoss(s: FunnelStage, locale: string): string {
+  if (s.money > 0) return `−${formatIls(s.money, locale)}`
+  return s.loss > 0 ? `−${s.loss}%` : '0%'
+}
+
+const RING_R = 50
+const RING_C = 2 * Math.PI * RING_R
+
+/** First screen, full-bleed under the top bar: the loss in big numbers, 100 visitors as dots, top leaks, key stats. */
+function LossHero({
+  locale,
+  domain,
+  stages,
+  revenue,
+  monthly,
+  yearly,
+  lostPct,
+  lostClients,
+  score,
+  scoreLevel,
+  waHref,
+}: {
+  locale: string
+  domain: string
+  stages: FunnelStage[]
+  revenue: number | null
+  monthly: number
+  yearly: number
+  lostPct: number
+  lostClients: number
+  score: number
+  scoreLevel: LightLevel
+  waHref: string | null
+}) {
+  const money = monthly > 0
+  const animated = useAnimatedNumber(money ? monthly : lostPct, 1400)
+  const big = money ? formatIls(Math.round(animated / 10) * 10, locale) : `${Math.round(animated)}%`
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
+
+  const leaking = stages.filter((s) => s.loss > 0)
+  const ranked = [...stages].sort((a, b) => b.loss - a.loss)
+  const top = ranked.filter((s) => s.loss > 0)
+  const kept = 100 - lostPct
+
+  // Inquiries won back if every leak is closed: the lost share measured against what reaches the form today.
+  const upside = kept > 0 ? Math.round((lostPct / kept) * 100) : 0
+  // Always four tiles: money and clients come first when known, the rest fill the row.
+  const stats = [
+    money ? { value: formatIls(yearly, locale), label: tCalc(copy.step4StatYear, locale), red: true } : null,
+    lostClients > 0 ? { value: `≈ ${lostClients}`, label: tCalc(copy.step4StatClients, locale), red: true } : null,
+    upside > 0 ? { value: `+${upside}%`, label: tCalc(copy.step4StatUpside, locale), red: false } : null,
+    { value: `${score}/100`, label: `${tCalc(copy.step4StatScore, locale)} · ${tCalc(copy.levelLabel[scoreLevel], locale).toLowerCase()}`, red: false },
+    top[0] ? { value: tCalc(top[0].short, locale), label: `${tCalc(copy.step4BiggestLeak, locale).toLowerCase()} · ⁦${stageLoss(top[0], locale)}⁩`, red: false } : null,
+    { value: `${leaking.length} / ${stages.length}`, label: tCalc(copy.step4StatLeakStages, locale), red: false },
+  ]
+    .filter((s): s is { value: string; label: string; red: boolean } => s !== null)
+    .slice(0, 4)
+
+  // Floating "scroll down" hint: shown on the first screen, gone once the visitor starts scrolling.
+  const [hint, setHint] = useState(true)
+  useEffect(() => {
+    const onScroll = () => setHint(window.scrollY < 120)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+  const toBreakdown = (e: React.MouseEvent) => {
+    const el = document.getElementById('loss-breakdown')
+    if (!el) return
+    e.preventDefault()
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+  }
+
+  return (
+    <section className="calc-loss-flow relative isolate ms-[calc(50%-50vw)] w-screen overflow-hidden text-white">
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <div className="calc-lq-blob calc-loss-a" />
+        <div className="calc-lq-blob calc-loss-b" />
+        <div className="calc-lq-blob calc-loss-c" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#150f26]/10 via-transparent to-[#150f26]/40" />
+      </div>
+
+      <div className="mx-auto w-full max-w-[1536px] px-4 py-10 sm:px-8 sm:py-14 lg:px-12 lg:py-14">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-start lg:gap-14 xl:items-center">
+          {/* Left: the loss itself */}
+          <div className="flex flex-col items-center text-center lg:items-start lg:text-start">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[13px] leading-[1.5] text-white/70 lg:justify-start">
+              <span className="inline-flex items-center gap-1.5 rounded-[4px] border-[0.75px] border-white/25 bg-white/10 px-2 py-[3px] text-xs text-white">
+                <svg className="size-3.5 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+                <bdi>{domain}</bdi>
+              </span>
+              <span>{tCalc(copy.step4MetaReport, locale)}</span>
+            </div>
+
+            <h1 className="m-0 mt-7 flex flex-col items-center gap-3 sm:mt-9 lg:items-start">
+              <span className="text-[28px] font-black uppercase leading-[1.3] tracking-[0.01em] text-white sm:text-[40px] sm:leading-[1.25] lg:text-4xl lg:leading-[1.2] xl:text-[44px]">{tCalc(copy.step4HeroLabel, locale)}</span>
+              {/* A percent is short, so on phones it can be much larger than a ₪ amount without hitting the edges */}
+              <span className={`${money ? 'text-[56px]' : 'text-[88px]'} font-black leading-none tracking-[-0.04em] tabular-nums text-[#ff4542] [text-shadow:0_6px_40px_rgba(229,36,33,0.45)] sm:text-[96px] xl:text-[120px]`}>
+                <bdi>{big}</bdi>
+              </span>
+              <span className="max-w-2xl text-balance text-[28px] font-black uppercase leading-[1.3] tracking-[0.01em] text-white sm:text-[40px] sm:leading-[1.25] lg:text-4xl lg:leading-[1.2] xl:text-[44px]">
+                {money ? tCalc(copy.step4HeroPerMonth, locale) : tCalc(copy.step4HeroPctTail, locale)}
+              </span>
+            </h1>
+
+            <p className="m-0 mt-5 max-w-xl text-balance text-base leading-[1.7] text-white/75 sm:text-lg lg:leading-[1.5]">
+              {money && revenue
+                ? fillCalc(tCalc(copy.step4HeroContextMoney, locale), { rev: formatIls(revenue, locale), p: lostPct, yearly: formatIls(yearly, locale) })
+                : fillCalc(tCalc(copy.step4HeroContextPct, locale), { lost: lostPct })}
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+              {waHref ? (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#e52421] px-6 py-3.5 text-sm font-semibold text-white no-underline shadow-[0_8px_28px_rgba(229,36,33,0.45)] transition hover:bg-[#d11d1a] hover:shadow-[0_10px_34px_rgba(229,36,33,0.6)] sm:text-base"
+                >
+                  {tCalc(copy.step4HeroCta, locale)}
+                  <svg className="size-4 rtl:-scale-x-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </a>
+              ) : null}
+              <a
+                href="#loss-breakdown"
+                onClick={toBreakdown}
+                className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3.5 text-sm font-semibold text-white no-underline transition hover:border-white/60 hover:bg-white/10 sm:text-base"
+              >
+                {tCalc(copy.step4HeroMore, locale)}
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Right: ring of who reaches an inquiry + the biggest leaks */}
+          <div className="grid w-full gap-6 rounded-[16px] border border-white/15 bg-white/[0.07] p-5 backdrop-blur-md sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] sm:p-7 lg:grid-cols-1 xl:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]">
+            <div className="mx-auto w-full max-w-[15rem]">
+            <p className="m-0 text-center text-xs uppercase leading-[18px] tracking-[0.04em] text-white/65">{tCalc(copy.step4RingTitle, locale)}</p>
+            {/* Ring: red base = lost on the way, the light arc grows to the share that still reaches an inquiry */}
+            <div className="relative mx-auto mt-4 aspect-square w-full max-w-[13rem]" role="img" aria-label={fillCalc(tCalc(copy.step4DotsAria, locale), { kept, lost: lostPct })}>
+              <svg viewBox="0 0 120 120" className="size-full -rotate-90" aria-hidden="true">
+                <circle cx="60" cy="60" r={RING_R} fill="none" stroke="#ff4542" strokeWidth="12" className="[filter:drop-shadow(0_0_6px_rgba(255,69,66,0.5))]" />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r={RING_R}
+                  fill="none"
+                  stroke="#f1f5f9"
+                  strokeWidth="12"
+                  strokeDasharray={`${shown ? (RING_C * kept) / 100 : 0} ${RING_C}`}
+                  className="transition-[stroke-dasharray] duration-[1400ms] ease-out motion-reduce:transition-none"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <b className="text-[44px] font-black leading-none tracking-[-0.03em] tabular-nums text-white"><bdi>{kept}%</bdi></b>
+                <span className="mt-1 max-w-[8rem] text-xs leading-[1.4] text-white/75">{tCalc(copy.step4RingCenter, locale)}</span>
+              </div>
+            </div>
+            <div className="mt-4 flex flex-col items-center gap-1 text-[13px] leading-[1.5]">
+              <span className="inline-flex items-center gap-2 text-white"><i aria-hidden className="size-2.5 rounded-[2px] bg-[#f1f5f9]" />{tCalc(copy.step4RingLegendKept, locale)}</span>
+              <span className="inline-flex items-center gap-2 text-white/75"><i aria-hidden className="size-2.5 rounded-[2px] bg-[#ff4542]" />{tCalc(copy.step4RingLegendLost, locale)}</span>
+            </div>
+            </div>
+
+            {ranked.length ? (
+              <div className="flex flex-col border-t border-white/15 pt-5 sm:border-s sm:border-t-0 sm:ps-6 sm:pt-0 lg:border-s-0 lg:border-t lg:ps-0 lg:pt-5 xl:border-s xl:border-t-0 xl:ps-6 xl:pt-0">
+                <p className="m-0 text-xs uppercase leading-[18px] tracking-[0.04em] text-white/65">{tCalc(copy.step4LeaksByStage, locale)}</p>
+                {/* Each bar is 100 visitors at that stage: white passes on, red is the shortfall */}
+                <ul className="m-0 mt-4 flex list-none flex-col gap-3.5 p-0">
+                  {ranked.map((s) => (
+                    <li key={s.key} className="flex flex-col gap-1.5">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="text-[15px] font-semibold leading-[1.5]">{tCalc(s.short, locale)}</span>
+                        <b className={`text-lg font-bold tabular-nums ${s.loss > 0 ? 'text-[#ff6b68]' : 'text-white/60'}`}>
+                          <bdi dir="ltr">{stageLoss(s, locale)}</bdi>
+                        </b>
+                      </div>
+                      <div className="flex h-1.5 justify-end overflow-hidden rounded-full bg-[#f1f5f9]">
+                        <div
+                          className="h-full bg-[#ff4542] transition-[width] duration-700 ease-out motion-reduce:transition-none"
+                          style={{ width: shown ? `${s.loss}%` : '0%' }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-5 flex items-baseline justify-between gap-3 border-t border-white/15 pt-4">
+                  <span className="whitespace-nowrap text-sm font-semibold uppercase leading-[1.5] tracking-[0.02em] text-white">{tCalc(copy.step4LeaksTotal, locale)}</span>
+                  <b className="text-xl font-black tabular-nums text-[#ff4542]">
+                    <bdi dir="ltr">{money ? `−${formatIls(monthly, locale)}` : `−${lostPct}%`}</bdi>
+                  </b>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <dl className={`m-0 mt-10 grid grid-cols-2 gap-3 lg:mt-12 lg:grid-cols-4`}>
+          {stats.map((s) => (
+            <div key={s.label} className="flex flex-col items-center gap-1 rounded-[12px] border border-white/12 bg-white/[0.06] px-3 py-5 text-center backdrop-blur-sm sm:px-5 sm:py-6">
+              <dt className="order-2 text-[13px] leading-[1.5] text-white/70">{s.label}</dt>
+              <dd className={`order-1 m-0 text-2xl font-bold leading-[1.2] tracking-[-0.02em] tabular-nums sm:text-[34px] ${s.red ? 'text-[#ff6b68]' : 'text-white'}`}>
+                <bdi>{s.value}</bdi>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      {/* Floating scroll hint, portalled to body so the page fade-in transform cannot pin it to the hero */}
+      {shown
+        ? createPortal(
+            <a
+              href="#loss-breakdown"
+              onClick={toBreakdown}
+              aria-label={tCalc(copy.step4HeroMore, locale)}
+              tabIndex={hint ? 0 : -1}
+              className={`fixed bottom-[4.5rem] left-1/2 z-40 flex size-14 -translate-x-1/2 items-center justify-center rounded-full bg-[#e52421] text-white shadow-[0_8px_28px_rgba(229,36,33,0.5)] transition-opacity duration-300 hover:bg-[#d11d1a] ${hint ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+            >
+              <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-[#e52421] opacity-40 motion-reduce:hidden" />
+              <svg className="relative size-6 animate-bounce motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 6l6 6 6-6" />
+                <path d="M6 12l6 6 6-6" />
+              </svg>
+            </a>,
+            document.body,
+          )
+        : null}
+    </section>
+  )
+}
+
+/** Coral: the lighter companion of the brand red (same as the big loss number in the panel). */
+const CORAL = '#ff4542'
+
+/* Lilac from the loss panel, reused as the report's second brand colour below it. */
+const LILAC = { deep: '#3d2c66', base: '#54408a', mid: '#8b74c7', soft: '#f1edfa', wash: '#f9f7fd', ring: '#d6cfe6' } as const
+
+/** Smooth in-page jump to an element id (instant when the visitor prefers reduced motion). */
+function scrollToId(e: React.MouseEvent, id: string) {
+  const el = document.getElementById(id)
+  if (!el) return
+  e.preventDefault()
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+}
+
+/** Small caps tag next to a stage name (biggest-leak and share-of-losses). */
+const STAGE_TAG = 'inline-flex items-center rounded-[3px] px-1.5 text-[10px] font-semibold uppercase leading-4 tracking-[0.04em] whitespace-nowrap'
+
+/** Subtitle under a CardTitle, indented so it starts under the first letter (past the red bar and its gap). */
+const TITLE_SUB = 'm-0 ps-[14px] text-base leading-[1.5] text-[#475569] sm:ps-[18px]'
+
+/** Where the loss goes: stages ranked from the biggest leak with lilac share bars; red only marks the biggest leak and the total. */
+function LossBreakdown({ locale, stages, monthly, total }: { locale: string; stages: FunnelStage[]; monthly: number; total: number }) {
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
+  const ranked = [...stages].filter((s) => s.loss > 0).sort((a, b) => b.loss - a.loss)
+  const share = (s: FunnelStage) => (total > 0 ? Math.round((s.loss / total) * 100) : 0)
+  const money = monthly > 0
+
+  return (
+    <section
+      id="loss-breakdown"
+      className="relative isolate scroll-mt-6 overflow-hidden rounded-[16px] border-[0.75px] border-[#e0e0e0] bg-[#f8f8f8] px-5 py-8 sm:px-10 sm:py-12 lg:p-[60px]"
+    >
+      <div className="flex flex-col gap-2">
+        <CardTitle className="!text-[24px] !font-bold !leading-[1.3] !tracking-[-0.02em] sm:!text-[34px] lg:!text-[34px]">
+          {tCalc(money ? copy.step4WhereTitle : copy.step4StagesHeading, locale)}
+        </CardTitle>
+        <p className={TITLE_SUB}>{tCalc(copy.step4WhereSub, locale)}</p>
+      </div>
+
+      {/* On desktop the rows share one grid (subgrid), so every bar starts right after the longest caption; the first track also holds the row padding */}
+      <ol className="m-0 mt-8 flex list-none flex-col gap-2 p-0 lg:grid lg:grid-cols-[4rem_auto_minmax(0,1fr)_auto_auto] lg:gap-x-6">
+        {ranked.map((s, i) => {
+          const biggest = i === 0
+          return (
+            <li
+              key={s.key}
+              className={`grid grid-cols-[2.25rem_minmax(0,1fr)_auto_auto] items-center gap-x-3 gap-y-2.5 rounded-[12px] px-3 py-3 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto_auto] sm:gap-x-6 sm:px-5 sm:py-3.5 lg:col-span-5 lg:grid-cols-subgrid ${
+                biggest
+                  ? 'border border-s-[3px] border-[#e2e8f0] border-s-[#e52421] bg-white'
+                  : 'border border-[#e8e8e8] bg-white'
+              }`}
+            >
+              {/* The biggest leak is the one red accent of the list: red marker, red left border, red badge and amount */}
+              <span
+                className="flex size-9 items-center justify-center rounded-full text-sm font-bold tabular-nums sm:size-10"
+                style={biggest ? { background: CORAL, color: '#fff' } : { background: LILAC.soft, color: LILAC.base, boxShadow: `inset 0 0 0 1px ${LILAC.ring}` }}
+              >
+                {i + 1}
+              </span>
+              <div className="min-w-0">
+                <p className="m-0 flex flex-wrap items-center gap-2 text-lg font-semibold leading-[1.4] text-[#1e1e1e] sm:text-[22px]">
+                  {tCalc(s.short, locale)}
+                  {/* One tag: red "biggest leak · N% of all losses" for the first stage, lilac (like the number circles) for the rest */}
+                  <span
+                    className={STAGE_TAG}
+                    style={biggest ? { background: '#e52421', color: '#fff' } : { background: LILAC.soft, color: LILAC.base, boxShadow: `inset 0 0 0 1px ${LILAC.ring}` }}
+                  >
+                    {biggest ? `${tCalc(copy.step4BiggestLeak, locale)} · ` : null}
+                    {fillCalc(tCalc(copy.step4StageShareTag, locale), { s: share(s) })}
+                  </span>
+                </p>
+                <p className="m-0 mt-0.5 text-[13px] leading-[1.5] text-[#64748b] sm:text-sm lg:whitespace-nowrap">
+                  {fillCalc(tCalc(copy.step4StageVisitors, locale), { p: s.loss })}
+                </p>
+              </div>
+              {/* Share of all losses in lilac: it compares the stages, the red stays for the totals */}
+              <div className="col-span-4 col-start-1 flex items-center gap-3 lg:col-span-1 lg:col-start-auto" aria-hidden>
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full" style={{ background: LILAC.soft }}>
+                  <div
+                    className="h-full rounded-full transition-[width] duration-700 ease-out motion-reduce:transition-none"
+                    style={{ width: shown ? `${share(s)}%` : '0%', background: LILAC.mid }}
+                  />
+                </div>
+              </div>
+              <p className="col-start-3 row-start-1 m-0 text-end lg:col-start-auto lg:row-start-auto">
+                <b
+                  className={`block text-2xl font-bold leading-[1.1] tracking-[-0.02em] tabular-nums sm:text-[30px] ${biggest ? 'text-[#e52421]' : ''}`}
+                  style={biggest ? undefined : { color: LILAC.deep }}
+                >
+                  <bdi dir="ltr">{stageLoss(s, locale)}</bdi>
+                </b>
+                {money ? <span className="text-[13px] leading-[1.5] text-[#64748b]">{tCalc(copy.step4HeroPerMonth, locale)}</span> : null}
+              </p>
+              {/* Jumps to the same-numbered step in "why it happens" */}
+              <a
+                href={`#why-${s.key}`}
+                onClick={(e) => scrollToId(e, `why-${s.key}`)}
+                aria-label={fillCalc(tCalc(copy.step4StageWhyLink, locale), { stage: tCalc(s.short, locale) })}
+                title={fillCalc(tCalc(copy.step4StageWhyLink, locale), { stage: tCalc(s.short, locale) })}
+                className={`col-start-4 row-start-1 flex size-9 items-center justify-center rounded-full border transition-colors lg:col-start-auto lg:row-start-auto ${
+                  biggest
+                    ? 'border-[#e52421] text-[#e52421] hover:bg-[#e52421] hover:text-white'
+                    : 'border-[#d6cfe6] text-[#54408a] hover:border-[#54408a] hover:bg-[#54408a] hover:text-white'
+                }`}
+              >
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 5v14M6 13l6 6 6-6" />
+                </svg>
+              </a>
+            </li>
+          )
+        })}
+      </ol>
+
+      <div
+        className="mt-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-[12px] px-5 py-5 text-white sm:px-7 sm:py-6"
+        style={{ background: `linear-gradient(120deg, ${LILAC.deep}, ${LILAC.base})` }}
+      >
+        <div className="min-w-0">
+          <span className="block text-base font-bold uppercase leading-[1.4] tracking-[0.02em] sm:text-lg">{tCalc(copy.step4Total, locale)}</span>
+          <span className="block text-[13px] leading-[1.5] text-white/65">{tCalc(copy.step4LeaksAcross, locale)}</span>
+        </div>
+        <b className="text-[28px] font-black leading-[1.1] tracking-[-0.02em] tabular-nums text-white sm:text-[38px]">
+          <bdi dir="ltr">{money ? `−${formatIls(monthly, locale)}` : `−${total}%`}</bdi>
+          {money ? <span className="ms-1.5 text-sm font-semibold tracking-normal text-white/70">{tCalc(copy.step4HeroPerMonth, locale)}</span> : null}
+        </b>
+      </div>
+    </section>
+  )
+}
+
+/** Stage-specific icons: what the visitor does there, and how that stage breaks. */
+const STAGE_ICON_PATHS: Record<CalcArea, Record<'action' | 'issue', React.ReactNode>> = {
+  visibility: {
+    action: (<><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></>),
+    issue: (<><path d="M3 3l18 18" /><path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c7 0 10 7 10 7a17 17 0 0 1-3.2 4.2" /><path d="M6.6 6.6C3.6 8.6 2 12 2 12s3 7 10 7a9.7 9.7 0 0 0 5.4-1.6" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" /></>),
+  },
+  speed: {
+    action: (<><rect x="7" y="2" width="10" height="20" rx="2" /><path d="M11 18h2" /></>),
+    issue: (<><path d="M6 2h12M6 22h12" /><path d="M7 2v4a5 5 0 0 0 10 0V2M7 22v-4a5 5 0 0 1 10 0v4" /></>),
+  },
+  security: {
+    action: (<><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" /><path d="m9 12 2 2 4-4" /></>),
+    issue: (<><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" /><path d="M12 8v4M12 16h.01" /></>),
+  },
+  forms: {
+    action: (<><path d="m9 9 5 12 1.8-5.2L21 14Z" /><path d="M7.2 2.2 8 5.1M5.1 8l-2.9-.8M14 4.1 12 6M6 12l-1.9 2" /></>),
+    issue: (<><circle cx="12" cy="12" r="9" /><path d="m15 9-6 6M9 9l6 6" /></>),
+  },
+}
+
+function StageIcon({ kind, stage }: { kind: 'action' | 'issue'; stage: CalcArea }) {
+  return (
+    <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {STAGE_ICON_PATHS[stage][kind]}
+    </svg>
+  )
+}
+
+/** Why it happens: the same ranked stages as the breakdown, each a card with "what the visitor does" and "where it breaks", joined by a timeline. */
+function StageTimeline({ locale, stages, biggestKey, total }: { locale: string; stages: FunnelStage[]; biggestKey: CalcArea; total: number }) {
+  const share = (s: FunnelStage) => (total > 0 ? Math.round((s.loss / total) * 100) : 0)
+  return (
+    <section className="flex flex-col gap-6 sm:gap-8">
+      {/* Same inner padding as the breakdown card, so this heading lines up under "where clients drop off" */}
+      <div className="flex flex-col gap-2 border-x-[0.75px] border-transparent px-5 sm:px-10 lg:px-[60px]">
+        <CardTitle className="!text-[24px] !font-bold !leading-[1.3] !tracking-[-0.02em] sm:!text-[34px] lg:!text-[34px]">
+          {tCalc(copy.step4WhyTitle, locale)}
+        </CardTitle>
+        <p className={TITLE_SUB}>{tCalc(copy.step4WhySub, locale)}</p>
+      </div>
+
+      <ol className="m-0 flex list-none flex-col gap-5 p-0 sm:gap-6">
+        {stages.map((s, i) => {
+          const last = i === stages.length - 1
+          const biggest = s.key === biggestKey && s.loss > 0
+          return (
+            <li key={s.key} id={`why-${s.key}`} className="relative grid scroll-mt-6 grid-cols-[2.75rem_minmax(0,1fr)] gap-3 sm:grid-cols-[3.5rem_minmax(0,1fr)] sm:gap-5">
+              {/* Connector: runs from under this marker into the next one */}
+              {!last ? (
+                <span aria-hidden className="absolute bottom-[-20px] start-[21px] top-12 w-0.5 sm:bottom-[-24px] sm:start-[27px] sm:top-14" style={{ background: LILAC.ring }} />
+              ) : null}
+              <span
+                className="relative z-10 flex size-11 items-center justify-center rounded-full text-lg font-bold tabular-nums text-white shadow-[0_0_0_5px_#eaeaea] sm:size-14 sm:text-xl"
+                style={{ background: biggest ? CORAL : LILAC.base }}
+              >
+                {i + 1}
+              </span>
+
+              <article
+                className={`min-w-0 rounded-[14px] border bg-white p-5 sm:p-7 ${biggest ? 'border-[#e2e8f0] border-s-[3px] border-s-[#e52421]' : 'border-[#e8e8e8] border-s-[3px] border-s-[#8b74c7]'}`}
+              >
+                <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+                  <div className="flex min-w-0 flex-col gap-2">
+                    <span
+                      className={STAGE_TAG + ' w-fit'}
+                      style={biggest ? { background: '#e52421', color: '#fff' } : { background: LILAC.soft, color: LILAC.base, boxShadow: `inset 0 0 0 1px ${LILAC.ring}` }}
+                    >
+                      {biggest ? `${tCalc(copy.step4BiggestLeak, locale)} · ` : `${tCalc(s.short, locale)} · `}
+                      {fillCalc(tCalc(copy.step4StageShareTag, locale), { s: share(s) })}
+                    </span>
+                    <h3 className="m-0 text-xl font-bold leading-[1.3] tracking-[-0.01em] text-[#1e1e1e] sm:text-[26px] lg:text-[28px]">{tCalc(s.title, locale)}</h3>
+                  </div>
+                  {/* The stage's loss sits on a small, low rectangular plate: coral for the biggest leak, lilac for the rest */}
+                  <p className="m-0 flex shrink-0 flex-col items-center gap-1.5 text-center">
+                    <b
+                      className="inline-flex h-10 min-w-16 items-center justify-center rounded-[3px] px-3 text-lg font-extrabold leading-none tracking-[-0.02em] tabular-nums sm:h-11 sm:min-w-[4.5rem] sm:text-xl"
+                      style={biggest ? { background: CORAL, color: '#fff' } : { background: LILAC.soft, color: LILAC.deep, boxShadow: `inset 0 0 0 1px ${LILAC.ring}` }}
+                    >
+                      <bdi dir="ltr">{stageLoss(s, locale)}</bdi>
+                    </b>
+                    <span className="whitespace-nowrap text-xs leading-[1.5] text-[#1e1e1e]">
+                      {s.money > 0 ? tCalc(copy.step4HeroPerMonth, locale) : fillCalc(tCalc(copy.step4StageScore, locale), { score: Math.round(s.score) })}
+                    </span>
+                  </p>
+                </header>
+
+                {/* Cause and effect: what the visitor does → where the site breaks, joined by an arrow */}
+                <div className="mt-6 grid items-stretch gap-2 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-3">
+                  <div className="flex flex-col gap-3 rounded-[12px] p-5 sm:p-6" style={{ background: LILAC.wash, boxShadow: `inset 0 0 0 1px ${LILAC.soft}` }}>
+                    <p className="m-0 flex items-center gap-3 text-[15px] font-bold leading-[1.3] sm:text-base" style={{ color: LILAC.deep }}>
+                      <span
+                        className="flex size-10 shrink-0 items-center justify-center rounded-[3px] text-white"
+                        style={{ background: LILAC.base }}
+                      >
+                        <StageIcon kind="action" stage={s.key} />
+                      </span>
+                      {tCalc(copy.step4CardColUser, locale)}
+                    </p>
+                    <p className="m-0 text-base leading-[1.6] text-[#1e1e1e]">{tCalc(s.action, locale)}</p>
+                  </div>
+
+                  <span aria-hidden className="flex items-center justify-center text-[#b4abc8]">
+                    <svg className="size-5 md:-rotate-90 md:rtl:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 5v14M6 13l6 6 6-6" />
+                    </svg>
+                  </span>
+
+                  <div className="flex flex-col gap-3 rounded-[12px] border border-[#ececec] bg-[#fafafa] p-5 sm:p-6">
+                    <p className="m-0 flex items-center gap-3 text-[15px] font-bold leading-[1.3] text-[#1e1e1e] sm:text-base">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-[3px] bg-[#ff4542] text-white">
+                        <StageIcon kind="issue" stage={s.key} />
+                      </span>
+                      {tCalc(copy.step4CardColIssue, locale)}
+                    </p>
+                    <p className="m-0 text-base leading-[1.6] text-[#1e1e1e]">{tCalc(s.issue, locale)}</p>
+                    {s.href ? (
+                      <a
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-[#1e1e1e] underline decoration-[#d6d6d6] underline-offset-4 transition-colors hover:text-[#e52421] hover:decoration-[#e52421]"
+                      >
+                        {tCalc(copy.step4PageSpeedLink, locale)}
+                        <svg className="size-3.5 rtl:-scale-x-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
+                        </svg>
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+              </article>
+            </li>
+          )
+        })}
+      </ol>
+    </section>
+  )
+}
+
 /** Finished audit: single central column matching executive audit report 243. */
 export function CalcResult({
   locale,
@@ -1363,538 +1906,38 @@ export function CalcResult({
     .sort((a, b) => b.points - a.points)
     .slice(0, 3)
 
+  const stageMoney = (loss: number) => (hasMoney && losses.total > 0 ? Math.round((result.monthly * loss) / losses.total / 10) * 10 : 0)
+  // Stages ranked by loss, biggest first: the breakdown list and the "why" timeline share this order and numbering.
+  const stages: FunnelStage[] = [
+    { key: 'visibility', short: copy.step4StageShortSearch, title: copy.step4Stage1Title, action: copy.step4Stage1ActionDesc, issue: copy.step4Stage1IssueDesc, loss: losses.visibility, money: stageMoney(losses.visibility), score: areas.visibility },
+    { key: 'speed', short: copy.step4StageShortSpeed, title: copy.step4Stage2Title, action: copy.step4Stage2ActionDesc, issue: copy.step4Stage2IssueDesc, loss: losses.speed, money: stageMoney(losses.speed), score: pillars.speed, href: pagespeedUrl },
+    { key: 'security', short: copy.step4StageShortTrust, title: copy.step4Stage3Title, action: copy.step4Stage3ActionDesc, issue: copy.step4Stage3IssueDesc, loss: losses.security, money: stageMoney(losses.security), score: pillars.security },
+    { key: 'forms', short: copy.step4StageShortForm, title: copy.step4Stage4Title, action: copy.step4Stage4ActionDesc, issue: copy.step4Stage4IssueDesc, loss: losses.forms, money: stageMoney(losses.forms), score: pillars.leads },
+  ].sort((a, b) => b.loss - a.loss)
+  const biggest = stages.reduce((a, b) => (b.loss > a.loss ? b : a), stages[0])
+
   return (
-    <div className="w-full flex flex-col gap-6 sm:gap-8">
-      {/* 0. Top Meta Badges Row (White badges with borders, only domain on black badge) */}
-      <div className="w-full flex flex-wrap items-center justify-center gap-2 sm:gap-2.5">
-        {/* Отчёт об аудите - белая плашка с бордером */}
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-white text-[#0f172a] border border-[#cbd5e1] px-3.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wider shadow-2xs">
-          <span className="size-1.5 rounded-full bg-[#e52421]" />
-          <span>{locale === 'ru' ? 'Отчёт об аудите · Pro' : locale === 'he' ? 'דוח ביקורת · Pro' : 'Executive Audit Report · Pro'}</span>
-        </span>
-        {/* Проверено: 230+ тестов - белая плашка с бордером */}
-        <span className="inline-flex items-center rounded-full bg-white text-[#475569] border border-[#e2e8f0] px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider shadow-2xs">
-          {locale === 'ru' ? 'Проверено: 230+ тестов воронки' : locale === 'he' ? 'נבדק: 230+ בדיקות משפך' : 'Verified: 230+ funnel tests'}
-        </span>
-        {/* Локаль - белая плашка с бордером */}
-        <span className="inline-flex items-center rounded-full bg-white text-[#475569] border border-[#e2e8f0] px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider shadow-2xs">
-          {locale === 'ru' ? `Локаль: ${locale.toUpperCase()}` : locale === 'he' ? `שפה: ${locale.toUpperCase()}` : `Locale: ${locale.toUpperCase()}`}
-        </span>
-        {/* Название сайта - чёрная плашка */}
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0f172a] text-white border border-[#0f172a] px-3.5 py-1 font-mono text-[11px] font-semibold shadow-2xs">
-          <svg className="size-3.5 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-          </svg>
-          <bdi>{domain}</bdi>
-        </span>
-      </div>
+    <div className="w-full flex flex-col gap-8 sm:gap-10">
+      {/* 1. The loss in numbers first: money per month (or share of clients), then year, clients, score */}
+      <LossHero
+        locale={locale}
+        domain={domain}
+        stages={stages}
+        revenue={revenue}
+        monthly={hasMoney ? result.monthly : 0}
+        yearly={hasMoney ? result.yearly : 0}
+        lostPct={losses.total}
+        lostClients={lostClients}
+        score={overall}
+        scoreLevel={overallLevel}
+        waHref={waHref}
+      />
 
-      {/* 1. CENTERED HERO SECTION: Big headline, red larger number, subtitle & white pills with colored borders */}
-      <div className="w-full flex flex-col items-center text-center gap-4 sm:gap-5 max-w-5xl mx-auto">
-        <div className="inline-flex items-center gap-2 font-mono text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-[#64748b]">
-          <span className="text-[#e52421]">§ 04</span>
-          <span>—</span>
-          <span>{tCalc(copy.step4JourneyKicker, locale).replace(/^§\s*04\s*[-—]\s*/, '')}</span>
-        </div>
+      {/* 2. Where that loss goes, stage by stage, biggest first */}
+      <LossBreakdown locale={locale} stages={stages} monthly={hasMoney ? result.monthly : 0} total={losses.total} />
 
-        {/* Big centered title: all black, ONLY the percentage number is larger font & red */}
-        <h1 className="m-0 font-black uppercase text-[#0f172a] text-[32px] sm:text-[46px] md:text-[54px] lg:text-[64px] xl:text-[72px] leading-[1.06] sm:leading-[1.04] tracking-[-0.035em] text-balance">
-          <span>{tCalc(copy.step4HeadlinePrefix, locale)}</span>
-          <span className="text-[#e52421] text-[1.12em] sm:text-[1.16em] font-black inline-block px-1">
-            <bdi>{losses.total}%</bdi>
-          </span>
-          <span>{tCalc(copy.step4HeadlineSuffix, locale)}</span>
-        </h1>
-
-        {/* Subtitle - wide, fits in 2 lines */}
-        <p className="m-0 text-sm sm:text-base md:text-lg lg:text-[19px] text-[#475569] leading-relaxed max-w-4xl text-balance">
-          {tCalc(copy.step4JourneySub, locale)}
-        </p>
-
-        {/* White summary pills with colored 2px borders */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 text-xs sm:text-sm font-mono mt-1">
-          {/* Pill 1: Белая с красным бордером - Суммарные потери */}
-          <span className="inline-flex items-center gap-2 rounded-full bg-white text-[#0f172a] border-2 border-[#e52421] px-4 py-1.5 font-bold shadow-2xs">
-            <span className="size-2 rounded-full bg-[#e52421]" />
-            <span>{fillCalc(tCalc(copy.step4PillLoss, locale), { p: losses.total })}</span>
-          </span>
-
-          {/* Pill 2: Белая с чёрным бордером - Оценка воронки */}
-          <span className="inline-flex items-center gap-2 rounded-full bg-white text-[#0f172a] border-2 border-[#0f172a] px-4 py-1.5 font-bold shadow-2xs">
-            <span className="size-2 rounded-full" style={{ backgroundColor: LEVEL_COLOR[overallLevel] }} />
-            <span>{fillCalc(tCalc(copy.step4PillScore, locale), { score: overall, status: tCalc(copy.levelLabel[overallLevel], locale) })}</span>
-          </span>
-
-          {/* Pill 3: Белая с оранжевым бордером - Сбои воронки */}
-          <span className="inline-flex items-center gap-2 rounded-full bg-white text-[#0f172a] border-2 border-[#ea580c] px-4 py-1.5 font-bold shadow-2xs">
-            <span className="size-2 rounded-full bg-[#ea580c]" />
-            <span>{fillCalc(tCalc(copy.step4PillBottlenecks, locale), { n: top3.length || 3 })}</span>
-          </span>
-
-          {/* Pill 4: Белая с зелёным бордером - Потенциал роста / Клиенты под риском */}
-          <span className="inline-flex items-center gap-2 rounded-full bg-white text-[#0f172a] border-2 border-[#16a34a] px-4 py-1.5 font-bold shadow-2xs">
-            <span className="size-2 rounded-full bg-[#16a34a]" />
-            <span>
-              {lostClients > 0
-                ? fillCalc(tCalc(copy.step4PillClients, locale), { n: lostClients })
-                : fillCalc(tCalc(copy.step4PillUpside, locale), { p: losses.total })}
-            </span>
-          </span>
-        </div>
-
-        {/* Subtle Revenue Note if provided */}
-        {hasMoney && revenue ? (
-          <div className="rounded-xl border border-[#e2e8f0] bg-white px-5 py-3 text-xs sm:text-sm text-[#475569] flex items-center justify-center flex-wrap gap-2 text-center mt-1 shadow-2xs">
-            <span>
-              {fillCalc(tCalc(copy.step4RevenueNote, locale), {
-                rev: formatIls(revenue, locale),
-                monthly: formatIls(result.monthly, locale),
-                yearly: formatIls(result.yearly, locale),
-              })}
-            </span>
-            {lostClients > 0 ? (
-              <span className="font-semibold text-[#0f172a]">
-                ≈ {lostClients} {tCalc(copy.lostClients, locale).toLowerCase()}
-              </span>
-            ) : null}
-          </div>
-        ) : null}
-
-        {/* Visual Lead-in Connector: linking Header straight into the Timeline */}
-        <div className="flex flex-col items-center gap-1.5 pt-2">
-          <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#64748b] bg-white border border-[#cbd5e1] px-3.5 py-1 rounded-full shadow-2xs">
-            {locale === 'ru' ? 'Пошаговый разбор этапов воронки ↓' : locale === 'he' ? 'מסלול המשפך שלב אחר שלב ↓' : 'Step-by-step funnel journey ↓'}
-          </span>
-          <div className="flex flex-col items-center" aria-hidden="true">
-            <div className="w-[2px] h-6 sm:h-8 bg-gradient-to-b from-[#cbd5e1] via-[#e52421] to-[#e2e8f0]" />
-            <div className="size-2 rounded-full bg-[#e52421] ring-4 ring-white shadow-xs" />
-          </div>
-        </div>
-      </div>
-
-      {/* 2. ALTERNATING VERTICAL TIMELINE: Centered line, cards alternating left & right */}
-      <section className="relative isolate w-full pt-1 pb-4">
-        {/* The Continuous Center Vertical Line */}
-        <div
-          aria-hidden="true"
-          className="absolute top-0 bottom-24 w-[2px] bg-[#e2e8f0] start-[19px] md:start-auto md:left-1/2 md:-translate-x-1/2"
-        />
-
-        <div className="flex flex-col gap-10 md:gap-14">
-          
-          {/* STAGE 01: Center node 01, Left = Visitor Action, Right = Failure */}
-          <div className="relative flex flex-col gap-3 w-full">
-            {/* Centered stage heading */}
-            <div className="flex flex-col items-center text-center gap-1.5 z-10 px-4 mb-1">
-              <div className="inline-flex items-center gap-2 font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#64748b] bg-white border border-[#e2e8f0] px-3.5 py-1 rounded-full shadow-2xs">
-                <span className="text-[#e52421]">§ 01</span>
-                <span className="text-[#cbd5e1]">·</span>
-                <span className="text-[#0f172a]">{tCalc(copy.step4Stage1Tag, locale)}</span>
-              </div>
-              <h3 className="m-0 text-base sm:text-lg md:text-xl font-bold text-[#0f172a] text-balance">
-                {tCalc(copy.step4Stage1Title, locale)}
-              </h3>
-            </div>
-
-            {/* Stage row: Left Card (Red) <--- Node 01 ---> Right Card (Gray) */}
-            <div className="relative flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 md:gap-0 w-full">
-              {/* Desktop horizontal connector line behind the node */}
-              <div
-                aria-hidden="true"
-                className="hidden md:block absolute top-1/2 left-[calc(50%-2.5rem)] w-[5rem] h-[2px] bg-[#e2e8f0] -translate-y-1/2 z-10"
-              />
-
-              {/* Center Node / Button */}
-              <div className="absolute start-0 md:start-auto md:left-1/2 md:-translate-x-1/2 top-2 md:top-1/2 md:-translate-y-1/2 z-20 size-10 md:size-12 rounded-full border-4 border-white bg-[#0f172a] text-white shadow-md flex items-center justify-center font-mono font-bold text-xs md:text-sm">
-                01
-              </div>
-
-              {/* Left Card: Где возникает сбой (Красная слева) */}
-              <div className="ps-12 sm:ps-14 md:ps-0 w-full md:w-[calc(50%-2.5rem)]">
-                <article className="h-full rounded-[18px] border border-[#fecaca] border-t-[4px] border-t-[#e52421] bg-[#fffbfb] p-5 sm:p-6 shadow-[0_4px_24px_rgba(15,23,42,0.03)] flex flex-col justify-between gap-4 text-start transition-all hover:border-[#f87171]">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#fee2e2] pb-3">
-                    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#b91c1c] bg-[#fef2f2] border border-[#fca5a5] px-3 py-1 rounded-full">
-                      <span className="size-1.5 rounded-full bg-[#e52421]" />
-                      <span>{tCalc(copy.step4CardColIssue, locale)}</span>
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs px-2.5 py-1 rounded-full font-bold bg-[#e52421] text-white shadow-2xs">
-                        {locale === 'ru' ? 'Потери:' : locale === 'he' ? 'איבוד:' : 'Loss:'} -{losses.visibility}%
-                      </span>
-                      <span className="font-mono text-xs px-2.5 py-1 rounded-full text-[#475569] bg-white border border-[#e2e8f0]">
-                        {locale === 'ru' ? 'Балл:' : locale === 'he' ? 'ציון:' : 'Score:'} {Math.round(pillars.seo)}/100
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="m-0 text-sm sm:text-[15px] text-[#7f1d1d] leading-relaxed">
-                    {tCalc(copy.step4Stage1IssueDesc, locale)}
-                  </p>
-
-                  <div className="pt-2 border-t border-[#fee2e2] flex items-center justify-between text-[11px] font-mono text-[#991b1b]">
-                    <span>{locale === 'ru' ? 'Утечка воронки' : locale === 'he' ? 'נשירת משפך' : 'Funnel leak'}</span>
-                    <span className="font-bold text-[#e52421]">
-                      {locale === 'ru' ? 'Слепая зона в выдаче' : locale === 'he' ? 'עיוורון בתוצאות' : 'Search visibility drop'}
-                    </span>
-                  </div>
-                </article>
-              </div>
-
-              {/* Right Card: Что делает клиент (Серая справа) */}
-              <div className="ps-12 sm:ps-14 md:ps-0 w-full md:w-[calc(50%-2.5rem)] md:ms-auto">
-                <article className="h-full rounded-[18px] border border-[#e2e8f0] bg-white p-5 sm:p-6 shadow-[0_4px_24px_rgba(15,23,42,0.03)] flex flex-col justify-between gap-4 text-start transition-all hover:border-[#cbd5e1]">
-                  <div className="flex items-center justify-between gap-2 border-b border-[#f1f5f9] pb-3">
-                    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#334155] bg-[#f8fafc] border border-[#e2e8f0] px-3 py-1 rounded-full">
-                      <span className="size-1.5 rounded-full bg-[#0f172a]" />
-                      <span>{tCalc(copy.step4CardColUser, locale)}</span>
-                    </span>
-                    <span className="font-mono text-[11px] text-[#94a3b8] uppercase font-semibold">
-                      {locale === 'ru' ? 'Действие' : locale === 'he' ? 'פעולה' : 'Action'}
-                    </span>
-                  </div>
-
-                  <p className="m-0 text-sm sm:text-[15px] text-[#334155] leading-relaxed">
-                    {tCalc(copy.step4Stage1ActionDesc, locale)}
-                  </p>
-
-                  <div className="pt-2 border-t border-[#f8fafc] flex items-center justify-between text-[11px] font-mono text-[#64748b]">
-                    <span>{locale === 'ru' ? 'Ожидание посетителя' : locale === 'he' ? 'ציפיית המבקר' : 'Visitor expectation'}</span>
-                    <span className="font-semibold text-[#0f172a]">
-                      {locale === 'ru' ? 'Быстрый и точный ответ' : locale === 'he' ? 'מענה מהיר ומדויק' : 'Fast, accurate answer'}
-                    </span>
-                  </div>
-                </article>
-              </div>
-            </div>
-          </div>
-
-          {/* STAGE 02: Center node 02, Left = Visitor Action, Right = Failure (Speed) */}
-          <div className="relative flex flex-col gap-3 w-full">
-            {/* Centered stage heading */}
-            <div className="flex flex-col items-center text-center gap-1.5 z-10 px-4 mb-1">
-              <div className="inline-flex items-center gap-2 font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#64748b] bg-white border border-[#e2e8f0] px-3.5 py-1 rounded-full shadow-2xs">
-                <span className="text-[#e52421]">§ 02</span>
-                <span className="text-[#cbd5e1]">·</span>
-                <span className="text-[#0f172a]">{tCalc(copy.step4Stage2Tag, locale)}</span>
-              </div>
-              <h3 className="m-0 text-base sm:text-lg md:text-xl font-bold text-[#0f172a] text-balance">
-                {tCalc(copy.step4Stage2Title, locale)}
-              </h3>
-            </div>
-
-            {/* Stage row: Left Card <--- Node 02 ---> Right Card */}
-            <div className="relative flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 md:gap-0 w-full">
-              {/* Desktop horizontal connector line behind the node */}
-              <div
-                aria-hidden="true"
-                className="hidden md:block absolute top-1/2 left-[calc(50%-2.5rem)] w-[5rem] h-[2px] bg-[#e2e8f0] -translate-y-1/2 z-10"
-              />
-
-              {/* Center Node / Button (Critical bottleneck - red) */}
-              <div className="absolute start-0 md:start-auto md:left-1/2 md:-translate-x-1/2 top-2 md:top-1/2 md:-translate-y-1/2 z-20 size-10 md:size-12 rounded-full border-4 border-white bg-[#e52421] text-white shadow-md flex items-center justify-center font-mono font-bold text-xs md:text-sm">
-                02
-              </div>
-
-              {/* Left Card: Что делает клиент */}
-              <div className="ps-12 sm:ps-14 md:ps-0 w-full md:w-[calc(50%-2.5rem)]">
-                <article className="h-full rounded-[18px] border border-[#e2e8f0] bg-white p-5 sm:p-6 shadow-[0_4px_24px_rgba(15,23,42,0.03)] flex flex-col justify-between gap-4 text-start transition-all hover:border-[#cbd5e1]">
-                  <div className="flex items-center justify-between gap-2 border-b border-[#f1f5f9] pb-3">
-                    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#334155] bg-[#f8fafc] border border-[#e2e8f0] px-3 py-1 rounded-full">
-                      <span className="size-1.5 rounded-full bg-[#0f172a]" />
-                      <span>{tCalc(copy.step4CardColUser, locale)}</span>
-                    </span>
-                    <span className="font-mono text-[11px] text-[#94a3b8] uppercase font-semibold">
-                      {locale === 'ru' ? 'Действие' : locale === 'he' ? 'פעולה' : 'Action'}
-                    </span>
-                  </div>
-
-                  <p className="m-0 text-sm sm:text-[15px] text-[#334155] leading-relaxed">
-                    {tCalc(copy.step4Stage2ActionDesc, locale)}
-                  </p>
-
-                  <div className="pt-2 border-t border-[#f8fafc] flex items-center justify-between text-[11px] font-mono text-[#64748b]">
-                    <span>{locale === 'ru' ? 'Ожидание посетителя' : locale === 'he' ? 'ציפיית המבקר' : 'Visitor expectation'}</span>
-                    <span className="font-semibold text-[#0f172a]">
-                      {locale === 'ru' ? 'Мгновенная отрисовка < 1.5 сек' : locale === 'he' ? 'טעינה מיידית < 1.5 שנ׳' : 'Instant render < 1.5s'}
-                    </span>
-                  </div>
-                </article>
-              </div>
-
-              {/* Right Card: Где возникает сбой */}
-              <div className="ps-12 sm:ps-14 md:ps-0 w-full md:w-[calc(50%-2.5rem)] md:ms-auto">
-                <article className="h-full rounded-[18px] border border-[#fecaca] border-t-[4px] border-t-[#e52421] bg-[#fffbfb] p-5 sm:p-6 shadow-[0_4px_24px_rgba(15,23,42,0.03)] flex flex-col justify-between gap-4 text-start transition-all hover:border-[#f87171]">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#fee2e2] pb-3">
-                    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#b91c1c] bg-[#fef2f2] border border-[#fca5a5] px-3 py-1 rounded-full">
-                      <span className="size-1.5 rounded-full bg-[#e52421]" />
-                      <span>{tCalc(copy.step4CardColIssue, locale)}</span>
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs px-2.5 py-1 rounded-full font-bold bg-[#e52421] text-white shadow-2xs">
-                        {locale === 'ru' ? 'Потери:' : locale === 'he' ? 'איבוד:' : 'Loss:'} -{losses.speed}%
-                      </span>
-                      <span className="font-mono text-xs px-2.5 py-1 rounded-full text-[#475569] bg-white border border-[#e2e8f0]">
-                        {locale === 'ru' ? 'Балл:' : locale === 'he' ? 'ציון:' : 'Score:'} {Math.round(pillars.speed)}/100
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-3">
-                    <p className="m-0 text-sm sm:text-[15px] text-[#7f1d1d] leading-relaxed">
-                      {tCalc(copy.step4Stage2IssueDesc, locale)}
-                    </p>
-
-                    <div className="pt-1">
-                      <a
-                        href={pagespeedUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#fca5a5] bg-white px-3 py-1.5 text-xs font-semibold text-[#b91c1c] transition-colors hover:bg-[#fef2f2] no-underline"
-                      >
-                        <span>{locale === 'ru' ? 'Проверить в PageSpeed Insights' : locale === 'he' ? 'בדיקה ב-PageSpeed Insights' : 'Verify on PageSpeed Insights'}</span>
-                        <svg className="size-3.5 rtl:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-[#fee2e2] flex items-center justify-between text-[11px] font-mono text-[#991b1b]">
-                    <span>{locale === 'ru' ? 'Утечка воронки' : locale === 'he' ? 'נשירת משפך' : 'Funnel leak'}</span>
-                    <span className="font-bold text-[#e52421]">
-                      {locale === 'ru' ? 'Закрытие вкладки' : locale === 'he' ? 'סגירת הכרטיסייה' : 'Tab closed before load'}
-                    </span>
-                  </div>
-                </article>
-              </div>
-            </div>
-          </div>
-
-          {/* STAGE 03: Center node 03, Left = Visitor Action, Right = Failure (Security) */}
-          <div className="relative flex flex-col gap-3 w-full">
-            {/* Centered stage heading */}
-            <div className="flex flex-col items-center text-center gap-1.5 z-10 px-4 mb-1">
-              <div className="inline-flex items-center gap-2 font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#64748b] bg-white border border-[#e2e8f0] px-3.5 py-1 rounded-full shadow-2xs">
-                <span className="text-[#e52421]">§ 03</span>
-                <span className="text-[#cbd5e1]">·</span>
-                <span className="text-[#0f172a]">{tCalc(copy.step4Stage3Tag, locale)}</span>
-              </div>
-              <h3 className="m-0 text-base sm:text-lg md:text-xl font-bold text-[#0f172a] text-balance">
-                {tCalc(copy.step4Stage3Title, locale)}
-              </h3>
-            </div>
-
-            {/* Stage row: Left Card (Red) <--- Node 03 ---> Right Card (Gray) */}
-            <div className="relative flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 md:gap-0 w-full">
-              {/* Desktop horizontal connector line behind the node */}
-              <div
-                aria-hidden="true"
-                className="hidden md:block absolute top-1/2 left-[calc(50%-2.5rem)] w-[5rem] h-[2px] bg-[#e2e8f0] -translate-y-1/2 z-10"
-              />
-
-              {/* Center Node / Button */}
-              <div className="absolute start-0 md:start-auto md:left-1/2 md:-translate-x-1/2 top-2 md:top-1/2 md:-translate-y-1/2 z-20 size-10 md:size-12 rounded-full border-4 border-white bg-[#0f172a] text-white shadow-md flex items-center justify-center font-mono font-bold text-xs md:text-sm">
-                03
-              </div>
-
-              {/* Left Card: Где возникает сбой (Красная слева) */}
-              <div className="ps-12 sm:ps-14 md:ps-0 w-full md:w-[calc(50%-2.5rem)]">
-                <article className="h-full rounded-[18px] border border-[#fecaca] border-t-[4px] border-t-[#e52421] bg-[#fffbfb] p-5 sm:p-6 shadow-[0_4px_24px_rgba(15,23,42,0.03)] flex flex-col justify-between gap-4 text-start transition-all hover:border-[#f87171]">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#fee2e2] pb-3">
-                    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#b91c1c] bg-[#fef2f2] border border-[#fca5a5] px-3 py-1 rounded-full">
-                      <span className="size-1.5 rounded-full bg-[#e52421]" />
-                      <span>{tCalc(copy.step4CardColIssue, locale)}</span>
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs px-2.5 py-1 rounded-full font-bold bg-[#e52421] text-white shadow-2xs">
-                        {locale === 'ru' ? 'Потери:' : locale === 'he' ? 'איבוד:' : 'Loss:'} -{losses.security}%
-                      </span>
-                      <span className="font-mono text-xs px-2.5 py-1 rounded-full text-[#475569] bg-white border border-[#e2e8f0]">
-                        {locale === 'ru' ? 'Балл:' : locale === 'he' ? 'ציון:' : 'Score:'} {Math.round(pillars.security)}/100
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="m-0 text-sm sm:text-[15px] text-[#7f1d1d] leading-relaxed">
-                    {tCalc(copy.step4Stage3IssueDesc, locale)}
-                  </p>
-
-                  <div className="pt-2 border-t border-[#fee2e2] flex items-center justify-between text-[11px] font-mono text-[#991b1b]">
-                    <span>{locale === 'ru' ? 'Утечка воронки' : locale === 'he' ? 'נשירת משפך' : 'Funnel leak'}</span>
-                    <span className="font-bold text-[#e52421]">
-                      {locale === 'ru' ? 'Потеря доверия' : locale === 'he' ? 'אובדן אמון' : 'Trust erosion'}
-                    </span>
-                  </div>
-                </article>
-              </div>
-
-              {/* Right Card: Что делает клиент (Серая справа) */}
-              <div className="ps-12 sm:ps-14 md:ps-0 w-full md:w-[calc(50%-2.5rem)] md:ms-auto">
-                <article className="h-full rounded-[18px] border border-[#e2e8f0] bg-white p-5 sm:p-6 shadow-[0_4px_24px_rgba(15,23,42,0.03)] flex flex-col justify-between gap-4 text-start transition-all hover:border-[#cbd5e1]">
-                  <div className="flex items-center justify-between gap-2 border-b border-[#f1f5f9] pb-3">
-                    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#334155] bg-[#f8fafc] border border-[#e2e8f0] px-3 py-1 rounded-full">
-                      <span className="size-1.5 rounded-full bg-[#0f172a]" />
-                      <span>{tCalc(copy.step4CardColUser, locale)}</span>
-                    </span>
-                    <span className="font-mono text-[11px] text-[#94a3b8] uppercase font-semibold">
-                      {locale === 'ru' ? 'Действие' : locale === 'he' ? 'פעולה' : 'Action'}
-                    </span>
-                  </div>
-
-                  <p className="m-0 text-sm sm:text-[15px] text-[#334155] leading-relaxed">
-                    {tCalc(copy.step4Stage3ActionDesc, locale)}
-                  </p>
-
-                  <div className="pt-2 border-t border-[#f8fafc] flex items-center justify-between text-[11px] font-mono text-[#64748b]">
-                    <span>{locale === 'ru' ? 'Ожидание посетителя' : locale === 'he' ? 'ציפיית המבקר' : 'Visitor expectation'}</span>
-                    <span className="font-semibold text-[#0f172a]">
-                      {locale === 'ru' ? 'Безопасное соединение и доверие' : locale === 'he' ? 'חיבור מאובטח ואמינות' : 'Secure connection & trust'}
-                    </span>
-                  </div>
-                </article>
-              </div>
-            </div>
-          </div>
-
-          {/* STAGE 04: Center node 04, Left = Visitor Action, Right = Failure (Forms) */}
-          <div className="relative flex flex-col gap-3 w-full">
-            {/* Centered stage heading */}
-            <div className="flex flex-col items-center text-center gap-1.5 z-10 px-4 mb-1">
-              <div className="inline-flex items-center gap-2 font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#64748b] bg-white border border-[#e2e8f0] px-3.5 py-1 rounded-full shadow-2xs">
-                <span className="text-[#e52421]">§ 04</span>
-                <span className="text-[#cbd5e1]">·</span>
-                <span className="text-[#0f172a]">{tCalc(copy.step4Stage4Tag, locale)}</span>
-              </div>
-              <h3 className="m-0 text-base sm:text-lg md:text-xl font-bold text-[#0f172a] text-balance">
-                {tCalc(copy.step4Stage4Title, locale)}
-              </h3>
-            </div>
-
-            {/* Stage row: Left Card <--- Node 04 ---> Right Card */}
-            <div className="relative flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 md:gap-0 w-full">
-              {/* Desktop horizontal connector line behind the node */}
-              <div
-                aria-hidden="true"
-                className="hidden md:block absolute top-1/2 left-[calc(50%-2.5rem)] w-[5rem] h-[2px] bg-[#e2e8f0] -translate-y-1/2 z-10"
-              />
-
-              {/* Center Node / Button (Critical bottleneck - red) */}
-              <div className="absolute start-0 md:start-auto md:left-1/2 md:-translate-x-1/2 top-2 md:top-1/2 md:-translate-y-1/2 z-20 size-10 md:size-12 rounded-full border-4 border-white bg-[#e52421] text-white shadow-md flex items-center justify-center font-mono font-bold text-xs md:text-sm">
-                04
-              </div>
-
-              {/* Left Card: Что делает клиент */}
-              <div className="ps-12 sm:ps-14 md:ps-0 w-full md:w-[calc(50%-2.5rem)]">
-                <article className="h-full rounded-[18px] border border-[#e2e8f0] bg-white p-5 sm:p-6 shadow-[0_4px_24px_rgba(15,23,42,0.03)] flex flex-col justify-between gap-4 text-start transition-all hover:border-[#cbd5e1]">
-                  <div className="flex items-center justify-between gap-2 border-b border-[#f1f5f9] pb-3">
-                    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#334155] bg-[#f8fafc] border border-[#e2e8f0] px-3 py-1 rounded-full">
-                      <span className="size-1.5 rounded-full bg-[#0f172a]" />
-                      <span>{tCalc(copy.step4CardColUser, locale)}</span>
-                    </span>
-                    <span className="font-mono text-[11px] text-[#94a3b8] uppercase font-semibold">
-                      {locale === 'ru' ? 'Действие' : locale === 'he' ? 'פעולה' : 'Action'}
-                    </span>
-                  </div>
-
-                  <p className="m-0 text-sm sm:text-[15px] text-[#334155] leading-relaxed">
-                    {tCalc(copy.step4Stage4ActionDesc, locale)}
-                  </p>
-
-                  <div className="pt-2 border-t border-[#f8fafc] flex items-center justify-between text-[11px] font-mono text-[#64748b]">
-                    <span>{locale === 'ru' ? 'Ожидание посетителя' : locale === 'he' ? 'ציפיית המבקר' : 'Visitor expectation'}</span>
-                    <span className="font-semibold text-[#0f172a]">
-                      {locale === 'ru' ? 'Быстрая отправка в 1 клик' : locale === 'he' ? 'שליחה מהירה בקליק 1' : 'Fast 1-click submission'}
-                    </span>
-                  </div>
-                </article>
-              </div>
-
-              {/* Right Card: Где возникает сбой */}
-              <div className="ps-12 sm:ps-14 md:ps-0 w-full md:w-[calc(50%-2.5rem)] md:ms-auto">
-                <article className="h-full rounded-[18px] border border-[#fecaca] border-t-[4px] border-t-[#e52421] bg-[#fffbfb] p-5 sm:p-6 shadow-[0_4px_24px_rgba(15,23,42,0.03)] flex flex-col justify-between gap-4 text-start transition-all hover:border-[#f87171]">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#fee2e2] pb-3">
-                    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-[#b91c1c] bg-[#fef2f2] border border-[#fca5a5] px-3 py-1 rounded-full">
-                      <span className="size-1.5 rounded-full bg-[#e52421]" />
-                      <span>{tCalc(copy.step4CardColIssue, locale)}</span>
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs px-2.5 py-1 rounded-full font-bold bg-[#e52421] text-white shadow-2xs">
-                        {locale === 'ru' ? 'Потери:' : locale === 'he' ? 'איבוד:' : 'Loss:'} -{losses.forms}%
-                      </span>
-                      <span className="font-mono text-xs px-2.5 py-1 rounded-full text-[#475569] bg-white border border-[#e2e8f0]">
-                        {locale === 'ru' ? 'Балл:' : locale === 'he' ? 'ציון:' : 'Score:'} {Math.round(pillars.leads)}/100
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="m-0 text-sm sm:text-[15px] text-[#7f1d1d] leading-relaxed">
-                    {tCalc(copy.step4Stage4IssueDesc, locale)}
-                  </p>
-
-                  <div className="pt-2 border-t border-[#fee2e2] flex items-center justify-between text-[11px] font-mono text-[#991b1b]">
-                    <span>{locale === 'ru' ? 'Утечка воронки' : locale === 'he' ? 'נשירת משפך' : 'Funnel leak'}</span>
-                    <span className="font-bold text-[#e52421]">
-                      {locale === 'ru' ? 'Брошенная форма' : locale === 'he' ? 'טופס נטוש' : 'Abandoned form'}
-                    </span>
-                  </div>
-                </article>
-              </div>
-            </div>
-          </div>
-
-          {/* FINAL DESTINATION OUTCOME CARD (Centered across both sides) */}
-          <div className="relative flex flex-col items-center w-full pt-4">
-            {/* Center Node with Checkmark */}
-            <div className="relative z-20 mb-4 size-11 md:size-13 rounded-full border-4 border-white bg-[#e52421] text-white shadow-lg flex items-center justify-center">
-              <svg className="size-5 md:size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
-
-            {/* Wide Centered Card */}
-            <article className="w-full max-w-3xl rounded-[20px] border-2 border-[#e52421]/30 bg-gradient-to-br from-white via-[#fffaf9] to-[#fef2f2] p-6 sm:p-9 shadow-md flex flex-col gap-6 text-start">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#fed7d7] pb-4">
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#991b1b] bg-[#fef2f2] px-3 py-1 rounded-full border border-[#fecaca]">
-                  {tCalc(copy.step4OutcomeTag, locale)}
-                </span>
-                <span className="font-mono text-xs font-semibold text-[#64748b]">
-                  Chromium Funnel Engine 2026
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <h3 className="m-0 text-2xl sm:text-3xl font-black text-[#0f172a] leading-tight">
-                  {fillCalc(tCalc(copy.step4OutcomeTitle, locale), { p: percent })}
-                </h3>
-                <p className="m-0 text-sm sm:text-base text-[#475569] leading-relaxed max-w-2xl">
-                  {tCalc(copy.step4OutcomeDesc, locale)}
-                </p>
-              </div>
-
-              {/* 4-column integer summary breakdown */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-[#fed7d7]/60">
-                <div className="flex flex-col bg-white/70 rounded-xl p-3 border border-[#f1f5f9]">
-                  <span className="text-[11px] font-mono uppercase text-[#64748b]">{tCalc(copy.step4FrictionVisibility, locale)}</span>
-                  <b className="text-xl font-black text-[#e52421] mt-0.5">-{losses.visibility}%</b>
-                </div>
-                <div className="flex flex-col bg-white/70 rounded-xl p-3 border border-[#f1f5f9]">
-                  <span className="text-[11px] font-mono uppercase text-[#64748b]">{tCalc(copy.step4FrictionSpeed, locale)}</span>
-                  <b className="text-xl font-black text-[#e52421] mt-0.5">-{losses.speed}%</b>
-                </div>
-                <div className="flex flex-col bg-white/70 rounded-xl p-3 border border-[#f1f5f9]">
-                  <span className="text-[11px] font-mono uppercase text-[#64748b]">{tCalc(copy.step4FrictionSecurity, locale)}</span>
-                  <b className="text-xl font-black text-[#e52421] mt-0.5">-{losses.security}%</b>
-                </div>
-                <div className="flex flex-col bg-white/70 rounded-xl p-3 border border-[#f1f5f9]">
-                  <span className="text-[11px] font-mono uppercase text-[#64748b]">{tCalc(copy.step4FrictionForms, locale)}</span>
-                  <b className="text-xl font-black text-[#e52421] mt-0.5">-{losses.forms}%</b>
-                </div>
-              </div>
-            </article>
-          </div>
-
-        </div>
-      </section>
+      {/* 3. Why: the visitor's path step by step */}
+      <StageTimeline locale={locale} stages={stages} biggestKey={biggest.key} total={losses.total} />
 
       {/* 3. ACTIONABLE FIX SPRINT (What we fix in 3-5 days) */}
       <CalcSprint locale={locale} areas={top3.map((r) => r.area)} />

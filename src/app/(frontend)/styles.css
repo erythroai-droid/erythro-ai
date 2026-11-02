@@ -158,6 +158,62 @@
   }
 }
 
+/* Calculator LP v2 report: the loss panel uses the same liquid motion in brand colours on a deep lilac base. */
+.calc-loss-flow {
+  background: linear-gradient(120deg, #150f26 0%, #24173f 35%, #33204f 65%, #150f26 100%);
+  background-size: 260% 260%;
+  animation: calc-loss-pan 18s ease-in-out infinite alternate;
+}
+
+/* Glows sit low and to the sides, away from the headline, so its colours stay clean. */
+.calc-loss-a {
+  left: 45%;
+  top: 55%;
+  width: 65%;
+  height: 90%;
+  background: radial-gradient(closest-side, rgba(229, 36, 33, 0.32), rgba(229, 36, 33, 0.1) 60%, transparent);
+  animation: calc-lq-1 13s ease-in-out infinite alternate;
+}
+
+.calc-loss-b {
+  left: 62%;
+  top: -35%;
+  width: 50%;
+  height: 80%;
+  background: radial-gradient(closest-side, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.1) 60%, transparent);
+  animation: calc-lq-2 16s ease-in-out -6s infinite alternate;
+}
+
+.calc-loss-c {
+  left: -18%;
+  top: 70%;
+  width: 55%;
+  height: 70%;
+  background: radial-gradient(closest-side, rgba(236, 72, 153, 0.22), rgba(236, 72, 153, 0.08) 60%, transparent);
+  animation: calc-lq-3 14s ease-in-out -3s infinite alternate;
+}
+
+[dir='rtl'] .calc-loss-a {
+  left: -10%;
+}
+
+[dir='rtl'] .calc-loss-b {
+  left: -12%;
+}
+
+[dir='rtl'] .calc-loss-c {
+  left: 63%;
+}
+
+@keyframes calc-loss-pan {
+  from {
+    background-position: 0% 40%;
+  }
+  to {
+    background-position: 100% 60%;
+  }
+}
+
 /* Calculator LP v2 hero: the character slides up from the bottom edge of the screen on load. */
 .calc-hero-rise {
   animation: calc-hero-rise 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
@@ -174,6 +230,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .calc-lq-blob,
+  .calc-loss-flow,
   .calc-hero-rise {
     animation: none;
   }

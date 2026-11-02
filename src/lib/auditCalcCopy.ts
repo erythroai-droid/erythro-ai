@@ -1,6 +1,6 @@
 import type { LightLevel } from '@/lib/revenueLeak'
 
-type Localized = { en: string; ru: string; he: string }
+export type Localized = { en: string; ru: string; he: string }
 
 export function tCalc(field: Localized, locale: string): string {
   return field[locale as keyof Localized] || field.en
@@ -1077,6 +1077,128 @@ export const auditCalcCopy = {
     en: 'Lost checkout inquiries',
     ru: 'Срыв готовых заявок',
     he: 'אובדן פניות מוכנות',
+  } satisfies Localized,
+
+  /* Step 4 funnel ledger: headline, funnel bars, stage list */
+  step4MetaReport: {
+    en: 'Audit report · 230+ checks',
+    ru: 'Отчёт об аудите · 230+ проверок',
+    he: 'דוח ביקורת · 230+ בדיקות',
+  } satisfies Localized,
+  step4FunnelHeadline: {
+    en: 'Out of 100 visitors, only {kept} reach an inquiry',
+    ru: 'Из 100 посетителей до заявки доходят {kept}',
+    he: 'מתוך 100 מבקרים, רק {kept} מגיעים לפנייה',
+  } satisfies Localized,
+  step4FunnelSub: {
+    en: 'Your site loses {p}% of clients across four funnel stages. Overall funnel score: {score} out of 100 ({status}).',
+    ru: 'Сайт теряет {p}% клиентов на четырёх этапах воронки. Общая оценка воронки: {score} из 100 ({status}).',
+    he: 'האתר מאבד {p}% מהלקוחות בארבעה שלבי המשפך. ציון המשפך הכולל: {score} מתוך 100 ({status}).',
+  } satisfies Localized,
+  step4FunnelEntry: {
+    en: 'Visitors',
+    ru: 'Посетители',
+    he: 'מבקרים',
+  } satisfies Localized,
+  step4FunnelReached: {
+    en: 'Left an inquiry',
+    ru: 'Оставили заявку',
+    he: 'השאירו פנייה',
+  } satisfies Localized,
+  step4FunnelLegendKept: {
+    en: 'Moved on',
+    ru: 'Прошли дальше',
+    he: 'המשיכו הלאה',
+  } satisfies Localized,
+  step4FunnelLegendLost: {
+    en: 'Left at this stage',
+    ru: 'Ушли на этапе',
+    he: 'עזבו בשלב זה',
+  } satisfies Localized,
+  step4StageShortSearch: { en: 'Search and AI', ru: 'Поиск и AI', he: 'חיפוש ו-AI' } satisfies Localized,
+  step4StageShortSpeed: { en: 'Load speed', ru: 'Скорость', he: 'מהירות' } satisfies Localized,
+  step4StageShortTrust: { en: 'Trust', ru: 'Доверие', he: 'אמון' } satisfies Localized,
+  step4StageShortForm: { en: 'Inquiry form', ru: 'Заявка', he: 'טופס פנייה' } satisfies Localized,
+  step4FunnelTitle: { en: 'Visitor funnel', ru: 'Воронка посетителей', he: 'משפך המבקרים' } satisfies Localized,
+  step4FunnelCaption: { en: 'per 100 visitors', ru: 'на 100 посетителей', he: 'לכל 100 מבקרים' } satisfies Localized,
+  step4FunnelPassed: { en: 'of 100 move on', ru: 'из 100 идут дальше', he: 'מתוך 100 ממשיכים' } satisfies Localized,
+  step4StepLabel: { en: 'Step', ru: 'Шаг', he: 'שלב' } satisfies Localized,
+  step4HeroLabel: { en: 'Your site is losing', ru: 'Ваш сайт теряет', he: 'האתר שלכם מאבד' } satisfies Localized,
+  step4HeroPerMonth: { en: 'every month', ru: 'каждый месяц', he: 'בכל חודש' } satisfies Localized,
+  step4HeroPctTail: {
+    en: 'of clients who already reached your site',
+    ru: 'клиентов, которые уже пришли на сайт',
+    he: 'מהלקוחות שכבר הגיעו לאתר',
+  } satisfies Localized,
+  step4StatYear: { en: 'lost per year', ru: 'теряется за год', he: 'אובדים בשנה' } satisfies Localized,
+  step4StatClients: { en: 'clients lost per month', ru: 'клиентов уходят в месяц', he: 'לקוחות אובדים בחודש' } satisfies Localized,
+  step4StatReach: { en: 'of 100 visitors leave an inquiry', ru: 'из 100 посетителей оставляют заявку', he: 'מתוך 100 מבקרים משאירים פנייה' } satisfies Localized,
+  step4StatUpside: { en: 'more inquiries once leaks are closed', ru: 'больше заявок, если закрыть утечки', he: 'יותר פניות אחרי סגירת הדליפות' } satisfies Localized,
+  step4StatScore: { en: 'funnel score', ru: 'оценка воронки', he: 'ציון המשפך' } satisfies Localized,
+  step4WhereTitle: { en: 'Where the money leaks', ru: 'Куда уходят деньги', he: 'לאן הכסף דולף' } satisfies Localized,
+  step4WhereSub: {
+    en: 'Losses by funnel stage, from the biggest to the smallest.',
+    ru: 'Потери по этапам воронки — от самой большой к меньшей.',
+    he: 'האובדן לפי שלבי המשפך, מהגדול לקטן.',
+  } satisfies Localized,
+  step4StageShare: {
+    en: '{p}% of visitors leave here · {s}% of all losses',
+    ru: 'здесь уходят {p}% посетителей · {s}% всех потерь',
+    he: '{p}% מהמבקרים עוזבים כאן · {s}% מכלל האובדן',
+  } satisfies Localized,
+  step4LeaksAcross: { en: 'across all funnel stages', ru: 'на всех этапах воронки', he: 'בכל שלבי המשפך' } satisfies Localized,
+  step4StageVisitors: { en: '{p}% of visitors leave here', ru: 'здесь уходят {p}% посетителей', he: '{p}% מהמבקרים עוזבים כאן' } satisfies Localized,
+  step4StageShareTag: { en: '{s}% of all losses', ru: '{s}% всех потерь', he: '{s}% מכלל האובדן' } satisfies Localized,
+  step4StageWhyLink: { en: 'Why: {stage}', ru: 'Почему: {stage}', he: 'למה: {stage}' } satisfies Localized,
+  step4Total: { en: 'Total', ru: 'Итого', he: 'סה״כ' } satisfies Localized,
+  step4WhyTitle: { en: 'Why it happens', ru: 'Почему это происходит', he: 'למה זה קורה' } satisfies Localized,
+  step4WhySub: {
+    en: 'The visitor’s path step by step: what they do and where the site loses them.',
+    ru: 'Путь клиента шаг за шагом: что он делает и где сайт его теряет.',
+    he: 'מסלול הלקוח צעד אחר צעד: מה הוא עושה והיכן האתר מאבד אותו.',
+  } satisfies Localized,
+  step4HeroContextMoney: {
+    en: 'With {rev} monthly revenue, the site misses {p}% of inquiries. That is {yearly} a year.',
+    ru: 'При выручке {rev} в месяц сайт недополучает {p}% заявок. За год это {yearly}.',
+    he: 'בהכנסה של {rev} בחודש האתר מפספס {p}% מהפניות. בשנה זה {yearly}.',
+  } satisfies Localized,
+  step4HeroContextPct: {
+    en: 'Out of every 100 visitors, {lost} leave without sending an inquiry. They are ready to buy, but the site lets them go.',
+    ru: 'Из каждых 100 посетителей {lost} уходят, так и не оставив заявку. Они готовы купить, но сайт их упускает.',
+    he: 'מתוך כל 100 מבקרים, {lost} עוזבים בלי להשאיר פנייה. הם מוכנים לקנות, אבל האתר מפספס אותם.',
+  } satisfies Localized,
+  step4HeroCta: { en: 'Get the fix plan', ru: 'Получить план исправлений', he: 'לקבל תוכנית תיקון' } satisfies Localized,
+  step4HeroMore: { en: 'See the breakdown', ru: 'Смотреть разбор', he: 'לפירוט המלא' } satisfies Localized,
+  step4DotsTitle: { en: 'Out of 100 site visitors', ru: 'Из 100 посетителей сайта', he: 'מתוך 100 מבקרים באתר' } satisfies Localized,
+  step4DotsAria: {
+    en: '{kept} of 100 visitors leave an inquiry, {lost} leave without one',
+    ru: '{kept} из 100 посетителей оставляют заявку, {lost} уходят без неё',
+    he: '{kept} מתוך 100 מבקרים משאירים פנייה, {lost} עוזבים בלעדיה',
+  } satisfies Localized,
+  step4DotsLost: { en: '{n} leave without an inquiry', ru: '{n} уходят без заявки', he: '{n} עוזבים בלי פנייה' } satisfies Localized,
+  step4DotsKept: { en: '{n} leave an inquiry', ru: '{n} оставляют заявку', he: '{n} משאירים פנייה' } satisfies Localized,
+  step4RingTitle: { en: 'Who reaches an inquiry', ru: 'Кто доходит до заявки', he: 'מי מגיע לפנייה' } satisfies Localized,
+  step4RingCenter: { en: 'reach an inquiry', ru: 'доходят до заявки', he: 'מגיעים לפנייה' } satisfies Localized,
+  step4RingLegendKept: { en: 'Reach an inquiry', ru: 'Доходят до заявки', he: 'מגיעים לפנייה' } satisfies Localized,
+  step4RingLegendLost: { en: 'Lost on the way', ru: 'Теряются по пути', he: 'אובדים בדרך' } satisfies Localized,
+  step4LeaksByStage: { en: 'Losses by stage', ru: 'Потери по этапам', he: 'אובדן לפי שלבים' } satisfies Localized,
+  step4LeaksTotal: { en: 'Total lost', ru: 'Всего теряется', he: 'סה״כ אובדן' } satisfies Localized,
+  step4TopLeaks: { en: 'Biggest leaks', ru: 'Главные утечки', he: 'הדליפות הגדולות' } satisfies Localized,
+  step4StatLeakStages: { en: 'funnel stages losing clients', ru: 'этапов воронки теряют клиентов', he: 'שלבי משפך מאבדים לקוחות' } satisfies Localized,
+  step4StagesHeading: {
+    en: 'Where exactly clients drop off',
+    ru: 'Где именно уходят клиенты',
+    he: 'היכן בדיוק הלקוחות נושרים',
+  } satisfies Localized,
+  step4StageClient: { en: 'Visitor', ru: 'Клиент', he: 'הלקוח' } satisfies Localized,
+  step4StageFailure: { en: 'Failure', ru: 'Сбой', he: 'הכשל' } satisfies Localized,
+  step4StageScore: { en: 'score {score}/100', ru: 'балл {score}/100', he: 'ציון {score}/100' } satisfies Localized,
+  step4StageNoLoss: { en: 'no loss', ru: 'без потерь', he: 'ללא אובדן' } satisfies Localized,
+  step4BiggestLeak: { en: 'Biggest leak', ru: 'Главная утечка', he: 'הדליפה הגדולה' } satisfies Localized,
+  step4PageSpeedLink: {
+    en: 'Check in PageSpeed Insights',
+    ru: 'Проверить в PageSpeed Insights',
+    he: 'בדיקה ב-PageSpeed Insights',
   } satisfies Localized,
 
   /* Final Outcome Card */

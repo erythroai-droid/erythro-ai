@@ -266,7 +266,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     <div
       className={`relative isolate min-h-screen flex flex-col justify-between w-full bg-transparent text-[#0f172a] overflow-x-hidden overflow-y-auto selection:bg-[#e52421]/15 selection:text-[#e52421] ${
         stage.name === 'ready'
-          ? ''
+          ? '!bg-[#eaeaea]'
           : 'lg:min-h-screen [@media(min-height:720px)_and_(min-width:1024px)]:h-screen [@media(min-height:720px)_and_(min-width:1024px)]:max-h-screen [@media(min-height:720px)_and_(min-width:1024px)]:overflow-hidden'
       }`}
     >
@@ -317,8 +317,9 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
       {/* ================= 2. MAIN CONTENT ================= */}
       {stage.name === 'ready' && report && pillars ? (
-        <main className="w-full flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-10 xl:px-12 2xl:px-14 py-8 sm:py-10 lg:py-14 animate-hero-fade">
-          <div className="w-full max-w-[1536px] xl:max-w-[1680px] 2xl:max-w-[1760px] mx-auto">
+        <main className="w-full flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pb-8 sm:pb-10 lg:pb-14 animate-hero-fade">
+          {/* Same side padding and content width as the full-bleed loss panel, so every block below lines up with it */}
+          <div className="w-full max-w-[1440px] mx-auto">
             <CalcResult
               locale={locale}
               domain={domain}
