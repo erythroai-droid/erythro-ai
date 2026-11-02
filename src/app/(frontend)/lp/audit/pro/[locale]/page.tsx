@@ -13,6 +13,7 @@ import {
   tAuditLp,
   type AuditLpLocale,
 } from '@/lib/auditLp'
+import { ogImageFields, ogImageForPlan } from '@/lib/ogImages'
 
 export const dynamic = 'force-static'
 export const revalidate = 60
@@ -43,6 +44,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description = tAuditLp(copy.subhead, locale)
   const canonical = auditLpCanonicalUrl(locale, PRODUCT)
   const origin = auditLpPublicOrigin(locale, PRODUCT)
+  // Child openGraph replaces layout OG — must include images (PIT-079).
+  const ogImage = ogImageForPlan('audit-pro')
+  const ogImages = [ogImageFields(ogImage, title)]
 
   return {
     title,
@@ -60,11 +64,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: 'Erythro.ai',
       type: 'website',
       locale: OG_LOCALE[locale],
+      images: ogImages,
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: [ogImage],
     },
     other: {
       'lp-origin': origin,
