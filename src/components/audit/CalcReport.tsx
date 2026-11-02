@@ -390,7 +390,7 @@ export function CalcHeroStatsBar({ locale, dark = false }: { locale: string; dar
     {
       category: isHe ? 'טסטים' : isRu ? 'ТЕСТЫ' : 'TESTS',
       val: '230+',
-      label: isHe ? 'בדיקות אוטומטיות לקוד, טפסי הזמנה ו-SEO + GEO' : isRu ? 'Автоматических проверок кода, форм заказа и SEO + GEO' : 'Automated checks of code, checkout forms & SEO + GEO',
+      label: isHe ? 'בדיקות קוד, טפסים ו-SEO + GEO. פירוט מלא בביקורת Pro' : isRu ? 'Проверок кода, форм и SEO + GEO. Полный разбор в аудите Pro' : 'Checks of code, forms & SEO + GEO. Full breakdown in the Pro audit',
     },
     {
       category: isHe ? 'מהירות' : isRu ? 'СКОРОСТЬ' : 'SPEED',
@@ -1171,8 +1171,8 @@ export function CalcWaiting({
             <div key={d.t.en} className={`flex min-w-0 items-start gap-2 rounded-[8px] border px-2.5 py-2 text-start ${isDark ? 'border-white/20 bg-white/[0.12]' : tile}`}>
               <svg className="mt-px size-3.5 shrink-0 text-[#86efac]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
               <span className="flex min-w-0 flex-col">
-                <span className={`text-xs font-bold leading-tight sm:truncate ${ink}`}>{tCalc(d.t, locale)}</span>
-                <span className={`mt-0.5 text-[11px] leading-tight sm:truncate ${muted}`}>{tCalc(d.s, locale)}</span>
+                <span className={`text-xs font-bold leading-tight ${ink}`}>{tCalc(d.t, locale)}</span>
+                <span className={`mt-0.5 text-[11px] leading-tight ${muted}`}>{tCalc(d.s, locale)}</span>
               </span>
             </div>
           ))}
@@ -2390,6 +2390,16 @@ export function CalcCta({
               </bdi>
               <span aria-hidden className="ms-0.5 align-super text-[0.45em] font-bold text-white/60">*</span>
             </b>
+            {/* The Pro audit comes free with the fix: old price struck through, ₪0 in mint, as on the sprint bonus */}
+            {/* One run of inline text, so the price stays on the line with the last word instead of dropping below */}
+            <span className="mt-1 block text-sm font-semibold leading-[1.5] text-white">
+              <svg className="me-1.5 inline-block size-4 -translate-y-px align-middle" style={{ color: GAIN.mint }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+              {tCalc(copy.step4FixIncludesPro, locale)}{' '}
+              <span className="whitespace-nowrap">
+                <s className="font-medium text-white/55"><bdi>{copy.offerOldPrice}</bdi></s>{' '}
+                <b className="text-xl font-black leading-none" style={{ color: GAIN.mint }}><bdi>{copy.offerNewPrice}</bdi></b>
+              </span>
+            </span>
             <span className="text-xs leading-[1.5] text-white/65">{tCalc(copy.step4FixEstimateNote, locale)}</span>
           </div>
           {/* Same width as the plate; zero intrinsic width so it never widens the column, only fills it */}

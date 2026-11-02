@@ -703,7 +703,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               ) : null}
 
               {stage.name === 'waiting' ? (
-                <div className="w-full rounded-[20px] border border-white/20 bg-white/[0.08] text-white shadow-[0_8px_24px_-14px_rgba(10,6,25,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl p-6 sm:p-8 lg:p-7 xl:p-8 flex flex-col gap-3">
+                <div className="w-full rounded-[20px] border border-white/20 bg-white/[0.08] text-white shadow-[0_8px_24px_-14px_rgba(10,6,25,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl p-6 sm:p-8 lg:p-6 flex flex-col gap-3">
                   <CalcWaiting locale={locale} domain={domain} progress={progress} theme="dark" />
                 </div>
               ) : null}

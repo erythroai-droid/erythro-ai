@@ -1181,6 +1181,7 @@ export const auditCalcCopy = {
     he: '230+ בדיקות לאתר כלולות במחיר הספרינט.',
   } satisfies Localized,
   step4FixTotal: { en: 'Fix total', ru: 'Сумма исправлений', he: 'סכום התיקונים' } satisfies Localized,
+  step4FixIncludesPro: { en: 'The price includes the Pro audit: full report on 230+ checks', ru: 'В стоимость входит аудит Pro: полный отчёт по 230+ проверкам', he: 'המחיר כולל ביקורת Pro: דוח מלא על 230+ בדיקות' } satisfies Localized,
   step4FixEstimateNote: {
     en: '* Preliminary estimate. The final price and timeline are agreed with you.',
     ru: '* Предварительный расчёт. Точная цена и сроки — после согласования.',
@@ -1382,9 +1383,9 @@ export const auditCalcCopy = {
       he: 'ההחזר משווה את ההפסד למחיר הקבוע של ספרינט התיקונים.',
     },
     {
-      en: 'This is a free express check of the homepage. The full Pro audit, 230+ checks, comes with the fix sprint.',
-      ru: 'Это бесплатная экспресс-проверка главной страницы. Полный аудит Pro на 230+ проверок входит в спринт исправлений.',
-      he: 'זו בדיקה מהירה וחינמית של דף הבית. ביקורת Pro המלאה, 230+ בדיקות, כלולה בספרינט התיקונים.',
+      en: 'The site was checked on 230+ parameters; the free audit shows a short summary. The full report on every check is in the Pro audit, which comes with the fix sprint.',
+      ru: 'Сайт проверен по 230+ параметрам, в бесплатном аудите показана краткая сводка. Полный отчёт по каждой проверке даёт аудит Pro, он входит в спринт исправлений.',
+      he: 'האתר נבדק לפי 230+ פרמטרים; בביקורת החינמית מוצג סיכום קצר. הדוח המלא על כל בדיקה נמצא בביקורת Pro, הכלולה בספרינט התיקונים.',
     },
   ] as const,
   sprintBadge: { en: 'Sprint', ru: 'Спринт', he: 'ספרינט' } satisfies Localized,
@@ -1595,9 +1596,9 @@ export const auditCalcCopy = {
     he: 'אומדן דליפת הכנסות מדויק בש״ח או ב-% לאורך המשפך',
   } satisfies Localized,
   step3Deliverable2Title: {
-    en: '230+ checks',
-    ru: '230+ тестов',
-    he: '230+ בדיקות',
+    en: 'Summary of 230+ checks',
+    ru: 'Итоги 230+ тестов',
+    he: 'סיכום 230+ בדיקות',
   } satisfies Localized,
   step3Deliverable2Desc: {
     en: 'speed on mobile & desktop, order forms, SEO & AI',
