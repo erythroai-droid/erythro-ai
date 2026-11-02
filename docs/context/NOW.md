@@ -1,38 +1,25 @@
 # Latest changes
 
-Обновлено: 2026-11-01 (фикс pin AI Visibility запушен)  
-Статус: Ветка `cursor/fix-ai-visibility-pin` запушена, не задеплоена
+Обновлено: 2026-11-02 (og:image на audit LP / `/audit` — PIT-079)  
+Статус: В работе (ожидает деплоя / ревью)
 
 ---
 
-## 1. Home AI Visibility pin — фикс «уезжает вверх» (текущий этап)
-- **Проблема:** Блок AI Visibility (`#ai-audit`) при скролле отпускал GSAP-pin слишком рано и уезжал вверх вместо того, чтобы стоять, пока Cases («наши работы») наезжает — как Cases → Services.
-- **Причина:** `ai-audit-pin` имел `end: '+=180%'` при Cases lead-in `160vh`. У `cases-pin` для того же паттерна — `+=260%`.
-- **Фикс:** `src/components/AiAuditHomeSection.tsx` — `end: '+=260%'` + пустой scrub-hold после settle; PIT-154. Ветка `cursor/fix-ai-visibility-pin`.
-- **Следующий шаг:** PR → merge → проверить на desktop (≥1024) после деплоя.
+## 1. og:image на audit-en.erythro.ai (и соседних LP) — PIT-079
+- **Проблема:** `generateMetadata` на `/lp/audit/{locale}` задавал свой `openGraph` без `images` → Next затирал layout OG, в HTML не было `og:image`.
+- **Фикс:** `openGraph.images` + `twitter.images` через `ogImageForPlan` / `ogImageFields` (`src/lib/ogImages.ts`).
+  - Free LP (`audit-en|ru|he`): `audit-free` → `Ai-Audit-1200-630-2.jpg` на R2
+  - Pro / Diagnostic LP: те же карты
+  - `/audit`: то же (тот же баг)
+- **Файлы:** `lp/audit/[locale]/page.tsx`, `lp/audit/pro|diagnostic/[locale]/page.tsx`, `audit/page.tsx`
+- **Следующий шаг:** Деплой; после — проверка view-source / LinkedIn Post Inspector на `https://audit-en.erythro.ai/`.
 
 ---
 
-## 2. ЛП калькулятора v2 (/lp/audit/calc/{ru,en,he}) — ШАГИ 1 И 2 ГОТОВЫ
-- **Статус:** Шаг 1 и Шаг 2 закоммичены в `feat/audit-calc-lp-v2` (worktree `C:/dev/erythro-ai-calc2`, порт 3112).
-- **Следующий шаг:** Экран ожидания (Шаг 3) и экран результатов (Шаг 4).
+## 2. ЛП калькулятора v2 (/lp/audit/calc/{ru,en,he}) — ШАГ 4
+- Worktree `C:/dev/erythro-ai-calc2`, ветка `feat/audit-calc-lp-v2`. Ожидает ревью.
 
 ---
 
-## 3. Hero на иврите: контур заднего плана (ветка `fix/hero-rtl-outline`) — ОЖИДАЕТ PR
-- Передний план в main; задний SVG-контур — в ветке. PR по команде пользователя.
-
----
-
-## 4. Отчёт 244 / бот-защита — ОЖИДАЕТ РЕШЕНИЯ
-- Письмо клиенту «Аудит не выполнен»; PATCH CMS для обнуления `auditScore`.
-
----
-
-## 5. Платные ЛП (Pro ₪490, Diagnostic ₪99) — ОЖИДАЕТ РЕШЕНИЯ
-- Код в `C:/dev/erythro-ai`, не закоммичен. Утвердить цены и тексты.
-
----
-
-## 6. Журнал мелких ошибок отчётов (ветка `docs/report-minor-issues`)
-- `docs/audit/minor-issues.md` в worktree `C:/dev/erythro-ai-minor-issues`.
+## 3. Hero RTL outline / отчёт 244 / платные ЛП / minor-issues
+- Без изменений в этой сессии; см. предыдущую эстафету.

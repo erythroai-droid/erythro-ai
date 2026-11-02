@@ -6,6 +6,7 @@ import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getCachedAuditPage } from '@/lib/auditPage.server'
 import { tAudit } from '@/lib/auditPage'
 import { getRequestPrefs } from '@/lib/requestPrefs'
+import { ogImageFields, ogImageForPlan } from '@/lib/ogImages'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -21,6 +22,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = `${tAudit(page.title, locale)} | Erythro.ai`
   const description = tAudit(page.metaDescription, locale)
   const slug = page.slug || 'audit'
+  // Child openGraph replaces layout OG — must include images (PIT-079).
+  const ogImage = ogImageForPlan('audit-free')
+  const ogImages = [ogImageFields(ogImage, title)]
 
   return {
     title,
@@ -32,11 +36,13 @@ export async function generateMetadata(): Promise<Metadata> {
       url: `${SITE_URL}/${slug}`,
       siteName: 'Erythro.ai',
       type: 'website',
+      images: ogImages,
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: [ogImage],
     },
   }
 }
