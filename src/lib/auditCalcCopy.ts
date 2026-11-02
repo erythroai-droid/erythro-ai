@@ -831,6 +831,282 @@ export const auditCalcCopy = {
     ru: 'Спринт исправлений: устраняем все найденные сбои воронки за 3–5 дней',
     he: 'ספרינט תיקונים: ביטול כל כשלי המשפך שאותרו תוך 3–5 ימים',
   } satisfies Localized,
+
+  /* ---- Step 4: Vertical Funnel Journey (Option 1) ---- */
+  step4JourneyKicker: {
+    en: '§ 04 — USER JOURNEY & FUNNEL BREAKDOWN',
+    ru: '§ 04 — АНАТОМИЯ ВОРОНКИ И ТОЧКИ СБОЕВ',
+    he: '§ 04 — מסלול הלקוח ונקודות הכשל במשפך',
+  } satisfies Localized,
+  step4HeadlinePrefix: {
+    en: 'Where your website loses up to ',
+    ru: 'Где ваш сайт теряет до ',
+    he: 'איפה האתר שלכם מאבד עד ',
+  } satisfies Localized,
+  step4HeadlineSuffix: {
+    en: ' of potential clients',
+    ru: ' потенциальных клиентов',
+    he: ' מהלקוחות הפוטנציאליים',
+  } satisfies Localized,
+  step4PillLoss: {
+    en: 'Total loss: −{p}%',
+    ru: 'Суммарные потери: −{p}%',
+    he: 'סך אובדן: −{p}%',
+  } satisfies Localized,
+  step4PillScore: {
+    en: 'Funnel Score: {score}/100 ({status})',
+    ru: 'Оценка воронки: {score}/100 ({status})',
+    he: 'ציון משפך: {score}/100 ({status})',
+  } satisfies Localized,
+  step4PillBottlenecks: {
+    en: '{n} critical drop-off points',
+    ru: '{n} критических сбоя воронки',
+    he: '{n} נקודות כשל קריטיות',
+  } satisfies Localized,
+  step4PillUpside: {
+    en: 'Growth upside: +{p}% leads',
+    ru: 'Потенциал роста: +{p}% заявок',
+    he: 'פוטנציאל גידול: +{p}% פניות',
+  } satisfies Localized,
+  step4PillClients: {
+    en: 'At risk: ≈ {n} clients/mo',
+    ru: 'Под угрозой: ≈ {n} клиентов/мес',
+    he: 'בסיכון: כ-~{n} לקוחות/חודש',
+  } satisfies Localized,
+  step4CardColUser: {
+    en: 'Customer action',
+    ru: 'Что делает клиент',
+    he: 'מה עושה הלקוח',
+  } satisfies Localized,
+  step4CardColIssue: {
+    en: 'Where friction occurs',
+    ru: 'Где возникает сбой',
+    he: 'היכן מתרחש הכשל',
+  } satisfies Localized,
+  step4JourneyHeroL1: {
+    en: 'WHERE YOUR WEBSITE LOSES',
+    ru: 'ГДЕ ВАШ САЙТ ТЕРЯЕТ',
+    he: 'איפה האתר שלכם מאבד',
+  } satisfies Localized,
+  step4JourneyHeroL2: {
+    en: 'UP TO {p}% OF CLIENTS',
+    ru: 'ДО {p}% ПОТЕНЦИАЛЬНЫХ КЛИЕНТОВ',
+    he: 'עד {p}% מהלקוחות הפוטנציאליים',
+  } satisfies Localized,
+  step4JourneySub: {
+    en: 'Step-by-step breakdown of the visitor path from search to checkout. We identified critical bottlenecks where customers drop off before leaving an inquiry.',
+    ru: 'Пошаговый разбор пути посетителя от первого поиска до заявки. Мы проверили ключевые этапы и выявили, где клиенты спотыкаются и уходят к конкурентам.',
+    he: 'פירוק שלב-אחר-שלב של מסלול המבקר מחיפוש ראשוני ועד שליחת פנייה. בדקנו את השלבים המרכזיים ואיתרנו היכן לקוחות נושרים ועוברים למתחרים.',
+  } satisfies Localized,
+  step4JourneyVerdict: {
+    en: 'Funnel Verdict: Out of 100 potential customers, only ~{retained} reach checkout. The funnel breaks down at key friction points.',
+    ru: 'Вердикт воронки: из 100 потенциальных клиентов до заявки доходят только ~{retained}. Воронка даёт сбой на ключевых этапах пути.',
+    he: 'פסיקת המשפך: מתוך 100 לקוחות פוטנציאליים, רק כ-~{retained} מגיעים להשלמת פנייה. המשפך כושל בנקודות חיכוך קריטיות.',
+  } satisfies Localized,
+  step4JourneySummaryLossLabel: {
+    en: 'Funnel conversion leak',
+    ru: 'Потери конверсии',
+    he: 'אובדן המרה במשפך',
+  } satisfies Localized,
+  step4JourneySummaryLossSub: {
+    en: 'lost across funnel stages',
+    ru: 'отсекаются на этапах воронки',
+    he: 'נושרים בשלבי המשפך',
+  } satisfies Localized,
+  step4JourneySummaryScoreLabel: {
+    en: 'Funnel health index',
+    ru: 'Общая оценка воронки',
+    he: 'מדד תקינות המשפך',
+  } satisfies Localized,
+  step4JourneySummaryScoreSub: {
+    en: 'out of 100 (230+ checks)',
+    ru: 'из 100 по 230+ тестам',
+    he: 'מתוך 100 (230+ בדיקות)',
+  } satisfies Localized,
+  step4JourneyTimelineHeading: {
+    en: 'Step-by-Step Funnel Journey: Where Visitors Drop Off',
+    ru: 'Путь клиента: 4 ключевых этапа воронки',
+    he: 'מסלול הלקוח: 4 שלבי המשפך שבהם מאבדים לקוחות',
+  } satisfies Localized,
+  step4JourneyTimelineSub: {
+    en: 'Follow the vertical line down to see what happens at each stage of the visit and why visitors abandon the site.',
+    ru: 'Двигайтесь по вертикальной линии вниз, чтобы увидеть, что происходит на каждом этапе визита и почему посетители уходят.',
+    he: 'עקבו לאורך הקו האנכי כדי לראות מה מתרחש בכל שלב בביקור ומדוע לקוחות נוטשים את האתר.',
+  } satisfies Localized,
+
+  /* 4 Journey Stages */
+  step4Stage1Tag: {
+    en: 'Stage 01 · Search & AI',
+    ru: 'Этап 01 · Привлечение и поиск',
+    he: 'שלב 01 · איתור ונראות בחיפוש',
+  } satisfies Localized,
+  step4Stage1Title: {
+    en: 'Can new customers find your site in Google & AI?',
+    ru: 'Находят ли сайт в Google и AI-поисковиках?',
+    he: 'האם לקוחות חדשים מוצאים את האתר בגוגל וב-AI?',
+  } satisfies Localized,
+  step4Stage1ActionLabel: {
+    en: 'What the user does:',
+    ru: 'Что делает клиент:',
+    he: 'מה עושה הלקוח:',
+  } satisfies Localized,
+  step4Stage1ActionDesc: {
+    en: 'Searches for your service in Google, ChatGPT, or Perplexity to find a solution.',
+    ru: 'Ищет ваши услуги в поиске Google или запрашивает рекомендации у ChatGPT и Perplexity.',
+    he: 'מחפש את השירותים שלכם בגוגל או מבקש המלצות מ-ChatGPT ומ-Perplexity.',
+  } satisfies Localized,
+  step4Stage1IssueLabel: {
+    en: 'Where the friction occurs:',
+    ru: 'Где возникает сбой:',
+    he: 'היכן מתרחש הכשל:',
+  } satisfies Localized,
+  step4Stage1IssueDesc: {
+    en: 'Missing structured data (Schema.org), weak snippets, or poor indexing cause search engines and AI to overlook your services.',
+    ru: 'Отсутствие микроразметки (Schema.org), слабые сниппеты и проблемы индексации мешают сайту попадать в топ и в ответы AI.',
+    he: 'היעדר נתונים מובנים (Schema.org), תגיות חלשות ואינדוקס לקוי גורמים למנועי חיפוש ול-AI לפספס את השירותים שלכם.',
+  } satisfies Localized,
+  step4Stage1LossText: {
+    en: 'Lost search & AI potential',
+    ru: 'Потери потенциального спроса',
+    he: 'אובדן פוטנציאל חיפוש ו-AI',
+  } satisfies Localized,
+
+  step4Stage2Tag: {
+    en: 'Stage 02 · First Click & Mobile Speed',
+    ru: 'Этап 02 · Первый экран и скорость',
+    he: 'שלב 02 · כניסה ראשונה ומהירות מובייל',
+  } satisfies Localized,
+  step4Stage2Title: {
+    en: 'Does the visitor wait for the page to load?',
+    ru: 'Дожидается ли посетитель загрузки сайта?',
+    he: 'האם המבקר ממתין לטעינת האתר?',
+  } satisfies Localized,
+  step4Stage2ActionLabel: {
+    en: 'What the user does:',
+    ru: 'Что делает клиент:',
+    he: 'מה עושה הלקוח:',
+  } satisfies Localized,
+  step4Stage2ActionDesc: {
+    en: 'Clicks your link or ad from a smartphone and waits for the screen to become interactive.',
+    ru: 'Кликает по ссылке или рекламе со смартфона и ждёт появления контента.',
+    he: 'מקליק על קישור או מודעה בסמארטפון וממתין להופעת התוכן.',
+  } satisfies Localized,
+  step4Stage2IssueLabel: {
+    en: 'Where the friction occurs:',
+    ru: 'Где возникает сбой:',
+    he: 'היכן מתרחש הכשל:',
+  } satisfies Localized,
+  step4Stage2IssueDesc: {
+    en: 'Slow mobile render (>2.5s on 4G) and layout jumps (CLS). Visitors leave before the page even finishes loading.',
+    ru: 'Задержка отрисовки экрана более 2.5–3.5 секунд на 4G и скачки вёрстки. Посетители закрывают вкладку, не дождавшись загрузки.',
+    he: 'עיכוב בטעינת מסך ראשון מעל 2.5–3.5 שניות ב-4G ותזוזות עימוד. גולשים סוגרים את הדף עוד לפני שהוצג במלואו.',
+  } satisfies Localized,
+  step4Stage2LossText: {
+    en: 'Lost mobile visits',
+    ru: 'Потери мобильных визитов',
+    he: 'אובדן ביקורים במובייל',
+  } satisfies Localized,
+
+  step4Stage3Tag: {
+    en: 'Stage 03 · Trust & Security',
+    ru: 'Этап 03 · Доверие и безопасность',
+    he: 'שלב 03 · אמון ואבטחת מידע',
+  } satisfies Localized,
+  step4Stage3Title: {
+    en: 'Does the site inspire safety and confidence?',
+    ru: 'Вызывает ли сайт доверие и безопасен ли он?',
+    he: 'האם האתר משדר ביטחון ואמינות?',
+  } satisfies Localized,
+  step4Stage3ActionLabel: {
+    en: 'What the user does:',
+    ru: 'Что делает клиент:',
+    he: 'מה עושה הלקוח:',
+  } satisfies Localized,
+  step4Stage3ActionDesc: {
+    en: 'Evaluates your credibility, looks for security indicators, and expects a reliable experience.',
+    ru: 'Оценивает надёжность компании, обращает внимание на безопасность браузера и стабильность работы.',
+    he: 'בוחן את אמינות העסק, שם לב לרמת האבטחה בדפדפן ומצפה לחוויה יציבה ללא תקלות.',
+  } satisfies Localized,
+  step4Stage3IssueLabel: {
+    en: 'Where the friction occurs:',
+    ru: 'Где возникает сбой:',
+    he: 'היכן מתרחש הכשל:',
+  } satisfies Localized,
+  step4Stage3IssueDesc: {
+    en: 'Missing security headers (CSP/HSTS), console script errors, or risks of browser security alerts scare clients away.',
+    ru: 'Ошибки скриптов в консоли, неполные заголовки безопасности (CSP/HSTS) или риски предупреждений браузера.',
+    he: 'שגיאות סקריפט, כותרי אבטחה חסרים (CSP/HSTS) וסיכון להתראות אבטחה שמרתיעות לקוחות.',
+  } satisfies Localized,
+  step4Stage3LossText: {
+    en: 'Lost to trust concerns',
+    ru: 'Потери из-за сбоев доверия',
+    he: 'אובדן עקב כשלי אמון ואבטחה',
+  } satisfies Localized,
+
+  step4Stage4Tag: {
+    en: 'Stage 04 · Conversion & Contact Forms',
+    ru: 'Этап 04 · Оформление заявки и контакты',
+    he: 'שלב 04 · השלמת פנייה וטפסים',
+  } satisfies Localized,
+  step4Stage4Title: {
+    en: 'Do forms and call-to-action buttons work smoothly?',
+    ru: 'Срабатывает ли форма заказа и кнопка заявки?',
+    he: 'האם טופסי הפנייה וכפתורי הקריאה לפעולה מגיבים?',
+  } satisfies Localized,
+  step4Stage4ActionLabel: {
+    en: 'What the user does:',
+    ru: 'Что делает клиент:',
+    he: 'מה עושה הלקוח:',
+  } satisfies Localized,
+  step4Stage4ActionDesc: {
+    en: 'Ready to buy: fills in phone or email, taps WhatsApp, or submits an inquiry form.',
+    ru: 'Готов обратиться: вводит телефон/email, нажимает кнопку отправки или переходит в WhatsApp.',
+    he: 'מוכן לפנות: מזין טלפון/מייל, לוחץ על כפתור השליחה או פותח וואטסאפ.',
+  } satisfies Localized,
+  step4Stage4IssueLabel: {
+    en: 'Where the friction occurs:',
+    ru: 'Где возникает сбой:',
+    he: 'היכן מתרחש הכשל:',
+  } satisfies Localized,
+  step4Stage4IssueDesc: {
+    en: 'Unresponsive mobile buttons, rigid input masking, or form validation crashes cause high-intent buyers to drop off right at the finish line.',
+    ru: 'Неотзывчивые кнопки на смартфонах, сбои маски ввода телефона или зависание формы срывают готовую заявку в самый последний момент.',
+    he: 'כפתורים שאינם מגיבים במובייל, אימות שדות קשיח או תקיעת הטופס מובילים לנשירת לקוחות בשלים ממש על קו הסיום.',
+  } satisfies Localized,
+  step4Stage4LossText: {
+    en: 'Lost checkout inquiries',
+    ru: 'Срыв готовых заявок',
+    he: 'אובדן פניות מוכנות',
+  } satisfies Localized,
+
+  /* Final Outcome Card */
+  step4OutcomeTag: {
+    en: 'Funnel Outcome',
+    ru: 'Итог воронки',
+    he: 'סיכום המשפך',
+  } satisfies Localized,
+  step4OutcomeTitle: {
+    en: 'Total Funnel Leak: Up to {p}% of potential clients lost',
+    ru: 'Суммарный диагноз: сайт теряет до {p}% обращений',
+    he: 'אבחנה מסכמת: האתר מאבד עד {p}% מהפניות',
+  } satisfies Localized,
+  step4OutcomeDesc: {
+    en: 'Every bottleneck above chips away at your conversion rate. Eliminating these 4 friction points recovers lost inquiries without increasing ad spend.',
+    ru: 'Каждое узкое место выше отсекает часть посетителей. Устранение этих 4 сбоев возвращает потерянные заявки без увеличения рекламного бюджета.',
+    he: 'כל נקודת כשל לעיל גורעת מהמרת האתר. ביטול 4 צווארי הבקבוק הללו מחזיר פניות אבודות לעסק ללא הגדלת תקציב הפרסום.',
+  } satisfies Localized,
+
+  /* Tech Details Accordion */
+  step4TechSpoilerBtn: {
+    en: 'Technical Details & 230+ Checks Protocol',
+    ru: 'Технические подробности и протокол 230+ тестов',
+    he: 'פרטים טכניים ופרוטוקול 230+ בדיקות',
+  } satisfies Localized,
+  step4TechSpoilerSub: {
+    en: 'Expand to view raw engineering scores, diagnostics breakdown, and complete audit checklist',
+    ru: 'Разверните, чтобы увидеть подробные шкалы, критерии диагностики и чеклист для разработчика',
+    he: 'הרחיבו לצפייה בציונים הנדסיים מפורטים, פירוק מדדים וצ׳ק-ליסט מלא למפתחים',
+  } satisfies Localized,
   scaleSpeed: { en: 'Speed & Mobile UX', ru: 'Скорость и мобильный UX', he: 'מהירות ו-UX למובייל' } satisfies Localized,
   scaleLeads: { en: 'Lead gen & Forms', ru: 'Лиды и формы', he: 'לידים וטפסים' } satisfies Localized,
   scaleSeo: { en: 'SEO & Visibility', ru: 'SEO и видимость', he: 'SEO ונראות' } satisfies Localized,
