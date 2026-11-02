@@ -205,6 +205,75 @@
   left: 63%;
 }
 
+/* Technical details under the sprint: light lilac wash, picks up where the sprint panel ends */
+.calc-tech-flow {
+  background:
+    radial-gradient(60% 80% at 85% 0%, rgba(139, 116, 199, 0.22), transparent 70%),
+    linear-gradient(180deg, #e4dcf5 0%, #efeaf9 55%, #f6f3fc 100%);
+}
+
+/* Calculator LP v2 report: the "how we fix it" panel — blue-violet lilac with a light rose shimmer near the bottom. */
+.calc-fix-flow {
+  background: linear-gradient(180deg, #2a2a6c 0%, #3a338a 45%, #5440a3 82%, #6a44a6 100%);
+}
+
+.calc-fix-a {
+  left: 50%;
+  top: -30%;
+  width: 60%;
+  height: 80%;
+  background: radial-gradient(closest-side, rgba(99, 102, 241, 0.45), rgba(99, 102, 241, 0.14) 60%, transparent);
+  animation: calc-lq-2 16s ease-in-out -6s infinite alternate;
+}
+
+.calc-fix-b {
+  left: -15%;
+  top: 55%;
+  width: 65%;
+  height: 80%;
+  background: radial-gradient(closest-side, rgba(236, 72, 153, 0.3), rgba(236, 72, 153, 0.08) 60%, transparent);
+  animation: calc-lq-1 14s ease-in-out infinite alternate;
+}
+
+.calc-fix-c {
+  left: 55%;
+  top: 60%;
+  width: 55%;
+  height: 70%;
+  background: radial-gradient(closest-side, rgba(167, 139, 250, 0.25), rgba(167, 139, 250, 0.08) 60%, transparent);
+  animation: calc-lq-3 15s ease-in-out -3s infinite alternate;
+}
+
+[dir='rtl'] .calc-fix-a {
+  left: -10%;
+}
+
+[dir='rtl'] .calc-fix-b {
+  left: 50%;
+}
+
+[dir='rtl'] .calc-fix-c {
+  left: -10%;
+}
+
+/* Calculator LP v2 report: arrow between "what the visitor does" and "where it breaks" drifts toward the failure. */
+.calc-arrow-nudge {
+  transform-box: fill-box;
+  animation: calc-arrow-nudge 1.6s ease-in-out infinite;
+}
+
+@keyframes calc-arrow-nudge {
+  0%,
+  100% {
+    transform: translateY(-3px);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(3px);
+    opacity: 1;
+  }
+}
+
 @keyframes calc-loss-pan {
   from {
     background-position: 0% 40%;
@@ -231,6 +300,8 @@
 @media (prefers-reduced-motion: reduce) {
   .calc-lq-blob,
   .calc-loss-flow,
+  .calc-fix-flow,
+  .calc-arrow-nudge,
   .calc-hero-rise {
     animation: none;
   }

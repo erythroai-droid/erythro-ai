@@ -826,6 +826,11 @@ export const auditCalcCopy = {
     ru: 'Инженерный протокол тестирования лаборатории Chromium',
     he: 'פרוטוקול הנדסי שהופק על ידי מעבדת Chromium',
   } satisfies Localized,
+  step4TechScalesTag: { en: 'Key indicators', ru: 'Основные показатели', he: 'מדדים עיקריים' } satisfies Localized,
+  step4TechLoss: { en: 'Loss', ru: 'Потери', he: 'אובדן' } satisfies Localized,
+  step4TechChecks: { en: 'Audit level', ru: 'Уровень аудита', he: 'רמת הביקורת' } satisfies Localized,
+  step4TechAreas: { en: 'Areas', ru: 'Направлений', he: 'תחומים' } satisfies Localized,
+  step4TechSite: { en: 'Website', ru: 'Сайт', he: 'אתר' } satisfies Localized,
   step4SprintCta: {
     en: 'Fix Sprint: Eliminate all identified funnel bottlenecks in 3–5 days',
     ru: 'Спринт исправлений: устраняем все найденные сбои воронки за 3–5 дней',
@@ -1125,6 +1130,7 @@ export const auditCalcCopy = {
   step4StepLabel: { en: 'Step', ru: 'Шаг', he: 'שלב' } satisfies Localized,
   step4HeroLabel: { en: 'Your site is losing', ru: 'Ваш сайт теряет', he: 'האתר שלכם מאבד' } satisfies Localized,
   step4HeroPerMonth: { en: 'every month', ru: 'каждый месяц', he: 'בכל חודש' } satisfies Localized,
+  step4PerMonthShort: { en: '/mo', ru: '/мес', he: '/חודש' } satisfies Localized,
   step4HeroPctTail: {
     en: 'of clients who already reached your site',
     ru: 'клиентов, которые уже пришли на сайт',
@@ -1150,6 +1156,36 @@ export const auditCalcCopy = {
   step4StageVisitors: { en: '{p}% of visitors leave here', ru: 'здесь уходят {p}% посетителей', he: '{p}% מהמבקרים עוזבים כאן' } satisfies Localized,
   step4StageShareTag: { en: '{s}% of all losses', ru: '{s}% всех потерь', he: '{s}% מכלל האובדן' } satisfies Localized,
   step4StageWhyLink: { en: 'Why: {stage}', ru: 'Почему: {stage}', he: 'למה: {stage}' } satisfies Localized,
+  step4FixKicker: { en: 'How we fix it', ru: 'Как мы это решим', he: 'איך נפתור את זה' } satisfies Localized,
+  step4FixTitlePre: { en: 'We close the leaks in', ru: 'Закроем утечки за', he: 'נסגור את הדליפות תוך' } satisfies Localized,
+  step4FixTitleDays: { en: '3–5 days', ru: '3–5 дней', he: '\u20663–5\u2069 ימים' } satisfies Localized,
+  step4FixSub: {
+    en: 'A fix sprint for the problems we found: our team does the work, your team does not have to.',
+    ru: 'Спринт исправлений по найденным проблемам: всё делаем сами, без участия вашей команды.',
+    he: 'ספרינט תיקונים לבעיות שמצאנו: אנחנו עושים את העבודה, בלי לערב את הצוות שלכם.',
+  } satisfies Localized,
+  step4FixPriceLabel: { en: 'Fixed sprint price', ru: 'Фиксированная цена спринта', he: 'מחיר קבוע לספרינט' } satisfies Localized,
+  step4FixCta: { en: 'Start the sprint', ru: 'Запустить спринт', he: 'להתחיל את הספרינט' } satisfies Localized,
+  step4FixListTitle: { en: 'What we fix', ru: 'Что исправим', he: 'מה נתקן' } satisfies Localized,
+  step4FixBackPctTail: { en: 'of visitors back', ru: 'посетителей обратно', he: 'מהמבקרים חוזרים' } satisfies Localized,
+  step4FixTileDays: { en: 'sprint length', ru: 'срок спринта', he: 'משך הספרינט' } satisfies Localized,
+  step4FixTilePayback: { en: 'sprint pays back in', ru: 'окупаемость спринта', he: 'החזר ההשקעה בספרינט' } satisfies Localized,
+  step4FixPaybackValue: { en: '{n} days', ru: '{n} дн.', he: '{n} ימים' } satisfies Localized,
+  step4FixTileChecks: { en: 'checks in the Pro audit', ru: 'проверок в аудите Pro', he: 'בדיקות בביקורת Pro' } satisfies Localized,
+  step4FixTileAudit: { en: 'Pro audit instead of {old}', ru: 'аудит Pro вместо {old}', he: 'ביקורת Pro במקום {old}' } satisfies Localized,
+  step4FixBonusTag: { en: 'Bonus', ru: 'Бонус', he: 'בונוס' } satisfies Localized,
+  step4FixBonusTitle: { en: 'Deep Pro audit as a gift', ru: 'Глубокий аудит Pro в подарке', he: 'ביקורת Pro מעמיקה במתנה' } satisfies Localized,
+  step4FixBonusBody: {
+    en: '230+ site checks are included in the sprint price.',
+    ru: '230+ проверок сайта входят в стоимость спринта.',
+    he: '230+ בדיקות לאתר כלולות במחיר הספרינט.',
+  } satisfies Localized,
+  step4FixTotal: { en: 'Fix total', ru: 'Сумма исправлений', he: 'סכום התיקונים' } satisfies Localized,
+  step4FixEstimateNote: {
+    en: '* Preliminary estimate. The final price and timeline are agreed with you.',
+    ru: '* Предварительный расчёт. Точная цена и сроки — после согласования.',
+    he: '* הערכה ראשונית. המחיר ולוח הזמנים הסופיים — לאחר תיאום.',
+  } satisfies Localized,
   step4Total: { en: 'Total', ru: 'Итого', he: 'סה״כ' } satisfies Localized,
   step4WhyTitle: { en: 'Why it happens', ru: 'Почему это происходит', he: 'למה זה קורה' } satisfies Localized,
   step4WhySub: {
@@ -1220,9 +1256,9 @@ export const auditCalcCopy = {
 
   /* Tech Details Accordion */
   step4TechSpoilerBtn: {
-    en: 'Technical Details & 230+ Checks Protocol',
-    ru: 'Технические подробности и протокол 230+ тестов',
-    he: 'פרטים טכניים ופרוטוקול 230+ בדיקות',
+    en: 'Technical Details & Audit Protocol',
+    ru: 'Технические подробности и протокол аудита',
+    he: 'פרטים טכניים ופרוטוקול הביקורת',
   } satisfies Localized,
   step4TechSpoilerSub: {
     en: 'Expand to view raw engineering scores, diagnostics breakdown, and complete audit checklist',
@@ -1344,6 +1380,11 @@ export const auditCalcCopy = {
       en: 'Payback compares the loss with the fixed price of the fix sprint.',
       ru: 'Окупаемость сравнивает потери с фиксированной ценой спринта исправлений.',
       he: 'ההחזר משווה את ההפסד למחיר הקבוע של ספרינט התיקונים.',
+    },
+    {
+      en: 'This is a free express check of the homepage. The full Pro audit, 230+ checks, comes with the fix sprint.',
+      ru: 'Это бесплатная экспресс-проверка главной страницы. Полный аудит Pro на 230+ проверок входит в спринт исправлений.',
+      he: 'זו בדיקה מהירה וחינמית של דף הבית. ביקורת Pro המלאה, 230+ בדיקות, כלולה בספרינט התיקונים.',
     },
   ] as const,
   sprintBadge: { en: 'Sprint', ru: 'Спринт', he: 'ספרינט' } satisfies Localized,

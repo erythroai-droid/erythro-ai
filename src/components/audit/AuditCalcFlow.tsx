@@ -6,7 +6,6 @@ import AuditLpForm, { AUDIT_BEAM_PROPS, type AuditLpSubmitted } from '@/componen
 import {
   CARD,
   CalcCta,
-  CalcHeroStatsBar,
   CalcNumbers,
   CalcResult,
   CalcWaiting,
@@ -261,6 +260,22 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     )
   }
 
+  // The report's full-screen panels fill the viewport below this top bar: expose its height as --calc-top
+  const headerRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const root = document.documentElement
+    const sync = () => root.style.setProperty('--calc-top', `${el.offsetHeight}px`)
+    sync()
+    const ro = new ResizeObserver(sync)
+    ro.observe(el)
+    return () => {
+      ro.disconnect()
+      root.style.removeProperty('--calc-top')
+    }
+  }, [])
+
   // ITSUA-INSPIRED TECHNICAL STUDIO LAYOUT
   return (
     <div
@@ -271,7 +286,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
       }`}
     >
       {/* ================= 1. TOP BAR (FULL WIDTH) ================= */}
-      <header className="w-full border-b border-[#cbd5e1] bg-white/70 backdrop-blur-xs px-5 sm:px-8 lg:px-12 py-2.5 sm:py-3 lg:py-2.5 flex items-center justify-between gap-4 shrink-0 z-20 animate-hero-fade">
+      <header ref={headerRef} className="w-full border-b border-[#cbd5e1] bg-white/70 backdrop-blur-xs px-5 sm:px-8 lg:px-12 py-2.5 sm:py-3 lg:py-2.5 flex items-center justify-between gap-4 shrink-0 z-20 animate-hero-fade">
         <a href={mainSiteUrl('/')} aria-label="Erythro.ai" dir="ltr" className="flex transition-opacity hover:opacity-90">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -701,11 +716,6 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
         </div>
       </main>
       )}
-
-      {/* ================= 3. FULL-WIDTH STATS BAR (ITSUA TECHNICAL STYLE) - BORDERS SOLID, NUMBERS CASCADE ================= */}
-      <section className="w-full shrink-0 border-t border-b border-[#cbd5e1] bg-white/60">
-        <CalcHeroStatsBar locale={locale} />
-      </section>
 
       {/* ================= 4. MICRO FOOTER ================= */}
       <footer className="w-full px-5 sm:px-8 lg:px-12 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-3 text-[11px] text-[#475569] shrink-0 bg-[#f8f8f8]">
