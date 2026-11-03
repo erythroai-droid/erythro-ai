@@ -1278,17 +1278,40 @@ function LossHero({
     yellow: { bg: '#ff7900', text: '#ffffff' },
     red: { bg: '#e52421', text: '#ffffff' },
   }
-  // Always four tiles: money and clients come first when known, the rest fill the row.
+  const badgeLoss = { bg: '#e52421', text: '#ffffff' } as const
+  const badgeGain = { bg: '#22bf16', text: '#ffffff' } as const
+  const badgeWarn = { bg: '#ff7900', text: '#ffffff' } as const
+  // Always four tiles, same stack: big value → colour plaque → small label (score card is the template).
   const stats: Array<{
     value: string
     label: string
     red: boolean
-    /** Solid colour plaque for the score / level (green · orange · red). */
-    badge?: { bg: string; text: string; caption: string }
+    badge: { bg: string; text: string; caption: string }
   }> = [
-    money ? { value: formatIls(yearly, locale), label: tCalc(copy.step4StatYear, locale), red: true } : null,
-    lostClients > 0 ? { value: `≈ ${lostClients}`, label: tCalc(copy.step4StatClients, locale), red: true } : null,
-    upside > 0 ? { value: `+${upside}%`, label: tCalc(copy.step4StatUpside, locale), red: false } : null,
+    money
+      ? {
+          value: formatIls(yearly, locale),
+          label: tCalc(copy.step4StatYear, locale),
+          red: true,
+          badge: { ...badgeLoss, caption: tCalc(copy.step4StatBadgeLoss, locale) },
+        }
+      : null,
+    lostClients > 0
+      ? {
+          value: `≈ ${lostClients}`,
+          label: tCalc(copy.step4StatClients, locale),
+          red: true,
+          badge: { ...badgeLoss, caption: tCalc(copy.step4StatBadgeClients, locale) },
+        }
+      : null,
+    upside > 0
+      ? {
+          value: `+${upside}%`,
+          label: tCalc(copy.step4StatUpside, locale),
+          red: false,
+          badge: { ...badgeGain, caption: tCalc(copy.step4StatBadgeUpside, locale) },
+        }
+      : null,
     {
       value: `${score}/100`,
       label: tCalc(copy.step4StatScore, locale),
@@ -1298,10 +1321,22 @@ function LossHero({
         caption: tCalc(copy.levelLabel[scoreLevel], locale),
       },
     },
-    top[0] ? { value: tCalc(top[0].short, locale), label: `${tCalc(copy.step4BiggestLeak, locale).toLowerCase()} · ⁦${stageLoss(top[0], locale)}⁩`, red: false } : null,
-    { value: `${leaking.length} / ${stages.length}`, label: tCalc(copy.step4StatLeakStages, locale), red: false },
+    top[0]
+      ? {
+          value: tCalc(top[0].short, locale),
+          label: tCalc(copy.step4BiggestLeak, locale),
+          red: false,
+          badge: { ...badgeLoss, caption: stageLoss(top[0], locale) },
+        }
+      : null,
+    {
+      value: `${leaking.length} / ${stages.length}`,
+      label: tCalc(copy.step4StatLeakStages, locale),
+      red: false,
+      badge: { ...badgeWarn, caption: tCalc(copy.step4StatBadgeStages, locale) },
+    },
   ]
-    .filter((s): s is { value: string; label: string; red: boolean; badge?: { bg: string; text: string; caption: string } } => s !== null)
+    .filter((s): s is { value: string; label: string; red: boolean; badge: { bg: string; text: string; caption: string } } => s !== null)
     .slice(0, 4)
 
   // Floating "scroll down" hint: shown on the first screen, gone once the visitor starts scrolling.
@@ -1452,19 +1487,17 @@ function LossHero({
               key={s.label}
               className="flex h-full flex-col items-center justify-center rounded-[12px] border border-white/12 bg-white/[0.06] px-3 py-5 text-center backdrop-blur-sm sm:px-5 sm:py-6"
             >
-              {/* Compact stack centred as one unit — no ghost spacer / min-heights that stretch the gap */}
+              {/* Same stack on every tile: big value → colour plaque → small label */}
               <div className="flex flex-col items-center gap-1.5">
                 <dd className={`m-0 text-2xl font-bold leading-none tracking-[-0.02em] tabular-nums sm:text-[34px] ${s.red ? 'text-[#ff6b68]' : 'text-white'}`}>
                   <bdi>{s.value}</bdi>
                 </dd>
-                {s.badge ? (
-                  <span
-                    className="inline-flex items-center rounded-[4px] px-2.5 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.04em] sm:text-xs"
-                    style={{ background: s.badge.bg, color: s.badge.text }}
-                  >
-                    {s.badge.caption}
-                  </span>
-                ) : null}
+                <span
+                  className="inline-flex items-center rounded-[4px] px-2.5 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.04em] sm:text-xs"
+                  style={{ background: s.badge.bg, color: s.badge.text }}
+                >
+                  <bdi>{s.badge.caption}</bdi>
+                </span>
                 <dt className="m-0 text-[13px] leading-[1.35] text-white/70">{s.label}</dt>
               </div>
             </div>

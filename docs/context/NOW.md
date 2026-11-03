@@ -1,12 +1,13 @@
 # Latest changes
 
-Обновлено: 2026-11-04 (hero tiles compact center)  
+Обновлено: 2026-11-04 (hero tiles uniform badge stack)  
 Статус: В коде; нужен commit/deploy
 
 ---
 
 ## 1. Сделано
-- Hero / FixSprint плитки: убраны ghost-spacer и `min-h` рядов — плотный стек по центру карточки (без «раздвижки»).
+- Hero 4 плитки: единый стек как у score — **крупное значение → цветная плашка → подпись**.
+- Плашки: Потеря / Уходят / Прирост / Хорошо|… / −N% у главной утечки / Утечки.
 
 ## 2. Следующий шаг
-- Commit/push → проверить step 4.
+- Commit/push → проверить step 4 hero tiles.
