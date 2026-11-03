@@ -8,6 +8,7 @@ import {
   monthlyRevenueOf,
   parseMoneyInput,
   parsePillars,
+  pillarsFromAuditSummary,
   pillarsFromOverall,
 } from '@/lib/revenueLeak'
 
@@ -66,11 +67,58 @@ describe('parsePillars', () => {
     })
   })
 
+  it('accepts numeric strings and executive_scorecard long keys', () => {
+    expect(parsePillars({ speed: '40', leads: 55, seo: 70, security: 90, ai: 30 })).toEqual({
+      speed: 40,
+      leads: 55,
+      seo: 70,
+      security: 90,
+      ai: 30,
+    })
+    expect(
+      parsePillars({
+        speed_mobile_ux: 41,
+        lead_gen_forms: 56,
+        seo_visibility: 71,
+        security_stability: 91,
+        ai_visibility: 31,
+      }),
+    ).toEqual({ speed: 41, leads: 56, seo: 71, security: 91, ai: 31 })
+  })
+
   it('rejects partial or malformed data', () => {
     expect(parsePillars(null)).toBeNull()
     expect(parsePillars('x')).toBeNull()
     expect(parsePillars({ speed: 40, leads: 55, seo: 70, security: 90 })).toBeNull()
-    expect(parsePillars({ speed: '40', leads: 55, seo: 70, security: 90, ai: 30 })).toBeNull()
+    expect(parsePillars({ speed: 'nope', leads: 55, seo: 70, security: 90, ai: 30 })).toBeNull()
+  })
+})
+
+describe('pillarsFromAuditSummary', () => {
+  it('prefers short pillars, else executive_scorecard', () => {
+    expect(
+      pillarsFromAuditSummary({
+        pillars: { speed: 10, leads: 20, seo: 30, security: 40, ai: 50 },
+        executive_scorecard: {
+          speed_mobile_ux: 1,
+          lead_gen_forms: 2,
+          seo_visibility: 3,
+          security_stability: 4,
+          ai_visibility: 5,
+        },
+      }),
+    ).toEqual({ speed: 10, leads: 20, seo: 30, security: 40, ai: 50 })
+    expect(
+      pillarsFromAuditSummary({
+        executive_scorecard: {
+          speed_mobile_ux: 11,
+          lead_gen_forms: 22,
+          seo_visibility: 33,
+          security_stability: 44,
+          ai_visibility: 55,
+        },
+      }),
+    ).toEqual({ speed: 11, leads: 22, seo: 33, security: 44, ai: 55 })
   })
 })
 
