@@ -39,6 +39,11 @@ describe('audit LP host / path lock', () => {
     })
     expect(AUDIT_LP_HOSTS_BY_PRODUCT.pro.ru).toBe('audit-pro-ru.erythro.ai')
     expect(AUDIT_LP_HOSTS_BY_PRODUCT.diagnostic.en).toBe('audit-diag-en.erythro.ai')
+    expect(AUDIT_LP_HOSTS_BY_PRODUCT.calc.ru).toBe('leak-ru.erythro.ai')
+    expect(auditLpTargetFromHost('leak-en.erythro.ai')).toEqual({
+      product: 'calc',
+      locale: 'en',
+    })
   })
 
   it('locks locale from /lp/audit/{locale} and paid product paths', () => {
@@ -51,6 +56,10 @@ describe('audit LP host / path lock', () => {
     expect(auditLpTargetFromPathname('/lp/audit/diagnostic/ru')).toEqual({
       product: 'diagnostic',
       locale: 'ru',
+    })
+    expect(auditLpTargetFromPathname('/lp/audit/calc/he')).toEqual({
+      product: 'calc',
+      locale: 'he',
     })
     expect(auditLpLocaleFromPathname('/audit')).toBeNull()
     expect(auditLpTargetFromPathname('/lp/audit/pro')).toBeNull()

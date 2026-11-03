@@ -47,9 +47,9 @@ export const AUDIT_LP_HOSTS_BY_PRODUCT: Record<
   },
   // Revenue-leak calculator LP: free audit first, then the loss estimate.
   calc: {
-    en: 'audit-calc-en.erythro.ai',
-    ru: 'audit-calc-ru.erythro.ai',
-    he: 'audit-calc-he.erythro.ai',
+    en: 'leak-en.erythro.ai',
+    ru: 'leak-ru.erythro.ai',
+    he: 'leak-he.erythro.ai',
   },
 }
 

@@ -1,5 +1,5 @@
 /**
- * Revenue-leak estimate for the calculator LP (audit-calc-*).
+ * Revenue-leak estimate for the calculator LP (leak-*).
  *
  * Input: the five scorecard scales (0–100) from a finished Free audit.
  * Output: how many percent of potential conversions the site loses and what that is in ₪.
