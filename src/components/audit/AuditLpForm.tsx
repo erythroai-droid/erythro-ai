@@ -214,6 +214,8 @@ export default function AuditLpForm({
   onValidated,
   onInvalid,
   onSubmitted,
+  calcRevenue = null,
+  calcClients = null,
 }: {
   locale: string
   theme?: 'light' | 'dark'
@@ -241,6 +243,9 @@ export default function AuditLpForm({
   onInvalid?: () => void
   /** When set, the caller continues the flow and the success modal is not shown. */
   onSubmitted?: (info: AuditLpSubmitted) => void
+  /** Leak calculator step-2 metrics — persisted for the report-ready email deep link. */
+  calcRevenue?: number | null
+  calcClients?: number | null
 }) {
   const isLight = theme === 'light'
   const reportLanguage = (
@@ -383,6 +388,8 @@ export default function AuditLpForm({
           message: buildAuditSubmissionMessage(values.website, values.auditLanguage),
           planSlug: 'audit-free',
         }),
+        ...(typeof calcRevenue === 'number' && calcRevenue > 0 ? { calcRevenue } : {}),
+        ...(typeof calcClients === 'number' && calcClients > 0 ? { calcClients } : {}),
         ...(AUDIT_LP_TURNSTILE_ENABLED
           ? { [TURNSTILE_TOKEN_FIELD]: turnstileToken }
           : {}),

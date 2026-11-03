@@ -16,7 +16,38 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;')
 }
 
-function copyForLocale(locale, withPdf) {
+function copyForLocale(locale, withPdf, leakCalc = false) {
+  if (leakCalc) {
+    if (locale === 'ru') {
+      return {
+        subject: (_url, orderId) => `Ваш расчёт утечек готов (${orderId})`,
+        greeting: (name) => `Здравствуйте${name ? `, ${name}` : ''}!`,
+        body: 'Результаты калькулятора потерь по вашему сайту готовы. Открыть шаг с расчётом:',
+        orderIdLabel: 'ID заказа',
+        support:
+          'Если ссылка не открывается или возникла ошибка — напишите в поддержку и укажите этот ID заказа.',
+        footer: 'Erythro.ai',
+      }
+    }
+    if (locale === 'he') {
+      return {
+        subject: (_url, orderId) => `חישוב הדליפות מוכן (${orderId})`,
+        greeting: (name) => `שלום${name ? ` ${name}` : ''},`,
+        body: 'תוצאות מחשבון הדליפות לאתר שלכם מוכנות. לפתיחת מסך החישוב:',
+        orderIdLabel: 'מספר הזמנה',
+        support: 'אם משהו לא עובד — פנו לתמיכה וציינו את מספר ההזמנה.',
+        footer: 'Erythro.ai',
+      }
+    }
+    return {
+      subject: (_url, orderId) => `Your leak calculator results are ready (${orderId})`,
+      greeting: (name) => `Hello${name ? `, ${name}` : ''},`,
+      body: 'Your revenue-leak calculator results are ready. Open the results step here:',
+      orderIdLabel: 'Order ID',
+      support: 'If the link fails or something goes wrong, contact support and quote this Order ID.',
+      footer: 'Erythro.ai',
+    }
+  }
   if (locale === 'ru') {
     return {
       subject: (url, orderId) => `Ваш отчёт AI-аудита (${orderId}) — ${url}`,
@@ -157,14 +188,15 @@ export async function sendClientAuditEmail(input) {
   }
 
   const locale = input.locale || 'en'
+  const leakCalc = Boolean(input.leakCalc)
   const pdfBuffer = input.blocked || input.waitingAccess ? null : input.pdfBuffer
   const withPdf = Boolean(pdfBuffer && pdfBuffer.length)
   const copyLang = locale === 'ru' || locale === 'he' ? locale : 'en'
   const copy = input.waitingAccess
-    ? { ...copyForLocale(locale, false), ...WAITING_COPY[copyLang] }
+    ? { ...copyForLocale(locale, false, false), ...WAITING_COPY[copyLang] }
     : input.blocked
-      ? { ...copyForLocale(locale, false), ...BLOCKED_COPY[copyLang] }
-      : copyForLocale(locale, withPdf)
+      ? { ...copyForLocale(locale, false, false), ...BLOCKED_COPY[copyLang] }
+      : copyForLocale(locale, withPdf, leakCalc)
   const orderId = formatAuditOrderId(input.orderId)
   const host = process.env.SMTP_HOST?.trim() || 'smtp.hostinger.com'
   const port = Number(process.env.SMTP_PORT || 465)

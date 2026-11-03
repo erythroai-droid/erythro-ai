@@ -110,6 +110,34 @@ export function auditLeadChannelFromHost(host: string | null | undefined): Audit
   return 'meta_ads'
 }
 
+/**
+ * Client email / reopen URL for the revenue-leak calculator LP (step 4 results).
+ * Not the A44 `/audit/report/…` page — that stays for free ads LP and organic.
+ */
+export function buildLeakCalcResultsUrl(input: {
+  locale: AuditLpLocale | string
+  submissionId: number | string
+  token: string
+  revenue?: number | null
+  clients?: number | null
+}): string {
+  const locale: AuditLpLocale =
+    input.locale === 'ru' || input.locale === 'he' || input.locale === 'en'
+      ? input.locale
+      : 'en'
+  const host = AUDIT_LP_HOSTS_BY_PRODUCT.calc[locale]
+  const u = new URL(`https://${host}/`)
+  u.searchParams.set('report', String(input.submissionId))
+  u.searchParams.set('k', input.token)
+  if (typeof input.revenue === 'number' && Number.isFinite(input.revenue) && input.revenue > 0) {
+    u.searchParams.set('rev', String(Math.round(input.revenue)))
+  }
+  if (typeof input.clients === 'number' && Number.isFinite(input.clients) && input.clients > 0) {
+    u.searchParams.set('clients', String(Math.round(input.clients)))
+  }
+  return u.toString()
+}
+
 /** Internal App Router path after middleware rewrite. */
 export function auditLpInternalPath(product: AuditLpProduct, locale: AuditLpLocale): string {
   if (product === 'free') return `/lp/audit/${locale}`
