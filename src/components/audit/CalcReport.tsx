@@ -415,8 +415,8 @@ export function CalcHeroStatsBar({ locale, dark = false }: { locale: string; dar
               i === 4 ? `col-span-2 lg:col-span-1 ${dark ? 'max-lg:!border-e-0' : ''}` : ''
             }`}
           >
-            {/* The outer grid/border stays fixed; only the digits & labels animate in */}
-            <div className="flex flex-col items-center justify-center w-full animate-hero-up">
+            {/* No entrance fade: on mobile Safari opacity:0 + will-change often sticks and leaves empty tiles */}
+            <div className="flex flex-col items-center justify-center w-full">
               <span className={`text-[10px] xl:text-[11px] font-semibold uppercase tracking-[0.04em] ${dark ? 'text-white/55' : 'text-[#64748b]'}`}>
                 {s.category}
               </span>

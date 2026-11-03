@@ -1,18 +1,21 @@
 # Latest changes
 
-Обновлено: 2026-11-03 (heroKicker → AI Audit Online; worker/cooldown check)  
-Статус: В работе (нужен деплой copy-fix + DNS уже жив для leak-*)
+Обновлено: 2026-11-03 (mobile: пустые плитки цифр в футере calc LP)  
+Статус: В работе (нужен деплой)
 
 ---
 
-## 1. Calc LP — заголовок и инфраструктура
-- **Live `leak-ru.erythro.ai`:** уже отвечает 200 (DNS подключён). На странице был kicker **«AI-онлайн-аудит»** / EN «AI Online Audit».
-- **Фикс (локально, эта ветка):** `auditCalcCopy.ts` → EN `AI Audit Online`, RU `AI-аудит онлайн`, HE `AI Audit אונליין`.
-- **Worker:** `https://agent-api.erythro.ai/health` → `{"ok":true,"service":"audit-agent"}`. На Vercel есть `AUDIT_AGENT_URL` + `AGENT_SECRET_TOKEN` (prod/preview).
-- **Cooldown 7 дней:** **включён.** `AUDIT_INTAKE_LIMITS_OPEN_FOR_QA = false`; env `AUDIT_SKIP_COOLDOWN` на Vercel не задан. Free audit: один домен / email / IP раз в 7 дней (`checkFreeAuditCooldown` в `/api/contact`).
-- **Следующий шаг:** закоммитить/задеплоить copy-fix (+ предыдущий rename hosts `leak-*`, если ещё не в main).
+## 1. Calc LP mobile — пустые блоки в ряду цифр
+- **Симптом:** на мобилке внизу hero (CalcHeroStatsBar) периодически пустые ячейки / залипает отрисовка.
+- **Причина:** `animate-hero-up` с `animation-fill-mode: both` стартует с `opacity: 0`; на Safari рядом с `backdrop-blur` + animated blobs слой часто не дорисовывается. Плюс вечный `will-change`.
+- **Фикс:**
+  - убран `animate-hero-up` с цифр в `CalcReport.tsx`;
+  - на `max-width: 1023px` отключены hero entrance + pan/blob motion;
+  - убран permanent `will-change` у `.animate-hero-*`;
+  - форма: `backdrop-blur-sm` на мобилке, `xl` с `lg+`.
+- **Следующий шаг:** commit → deploy → проверить `leak-ru` на телефоне.
 
 ---
 
-## 2. Хосты
-- Vercel: `leak-en|ru|he.erythro.ai` verified. DNS Cloudflare — уже резолвится (проверено на leak-ru).
+## 2. Ранее
+- Hosts `leak-*`, kicker «AI Audit Online», worker ok, cooldown 7 дней on.
