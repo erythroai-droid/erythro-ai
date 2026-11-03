@@ -41,15 +41,28 @@ export function normalizeAuditStatus(raw: unknown): AuditReportStatus {
 }
 
 export async function findAuditSubmission(id: number): Promise<AuditReportDoc | null> {
-  const payload = await getPayload({ config })
-  const doc = await payload.findByID({
-    collection: 'contact-submissions',
-    id,
-    depth: 0,
-    overrideAccess: true,
-  })
-  if (!doc || doc.source !== 'audit') return null
-  return doc as AuditReportDoc
+  try {
+    const payload = await getPayload({ config })
+    const doc = await payload.findByID({
+      collection: 'contact-submissions',
+      id,
+      depth: 0,
+      overrideAccess: true,
+    })
+    if (!doc || doc.source !== 'audit') return null
+    return doc as AuditReportDoc
+  } catch (err) {
+    // Payload findByID throws Not Found (status 404) for missing rows — map to null
+    // so /api/audit/report returns 404 (not 500) and the LP can stop polling.
+    const status =
+      typeof err === 'object' && err && 'status' in err
+        ? Number((err as { status?: unknown }).status)
+        : NaN
+    if (status === 404) return null
+    const msg = err instanceof Error ? err.message : String(err)
+    if (/not\s*found/i.test(msg)) return null
+    throw err
+  }
 }
 
 /** Preferred public path for A44 figma assets (also mirrored under /api/audit/assets). */

@@ -1,23 +1,19 @@
 # Latest changes
 
-Обновлено: 2026-11-03 (deep-link email → step 4, не fake step 3)  
-Статус: Локально в calc2; нужен commit → deploy
+Обновлено: 2026-11-03 (prod check deep-link + PIT-155)  
+Статус: Deep-link UI на prod OK; API 500→404 фикс локально, нужен deploy
 
 ---
 
-## 1. Баг: письмо открывало шаг 3 (анализ)
-- **Причина:** `?report=&k=` сразу ставил `waiting` + первый poll через 8 с → UI «идёт анализ» даже когда отчёт уже `report_sent`.
-- **Фикс (`AuditCalcFlow.tsx`):**
-  - deep-link → стадия `opening` («Открываем результаты…»);
-  - первый fetch сразу;
-  - при `report_sent` → сразу step 4;
-  - `waiting` только если статус ещё in progress;
-  - fallback pillars если score/pillars пустые;
-  - lang switcher сохраняет query.
+## 1. Проверка prod
+- **Vercel production:** PR **#367** READY (`67a274c` / merge deep-link fix).
+- **leak-ru:** `?report=&k=` показывает «Открываем результаты…» (не CalcWaiting «идёт анализ»).
+- **Баг на смоуке:** несуществующий id → Payload `findByID` Not Found → API **500** → poll крутится. Реальные id из письма должны давать 200/`report_sent` → step 4.
 
-## 2. Ранее
-- Бейдж «1 домен / 7 дней» под субзаголовком (шаг 1–2), убран из-под кнопки.
+## 2. Фикс PIT-155 (локально, не задеплоен)
+- `findAuditSubmission`: catch Not Found → `null` → HTTP 404.
+- Документ в `docs/PITFALLS.md` + Obsidian.
 
 ## 3. Следующий шаг
-- Commit + push + Vercel (leak LP).
-- Смоук: старая ссылка из письма → шаг 4 с результатами.
+- Commit + deploy PIT-155.
+- Смоук реальной ссылки из письма → step 4.
