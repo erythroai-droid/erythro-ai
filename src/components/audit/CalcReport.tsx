@@ -2485,9 +2485,19 @@ function TechReport({
           ))}
         </ul>
         {reportHref ? (
-          <a href={reportHref} target="_blank" rel="noopener noreferrer" className={`${OUTLINE_BTN} mt-6 !w-fit !px-8 py-3 text-xs no-underline`}>
-            {tCalc(copy.openReport, locale)}
-          </a>
+          <div className="mt-8 flex justify-center sm:mt-10">
+            <a
+              href={reportHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-14 w-full max-w-md cursor-pointer items-center justify-center gap-2 rounded-full bg-[#1e1e1e] px-8 py-4 text-base font-semibold tracking-[0.01em] text-white no-underline shadow-[0_8px_24px_rgba(15,23,42,0.18)] transition-colors hover:bg-[#e52421] hover:shadow-[0_10px_28px_rgba(229,36,33,0.35)] sm:min-h-16 sm:px-10 sm:text-lg"
+            >
+              {tCalc(copy.openReport, locale)}
+              <svg className="size-4 shrink-0 rtl:-scale-x-100 sm:size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
+              </svg>
+            </a>
+          </div>
         ) : null}
       </section>
     </div>
@@ -2624,12 +2634,21 @@ function FixSprintHero({
               ))}
             </ol>
 
-            <div className="mt-1 flex flex-wrap items-end justify-between gap-x-4 gap-y-1 border-t border-white/20 pt-5">
-              <span className="text-base font-bold uppercase leading-[1.4] tracking-[0.02em] text-white">{tCalc(copy.step4FixTotal, locale)}</span>
-              <b className="text-[32px] font-black leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[40px]">
-                <bdi>{formatIls(SPRINT_PRICE_ILS, locale)}</bdi>
-                {star}
-              </b>
+            <div className="mt-1 grid grid-cols-1 gap-4 border-t border-white/20 pt-5 sm:grid-cols-2 sm:gap-6">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-semibold uppercase leading-[1.4] tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotal, locale)}</span>
+                <b className="text-[32px] font-black leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[40px]">
+                  <bdi>{formatIls(SPRINT_PRICE_ILS, locale)}</bdi>
+                  {star}
+                </b>
+              </div>
+              <div className="flex flex-col gap-1.5 sm:items-end sm:text-end">
+                <span className="text-xs font-semibold uppercase leading-[1.4] tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotalTerm, locale)}</span>
+                <b className="text-[28px] font-black leading-none tracking-[-0.03em] text-white sm:text-[34px]" style={{ color: GAIN.mint }}>
+                  <bdi>{tCalc(copy.step4FixTitleDays, locale)}</bdi>
+                  {star}
+                </b>
+              </div>
             </div>
             <p className="m-0 mt-2 text-[13px] leading-[1.5] text-white/65">{tCalc(copy.step4FixEstimateNote, locale)}</p>
           </div>
@@ -2674,14 +2693,25 @@ export function CalcCta({
           </h2>
           {/* Fix total on the blue of the "we close the leaks" sprint panel, the amount in white with the shekel sign first */}
           <div className="calc-fix-flow relative isolate flex w-0 min-w-full flex-col items-center gap-1.5 overflow-hidden rounded-[14px] px-6 py-5 text-white sm:py-7">
-            <span className="text-xs font-semibold uppercase tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotal, locale)}</span>
-            <b className="text-[40px] font-black leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[52px]">
-              <bdi dir="ltr">
-                <span className="me-1 align-[0.3em] text-[0.55em] font-bold">₪</span>
-                {formatIls(SPRINT_PRICE_ILS, locale).replace('₪', '').trim()}
-              </bdi>
-              <span aria-hidden className="ms-0.5 align-super text-[0.45em] font-bold text-white/60">*</span>
-            </b>
+            <div className="flex w-full flex-wrap items-end justify-center gap-x-10 gap-y-4">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs font-semibold uppercase tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotal, locale)}</span>
+                <b className="text-[40px] font-black leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[52px]">
+                  <bdi dir="ltr">
+                    <span className="me-1 align-[0.3em] text-[0.55em] font-bold">₪</span>
+                    {formatIls(SPRINT_PRICE_ILS, locale).replace('₪', '').trim()}
+                  </bdi>
+                  <span aria-hidden className="ms-0.5 align-super text-[0.45em] font-bold text-white/60">*</span>
+                </b>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs font-semibold uppercase tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotalTerm, locale)}</span>
+                <b className="text-[32px] font-black leading-none tracking-[-0.03em] sm:text-[40px]" style={{ color: GAIN.mint }}>
+                  <bdi>{tCalc(copy.step4FixTitleDays, locale)}</bdi>
+                  <span aria-hidden className="ms-0.5 align-super text-[0.45em] font-bold text-white/60">*</span>
+                </b>
+              </div>
+            </div>
             {/* The Pro audit comes free with the fix: old price struck through, ₪0 in mint, as on the sprint bonus */}
             {/* One run of inline text, so the price stays on the line with the last word instead of dropping below */}
             <span className="mt-1 block text-sm font-semibold leading-[1.5] text-white">
