@@ -1218,6 +1218,11 @@ export const auditCalcCopy = {
   step4StatReach: { en: 'of 100 visitors leave an inquiry', ru: 'из 100 посетителей оставляют заявку', he: 'מתוך 100 מבקרים משאירים פנייה' } satisfies Localized,
   step4StatUpside: { en: 'more inquiries once leaks are closed', ru: 'больше заявок, если закрыть утечки', he: 'יותר פניות אחרי סגירת הדליפות' } satisfies Localized,
   step4StatScore: { en: 'funnel score', ru: 'оценка воронки', he: 'ציון המשפך' } satisfies Localized,
+  /** Middle plaque on hero stat tiles (same shape as the score level badge). */
+  step4StatBadgeLoss: { en: 'Loss', ru: 'Потеря', he: 'אובדן' } satisfies Localized,
+  step4StatBadgeClients: { en: 'Churn', ru: 'Уходят', he: 'נושרים' } satisfies Localized,
+  step4StatBadgeUpside: { en: 'Upside', ru: 'Прирост', he: 'פוטנציאל' } satisfies Localized,
+  step4StatBadgeStages: { en: 'Leaking', ru: 'Утечки', he: 'דולפים' } satisfies Localized,
   step4WhereTitle: { en: 'Where the money leaks', ru: 'Куда уходят деньги', he: 'לאן הכסף דולף' } satisfies Localized,
   step4WhereSub: {
     en: 'Losses by funnel stage, from the biggest to the smallest.',
