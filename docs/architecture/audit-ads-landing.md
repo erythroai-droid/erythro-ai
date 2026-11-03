@@ -40,6 +40,8 @@
 
 **Admin / CRM:** заявки с `leak-*` пишутся как `source=audit` + `leadChannel=leak_calc` (воркер тот же). В сайдбаре Payload — отдельный список **Leak Calculator**; **AI Audit Orders** их не показывает. Staff-письмо: subject `Erythro.ai leak calculator…`. Pro/Diagnostic upsell-письма для leak **не** шлются (`proOfferStatus=skipped`) — допродажи только через WhatsApp. Тариф один: free.
 
+**Client report email (leak):** ссылка не на `/audit/report/…`, а на шаг 4 калькулятора: `https://leak-{locale}.erythro.ai/?report={id}&k={token}` (+ опционально `rev` / `clients` из шага 2). LP при открытии поднимает waiting→ready (CalcResult).
+
 DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → Domains: все двенадцать.
 
 Публичный RU free-хост — **`audit-ru`**. Label `audit-rus` в коде только как alias middleware (DNS на него не публиковался → NXDOMAIN).

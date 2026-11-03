@@ -1,21 +1,14 @@
 # Latest changes
 
-Обновлено: 2026-11-03 (leak_calc: отдельный раздел админки + письма)  
-Статус: В работе (нужен деплой)
+Обновлено: 2026-11-03 (leak client email → step 4 deep link)  
+Статус: В работе (нужен деплой сайта + воркера)
 
 ---
 
-## 1. Leak Calculator ≠ AI Audit Orders
-- **Проблема:** заявки с `leak-*` шли в тот же `source=audit` / `leadChannel=meta_ads`, смешивались с free AI Audit.
-- **Фикс:**
-  - `leadChannel=leak_calc` с хоста `leak-*` (`auditLeadChannelFromHost`);
-  - сайдбар **Leak Calculator** + **AI Audit Orders** без leak;
-  - staff email: `Erythro.ai leak calculator…`;
-  - `proOfferStatus=skipped` для leak (нет платных тарифов / WhatsApp);
-  - badge «Leak» в списке.
-- **Следующий шаг:** commit → deploy. Старые leak-заявки в CMS останутся как `meta_ads` (не восстановить).
-
----
-
-## 2. Ранее
-- Mobile empty stats tiles, hosts `leak-*`, kicker AI Audit Online.
+## 1. Письмо клиенту с калькулятора → шаг 4 LP
+- **Было:** report-ready mail всегда на `erythro.ai/audit/report/{id}?k=…` (A44).
+- **Стало (leak_calc):** `https://leak-{locale}.erythro.ai/?report={id}&k={token}&rev=&clients=`
+- **LP:** `AuditCalcFlow` читает query в prod и открывает waiting→ready (шаг 4).
+- **Intake:** `calcRevenue` / `calcClients` в `auditSummary` (для money mode в письме).
+- **Воркер:** `runAudit.js` + copy в `mail.js` («расчёт утечек»). Нужен **редеплой audit-agent** на VPS, не только Vercel.
+- **Следующий шаг:** commit → deploy Next → redeploy worker Docker.

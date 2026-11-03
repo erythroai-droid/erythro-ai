@@ -105,6 +105,8 @@ export async function POST(request: NextRequest) {
     planSlug,
     planTotal,
     auditStatus,
+    calcRevenue,
+    calcClients,
   } = guarded.data
 
   try {
@@ -164,6 +166,14 @@ export async function POST(request: NextRequest) {
               leadChannel: leadChannel ?? 'organic',
               // Leak LP: free check only — no Pro/Diagnostic upsell emails (WhatsApp follow-up).
               proOfferStatus: isLeakCalc ? 'skipped' : 'none',
+              ...(isLeakCalc && (calcRevenue != null || calcClients != null)
+                ? {
+                    auditSummary: {
+                      ...(calcRevenue != null ? { calcRevenue } : {}),
+                      ...(calcClients != null ? { calcClients } : {}),
+                    },
+                  }
+                : {}),
             }
           : {}),
       },

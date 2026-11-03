@@ -42,6 +42,9 @@ export type ContactSubmissionInput = {
   planSlug?: string
   planTotal?: string
   auditStatus?: 'new' | 'in_progress' | 'report_sent'
+  /** Leak calculator step-2 metrics (optional; stored in auditSummary). */
+  calcRevenue?: number
+  calcClients?: number
 }
 
 export type ContactGuardFailure = {
@@ -163,7 +166,19 @@ export function guardContactSubmission(body: unknown): ContactGuardResult {
     data.auditStatus = 'new'
     if (planSlug) data.planSlug = planSlug
     if (planTotal) data.planTotal = planTotal
+
+    // Optional leak-calculator business inputs (for email deep link → step 4 money mode).
+    const calcRevenue = parsePositiveNumber(raw.calcRevenue)
+    const calcClients = parsePositiveNumber(raw.calcClients)
+    if (calcRevenue != null) data.calcRevenue = calcRevenue
+    if (calcClients != null) data.calcClients = calcClients
   }
 
   return { ok: true, data }
+}
+
+function parsePositiveNumber(value: unknown): number | undefined {
+  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN
+  if (!Number.isFinite(n) || n <= 0) return undefined
+  return Math.round(n)
 }

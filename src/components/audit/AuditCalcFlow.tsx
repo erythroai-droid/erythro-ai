@@ -93,14 +93,34 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
   const waiting = stage.name === 'waiting' ? stage : null
 
-  // Dev preview support: ?preview=step2|waiting|ready|failed
+  // Deep link from the report-ready email: ?report={id}&k={token}&rev=&clients=
+  // Dev preview: ?preview=step2|waiting|ready|failed
   useEffect(() => {
-    if (process.env.NODE_ENV === 'production') return
     const q = new URLSearchParams(window.location.search)
     const r = Number(q.get('rev'))
     const c = Number(q.get('clients'))
     if (r > 0) setRevenue(r)
     if (c > 0) setClients(c)
+
+    const reportIdRaw = q.get('report')
+    const accessKey = q.get('k')?.trim() || null
+    const reportId = reportIdRaw && /^\d+$/.test(reportIdRaw) ? Number(reportIdRaw) : null
+    if (reportId && accessKey) {
+      const siteParam = q.get('site') || q.get('website') || ''
+      setStage({
+        name: 'waiting',
+        submitted: {
+          id: reportId,
+          accessKey,
+          website: siteParam,
+          reportHref: null,
+        },
+        startedAt: Date.now(),
+      })
+      return
+    }
+
+    if (process.env.NODE_ENV === 'production') return
     const preview = q.get('preview')
     if (!preview) return
     const siteParam = q.get('site') || q.get('website') || 'https://fast-taxi.co.il'
@@ -165,7 +185,14 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
           const json = (await res.json()) as AuditReportPublicPayload
           if (cancelled) return
           if (json.status === 'report_sent') {
-            setStage({ name: 'ready', submitted, report: json })
+            setStage({
+              name: 'ready',
+              submitted: {
+                ...submitted,
+                website: submitted.website || json.website || '',
+              },
+              report: json,
+            })
             return
           }
           if (json.status === 'failed') {
@@ -552,6 +579,8 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                       page={page}
                       bare
                       websiteFirst
+                      calcRevenue={revenue}
+                      calcClients={clients}
                       submitLabel={tCalc(
                         formStep === 1
                           ? copy.nextStepCalc
