@@ -1267,16 +1267,35 @@ function LossHero({
 
   // Inquiries won back if every leak is closed: the lost share measured against what reaches the form today.
   const upside = kept > 0 ? Math.round((lostPct / kept) * 100) : 0
+  const scoreLevelFill: Record<LightLevel, { bg: string; text: string }> = {
+    green: { bg: '#22bf16', text: '#ffffff' },
+    yellow: { bg: '#ff7900', text: '#ffffff' },
+    red: { bg: '#e52421', text: '#ffffff' },
+  }
   // Always four tiles: money and clients come first when known, the rest fill the row.
-  const stats = [
+  const stats: Array<{
+    value: string
+    label: string
+    red: boolean
+    /** Solid colour plaque for the score / level (green · orange · red). */
+    badge?: { bg: string; text: string; caption: string }
+  }> = [
     money ? { value: formatIls(yearly, locale), label: tCalc(copy.step4StatYear, locale), red: true } : null,
     lostClients > 0 ? { value: `≈ ${lostClients}`, label: tCalc(copy.step4StatClients, locale), red: true } : null,
     upside > 0 ? { value: `+${upside}%`, label: tCalc(copy.step4StatUpside, locale), red: false } : null,
-    { value: `${score}/100`, label: `${tCalc(copy.step4StatScore, locale)} · ${tCalc(copy.levelLabel[scoreLevel], locale).toLowerCase()}`, red: false },
+    {
+      value: `${score}/100`,
+      label: tCalc(copy.step4StatScore, locale),
+      red: false,
+      badge: {
+        ...scoreLevelFill[scoreLevel],
+        caption: tCalc(copy.levelLabel[scoreLevel], locale),
+      },
+    },
     top[0] ? { value: tCalc(top[0].short, locale), label: `${tCalc(copy.step4BiggestLeak, locale).toLowerCase()} · ⁦${stageLoss(top[0], locale)}⁩`, red: false } : null,
     { value: `${leaking.length} / ${stages.length}`, label: tCalc(copy.step4StatLeakStages, locale), red: false },
   ]
-    .filter((s): s is { value: string; label: string; red: boolean } => s !== null)
+    .filter((s): s is { value: string; label: string; red: boolean; badge?: { bg: string; text: string; caption: string } } => s !== null)
     .slice(0, 4)
 
   // Floating "scroll down" hint: shown on the first screen, gone once the visitor starts scrolling.
@@ -1423,10 +1442,20 @@ function LossHero({
 
         <dl className={`m-0 mt-10 grid grid-cols-2 gap-3 lg:mt-12 lg:grid-cols-4`}>
           {stats.map((s) => (
-            <div key={s.label} className="flex flex-col items-center gap-1 rounded-[12px] border border-white/12 bg-white/[0.06] px-3 py-5 text-center backdrop-blur-sm sm:px-5 sm:py-6">
+            <div key={s.label} className="flex flex-col items-center gap-1.5 rounded-[12px] border border-white/12 bg-white/[0.06] px-3 py-5 text-center backdrop-blur-sm sm:px-5 sm:py-6">
               <dt className="order-2 text-[13px] leading-[1.5] text-white/70">{s.label}</dt>
-              <dd className={`order-1 m-0 text-2xl font-bold leading-[1.2] tracking-[-0.02em] tabular-nums sm:text-[34px] ${s.red ? 'text-[#ff6b68]' : 'text-white'}`}>
-                <bdi>{s.value}</bdi>
+              <dd className={`order-1 m-0 flex flex-col items-center gap-2`}>
+                <span className={`text-2xl font-bold leading-[1.2] tracking-[-0.02em] tabular-nums sm:text-[34px] ${s.red ? 'text-[#ff6b68]' : 'text-white'}`}>
+                  <bdi>{s.value}</bdi>
+                </span>
+                {s.badge ? (
+                  <span
+                    className="inline-flex items-center rounded-[4px] px-2.5 py-1 text-[11px] font-semibold uppercase leading-4 tracking-[0.04em] sm:text-xs"
+                    style={{ background: s.badge.bg, color: s.badge.text }}
+                  >
+                    {s.badge.caption}
+                  </span>
+                ) : null}
               </dd>
             </div>
           ))}
@@ -1484,7 +1513,8 @@ function LossBreakdown({ locale, stages, monthly, total }: { locale: string; sta
     const id = requestAnimationFrame(() => setShown(true))
     return () => cancelAnimationFrame(id)
   }, [])
-  const ranked = [...stages].filter((s) => s.loss > 0).sort((a, b) => b.loss - a.loss)
+  // Caller passes the same ordered leaking set used by StageTimeline (do not re-filter here).
+  const ranked = [...stages].sort((a, b) => b.loss - a.loss)
   const share = (s: FunnelStage) => (total > 0 ? Math.round((s.loss / total) * 100) : 0)
   const money = monthly > 0
   // One tag: red "biggest leak · N% of all losses" for the first stage, lilac (like the number circles) for the rest
@@ -1885,21 +1915,24 @@ export function CalcResult({
   const diagnosticScales = [
     { key: 'speed', label: tCalc(copy.scaleSpeed, locale), score: pillars.speed, loss: losses.speed, impact: tCalc(copy.areaImpact.speed[lightFor(pillars.speed)], locale) },
     { key: 'leads', label: tCalc(copy.scaleLeads, locale), score: pillars.leads, loss: losses.forms, impact: tCalc(copy.areaImpact.forms[lightFor(pillars.leads)], locale) },
-    { key: 'seo', label: tCalc(copy.scaleSeo, locale), score: pillars.seo, loss: losses.seo, impact: tCalc(copy.areaLoss.visibility, locale) },
+    { key: 'seo', label: tCalc(copy.scaleSeo, locale), score: pillars.seo, loss: losses.seo, impact: tCalc(copy.areaImpact.visibility[lightFor(pillars.seo)], locale) },
     { key: 'security', label: tCalc(copy.scaleSecurity, locale), score: pillars.security, loss: losses.security, impact: tCalc(copy.areaImpact.security[lightFor(pillars.security)], locale) },
     { key: 'ai', label: tCalc(copy.scaleAi, locale), score: pillars.ai, loss: losses.ai, impact: tCalc(copy.areaImpact.visibility[lightFor(pillars.ai)], locale) },
   ] as const
 
 
   const stageMoney = (loss: number) => (hasMoney && losses.total > 0 ? Math.round((result.monthly * loss) / losses.total / 10) * 10 : 0)
-  // Stages ranked by loss, biggest first: the breakdown list and the "why" timeline share this order and numbering.
+  // Stages ranked by loss, biggest first. Breakdown + "why" share the same leaking set (loss > 0).
   const stages: FunnelStage[] = ([
     { key: 'visibility' as const, short: copy.step4StageShortSearch, title: copy.step4Stage1Title, action: copy.step4Stage1ActionDesc, issue: copy.step4Stage1IssueDesc, loss: losses.visibility, money: stageMoney(losses.visibility), score: areas.visibility },
     { key: 'speed' as const, short: copy.step4StageShortSpeed, title: copy.step4Stage2Title, action: copy.step4Stage2ActionDesc, issue: copy.step4Stage2IssueDesc, loss: losses.speed, money: stageMoney(losses.speed), score: pillars.speed, href: pagespeedUrl },
     { key: 'security' as const, short: copy.step4StageShortTrust, title: copy.step4Stage3Title, action: copy.step4Stage3ActionDesc, issue: copy.step4Stage3IssueDesc, loss: losses.security, money: stageMoney(losses.security), score: pillars.security },
     { key: 'forms' as const, short: copy.step4StageShortForm, title: copy.step4Stage4Title, action: copy.step4Stage4ActionDesc, issue: copy.step4Stage4IssueDesc, loss: losses.forms, money: stageMoney(losses.forms), score: pillars.leads },
   ] as FunnelStage[]).sort((a, b) => b.loss - a.loss)
-  const biggest = stages.reduce((a, b) => (b.loss > a.loss ? b : a), stages[0])
+  const leakingOnly = stages.filter((s) => s.loss > 0)
+  // Same list for "where money goes" and "why": leaking stages only (fallback to all if none).
+  const leakingStages = leakingOnly.length > 0 ? leakingOnly : stages
+  const biggest = leakingStages[0] ?? stages[0]
 
   return (
     <div className="w-full flex flex-col gap-8 sm:gap-10">
@@ -1919,13 +1952,13 @@ export function CalcResult({
       />
 
       {/* 2. Where that loss goes, stage by stage, biggest first */}
-      <LossBreakdown locale={locale} stages={stages} monthly={hasMoney ? result.monthly : 0} total={losses.total} />
+      <LossBreakdown locale={locale} stages={leakingStages} monthly={hasMoney ? result.monthly : 0} total={losses.total} />
 
-      {/* 3. Why: the visitor's path step by step */}
-      <StageTimeline locale={locale} stages={stages} biggestKey={biggest.key} total={losses.total} />
+      {/* 3. Why: the visitor's path step by step — same stages as the breakdown */}
+      <StageTimeline locale={locale} stages={leakingStages} biggestKey={biggest.key} total={losses.total} />
 
       {/* 3. How we fix it: full-bleed sprint panel, the answer to the loss panel */}
-      <FixSprintHero locale={locale} stages={stages} lostPct={losses.total} paybackDays={hasMoney ? result.paybackDays : null} waHref={waHref} />
+      <FixSprintHero locale={locale} stages={leakingStages} lostPct={losses.total} paybackDays={hasMoney ? result.paybackDays : null} waHref={waHref} />
 
       {/* 4. Technical details for developers: full-bleed light lilac panel right under the sprint, collapsed by default */}
       <section className="calc-tech-flow ms-[calc(50%-50vw)] -mt-8 w-screen sm:-mt-10">

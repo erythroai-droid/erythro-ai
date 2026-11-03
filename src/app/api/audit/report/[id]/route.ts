@@ -16,7 +16,7 @@ import {
   reportAccessTokenMatches,
 } from '@/lib/auditReportAccess'
 import { isUnpaidAuditCheckout } from '@/lib/auditPaymentGate'
-import { parsePillars } from '@/lib/revenueLeak'
+import { pillarsFromAuditSummary } from '@/lib/revenueLeak'
 import {
   findAuditSubmission,
   normalizeAuditStatus,
@@ -84,10 +84,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       orderId: formatAuditOrderId(id),
       status,
       auditScore: typeof doc.auditScore === 'number' ? doc.auditScore : null,
-      pillars:
-        doc.auditSummary && typeof doc.auditSummary === 'object'
-          ? parsePillars((doc.auditSummary as { pillars?: unknown }).pillars)
-          : null,
+      pillars: pillarsFromAuditSummary(doc.auditSummary),
       reportUrl:
         typeof doc.reportUrl === 'string' && isPublicReportUrl(doc.reportUrl)
           ? doc.reportUrl

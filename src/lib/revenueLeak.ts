@@ -75,17 +75,34 @@ export function lightFor(score: number): LightLevel {
   return 'green'
 }
 
-/** Reads `auditSummary.pillars` from the DB; null unless all five scales are finite numbers. */
+/**
+ * Reads five scorecard scales from `auditSummary.pillars` (short keys) or from an
+ * executive_scorecard-shaped object (Java long keys). Null unless all five are finite.
+ */
 export function parsePillars(value: unknown): AuditPillars | null {
   if (!value || typeof value !== 'object') return null
   const raw = value as Record<string, unknown>
+  const pairs: Array<[keyof AuditPillars, unknown]> = [
+    ['speed', raw.speed ?? raw.speed_mobile_ux],
+    ['leads', raw.leads ?? raw.lead_gen_forms],
+    ['seo', raw.seo ?? raw.seo_visibility],
+    ['security', raw.security ?? raw.security_stability],
+    ['ai', raw.ai ?? raw.ai_visibility],
+  ]
   const out: Partial<AuditPillars> = {}
-  for (const key of ['speed', 'leads', 'seo', 'security', 'ai'] as const) {
-    const n = raw[key]
-    if (typeof n !== 'number' || !Number.isFinite(n)) return null
+  for (const [key, value] of pairs) {
+    const n = typeof value === 'number' ? value : Number(value)
+    if (!Number.isFinite(n)) return null
     out[key] = clampScore(n)
   }
   return out as AuditPillars
+}
+
+/** Prefer short `pillars`, else executive_scorecard keys on the same summary object. */
+export function pillarsFromAuditSummary(summary: unknown): AuditPillars | null {
+  if (!summary || typeof summary !== 'object') return null
+  const s = summary as { pillars?: unknown; executive_scorecard?: unknown }
+  return parsePillars(s.pillars) ?? parsePillars(s.executive_scorecard)
 }
 
 /** Old audits have no per-scale data: fall back to the overall score for every scale. */

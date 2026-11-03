@@ -1,19 +1,14 @@
 # Latest changes
 
-Обновлено: 2026-11-03 (prod check deep-link + PIT-155)  
-Статус: Deep-link UI на prod OK; API 500→404 фикс локально, нужен deploy
+Обновлено: 2026-11-03 (step 4: score badge + stages sync + pillars parse)  
+Статус: Локально; нужен commit → deploy
 
 ---
 
-## 1. Проверка prod
-- **Vercel production:** PR **#367** READY (`67a274c` / merge deep-link fix).
-- **leak-ru:** `?report=&k=` показывает «Открываем результаты…» (не CalcWaiting «идёт анализ»).
-- **Баг на смоуке:** несуществующий id → Payload `findByID` Not Found → API **500** → poll крутится. Реальные id из письма должны давать 200/`report_sent` → step 4.
+## 1. Step 4 правки (CalcReport / revenueLeak / API)
+- Hero: уровень оценки («Отлично» / «Требует внимания» / «Критично») на цветной плашке green/orange/red.
+- «Куда уходят» и «Почему это происходит» — один и тот же список этапов (только loss > 0).
+- Техподробности: SEO impact по уровню; `parsePillars` / `pillarsFromAuditSummary` читают и short keys, и `executive_scorecard` (чтобы шкалы не были одинаковыми при fallback).
 
-## 2. Фикс PIT-155 (локально, не задеплоен)
-- `findAuditSubmission`: catch Not Found → `null` → HTTP 404.
-- Документ в `docs/PITFALLS.md` + Obsidian.
-
-## 3. Следующий шаг
-- Commit + deploy PIT-155.
-- Смоук реальной ссылки из письма → step 4.
+## 2. Следующий шаг
+- Commit + deploy; смоук step 4 на leak-ru.
