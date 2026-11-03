@@ -107,6 +107,8 @@ const nextConfig: NextConfig = {
   // Without tracing it, `docs/` is absent from the serverless bundle.
   outputFileTracingIncludes: {
     '/api/consult': ['./docs/consultant/erythro-knowledge-base.md'],
+    // Read with tracing off (turbopackIgnore) — only these A44 report icons, not the whole project.
+    '/api/audit/assets/[...path]': ['./public/templates/figma-assets/*'],
   },
   env: {
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: turnstileSiteKey,
@@ -193,6 +195,9 @@ const nextConfig: NextConfig = {
     inlineCss: true,
   },
   images: {
+    // Next 16 only accepts quality 75 unless listed: ServicesSection uses 65, the hero 70
+    // (HERO_IMAGE_QUALITY); anything else gets a 400 from /_next/image.
+    qualities: [65, 70, 75],
     localPatterns: [
       {
         pathname: '/api/media/file/**',
@@ -224,9 +229,10 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Webpack-only, kept as the fallback for `next build --webpack`. Turbopack (default since
+  // Next 16, used by our scripts) tree-shakes the plugin-cloud-storage `utilities` barrel and needs
+  // neither the client stub nor extensionAlias (checked 30.10: no resolveSignedURLKey/undici in
+  // client chunks).
   webpack: (webpackConfig, { isServer, webpack }) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],

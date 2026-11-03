@@ -381,10 +381,18 @@ public class AuditCollector {
         }
         """.replace("/*IS_ENTRY_FORM*/", IS_ENTRY_FORM_JS);
 
-    private static final List<String> AI_CRAWLER_BOTS = List.of(
-            "GPTBot", "ChatGPT-User", "ClaudeBot", "anthropic-ai",
-            "CCBot", "Google-Extended", "Applebot-Extended", "PerplexityBot"
+    // Bots that fetch pages for answers and AI search. Blocking them hides the site from ChatGPT
+    // and Perplexity answers: that alone is a severe block.
+    private static final List<String> AI_ANSWER_BOTS = List.of("ChatGPT-User", "PerplexityBot");
+
+    // Training crawlers. Cloudflare Managed robots.txt blocks them by default; that is the owner's
+    // choice about training, not invisibility in answers (report 243, fast-taxi.co.il, PIT-148).
+    private static final List<String> AI_TRAINING_BOTS = List.of(
+            "GPTBot", "ClaudeBot", "anthropic-ai", "CCBot", "Google-Extended", "Applebot-Extended"
     );
+
+    private static final List<String> AI_CRAWLER_BOTS = java.util.stream.Stream
+            .concat(AI_ANSWER_BOTS.stream(), AI_TRAINING_BOTS.stream()).toList();
 
     /** JSON-LD, llms link, GA4 consent stub — homepage AI visibility signals. */
     private static final String AI_VISIBILITY_SCRIPT = """
@@ -2501,11 +2509,11 @@ public class AuditCollector {
         boolean hasSitemap = infra != null && Boolean.TRUE.equals(infra.get("has_sitemap_xml"));
         String robotsDetail;
         if (severeBlock) {
-            Object blockedBots = robotsAi.getOrDefault("blocked_bots", List.of());
+            Object blockedBots = robotsAi.getOrDefault("answer_blocked_bots", List.of());
             robotsDetail = ReportFindingsCatalog.tr(i18n.lang,
-                    "Disallow: / для ботов: " + blockedBots,
-                    "Disallow: / for bots: " + blockedBots,
-                    "Disallow: / לבוטים: " + blockedBots);
+                    "Disallow: / для ботов AI-поиска и ответов: " + blockedBots,
+                    "Disallow: / for AI search and answer bots: " + blockedBots,
+                    "Disallow: / לבוטי חיפוש ותשובות AI: " + blockedBots);
         } else {
             String allowSuffix = allowed.isEmpty() ? "" : ": " + String.join(", ", allowed);
             robotsDetail = ReportFindingsCatalog.tr(i18n.lang,
@@ -2513,6 +2521,7 @@ public class AuditCollector {
                     "Allow for AI bots" + allowSuffix,
                     "Allow לבוטי AI" + allowSuffix);
         }
+        robotsDetail += trainingBlockNote(robotsAi, i18n.lang);
         if (infra != null) {
             // 200 with HTML (a redirect to the homepage) is no robots.txt, not "robots.txt: 200" (AUD-230)
             Object robotsStatus = infra.getOrDefault("robots_txt_status", "err");
@@ -2546,18 +2555,19 @@ public class AuditCollector {
                 i18n.checkGa4,
                 gaOk
                         ? ReportFindingsCatalog.tr(i18n.lang,
-                        // The stub may come from an app bundle, not <head> (AUD-231), so no "in head" claim
-                        "dataLayer + consent stub (Consent Mode default) (GA4 "
-                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID найден" : "stub only") + ")",
-                        "dataLayer + consent stub (Consent Mode default) (GA4 "
-                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID found" : "stub only") + ")",
-                        "dataLayer + consent stub (Consent Mode default) (GA4 "
-                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID נמצא" : "stub only") + ")")
+                        // The default may come from an app bundle, not <head> (AUD-231), so no "in head" claim;
+                        // no English "stub" inside RU/HE text (MI-003)
+                        "dataLayer + Consent Mode по умолчанию (GA4: "
+                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "найден G- ID" : "G- ID не найден") + ")",
+                        "dataLayer + Consent Mode default (GA4: "
+                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "G- ID found" : "no G- ID") + ")",
+                        "dataLayer + Consent Mode כברירת מחדל (GA4: "
+                                + (Boolean.TRUE.equals(dom.get("ga4_id_present")) ? "נמצא G- ID" : "לא נמצא G- ID") + ")")
                         : dataLayer
                                 ? ReportFindingsCatalog.tr(i18n.lang,
-                                "GA4 / dataLayer есть, consent stub неполный",
-                                "GA4 / dataLayer present, consent stub incomplete",
-                                "GA4 / dataLayer קיים, consent stub חלקי")
+                                "GA4 / dataLayer есть, Consent Mode по умолчанию задан не полностью",
+                                "GA4 / dataLayer present, Consent Mode default incomplete",
+                                "GA4 / dataLayer קיים, ברירת המחדל של Consent Mode חלקית")
                                 : ReportFindingsCatalog.tr(i18n.lang,
                                 "Нет сигналов dataLayer / gtag consent",
                                 "No dataLayer / gtag consent signals",
@@ -2579,15 +2589,17 @@ public class AuditCollector {
                     : (crawlerOk && signalsOk ? i18n.statusOk : i18n.statusNeedsAttention);
             String signalsDetail;
             if (l1Severe) {
+                Object answerBlocked = robotsAi.getOrDefault("answer_blocked_bots", List.of());
                 signalsDetail = ReportFindingsCatalog.tr(i18n.lang,
-                        "Disallow: / для AI-ботов: " + l1Crawler.getOrDefault("blocked_bots", List.of()),
-                        "Disallow: / for AI bots: " + l1Crawler.getOrDefault("blocked_bots", List.of()),
-                        "Disallow: / לבוטי AI: " + l1Crawler.getOrDefault("blocked_bots", List.of()));
+                        "Disallow: / для ботов AI-поиска и ответов: " + answerBlocked,
+                        "Disallow: / for AI search and answer bots: " + answerBlocked,
+                        "Disallow: / לבוטי חיפוש ותשובות AI: " + answerBlocked);
             } else if (signalsOk) {
                 signalsDetail = ReportFindingsCatalog.tr(i18n.lang,
-                        "Content-Signal: " + l1Signals.getOrDefault("signals", Map.of()) + "; AI-боты: Allow",
-                        "Content-Signal: " + l1Signals.getOrDefault("signals", Map.of()) + "; AI bots: Allow",
-                        "Content-Signal: " + l1Signals.getOrDefault("signals", Map.of()) + "; בוטי AI: Allow");
+                        "Content-Signal: " + l1Signals.getOrDefault("signals", Map.of()) + "; AI-поиск: Allow",
+                        "Content-Signal: " + l1Signals.getOrDefault("signals", Map.of()) + "; AI search: Allow",
+                        "Content-Signal: " + l1Signals.getOrDefault("signals", Map.of()) + "; חיפוש AI: Allow")
+                        + trainingBlockNote(robotsAi, i18n.lang);
             } else {
                 signalsDetail = ReportFindingsCatalog.tr(i18n.lang,
                         "Нет Content-Signal в robots.txt (агенты не знают, можно ли цитировать / обучать)",
@@ -2940,6 +2952,7 @@ public class AuditCollector {
         List<ReportFindingsCatalog.BizFinding> bizFindings = ReportFindingsCatalog.buildAll(findingCtx, reportLang);
         bizFindings.sort(Comparator.comparingInt(ReportFindingsCatalog.BizFinding::severity).reversed());
         scorecard.put("top_vulnerabilities", ReportFindingsCatalog.toTopVulnerabilities(bizFindings, reportLang, multilingualSite));
+        scorecard.put("top_candidates", ReportFindingsCatalog.toTopCandidates(bizFindings));
         scorecard.put("findings_total", bizFindings.size());
         return scorecard;
     }
@@ -4186,7 +4199,7 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
             try {
                 HttpResponse<String> robots = client.send(documentRequest(URI.create(o + "/robots.txt")),
                         HttpResponse.BodyHandlers.ofString());
-                String body = robots.body() == null ? "" : robots.body();
+                String body = textBody(robots);
                 // SPA hosts often answer 200 with index.html instead of a real robots.txt
                 boolean isRealRobots = robots.statusCode() == 200 && !body.stripLeading().startsWith("<");
                 robotsStatus = robots.statusCode();
@@ -4226,7 +4239,7 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
                 HttpResponse<String> sitemap = client.send(documentRequest(URI.create(candidate)),
                         HttpResponse.BodyHandlers.ofString());
                 lastStatus = sitemap.statusCode();
-                String body = sitemap.body() == null ? "" : sitemap.body();
+                String body = textBody(sitemap);
                 if (sitemap.statusCode() == 200 && (body.contains("<urlset") || body.contains("<sitemapindex"))) {
                     sitemapFound = true;
                     sitemapUrl = candidate;
@@ -4293,7 +4306,7 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
                     documentRequest(URI.create(origin + "/robots.txt")),
                     HttpResponse.BodyHandlers.ofString());
             robotsStatus = robotsResp.statusCode();
-            robotsBody = robotsResp.body() == null ? "" : robotsResp.body();
+            robotsBody = textBody(robotsResp);
             robotsAi = robotsAiFromBody(robotsStatus, robotsBody);
         } catch (Exception e) {
             robotsAi = robotsAiError(e.getMessage());
@@ -4345,7 +4358,7 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
             HttpResponse<String> response = client.send(
                     documentRequest(URI.create(origin + "/llms.txt")),
                     HttpResponse.BodyHandlers.ofString());
-            String body = response.body() == null ? "" : response.body();
+            String body = textBody(response);
             result.put("status", response.statusCode());
             boolean startsMarkdown = body.stripLeading().startsWith("#");
             boolean hasBrand = body.contains("Erythro") || (!host.isEmpty() && body.toLowerCase().contains(host.toLowerCase()));
@@ -4441,6 +4454,19 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
         return result;
     }
 
+    /** "; training closed for: GPTBot, …" when robots.txt blocks only training crawlers. */
+    @SuppressWarnings("unchecked")
+    private static String trainingBlockNote(Map<String, Object> robotsAi, String lang) {
+        List<String> training = robotsAi.get("training_blocked_bots") instanceof List
+                ? (List<String>) robotsAi.get("training_blocked_bots") : List.of();
+        if (training.isEmpty()) return "";
+        String bots = String.join(", ", training);
+        return ReportFindingsCatalog.tr(lang,
+                "; обучение моделей закрыто (это не мешает ответам AI): " + bots,
+                "; model training is closed (this does not stop AI answers): " + bots,
+                "; אימון מודלים חסום (זה לא מונע תשובות AI): " + bots);
+    }
+
     private static Map<String, Object> robotsAiFromBody(int status, String body) {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", status);
@@ -4477,7 +4503,8 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
         List<String> blockedBots = new ArrayList<>();
         List<String> allowedBots = new ArrayList<>();
         List<String> explicitAllowBots = new ArrayList<>();
-        boolean severeBlock = false;
+        List<String> answerBlockedBots = new ArrayList<>();
+        List<String> trainingBlockedBots = new ArrayList<>();
         boolean cloudflareManaged = robotsBody.contains("BEGIN Cloudflare Managed");
 
         Map<String, List<String>> rulesByAgent = indexRobotsAllowDisallow(robotsBody);
@@ -4493,8 +4520,8 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
             boolean hasAllowRoot = robotsHasAllowRoot(rules);
             boolean hasDisallowRoot = robotsHasDisallowRoot(rules);
             if (hasDisallowRoot && !hasAllowRoot) {
-                severeBlock = true;
                 blockedBots.add(bot);
+                (AI_ANSWER_BOTS.contains(bot) ? answerBlockedBots : trainingBlockedBots).add(bot);
             } else {
                 allowedBots.add(bot);
                 if (hasOwnBlock && hasAllowRoot) {
@@ -4504,8 +4531,10 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
         }
 
         Map<String, Object> parsed = new LinkedHashMap<>();
-        parsed.put("severe_block", severeBlock);
+        parsed.put("severe_block", !answerBlockedBots.isEmpty());
         parsed.put("blocked_bots", blockedBots);
+        parsed.put("answer_blocked_bots", answerBlockedBots);
+        parsed.put("training_blocked_bots", trainingBlockedBots);
         parsed.put("allowed_bots", allowedBots);
         parsed.put("explicit_allow_bots", explicitAllowBots);
         parsed.put("cloudflare_managed", cloudflareManaged);
@@ -4761,7 +4790,7 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
                     acceptRequest(home, "text/markdown"),
                     HttpResponse.BodyHandlers.ofString());
             String mdType = mdResp.headers().firstValue("content-type").orElse("");
-            String mdBody = mdResp.body() == null ? "" : mdResp.body();
+            String mdBody = textBody(mdResp);
             String vary = mdResp.headers().firstValue("vary").orElse("");
             boolean varyAccept = Arrays.stream(vary.split(","))
                     .map(String::trim)
@@ -4836,6 +4865,13 @@ Map<String, Object> securityHeaders = new LinkedHashMap<>();
             idx = end + 6;
         }
         return locs;
+    }
+
+    // Body of a text file (robots.txt, llms.txt, sitemap, markdown) without a leading UTF-8 BOM:
+    // Java keeps U+FEFF, so "# fast taxi" failed startsWith("#") and a real llms.txt read as missing (PIT-148).
+    private static String textBody(HttpResponse<String> response) {
+        String body = response.body() == null ? "" : response.body();
+        return body.startsWith("\uFEFF") ? body.substring(1) : body;
     }
 
     private static HttpRequest documentRequest(URI uri) {

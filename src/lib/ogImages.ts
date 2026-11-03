@@ -12,16 +12,21 @@ export const DEFAULT_OG_IMAGE =
 export const OG_IMAGE_WIDTH = 1200
 export const OG_IMAGE_HEIGHT = 630
 
-/** Per-plan 1200×630 cards on R2 (same public host as homepage Og.jpg). */
+/**
+ * Audit OG card on the main site origin (not pub-*.r2.dev).
+ * Messengers already fetch homepage assets from erythro.ai reliably;
+ * r2.dev is rate-limited and often yields a title/description preview with a blank image.
+ */
+const AUDIT_OG_IMAGE = 'https://erythro.ai/images/og/ai-audit.jpg'
+
+/** Per-plan 1200×630 share cards. */
 const PLAN_OG_IMAGES: Record<string, string> = {
   'business-automation':
     'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/Business-Automation-4.jpg',
-  'audit-free': 'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/Ai-Audit-1200-630-2.jpg',
-  'audit-diagnostic':
-    'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/Ai-Audit-1200-630-2.jpg',
-  'audit-pro': 'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/Ai-Audit-1200-630-2.jpg',
-  'audit-pro-ads':
-    'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/Ai-Audit-1200-630-2.jpg',
+  'audit-free': AUDIT_OG_IMAGE,
+  'audit-diagnostic': AUDIT_OG_IMAGE,
+  'audit-pro': AUDIT_OG_IMAGE,
+  'audit-pro-ads': AUDIT_OG_IMAGE,
 }
 
 export function ogImageForPlan(slug: string, siteOgImage?: string): string {

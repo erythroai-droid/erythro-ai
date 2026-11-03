@@ -264,7 +264,9 @@ export default function AiAuditHomeSection({ locale }: AiAuditHomeSectionProps) 
               id: 'ai-audit-pin',
               trigger: wrapperRef.current,
               start: 'top top',
-              end: '+=180%',
+              // Match cases-pin: cover Cases 160vh lead-in + overlay so AI Visibility
+              // stays put while Cases slides over (same as Cases → Services).
+              end: '+=260%',
               pin: true,
               pinSpacing: false,
               scrub: 1,
@@ -300,7 +302,10 @@ export default function AiAuditHomeSection({ locale }: AiAuditHomeSectionProps) 
           )
 
           settleStartTime = tl.duration()
+          // Scrub room for settle gate, then empty hold so clip+settle finish during
+          // the Cases lead-in and the rest of the pin is pure overlay room.
           tl.to({}, { duration: 0.55 })
+          tl.to({}, { duration: 1.0 })
 
           ScrollTrigger.sort()
 

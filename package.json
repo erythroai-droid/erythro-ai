@@ -62,7 +62,7 @@
     "imapflow": "^2.5.8",
     "libphonenumber-js": "^1.13.12",
     "liquid-gooey": "^0.2.1",
-    "next": "15.5.27",
+    "next": "16.4.3",
     "nextjs-toploader": "^3.9.17",
     "nodemailer": "10.0.15",
     "payload": "3.90.2",
@@ -82,7 +82,7 @@
     "@vitejs/plugin-react": "4.5.2",
     "autoprefixer": "^10.5.0",
     "eslint": "^9.16.0",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "16.4.3",
     "jsdom": "28.0.0",
     "pg": "^8.22.0",
     "postcss": "8.5.29",
@@ -99,11 +99,6 @@
     "pnpm": "^9 || ^10"
   },
   "pnpm": {
-    "peerDependencyRules": {
-      "allowedVersions": {
-        "next": "15"
-      }
-    },
     "overrides": {
       "browserslist": "4.29.3",
       "brace-expansion@1": "1.1.21",

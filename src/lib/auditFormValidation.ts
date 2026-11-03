@@ -13,7 +13,7 @@ export type AuditFormValues = {
 }
 
 export type AuditField = keyof AuditFormValues
-export type AuditFieldError = 'required' | 'invalid' | 'unreachable' | 'platform'
+export type AuditFieldError = 'required' | 'invalid' | 'unreachable' | 'platform' | 'bot_protected'
 export type AuditFieldErrors = Partial<Record<AuditField, AuditFieldError>>
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

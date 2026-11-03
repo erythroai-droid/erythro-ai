@@ -18,25 +18,31 @@ export type AuditFieldOk = Partial<Record<AuditField, boolean>>
 
 type CheckWebsiteResponse = { ok?: boolean; reason?: string }
 
-async function postWebsiteCheck(website: string): Promise<CheckWebsiteResponse> {
+async function postWebsiteCheck(website: string, planSlug?: string): Promise<CheckWebsiteResponse> {
   const res = await fetch('/api/audit/check-website', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ website }),
-    signal: AbortSignal.timeout(WEBSITE_CHECK_TIMEOUT_MS),
+    body: JSON.stringify({ website, ...(planSlug ? { planSlug } : {}) }),
+    // Paid plans also wait for the lab access check on the worker (PIT-150)
+    signal: AbortSignal.timeout(planSlug ? PAID_WEBSITE_CHECK_TIMEOUT_MS : WEBSITE_CHECK_TIMEOUT_MS),
   })
   const payload = (await res.json().catch(() => null)) as CheckWebsiteResponse | null
   if (res.status === 429) return { ok: false, reason: 'rate_limited' }
   return payload || { ok: false, reason: 'dns' }
 }
 
+const PAID_WEBSITE_CHECK_TIMEOUT_MS = 30_000
+
 /**
  * Green checks after blur; website also hits DNS via /api/audit/check-website.
+ * With a paid `planSlug` the check also asks whether the lab gets a bot challenge.
  */
 export function useAuditFieldChecks(
   values: AuditFormValues,
   setFieldErrors: React.Dispatch<React.SetStateAction<AuditFieldErrors>>,
+  options: { planSlug?: string } = {},
 ) {
+  const planSlug = options.planSlug
   const [ok, setOk] = useState<AuditFieldOk>({})
   const [checkingWebsite, setCheckingWebsite] = useState(false)
   const websiteGen = useRef(0)
@@ -132,7 +138,7 @@ export function useAuditFieldChecks(
       const gen = ++websiteGen.current
       setCheckingWebsite(true)
       try {
-        const payload = await postWebsiteCheck(trimmed)
+        const payload = await postWebsiteCheck(trimmed, planSlug)
         if (gen !== websiteGen.current) return false
         if (payload.ok) {
           verifiedWebsite.current = trimmed
@@ -149,7 +155,9 @@ export function useAuditFieldChecks(
             ? 'invalid'
             : payload.reason === 'platform'
               ? 'platform'
-              : 'unreachable',
+              : payload.reason === 'bot_protected'
+                ? 'bot_protected'
+                : 'unreachable',
         )
         return false
       } catch {
@@ -162,7 +170,7 @@ export function useAuditFieldChecks(
         if (gen === websiteGen.current) setCheckingWebsite(false)
       }
     },
-    [setFieldError],
+    [setFieldError, planSlug],
   )
 
   const blurWebsite = useCallback(() => {

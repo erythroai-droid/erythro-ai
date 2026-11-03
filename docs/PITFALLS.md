@@ -2172,6 +2172,147 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-154 — Home AI Visibility pin ends too early (section scrolls up under Cases)
+
+**Tags:** `gsap`, `scroll`, `home`, `ai-audit`, `pin`
+**Seen:** 2026-11-01 — erythro.ai home, desktop: AI Visibility («נראות ב-AI» / `#ai-audit`) slides up instead of staying while Cases overlays
+
+**Symptom:** After the AI Visibility settle, further scroll makes the block leave the viewport upward. Cases («наши работы») does not cleanly slide over a pinned plate the way Services slides over Cases.
+
+**Cause:** `ai-audit-pin` used `end: '+=180%'` with `pinSpacing: false`, while Cases still has a `160vh` lead-in spacer. Pin release happens almost as soon as the Cases panel arrives, so the section returns to document flow and rides up. The working Cases → Services pair uses `cases-pin` `end: '+=260%'` against the same `160vh` Services lead-in.
+
+**Fix:** In `AiAuditHomeSection.tsx`, set `end: '+=260%'` and add an empty scrub hold after the settle tween so clip-open + settle finish during the Cases lead-in; the rest of the pin is overlay room only.
+
+**Prevent:** For every `pinSpacing: false` home stack pair, pin `end` must cover the next section’s lead-in **plus** overlay (~`+=260%` when lead-in is `160vh`). Do not shorten the upstream pin without shrinking the downstream spacer.
+
+---
+
+## PIT-153 — Top-3 ordered by internal weight, GA4 shown with two statuses, "1." in the accessibility card (MI-002, MI-006, MI-011)
+
+**Tags:** `audit`, `render-v2`, `top-3`, `status`, `wording`
+**Seen:** 2026-10-28…30 — reports 238, 239, 240 (HE), 243 (fast-taxi.co.il, Free HE); each reached 3 repeats (MI-011: 1, linked to MI-002)
+
+**Symptom:** (1) Top-3: a "growth point" card stood above "needs attention", and a worse finding (security headers 0/6, slow LCP) was left out; the action plan listed a different order. (2) Same report, same check: GA4 "Critical" in the checklist, "Growth opportunity" in the top-3 card and in plan Step 5. (3) Accessibility card: "axe-core found critical/serious violations: 1." read like broken list numbering.
+
+**Cause:** (1) `ReportFindingsCatalog.toTopVulnerabilities` picked 3 by the internal `BizFinding.severity` weight, while the card shows the status of its pillar (`sevForPillar` in `render-v2-reports.mjs`). (2) The GA4 finding is classified into the `seo` step (`classifyActionPillar`), the checklist row into the `ai` pillar (`classifyCheck`), so the card took the SEO scale's colour, not the row's. (3) The count was the last word of the sentence.
+
+**Fix:** Java also writes `executive_scorecard.top_candidates` (real findings in weight order, one AI card, no pads). render-v2 picks the top-3 from it by the shown status (ties by weight), AI Visibility stays in (replaces the least severe), growth pads still fill a short list; `finds` is built once, before the checklist, so Step 1 / Free's open step follow the same order. `sevIdx` takes the GA4 finding's status from the GA4 checklist row. The accessibility count sits inside the sentence: "(WCAG rules: N)" in RU/EN/HE. Old `audit_data.json` without `top_candidates` keeps Java's top-3.
+
+**Prevent:** Anything the report orders or colours must use the status the reader sees, not an internal weight; a finding and its checklist row must share one status source. Do not end a sentence with a bare number.
+
+---
+
+## PIT-152 — Hebrew hero animation shows Latin words mirrored ("AI" → "IA")
+
+**Tags:** `frontend`, `rtl`, `bidi`, `hero`, `animation`
+**Seen:** 2026-10-30 — erythro.ai `?lang=he`, hero phrase «אוטומציית AI» (CMS text is correct)
+
+**Symptom:** In the hero text animation the Latin word reads backwards: «אוטומציית IA». Plain text elsewhere on the page is fine.
+
+**Cause:** `HeroMotionText.tsx` splits phrases into per-letter `display:inline-block` / flex spans for the kinetic effects. Each such span is an atomic, bidi-neutral item; an RTL container lays them out right-to-left, so the letters of a Latin run come out in reverse (same for `ב-AI`, `24/7`).
+
+**Fix:** `appendGlyphs()` — in RTL phrases each Latin/digit run goes into its own `display:inline-flex;direction:ltr;unicode-bidi:isolate` box; used by every per-letter split (`renderChars`, `explodeToChars`, the AI-plate word and its white cover, the flip frame). The letter-by-letter frame sets `direction:ltr` on a Latin word's box. Checked in Chrome against native text layout.
+
+**Follow-up (outline behind the text):** the background outline is one SVG `<text>` inside the `dir="ltr"` stage, so the LTR paragraph put the words of «אוטומציית AI» in LTR order (Hebrew word left, AI right) — swapped against the foreground. `buildMaskedOutline` wraps Hebrew phrases in RLE…PDF (U+202B…U+202C) for the stroke and the mask text: word order as Hebrew reads, `x`/`getBBox` unchanged (checked in Chrome: bbox x 0, width 326 before and after; Hebrew-only phrases unchanged).
+
+**Prevent:** Never split mixed-script text into per-letter inline-block/flex items without grouping LTR runs; compare the visual order with the browser's own rendering of the same string.
+
+---
+
+## PIT-151 — Vercel build fails in next/font: Google returns extensionless font URLs
+
+**Tags:** `build`, `vercel`, `next`, `fonts`, `pnpm-patch`
+**Seen:** 2026-10-30 — preview builds of PR #350 failed twice; a no-cache redeploy passed
+
+**Symptom:** `next build` → `src/lib/fonts.ts — An error occurred in next/font. TypeError: Cannot read properties of null (reading '1')` at `@next/font/dist/google/loader.js:122` (Heebo). Not every build: the same request to Google sometimes returns normal `…/s/heebo/v28/….woff2` URLs and sometimes `https://fonts.gstatic.com/l/font?kit=…&skey=…&v=v28` without an extension.
+
+**Cause:** next 15.5.27 takes the file type with `/\.(woff|woff2|eot|ttf|otf)$/.exec(url)[1]`; an extensionless URL gives `null`. Fixed upstream in next 16.4.3 (vercel/next.js#99114); 15.5.28 (backport tag) does not have it. Payload 3.90.2 officially supports next `>=16.3.3`, not 15.5 (we run 15.5 via `pnpm.peerDependencyRules.allowedVersions`).
+
+**Fix:** `patches/next@15.5.27.patch` (`pnpm.patchedDependencies`) — backport of the 16.4.3 change: `findFontFilesInCss` returns `ext` from the URL path, else from the CSS `format()` hint, else `woff2`; `loader.js` uses it. Guard test `tests/int/nextFontGooglePatch.int.spec.ts`. On Windows with a non-ASCII user folder `pnpm patch-commit` writes `"a/C:/Users/…/patch-commit/<hash>/dist/…"` headers and then fails with `ERR_PNPM_INVALID_PATCH` — rewrite them to `a/dist/…` and run `pnpm install`.
+
+**Prevent:** Remove the patch when moving to next 16.4.3+ (the guard test keeps passing there). A build that fails in `next/font` with this stack is the Google flake, not the PR.
+
+---
+
+## PIT-150 — Paid Diagnostic/Pro for a site the lab cannot open
+
+**Tags:** `audit`, `payment`, `worker`, `bot-protection`, `reconcile`
+**Seen:** 2026-10-30 — follow-up to PIT-149 (report 244): Free may get the "audit not completed" page, a client who paid must not
+
+**Symptom (risk):** A client pays ₪99/₪490, the worker meets a bot challenge (AWS WAF, Cloudflare…) and the paid result is the PIT-149 page "we could not check your site".
+
+**Cause:** The challenge was only seen after payment, and the site's own website check runs on Vercel, whose IPs a WAF may let through while it blocks the VPS lab IP.
+
+**Fix:**
+- Worker `POST /api/check-access` (secret + optional HMAC) runs `detectBotChallenge` from the lab IP.
+- Site: `src/lib/auditLabAccess.ts` (`checkLabAccess`, `isPaidAuditCheckoutSlug`). `/api/audit/check-website` with a paid `planSlug` asks the worker; `bot_protected` → field error "add IP 46.202.155.56 to the allowlist, then click again" (`useAuditFieldChecks(..., { planSlug })`, `OrderClient`, `AuditLpPaidForm`). `/api/payment/create` re-checks on the server and answers `409 code: bot_protected`. An unanswered worker never blocks the checkout.
+- Worker, paid run still blocked (protection turned on after payment): `waitForLabAccess` — order stays `in_progress` with `auditSummary.waitingAccess {since, lastCheck, checks, clientNotified}`; first time the client gets "payment received — open access" (no report, no PDF) and team@erythro.ai gets an alert; after 72 h → `failed` + second team alert.
+- Site cron `reconcileStuckAudits`: `waitingAccess` orders are re-queued every 30 min without spending `MAX_RECONCILE_RETRIES`.
+
+**Prevent:** Anything the client pays for must be checked before payment from the machine that will do the work, not from the web front. A paid result is never a "could not do it" page: wait, retry, tell the team.
+
+---
+
+## PIT-149 — Site behind a bot challenge audited as its empty challenge page
+
+**Tags:** `audit`, `worker`, `waf`, `bot-protection`, `report`
+**Seen:** 2026-10-30 — reports 244 and 200, shirielectric.co.il (Konimbo shop on CloudFront)
+
+**Symptom:** Free report: "На сайте нет формы захвата заявок — Критично", "Путь к заявке — Критично", "битые или пустые страницы 1/1", security headers 0/6, robots.txt and sitemap 202, AI 14/100, technologies only "Amazon CloudFront". From a normal IP the site is a shop with 4 forms and WhatsApp. Only the Lighthouse numbers were right (Google PSI fetches from its own IPs).
+
+**Cause:** From the VPS IP the site answers `HTTP 202`, `x-amzn-waf-action: challenge`, `Server: CloudFront`, empty body (AWS WAF bot challenge). Nothing in the worker or the collector recognised a site-wide challenge; every check ran against the empty page and produced findings.
+
+**Fix:** `services/audit-agent/src/botChallenge.js` — before the Java audit the worker GETs the homepage like a browser (redirects followed with the SSRF guard on each hop) and `classifyChallenge` looks only for strong signals: `x-amzn-waf-action: challenge|captcha`, `cf-mitigated: challenge`, or a challenge page (Cloudflare "Just a moment" / challenge-platform, DataDome, Imperva, Sucuri, Akamai) with status 202/403/429/503. On a challenge `runAuditJob` skips the audit, renders `render-blocked-report.mjs` (report styles, RU/EN/HE: "site is behind bot protection", lab IP 46.202.155.56 for an allowlist, WhatsApp, email), stores it as the report (`auditStatus: report_sent`, no `auditScore`, `auditSummary.blocked`), sends the "Аудит не выполнен" email without PDF and schedules no Pro offer. A network error is not a challenge: the normal audit runs.
+
+**Prevent:** An audit that could not see the site must not produce findings. When adding a check, ask what it reports if the page is a WAF/captcha page; compare against a fetch from a normal IP when a report looks implausible (no forms on a shop, 0/6 headers, everything 202).
+
+---
+
+## PIT-148 — AI card on a Cloudflare WordPress site: real llms.txt "missing", second Content-Signal in Step 1, "AI does not see the brand"
+
+**Tags:** `audit`, `ai-visibility`, `robots`, `render-v2`, `report-text`
+**Seen:** 2026-10-30 — report 243, fast-taxi.co.il, Free HE
+
+**Symptom:** Top finding 01 "עוזרי AI לא מוצאים את האתר — Критично", AI Visibility 29/100. Gaps listed `/llms.txt` and "robots Disallow: / לבוטי AI"; text said ChatGPT, Claude and Gemini do not see the brand. Step 1 told the owner to add `Content-Signal: search=yes, ai-input=yes, ai-train=no` to robots.txt. On the site: `/llms.txt` is 200 `text/plain`, 37 KB, valid llmstxt.org; robots.txt is Cloudflare Managed and already has `Content-Signal: search=yes,ai-train=no,use=reference`; it blocks training crawlers (GPTBot, ClaudeBot, Google-Extended…), ChatGPT-User and PerplexityBot are open.
+
+**Cause:** (1) `fetchLlmsTxt` checked `body.stripLeading().startsWith("#")`; the file starts with a UTF-8 BOM, Java keeps U+FEFF and `stripLeading` does not remove it. (2) `renderCodeBox` picked `codeExisting` (the Content-Signal line) whenever robots.txt existed, without looking at `vercel_level1.content_signals.present`. (3) `parseRobotsAiAccess` set `severe_block` for any blocked AI bot, training crawlers included; the card text and the Pro engine cards called a training-only block invisibility ("ChatGPT Search (GPTBot)").
+
+**Fix:** `textBody()` strips a leading BOM for robots.txt, llms.txt, sitemap and markdown bodies. Bots split into `AI_ANSWER_BOTS` (ChatGPT-User, PerplexityBot) and `AI_TRAINING_BOTS`; `severe_block` only when an answer bot is blocked, `answer_blocked_bots` / `training_blocked_bots` in data, the checklist adds "обучение моделей закрыто (это не мешает ответам AI)". The AI finding says "не находят" only with a severe block, otherwise "ИИ-ассистентам не хватает данных о сайте". Step 1 with an existing robots.txt gives only what is missing: Content-Signal and/or a `Sitemap:` line, else an `/llms.txt` skeleton, else `link rel=describedby`, else no code. Pro engine cards: answer bot decides "Blocked", training-only shows "Обучение закрыто" (Gemini: Google-Extended affects Gemini app answers, not Search / AI Overviews).
+
+**Prevent:** Read text files from the web through `textBody()`. A code snippet for a file the site already has must be built from what the collector found in that file, never a fixed line. "Training closed" and "invisible to AI" are different findings: check which bot is blocked before writing a claim about answers.
+
+---
+
+## PIT-147 — Worker redeployed from a CRLF worktree: render-v2 crashes, clients get the old Java report
+
+**Tags:** `audit`, `deploy`, `vps`, `render-v2`, `line-endings`
+**Seen:** 2026-10-30 — AUD-242 (bedek2.co.il, Free HE) arrived in the old Java template after the 08:07 UTC worker redeploy
+
+**Symptom:** Worker log: `Error: anchor end not found:     </div>\n  </section>` from `render-v2-reports.mjs`, then `render-v2-reports.mjs завершился с кодом: 1`; the run still ends `ok`, the email goes out with the fallback Java HTML (old design). Code in the container matched `main`.
+
+**Cause:** `deploy_audit_agent_only.py` was run from a fresh git worktree (`C:/dev/erythro-ai-ga4-text`). With `core.autocrlf=true` the worktree checkout wrote every text file with CRLF, and the script tars files as they are on disk. `render-v2-reports.mjs` cuts template blocks with LF anchors (`'    </div>\n  </section>'`); in CRLF templates `indexOf` fails. The main checkout happened to have LF templates, so earlier deploys from it worked.
+
+**Fix:** Redeployed from `git -c core.autocrlf=false archive origin/main services/audit-agent scripts/deploy_audit_agent_only.py` (LF) with `VPS_PASSWORD` from the main `.env.local`. Container templates = `origin/main` blobs, 0 CRLF files. Checked on the AUD-242 data in a copy inside the old container: CRLF templates crash, LF templates render all reports.
+
+**Prevent:** Deploy the worker only from LF files (a `git archive` with `core.autocrlf=false`, or a checkout whose templates have no `\r`). After every worker redeploy run one audit and grep the log for `render-v2-reports.mjs завершился с кодом`. `.gitattributes` now forces `eol=lf` for `services/audit-agent/**`, so new worktrees check it out with LF.
+
+---
+
+## PIT-146 — English "stub" and an "in head" claim inside RU/HE text of the GA4 / Consent Mode check
+
+**Tags:** `audit`, `i18n`, `ga4`, `consent-mode`, `report-text`
+**Seen:** 3 times — myblindspot.eu RU, report 238 (sirton.co.il HE), report 240 (bigcars.co.il HE); logged as MI-003 in `docs/audit/minor-issues.md`
+
+**Symptom:** The "GA4 / dataLayer readiness" row read "dataLayer + consent stub (Consent Mode default) (GA4 G- ID נמצא)" and in the recommendation "Consent Mode stub כבר ב-<head>" — English words inside RU/HE text, and a claim that the default sits in `<head>` even when it comes from an app bundle or a consent plugin (AUD-231).
+
+**Cause:** The RU/HE strings in `AuditCollector` (check row), `A44Recommendations.ga4`, `ReportFindingsCatalog` (GA4 finding) and `ReportScopeOfWork` were translated word by word from the English "consent stub" / "stub only".
+
+**Fix:** Localized wording without "stub": "Consent Mode по умолчанию" / "ברירת מחדל של Consent Mode"; the good state no longer says "in <head>" (the recommendation to add it still says <head>); "stub only" → "G- ID не найден" / "no G- ID" / "לא נמצא G- ID". Generated `audit_template_*` copies are not edited by hand — they refresh on the next render.
+
+**Prevent:** No English technical slang in RU/HE strings unless it is a name (Consent Mode, dataLayer). A "found" message must not assert where the code lives unless the collector measured it. Redeploy the VPS audit worker after Java text changes; samples on the site refresh only when rebuilt.
+
+---
+
 ## PIT-145 — Pro hid the open sign-up behind another lead form (start form + /whitepaper)
 
 **Tags:** `audit`, `diagnostic`, `pro`, `lead-capture`, `render-v2`
@@ -2528,3 +2669,12 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] render-v2 reads only its own tier's Java HTML from this run; never fall back to another tier's file (PIT-139)
 - [ ] Lead check: a start form (URL field → sign-up) is `na` "not checked" in Free; Diagnostic/Pro submit it once with the site origin and judge the step that opens, never typing credentials (PIT-144)
 - [ ] Start form next to other lead forms: Diagnostic/Pro still judge the step behind it and report both; a paid tier never reports less than a cheaper one (PIT-145)
+- [ ] RU/HE report text: no English "stub"/slang, no "in <head>" claim the collector did not measure (PIT-146)
+- [ ] Worker redeploy: ship LF files only (`git -c core.autocrlf=false archive`), never a CRLF worktree; after it, check one audit log for a render-v2 exit code (PIT-147)
+- [ ] Web text files through `textBody()` (BOM); Step 1 snippet only adds what the existing file lacks; a training-only robots block is not "AI does not see the site" (PIT-148)
+- [ ] Before the audit, check for a site-wide bot challenge (`detectBotChallenge`); on a challenge send the blocked page, never findings from the challenge page (PIT-149)
+- [ ] Paid audit: check lab access from the worker before payment; a blocked paid run waits (30 min re-checks, 72 h) and alerts the team, never sends the blocked page (PIT-150)
+- [ ] next/font build crash `reading '1'` = extensionless Google font URL; keep `patches/next@15.5.27.patch` until next 16.4.3+ (PIT-151)
+- [ ] Per-letter spans in RTL text: wrap Latin/digit runs in a direction:ltr box (appendGlyphs), or they read mirrored (PIT-152)
+- [ ] Top-3 and the plan follow the status the card shows (`top_candidates` + `sevIdx`); a finding takes its status from its checklist row (PIT-153)
+- [ ] Home pin + lead-in: upstream `pinSpacing: false` end must cover next section’s `160vh` lead-in + overlay (`+=260%`, PIT-154)

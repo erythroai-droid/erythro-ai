@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 import { config as loadEnv } from 'dotenv'
 import { runAuditJob } from './runAudit.js'
 import { assertPublicHttpUrl } from './ssrf.js'
+import { detectBotChallenge } from './botChallenge.js'
 
 loadEnv()
 
@@ -58,6 +59,48 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'GET' && url.pathname === '/health') {
     send(res, 200, { ok: true, service: 'audit-agent' })
+    return
+  }
+
+  // Before a paid checkout the site asks whether the lab IP gets the pages or a bot challenge
+  // (the site itself runs on Vercel, whose IPs a WAF may treat differently) — PIT-150
+  if (req.method === 'POST' && url.pathname === '/api/check-access') {
+    if (!checkSecret(req)) {
+      unauthorized(res)
+      return
+    }
+    let rawBody
+    try {
+      rawBody = await readRawBody(req)
+    } catch {
+      send(res, 400, { error: 'invalid_body' })
+      return
+    }
+    const hasSig = typeof req.headers['x-agent-signature'] === 'string'
+    if ((REQUIRE_HMAC || hasSig) && !checkSignature(rawBody, req)) {
+      unauthorized(res)
+      return
+    }
+    let body
+    try {
+      body = rawBody.length ? JSON.parse(rawBody.toString('utf8')) : {}
+    } catch {
+      send(res, 400, { error: 'invalid_json' })
+      return
+    }
+    const targetUrl = typeof body.targetUrl === 'string' ? body.targetUrl.trim() : ''
+    const ssrf = await assertPublicHttpUrl(targetUrl)
+    if (!ssrf.ok) {
+      send(res, 400, { error: 'ssrf_blocked', reason: ssrf.reason })
+      return
+    }
+    const result = await detectBotChallenge(targetUrl)
+    send(res, 200, {
+      blocked: result.blocked,
+      protection: result.protection || null,
+      status: result.status || null,
+      error: result.error || null,
+    })
     return
   }
 

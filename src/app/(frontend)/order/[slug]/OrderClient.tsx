@@ -78,6 +78,7 @@ import {
   auditPage,
   tAudit,
   tAuditWebsitePlatform,
+  tAuditWebsiteBotProtected,
   tAuditWebsiteUnreachable,
   type AuditPageContent,
 } from '@/lib/auditPage'
@@ -1182,7 +1183,9 @@ function AuditOrderModal({
     blurPhone,
     blurWebsite,
     ensureWebsiteOk,
-  } = useAuditFieldChecks(values, setFieldErrors)
+  } = useAuditFieldChecks(values, setFieldErrors, {
+    planSlug: plan.slug === 'audit-free' ? undefined : plan.slug,
+  })
 
   const isFreePlan = plan.slug === 'audit-free'
   const planTitle = tLocale(plan.card.title, locale)
@@ -1335,8 +1338,11 @@ function AuditOrderModal({
         }
 
         const code = paymentData?.code
+        if (code === 'bot_protected') setFieldErrors((prev) => ({ ...prev, website: 'bot_protected' }))
         setSubmitError(
-          code === 'name_unsupported'
+          code === 'bot_protected'
+            ? tAuditWebsiteBotProtected(locale)
+            : code === 'name_unsupported'
             ? tForm(contactForm.paymentName)
             : code === 'phone_unsupported'
               ? tForm(contactForm.paymentPhone)
@@ -1704,7 +1710,9 @@ function AuditOrderModal({
                           ? tAuditWebsiteUnreachable(formCopy.websiteUnreachable, locale)
                           : fieldErrors.website === 'platform'
                             ? tAuditWebsitePlatform(formCopy.websitePlatform, locale)
-                            : tForm(contactForm.fieldRequired)}
+                            : fieldErrors.website === 'bot_protected'
+                              ? tAuditWebsiteBotProtected(locale)
+                              : tForm(contactForm.fieldRequired)}
                     </p>
                   ) : null}
                 </div>

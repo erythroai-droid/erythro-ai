@@ -7,7 +7,7 @@ import {
 } from '@/lib/markdownNegotiation'
 import { getCachedPortfolioProjects } from '@/lib/cmsPages'
 import { NextRequest } from 'next/server'
-import { middleware } from '@/middleware'
+import { proxy } from '@/proxy'
 
 describe('shouldServeMarkdown', () => {
   it('returns true when Accept header is text/markdown', () => {
@@ -171,14 +171,14 @@ describe('generateMarkdownForRoute', () => {
   }, 30_000)
 })
 
-describe('middleware markdown content negotiation', () => {
+describe('proxy markdown content negotiation', () => {
   it('rewrites requests with Accept: text/markdown to /api/markdown-negotiate', () => {
     const req = new NextRequest('https://erythro.ai/about', {
       headers: {
         accept: 'text/markdown',
       },
     })
-    const res = middleware(req)
+    const res = proxy(req)
     expect(res.headers.get('x-middleware-rewrite')).toContain('/api/markdown-negotiate?path=%2Fabout')
   })
 
@@ -188,7 +188,7 @@ describe('middleware markdown content negotiation', () => {
         accept: 'text/html,application/xhtml+xml',
       },
     })
-    const res = middleware(req)
+    const res = proxy(req)
     expect(res.headers.get('x-middleware-rewrite')).toBeNull()
   })
 
@@ -198,7 +198,7 @@ describe('middleware markdown content negotiation', () => {
         accept: 'text/markdown',
       },
     })
-    const resApi = middleware(reqApi)
+    const resApi = proxy(reqApi)
     expect(resApi.headers.get('x-middleware-rewrite')).toBeNull()
 
     const reqAdmin = new NextRequest('https://erythro.ai/admin', {
@@ -206,7 +206,7 @@ describe('middleware markdown content negotiation', () => {
         accept: 'text/markdown',
       },
     })
-    const resAdmin = middleware(reqAdmin)
+    const resAdmin = proxy(reqAdmin)
     expect(resAdmin.headers.get('x-middleware-rewrite')).toBeNull()
   })
 })

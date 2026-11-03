@@ -20,6 +20,7 @@ import {
   auditPage,
   tAudit,
   tAuditWebsitePlatform,
+  tAuditWebsiteBotProtected,
   tAuditWebsiteUnreachable,
   type AuditPageContent,
 } from '@/lib/auditPage'
@@ -142,7 +143,7 @@ export default function AuditLpPaidForm({
     blurName,
     blurPhone,
     ensureWebsiteOk,
-  } = useAuditFieldChecks(values, setFieldErrors)
+  } = useAuditFieldChecks(values, setFieldErrors, { planSlug })
 
   useEffect(() => {
     setValues((current) => ({ ...current, auditLanguage: reportLanguage }))
@@ -166,6 +167,7 @@ export default function AuditLpPaidForm({
     if (field === 'website' && err === 'platform') {
       return tAuditWebsitePlatform(page.form.websitePlatform, locale)
     }
+    if (field === 'website' && err === 'bot_protected') return tAuditWebsiteBotProtected(locale)
     if (field === 'email' && err === 'invalid') return tForm(contactForm.emailInvalid)
     if (field === 'phone' && err === 'invalid') return tForm(contactForm.phoneInvalid)
     return tForm(contactForm.fieldRequired)
@@ -276,8 +278,11 @@ export default function AuditLpPaidForm({
       }
 
       const code = paymentData?.code
+      if (code === 'bot_protected') setFieldErrors((prev) => ({ ...prev, website: 'bot_protected' }))
       setSubmitError(
-        code === 'name_unsupported'
+        code === 'bot_protected'
+          ? tAuditWebsiteBotProtected(locale)
+          : code === 'name_unsupported'
           ? tForm(contactForm.paymentName)
           : code === 'phone_unsupported'
             ? tForm(contactForm.paymentPhone)

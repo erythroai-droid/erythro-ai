@@ -58,6 +58,17 @@ export function tAuditWebsitePlatform(field: Localized | undefined, locale: stri
   return tAudit(field ?? AUDIT_WEBSITE_PLATFORM, locale)
 }
 
+/** Paid checkout: the lab IP gets a bot challenge, the audit cannot run (PIT-150). */
+export const AUDIT_WEBSITE_BOT_PROTECTED = {
+  en: 'Your site is behind bot protection and our lab cannot check it. Add IP 46.202.155.56 to the allowlist (Cloudflare, AWS WAF, hosting panel), then click the button again.',
+  ru: 'Сайт закрыт защитой от ботов, наша лаборатория не может его проверить. Добавьте IP 46.202.155.56 в allowlist (Cloudflare, AWS WAF, панель хостинга) и нажмите кнопку ещё раз.',
+  he: 'האתר מוגן מפני בוטים והמעבדה שלנו לא יכולה לבדוק אותו. הוסיפו את ה-IP ‏46.202.155.56 לרשימת ההיתרים (Cloudflare, AWS WAF, לוח הבקרה של האחסון) ולחצו שוב על הכפתור.',
+} satisfies Localized
+
+export function tAuditWebsiteBotProtected(locale: string): string {
+  return tAudit(AUDIT_WEBSITE_BOT_PROTECTED, locale)
+}
+
 export const auditPage = {
   slug: 'audit',
   title: {

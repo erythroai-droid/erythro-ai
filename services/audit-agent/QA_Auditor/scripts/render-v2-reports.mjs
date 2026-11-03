@@ -481,7 +481,7 @@ function renderAiVisibilitySection(lang) {
       sub: 'Анализ готовности сайта к индексации, цитированию и ответам в ChatGPT Search, Perplexity AI, Claude и Google Gemini.',
       engines: [
         {
-          name: 'ChatGPT Search (GPTBot)',
+          name: 'ChatGPT (OpenAI)',
           badge: 'Индексирует',
           cls: 'ok',
           icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M22.28 9.87a5.98 5.98 0 0 0-.52-4.91 6.05 6.05 0 0 0-6.52-2.82 6.06 6.06 0 0 0-4.9-2.52 6.06 6.06 0 0 0-5.78 4.2 6.03 6.03 0 0 0-3.9 2.84 6.05 6.05 0 0 0 .74 7.08 6 6 0 0 0 .52 4.91 6.05 6.05 0 0 0 6.52 2.82 6.06 6.06 0 0 0 4.9 2.52 6.06 6.06 0 0 0 5.78-4.2 6.03 6.03 0 0 0 3.9-2.84 6.05 6.05 0 0 0-.74-7.08ZM13 21.88a4.54 4.54 0 0 1-2.91-1.05l.15-.08 4.83-2.79a.77.77 0 0 0 .39-.67v-6.82l2.06 1.19a.07.07 0 0 1 .04.05v5.62a4.56 4.56 0 0 1-4.56 4.55Zm-7.7-3.7a4.53 4.53 0 0 1-.58-3.04l.15.09 4.83 2.79a.77.77 0 0 0 .78 0l5.9-3.41v2.38a.07.07 0 0 1-.03.06l-4.87 2.81a4.55 4.55 0 0 1-6.18-1.68Zm-1.2-8.32a4.54 4.54 0 0 1 2.33-2l-.15.09-4.83 2.79a.77.77 0 0 0-.39.67v6.82l-2.06-1.19a.07.07 0 0 1-.04-.05V11.4a4.56 4.56 0 0 1 5.14-1.54ZM11 2.12a4.54 4.54 0 0 1 2.91 1.05l-.15.08-4.83 2.79a.77.77 0 0 0-.39.67v6.82l-2.06-1.19a.07.07 0 0 1-.04-.05V6.67A4.56 4.56 0 0 1 11 2.12Zm7.7 3.7a4.53 4.53 0 0 1 .58 3.04l-.15-.09-4.83-2.79a.77.77 0 0 0-.78 0l-5.9 3.41V7.01a.07.07 0 0 1 .03-.06l4.87-2.81a4.55 4.55 0 0 1 6.18 1.68Zm1.2 8.32a4.54 4.54 0 0 1-2.33 2l.15-.09 4.83-2.79a.77.77 0 0 0 .39-.67V7.47l2.06 1.19a.07.07 0 0 1 .04.05v5.62a4.56 4.56 0 0 1-5.14 1.54ZM12 13.5l-2.7-1.56 2.7-1.56 2.7 1.56L12 13.5Z"/></svg>`,
@@ -546,7 +546,7 @@ function renderAiVisibilitySection(lang) {
       sub: 'Readiness and indexing analysis for ChatGPT Search, Perplexity AI, Claude, and Google Gemini Overviews.',
       engines: [
         {
-          name: 'ChatGPT Search (GPTBot)',
+          name: 'ChatGPT (OpenAI)',
           badge: 'Crawling active',
           cls: 'ok',
           icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M22.28 9.87a5.98 5.98 0 0 0-.52-4.91 6.05 6.05 0 0 0-6.52-2.82 6.06 6.06 0 0 0-4.9-2.52 6.06 6.06 0 0 0-5.78 4.2 6.03 6.03 0 0 0-3.9 2.84 6.05 6.05 0 0 0 .74 7.08 6 6 0 0 0 .52 4.91 6.05 6.05 0 0 0 6.52 2.82 6.06 6.06 0 0 0 4.9 2.52 6.06 6.06 0 0 0 5.78-4.2 6.03 6.03 0 0 0 3.9-2.84 6.05 6.05 0 0 0-.74-7.08ZM13 21.88a4.54 4.54 0 0 1-2.91-1.05l.15-.08 4.83-2.79a.77.77 0 0 0 .39-.67v-6.82l2.06 1.19a.07.07 0 0 1 .04.05v5.62a4.56 4.56 0 0 1-4.56 4.55Zm-7.7-3.7a4.53 4.53 0 0 1-.58-3.04l.15.09 4.83 2.79a.77.77 0 0 0 .78 0l5.9-3.41v2.38a.07.07 0 0 1-.03.06l-4.87 2.81a4.55 4.55 0 0 1-6.18-1.68Zm-1.2-8.32a4.54 4.54 0 0 1 2.33-2l-.15.09-4.83 2.79a.77.77 0 0 0-.39.67v6.82l-2.06-1.19a.07.07 0 0 1-.04-.05V11.4a4.56 4.56 0 0 1 5.14-1.54ZM11 2.12a4.54 4.54 0 0 1 2.91 1.05l-.15.08-4.83 2.79a.77.77 0 0 0-.39.67v6.82l-2.06-1.19a.07.07 0 0 1-.04-.05V6.67A4.56 4.56 0 0 1 11 2.12Zm7.7 3.7a4.53 4.53 0 0 1 .58 3.04l-.15-.09-4.83-2.79a.77.77 0 0 0-.78 0l-5.9 3.41V7.01a.07.07 0 0 1 .03-.06l4.87-2.81a4.55 4.55 0 0 1 6.18 1.68Zm1.2 8.32a4.54 4.54 0 0 1-2.33 2l.15-.09 4.83-2.79a.77.77 0 0 0 .39-.67V7.47l2.06 1.19a.07.07 0 0 1 .04.05v5.62a4.56 4.56 0 0 1-5.14 1.54ZM12 13.5l-2.7-1.56 2.7-1.56 2.7 1.56L12 13.5Z"/></svg>`,
@@ -611,7 +611,7 @@ function renderAiVisibilitySection(lang) {
       sub: 'ניתוח מוכנות ואינדוקס עבור ChatGPT Search, Perplexity AI, Claude ו-Google Gemini.',
       engines: [
         {
-          name: 'ChatGPT Search (GPTBot)',
+          name: 'ChatGPT (OpenAI)',
           badge: 'אינדוקס פעיל',
           cls: 'ok',
           icon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M22.28 9.87a5.98 5.98 0 0 0-.52-4.91 6.05 6.05 0 0 0-6.52-2.82 6.06 6.06 0 0 0-4.9-2.52 6.06 6.06 0 0 0-5.78 4.2 6.03 6.03 0 0 0-3.9 2.84 6.05 6.05 0 0 0 .74 7.08 6 6 0 0 0 .52 4.91 6.05 6.05 0 0 0 6.52 2.82 6.06 6.06 0 0 0 4.9 2.52 6.06 6.06 0 0 0 5.78-4.2 6.03 6.03 0 0 0 3.9-2.84 6.05 6.05 0 0 0-.74-7.08ZM13 21.88a4.54 4.54 0 0 1-2.91-1.05l.15-.08 4.83-2.79a.77.77 0 0 0 .39-.67v-6.82l2.06 1.19a.07.07 0 0 1 .04.05v5.62a4.56 4.56 0 0 1-4.56 4.55Zm-7.7-3.7a4.53 4.53 0 0 1-.58-3.04l.15.09 4.83 2.79a.77.77 0 0 0 .78 0l5.9-3.41v2.38a.07.07 0 0 1-.03.06l-4.87 2.81a4.55 4.55 0 0 1-6.18-1.68Zm-1.2-8.32a4.54 4.54 0 0 1 2.33-2l-.15.09-4.83 2.79a.77.77 0 0 0-.39.67v6.82l-2.06-1.19a.07.07 0 0 1-.04-.05V11.4a4.56 4.56 0 0 1 5.14-1.54ZM11 2.12a4.54 4.54 0 0 1 2.91 1.05l-.15.08-4.83 2.79a.77.77 0 0 0-.39.67v6.82l-2.06-1.19a.07.07 0 0 1-.04-.05V6.67A4.56 4.56 0 0 1 11 2.12Zm7.7 3.7a4.53 4.53 0 0 1 .58 3.04l-.15-.09-4.83-2.79a.77.77 0 0 0-.78 0l-5.9 3.41V7.01a.07.07 0 0 1 .03-.06l4.87-2.81a4.55 4.55 0 0 1 6.18 1.68Zm1.2 8.32a4.54 4.54 0 0 1-2.33 2l.15-.09 4.83-2.79a.77.77 0 0 0 .39-.67V7.47l2.06 1.19a.07.07 0 0 1 .04.05v5.62a4.56 4.56 0 0 1-5.14 1.54ZM12 13.5l-2.7-1.56 2.7-1.56 2.7 1.56L12 13.5Z"/></svg>`,
@@ -685,6 +685,7 @@ function renderAiVisibilitySection(lang) {
     fail: T3('Не выполнено', 'Not passed', 'לא תקין'),
     open: T3('Доступ открыт', 'Access open', 'גישה פתוחה'),
     blocked: T3('Заблокирован', 'Blocked', 'חסום'),
+    trainingClosed: T3('Обучение закрыто', 'Training closed', 'אימון חסום'),
     dflt: T3('Не указан', 'Not set', 'לא הוגדר'),
     factorsTitle: T3('7 критериев AI Visibility', '7 AI Visibility criteria', '7 קריטריונים של AI Visibility'),
     l1Title: T3('Agent Readiness L1 — готовность к AI-агентам', 'Agent Readiness L1 — readiness for AI agents', 'Agent Readiness L1 — מוכנות לסוכני AI'),
@@ -692,23 +693,52 @@ function renderAiVisibilitySection(lang) {
     l1passed: (p, t) => T3(`Agent Readiness L1: ${p} из ${t}`, `Agent Readiness L1: ${p} of ${t}`, `Agent Readiness L1: ${p} מתוך ${t}`)
   };
 
-  // engines: access decided by the robots.txt rules for each vendor's bots
-  const ENGINE_BOTS = [['GPTBot', 'ChatGPT-User'], ['PerplexityBot'], ['ClaudeBot', 'anthropic-ai'], ['Google-Extended']];
+  // engines: access decided by the robots.txt rules for each vendor's bots. The answer bot decides
+  // whether the model can cite the site; the training bot only decides training (PIT-148: Cloudflare
+  // Managed robots.txt closes GPTBot/ClaudeBot by default, ChatGPT-User stays open)
+  const ENGINE_BOTS = [
+    { answer: ['ChatGPT-User'], training: ['GPTBot'] },
+    { answer: ['PerplexityBot'], training: [] },
+    { answer: [], training: ['ClaudeBot', 'anthropic-ai'] },
+    { answer: [], training: ['Google-Extended'], grounding: true }
+  ];
   const allowed = robots.allowed_bots || [];
   const blocked = robots.blocked_bots || [];
   const enginesHtml = c.engines.map((e, i) => {
-    const bots = (ENGINE_BOTS[i] || []).join(', ');
-    const isBlocked = (ENGINE_BOTS[i] || []).some((x) => blocked.includes(x));
-    const isAllowed = (ENGINE_BOTS[i] || []).some((x) => allowed.includes(x));
-    const badge = isBlocked ? L.blocked : isAllowed ? L.open : L.dflt;
-    const desc = isBlocked
-      ? T3(`robots.txt блокирует ${bots}: эта модель не сможет ссылаться на сайт в ответах.`, `robots.txt blocks ${bots}: this model cannot cite the site in answers.`, `robots.txt חוסם את ${bots}: המודל לא יוכל להפנות לאתר בתשובות.`)
-      : T3(`robots.txt пропускает ${bots}: модель читает страницы и может ссылаться на сайт в ответах.`, `robots.txt lets ${bots} in: the model reads pages and can cite the site in answers.`, `robots.txt מאפשר ל-${bots}: המודל קורא את העמודים ויכול להפנות לאתר בתשובות.`);
+    const eb = ENGINE_BOTS[i] || { answer: [], training: [] };
+    const answerBlocked = eb.answer.filter((x) => blocked.includes(x));
+    const trainingBlocked = eb.training.filter((x) => blocked.includes(x));
+    const all = [...eb.answer, ...eb.training];
+    const isAllowed = all.some((x) => allowed.includes(x));
+    let badge;
+    let warn;
+    let desc;
+    if (answerBlocked.length) {
+      const bots = answerBlocked.join(', ');
+      badge = L.blocked;
+      warn = true;
+      desc = T3(`robots.txt блокирует ${bots}: эта модель не сможет ссылаться на сайт в ответах.`, `robots.txt blocks ${bots}: this model cannot cite the site in answers.`, `robots.txt חוסם את ${bots}: המודל לא יוכל להפנות לאתר בתשובות.`);
+    } else if (trainingBlocked.length && eb.grounding) {
+      const bots = trainingBlocked.join(', ');
+      badge = L.trainingClosed;
+      warn = true;
+      desc = T3(`robots.txt закрывает ${bots}: Gemini не берёт страницы для обучения и для ответов в приложении Gemini. Google Поиск и AI Overviews это не затрагивает.`, `robots.txt closes ${bots}: Gemini does not use the pages for training or for answers in the Gemini app. Google Search and AI Overviews are not affected.`, `robots.txt סוגר את ${bots}: Gemini לא משתמש בעמודים לאימון ולתשובות באפליקציית Gemini. חיפוש Google ו-AI Overviews לא מושפעים.`);
+    } else if (trainingBlocked.length) {
+      const bots = trainingBlocked.join(', ');
+      badge = L.trainingClosed;
+      warn = false;
+      desc = T3(`robots.txt закрывает обучение (${bots}): модель не учится на сайте, но ответы со ссылкой на сайт это не закрывает.`, `robots.txt closes training (${bots}): the model does not learn from the site, but answers citing the site stay possible.`, `robots.txt סוגר אימון (${bots}): המודל לא לומד מהאתר, אבל תשובות שמפנות לאתר עדיין אפשריות.`);
+    } else {
+      const bots = all.join(', ');
+      badge = isAllowed ? L.open : L.dflt;
+      warn = false;
+      desc = T3(`robots.txt пропускает ${bots}: модель читает страницы и может ссылаться на сайт в ответах.`, `robots.txt lets ${bots} in: the model reads pages and can cite the site in answers.`, `robots.txt מאפשר ל-${bots}: המודל קורא את העמודים ויכול להפנות לאתר בתשובות.`);
+    }
     return `
       <div class="ai-engine">
         <div class="ai-engine-head">
           <span class="ai-engine-name">${e.icon}<span>${esc(e.name)}</span></span>
-          <span class="ai-engine-badge ${isBlocked ? 'warn' : 'ok'}">${esc(badge)}</span>
+          <span class="ai-engine-badge ${warn ? 'warn' : 'ok'}">${esc(badge)}</span>
         </div>
         <p>${esc(desc)}</p>
       </div>`;
@@ -720,6 +750,7 @@ function renderAiVisibilitySection(lang) {
   const llmsParts = [llms.has_h1, llms.has_brand, llms.has_structure].filter(Boolean).length;
   const orgParts = [org.hasName, org.hasUrl, org.hasSameAs, org.hasContactPoint].filter(Boolean).length;
   const yn = (v) => (v ? T3('есть', 'yes', 'כן') : T3('нет', 'no', 'לא'));
+  const trainingOnly = blocked.length > 0 && !robots.severe_block;
   const criteria = [
     [llms.ok, T3('Машиночитаемый каталог /llms.txt', 'Machine-readable /llms.txt', 'קטלוג llms.txt קריא למכונה'),
       T3(`HTTP ${llms.status ?? '—'}; заголовок, бренд и структура: ${llmsParts} из 3.`, `HTTP ${llms.status ?? '—'}; heading, brand and structure: ${llmsParts} of 3.`, `HTTP ${llms.status ?? '—'}; כותרת, מותג ומבנה: ${llmsParts} מתוך 3.`)],
@@ -728,7 +759,7 @@ function renderAiVisibilitySection(lang) {
     [(av.about_page || {}).ok, T3('Страница /about с фактами о бренде', '/about page with brand facts', 'עמוד about עם עובדות על המותג'),
       T3('Источник проверенных фактов о компании для ответов моделей.', 'A source of verified company facts for model answers.', 'מקור לעובדות מאומתות על החברה לתשובות המודלים.')],
     [!robots.severe_block, T3('Доступ AI-ботов в robots.txt', 'AI-bot access in robots.txt', 'גישת בוטי AI ב-robots.txt'),
-      T3(`Разрешено ботов: ${allowed.length}, заблокировано: ${blocked.length}.`, `Bots allowed: ${allowed.length}, blocked: ${blocked.length}.`, `בוטים מותרים: ${allowed.length}, חסומים: ${blocked.length}.`)],
+      T3(`Разрешено ботов: ${allowed.length}, заблокировано: ${blocked.length}${trainingOnly ? ' (только обучение — ответам AI не мешает)' : ''}.`, `Bots allowed: ${allowed.length}, blocked: ${blocked.length}${trainingOnly ? ' (training only — does not stop AI answers)' : ''}.`, `בוטים מותרים: ${allowed.length}, חסומים: ${blocked.length}${trainingOnly ? ' (אימון בלבד — לא מונע תשובות AI)' : ''}.`)],
     [dom.organization_schema, T3('Schema.org Organization (JSON-LD)', 'Schema.org Organization (JSON-LD)', 'Schema.org Organization (JSON-LD)'),
       T3(`Название, URL, sameAs, контакты: ${orgParts} из 4${dom.faq_schema ? '; есть FAQPage' : ''}.`, `Name, URL, sameAs, contacts: ${orgParts} of 4${dom.faq_schema ? '; FAQPage present' : ''}.`, `שם, URL, sameAs, אנשי קשר: ${orgParts} מתוך 4${dom.faq_schema ? '; קיים FAQPage' : ''}.`)],
     [dom.llms_describedby, T3('Ссылка на /llms.txt в HTML', '/llms.txt linked from HTML', 'קישור ל-llms.txt ב-HTML'),
@@ -1052,10 +1083,59 @@ function snippetWhere(solObj, lang) {
   return w[lang] || w.en || w.ru || '';
 }
 
+// Step 1 of the AI action when the site already has robots.txt: give only what is missing.
+// Report 243 (fast-taxi.co.il): Cloudflare had already put Content-Signal into robots.txt, and the
+// report still told the owner to add a second Content-Signal line (PIT-148).
+function aiSnippetForExistingRobots(lang, origin) {
+  const T3 = (ru, en, he) => (lang === 'ru' ? ru : lang === 'he' ? he : en);
+  const infra = data.infrastructure_and_security || {};
+  const av = data.ai_visibility || {};
+  const l1 = av.vercel_level1 || {};
+  const dom = av.dom || {};
+  const hasSignal = (l1.content_signals || {}).present === true;
+  const sitemapLine = (infra.robots_sitemap_directives || []).length === 0 && infra.has_sitemap_xml && infra.sitemap_url
+    ? `Sitemap: ${infra.sitemap_url}` : '';
+  const lines = [];
+  if (!hasSignal) lines.push('Content-Signal: search=yes, ai-input=yes, ai-train=no');
+  if (sitemapLine) lines.push(sitemapLine);
+  if (lines.length) {
+    const head = !hasSignal && sitemapLine
+      ? T3('# Добавьте в существующий robots.txt: Content-Signal — в блок User-agent: *,\n# Sitemap — в любое место файла. Остальные правила не меняйте:',
+        '# Add to your existing robots.txt: Content-Signal in the User-agent: * group,\n# Sitemap anywhere in the file. Keep the other rules as they are:',
+        '# הוסיפו ל-robots.txt הקיים: את Content-Signal בקבוצת User-agent: *,\n# ואת Sitemap בכל מקום בקובץ. את שאר הכללים השאירו כמו שהם:')
+      : !hasSignal
+        ? T3('# Добавьте строку в существующий robots.txt, в блок User-agent: *.\n# Остальные правила файла не меняйте:',
+          '# Add this line to your existing robots.txt, in the User-agent: * group.\n# Keep the file\'s other rules as they are:',
+          '# הוסיפו את השורה ל-robots.txt הקיים, בקבוצת User-agent: *.\n# את שאר הכללים בקובץ השאירו כמו שהם:')
+        : T3('# Добавьте строку в существующий robots.txt, в любое место файла:\n# так AI-агенты найдут карту сайта. Остальные правила не меняйте:',
+          '# Add this line anywhere in your existing robots.txt so AI agents\n# find the sitemap. Keep the other rules as they are:',
+          '# הוסיפו את השורה בכל מקום ב-robots.txt הקיים, כדי שסוכני AI\n# ימצאו את מפת האתר. את שאר הכללים השאירו כמו שהם:');
+    return { where: T3('robots.txt в корне сайта', 'robots.txt at the site root', 'robots.txt בשורש האתר'), code: `${head}\n${lines.join('\n')}` };
+  }
+  const llms = av.llms_txt || {};
+  if (!llms.ok) {
+    let host = '';
+    try { host = new URL(origin).hostname; } catch (e) {}
+    return {
+      where: T3('/llms.txt в корне сайта', '/llms.txt at the site root', 'llms.txt בשורש האתר'),
+      code: T3(`# ${host}\n> Коротко: чем занимается компания, где работает, как связаться.\n\n## Основные страницы\n- [Главная](${origin}/): услуги и цены\n- [Контакты](${origin}/contact): телефон, WhatsApp, адрес`,
+        `# ${host}\n> In one line: what the business does, where it works, how to reach it.\n\n## Main pages\n- [Home](${origin}/): services and prices\n- [Contact](${origin}/contact): phone, WhatsApp, address`,
+        `# ${host}\n> בשורה אחת: מה העסק עושה, איפה הוא פועל ואיך יוצרים קשר.\n\n## עמודים עיקריים\n- [ראשי](${origin}/): שירותים ומחירים\n- [צור קשר](${origin}/contact): טלפון, WhatsApp, כתובת`)
+    };
+  }
+  if (!dom.llms_describedby) {
+    return {
+      where: T3('<head> каждой страницы', '<head> of every page', '<head> בכל עמוד'),
+      code: `<link rel="describedby" href="${origin}/llms.txt" type="text/markdown">`
+    };
+  }
+  return null;
+}
+
 function renderCodeBox(solObj, lang) {
   if (!solObj) return '';
   const item = solObj[lang] || solObj.en || solObj.ru;
-  const where = snippetWhere(solObj, lang);
+  let where = snippetWhere(solObj, lang);
   // Snippets are written against erythro.ai; the client's copy must point at the audited site:
   // the origin the homepage lands on (www → apex) and the sitemap the collector actually found
   // (AUD-230: www/sitemap.xml is 404, the real one is on the apex)
@@ -1069,6 +1149,12 @@ function renderCodeBox(solObj, lang) {
     code = code.replaceAll('https://erythro.ai/sitemap.xml', infra.sitemap_url);
   }
   if (origin) code = code.replaceAll('https://erythro.ai', origin);
+  if (solObj === ACTION_CODE_SOLUTIONS.ai && infra.has_robots_txt === true) {
+    const s = aiSnippetForExistingRobots(lang, origin || 'https://example.com');
+    if (!s) return '';
+    where = s.where;
+    code = s.code;
+  }
 
   return `
     <div class="code-box">
@@ -2662,8 +2748,48 @@ function renderReport(lang, tier = 'pro') {
   const planLinkText = lang === 'ru' ? 'Смотреть решение с кодом в плане действий ↓'
     : lang === 'he' ? 'לצפייה בפתרון עם קוד בתוכנית הפעולה ↓'
     : 'View solution with code in action plan ↓';
+  // Top-3 and its severity (all tiers). The card shows the status of the finding's scale or check,
+  // so that status, not Java's internal weight, decides the order and what gets in (MI-002).
+  const mapFind = (v) => {
+    const origTitle = strip(v.title || '');
+    const tr = FINDINGS_DICT[origTitle]?.[lang];
+    return {
+      // pillar is classified from the original (RU) title, so every language copy gets the same plan
+      orig: origTitle,
+      title: tr ? tr.title : origTitle,
+      issue: tr ? tr.issue : strip(v.issue || ''),
+      impact: tr ? tr.impact : strip(v.impact || ''),
+      sol: tr ? tr.sol : strip(v.solution || v.sol || '')
+    };
+  };
+  // The GA4 finding belongs to the 'seo' step, but its checklist row sits in the 'ai' pillar: take the row's
+  // status, or the card said "growth point" next to "Critical" in the checklist (MI-011)
+  const ga4Check = checks.find((c) => /ga4|datalayer/i.test(c.name));
+  const sevIdx = (f) => {
+    const orig = f.orig || f.title;
+    if (/ga4/i.test(orig) && ga4Check && isIssue(ga4Check)) return ga4Check.status === 'bad' ? 0 : ga4Check.status === 'warn' ? 1 : 2;
+    return sevForPillar(classifyActionPillar(orig));
+  };
+  let finds = [];
+  if (sc && Array.isArray(sc.top_vulnerabilities) && sc.top_vulnerabilities.length > 0) {
+    const javaTop = sc.top_vulnerabilities.slice(0, 3).map(mapFind);
+    const cands = Array.isArray(sc.top_candidates) ? sc.top_candidates : [];
+    if (cands.length) {
+      const byStatus = (a, b) => a.k - b.k || a.i - b.i;
+      const ranked = cands.map((v, i) => { const f = mapFind(v); return { f, i, k: sevIdx(f), ai: v.ai === 'true' }; }).sort(byStatus);
+      let picked = ranked.slice(0, 3);
+      // AI Visibility always stays in the top-3 (product rule); it takes the place of the least severe one
+      const ai = ranked.find((r) => r.ai);
+      if (ai && !picked.includes(ai)) picked = [...picked.slice(0, 2), ai].sort(byStatus);
+      finds = picked.map((r) => r.f);
+      // Fewer than 3 real findings: the growth pads Java added fill the rest (kept on purpose)
+      for (const f of javaTop) if (finds.length < 3 && !finds.some((x) => x.orig === f.orig)) finds.push(f);
+    } else {
+      finds = javaTop; // audit_data.json from before top_candidates
+    }
+  }
   // Free opens Step 1 only: the action built from the first top-3 finding
-  const freeOpenPillar = classifyActionPillar((sc?.top_vulnerabilities?.[0]?.title) || 'speed');
+  const freeOpenPillar = classifyActionPillar(finds[0]?.orig || 'speed');
 
   const renderedChecks = tier === 'free' ? pickFreeChecks(checks, lang) : checks;
 
@@ -3015,22 +3141,8 @@ ${cards}
   }
   s = s.replace(/<p class="score-note">[\s\S]*?<\/p>/, `<p class="score-note">${scoreNote}</p>`);
 
-  // --- Top 3 findings
-  let finds = [];
-  if (sc && Array.isArray(sc.top_vulnerabilities) && sc.top_vulnerabilities.length > 0) {
-    finds = sc.top_vulnerabilities.slice(0, 3).map((v) => {
-      const origTitle = strip(v.title || '');
-      const tr = FINDINGS_DICT[origTitle]?.[lang];
-      return {
-        // pillar is classified from the original (RU) title, so every language copy gets the same plan
-        orig: origTitle,
-        title: tr ? tr.title : origTitle,
-        issue: tr ? tr.issue : strip(v.issue || ''),
-        impact: tr ? tr.impact : strip(v.impact || ''),
-        sol: tr ? tr.sol : strip(v.solution || v.sol || '')
-      };
-    });
-  } else {
+  // --- Top 3 findings (chosen above, before the checklist: Free's open step follows the first one)
+  if (!finds.length) {
     const findRe = /<article class="finding-card">([\s\S]*?)<\/article>/g;
     let fm;
     while ((fm = findRe.exec(pro))) {
@@ -3075,8 +3187,6 @@ ${cards}
   const lblImp = lang === 'ru' ? 'Потери бизнеса' : lang === 'he' ? 'השפעה עסקית' : 'Business loss';
   const lblSol = lang === 'ru' ? 'Решение от Erythro.ai' : lang === 'he' ? 'פתרון מ-Erythro.ai' : 'Erythro.ai solution';
 
-  // Free: severity follows the scale and the checklist (Pro/Diagnostic still use the fixed 0/1/2 order)
-  const sevIdx = (f) => sevForPillar(classifyActionPillar(f.orig || f.title));
   const lockIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
   const freeStep1Text = lang === 'ru' ? 'Готовое решение с кодом — в Шаге 1 плана действий ↓'
     : lang === 'he' ? 'פתרון מוכן עם קוד — בשלב 1 של תוכנית הפעולה ↓'
