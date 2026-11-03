@@ -1642,13 +1642,11 @@ html:not(.dark) .audit-pill-shell input:-webkit-autofill:active {
 
 .animate-hero-fade {
   animation: heroFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both 0.1s;
-  will-change: opacity;
 }
 
 /* Title: Slides in from the Left */
 .animate-hero-left {
   animation: heroSlideFromLeft 1.35s cubic-bezier(0.16, 1, 0.3, 1) both 0.25s;
-  will-change: transform, opacity;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -1660,7 +1658,6 @@ html:not(.dark) .audit-pill-shell input:-webkit-autofill:active {
 /* Form: Slides in from the Right */
 .animate-hero-right {
   animation: heroSlideFromRight 1.35s cubic-bezier(0.16, 1, 0.3, 1) both 0.25s;
-  will-change: transform, opacity;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -1669,12 +1666,38 @@ html:not(.dark) .audit-pill-shell input:-webkit-autofill:active {
   animation-name: heroSlideFromRightRtl;
 }
 
-/* Numbers: Slides up from Below */
+/* Numbers: Slides up from Below (avoid on mobile — see max-width rule below) */
 .animate-hero-up {
   animation: heroFadeUp 1.35s cubic-bezier(0.16, 1, 0.3, 1) both 0.25s;
-  will-change: transform, opacity;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+}
+
+/*
+  Mobile: skip entrance fades that start at opacity:0 (fill-mode both).
+  Safari often fails to composite them over backdrop-blur + animated blobs,
+  leaving empty bordered tiles in the stats footer. Also freeze continuous
+  blob/pan motion so the GPU is not thrashing while the visitor scrolls.
+*/
+@media (max-width: 1023px) {
+  .animate-hero-fade,
+  .animate-hero-left,
+  .animate-hero-right,
+  .animate-hero-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .calc-lq-blob {
+    animation: none;
+    /* Still soft, without continuous transform/filter churn */
+    will-change: auto;
+  }
+
+  .calc-loss-flow {
+    animation: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
