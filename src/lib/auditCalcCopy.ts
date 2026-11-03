@@ -1423,9 +1423,9 @@ export const auditCalcCopy = {
 
   /* ---- hero (giant headings, background words) ---- */
   heroKicker: {
-    en: 'AI Online Audit',
-    ru: 'AI-онлайн-аудит',
-    he: 'בדיקת AI אונליין',
+    en: 'AI Audit Online',
+    ru: 'AI-аудит онлайн',
+    he: 'AI Audit אונליין',
   } satisfies Localized,
   heroLive: { en: 'Auditor online', ru: 'Аудитор онлайн', he: 'הבודק מחובר' } satisfies Localized,
   heroL1: { en: 'How much', ru: 'Сколько', he: 'כמה' } satisfies Localized,
