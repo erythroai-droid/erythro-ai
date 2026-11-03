@@ -1,14 +1,23 @@
 # Latest changes
 
-Обновлено: 2026-11-03 (leak client email → step 4 deep link)  
-Статус: В работе (нужен деплой сайта + воркера)
+Обновлено: 2026-11-03 (deep-link email → step 4, не fake step 3)  
+Статус: Локально в calc2; нужен commit → deploy
 
 ---
 
-## 1. Письмо клиенту с калькулятора → шаг 4 LP
-- **Было:** report-ready mail всегда на `erythro.ai/audit/report/{id}?k=…` (A44).
-- **Стало (leak_calc):** `https://leak-{locale}.erythro.ai/?report={id}&k={token}&rev=&clients=`
-- **LP:** `AuditCalcFlow` читает query в prod и открывает waiting→ready (шаг 4).
-- **Intake:** `calcRevenue` / `calcClients` в `auditSummary` (для money mode в письме).
-- **Воркер:** `runAudit.js` + copy в `mail.js` («расчёт утечек»). Нужен **редеплой audit-agent** на VPS, не только Vercel.
-- **Следующий шаг:** commit → deploy Next → redeploy worker Docker.
+## 1. Баг: письмо открывало шаг 3 (анализ)
+- **Причина:** `?report=&k=` сразу ставил `waiting` + первый poll через 8 с → UI «идёт анализ» даже когда отчёт уже `report_sent`.
+- **Фикс (`AuditCalcFlow.tsx`):**
+  - deep-link → стадия `opening` («Открываем результаты…»);
+  - первый fetch сразу;
+  - при `report_sent` → сразу step 4;
+  - `waiting` только если статус ещё in progress;
+  - fallback pillars если score/pillars пустые;
+  - lang switcher сохраняет query.
+
+## 2. Ранее
+- Бейдж «1 домен / 7 дней» под субзаголовком (шаг 1–2), убран из-под кнопки.
+
+## 3. Следующий шаг
+- Commit + push + Vercel (leak LP).
+- Смоук: старая ссылка из письма → шаг 4 с результатами.

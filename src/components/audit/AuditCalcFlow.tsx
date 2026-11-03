@@ -34,9 +34,20 @@ import { pillarsFromOverall, type AuditPillars } from '@/lib/revenueLeak'
 
 type Stage =
   | { name: 'form' }
+  /** Email deep-link: fetch status before showing the analysis/waiting UI. */
+  | { name: 'opening'; submitted: AuditLpSubmitted }
   | { name: 'waiting'; submitted: AuditLpSubmitted; startedAt: number }
   | { name: 'ready'; submitted: AuditLpSubmitted; report: AuditReportPublicPayload }
   | { name: 'failed'; submitted: AuditLpSubmitted }
+
+function startedAtFromReport(json: AuditReportPublicPayload): number {
+  for (const raw of [json.createdAt, json.updatedAt]) {
+    if (typeof raw !== 'string' || !raw.trim()) continue
+    const ms = Date.parse(raw)
+    if (Number.isFinite(ms) && ms > 0) return ms
+  }
+  return Date.now()
+}
 
 /** Element inside the form card that receives the audit form's submit button. */
 const SUBMIT_SLOT_ID = 'calc-submit-slot'
@@ -67,8 +78,11 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
   const [skipToPercent, setSkipToPercent] = useState(false)
   const [revenue, setRevenue] = useState<number | null>(null)
   const [clients, setClients] = useState<number | null>(null)
+  /** Keep ?report=&k=&rev=&clients= when switching leak-{locale} hosts. */
+  const [resumeSearch, setResumeSearch] = useState('')
 
-  const currentStep = stage.name === 'ready' ? 4 : stage.name === 'waiting' ? 3 : formStep
+  const currentStep =
+    stage.name === 'ready' ? 4 : stage.name === 'waiting' || stage.name === 'opening' ? 3 : formStep
 
   const stepLabels: Record<string, Record<1 | 2 | 3 | 4, string>> = {
     ru: {
@@ -92,6 +106,8 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
   }
 
   const waiting = stage.name === 'waiting' ? stage : null
+  const opening = stage.name === 'opening' ? stage : null
+  const pollTarget = waiting ?? opening
 
   // Deep link from the report-ready email: ?report={id}&k={token}&rev=&clients=
   // Dev preview: ?preview=step2|waiting|ready|failed
@@ -107,15 +123,17 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     const reportId = reportIdRaw && /^\d+$/.test(reportIdRaw) ? Number(reportIdRaw) : null
     if (reportId && accessKey) {
       const siteParam = q.get('site') || q.get('website') || ''
+      setResumeSearch(window.location.search || '')
+      // Do not jump straight into the "analysis running" UI — fetch first.
+      // Ready emails must land on step 4, not a fake re-run of step 3.
       setStage({
-        name: 'waiting',
+        name: 'opening',
         submitted: {
           id: reportId,
           accessKey,
           website: siteParam,
           reportHref: null,
         },
-        startedAt: Date.now(),
       })
       return
     }
@@ -157,10 +175,11 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     }
   }, [])
 
-  // Poll report status
+  // Poll / open report status (email deep-link + live waiting). First tick is immediate.
   useEffect(() => {
-    if (!waiting) return
-    const { submitted } = waiting
+    if (!pollTarget) return
+    const { submitted } = pollTarget
+    const fromDeepLink = pollTarget.name === 'opening'
     if (submitted.accessKey === 'preview') return
     if (!submitted.accessKey) {
       setStage({ name: 'failed', submitted })
@@ -184,19 +203,29 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
         if (res.ok) {
           const json = (await res.json()) as AuditReportPublicPayload
           if (cancelled) return
+          const nextSubmitted = {
+            ...submitted,
+            website: submitted.website || json.website || '',
+          }
           if (json.status === 'report_sent') {
             setStage({
               name: 'ready',
-              submitted: {
-                ...submitted,
-                website: submitted.website || json.website || '',
-              },
+              submitted: nextSubmitted,
               report: json,
             })
             return
           }
           if (json.status === 'failed') {
-            setStage({ name: 'failed', submitted })
+            setStage({ name: 'failed', submitted: nextSubmitted })
+            return
+          }
+          // Still running — promote opening → waiting once (do not setState every poll).
+          if (fromDeepLink) {
+            setStage({
+              name: 'waiting',
+              submitted: nextSubmitted,
+              startedAt: startedAtFromReport(json),
+            })
             return
           }
         }
@@ -206,12 +235,12 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
       if (!cancelled) timer = setTimeout(tick, delay)
     }
 
-    timer = setTimeout(tick, AUDIT_REPORT_POLL_MS)
+    void tick()
     return () => {
       cancelled = true
       if (timer) clearTimeout(timer)
     }
-  }, [waiting])
+  }, [pollTarget])
 
   // Timer for smooth progress bar during waiting
   useEffect(() => {
@@ -221,7 +250,12 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
   }, [waiting])
 
   const domain = useMemo(() => {
-    if (stage.name === 'waiting' || stage.name === 'ready' || stage.name === 'failed') {
+    if (
+      stage.name === 'waiting' ||
+      stage.name === 'opening' ||
+      stage.name === 'ready' ||
+      stage.name === 'failed'
+    ) {
       return displayDomain(stage.submitted.website)
     }
     return ''
@@ -233,6 +267,8 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     if (!report) return null
     if (report.pillars) return report.pillars
     if (typeof report.auditScore === 'number') return pillarsFromOverall(report.auditScore)
+    // report_sent without score/pillars still must show step 4 (email deep-link).
+    if (report.status === 'report_sent') return pillarsFromOverall(50)
     return null
   }, [report])
 
@@ -372,18 +408,24 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
         {/* Language Selector */}
         <nav aria-label="Language" className="flex items-center gap-0.5 rounded-full border border-[#cbd5e1] bg-white p-1">
-          {AUDIT_LP_LOCALES.map((l) => (
-            <a
-              key={l}
-              href={auditLpHrefForLocale(l, 'calc')}
-              aria-current={l === locale ? 'true' : undefined}
-              className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.04em] no-underline transition-all ${
-                l === locale ? 'bg-[#0f172a] text-white' : 'text-[#64748b] hover:text-[#e52421]'
-              }`}
-            >
-              {l}
-            </a>
-          ))}
+          {AUDIT_LP_LOCALES.map((l) => {
+            const base = auditLpHrefForLocale(l, 'calc')
+            const href = resumeSearch
+              ? `${base.replace(/\/?$/, '')}${resumeSearch.startsWith('?') ? resumeSearch : `?${resumeSearch}`}`
+              : base
+            return (
+              <a
+                key={l}
+                href={href}
+                aria-current={l === locale ? 'true' : undefined}
+                className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.04em] no-underline transition-all ${
+                  l === locale ? 'bg-[#0f172a] text-white' : 'text-[#64748b] hover:text-[#e52421]'
+                }`}
+              >
+                {l}
+              </a>
+            )
+          })}
         </nav>
       </header>
 
@@ -501,6 +543,10 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                     <span className="size-1.5 rounded-full bg-[#86efac]" />
                     {locale === 'he' ? 'אודיט מהיר חינם' : locale === 'ru' ? 'Бесплатный экспресс-аудит' : 'Free Quick Audit'}
                   </span>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-1.5 rounded-full bg-white/50" />
+                    {tCalc(copy.step1Guarantee2, locale)}
+                  </span>
                 </>
               ) : currentStep === 2 ? (
                 <>
@@ -511,6 +557,10 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                   <span className="inline-flex items-center gap-2">
                     <span className="size-1.5 rounded-full bg-[#86efac]" />
                     {tCalc(copy.step2PercentBadge, locale)}
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="size-1.5 rounded-full bg-white/50" />
+                    {tCalc(copy.step1Guarantee2, locale)}
                   </span>
                 </>
               ) : (
@@ -688,7 +738,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
                     {formStep === 1 ? (
                       <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-center text-xs font-medium text-white/75">
-                        {[copy.step1Guarantee1, copy.step1Guarantee2, copy.step1Guarantee3].map((g) => (
+                        {[copy.step1Guarantee1, copy.step1Guarantee3].map((g) => (
                           <span key={g.en} className="inline-flex items-center gap-1.5 whitespace-nowrap">
                             <svg className="size-3.5 shrink-0 text-[#86efac]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
                             {tCalc(g, locale)}
@@ -728,6 +778,22 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                       </div>
                     )}
                   </div>
+                </div>
+              ) : null}
+
+              {stage.name === 'opening' ? (
+                <div className="w-full rounded-[20px] border border-white/20 bg-white/[0.08] text-white shadow-[0_8px_24px_-14px_rgba(10,6,25,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm lg:backdrop-blur-xl p-6 sm:p-8 lg:p-6 flex flex-col items-center justify-center gap-3 min-h-[220px]">
+                  <span className="relative flex size-3">
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#86efac] opacity-75 motion-reduce:hidden" />
+                    <span className="relative inline-flex size-3 rounded-full bg-[#86efac]" />
+                  </span>
+                  <p className="m-0 text-sm font-medium text-white/80">
+                    {locale === 'he'
+                      ? 'פותחים את התוצאות…'
+                      : locale === 'ru'
+                        ? 'Открываем результаты…'
+                        : 'Opening your results…'}
+                  </p>
                 </div>
               ) : null}
 
