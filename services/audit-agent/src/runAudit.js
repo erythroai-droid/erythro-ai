@@ -41,6 +41,52 @@ function siteBase() {
   )
 }
 
+const LEAK_CALC_HOSTS = {
+  en: 'leak-en.erythro.ai',
+  ru: 'leak-ru.erythro.ai',
+  he: 'leak-he.erythro.ai',
+}
+
+/**
+ * Client link in the report-ready email.
+ * Leak calculator → step 4 on leak-{locale}.erythro.ai (not /audit/report A44).
+ */
+function buildClientStatusPageUrl({
+  submissionId,
+  reportAccessToken,
+  locale,
+  leadChannel,
+  calcRevenue,
+  calcClients,
+}) {
+  const token = encodeURIComponent(reportAccessToken)
+  if (leadChannel === 'leak_calc') {
+    const lang = locale === 'ru' || locale === 'he' || locale === 'en' ? locale : 'en'
+    const host = LEAK_CALC_HOSTS[lang] || LEAK_CALC_HOSTS.en
+    const u = new URL(`https://${host}/`)
+    u.searchParams.set('report', String(submissionId))
+    u.searchParams.set('k', reportAccessToken)
+    if (typeof calcRevenue === 'number' && Number.isFinite(calcRevenue) && calcRevenue > 0) {
+      u.searchParams.set('rev', String(Math.round(calcRevenue)))
+    }
+    if (typeof calcClients === 'number' && Number.isFinite(calcClients) && calcClients > 0) {
+      u.searchParams.set('clients', String(Math.round(calcClients)))
+    }
+    return u.toString()
+  }
+  return `${siteBase()}/audit/report/${submissionId}?k=${token}`
+}
+
+function calcMetricsFromSummary(summary) {
+  if (!summary || typeof summary !== 'object') return { calcRevenue: null, calcClients: null }
+  const rev = Number(summary.calcRevenue)
+  const clients = Number(summary.calcClients)
+  return {
+    calcRevenue: Number.isFinite(rev) && rev > 0 ? rev : null,
+    calcClients: Number.isFinite(clients) && clients > 0 ? clients : null,
+  }
+}
+
 export const WAIT_ACCESS_MAX_MS = 72 * 60 * 60 * 1000
 
 /**
@@ -54,7 +100,14 @@ async function waitForLabAccess(input) {
   const prev = input.previous && typeof input.previous === 'object' ? input.previous : {}
   const since = typeof prev.since === 'string' ? prev.since : now.toISOString()
   const checks = (Number(prev.checks) || 0) + 1
-  const statusPageUrl = `${siteBase()}/audit/report/${submissionId}?k=${encodeURIComponent(input.reportAccessToken)}`
+  const statusPageUrl = buildClientStatusPageUrl({
+    submissionId,
+    reportAccessToken: input.reportAccessToken,
+    locale: input.locale,
+    leadChannel: input.leadChannel,
+    calcRevenue: input.calcRevenue,
+    calcClients: input.calcClients,
+  })
   const alert = {
     orderId: submissionId,
     targetUrl,
@@ -144,6 +197,12 @@ export async function runAuditJob(job) {
   let reportAccessToken = ''
   /** @type {string|null} */
   let leadChannel = null
+  /** @type {number|null} */
+  let calcRevenue = null
+  /** @type {number|null} */
+  let calcClients = null
+  /** @type {Record<string, unknown>|null} */
+  let priorSummary = null
 
   try {
     const doc = await getContactSubmission(submissionId)
@@ -154,6 +213,12 @@ export async function runAuditJob(job) {
         reportAccessToken = doc.reportAccessToken.trim()
       }
       if (typeof doc.leadChannel === 'string') leadChannel = doc.leadChannel
+      if (doc.auditSummary && typeof doc.auditSummary === 'object') {
+        priorSummary = doc.auditSummary
+        const metrics = calcMetricsFromSummary(doc.auditSummary)
+        calcRevenue = metrics.calcRevenue
+        calcClients = metrics.calcClients
+      }
     }
     if (!reportAccessToken) {
       throw new Error('Missing reportAccessToken on submission — refuse unscoped report URL')
@@ -181,8 +246,11 @@ export async function runAuditJob(job) {
         clientName,
         notifyClient,
         reportAccessToken,
+        leadChannel,
+        calcRevenue,
+        calcClients,
         challenge,
-        previous: doc?.auditSummary?.waitingAccess,
+        previous: priorSummary?.waitingAccess,
       })
     }
     if (challenge.blocked) {
@@ -195,7 +263,14 @@ export async function runAuditJob(job) {
         body: html,
         contentType: 'text/html; charset=utf-8',
       })
-      const statusPageUrl = `${siteBase()}/audit/report/${submissionId}?k=${encodeURIComponent(reportAccessToken)}`
+      const statusPageUrl = buildClientStatusPageUrl({
+        submissionId,
+        reportAccessToken,
+        locale,
+        leadChannel,
+        calcRevenue,
+        calcClients,
+      })
       await updateContactSubmission(submissionId, {
         auditStatus: 'report_sent',
         reportUrl: statusPageUrl,
@@ -211,6 +286,8 @@ export async function runAuditJob(job) {
           challengeStatus: challenge.status,
           storageKey: uploaded.key,
           pdfStorageKey: null,
+          ...(calcRevenue != null ? { calcRevenue } : {}),
+          ...(calcClients != null ? { calcClients } : {}),
         },
         htmlResult: html,
         errorLast: null,
@@ -225,6 +302,7 @@ export async function runAuditJob(job) {
           locale,
           planSlug,
           blocked: true,
+          leakCalc: leadChannel === 'leak_calc',
         })
         console.log(
           mailed.sent
@@ -273,10 +351,21 @@ export async function runAuditJob(job) {
       console.warn(`[audit] submission=${submissionId} Diagnostic/Pro PDF missing — email HTML link only`)
     }
 
-    const statusPageUrl = `${siteBase()}/audit/report/${submissionId}?k=${encodeURIComponent(reportAccessToken)}`
-    const publicReportUrl = uploaded.url.includes('.r2.cloudflarestorage.com/')
-      ? statusPageUrl
-      : uploaded.url
+    const statusPageUrl = buildClientStatusPageUrl({
+      submissionId,
+      reportAccessToken,
+      locale,
+      leadChannel,
+      calcRevenue,
+      calcClients,
+    })
+    // Leak LP: client opens step 4 on leak-*; keep A44 R2 URL only when public (non-r2.dev).
+    const publicReportUrl =
+      leadChannel === 'leak_calc'
+        ? statusPageUrl
+        : uploaded.url.includes('.r2.cloudflarestorage.com/')
+          ? statusPageUrl
+          : uploaded.url
 
     const detectedTechnologies = Array.isArray(result.summary?.detectedTechnologies)
       ? result.summary.detectedTechnologies
@@ -299,6 +388,9 @@ export async function runAuditJob(job) {
         storageKey: uploaded.key,
         pdfStorageKey: pdfUpload?.key || null,
         detectedTechnologies,
+        pillars: result.summary?.pillars ?? null,
+        ...(calcRevenue != null ? { calcRevenue } : {}),
+        ...(calcClients != null ? { calcClients } : {}),
       },
       errorLast: null,
     }
@@ -328,6 +420,7 @@ export async function runAuditJob(job) {
         planSlug,
         pdfBuffer: wantsPdf ? result.pdf : null,
         pdfFilename,
+        leakCalc: leadChannel === 'leak_calc',
       })
       if (!mailed.sent) {
         console.warn(`[audit] submission=${submissionId} email skipped: ${mailed.reason}`)
@@ -336,7 +429,10 @@ export async function runAuditJob(job) {
           `[audit] submission=${submissionId} email sent to client orderId=${mailed.orderId || formatAuditOrderId(submissionId)}`,
         )
         // Free → Pro promo; Pro/Diagnostic → development offer (+15m, site sends).
-        scheduleProOfferEmail(submissionId, planSlug, { leadChannel })
+        // Leak calculator: WhatsApp follow-up only — never schedule Pro upsell.
+        if (leadChannel !== 'leak_calc') {
+          scheduleProOfferEmail(submissionId, planSlug, { leadChannel })
+        }
       }
     } else if (clientEmail && !notifyClient) {
       console.log(
