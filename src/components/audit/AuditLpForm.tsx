@@ -56,7 +56,7 @@ import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
 
-const AUDIT_BEAM_PROPS = {
+export const AUDIT_BEAM_PROPS = {
   size: 'pulse-outside' as const,
   colorVariant: 'colorful' as const,
   strength: 0.7,
@@ -190,14 +190,57 @@ function AuditLpSuccessModal({
   )
 }
 
+export type AuditLpSubmitted = {
+  id: number | string
+  /** Report access key (`k`), null if the API did not return one. */
+  accessKey: string | null
+  website: string
+  reportHref: string | null
+}
+
 export default function AuditLpForm({
   locale,
   theme = 'dark',
   page = auditPage,
+  kicker,
+  bare = false,
+  submitLabel,
+  submitTargetId,
+  submitClassName,
+  neon = false,
+  showName = false,
+  websiteFirst = false,
+  holdSubmit = false,
+  onValidated,
+  onInvalid,
+  onSubmitted,
 }: {
   locale: string
   theme?: 'light' | 'dark'
   page?: AuditPageContent
+  /** Put website input above email input. */
+  websiteFirst?: boolean
+  /** Replaces the default card heading. */
+  kicker?: string
+  /** Fields and submit only: no card, heading, beam, privacy notice or side links. For embedding in another card. */
+  bare?: boolean
+  /** Replaces the CMS submit button text. */
+  submitLabel?: string
+  /** Id of an element elsewhere on the page; the submit button is rendered into it instead of the form. */
+  submitTargetId?: string
+  /** Replaces the default submit button look. */
+  submitClassName?: string
+  /** Dark glass fields (calculator LP). */
+  neon?: boolean
+  /** Adds an optional name field above the email. */
+  showName?: boolean
+  /** Validate the fields and call `onValidated` instead of sending (multi-step flows). */
+  holdSubmit?: boolean
+  onValidated?: () => void
+  /** Called when validation or the site check fails, so the caller can show the fields again. */
+  onInvalid?: () => void
+  /** When set, the caller continues the flow and the success modal is not shown. */
+  onSubmitted?: (info: AuditLpSubmitted) => void
 }) {
   const isLight = theme === 'light'
   const reportLanguage = (
@@ -235,15 +278,23 @@ export default function AuditLpForm({
     resetChecks,
   } = useAuditFieldChecks(values, setFieldErrors)
 
+  const formId = useId()
+  const [submitMount, setSubmitMount] = useState<HTMLElement | null>(null)
+
   useEffect(() => {
     setPortalReady(true)
   }, [])
+
+  // The submit button can live outside the form's card (see `submitTargetId`).
+  useEffect(() => {
+    setSubmitMount(submitTargetId ? document.getElementById(submitTargetId) : null)
+  }, [submitTargetId])
 
   useEffect(() => {
     setValues((current) => ({ ...current, auditLanguage: reportLanguage }))
   }, [reportLanguage])
 
-  const pillFieldClass = formPillFieldClass(isLight)
+  const pillFieldClass = formPillFieldClass(isLight, neon)
   const fieldLabelClass = isLight ? 'text-coal-900/60' : 'text-white/60'
   const samplePath = auditSampleReportHref('audit-free', locale)
   const sampleHref = samplePath ? mainSiteUrl(samplePath) : null
@@ -288,7 +339,14 @@ export default function AuditLpForm({
     const nextFieldErrors = validateAuditForm(values, { requireNamePhone: false })
     setFieldErrors(nextFieldErrors)
 
-    if (hasAuditFieldErrors(nextFieldErrors)) return
+    if (hasAuditFieldErrors(nextFieldErrors)) {
+      onInvalid?.()
+      return
+    }
+    if (holdSubmit) {
+      onValidated?.()
+      return
+    }
     if (
       AUDIT_LP_TURNSTILE_ENABLED &&
       isTurnstileSiteKeyConfigured() &&
@@ -312,6 +370,7 @@ export default function AuditLpForm({
       const websiteOk = await ensureWebsiteOk()
       if (!websiteOk) {
         setStatus('idle')
+        onInvalid?.()
         return
       }
 
@@ -369,8 +428,26 @@ export default function AuditLpForm({
       // `?lang=` carries LP locale — cookies/localStorage do not cross audit-*. → erythro.ai.
       setReportHref(path ? mainSiteUrl(path) : null)
       setOrderId(payload?.orderId || (sid != null ? `AUD-${sid}` : null))
-      setStatus('success')
       if (sid != null) trackFreeAuditLead(String(sid))
+      if (onSubmitted && sid != null) {
+        let accessKey = typeof payload?.reportAccessToken === 'string' ? payload.reportAccessToken : null
+        if (!accessKey && path) {
+          try {
+            accessKey = new URL(path, 'https://erythro.ai').searchParams.get('k')
+          } catch {
+            accessKey = null
+          }
+        }
+        setStatus('idle')
+        onSubmitted({
+          id: sid,
+          accessKey,
+          website: values.website.trim(),
+          reportHref: path ? mainSiteUrl(path) : null,
+        })
+      } else {
+        setStatus('success')
+      }
       setValues({
         website: '',
         name: '',
@@ -389,23 +466,54 @@ export default function AuditLpForm({
     }
   }
 
-  const card = (
-    <div
-      className={`relative z-[1] w-full rounded-[20px] border px-4 pb-6 pt-4 sm:px-5 sm:pb-8 sm:pt-5 ${
-        isLight
-          ? 'bg-white shadow-[0_4px_24px_0_rgba(13,13,13,0.08)] [border-color:color-mix(in_oklab,var(--color-coal-900)_10%,transparent)]'
-          : 'border-white/10 bg-coal-500'
+  const submitButton = (
+    <button
+      type="submit"
+      form={formId}
+      disabled={status === 'sending'}
+      className={`${submitClassName ?? FORM_SUBMIT_CLASS} box-border h-[50px] w-full py-0 sm:h-[54px] ${
+        submitMount
+          ? 'sm:!w-auto sm:px-14'
+          : bare
+            ? ''
+            : 'lg:!w-auto lg:shrink-0 lg:whitespace-nowrap lg:px-8'
       }`}
     >
-      <p
-        className={`mx-auto mb-6 mt-1 max-w-3xl px-2 text-center font-sans text-xl font-semibold uppercase leading-tight tracking-[0.08em] sm:mb-8 sm:mt-2 sm:px-4 sm:text-2xl md:text-[1.75rem] md:leading-tight ${
-          isLight ? 'text-coal-900' : 'text-gold-500'
-        }`}
-      >
-        {tAuditLp(auditLpCopy.formKicker, locale)}
-      </p>
+      {status === 'sending' ? (
+        <>
+          <ContactSendSpinner className="h-[18px] w-[18px] shrink-0" />
+          <span>{tForm(contactForm.sending)}</span>
+        </>
+      ) : (
+        (submitLabel ?? tAudit(page.form.submit, locale))
+      )}
+    </button>
+  )
+
+  const card = (
+    <div
+      className={
+        bare
+          ? 'relative z-[1] w-full'
+          : `relative z-[1] w-full rounded-[20px] border px-4 pb-6 pt-4 sm:px-5 sm:pb-8 sm:pt-5 ${
+              isLight
+                ? 'bg-white shadow-[0_4px_24px_0_rgba(13,13,13,0.08)] [border-color:color-mix(in_oklab,var(--color-coal-900)_10%,transparent)]'
+                : 'border-white/10 bg-coal-500'
+            }`
+      }
+    >
+      {bare ? null : (
+        <p
+          className={`mx-auto mb-6 mt-1 max-w-3xl px-2 text-center font-sans text-xl font-semibold uppercase leading-tight tracking-[0.08em] sm:mb-8 sm:mt-2 sm:px-4 sm:text-2xl md:text-[1.75rem] md:leading-tight ${
+            isLight ? 'text-coal-900' : 'text-gold-500'
+          }`}
+        >
+          {kicker ?? tAuditLp(auditLpCopy.formKicker, locale)}
+        </p>
+      )}
 
       <form
+        id={formId}
         onSubmit={handleSubmit}
         className="flex min-w-0 flex-col gap-3"
         noValidate
@@ -420,102 +528,196 @@ export default function AuditLpForm({
           <ContactHoneypotField idPrefix="audit-lp" />
 
           <div className="flex min-w-0 flex-col gap-3">
-            <div className="flex min-w-0 flex-col items-stretch gap-3 lg:flex-row lg:items-start">
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <FormPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.email)}>
-                  <div className="relative min-w-0 flex-1">
-                    <label htmlFor="audit-lp-email" className="sr-only">
-                      {tForm(contactForm.email)}
-                    </label>
-                    <input
-                      id="audit-lp-email"
-                      name="email"
-                      type="email"
-                      inputMode="email"
-                      required
-                      value={values.email}
-                      onChange={handleChange}
-                      onBlur={blurEmail}
-                      placeholder={requiredPlaceholder(tForm(contactForm.email))}
-                      className={`${pillFieldClass} ${fieldOk.email ? 'pe-10' : 'pe-4'}`}
-                      autoComplete="email"
-                      autoCapitalize="off"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      aria-required="true"
-                      aria-invalid={Boolean(fieldErrors.email) || undefined}
-                      aria-describedby={fieldErrors.email ? 'audit-lp-email-error' : undefined}
-                    />
-                    <FieldOkCheck show={Boolean(fieldOk.email)} isLight={isLight} />
-                  </div>
-                </FormPillShell>
-                {fieldErrors.email ? renderFieldError('email', 'audit-lp-email-error') : null}
-              </div>
+            <div
+              className={`flex min-w-0 flex-col items-stretch ${neon ? 'gap-3.5' : 'gap-3'} ${
+                bare ? '' : 'lg:flex-row lg:items-start'
+              }`}
+            >
+              {showName ? (
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <FormPillShell isLight={isLight} neon={neon} clip>
+                    <div className="relative min-w-0 flex-1">
+                      <label htmlFor="audit-lp-name" className="sr-only">
+                        {tForm(contactForm.name)}
+                      </label>
+                      <input
+                        id="audit-lp-name"
+                        name="name"
+                        type="text"
+                        value={values.name}
+                        onChange={handleChange}
+                        placeholder={tForm(contactForm.name)}
+                        className={`${pillFieldClass} pe-4`}
+                        autoComplete="name"
+                      />
+                    </div>
+                  </FormPillShell>
+                </div>
+              ) : null}
 
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <FormPillShell isLight={isLight} clip hasError={Boolean(fieldErrors.website)}>
-                  <div className="relative min-w-0 flex-1">
-                    <label htmlFor="audit-lp-website" className="sr-only">
-                      {tAudit(page.form.website, locale)}
-                    </label>
-                    <input
-                      id="audit-lp-website"
-                      name="website"
-                      type="url"
-                      inputMode="url"
-                      required
-                      value={values.website}
-                      onChange={handleChange}
-                      onBlur={blurWebsite}
-                      placeholder={requiredPlaceholder(tAudit(page.form.website, locale))}
-                      className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'} ${
-                        locale === 'he' ? 'text-right placeholder:text-right' : ''
-                      }`}
-                      autoComplete="url"
-                      autoCapitalize="off"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      dir="ltr"
-                      aria-required="true"
-                      aria-invalid={Boolean(fieldErrors.website) || undefined}
-                      aria-describedby={fieldErrors.website ? 'audit-lp-website-error' : undefined}
-                    />
-                    <FieldOkCheck
-                      show={Boolean(fieldOk.website)}
-                      checking={checkingWebsite}
-                      isLight={isLight}
-                    />
+              {/* Email and Website fields (order configurable via websiteFirst) */}
+              {websiteFirst ? (
+                <>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <FormPillShell isLight={isLight} neon={neon} clip hasError={Boolean(fieldErrors.website)}>
+                      <div className="relative min-w-0 flex-1">
+                        <label htmlFor="audit-lp-website" className="sr-only">
+                          {tAudit(page.form.website, locale)}
+                        </label>
+                        <input
+                          id="audit-lp-website"
+                          name="website"
+                          type="url"
+                          inputMode="url"
+                          required
+                          value={values.website}
+                          onChange={handleChange}
+                          onBlur={blurWebsite}
+                          placeholder={requiredPlaceholder(tAudit(page.form.website, locale))}
+                          className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'} ${
+                            locale === 'he' ? 'text-right placeholder:text-right' : ''
+                          }`}
+                          autoComplete="url"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          dir="ltr"
+                          aria-required="true"
+                          aria-invalid={Boolean(fieldErrors.website) || undefined}
+                          aria-describedby={fieldErrors.website ? 'audit-lp-website-error' : undefined}
+                        />
+                        <FieldOkCheck
+                          show={Boolean(fieldOk.website)}
+                          checking={checkingWebsite}
+                          isLight={isLight}
+                        />
+                      </div>
+                    </FormPillShell>
+                    {renderFieldError('website', 'audit-lp-website-error')}
                   </div>
-                </FormPillShell>
-                {renderFieldError('website', 'audit-lp-website-error')}
-              </div>
 
-              <button
-                type="submit"
-                className={`${FORM_SUBMIT_CLASS} box-border h-[50px] w-full py-0 sm:h-[54px] lg:!w-auto lg:shrink-0 lg:whitespace-nowrap lg:px-8`}
-              >
-                {status === 'sending' ? (
-                  <>
-                    <ContactSendSpinner className="h-[18px] w-[18px] shrink-0" />
-                    <span>{tForm(contactForm.sending)}</span>
-                  </>
-                ) : (
-                  tAudit(page.form.submit, locale)
-                )}
-              </button>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <FormPillShell isLight={isLight} neon={neon} clip hasError={Boolean(fieldErrors.email)}>
+                      <div className="relative min-w-0 flex-1">
+                        <label htmlFor="audit-lp-email" className="sr-only">
+                          {tForm(contactForm.email)}
+                        </label>
+                        <input
+                          id="audit-lp-email"
+                          name="email"
+                          type="email"
+                          inputMode="email"
+                          required
+                          value={values.email}
+                          onChange={handleChange}
+                          onBlur={blurEmail}
+                          placeholder={requiredPlaceholder(tForm(contactForm.email))}
+                          className={`${pillFieldClass} ${fieldOk.email ? 'pe-10' : 'pe-4'}`}
+                          autoComplete="email"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          aria-required="true"
+                          aria-invalid={Boolean(fieldErrors.email) || undefined}
+                          aria-describedby={fieldErrors.email ? 'audit-lp-email-error' : undefined}
+                        />
+                        <FieldOkCheck show={Boolean(fieldOk.email)} isLight={isLight} />
+                      </div>
+                    </FormPillShell>
+                    {fieldErrors.email ? renderFieldError('email', 'audit-lp-email-error') : null}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <FormPillShell isLight={isLight} neon={neon} clip hasError={Boolean(fieldErrors.email)}>
+                      <div className="relative min-w-0 flex-1">
+                        <label htmlFor="audit-lp-email" className="sr-only">
+                          {tForm(contactForm.email)}
+                        </label>
+                        <input
+                          id="audit-lp-email"
+                          name="email"
+                          type="email"
+                          inputMode="email"
+                          required
+                          value={values.email}
+                          onChange={handleChange}
+                          onBlur={blurEmail}
+                          placeholder={requiredPlaceholder(tForm(contactForm.email))}
+                          className={`${pillFieldClass} ${fieldOk.email ? 'pe-10' : 'pe-4'}`}
+                          autoComplete="email"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          aria-required="true"
+                          aria-invalid={Boolean(fieldErrors.email) || undefined}
+                          aria-describedby={fieldErrors.email ? 'audit-lp-email-error' : undefined}
+                        />
+                        <FieldOkCheck show={Boolean(fieldOk.email)} isLight={isLight} />
+                      </div>
+                    </FormPillShell>
+                    {fieldErrors.email ? renderFieldError('email', 'audit-lp-email-error') : null}
+                  </div>
+
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <FormPillShell isLight={isLight} neon={neon} clip hasError={Boolean(fieldErrors.website)}>
+                      <div className="relative min-w-0 flex-1">
+                        <label htmlFor="audit-lp-website" className="sr-only">
+                          {tAudit(page.form.website, locale)}
+                        </label>
+                        <input
+                          id="audit-lp-website"
+                          name="website"
+                          type="url"
+                          inputMode="url"
+                          required
+                          value={values.website}
+                          onChange={handleChange}
+                          onBlur={blurWebsite}
+                          placeholder={requiredPlaceholder(tAudit(page.form.website, locale))}
+                          className={`${pillFieldClass} ${fieldOk.website || checkingWebsite ? 'pe-10' : 'pe-4'} ${
+                            locale === 'he' ? 'text-right placeholder:text-right' : ''
+                          }`}
+                          autoComplete="url"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          dir="ltr"
+                          aria-required="true"
+                          aria-invalid={Boolean(fieldErrors.website) || undefined}
+                          aria-describedby={fieldErrors.website ? 'audit-lp-website-error' : undefined}
+                        />
+                        <FieldOkCheck
+                          show={Boolean(fieldOk.website)}
+                          checking={checkingWebsite}
+                          isLight={isLight}
+                        />
+                      </div>
+                    </FormPillShell>
+                    {renderFieldError('website', 'audit-lp-website-error')}
+                  </div>
+                </>
+              )}
+
+              {submitTargetId ? null : submitButton}
             </div>
 
-            <ContactPrivacyConsent
-              locale={locale}
-              theme={theme}
-              idPrefix="audit-lp"
-              parts="notice"
-              privacyHref={mainSiteUrl('/privacy')}
-              termsHref={mainSiteUrl('/terms')}
-            />
+            {bare ? null : (
+              <ContactPrivacyConsent
+                locale={locale}
+                theme={theme}
+                idPrefix="audit-lp"
+                parts="notice"
+                privacyHref={mainSiteUrl('/privacy')}
+                termsHref={mainSiteUrl('/terms')}
+              />
+            )}
 
             <p
-              className={`m-0 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 px-1 text-[11px] font-light leading-snug ${fieldLabelClass}`}
+              className={`m-0 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 px-1 text-[11px] font-light leading-snug ${
+                neon ? 'justify-center text-center' : ''
+              } ${fieldLabelClass}`}
             >
               <span>
                 {tAuditLp(auditLpCopy.legalNote, locale)}{' '}
@@ -562,19 +764,21 @@ export default function AuditLpForm({
             />
           ) : null}
 
-          <div className="flex flex-col items-center justify-center gap-4 pt-2 text-center sm:flex-row sm:flex-wrap sm:gap-x-14 sm:gap-y-3">
-            {sampleHref ? (
-              <AuditLpExternalLink href={sampleHref} isLight={isLight}>
-                {auditSampleReportLabel(locale)}
+          {bare ? null : (
+            <div className="flex flex-col items-center justify-center gap-4 pt-2 text-center sm:flex-row sm:flex-wrap sm:gap-x-14 sm:gap-y-3">
+              {sampleHref ? (
+                <AuditLpExternalLink href={sampleHref} isLight={isLight}>
+                  {auditSampleReportLabel(locale)}
+                </AuditLpExternalLink>
+              ) : null}
+              <AuditLpExternalLink
+                href={mainSiteUrlWithLang('/audit', locale)}
+                isLight={isLight}
+              >
+                {tAuditLp(auditLpCopy.allOffersLink, locale)}
               </AuditLpExternalLink>
-            ) : null}
-            <AuditLpExternalLink
-              href={mainSiteUrlWithLang('/audit', locale)}
-              isLight={isLight}
-            >
-              {tAuditLp(auditLpCopy.allOffersLink, locale)}
-            </AuditLpExternalLink>
-          </div>
+            </div>
+          )}
         </fieldset>
         {status === 'sending' ? (
           <p className="sr-only" role="status" aria-live="polite">
@@ -587,7 +791,7 @@ export default function AuditLpForm({
 
   return (
     <>
-      {isLight ? (
+      {isLight || bare ? (
         card
       ) : (
         <div className="audit-beam-hue overflow-visible p-4 -m-4">
@@ -596,6 +800,8 @@ export default function AuditLpForm({
           </BorderBeam>
         </div>
       )}
+
+      {submitMount ? createPortal(submitButton, submitMount) : null}
 
       {portalReady && status === 'success' ? (
         <AuditLpSuccessModal

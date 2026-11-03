@@ -6,7 +6,13 @@ import { useSiteContent } from './SiteContentProvider'
  * Floating WhatsApp contact button. By default hidden on lg+ (desktop ChatButton
  * covers contact). Pass `alwaysVisible` on ads LPs that skip ChatButton.
  */
-export default function WhatsAppButton({ alwaysVisible = false }: { alwaysVisible?: boolean }) {
+export default function WhatsAppButton({
+  alwaysVisible = false,
+  className,
+}: {
+  alwaysVisible?: boolean
+  className?: string
+}) {
   const site = useSiteContent().siteSettings
   const number = (site.phone || '').replace(/[^0-9]/g, '')
   const href = number ? `https://wa.me/${number}` : '#'
@@ -17,7 +23,10 @@ export default function WhatsAppButton({ alwaysVisible = false }: { alwaysVisibl
       target="_blank"
       rel="noopener noreferrer"
       aria-label="WhatsApp"
-      className={`${alwaysVisible ? '' : 'lg:hidden '}fixed bottom-14 end-[18px] z-[70] flex h-[54px] w-[54px] items-center justify-center`}
+      className={
+        className ??
+        `${alwaysVisible ? '' : 'lg:hidden '}fixed bottom-14 end-[18px] z-[70] flex h-[54px] w-[54px] items-center justify-center`
+      }
     >
       <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-70 animate-ping" />
 

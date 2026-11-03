@@ -5,7 +5,7 @@ import { normalizeHost } from '@/lib/vercelHost'
 export const AUDIT_LP_LOCALES = ['en', 'ru', 'he'] as const
 export type AuditLpLocale = (typeof AUDIT_LP_LOCALES)[number]
 
-export const AUDIT_LP_PRODUCTS = ['free', 'pro', 'diagnostic'] as const
+export const AUDIT_LP_PRODUCTS = ['free', 'pro', 'diagnostic', 'calc'] as const
 export type AuditLpProduct = (typeof AUDIT_LP_PRODUCTS)[number]
 
 export type AuditLpTarget = {
@@ -45,6 +45,12 @@ export const AUDIT_LP_HOSTS_BY_PRODUCT: Record<
     ru: 'audit-diag-ru.erythro.ai',
     he: 'audit-diag-he.erythro.ai',
   },
+  // Revenue-leak calculator LP: free audit first, then the loss estimate.
+  calc: {
+    en: 'audit-calc-en.erythro.ai',
+    ru: 'audit-calc-ru.erythro.ai',
+    he: 'audit-calc-he.erythro.ai',
+  },
 }
 
 /** Free LP hosts — kept for callers that only mean the express/free ads LP. */
@@ -56,6 +62,7 @@ export const AUDIT_LP_ALL_HOSTS: readonly string[] = [
   ...Object.values(AUDIT_LP_HOSTS_BY_PRODUCT.free),
   ...Object.values(AUDIT_LP_HOSTS_BY_PRODUCT.pro),
   ...Object.values(AUDIT_LP_HOSTS_BY_PRODUCT.diagnostic),
+  ...Object.values(AUDIT_LP_HOSTS_BY_PRODUCT.calc),
   'audit-rus.erythro.ai', // unused free RU alias
 ]
 
@@ -105,7 +112,7 @@ export function auditLpInternalPath(product: AuditLpProduct, locale: AuditLpLoca
  */
 export function auditLpTargetFromPathname(pathname: string): AuditLpTarget | null {
   const clean = pathname.split('?')[0] || '/'
-  const match = clean.match(/^\/lp\/audit\/(?:(pro|diagnostic)\/)?(en|ru|he)(?:\/|$)/)
+  const match = clean.match(/^\/lp\/audit\/(?:(pro|diagnostic|calc)\/)?(en|ru|he)(?:\/|$)/)
   if (!match?.[2] || !isAuditLpLocale(match[2])) return null
   const product = match[1] && isAuditLpProduct(match[1]) ? match[1] : 'free'
   return { product, locale: match[2] }
@@ -154,7 +161,7 @@ export function auditLpHrefForLocale(
 }
 
 /** CMS / order plan slug for paid LPs. */
-export function auditLpPlanSlug(product: Exclude<AuditLpProduct, 'free'>): string {
+export function auditLpPlanSlug(product: Exclude<AuditLpProduct, 'free' | 'calc'>): string {
   return product === 'pro' ? 'audit-pro' : 'audit-diagnostic'
 }
 
@@ -755,6 +762,7 @@ export const auditLpProCopy = {
 export function auditLpCopyFor(product: AuditLpProduct): AuditLpCopyBundle {
   if (product === 'pro') return auditLpProCopy
   if (product === 'diagnostic') return auditLpDiagCopy
+  // calc: page copy lives in auditCalcCopy.ts; shared chrome (theme, home link) comes from the free bundle
   return auditLpCopy
 }
 

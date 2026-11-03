@@ -1,4 +1,5 @@
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
+import type { AuditPillars } from '@/lib/revenueLeak'
 
 export type AuditReportStatus = 'new' | 'in_progress' | 'report_sent' | 'failed'
 
@@ -8,6 +9,8 @@ export type AuditReportPublicPayload = {
   orderId: string
   status: AuditReportStatus
   auditScore: number | null
+  /** Five scorecard scales for the calculator LP; null for audits made before the worker stored them. */
+  pillars: AuditPillars | null
   reportUrl: string | null
   /** @deprecated Report opens as full page via readyHtmlUrl; kept null for older clients */
   htmlPreview: string | null

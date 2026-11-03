@@ -2,7 +2,7 @@
 
 @theme {
   --font-sans: var(--font-inter), var(--font-heebo, ui-sans-serif), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-roboto-mono, ui-monospace), ui-monospace, monospace;
+  --font-mono: var(--font-sans);
 
   --color-coal-100: var(--coal-100);
   --color-coal-200: var(--coal-200);
@@ -70,6 +70,240 @@
 @keyframes audit-beam-hue {
   to {
     --beam-hue-base: 360deg;
+  }
+}
+
+/* Calculator LP v2 "liquid" backdrop: light lilac ribbons that slowly flow and change shape. */
+.calc-lq-blob {
+  position: absolute;
+  filter: blur(60px);
+  will-change: transform, border-radius;
+}
+
+.calc-lq-a {
+  left: -10%;
+  top: -12%;
+  width: 55%;
+  height: 55%;
+  background: radial-gradient(closest-side, rgba(192, 132, 252, 0.6), rgba(216, 180, 254, 0.35) 60%, transparent);
+  animation: calc-lq-1 11s ease-in-out infinite alternate;
+}
+
+.calc-lq-b {
+  left: 40%;
+  top: 8%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(closest-side, rgba(167, 139, 250, 0.5), rgba(196, 181, 253, 0.3) 60%, transparent);
+  animation: calc-lq-2 14s ease-in-out -6s infinite alternate;
+}
+
+.calc-lq-c {
+  left: 8%;
+  top: 48%;
+  width: 55%;
+  height: 52%;
+  background: radial-gradient(closest-side, rgba(232, 150, 249, 0.5), rgba(240, 190, 252, 0.3) 60%, transparent);
+  animation: calc-lq-3 12s ease-in-out -3s infinite alternate;
+}
+
+.calc-lq-d {
+  left: 58%;
+  top: 52%;
+  width: 48%;
+  height: 52%;
+  background: radial-gradient(closest-side, rgba(129, 140, 248, 0.45), rgba(180, 190, 255, 0.3) 60%, transparent);
+  animation: calc-lq-1 15s ease-in-out -10s infinite alternate;
+}
+
+.calc-lq-e {
+  left: 28%;
+  top: 22%;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(closest-side, rgba(251, 170, 220, 0.5), rgba(252, 205, 235, 0.3) 60%, transparent);
+  animation: calc-lq-2 16s ease-in-out -14s infinite alternate;
+}
+
+@keyframes calc-lq-1 {
+  0% {
+    transform: translate3d(-10%, 8%, 0) rotate(-12deg) scale(0.9);
+    border-radius: 58% 42% 52% 48% / 46% 56% 44% 54%;
+  }
+  100% {
+    transform: translate3d(26%, -22%, 0) rotate(34deg) scale(1.3);
+    border-radius: 38% 62% 36% 64% / 62% 36% 64% 38%;
+  }
+}
+
+@keyframes calc-lq-2 {
+  0% {
+    transform: translate3d(12%, -14%, 0) rotate(-20deg) scale(0.92);
+    border-radius: 46% 54% 60% 40% / 52% 44% 56% 48%;
+  }
+  100% {
+    transform: translate3d(-24%, 22%, 0) rotate(24deg) scale(1.28);
+    border-radius: 64% 36% 42% 58% / 38% 62% 40% 60%;
+  }
+}
+
+@keyframes calc-lq-3 {
+  0% {
+    transform: translate3d(-20%, -12%, 0) rotate(16deg) scale(1.25);
+    border-radius: 52% 48% 42% 58% / 60% 42% 58% 40%;
+  }
+  100% {
+    transform: translate3d(24%, 18%, 0) rotate(-30deg) scale(0.86);
+    border-radius: 36% 64% 58% 42% / 42% 60% 40% 58%;
+  }
+}
+
+/* Calculator LP v2 report: the loss panel uses the same liquid motion in brand colours on a deep lilac base. */
+.calc-loss-flow {
+  background: linear-gradient(120deg, #150f26 0%, #24173f 35%, #33204f 65%, #150f26 100%);
+  background-size: 260% 260%;
+  animation: calc-loss-pan 18s ease-in-out infinite alternate;
+}
+
+/* Glows sit low and to the sides, away from the headline, so its colours stay clean. */
+.calc-loss-a {
+  left: 45%;
+  top: 55%;
+  width: 65%;
+  height: 90%;
+  background: radial-gradient(closest-side, rgba(229, 36, 33, 0.32), rgba(229, 36, 33, 0.1) 60%, transparent);
+  animation: calc-lq-1 13s ease-in-out infinite alternate;
+}
+
+.calc-loss-b {
+  left: 62%;
+  top: -35%;
+  width: 50%;
+  height: 80%;
+  background: radial-gradient(closest-side, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.1) 60%, transparent);
+  animation: calc-lq-2 16s ease-in-out -6s infinite alternate;
+}
+
+.calc-loss-c {
+  left: -18%;
+  top: 70%;
+  width: 55%;
+  height: 70%;
+  background: radial-gradient(closest-side, rgba(236, 72, 153, 0.22), rgba(236, 72, 153, 0.08) 60%, transparent);
+  animation: calc-lq-3 14s ease-in-out -3s infinite alternate;
+}
+
+[dir='rtl'] .calc-loss-a {
+  left: -10%;
+}
+
+[dir='rtl'] .calc-loss-b {
+  left: -12%;
+}
+
+[dir='rtl'] .calc-loss-c {
+  left: 63%;
+}
+
+/* Technical details under the sprint: light lilac wash, picks up where the sprint panel ends */
+.calc-tech-flow {
+  background:
+    radial-gradient(60% 80% at 85% 0%, rgba(139, 116, 199, 0.22), transparent 70%),
+    linear-gradient(180deg, #e4dcf5 0%, #efeaf9 55%, #f6f3fc 100%);
+}
+
+/* Calculator LP v2 report: the "how we fix it" panel — blue-violet lilac with a light rose shimmer near the bottom. */
+.calc-fix-flow {
+  background: linear-gradient(180deg, #2a2a6c 0%, #3a338a 45%, #5440a3 82%, #6a44a6 100%);
+}
+
+.calc-fix-a {
+  left: 50%;
+  top: -30%;
+  width: 60%;
+  height: 80%;
+  background: radial-gradient(closest-side, rgba(99, 102, 241, 0.45), rgba(99, 102, 241, 0.14) 60%, transparent);
+  animation: calc-lq-2 16s ease-in-out -6s infinite alternate;
+}
+
+.calc-fix-b {
+  left: -15%;
+  top: 55%;
+  width: 65%;
+  height: 80%;
+  background: radial-gradient(closest-side, rgba(236, 72, 153, 0.3), rgba(236, 72, 153, 0.08) 60%, transparent);
+  animation: calc-lq-1 14s ease-in-out infinite alternate;
+}
+
+.calc-fix-c {
+  left: 55%;
+  top: 60%;
+  width: 55%;
+  height: 70%;
+  background: radial-gradient(closest-side, rgba(167, 139, 250, 0.25), rgba(167, 139, 250, 0.08) 60%, transparent);
+  animation: calc-lq-3 15s ease-in-out -3s infinite alternate;
+}
+
+[dir='rtl'] .calc-fix-a {
+  left: -10%;
+}
+
+[dir='rtl'] .calc-fix-b {
+  left: 50%;
+}
+
+[dir='rtl'] .calc-fix-c {
+  left: -10%;
+}
+
+/* Calculator LP v2 report: arrow between "what the visitor does" and "where it breaks" drifts toward the failure. */
+.calc-arrow-nudge {
+  transform-box: fill-box;
+  animation: calc-arrow-nudge 1.6s ease-in-out infinite;
+}
+
+@keyframes calc-arrow-nudge {
+  0%,
+  100% {
+    transform: translateY(-3px);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(3px);
+    opacity: 1;
+  }
+}
+
+@keyframes calc-loss-pan {
+  from {
+    background-position: 0% 40%;
+  }
+  to {
+    background-position: 100% 60%;
+  }
+}
+
+/* Calculator LP v2 hero: the character slides up from the bottom edge of the screen on load. */
+.calc-hero-rise {
+  animation: calc-hero-rise 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+
+@keyframes calc-hero-rise {
+  from {
+    transform: translateY(105%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calc-lq-blob,
+  .calc-loss-flow,
+  .calc-fix-flow,
+  .calc-arrow-nudge,
+  .calc-hero-rise {
+    animation: none;
   }
 }
 
@@ -1339,4 +1573,119 @@ html:not(.dark) .audit-pill-shell input:-webkit-autofill:active {
 
 /* Accessibility control classes and panel styles now live in the
    self-contained module at src/components/accessibility/. */
+
+/* Hero Entrance Cascade Animations - Pronounced Ease-Out (fast start, gradual deceleration) */
+/* Hero Entrance: Convergence from 3 directions (Title from Left, Form from Right, Numbers from Bottom) */
+@keyframes heroSlideFromLeft {
+  from {
+    opacity: 0;
+    transform: translate3d(-40px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes heroSlideFromLeftRtl {
+  from {
+    opacity: 0;
+    transform: translate3d(40px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes heroSlideFromRight {
+  from {
+    opacity: 0;
+    transform: translate3d(40px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes heroSlideFromRightRtl {
+  from {
+    opacity: 0;
+    transform: translate3d(-40px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-hero-fade {
+  animation: heroFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both 0.1s;
+  will-change: opacity;
+}
+
+/* Title: Slides in from the Left */
+.animate-hero-left {
+  animation: heroSlideFromLeft 1.35s cubic-bezier(0.16, 1, 0.3, 1) both 0.25s;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+[dir="rtl"] .animate-hero-left {
+  animation-name: heroSlideFromLeftRtl;
+}
+
+/* Form: Slides in from the Right */
+.animate-hero-right {
+  animation: heroSlideFromRight 1.35s cubic-bezier(0.16, 1, 0.3, 1) both 0.25s;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+[dir="rtl"] .animate-hero-right {
+  animation-name: heroSlideFromRightRtl;
+}
+
+/* Numbers: Slides up from Below */
+.animate-hero-up {
+  animation: heroFadeUp 1.35s cubic-bezier(0.16, 1, 0.3, 1) both 0.25s;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-fade,
+  .animate-hero-left,
+  .animate-hero-right,
+  .animate-hero-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 

@@ -299,6 +299,7 @@ export async function runAuditJob(job) {
         storageKey: uploaded.key,
         pdfStorageKey: pdfUpload?.key || null,
         detectedTechnologies,
+        pillars: result.summary?.pillars ?? null,
       },
       errorLast: null,
     }

@@ -182,23 +182,26 @@ function AuditLpPrefsPill({
 }
 
 /** Chip strip + logo + theme/locale pill. Scrolls with the page. */
-function AuditLpHeader({
+export function AuditLpHeader({
   locale,
   product,
   theme,
   setTheme,
+  bare = false,
 }: {
   locale: AuditLpLocale
   product: AuditLpProduct
   theme: 'light' | 'dark'
   setTheme: (next: 'light' | 'dark') => void
+  /** Drop the picture strip: the logo and the pill sit directly on the page background. */
+  bare?: boolean
 }) {
   const copy = auditLpCopyFor(product)
   const logoAlt = tAuditLp(copy.homeLink, locale)
 
   return (
-    <div className="relative z-20 w-full">
-      <HeaderChipStrip page="legal" pin={false} />
+    <div className={`relative w-full ${bare ? 'z-30' : 'z-20'}`}>
+      {bare ? null : <HeaderChipStrip page="legal" pin={false} />}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex w-full items-center justify-between gap-3 px-[30px] py-5 lg:px-[50px] lg:py-8">
         <a
           href={mainSiteUrl('/')}
@@ -225,7 +228,7 @@ function AuditLpHeader({
 }
 
 /** Slim LP footer: copyright + legal only. */
-function AuditLpFooter({ locale, theme }: { locale: string; theme: 'light' | 'dark' }) {
+export function AuditLpFooter({ locale, theme }: { locale: string; theme: 'light' | 'dark' }) {
   const content = useSiteContent()
   const footer = content.footer
   const cookieConsent = content.cookieConsent
@@ -250,8 +253,8 @@ function AuditLpFooter({ locale, theme }: { locale: string; theme: 'light' | 'da
             <a
               key={link.id}
               href={mainSiteUrl(link.href)}
-              className={`text-xs uppercase leading-[1.5] transition-colors hover:text-gold-500 ${
-                isLight ? 'text-coal-900' : 'text-white'
+              className={`text-xs uppercase leading-[1.5] transition-colors ${
+                isLight ? 'text-coal-900 hover:text-[#e52421]' : 'text-white hover:text-gold-500'
               }`}
             >
               {t(link.label)}
@@ -260,8 +263,8 @@ function AuditLpFooter({ locale, theme }: { locale: string; theme: 'light' | 'da
           <button
             type="button"
             onClick={openConsentSettings}
-            className={`cursor-pointer text-xs uppercase leading-[1.5] transition-colors hover:text-gold-500 ${
-              isLight ? 'text-coal-900' : 'text-white'
+            className={`cursor-pointer text-xs uppercase leading-[1.5] transition-colors ${
+              isLight ? 'text-coal-900 hover:text-[#e52421]' : 'text-white hover:text-gold-500'
             }`}
           >
             {cookieSettingsLabel}
@@ -335,7 +338,7 @@ export default function AuditLpClient({
         className={`relative min-h-screen overflow-x-clip font-sans transition-colors duration-500 ${shell} ${ink}`}
       >
         <AuditLpHeader
-          locale={locale}
+          locale={locale as AuditLpLocale}
           product={product}
           theme={theme}
           setTheme={setTheme}
@@ -378,15 +381,15 @@ export default function AuditLpClient({
           </div>
 
           <div className="w-full min-w-0">
-            {product === 'free' ? (
-              <AuditLpForm locale={locale} theme={theme} page={auditPageContent} />
-            ) : (
+            {product === 'pro' || product === 'diagnostic' ? (
               <AuditLpPaidForm
                 locale={locale}
                 product={product}
                 theme={theme}
                 page={auditPageContent}
               />
+            ) : (
+              <AuditLpForm locale={locale} theme={theme} page={auditPageContent} />
             )}
           </div>
 

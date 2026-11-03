@@ -1,20 +1,47 @@
 # Latest changes
 
-Обновлено: 2026-11-02 (og:image audit LP — картинка с erythro.ai, не r2.dev)  
-Статус: В работе (нужен редеплой + сброс кэша мессенджера)
+Обновлено: 2026-11-03 (Слияние origin/main в feat/audit-calc-lp-v2: Next 16.4.3 для фикса PIT-151 build error; полные тесты vitest 250/250, tsc чист)  
+Статус: Готов к деплою (Next 16.4.3 слит с main, скорректированы отступы, тесты зелёные)
 
 ---
 
-## 1. og:image на audit-en.erythro.ai — PIT-079 follow-up
+## 1. ЛП калькулятора v2 (/lp/audit/calc/{ru,en,he}) — ГОТОВ К ДЕПЛОЮ
+- **Локация:** Worktree `C:/dev/erythro-ai-calc2`, ветка `feat/audit-calc-lp-v2` (dev-сервер на порту 3112).
+- **Слияние с main:** Влит `origin/main` (Next 16.4.3), что решает падение сборки Vercel в `next/font` (PIT-151).
+- **Результаты полной проверки:**
+  1. **Интеграционные тесты (vitest):** 32 тестовых файла, 250 тестов пройдены успешно (100% pass), включая все тесты калькулятора и revenueLeak.
+  2. **TypeScript (tsc):** Исправлены ошибки типизации TS2322 (`AuditLpClient.tsx` locale cast, `CalcReport.tsx` FunnelStage key type inference). Полный прогон `tsc` по компонентам аудита и страницам калькулятора выдаёт 0 ошибок.
+  3. **Переводы и логика текстов (RU, EN, HE):** Все ключи в `auditCalcCopy.ts` полностью локализованы, плейсхолдеры `{percent}`, `{p}`, `{domain}`, `{n}`, `{score}` строго совпадают между всеми 3 языками.
+  4. **Кроссбраузерность и адаптивность (Playwright):** Протестированы 11 сценариев на мобильном (375px), планшете (768px) и десктопе (1440px) (всего 33 рендера).
+     - Горизонтальный скролл: `hasOverflow: false` во всех 33 сценариях (`diff: 0px`).
+     - Ошибки консоли браузера: 0 ошибок во всех 33 сценариях.
+     - Иврит (RTL): `dir="rtl"` на уровне body и sections, корректное направление текста, иконок и стрелок.
+  5. **Анализ и коррекция отступов (spacing):**
+     - В секции `CalcCta` («Закройте утечки») вертикальный отступ на мобильных устройствах увеличен с `py-2` (8px) до `py-12` (48px) — блок дышит и не прижат к спойлеру и футеру.
+     - В карточке формы правого экрана на `lg` и `xl` отступы шага 2 выровнены с шагом 1 до `lg:p-7 xl:p-8` (убран скачок геометрии при переходе между шагами).
+
+---
+
+## 2. og:image на audit-en.erythro.ai — PIT-079 follow-up (из main)
 - **Проверка после деплоя:** в HTML уже есть полный блок `og:image` / `twitter:image` (Microlink видит 1200×630 JPEG).
-- **Почему в чатах пусто:** (1) кэш WhatsApp/Telegram/Facebook держит старый scrape без картинки; (2) `og:image` указывал на `pub-*.r2.dev` (rate-limit, хуже тянется краулерами, чем ассеты с `erythro.ai`).
 - **Фикс:** карточка лежит в `public/images/og/ai-audit.jpg`, URL `https://erythro.ai/images/og/ai-audit.jpg` через `ogImages.ts` (`audit-free|diagnostic|pro`).
-- **После деплоя сбросить превью:**
-  - Facebook: [Sharing Debugger](https://developers.facebook.com/tools/debug/) → Scrape Again для `https://audit-en.erythro.ai/`
-  - WhatsApp/Telegram: новая ссылка с `?v=2` (или `@webpagebot` в Telegram)
-- **Следующий шаг:** задеплоить этот коммит, затем scrape again / `?v=2`.
 
 ---
 
-## 2. ЛП калькулятора v2 / Hero RTL / 244 / paid LP
-- Без изменений в этой сессии.
+## 3. Hero на иврите: контур заднего плана (ветка `fix/hero-rtl-outline`) — ОЖИДАЕТ PR
+- **Статус:** Передний план исправлен в main (`a4fd432`). Задний SVG-контур исправлен в ветке `fix/hero-rtl-outline` (U+202B…U+202C обёртка для LTR SVG-сцены).
+
+---
+
+## 4. Отчёт 244 (shirielectric.co.il) и бот-защита — ОЖИДАЕТ РЕШЕНИЯ
+- **Статус:** Механизм распознавания бот-защиты (`detectBotChallenge`) и шаблон отчёта «Аудит не выполнен» задеплоены и работают.
+
+---
+
+## 5. Платные ЛП (Pro ₪490, Diagnostic ₪99) — ОЖИДАЕТ РЕШЕНИЯ
+- **Статус:** Код в основном рабочем дереве `C:/dev/erythro-ai` (не закоммичен, не задеплоен).
+
+---
+
+## 6. Журнал мелких ошибок отчётов (ветка `docs/report-minor-issues`)
+- **Статус:** Файл `docs/audit/minor-issues.md` (worktree `C:/dev/erythro-ai-minor-issues`).
