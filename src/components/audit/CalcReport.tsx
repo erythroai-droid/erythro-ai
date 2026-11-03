@@ -1450,25 +1450,25 @@ function LossHero({
           {stats.map((s) => (
             <div
               key={s.label}
-              className="flex min-h-[7.5rem] flex-col items-center rounded-[12px] border border-white/12 bg-white/[0.06] px-3 py-5 text-center backdrop-blur-sm sm:min-h-[8.5rem] sm:px-5 sm:py-6"
+              className="flex min-h-[8.5rem] flex-col items-center justify-center gap-2 rounded-[12px] border border-white/12 bg-white/[0.06] px-3 py-5 text-center backdrop-blur-sm sm:min-h-[9.5rem] sm:px-5 sm:py-6"
             >
-              {/* Value + optional badge share one middle band so all four tiles line up */}
-              <dd className="m-0 flex min-h-[4.25rem] flex-1 flex-col items-center justify-center gap-2 sm:min-h-[4.75rem]">
-                <span className={`text-2xl font-bold leading-none tracking-[-0.02em] tabular-nums sm:text-[34px] ${s.red ? 'text-[#ff6b68]' : 'text-white'}`}>
+              {/* Whole stack (value → badge → label) sits in the vertical middle; equal row heights keep numbers on one line */}
+              <dd className="m-0 flex flex-col items-center gap-2">
+                <span className={`flex min-h-[2.5rem] items-center text-2xl font-bold leading-none tracking-[-0.02em] tabular-nums sm:min-h-[2.75rem] sm:text-[34px] ${s.red ? 'text-[#ff6b68]' : 'text-white'}`}>
                   <bdi>{s.value}</bdi>
                 </span>
                 {s.badge ? (
                   <span
-                    className="inline-flex items-center rounded-[4px] px-2.5 py-1 text-[11px] font-semibold uppercase leading-4 tracking-[0.04em] sm:text-xs"
+                    className="inline-flex h-6 items-center rounded-[4px] px-2.5 text-[11px] font-semibold uppercase leading-none tracking-[0.04em] sm:text-xs"
                     style={{ background: s.badge.bg, color: s.badge.text }}
                   >
                     {s.badge.caption}
                   </span>
                 ) : (
-                  <span aria-hidden className="h-[22px] sm:h-6" />
+                  <span aria-hidden className="h-6" />
                 )}
               </dd>
-              <dt className="mt-2 min-h-[2.5rem] text-[13px] leading-[1.35] text-white/70">{s.label}</dt>
+              <dt className="flex min-h-[2.5rem] items-center text-[13px] leading-[1.35] text-white/70">{s.label}</dt>
             </div>
           ))}
         </dl>
@@ -2664,16 +2664,16 @@ function FixSprintHero({
           {tiles.map((t) => (
             <div
               key={t.label}
-              className="flex min-h-[7.25rem] flex-col items-center rounded-[12px] border border-white/12 bg-white/[0.07] px-3 py-5 text-center backdrop-blur-sm sm:min-h-[8.25rem] sm:px-5 sm:py-6"
+              className="flex min-h-[8rem] flex-col items-center justify-center gap-2 rounded-[12px] border border-white/12 bg-white/[0.07] px-3 py-5 text-center backdrop-blur-sm sm:min-h-[9rem] sm:px-5 sm:py-6"
             >
               <dd
-                className="m-0 flex min-h-[3.25rem] flex-1 items-center justify-center text-2xl font-bold leading-none tracking-[-0.02em] tabular-nums sm:min-h-[3.75rem] sm:text-[34px]"
+                className="m-0 flex min-h-[2.5rem] items-center text-2xl font-bold leading-none tracking-[-0.02em] tabular-nums sm:min-h-[2.75rem] sm:text-[34px]"
                 style={{ color: t.gain ? GAIN.mint : '#fff' }}
               >
                 <bdi>{t.value}</bdi>
                 {t.estimate ? star : null}
               </dd>
-              <dt className="mt-2 min-h-[2.5rem] text-[13px] leading-[1.35] text-white/75">{t.label}</dt>
+              <dt className="flex min-h-[2.5rem] items-center text-[13px] leading-[1.35] text-white/75">{t.label}</dt>
             </div>
           ))}
         </dl>
