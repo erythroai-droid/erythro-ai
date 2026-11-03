@@ -10,6 +10,7 @@ import {
   parsePillars,
   pillarsFromAuditSummary,
   pillarsFromOverall,
+  scoreLabelKey,
 } from '@/lib/revenueLeak'
 
 describe('leakBreakdown', () => {
@@ -42,6 +43,14 @@ describe('leakBreakdown', () => {
     const b = leakBreakdown({ speed: 140, leads: -20, seo: 100, security: 100, ai: 100 })
     expect(b.speed).toBe(0)
     expect(b.forms).toBe(15)
+  })
+})
+
+describe('scoreLabelKey', () => {
+  it('never calls a green score with loss «excellent»', () => {
+    expect(scoreLabelKey(90, 2)).toBe('green')
+    expect(scoreLabelKey(100, 0)).toBe('excellent')
+    expect(scoreLabelKey(85, 0)).toBe('excellent')
   })
 })
 

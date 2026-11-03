@@ -1,4 +1,4 @@
-import type { LightLevel } from '@/lib/revenueLeak'
+import type { LightLevel, ScoreLabelKey } from '@/lib/revenueLeak'
 
 export type Localized = { en: string; ru: string; he: string }
 
@@ -190,8 +190,11 @@ export const auditCalcCopy = {
   levelLabel: {
     red: { en: 'Critical', ru: 'Критично', he: 'קריטי' },
     yellow: { en: 'Needs attention', ru: 'Требует внимания', he: 'דורש תשומת לב' },
-    green: { en: 'Excellent', ru: 'Отлично', he: 'מצוין' },
-  } satisfies Record<LightLevel, Localized>,
+    /** Score ≥80 with attributed loss — good, not perfect. */
+    green: { en: 'Good', ru: 'Хорошо', he: 'טוב' },
+    /** Score ≥80 and zero loss on that scale — only then «Excellent». */
+    excellent: { en: 'Excellent', ru: 'Отлично', he: 'מצוין' },
+  } satisfies Record<ScoreLabelKey, Localized>,
 
   areaTitle: {
     speed: { en: 'Speed on phones', ru: 'Скорость на телефоне', he: 'מהירות בטלפון' },
@@ -220,6 +223,11 @@ export const auditCalcCopy = {
         he: 'המהירות בינונית: חלק מהקליקים בתשלום הולכים לאיבוד בטעינה.',
       },
       green: {
+        en: 'Speed is solid, but a slice of visits still drops on load.',
+        ru: 'Скорость хорошая, но часть визитов всё ещё теряется на загрузке.',
+        he: 'המהירות טובה, אך חלק מהביקורים עדיין הולך לאיבוד בטעינה.',
+      },
+      excellent: {
         en: 'Pages open fast on phones.',
         ru: 'Страницы быстро открываются на телефонах.',
         he: 'העמודים נפתחים מהר בטלפונים.',
@@ -237,6 +245,11 @@ export const auditCalcCopy = {
         he: 'הטפסים עובדים, אך בדרך לפנייה יש פערים.',
       },
       green: {
+        en: 'The path mostly works, yet a share of ready buyers still drop off.',
+        ru: 'Путь в целом работает, но доля готовых покупателей всё ещё срывается.',
+        he: 'הדרך עובדת בדרך כלל, אך חלק מהקונים המוכנים עדיין נושרים.',
+      },
+      excellent: {
         en: 'The path to an inquiry is clear and protected.',
         ru: 'Путь к заявке понятный и защищённый.',
         he: 'הדרך לפנייה ברורה ומוגנת.',
@@ -254,6 +267,11 @@ export const auditCalcCopy = {
         he: 'יש הגנה בסיסית, חסרים כמה צעדי חיזוק.',
       },
       green: {
+        en: 'Basics are fine; remaining gaps still cost a little trust.',
+        ru: 'База в порядке; оставшиеся пробелы всё ещё чуть бьют по доверию.',
+        he: 'הבסיס תקין; הפערים שנותרו עדיין פוגעים מעט באמון.',
+      },
+      excellent: {
         en: 'Security basics are in place.',
         ru: 'Базовая безопасность на месте.',
         he: 'יסודות האבטחה במקום.',
@@ -271,12 +289,17 @@ export const auditCalcCopy = {
         he: 'הנראות מוגבלת: חיפוש ו-AI רואים רק חלק מהאתר.',
       },
       green: {
+        en: 'Visibility is decent, but search and AI still miss some demand.',
+        ru: 'Видимость нормальная, но поиск и AI всё ещё не видят часть спроса.',
+        he: 'הנראות סבירה, אך חיפוש ו-AI עדיין מפספסים חלק מהביקוש.',
+      },
+      excellent: {
         en: 'The site is visible to search and AI.',
         ru: 'Сайт хорошо виден поиску и AI.',
         he: 'האתר נראה היטב לחיפוש ול-AI.',
       },
     },
-  } satisfies Record<CalcArea, Record<LightLevel, Localized>>,
+  } satisfies Record<CalcArea, Record<ScoreLabelKey, Localized>>,
 
   calcHeading: {
     en: 'Express Audit Setup',
@@ -831,6 +854,30 @@ export const auditCalcCopy = {
   step4TechChecks: { en: 'Audit level', ru: 'Уровень аудита', he: 'רמת הביקורת' } satisfies Localized,
   step4TechAreas: { en: 'Areas', ru: 'Направлений', he: 'תחומים' } satisfies Localized,
   step4TechSite: { en: 'Website', ru: 'Сайт', he: 'אתר' } satisfies Localized,
+  step4CwvTitle: {
+    en: 'Speed & Core Web Vitals',
+    ru: 'Скорость и Core Web Vitals',
+    he: 'מהירות ו-Core Web Vitals',
+  } satisfies Localized,
+  step4CwvSub: {
+    en: 'Google Lighthouse lab metrics · mobile and desktop',
+    ru: 'Лабораторные метрики Google Lighthouse · телефон и десктоп',
+    he: 'מדדי מעבדה של Google Lighthouse · מובייל ודסקטופ',
+  } satisfies Localized,
+  step4CwvTag: { en: 'Google Lighthouse', ru: 'Google Lighthouse', he: 'Google Lighthouse' } satisfies Localized,
+  step4CwvColMetric: { en: 'Metric', ru: 'Метрика', he: 'מדד' } satisfies Localized,
+  step4CwvColMobile: { en: 'Mobile', ru: 'Телефон', he: 'מובייל' } satisfies Localized,
+  step4CwvColDesktop: { en: 'Desktop', ru: 'Десктоп', he: 'דסקטופ' } satisfies Localized,
+  step4CwvMetricPerf: { en: 'Performance', ru: 'Performance', he: 'Performance' } satisfies Localized,
+  step4CwvMetricA11y: { en: 'Accessibility', ru: 'Accessibility', he: 'Accessibility' } satisfies Localized,
+  step4CwvMetricBp: { en: 'Best Practices', ru: 'Best Practices', he: 'Best Practices' } satisfies Localized,
+  step4CwvMetricSeo: { en: 'SEO', ru: 'SEO', he: 'SEO' } satisfies Localized,
+  step4CwvMetricFcp: { en: 'FCP', ru: 'FCP', he: 'FCP' } satisfies Localized,
+  step4CwvMetricLcp: { en: 'LCP', ru: 'LCP', he: 'LCP' } satisfies Localized,
+  step4CwvMetricCls: { en: 'CLS', ru: 'CLS', he: 'CLS' } satisfies Localized,
+  step4CwvMetricTbt: { en: 'TBT', ru: 'TBT', he: 'TBT' } satisfies Localized,
+  step4CwvMetricSi: { en: 'Speed Index', ru: 'Speed Index', he: 'Speed Index' } satisfies Localized,
+  step4CwvMetricTti: { en: 'TTI', ru: 'TTI', he: 'TTI' } satisfies Localized,
   step4SprintCta: {
     en: 'Fix Sprint: Eliminate all identified funnel bottlenecks in 3–5 days',
     ru: 'Спринт исправлений: устраняем все найденные сбои воронки за 3–5 дней',
@@ -970,6 +1017,16 @@ export const auditCalcCopy = {
     ru: 'Отсутствие микроразметки (Schema.org), слабые сниппеты и проблемы индексации мешают сайту попадать в топ и в ответы AI.',
     he: 'היעדר נתונים מובנים (Schema.org), תגיות חלשות ואינדוקס לקוי גורמים למנועי חיפוש ול-AI לפספס את השירותים שלכם.',
   } satisfies Localized,
+  step4Stage1IssueMetrics: {
+    en: 'Lighthouse SEO mobile {seoM}/100, desktop {seoD}/100; AI visibility {ai}/100. About {loss}% of the leak is demand that never reaches the site.',
+    ru: 'Lighthouse SEO: телефон {seoM}/100, десктоп {seoD}/100; AI-видимость {ai}/100. Около {loss}% утечки — спрос, который до сайта не доходит.',
+    he: 'Lighthouse SEO: מובייל {seoM}/100, דסקטופ {seoD}/100; נראות AI {ai}/100. כ-{loss}% מהדליפה — ביקוש שלא מגיע לאתר.',
+  } satisfies Localized,
+  step4Stage1IssueScore: {
+    en: 'Search {seo}/100 and AI {ai}/100 — about {loss}% of the leak is demand that never finds the site (snippets, index, AI crawlers).',
+    ru: 'Поиск {seo}/100 и AI {ai}/100 — около {loss}% утечки: спрос не находит сайт (сниппеты, индекс, AI-краулеры).',
+    he: 'חיפוש {seo}/100 ו-AI {ai}/100 — כ-{loss}% מהדליפה: ביקוש שלא מוצא את האתר (snippet, אינדקס, בוטי AI).',
+  } satisfies Localized,
   step4Stage1LossText: {
     en: 'Lost search & AI potential',
     ru: 'Потери потенциального спроса',
@@ -1005,6 +1062,17 @@ export const auditCalcCopy = {
     en: 'Slow mobile render (>2.5s on 4G) and layout jumps (CLS). Visitors leave before the page even finishes loading.',
     ru: 'Задержка отрисовки экрана более 2.5–3.5 секунд на 4G и скачки вёрстки. Посетители закрывают вкладку, не дождавшись загрузки.',
     he: 'עיכוב בטעינת מסך ראשון מעל 2.5–3.5 שניות ב-4G ותזוזות עימוד. גולשים סוגרים את הדף עוד לפני שהוצג במלואו.',
+  } satisfies Localized,
+  /** Speed issue with lab numbers (mobile Lighthouse). */
+  step4Stage2IssueMetrics: {
+    en: 'Lab: mobile Performance {perf}/100, LCP {lcp}, CLS {cls}. Above ~2.5 s LCP or a jumpy layout, people close the tab before the screen settles.',
+    ru: 'Замер: Performance на телефоне {perf}/100, LCP {lcp}, CLS {cls}. При LCP выше ~2.5 с или скачках вёрстки вкладку закрывают до отрисовки экрана.',
+    he: 'מדידה: Performance במובייל {perf}/100, LCP {lcp}, CLS {cls}. מעל ~2.5 שנ׳ LCP או קפיצות עימוד — סוגרים את הלשונית לפני שהמסך מתייצב.',
+  } satisfies Localized,
+  step4Stage2IssueScore: {
+    en: 'Speed scale {score}/100 — about {loss}% of visits still drop while the page loads on phones.',
+    ru: 'Шкала скорости {score}/100 — около {loss}% визитов всё ещё срывается на загрузке на телефоне.',
+    he: 'מדד מהירות {score}/100 — כ-{loss}% מהביקורים עדיין נושרים בטעינה במובייל.',
   } satisfies Localized,
   step4Stage2LossText: {
     en: 'Lost mobile visits',
@@ -1042,6 +1110,11 @@ export const auditCalcCopy = {
     ru: 'Ошибки скриптов в консоли, неполные заголовки безопасности (CSP/HSTS) или риски предупреждений браузера.',
     he: 'שגיאות סקריפט, כותרי אבטחה חסרים (CSP/HSTS) וסיכון להתראות אבטחה שמרתיעות לקוחות.',
   } satisfies Localized,
+  step4Stage3IssueScore: {
+    en: 'Security & stability {score}/100 — about {loss}% of the leak. Typical gaps: CSP/HSTS headers, console script errors, or browser warning risk.',
+    ru: 'Безопасность и стабильность {score}/100 — около {loss}% утечки. Типичные пробелы: заголовки CSP/HSTS, ошибки скриптов в консоли или риск предупреждения браузера.',
+    he: 'אבטחה ויציבות {score}/100 — כ-{loss}% מהדליפה. פערים אופייניים: כותרי CSP/HSTS, שגיאות סקריפט או סיכון להתראת דפדפן.',
+  } satisfies Localized,
   step4Stage3LossText: {
     en: 'Lost to trust concerns',
     ru: 'Потери из-за сбоев доверия',
@@ -1077,6 +1150,11 @@ export const auditCalcCopy = {
     en: 'Unresponsive mobile buttons, rigid input masking, or form validation crashes cause high-intent buyers to drop off right at the finish line.',
     ru: 'Неотзывчивые кнопки на смартфонах, сбои маски ввода телефона или зависание формы срывают готовую заявку в самый последний момент.',
     he: 'כפתורים שאינם מגיבים במובייל, אימות שדות קשיח או תקיעת הטופס מובילים לנשירת לקוחות בשלים ממש על קו הסיום.',
+  } satisfies Localized,
+  step4Stage4IssueScore: {
+    en: 'Forms & inquiries {score}/100 — about {loss}% drop at the finish: mobile taps, phone masks, spam filters, or a stuck submit.',
+    ru: 'Формы и заявки {score}/100 — около {loss}% срыва на финише: тапы на смартфоне, маска телефона, антиспам или зависшая отправка.',
+    he: 'טפסים ופניות {score}/100 — כ-{loss}% נשירה בקו הסיום: לחיצות במובייל, מסכת טלפון, אנטי-ספאם או שליחה שנתקעת.',
   } satisfies Localized,
   step4Stage4LossText: {
     en: 'Lost checkout inquiries',
