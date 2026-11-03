@@ -338,7 +338,7 @@ export default function AuditLpClient({
         className={`relative min-h-screen overflow-x-clip font-sans transition-colors duration-500 ${shell} ${ink}`}
       >
         <AuditLpHeader
-          locale={locale}
+          locale={locale as AuditLpLocale}
           product={product}
           theme={theme}
           setTheme={setTheme}

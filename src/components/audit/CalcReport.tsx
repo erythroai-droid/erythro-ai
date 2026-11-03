@@ -1893,12 +1893,12 @@ export function CalcResult({
 
   const stageMoney = (loss: number) => (hasMoney && losses.total > 0 ? Math.round((result.monthly * loss) / losses.total / 10) * 10 : 0)
   // Stages ranked by loss, biggest first: the breakdown list and the "why" timeline share this order and numbering.
-  const stages: FunnelStage[] = [
-    { key: 'visibility', short: copy.step4StageShortSearch, title: copy.step4Stage1Title, action: copy.step4Stage1ActionDesc, issue: copy.step4Stage1IssueDesc, loss: losses.visibility, money: stageMoney(losses.visibility), score: areas.visibility },
-    { key: 'speed', short: copy.step4StageShortSpeed, title: copy.step4Stage2Title, action: copy.step4Stage2ActionDesc, issue: copy.step4Stage2IssueDesc, loss: losses.speed, money: stageMoney(losses.speed), score: pillars.speed, href: pagespeedUrl },
-    { key: 'security', short: copy.step4StageShortTrust, title: copy.step4Stage3Title, action: copy.step4Stage3ActionDesc, issue: copy.step4Stage3IssueDesc, loss: losses.security, money: stageMoney(losses.security), score: pillars.security },
-    { key: 'forms', short: copy.step4StageShortForm, title: copy.step4Stage4Title, action: copy.step4Stage4ActionDesc, issue: copy.step4Stage4IssueDesc, loss: losses.forms, money: stageMoney(losses.forms), score: pillars.leads },
-  ].sort((a, b) => b.loss - a.loss)
+  const stages: FunnelStage[] = ([
+    { key: 'visibility' as const, short: copy.step4StageShortSearch, title: copy.step4Stage1Title, action: copy.step4Stage1ActionDesc, issue: copy.step4Stage1IssueDesc, loss: losses.visibility, money: stageMoney(losses.visibility), score: areas.visibility },
+    { key: 'speed' as const, short: copy.step4StageShortSpeed, title: copy.step4Stage2Title, action: copy.step4Stage2ActionDesc, issue: copy.step4Stage2IssueDesc, loss: losses.speed, money: stageMoney(losses.speed), score: pillars.speed, href: pagespeedUrl },
+    { key: 'security' as const, short: copy.step4StageShortTrust, title: copy.step4Stage3Title, action: copy.step4Stage3ActionDesc, issue: copy.step4Stage3IssueDesc, loss: losses.security, money: stageMoney(losses.security), score: pillars.security },
+    { key: 'forms' as const, short: copy.step4StageShortForm, title: copy.step4Stage4Title, action: copy.step4Stage4ActionDesc, issue: copy.step4Stage4IssueDesc, loss: losses.forms, money: stageMoney(losses.forms), score: pillars.leads },
+  ] as FunnelStage[]).sort((a, b) => b.loss - a.loss)
   const biggest = stages.reduce((a, b) => (b.loss > a.loss ? b : a), stages[0])
 
   return (
@@ -2372,7 +2372,7 @@ export function CalcCta({
 }) {
   return (
     <>
-      <section className="relative isolate flex flex-col items-center gap-4 px-[22px] py-2 text-center sm:gap-6 sm:px-8 sm:py-20 lg:px-[60px] lg:py-28">
+      <section className="relative isolate flex flex-col items-center gap-4 px-[22px] py-12 text-center sm:gap-6 sm:px-8 sm:py-20 lg:px-[60px] lg:py-28">
         {/* The red line sets the width: the first line is taken out of sizing (zero width, centred overflow),
             so the plate and the text under it are exactly as wide as "get inquiries back" */}
         <div className="flex w-fit max-w-full flex-col items-stretch gap-4 sm:gap-6">
