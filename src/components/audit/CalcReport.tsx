@@ -29,11 +29,7 @@ import {
   type ScoreLabelKey,
 } from '@/lib/revenueLeak'
 import { stageIssueText } from '@/lib/calcStageIssues'
-import {
-  hasPagespeedData,
-  type PagespeedSnapshot,
-  type PsiDeviceSnapshot,
-} from '@/lib/pagespeedSnapshot'
+import { hasPagespeedData, type PagespeedSnapshot } from '@/lib/pagespeedSnapshot'
 
 /**
  * Calculator LP, design 2: every block follows the audit report template (light theme):
@@ -2184,64 +2180,142 @@ function ReportSegs({ score, level }: { score: number; level: LightLevel }) {
 
 type TechScale = { key: string; label: string; score: number; loss: number; impact: string }
 
-function cwvCell(device: PsiDeviceSnapshot | null | undefined, key: keyof PsiDeviceSnapshot): string {
-  if (!device) return '—'
-  const v = device[key]
-  if (v == null || v === '') return '—'
-  return String(v)
+/** Lighthouse score pill colours from the HTML audit report (`.p.g` / `.p.w` / `.p.b`). */
+const CWV_PILL: Record<'g' | 'w' | 'b', string> = {
+  g: '#22bf16',
+  w: '#ff7900',
+  b: '#e52421',
 }
 
+function cwvPillTone(score: number | null | undefined): 'g' | 'w' | 'b' | null {
+  if (score == null || !Number.isFinite(score)) return null
+  if (score >= 90) return 'g'
+  if (score >= 50) return 'w'
+  return 'b'
+}
+
+function CwvScorePill({ score }: { score: number | null | undefined }) {
+  const tone = cwvPillTone(score)
+  if (tone == null) {
+    return (
+      <span className="text-[15px] tabular-nums text-[#1e1e1e]">
+        <bdi dir="ltr">—</bdi>
+      </span>
+    )
+  }
+  return (
+    <span
+      className="inline-block min-w-11 rounded-full px-2.5 py-[3px] text-center text-[13px] font-medium tabular-nums text-white"
+      style={{ background: CWV_PILL[tone] }}
+    >
+      <bdi dir="ltr">{Math.round(score as number)}</bdi>
+    </span>
+  )
+}
+
+function CwvPlain({ value }: { value: string | null | undefined }) {
+  return (
+    <span className="text-[15px] tabular-nums text-[#1e1e1e]">
+      <bdi dir="ltr">{value && value !== '' ? value : '—'}</bdi>
+    </span>
+  )
+}
+
+/** Same layout as the Free HTML report speed card: score pills + plain lab timings + funnel row. */
 function CwvTable({ locale, pagespeed }: { locale: string; pagespeed: PagespeedSnapshot }) {
-  const rows: { label: string; key: keyof PsiDeviceSnapshot }[] = [
+  const mobile = pagespeed.mobile
+  const desktop = pagespeed.desktop
+  const scoreRows: { label: string; key: 'performance' | 'accessibility' | 'bestPractices' | 'seo' }[] = [
     { label: tCalc(copy.step4CwvMetricPerf, locale), key: 'performance' },
     { label: tCalc(copy.step4CwvMetricA11y, locale), key: 'accessibility' },
     { label: tCalc(copy.step4CwvMetricBp, locale), key: 'bestPractices' },
     { label: tCalc(copy.step4CwvMetricSeo, locale), key: 'seo' },
+  ]
+  const timingRows: { label: string; key: 'fcp' | 'lcp' | 'cls' }[] = [
     { label: tCalc(copy.step4CwvMetricFcp, locale), key: 'fcp' },
     { label: tCalc(copy.step4CwvMetricLcp, locale), key: 'lcp' },
     { label: tCalc(copy.step4CwvMetricCls, locale), key: 'cls' },
-    { label: tCalc(copy.step4CwvMetricTbt, locale), key: 'tbt' },
-    { label: tCalc(copy.step4CwvMetricSi, locale), key: 'speedIndex' },
-    { label: tCalc(copy.step4CwvMetricTti, locale), key: 'tti' },
   ]
+
   return (
-    <section className={`${REPORT_CARD} flex flex-col gap-5`}>
-      <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <div className="flex min-w-0 flex-col gap-1">
-          <ReportH2>{tCalc(copy.step4CwvTitle, locale)}</ReportH2>
-          <p className="m-0 text-sm leading-[1.5] text-[#6b6254]">{tCalc(copy.step4CwvSub, locale)}</p>
-        </div>
-        <span className={`${REPORT_CHIP} border-[#d6d6d6] bg-white text-[#1e1e1e]`}>{tCalc(copy.step4CwvTag, locale)}</span>
+    <section className={`${REPORT_CARD} flex flex-col`}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <ReportH2>{tCalc(copy.step4CwvTitle, locale)}</ReportH2>
+        <span className={`${REPORT_CHIP} border-[#d6d6d6] bg-[#f0ebe3] text-[#1e1e1e]`}>{tCalc(copy.step4CwvTag, locale)}</span>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[28rem] border-collapse text-start text-sm">
+      <div className="mt-[18px] overflow-x-auto">
+        <table className="w-full min-w-[28rem] border-collapse text-[15px]">
           <thead>
-            <tr className="border-b border-[#e0e0e0] text-xs uppercase tracking-[0.04em] text-[#64748b]">
-              <th scope="col" className="px-0 py-3 pe-4 font-medium">
+            <tr>
+              <th
+                scope="col"
+                className="border-b border-[#e0e0e0] px-0 py-3.5 pe-3 text-start text-[11px] font-normal uppercase tracking-[0.04em] text-[#6b6254]"
+              >
                 {tCalc(copy.step4CwvColMetric, locale)}
               </th>
-              <th scope="col" className="px-2 py-3 font-medium">
+              <th
+                scope="col"
+                className="border-b border-[#e0e0e0] px-3 py-3.5 text-center text-[11px] font-normal uppercase tracking-[0.04em] text-[#6b6254]"
+              >
                 {tCalc(copy.step4CwvColMobile, locale)}
               </th>
-              <th scope="col" className="px-2 py-3 font-medium">
+              <th
+                scope="col"
+                className="border-b border-[#e0e0e0] px-3 py-3.5 text-center text-[11px] font-normal uppercase tracking-[0.04em] text-[#6b6254]"
+              >
                 {tCalc(copy.step4CwvColDesktop, locale)}
               </th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.key} className="border-b border-[#f0f0f0] last:border-b-0">
-                <th scope="row" className="px-0 py-3 pe-4 text-start font-medium text-[#1e1e1e]">
+            {scoreRows.map((row) => (
+              <tr key={row.key}>
+                <th
+                  scope="row"
+                  className="border-b border-[#e0e0e0] px-0 py-3.5 pe-3 text-start text-xs font-normal uppercase tracking-[0.03em] text-[#1e1e1e]"
+                >
                   {row.label}
                 </th>
-                <td className="px-2 py-3 tabular-nums text-[#1e1e1e]">
-                  <bdi dir="ltr">{cwvCell(pagespeed.mobile, row.key)}</bdi>
+                <td className="border-b border-[#e0e0e0] px-3 py-3.5 text-center">
+                  <CwvScorePill score={mobile?.[row.key] ?? null} />
                 </td>
-                <td className="px-2 py-3 tabular-nums text-[#1e1e1e]">
-                  <bdi dir="ltr">{cwvCell(pagespeed.desktop, row.key)}</bdi>
+                <td className="border-b border-[#e0e0e0] px-3 py-3.5 text-center">
+                  <CwvScorePill score={desktop?.[row.key] ?? null} />
                 </td>
               </tr>
             ))}
+            {timingRows.map((row) => (
+              <tr key={row.key}>
+                <th
+                  scope="row"
+                  className="border-b border-[#e0e0e0] px-0 py-3.5 pe-3 text-start text-xs font-normal uppercase tracking-[0.03em] text-[#1e1e1e]"
+                >
+                  {row.label}
+                </th>
+                <td className="border-b border-[#e0e0e0] px-3 py-3.5 text-center">
+                  <CwvPlain value={mobile?.[row.key]} />
+                </td>
+                <td className="border-b border-[#e0e0e0] px-3 py-3.5 text-center">
+                  <CwvPlain value={desktop?.[row.key]} />
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <th
+                scope="row"
+                className="px-0 py-3.5 pe-3 text-start text-xs font-normal uppercase tracking-[0.03em] text-[#1e1e1e]"
+              >
+                {tCalc(copy.step4CwvFunnel, locale)}
+              </th>
+              <td colSpan={2} className="px-3 py-3.5 text-center">
+                <span
+                  className="inline-block min-w-11 rounded-full px-2.5 py-[3px] text-center text-[13px] font-medium tabular-nums text-white"
+                  style={{ background: CWV_PILL.g }}
+                >
+                  <bdi dir="ltr">{tCalc(copy.step4CwvFunnelCount, locale)}</bdi>
+                </span>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
