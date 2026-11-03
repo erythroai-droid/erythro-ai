@@ -190,7 +190,7 @@ export const auditCalcCopy = {
   levelLabel: {
     red: { en: 'Critical', ru: 'Критично', he: 'קריטי' },
     yellow: { en: 'Needs attention', ru: 'Требует внимания', he: 'דורש תשומת לב' },
-    green: { en: 'OK', ru: 'Отлично', he: 'תקין' },
+    green: { en: 'Excellent', ru: 'Отлично', he: 'מצוין' },
   } satisfies Record<LightLevel, Localized>,
 
   areaTitle: {
