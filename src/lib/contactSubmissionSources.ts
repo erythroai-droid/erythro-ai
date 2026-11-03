@@ -20,6 +20,27 @@ export function submissionListHref(source: ContactSubmissionSourceId): string {
 }
 
 /**
+ * AI Audit Orders: source=audit, excluding leak calculator LP.
+ * Leak rows stay source=audit for the worker, but use leadChannel=leak_calc.
+ */
+export function auditOrdersListHref(): string {
+  return (
+    `/admin/collections/${COLLECTION}` +
+    `?where[and][0][source][equals]=audit` +
+    `&where[and][1][leadChannel][not_equals]=leak_calc`
+  )
+}
+
+/** Leak calculator LP only (revenue-leak landing → free audit). */
+export function leakSubmissionsListHref(): string {
+  return (
+    `/admin/collections/${COLLECTION}` +
+    `?where[and][0][source][equals]=audit` +
+    `&where[and][1][leadChannel][equals]=leak_calc`
+  )
+}
+
+/**
  * Registered intake channels for Contact Submissions.
  * Add a row here + a select option on the collection when shipping a new service.
  */
@@ -33,7 +54,8 @@ export const CONTACT_SUBMISSION_SOURCES: ContactSubmissionSourceDef[] = [
   {
     id: 'audit',
     navLabel: 'AI Audit Orders',
-    description: 'AI Audit checkout and /audit form leads (source=audit).',
+    description:
+      'AI Audit checkout and /audit / audit-* ads LP (source=audit, not leak calculator).',
     inNav: true,
   },
   {
@@ -41,6 +63,43 @@ export const CONTACT_SUBMISSION_SOURCES: ContactSubmissionSourceDef[] = [
     navLabel: 'Contact Inquiries',
     description: 'Contact page and general feedback (source=contact).',
     inNav: true,
+  },
+]
+
+/** Sidebar / dashboard nav entries (audit split from leak by leadChannel). */
+export type SubmissionNavId = 'order' | 'audit' | 'leak' | 'contact'
+
+export type SubmissionNavLink = {
+  id: SubmissionNavId
+  navLabel: string
+  description: string
+  href: string
+}
+
+export const SUBMISSION_NAV_LINKS: SubmissionNavLink[] = [
+  {
+    id: 'order',
+    navLabel: 'Solution Orders',
+    description: 'Checkout submissions from /order/* solution plans (source=order).',
+    href: submissionListHref('order'),
+  },
+  {
+    id: 'audit',
+    navLabel: 'AI Audit Orders',
+    description: 'AI Audit leads from /audit and audit-* ads LP (excludes leak calculator).',
+    href: auditOrdersListHref(),
+  },
+  {
+    id: 'leak',
+    navLabel: 'Leak Calculator',
+    description: 'Revenue-leak calculator LP (leak-*.erythro.ai) — free check only.',
+    href: leakSubmissionsListHref(),
+  },
+  {
+    id: 'contact',
+    navLabel: 'Contact Inquiries',
+    description: 'Contact page and general feedback (source=contact).',
+    href: submissionListHref('contact'),
   },
 ]
 

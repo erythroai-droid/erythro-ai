@@ -149,10 +149,11 @@ export const ContactSubmissions: CollectionConfig = {
               options: [
                 { label: 'Organic', value: 'organic' },
                 { label: 'Meta ads LP', value: 'meta_ads' },
+                { label: 'Leak calculator LP', value: 'leak_calc' },
               ],
               admin: {
                 description:
-                  'Traffic attribution: meta_ads when submitted from audit-*.erythro.ai ads LP',
+                  'Traffic: organic=/audit; meta_ads=audit-*.erythro.ai; leak_calc=leak-*.erythro.ai',
                 condition: auditOnly,
                 readOnly: true,
               },

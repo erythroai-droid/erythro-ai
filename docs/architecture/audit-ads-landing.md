@@ -38,6 +38,8 @@
 | `https://leak-ru.erythro.ai/` | `ru` | `/lp/audit/calc/ru` |
 | `https://leak-he.erythro.ai/` | `he` | `/lp/audit/calc/he` |
 
+**Admin / CRM:** заявки с `leak-*` пишутся как `source=audit` + `leadChannel=leak_calc` (воркер тот же). В сайдбаре Payload — отдельный список **Leak Calculator**; **AI Audit Orders** их не показывает. Staff-письмо: subject `Erythro.ai leak calculator…`. Pro/Diagnostic upsell-письма для leak **не** шлются (`proOfferStatus=skipped`) — допродажи только через WhatsApp. Тариф один: free.
+
 DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → Domains: все двенадцать.
 
 Публичный RU free-хост — **`audit-ru`**. Label `audit-rus` в коде только как alias middleware (DNS на него не публиковался → NXDOMAIN).

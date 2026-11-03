@@ -3,18 +3,15 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  SUBMISSION_SOURCES_IN_NAV,
-  submissionListHref,
-} from '@/lib/contactSubmissionSources'
+import { SUBMISSION_NAV_LINKS, type SubmissionNavId } from '@/lib/contactSubmissionSources'
 import { activeSubmissionSource } from './submissionAdminLinks'
 
 /**
- * Sidebar shortcuts: one filtered Contact Submissions list per intake channel.
+ * Sidebar shortcuts: filtered Contact Submissions lists (audit vs leak split by leadChannel).
  */
 export const SubmissionSourcesNavLinks: React.FC = () => {
   const pathname = usePathname()
-  const [activeSource, setActiveSource] = useState<string | null>(null)
+  const [activeSource, setActiveSource] = useState<SubmissionNavId | null>(null)
 
   useEffect(() => {
     const onCollection = pathname?.includes('/collections/contact-submissions')
@@ -27,18 +24,18 @@ export const SubmissionSourcesNavLinks: React.FC = () => {
 
   return (
     <>
-      {SUBMISSION_SOURCES_IN_NAV.map((source) => {
-        const active = activeSource === source.id
+      {SUBMISSION_NAV_LINKS.map((link) => {
+        const active = activeSource === link.id
         return (
           <Link
-            key={source.id}
+            key={link.id}
             className={`nav__link${active ? ' active' : ''}`}
-            href={submissionListHref(source.id)}
+            href={link.href}
             prefetch={false}
-            title={source.description}
+            title={link.description}
             {...(active ? { 'aria-current': 'page' as const } : {})}
           >
-            <span className="nav__link-label">{source.navLabel}</span>
+            <span className="nav__link-label">{link.navLabel}</span>
           </Link>
         )
       })}

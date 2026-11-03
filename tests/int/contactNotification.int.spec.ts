@@ -72,6 +72,25 @@ describe('contactNotification', () => {
     expect(html).toContain('REQ-42')
   })
 
+  it('labels leak calculator staff mail separately from AI audit', () => {
+    const { html, subject, text } = buildContactEmail({
+      name: 'Ada',
+      email: 'ada@example.com',
+      message: 'Leak check',
+      source: 'audit',
+      leadChannel: 'leak_calc',
+      website: 'https://example.com',
+      planSlug: 'audit-free',
+      submissionId: 99,
+    })
+    expect(subject).toBe('Erythro.ai leak calculator AUD-99: Ada')
+    expect(text).toContain('Source: leak_calculator')
+    expect(text).toContain('Lead channel: leak_calc')
+    expect(text).toContain('WhatsApp')
+    expect(html).toContain('leak_calculator')
+    expect(html).toContain('leak_calc')
+  })
+
   it('builds a localized client ack with escaped name', () => {
     const { html, subject, text } = buildClientAckEmail({
       name: 'Ada <script>',
