@@ -1446,12 +1446,15 @@ function LossHero({
           </div>
         </div>
 
-        <dl className={`m-0 mt-10 grid grid-cols-2 gap-3 lg:mt-12 lg:grid-cols-4`}>
+        <dl className="m-0 mt-10 grid grid-cols-2 gap-3 lg:mt-12 lg:grid-cols-4 lg:items-stretch">
           {stats.map((s) => (
-            <div key={s.label} className="flex flex-col items-center gap-1.5 rounded-[12px] border border-white/12 bg-white/[0.06] px-3 py-5 text-center backdrop-blur-sm sm:px-5 sm:py-6">
-              <dt className="order-2 text-[13px] leading-[1.5] text-white/70">{s.label}</dt>
-              <dd className={`order-1 m-0 flex flex-col items-center gap-2`}>
-                <span className={`text-2xl font-bold leading-[1.2] tracking-[-0.02em] tabular-nums sm:text-[34px] ${s.red ? 'text-[#ff6b68]' : 'text-white'}`}>
+            <div
+              key={s.label}
+              className="flex min-h-[7.5rem] flex-col items-center rounded-[12px] border border-white/12 bg-white/[0.06] px-3 py-5 text-center backdrop-blur-sm sm:min-h-[8.5rem] sm:px-5 sm:py-6"
+            >
+              {/* Value + optional badge share one middle band so all four tiles line up */}
+              <dd className="m-0 flex min-h-[4.25rem] flex-1 flex-col items-center justify-center gap-2 sm:min-h-[4.75rem]">
+                <span className={`text-2xl font-bold leading-none tracking-[-0.02em] tabular-nums sm:text-[34px] ${s.red ? 'text-[#ff6b68]' : 'text-white'}`}>
                   <bdi>{s.value}</bdi>
                 </span>
                 {s.badge ? (
@@ -1461,8 +1464,11 @@ function LossHero({
                   >
                     {s.badge.caption}
                   </span>
-                ) : null}
+                ) : (
+                  <span aria-hidden className="h-[22px] sm:h-6" />
+                )}
               </dd>
+              <dt className="mt-2 min-h-[2.5rem] text-[13px] leading-[1.35] text-white/70">{s.label}</dt>
             </div>
           ))}
         </dl>
@@ -2634,17 +2640,17 @@ function FixSprintHero({
               ))}
             </ol>
 
-            <div className="mt-1 grid grid-cols-1 gap-4 border-t border-white/20 pt-5 sm:grid-cols-2 sm:gap-6">
+            <div className="mt-1 grid grid-cols-1 gap-4 border-t border-white/20 pt-5 sm:grid-cols-2 sm:items-end sm:gap-6">
               <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold uppercase leading-[1.4] tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotal, locale)}</span>
+                <span className="min-h-4 text-xs font-semibold uppercase leading-4 tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotal, locale)}</span>
                 <b className="text-[32px] font-black leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[40px]">
                   <bdi>{formatIls(SPRINT_PRICE_ILS, locale)}</bdi>
                   {star}
                 </b>
               </div>
               <div className="flex flex-col gap-1.5 sm:items-end sm:text-end">
-                <span className="text-xs font-semibold uppercase leading-[1.4] tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotalTerm, locale)}</span>
-                <b className="text-[28px] font-black leading-none tracking-[-0.03em] text-white sm:text-[34px]" style={{ color: GAIN.mint }}>
+                <span className="min-h-4 text-xs font-semibold uppercase leading-4 tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotalTerm, locale)}</span>
+                <b className="text-[32px] font-black leading-none tracking-[-0.03em] tabular-nums sm:text-[40px]" style={{ color: GAIN.mint }}>
                   <bdi>{tCalc(copy.step4FixTitleDays, locale)}</bdi>
                   {star}
                 </b>
@@ -2654,14 +2660,20 @@ function FixSprintHero({
           </div>
         </div>
 
-        <dl className={`m-0 mt-10 grid grid-cols-2 gap-3 lg:mt-14 ${tileCols}`}>
+        <dl className={`m-0 mt-10 grid grid-cols-2 items-stretch gap-3 lg:mt-14 ${tileCols}`}>
           {tiles.map((t) => (
-            <div key={t.label} className="flex flex-col items-center gap-1 rounded-[12px] border border-white/12 bg-white/[0.07] px-3 py-5 text-center backdrop-blur-sm sm:px-5 sm:py-6">
-              <dt className="order-2 text-[13px] leading-[1.5] text-white/75">{t.label}</dt>
-              <dd className="order-1 m-0 text-2xl font-bold leading-[1.2] tracking-[-0.02em] tabular-nums sm:text-[34px]" style={{ color: t.gain ? GAIN.mint : '#fff' }}>
+            <div
+              key={t.label}
+              className="flex min-h-[7.25rem] flex-col items-center rounded-[12px] border border-white/12 bg-white/[0.07] px-3 py-5 text-center backdrop-blur-sm sm:min-h-[8.25rem] sm:px-5 sm:py-6"
+            >
+              <dd
+                className="m-0 flex min-h-[3.25rem] flex-1 items-center justify-center text-2xl font-bold leading-none tracking-[-0.02em] tabular-nums sm:min-h-[3.75rem] sm:text-[34px]"
+                style={{ color: t.gain ? GAIN.mint : '#fff' }}
+              >
                 <bdi>{t.value}</bdi>
                 {t.estimate ? star : null}
               </dd>
+              <dt className="mt-2 min-h-[2.5rem] text-[13px] leading-[1.35] text-white/75">{t.label}</dt>
             </div>
           ))}
         </dl>
@@ -2693,9 +2705,9 @@ export function CalcCta({
           </h2>
           {/* Fix total on the blue of the "we close the leaks" sprint panel, the amount in white with the shekel sign first */}
           <div className="calc-fix-flow relative isolate flex w-0 min-w-full flex-col items-center gap-1.5 overflow-hidden rounded-[14px] px-6 py-5 text-white sm:py-7">
-            <div className="flex w-full flex-wrap items-end justify-center gap-x-10 gap-y-4">
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-xs font-semibold uppercase tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotal, locale)}</span>
+            <div className="grid w-full grid-cols-1 items-end gap-4 sm:grid-cols-2 sm:gap-8">
+              <div className="flex flex-col items-center gap-1.5">
+                <span className="min-h-4 text-xs font-semibold uppercase leading-4 tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotal, locale)}</span>
                 <b className="text-[40px] font-black leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[52px]">
                   <bdi dir="ltr">
                     <span className="me-1 align-[0.3em] text-[0.55em] font-bold">₪</span>
@@ -2704,9 +2716,9 @@ export function CalcCta({
                   <span aria-hidden className="ms-0.5 align-super text-[0.45em] font-bold text-white/60">*</span>
                 </b>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-xs font-semibold uppercase tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotalTerm, locale)}</span>
-                <b className="text-[32px] font-black leading-none tracking-[-0.03em] sm:text-[40px]" style={{ color: GAIN.mint }}>
+              <div className="flex flex-col items-center gap-1.5">
+                <span className="min-h-4 text-xs font-semibold uppercase leading-4 tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotalTerm, locale)}</span>
+                <b className="text-[40px] font-black leading-none tracking-[-0.03em] tabular-nums sm:text-[52px]" style={{ color: GAIN.mint }}>
                   <bdi>{tCalc(copy.step4FixTitleDays, locale)}</bdi>
                   <span aria-hidden className="ms-0.5 align-super text-[0.45em] font-bold text-white/60">*</span>
                 </b>
