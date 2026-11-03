@@ -23,6 +23,8 @@ export type ContactNotificationInput = {
   planTotal?: string
   /** Numeric CMS id; rendered as AUD-{id} for audit orders */
   submissionId?: number | string
+  /** Free-audit traffic: leak_calc = revenue-leak calculator LP */
+  leadChannel?: 'organic' | 'meta_ads' | 'leak_calc' | null
 }
 
 export type SiteEmailSettings = {
@@ -211,6 +213,7 @@ export function buildClientAckEmail(
 
 export function buildContactEmail(input: ContactNotificationInput): { subject: string; text: string; html: string } {
   const source = input.source === 'order' ? 'order' : input.source === 'audit' ? 'audit' : 'contact'
+  const isLeak = source === 'audit' && input.leadChannel === 'leak_calc'
   const ticket = formatSubmissionTicketId(source, input.submissionId)
   const ticketSuffix = ticket ? ` ${ticket}` : ''
   const displayName = input.name.trim() || input.email
@@ -218,11 +221,13 @@ export function buildContactEmail(input: ContactNotificationInput): { subject: s
   const subject =
     source === 'order'
       ? `Erythro.ai order inquiry${ticketSuffix}: ${displayName}`
-      : source === 'audit'
-        ? `Erythro.ai AI audit${ticketSuffix}: ${displayName}`
-        : `Erythro.ai contact${ticketSuffix}: ${displayName}`
+      : isLeak
+        ? `Erythro.ai leak calculator${ticketSuffix}: ${displayName}`
+        : source === 'audit'
+          ? `Erythro.ai AI audit${ticketSuffix}: ${displayName}`
+          : `Erythro.ai contact${ticketSuffix}: ${displayName}`
   const lines = [
-    `Source: ${source}`,
+    `Source: ${isLeak ? 'leak_calculator' : source}`,
     ...(ticket ? [`Ticket: ${ticket}`] : []),
     `Name: ${nameLine}`,
     `Email: ${input.email}`,
@@ -230,9 +235,11 @@ export function buildContactEmail(input: ContactNotificationInput): { subject: s
     `Locale: ${input.locale || '—'}`,
   ]
   if (source === 'audit') {
+    lines.push(`Lead channel: ${input.leadChannel?.trim() || '—'}`)
     lines.push(`Website: ${input.website?.trim() || '—'}`)
     lines.push(`Report language: ${input.auditLanguage || '—'}`)
     lines.push(`Plan: ${input.planSlug?.trim() || '—'}`)
+    if (isLeak) lines.push('Note: free leak check only — follow up via WhatsApp (no paid audit upsell).')
     if (input.planTotal?.trim()) lines.push(`Total: ${input.planTotal.trim()}`)
   }
   lines.push('', input.message)
@@ -240,14 +247,20 @@ export function buildContactEmail(input: ContactNotificationInput): { subject: s
   const auditRows =
     source === 'audit'
       ? `
+    <p><strong>Lead channel:</strong> ${escapeHtml(input.leadChannel?.trim() || '—')}</p>
     <p><strong>Website:</strong> ${escapeHtml(input.website?.trim() || '—')}</p>
     <p><strong>Report language:</strong> ${escapeHtml(input.auditLanguage || '—')}</p>
     <p><strong>Plan:</strong> ${escapeHtml(input.planSlug?.trim() || '—')}</p>
+    ${
+      isLeak
+        ? '<p><strong>Note:</strong> Free leak check only — follow up via WhatsApp (no paid audit upsell).</p>'
+        : ''
+    }
     ${input.planTotal?.trim() ? `<p><strong>Total:</strong> ${escapeHtml(input.planTotal.trim())}</p>` : ''}
       `
       : ''
   const html = `
-    <p><strong>Source:</strong> ${escapeHtml(source)}</p>
+    <p><strong>Source:</strong> ${escapeHtml(isLeak ? 'leak_calculator' : source)}</p>
     ${ticket ? `<p><strong>Ticket:</strong> <code dir="ltr">${escapeHtml(ticket)}</code></p>` : ''}
     <p><strong>Name:</strong> ${escapeHtml(nameLine)}</p>
     <p><strong>Email:</strong> ${escapeHtml(input.email)}</p>

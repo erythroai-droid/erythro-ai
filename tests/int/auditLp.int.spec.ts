@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   AUDIT_LP_HOST_BY_LOCALE,
   AUDIT_LP_HOSTS_BY_PRODUCT,
+  auditLeadChannelFromHost,
   auditLpCanonicalUrl,
   auditLpInternalPath,
   auditLpLocaleFromHost,
@@ -44,6 +45,9 @@ describe('audit LP host / path lock', () => {
       product: 'calc',
       locale: 'en',
     })
+    expect(auditLeadChannelFromHost('leak-ru.erythro.ai')).toBe('leak_calc')
+    expect(auditLeadChannelFromHost('audit-en.erythro.ai')).toBe('meta_ads')
+    expect(auditLeadChannelFromHost('erythro.ai')).toBe('organic')
   })
 
   it('locks locale from /lp/audit/{locale} and paid product paths', () => {

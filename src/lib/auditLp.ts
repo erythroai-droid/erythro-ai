@@ -100,6 +100,16 @@ export function isAuditLpHost(host: string | null | undefined): boolean {
   return auditLpTargetFromHost(host) != null
 }
 
+/** CMS `leadChannel` for free-audit intake (ads LP vs leak calculator vs organic). */
+export type AuditLeadChannel = 'organic' | 'meta_ads' | 'leak_calc'
+
+export function auditLeadChannelFromHost(host: string | null | undefined): AuditLeadChannel {
+  const target = auditLpTargetFromHost(host)
+  if (!target) return 'organic'
+  if (target.product === 'calc') return 'leak_calc'
+  return 'meta_ads'
+}
+
 /** Internal App Router path after middleware rewrite. */
 export function auditLpInternalPath(product: AuditLpProduct, locale: AuditLpLocale): string {
   if (product === 'free') return `/lp/audit/${locale}`
