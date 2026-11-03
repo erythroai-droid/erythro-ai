@@ -1258,6 +1258,12 @@ export const auditCalcCopy = {
     he: '230+ בדיקות לאתר כלולות במחיר הספרינט.',
   } satisfies Localized,
   step4FixTotal: { en: 'Fix total', ru: 'Сумма исправлений', he: 'סכום התיקונים' } satisfies Localized,
+  /** Shown under the sprint price on the lilac plate: price + turnaround. */
+  step4FixTotalTerm: {
+    en: 'Turnaround',
+    ru: 'Срок исправления',
+    he: 'משך התיקון',
+  } satisfies Localized,
   step4FixIncludesPro: { en: 'The price includes the Pro audit: full report on 230+ checks', ru: 'В стоимость входит аудит Pro: полный отчёт по 230+ проверкам', he: 'המחיר כולל ביקורת Pro: דוח מלא על 230+ בדיקות' } satisfies Localized,
   step4FixEstimateNote: {
     en: '* Preliminary estimate. The final price and timeline are agreed with you.',
