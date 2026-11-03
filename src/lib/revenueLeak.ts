@@ -49,6 +49,12 @@ export const SPRINT_PRICE_ILS = 2200
 
 export type LightLevel = 'red' | 'yellow' | 'green'
 
+/**
+ * Chip / impact copy key. Green scores with any loss use «Good», not «Excellent»
+ * (product rule 1B: Отлично cannot coexist with losses).
+ */
+export type ScoreLabelKey = LightLevel | 'excellent'
+
 function clampScore(value: number): number {
   if (!Number.isFinite(value)) return 0
   return Math.min(100, Math.max(0, value))
@@ -73,6 +79,16 @@ export function lightFor(score: number): LightLevel {
   if (s < 60) return 'red'
   if (s < 80) return 'yellow'
   return 'green'
+}
+
+/**
+ * Label for a scale given its score and attributed loss (percentage points).
+ * loss ≤ 0 and green → excellent; green with loss → good (still LightLevel green).
+ */
+export function scoreLabelKey(score: number, loss: number): ScoreLabelKey {
+  const level = lightFor(score)
+  if (level === 'green' && !(loss > 0)) return 'excellent'
+  return level
 }
 
 /**

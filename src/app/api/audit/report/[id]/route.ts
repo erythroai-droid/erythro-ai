@@ -17,6 +17,7 @@ import {
 } from '@/lib/auditReportAccess'
 import { isUnpaidAuditCheckout } from '@/lib/auditPaymentGate'
 import { pillarsFromAuditSummary } from '@/lib/revenueLeak'
+import { pagespeedFromAuditSummary } from '@/lib/pagespeedSnapshot'
 import {
   findAuditSubmission,
   normalizeAuditStatus,
@@ -85,6 +86,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       status,
       auditScore: typeof doc.auditScore === 'number' ? doc.auditScore : null,
       pillars: pillarsFromAuditSummary(doc.auditSummary),
+      pagespeed: pagespeedFromAuditSummary(doc.auditSummary),
       reportUrl:
         typeof doc.reportUrl === 'string' && isPublicReportUrl(doc.reportUrl)
           ? doc.reportUrl

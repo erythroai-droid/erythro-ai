@@ -158,6 +158,32 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
           status: 'report_sent',
           auditScore: 48,
           pillars: { speed: 35, leads: 72, seo: 62, security: 45, ai: 85 },
+          pagespeed: {
+            mobile: {
+              performance: 42,
+              accessibility: 88,
+              bestPractices: 75,
+              seo: 90,
+              fcp: '2.8 s',
+              lcp: '4.2 s',
+              cls: '0.28',
+              tbt: '420 ms',
+              speedIndex: '5.1 s',
+              tti: '6.4 s',
+            },
+            desktop: {
+              performance: 78,
+              accessibility: 92,
+              bestPractices: 83,
+              seo: 95,
+              fcp: '1.1 s',
+              lcp: '1.8 s',
+              cls: '0.05',
+              tbt: '80 ms',
+              speedIndex: '2.0 s',
+              tti: '2.4 s',
+            },
+          },
           reportUrl: null,
           htmlPreview: null,
           readyHtmlUrl: null,
@@ -439,6 +465,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               domain={domain}
               websiteUrl={stage.submitted.website}
               pillars={pillars}
+              pagespeed={report.pagespeed}
               revenue={revenue}
               clients={clients}
               approximate={report.pillars == null}

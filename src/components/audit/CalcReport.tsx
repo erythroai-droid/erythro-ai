@@ -22,10 +22,18 @@ import {
   lightFor,
   lostClientsPerMonth,
   revenueToSlider,
+  scoreLabelKey,
   sliderToRevenue,
   type AuditPillars,
   type LightLevel,
+  type ScoreLabelKey,
 } from '@/lib/revenueLeak'
+import { stageIssueText } from '@/lib/calcStageIssues'
+import {
+  hasPagespeedData,
+  type PagespeedSnapshot,
+  type PsiDeviceSnapshot,
+} from '@/lib/pagespeedSnapshot'
 
 /**
  * Calculator LP, design 2: every block follows the audit report template (light theme):
@@ -1195,7 +1203,8 @@ type FunnelStage = {
   short: Localized
   title: Localized
   action: Localized
-  issue: Localized
+  /** Already localized «where it breaks» text (may include lab numbers). */
+  issue: string
   loss: number
   /** ₪ per month lost at this stage; 0 when revenue is unknown. */
   money: number
@@ -1248,7 +1257,7 @@ function LossHero({
   lostPct: number
   lostClients: number
   score: number
-  scoreLevel: LightLevel
+  scoreLevel: ScoreLabelKey
   waHref: string | null
 }) {
   const money = monthly > 0
@@ -1267,7 +1276,8 @@ function LossHero({
 
   // Inquiries won back if every leak is closed: the lost share measured against what reaches the form today.
   const upside = kept > 0 ? Math.round((lostPct / kept) * 100) : 0
-  const scoreLevelFill: Record<LightLevel, { bg: string; text: string }> = {
+  const scoreLevelFill: Record<ScoreLabelKey, { bg: string; text: string }> = {
+    excellent: { bg: '#22bf16', text: '#ffffff' },
     green: { bg: '#22bf16', text: '#ffffff' },
     yellow: { bg: '#ff7900', text: '#ffffff' },
     red: { bg: '#e52421', text: '#ffffff' },
@@ -1759,7 +1769,7 @@ function StageTimeline({ locale, stages, biggestKey, total }: { locale: string; 
                       </span>
                       {tCalc(copy.step4CardColIssue, locale)}
                     </p>
-                    <p className="m-0 text-base leading-[1.6] text-[#1e1e1e]">{tCalc(s.issue, locale)}</p>
+                    <p className="m-0 text-base leading-[1.6] text-[#1e1e1e]">{s.issue}</p>
                     {s.href ? (
                       <a
                         href={s.href}
@@ -1790,6 +1800,7 @@ export function CalcResult({
   domain,
   websiteUrl,
   pillars,
+  pagespeed,
   revenue,
   clients,
   approximate,
@@ -1801,6 +1812,7 @@ export function CalcResult({
   domain: string
   websiteUrl?: string
   pillars: AuditPillars
+  pagespeed?: PagespeedSnapshot | null
   revenue: number | null
   clients: number | null
   approximate: boolean
@@ -1818,7 +1830,6 @@ export function CalcResult({
   const lostClients = !negligible && lostClientsRaw > 0 ? lostClientsRaw : 0
   const areas = areaScores(pillars)
   const overall = Math.round(Object.values(areas).reduce((a, b) => a + b, 0) / 4)
-  const overallLevel = lightFor(overall)
 
   // Coherent integer loss model: every row in the report and the 5 diagnostic scales
   // sum up strictly and mathematically to the exact same total.
@@ -1912,22 +1923,116 @@ export function CalcResult({
   const targetSite = websiteUrl || (domain.startsWith('http') ? domain : `https://${domain}`)
   const pagespeedUrl = `https://pagespeed.web.dev/analysis?url=${encodeURIComponent(targetSite)}`
 
-  const diagnosticScales = [
-    { key: 'speed', label: tCalc(copy.scaleSpeed, locale), score: pillars.speed, loss: losses.speed, impact: tCalc(copy.areaImpact.speed[lightFor(pillars.speed)], locale) },
-    { key: 'leads', label: tCalc(copy.scaleLeads, locale), score: pillars.leads, loss: losses.forms, impact: tCalc(copy.areaImpact.forms[lightFor(pillars.leads)], locale) },
-    { key: 'seo', label: tCalc(copy.scaleSeo, locale), score: pillars.seo, loss: losses.seo, impact: tCalc(copy.areaImpact.visibility[lightFor(pillars.seo)], locale) },
-    { key: 'security', label: tCalc(copy.scaleSecurity, locale), score: pillars.security, loss: losses.security, impact: tCalc(copy.areaImpact.security[lightFor(pillars.security)], locale) },
-    { key: 'ai', label: tCalc(copy.scaleAi, locale), score: pillars.ai, loss: losses.ai, impact: tCalc(copy.areaImpact.visibility[lightFor(pillars.ai)], locale) },
-  ] as const
+  const overallLevel = scoreLabelKey(overall, losses.total)
 
+  const diagnosticScales = [
+    {
+      key: 'speed',
+      label: tCalc(copy.scaleSpeed, locale),
+      score: pillars.speed,
+      loss: losses.speed,
+      impact: tCalc(copy.areaImpact.speed[scoreLabelKey(pillars.speed, losses.speed)], locale),
+    },
+    {
+      key: 'leads',
+      label: tCalc(copy.scaleLeads, locale),
+      score: pillars.leads,
+      loss: losses.forms,
+      impact: tCalc(copy.areaImpact.forms[scoreLabelKey(pillars.leads, losses.forms)], locale),
+    },
+    {
+      key: 'seo',
+      label: tCalc(copy.scaleSeo, locale),
+      score: pillars.seo,
+      loss: losses.seo,
+      impact: tCalc(copy.areaImpact.visibility[scoreLabelKey(pillars.seo, losses.seo)], locale),
+    },
+    {
+      key: 'security',
+      label: tCalc(copy.scaleSecurity, locale),
+      score: pillars.security,
+      loss: losses.security,
+      impact: tCalc(copy.areaImpact.security[scoreLabelKey(pillars.security, losses.security)], locale),
+    },
+    {
+      key: 'ai',
+      label: tCalc(copy.scaleAi, locale),
+      score: pillars.ai,
+      loss: losses.ai,
+      impact: tCalc(copy.areaImpact.visibility[scoreLabelKey(pillars.ai, losses.ai)], locale),
+    },
+  ] as const
 
   const stageMoney = (loss: number) => (hasMoney && losses.total > 0 ? Math.round((result.monthly * loss) / losses.total / 10) * 10 : 0)
   // Stages ranked by loss, biggest first. Breakdown + "why" share the same leaking set (loss > 0).
   const stages: FunnelStage[] = ([
-    { key: 'visibility' as const, short: copy.step4StageShortSearch, title: copy.step4Stage1Title, action: copy.step4Stage1ActionDesc, issue: copy.step4Stage1IssueDesc, loss: losses.visibility, money: stageMoney(losses.visibility), score: areas.visibility },
-    { key: 'speed' as const, short: copy.step4StageShortSpeed, title: copy.step4Stage2Title, action: copy.step4Stage2ActionDesc, issue: copy.step4Stage2IssueDesc, loss: losses.speed, money: stageMoney(losses.speed), score: pillars.speed, href: pagespeedUrl },
-    { key: 'security' as const, short: copy.step4StageShortTrust, title: copy.step4Stage3Title, action: copy.step4Stage3ActionDesc, issue: copy.step4Stage3IssueDesc, loss: losses.security, money: stageMoney(losses.security), score: pillars.security },
-    { key: 'forms' as const, short: copy.step4StageShortForm, title: copy.step4Stage4Title, action: copy.step4Stage4ActionDesc, issue: copy.step4Stage4IssueDesc, loss: losses.forms, money: stageMoney(losses.forms), score: pillars.leads },
+    {
+      key: 'visibility' as const,
+      short: copy.step4StageShortSearch,
+      title: copy.step4Stage1Title,
+      action: copy.step4Stage1ActionDesc,
+      issue: stageIssueText({
+        area: 'visibility',
+        locale,
+        score: areas.visibility,
+        loss: losses.visibility,
+        seoScore: pillars.seo,
+        aiScore: pillars.ai,
+        pagespeed,
+      }),
+      loss: losses.visibility,
+      money: stageMoney(losses.visibility),
+      score: areas.visibility,
+    },
+    {
+      key: 'speed' as const,
+      short: copy.step4StageShortSpeed,
+      title: copy.step4Stage2Title,
+      action: copy.step4Stage2ActionDesc,
+      issue: stageIssueText({
+        area: 'speed',
+        locale,
+        score: pillars.speed,
+        loss: losses.speed,
+        pagespeed,
+      }),
+      loss: losses.speed,
+      money: stageMoney(losses.speed),
+      score: pillars.speed,
+      href: pagespeedUrl,
+    },
+    {
+      key: 'security' as const,
+      short: copy.step4StageShortTrust,
+      title: copy.step4Stage3Title,
+      action: copy.step4Stage3ActionDesc,
+      issue: stageIssueText({
+        area: 'security',
+        locale,
+        score: pillars.security,
+        loss: losses.security,
+        pagespeed,
+      }),
+      loss: losses.security,
+      money: stageMoney(losses.security),
+      score: pillars.security,
+    },
+    {
+      key: 'forms' as const,
+      short: copy.step4StageShortForm,
+      title: copy.step4Stage4Title,
+      action: copy.step4Stage4ActionDesc,
+      issue: stageIssueText({
+        area: 'forms',
+        locale,
+        score: pillars.leads,
+        loss: losses.forms,
+        pagespeed,
+      }),
+      loss: losses.forms,
+      money: stageMoney(losses.forms),
+      score: pillars.leads,
+    },
   ] as FunnelStage[]).sort((a, b) => b.loss - a.loss)
   const leakingOnly = stages.filter((s) => s.loss > 0)
   // Same list for "where money goes" and "why": leaking stages only (fallback to all if none).
@@ -1996,7 +2101,15 @@ export function CalcResult({
             className={`grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${techOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
           >
             <div className="min-h-0 overflow-hidden">
-              <TechReport locale={locale} scales={diagnosticScales} domain={domain} overall={overall} approximate={approximate} reportHref={reportHref} />
+              <TechReport
+                locale={locale}
+                scales={diagnosticScales}
+                pagespeed={pagespeed ?? null}
+                domain={domain}
+                overall={overall}
+                approximate={approximate}
+                reportHref={reportHref}
+              />
             </div>
           </div>
         </div>
@@ -2071,10 +2184,76 @@ function ReportSegs({ score, level }: { score: number; level: LightLevel }) {
 
 type TechScale = { key: string; label: string; score: number; loss: number; impact: string }
 
+function cwvCell(device: PsiDeviceSnapshot | null | undefined, key: keyof PsiDeviceSnapshot): string {
+  if (!device) return '—'
+  const v = device[key]
+  if (v == null || v === '') return '—'
+  return String(v)
+}
+
+function CwvTable({ locale, pagespeed }: { locale: string; pagespeed: PagespeedSnapshot }) {
+  const rows: { label: string; key: keyof PsiDeviceSnapshot }[] = [
+    { label: tCalc(copy.step4CwvMetricPerf, locale), key: 'performance' },
+    { label: tCalc(copy.step4CwvMetricA11y, locale), key: 'accessibility' },
+    { label: tCalc(copy.step4CwvMetricBp, locale), key: 'bestPractices' },
+    { label: tCalc(copy.step4CwvMetricSeo, locale), key: 'seo' },
+    { label: tCalc(copy.step4CwvMetricFcp, locale), key: 'fcp' },
+    { label: tCalc(copy.step4CwvMetricLcp, locale), key: 'lcp' },
+    { label: tCalc(copy.step4CwvMetricCls, locale), key: 'cls' },
+    { label: tCalc(copy.step4CwvMetricTbt, locale), key: 'tbt' },
+    { label: tCalc(copy.step4CwvMetricSi, locale), key: 'speedIndex' },
+    { label: tCalc(copy.step4CwvMetricTti, locale), key: 'tti' },
+  ]
+  return (
+    <section className={`${REPORT_CARD} flex flex-col gap-5`}>
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1">
+          <ReportH2>{tCalc(copy.step4CwvTitle, locale)}</ReportH2>
+          <p className="m-0 text-sm leading-[1.5] text-[#6b6254]">{tCalc(copy.step4CwvSub, locale)}</p>
+        </div>
+        <span className={`${REPORT_CHIP} border-[#d6d6d6] bg-white text-[#1e1e1e]`}>{tCalc(copy.step4CwvTag, locale)}</span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[28rem] border-collapse text-start text-sm">
+          <thead>
+            <tr className="border-b border-[#e0e0e0] text-xs uppercase tracking-[0.04em] text-[#64748b]">
+              <th scope="col" className="px-0 py-3 pe-4 font-medium">
+                {tCalc(copy.step4CwvColMetric, locale)}
+              </th>
+              <th scope="col" className="px-2 py-3 font-medium">
+                {tCalc(copy.step4CwvColMobile, locale)}
+              </th>
+              <th scope="col" className="px-2 py-3 font-medium">
+                {tCalc(copy.step4CwvColDesktop, locale)}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.key} className="border-b border-[#f0f0f0] last:border-b-0">
+                <th scope="row" className="px-0 py-3 pe-4 text-start font-medium text-[#1e1e1e]">
+                  {row.label}
+                </th>
+                <td className="px-2 py-3 tabular-nums text-[#1e1e1e]">
+                  <bdi dir="ltr">{cwvCell(pagespeed.mobile, row.key)}</bdi>
+                </td>
+                <td className="px-2 py-3 tabular-nums text-[#1e1e1e]">
+                  <bdi dir="ltr">{cwvCell(pagespeed.desktop, row.key)}</bdi>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
 /** Expanded "technical details", laid out like the audit HTML report: scales, checklist, protocol. */
 function TechReport({
   locale,
   scales,
+  pagespeed,
   domain,
   overall,
   approximate,
@@ -2082,6 +2261,7 @@ function TechReport({
 }: {
   locale: string
   scales: readonly TechScale[]
+  pagespeed: PagespeedSnapshot | null
   domain: string
   overall: number
   approximate: boolean
@@ -2102,6 +2282,7 @@ function TechReport({
     { value: '5', label: tCalc(copy.step4TechAreas, locale), bar: REPORT_LEVEL.yellow.bar },
     { value: domain, label: tCalc(copy.step4TechSite, locale), bar: REPORT_LEVEL.red.bar },
   ]
+  const showCwv = hasPagespeedData(pagespeed)
 
   return (
     <div className="mt-8 flex flex-col gap-4 sm:mt-10 sm:gap-5">
@@ -2112,6 +2293,7 @@ function TechReport({
           <span className="text-xs uppercase tracking-[0.04em] text-[#64748b]">{tCalc(copy.step4TechScalesTag, locale)}</span>
         </div>
         {scales.map((s, i) => {
+          const labelKey = scoreLabelKey(s.score, s.loss)
           const level = lightFor(s.score)
           const last = i === scales.length - 1
           const left = i % 2 === 0
@@ -2127,7 +2309,7 @@ function TechReport({
               {/* Title and status always stacked, so the score row and bars line up across both columns at every width */}
               <div className="flex flex-col items-start gap-2">
                 <h3 className="m-0 text-lg font-medium leading-[1.4] text-[#1e1e1e] lg:text-xl">{s.label}</h3>
-                <span className={`${REPORT_CHIP} ${REPORT_LEVEL[level].chip}`}>{tCalc(copy.levelLabel[level], locale)}</span>
+                <span className={`${REPORT_CHIP} ${REPORT_LEVEL[level].chip}`}>{tCalc(copy.levelLabel[labelKey], locale)}</span>
               </div>
               <div className="flex items-baseline justify-between gap-3">
                 <b className="text-[28px] font-medium leading-none tracking-[-0.02em] text-[#1e1e1e] lg:text-[32px]">
@@ -2147,6 +2329,8 @@ function TechReport({
           )
         })}
       </section>
+
+      {showCwv && pagespeed ? <CwvTable locale={locale} pagespeed={pagespeed} /> : null}
 
       {/* Checklist: filter pills and expandable rows (report "full checklist") */}
       <section className={`${REPORT_CARD} flex flex-col gap-5`}>
@@ -2177,11 +2361,12 @@ function TechReport({
         <div className="flex flex-col gap-2.5">
           {shown.length === 0 ? <p className="m-0 text-base text-[#6b6254]">{tCalc(copy.noItems, locale)}</p> : null}
           {shown.map((s) => {
+            const labelKey = scoreLabelKey(s.score, s.loss)
             const level = lightFor(s.score)
             return (
               <details key={s.key} className="group/row rounded-[10px] border border-[#e0e0e0] bg-white">
                 <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-4 sm:gap-4 sm:px-6 [&::-webkit-details-marker]:hidden">
-                  <span className={`${REPORT_CHIP} shrink-0 ${REPORT_LEVEL[level].chip}`}>{tCalc(copy.levelLabel[level], locale)}</span>
+                  <span className={`${REPORT_CHIP} shrink-0 ${REPORT_LEVEL[level].chip}`}>{tCalc(copy.levelLabel[labelKey], locale)}</span>
                   <span className="min-w-0 flex-1 text-[15px] leading-snug text-[#1e1e1e] sm:text-base">{s.label}</span>
                   <b className="shrink-0 text-lg font-medium tabular-nums tracking-[-0.02em] text-[#1e1e1e]">
                     <bdi>{Math.round(s.score)}</bdi>
