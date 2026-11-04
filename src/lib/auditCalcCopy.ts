@@ -189,7 +189,7 @@ export const auditCalcCopy = {
 
   levelLabel: {
     red: { en: 'Critical', ru: 'Критично', he: 'קריטי' },
-    yellow: { en: 'Needs attention', ru: 'Требует внимания', he: 'דורש תשומת לב' },
+    yellow: { en: 'Attention', ru: 'Внимание', he: 'שימו לב' },
     /** Score ≥80 with attributed loss — good, not perfect. */
     green: { en: 'Good', ru: 'Хорошо', he: 'טוב' },
     /** Score ≥80 and zero loss on that scale — only then «Excellent». */
@@ -1219,11 +1219,14 @@ export const auditCalcCopy = {
   step4StatUpside: { en: 'more inquiries once problems are fixed', ru: 'больше заявок, если устранить проблемы', he: 'יותר פניות אחרי תיקון הבעיות' } satisfies Localized,
   step4StatScore: { en: 'funnel score', ru: 'оценка воронки', he: 'ציון המשפך' } satisfies Localized,
   /** Middle plaque on hero stat tiles (same shape as the score level badge). */
+  /** Short calls on the colour plaques only — not sentences. */
   step4StatBadgeLoss: { en: 'Loss', ru: 'Потеря', he: 'אובדן' } satisfies Localized,
   /** Same word as loss — kept for callers that still reference the clients key. */
   step4StatBadgeClients: { en: 'Loss', ru: 'Потеря', he: 'אובדן' } satisfies Localized,
   step4StatBadgeUpside: { en: 'Gain', ru: 'Прирост', he: 'גידול' } satisfies Localized,
-  step4StatBadgeStages: { en: 'Weak spots', ru: 'Слабые места', he: 'נקודות חולשה' } satisfies Localized,
+  /** Biggest funnel leak tile (red): −N% above, stage name below. */
+  step4StatBadgeLeak: { en: 'Leak', ru: 'Утечка', he: 'דליפה' } satisfies Localized,
+  step4StatBadgeStages: { en: 'Risk', ru: 'Риск', he: 'סיכון' } satisfies Localized,
   step4WhereTitle: { en: 'Where the money leaks', ru: 'Куда уходят деньги', he: 'לאן הכסף דולף' } satisfies Localized,
   step4WhereSub: {
     en: 'Losses by funnel stage, from the biggest to the smallest.',
