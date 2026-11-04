@@ -1,13 +1,12 @@
 # Latest changes
 
-Обновлено: 2026-11-04 (hero tiles uniform badge stack)  
+Обновлено: 2026-11-04 (openReport = free, not full)  
 Статус: В коде; нужен commit/deploy
 
 ---
 
 ## 1. Сделано
-- Hero 4 плитки: единый стек как у score — **крупное значение → цветная плашка → подпись**.
-- Плашки: Потеря / Уходят / Прирост / Хорошо|… / −N% у главной утечки / Утечки.
+- Tech details CTA: `openReport` — «Открыть отчёт Free» (EN/HE: Open Free report).
 
 ## 2. Следующий шаг
-- Commit/push → проверить step 4 hero tiles.
+- Commit/push → проверить кнопку в technical details.

@@ -1367,10 +1367,11 @@ export const auditCalcCopy = {
     ru: 'AI Visibility',
     he: 'נראות AI',
   } satisfies Localized,
+  /** Links to the Free HTML audit (not Pro). Pro is paid / included in the fix sprint. */
   openReport: {
-    en: 'Open the full report',
-    ru: 'Открыть полный отчёт',
-    he: 'לפתיחת הדוח המלא',
+    en: 'Open Free report',
+    ru: 'Открыть отчёт Free',
+    he: 'לפתיחת דוח Free',
   } satisfies Localized,
   scalesApprox: {
     en: 'The audit did not store per-scale scores for this site, so every scale uses the overall score.',
