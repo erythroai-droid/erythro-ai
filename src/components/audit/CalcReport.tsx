@@ -23,6 +23,7 @@ import {
   revenueToSlider,
   scoreLabelKey,
   sliderToRevenue,
+  sprintPriceIls,
   type AuditPillars,
   type LightLevel,
   type ScoreLabelKey,
@@ -1876,10 +1877,6 @@ export function CalcResult({
   const [techOpen, setTechOpen] = useState(false)
   const techId = useId()
   const negligible = breakdown.total < LEAK_NEGLIGIBLE_BELOW
-  const result = computeLeak(breakdown, { mode: 'revenue', monthlyRevenue: revenue ?? 0 })
-  const hasMoney = !negligible && result.monthly > 0
-  const lostClientsRaw = clients ? lostClientsPerMonth(breakdown, clients) : 0
-  const lostClients = !negligible && lostClientsRaw > 0 ? lostClientsRaw : 0
   const areas = areaScores(pillars)
   const overall = Math.round(Object.values(areas).reduce((a, b) => a + b, 0) / 4)
 
@@ -1922,6 +1919,24 @@ export function CalcResult({
       total: targetTotal,
     }
   }, [breakdown, pillars])
+
+  // Sprint quote from the same integer zones the UI lists under «Что исправим»
+  // (raw fractional breakdown can count a 0.3% visibility drip that rounds away on screen).
+  const result = useMemo(() => {
+    const base = computeLeak(breakdown, { mode: 'revenue', monthlyRevenue: revenue ?? 0 })
+    const sprintPrice = sprintPriceIls({
+      speed: losses.speed,
+      forms: losses.forms,
+      visibility: losses.visibility,
+      security: losses.security,
+      total: losses.total,
+    })
+    const paybackDays = base.monthly > 0 ? Math.max(1, Math.ceil(sprintPrice / (base.monthly / 30))) : null
+    return { ...base, sprintPrice, paybackDays }
+  }, [breakdown, losses, revenue])
+  const hasMoney = !negligible && result.monthly > 0
+  const lostClientsRaw = clients ? lostClientsPerMonth(breakdown, clients) : 0
+  const lostClients = !negligible && lostClientsRaw > 0 ? lostClientsRaw : 0
 
   const percent = String(losses.total)
 
