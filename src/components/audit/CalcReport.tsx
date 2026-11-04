@@ -16,7 +16,6 @@ import {
   LEAK_CAPS,
   LEAK_NEGLIGIBLE_BELOW,
   REVENUE_SLIDER,
-  SPRINT_PRICE_ILS,
   computeLeak,
   leakBreakdown,
   lightFor,
@@ -2116,7 +2115,14 @@ export function CalcResult({
       <StageTimeline locale={locale} stages={leakingStages} biggestKey={biggest.key} total={losses.total} />
 
       {/* 3. How we fix it: full-bleed sprint panel, the answer to the loss panel */}
-      <FixSprintHero locale={locale} stages={leakingStages} lostPct={losses.total} paybackDays={hasMoney ? result.paybackDays : null} waHref={waHref} />
+      <FixSprintHero
+        locale={locale}
+        stages={leakingStages}
+        lostPct={losses.total}
+        sprintPrice={result.sprintPrice}
+        paybackDays={hasMoney ? result.paybackDays : null}
+        waHref={waHref}
+      />
 
       {/* 4. Technical details for developers: full-bleed light lilac panel right under the sprint, collapsed by default */}
       <section className="calc-tech-flow ms-[calc(50%-50vw)] -mt-8 w-screen sm:-mt-10">
@@ -2169,7 +2175,7 @@ export function CalcResult({
       </section>
 
       {/* 5. CENTERED WHATSAPP CTA BLOCK */}
-      <CalcCta locale={locale} waHref={waHref} locked={false} showNote={true} />
+      <CalcCta locale={locale} waHref={waHref} locked={false} showNote={true} sprintPrice={result.sprintPrice} />
     </div>
   )
 }
@@ -2569,12 +2575,14 @@ function FixSprintHero({
   locale,
   stages,
   lostPct,
+  sprintPrice,
   paybackDays,
   waHref,
 }: {
   locale: string
   stages: FunnelStage[]
   lostPct: number
+  sprintPrice: number
   paybackDays: number | null
   waHref: string | null
 }) {
@@ -2585,16 +2593,23 @@ function FixSprintHero({
   const backValue = (s: FunnelStage) => (s.money > 0 ? formatIls(s.money, locale) : `${s.loss}%`)
   const backTail = (s: FunnelStage) => tCalc(s.money > 0 ? copy.step4HeroPerMonth : copy.step4FixBackPctTail, locale)
 
+  // Always four plaques: days + calculated price, then upside / payback / issue count / checks.
   // Timeline, price and payback are estimates until agreed with the client: they carry an asterisk (see the footnote)
-  const tiles = [
+  type FixTile = { value: string; label: string; gain: boolean; estimate: boolean }
+  const issueCount = Math.max(1, leaking.length)
+  const tiles: FixTile[] = [
     { value: tCalc(copy.step4FixTitleDays, locale), label: tCalc(copy.step4FixTileDays, locale), gain: false, estimate: true },
+    { value: formatIls(sprintPrice, locale), label: tCalc(copy.step4FixPriceLabel, locale), gain: false, estimate: true },
     upside > 0 ? { value: `+${upside}%`, label: tCalc(copy.step4StatUpside, locale), gain: true, estimate: false } : null,
     paybackDays
       ? { value: fillCalc(tCalc(copy.step4FixPaybackValue, locale), { n: paybackDays }), label: tCalc(copy.step4FixTilePayback, locale), gain: true, estimate: true }
       : null,
     { value: '230+', label: tCalc(copy.step4FixTileChecks, locale), gain: false, estimate: false },
-  ].filter((t): t is { value: string; label: string; gain: boolean; estimate: boolean } => t !== null)
-  const tileCols = tiles.length >= 4 ? 'lg:grid-cols-4' : tiles.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2'
+    { value: String(issueCount), label: tCalc(copy.step4FixTileIssues, locale), gain: false, estimate: false },
+  ]
+    .filter((t): t is FixTile => t !== null)
+    .slice(0, 4)
+  const tileCols = 'lg:grid-cols-4'
   const star = <span aria-hidden className="ms-0.5 align-super text-[0.5em] font-bold opacity-75">*</span>
 
   return (
@@ -2695,7 +2710,7 @@ function FixSprintHero({
               <div className="flex flex-col gap-1.5">
                 <span className="min-h-4 text-xs font-semibold uppercase leading-4 tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotal, locale)}</span>
                 <b className="text-[32px] font-black leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[40px]">
-                  <bdi>{formatIls(SPRINT_PRICE_ILS, locale)}</bdi>
+                  <bdi>{formatIls(sprintPrice, locale)}</bdi>
                   {star}
                 </b>
               </div>
@@ -2740,11 +2755,13 @@ export function CalcCta({
   waHref,
   locked,
   showNote,
+  sprintPrice,
 }: {
   locale: string
   waHref: string | null
   locked: boolean
   showNote: boolean
+  sprintPrice: number
 }) {
   return (
     <>
@@ -2764,7 +2781,7 @@ export function CalcCta({
                 <b className="text-[40px] font-black leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[52px]">
                   <bdi dir="ltr">
                     <span className="me-1 align-[0.3em] text-[0.55em] font-bold">₪</span>
-                    {formatIls(SPRINT_PRICE_ILS, locale).replace('₪', '').trim()}
+                    {formatIls(sprintPrice, locale).replace('₪', '').trim()}
                   </bdi>
                   <span aria-hidden className="ms-0.5 align-super text-[0.45em] font-bold text-white/60">*</span>
                 </b>

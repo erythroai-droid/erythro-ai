@@ -44,8 +44,33 @@ export const LEAK_TOTAL_MAX = 42
 /** Below this total the site is in good shape and the page says so instead of a loss. */
 export const LEAK_NEGLIGIBLE_BELOW = 3
 
-/** Fixed price of the fix sprint, ₪. */
+/** Engineer hour rate used for the fix-sprint quote, ₪. */
+export const ENGINEER_HOUR_ILS = 600
+
+/** Floor for the fix-sprint quote: one engineer hour. */
+export const SPRINT_PRICE_MIN_ILS = ENGINEER_HOUR_ILS
+
+/**
+ * @deprecated Fixed ₪2200 quote — kept for old imports/tests; use `sprintPriceIls`.
+ * Max quote at four full areas is 4 × ENGINEER_HOUR_ILS.
+ */
 export const SPRINT_PRICE_ILS = 2200
+
+const LEAK_AREA_KEYS = ['speed', 'forms', 'visibility', 'security'] as const
+
+/** How many of the four leak areas contribute a non-zero loss. */
+export function leakingAreaCount(breakdown: LeakBreakdown): number {
+  return LEAK_AREA_KEYS.filter((key) => breakdown[key] > 0).length
+}
+
+/**
+ * Fix-sprint quote in ₪: one engineer hour (₪600) per leaking area, minimum one hour.
+ * Proportional to the number of problem areas shown in the sprint, not a flat ₪2200.
+ */
+export function sprintPriceIls(breakdown: LeakBreakdown): number {
+  if (!(breakdown.total > 0)) return SPRINT_PRICE_MIN_ILS
+  return Math.max(SPRINT_PRICE_MIN_ILS, leakingAreaCount(breakdown) * ENGINEER_HOUR_ILS)
+}
 
 export type LightLevel = 'red' | 'yellow' | 'green'
 
@@ -164,13 +189,14 @@ export function computeLeak(breakdown: LeakBreakdown, input: RevenueInput): Leak
   const revenue = monthlyRevenueOf(input)
   const p = breakdown.total / 100
   const monthly = revenue > 0 && p > 0 ? roundMoney((revenue * p) / (1 - p)) : 0
-  const paybackDays = monthly > 0 ? Math.max(1, Math.ceil(SPRINT_PRICE_ILS / (monthly / 30))) : null
+  const sprintPrice = sprintPriceIls(breakdown)
+  const paybackDays = monthly > 0 ? Math.max(1, Math.ceil(sprintPrice / (monthly / 30))) : null
   return {
     revenue,
     monthly,
     yearly: monthly * 12,
     percent: Math.round(breakdown.total * 10) / 10,
-    sprintPrice: SPRINT_PRICE_ILS,
+    sprintPrice,
     paybackDays,
   }
 }
