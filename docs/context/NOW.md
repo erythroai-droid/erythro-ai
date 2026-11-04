@@ -1,14 +1,20 @@
 # Latest changes
 
-Обновлено: 2026-11-04 (Vercel: сняты obsolete audit-calc-*)  
-Статус: ops закрыт
+Обновлено: 2026-11-04 (handoff: Vercel audit-calc + calc sprint price)  
+Статус: calc follow-up — цена от округлённых зон; Vercel ops закрыт
 
 ---
 
-## 1. Vercel misconfigured domains — закрыто
-- Письмо Vercel: `audit-calc-{en,ru,he}.erythro.ai` misconfigured на проекте erythro-ai.
-- Причина: старые имена калькулятора; канон теперь `leak-{en,ru,he}.erythro.ai` (DNS + Vercel OK). У `audit-calc-*` в CF DNS нет записей (NXDOMAIN).
-- **Сделано:** удалены 3 домена из Vercel Project Domains. `leak-*` / audit / diag / pro на месте (14 доменов).
+## 1. Calc LP — сумма исправлений (из main / #380)
+- **Прод:** #380 задеплоен; фикс ₪2200 ушёл.
+- **Баг:** `computeLeak` брал сырой `leakBreakdown` (visibility 0.3% считалась зоной) → ₪1800 при двух пунктах в «Что исправим».
+- **Фикс:** `sprintPrice` / окупаемость от integer `losses` (те же зоны, что на экране). Для report=258 → 2×₪600 = ₪1200.
+- **Следующий шаг:** закоммитить/смержить follow-up.
 
-## 2. og:image на audit-en.erythro.ai — PIT-079 follow-up
-- Без изменений: после деплоя — scrape again / `?v=2` для мессенджеров (см. предыдущую эстафету).
+## 2. Vercel misconfigured domains — закрыто
+- Письмо Vercel: `audit-calc-{en,ru,he}.erythro.ai` misconfigured.
+- Старые имена; канон — `leak-{en,ru,he}.erythro.ai` (DNS + Vercel OK). У `audit-calc-*` NXDOMAIN.
+- **Сделано:** 3 домена удалены из Vercel Project Domains. `leak-*` / audit / diag / pro на месте.
+
+## 3. og:image audit LP — PIT-079
+- После деплоя: scrape again / `?v=2` для мессенджеров.
