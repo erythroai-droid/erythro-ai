@@ -1281,18 +1281,22 @@ function LossHero({
   const badgeLoss = { bg: '#e52421', text: '#ffffff' } as const
   const badgeGain = { bg: '#22bf16', text: '#ffffff' } as const
   const badgeWarn = { bg: '#ff7900', text: '#ffffff' } as const
-  /** 0 green · 1 orange · 2 red — LTR reads left→right so problems land last; HE mirrors via dir=rtl. */
-  type StatSeverity = 0 | 1 | 2
-  const scoreSeverity: StatSeverity =
-    scoreLevel === 'red' ? 2 : scoreLevel === 'yellow' ? 1 : 0
+  /**
+   * Tone drives LTR order: green → orange → red (problems last).
+   * Score joins the group of its badge colour. HE mirrors via dir=rtl.
+   */
+  type StatTone = 'gain' | 'warn' | 'loss'
+  const TONE_RANK: Record<StatTone, number> = { gain: 0, warn: 1, loss: 2 }
+  const scoreTone: StatTone =
+    scoreLevel === 'red' ? 'loss' : scoreLevel === 'yellow' ? 'warn' : 'gain'
   type StatTile = {
     value: string
     label: string
     red: boolean
-    severity: StatSeverity
+    tone: StatTone
     badge: { bg: string; text: string; caption: string }
   }
-  // Always four tiles, same stack: big value → colour plaque → small label (score card is the template).
+  // Always four tiles, same stack: big value → short colour plaque → small label.
   const stats: StatTile[] = (
     [
       money
@@ -1300,7 +1304,7 @@ function LossHero({
             value: formatIls(yearly, locale),
             label: tCalc(copy.step4StatYear, locale),
             red: true,
-            severity: 2 as StatSeverity,
+            tone: 'loss' as StatTone,
             badge: { ...badgeLoss, caption: tCalc(copy.step4StatBadgeLoss, locale) },
           }
         : null,
@@ -1309,7 +1313,7 @@ function LossHero({
             value: `≈ ${lostClients}`,
             label: tCalc(copy.step4StatClients, locale),
             red: true,
-            severity: 2 as StatSeverity,
+            tone: 'loss' as StatTone,
             badge: { ...badgeLoss, caption: tCalc(copy.step4StatBadgeLoss, locale) },
           }
         : null,
@@ -1318,7 +1322,7 @@ function LossHero({
             value: `+${upside}%`,
             label: tCalc(copy.step4StatUpside, locale),
             red: false,
-            severity: 0 as StatSeverity,
+            tone: 'gain' as StatTone,
             badge: { ...badgeGain, caption: tCalc(copy.step4StatBadgeUpside, locale) },
           }
         : null,
@@ -1326,33 +1330,34 @@ function LossHero({
         value: `${score}/100`,
         label: tCalc(copy.step4StatScore, locale),
         red: scoreLevel === 'red',
-        severity: scoreSeverity,
+        tone: scoreTone,
         badge: {
           ...scoreLevelFill[scoreLevel],
           caption: tCalc(copy.levelLabel[scoreLevel], locale),
         },
       },
+      // Biggest leak: −N% on top, short «Leak» plaque, stage name below (e.g. Speed).
       top[0]
         ? {
-            value: tCalc(top[0].short, locale),
-            label: tCalc(copy.step4BiggestLeak, locale),
+            value: stageLoss(top[0], locale),
+            label: tCalc(top[0].short, locale),
             red: true,
-            severity: 2 as StatSeverity,
-            badge: { ...badgeLoss, caption: tCalc(copy.step4StatBadgeLoss, locale) },
+            tone: 'loss' as StatTone,
+            badge: { ...badgeLoss, caption: tCalc(copy.step4StatBadgeLeak, locale) },
           }
         : null,
       {
         value: `${leaking.length} / ${stages.length}`,
         label: tCalc(copy.step4StatLeakStages, locale),
         red: false,
-        severity: 1 as StatSeverity,
+        tone: 'warn' as StatTone,
         badge: { ...badgeWarn, caption: tCalc(copy.step4StatBadgeStages, locale) },
       },
     ] as Array<StatTile | null>
   )
     .filter((s): s is StatTile => s !== null)
     .slice(0, 4)
-    .sort((a, b) => a.severity - b.severity)
+    .sort((a, b) => TONE_RANK[a.tone] - TONE_RANK[b.tone])
 
   // Floating "scroll down" hint: shown on the first screen, gone once the visitor starts scrolling.
   const [hint, setHint] = useState(true)
