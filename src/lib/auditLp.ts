@@ -5,7 +5,7 @@ import { normalizeHost } from '@/lib/vercelHost'
 export const AUDIT_LP_LOCALES = ['en', 'ru', 'he'] as const
 export type AuditLpLocale = (typeof AUDIT_LP_LOCALES)[number]
 
-export const AUDIT_LP_PRODUCTS = ['free', 'pro', 'diagnostic'] as const
+export const AUDIT_LP_PRODUCTS = ['free', 'pro', 'diagnostic', 'calc'] as const
 export type AuditLpProduct = (typeof AUDIT_LP_PRODUCTS)[number]
 
 export type AuditLpTarget = {
@@ -45,6 +45,12 @@ export const AUDIT_LP_HOSTS_BY_PRODUCT: Record<
     ru: 'audit-diag-ru.erythro.ai',
     he: 'audit-diag-he.erythro.ai',
   },
+  // Revenue-leak calculator LP: free audit first, then the loss estimate.
+  calc: {
+    en: 'leak-en.erythro.ai',
+    ru: 'leak-ru.erythro.ai',
+    he: 'leak-he.erythro.ai',
+  },
 }
 
 /** Free LP hosts — kept for callers that only mean the express/free ads LP. */
@@ -56,6 +62,7 @@ export const AUDIT_LP_ALL_HOSTS: readonly string[] = [
   ...Object.values(AUDIT_LP_HOSTS_BY_PRODUCT.free),
   ...Object.values(AUDIT_LP_HOSTS_BY_PRODUCT.pro),
   ...Object.values(AUDIT_LP_HOSTS_BY_PRODUCT.diagnostic),
+  ...Object.values(AUDIT_LP_HOSTS_BY_PRODUCT.calc),
   'audit-rus.erythro.ai', // unused free RU alias
 ]
 
@@ -93,6 +100,44 @@ export function isAuditLpHost(host: string | null | undefined): boolean {
   return auditLpTargetFromHost(host) != null
 }
 
+/** CMS `leadChannel` for free-audit intake (ads LP vs leak calculator vs organic). */
+export type AuditLeadChannel = 'organic' | 'meta_ads' | 'leak_calc'
+
+export function auditLeadChannelFromHost(host: string | null | undefined): AuditLeadChannel {
+  const target = auditLpTargetFromHost(host)
+  if (!target) return 'organic'
+  if (target.product === 'calc') return 'leak_calc'
+  return 'meta_ads'
+}
+
+/**
+ * Client email / reopen URL for the revenue-leak calculator LP (step 4 results).
+ * Not the A44 `/audit/report/…` page — that stays for free ads LP and organic.
+ */
+export function buildLeakCalcResultsUrl(input: {
+  locale: AuditLpLocale | string
+  submissionId: number | string
+  token: string
+  revenue?: number | null
+  clients?: number | null
+}): string {
+  const locale: AuditLpLocale =
+    input.locale === 'ru' || input.locale === 'he' || input.locale === 'en'
+      ? input.locale
+      : 'en'
+  const host = AUDIT_LP_HOSTS_BY_PRODUCT.calc[locale]
+  const u = new URL(`https://${host}/`)
+  u.searchParams.set('report', String(input.submissionId))
+  u.searchParams.set('k', input.token)
+  if (typeof input.revenue === 'number' && Number.isFinite(input.revenue) && input.revenue > 0) {
+    u.searchParams.set('rev', String(Math.round(input.revenue)))
+  }
+  if (typeof input.clients === 'number' && Number.isFinite(input.clients) && input.clients > 0) {
+    u.searchParams.set('clients', String(Math.round(input.clients)))
+  }
+  return u.toString()
+}
+
 /** Internal App Router path after middleware rewrite. */
 export function auditLpInternalPath(product: AuditLpProduct, locale: AuditLpLocale): string {
   if (product === 'free') return `/lp/audit/${locale}`
@@ -105,7 +150,7 @@ export function auditLpInternalPath(product: AuditLpProduct, locale: AuditLpLoca
  */
 export function auditLpTargetFromPathname(pathname: string): AuditLpTarget | null {
   const clean = pathname.split('?')[0] || '/'
-  const match = clean.match(/^\/lp\/audit\/(?:(pro|diagnostic)\/)?(en|ru|he)(?:\/|$)/)
+  const match = clean.match(/^\/lp\/audit\/(?:(pro|diagnostic|calc)\/)?(en|ru|he)(?:\/|$)/)
   if (!match?.[2] || !isAuditLpLocale(match[2])) return null
   const product = match[1] && isAuditLpProduct(match[1]) ? match[1] : 'free'
   return { product, locale: match[2] }
@@ -154,7 +199,7 @@ export function auditLpHrefForLocale(
 }
 
 /** CMS / order plan slug for paid LPs. */
-export function auditLpPlanSlug(product: Exclude<AuditLpProduct, 'free'>): string {
+export function auditLpPlanSlug(product: Exclude<AuditLpProduct, 'free' | 'calc'>): string {
   return product === 'pro' ? 'audit-pro' : 'audit-diagnostic'
 }
 
@@ -755,6 +800,7 @@ export const auditLpProCopy = {
 export function auditLpCopyFor(product: AuditLpProduct): AuditLpCopyBundle {
   if (product === 'pro') return auditLpProCopy
   if (product === 'diagnostic') return auditLpDiagCopy
+  // calc: page copy lives in auditCalcCopy.ts; shared chrome (theme, home link) comes from the free bundle
   return auditLpCopy
 }
 

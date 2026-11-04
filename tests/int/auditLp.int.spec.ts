@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   AUDIT_LP_HOST_BY_LOCALE,
   AUDIT_LP_HOSTS_BY_PRODUCT,
+  auditLeadChannelFromHost,
+  buildLeakCalcResultsUrl,
   auditLpCanonicalUrl,
   auditLpInternalPath,
   auditLpLocaleFromHost,
@@ -39,6 +41,23 @@ describe('audit LP host / path lock', () => {
     })
     expect(AUDIT_LP_HOSTS_BY_PRODUCT.pro.ru).toBe('audit-pro-ru.erythro.ai')
     expect(AUDIT_LP_HOSTS_BY_PRODUCT.diagnostic.en).toBe('audit-diag-en.erythro.ai')
+    expect(AUDIT_LP_HOSTS_BY_PRODUCT.calc.ru).toBe('leak-ru.erythro.ai')
+    expect(auditLpTargetFromHost('leak-en.erythro.ai')).toEqual({
+      product: 'calc',
+      locale: 'en',
+    })
+    expect(auditLeadChannelFromHost('leak-ru.erythro.ai')).toBe('leak_calc')
+    expect(auditLeadChannelFromHost('audit-en.erythro.ai')).toBe('meta_ads')
+    expect(auditLeadChannelFromHost('erythro.ai')).toBe('organic')
+    expect(
+      buildLeakCalcResultsUrl({
+        locale: 'ru',
+        submissionId: 42,
+        token: 'abc',
+        revenue: 50_000,
+        clients: 120,
+      }),
+    ).toBe('https://leak-ru.erythro.ai/?report=42&k=abc&rev=50000&clients=120')
   })
 
   it('locks locale from /lp/audit/{locale} and paid product paths', () => {
@@ -51,6 +70,10 @@ describe('audit LP host / path lock', () => {
     expect(auditLpTargetFromPathname('/lp/audit/diagnostic/ru')).toEqual({
       product: 'diagnostic',
       locale: 'ru',
+    })
+    expect(auditLpTargetFromPathname('/lp/audit/calc/he')).toEqual({
+      product: 'calc',
+      locale: 'he',
     })
     expect(auditLpLocaleFromPathname('/audit')).toBeNull()
     expect(auditLpTargetFromPathname('/lp/audit/pro')).toBeNull()

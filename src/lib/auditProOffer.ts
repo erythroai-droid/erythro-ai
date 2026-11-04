@@ -56,7 +56,7 @@ const SITE_URL = resolveSiteUrl()
 /** Paid funnel plans that mean “already bought / started checkout” — skip free promo. */
 export const PAID_AUDIT_FUNNEL_SLUGS = PAID_AUDIT_FUNNEL_PLAN_SLUGS
 
-export type ProOfferLeadChannel = 'organic' | 'meta_ads'
+export type ProOfferLeadChannel = 'organic' | 'meta_ads' | 'leak_calc'
 export type ProOfferStatus =
   | 'none'
   | 'scheduled'
@@ -1281,6 +1281,11 @@ export async function trySendAuditProOffer(
     return { ok: false, reason: 'not_found' }
   }
 
+  if (doc.leadChannel === 'leak_calc') {
+    await patchProOfferFieldsSql(payload, submissionId, { proOfferStatus: 'skipped' })
+    return { ok: true, status: 'skipped', reason: 'leak_calculator' }
+  }
+
   const status = (doc.proOfferStatus as ProOfferStatus | null) || 'none'
   if (status === 'sent' || status === 'nudge_sent' || status === 'reminder_sent') {
     return { ok: true, status: 'already_sent' }
@@ -1707,6 +1712,7 @@ export async function sendDueAuditProOffers(limit = 20): Promise<{
     where: {
       and: [
         { source: { equals: 'audit' } },
+        { leadChannel: { not_equals: 'leak_calc' } },
         { proOfferStatus: { equals: 'scheduled' } },
         { proOfferDueAt: { less_than_equal: nowIso } },
         { auditStatus: { equals: 'report_sent' } },
@@ -1744,6 +1750,7 @@ export async function sendDueAuditProOfferNudges(limit = 20): Promise<{
     where: {
       and: [
         { source: { equals: 'audit' } },
+        { leadChannel: { not_equals: 'leak_calc' } },
         { proOfferStatus: { equals: 'sent' } },
         { proOfferNudgeDueAt: { less_than_equal: nowIso } },
         {
@@ -1782,6 +1789,7 @@ export async function sendDueAuditProOfferReminders(limit = 20): Promise<{
     where: {
       and: [
         { source: { equals: 'audit' } },
+        { leadChannel: { not_equals: 'leak_calc' } },
         { proOfferStatus: { in: ['sent', 'nudge_sent'] } },
         { proOfferReminderDueAt: { less_than_equal: nowIso } },
         {

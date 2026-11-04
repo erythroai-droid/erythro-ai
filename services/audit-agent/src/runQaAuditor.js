@@ -21,6 +21,87 @@ export function planToTier(planSlug) {
   return { tier: 'FREE', folder: 'free', pageCap: 1 }
 }
 
+/**
+ * Scorecard keys written by AuditCollector.calculateExecutiveScorecard → short names.
+ * Returns undefined unless all five scales are numbers, so partial data is never stored.
+ * @param {Record<string, unknown>} card
+ */
+export function pickPillars(card) {
+  const map = {
+    speed: card?.speed_mobile_ux,
+    leads: card?.lead_gen_forms,
+    seo: card?.seo_visibility,
+    security: card?.security_stability,
+    ai: card?.ai_visibility,
+  }
+  const out = {}
+  for (const [key, value] of Object.entries(map)) {
+    const n = Number(value)
+    if (value == null || !Number.isFinite(n)) return undefined
+    out[key] = Math.round(Math.min(100, Math.max(0, n)))
+  }
+  return out
+}
+
+/**
+ * Compact PageSpeed / Lighthouse snapshot for the leak calculator (CWV table + why copy).
+ * Reads `pagespeed_insights` from audit_data.json. Undefined when neither device succeeded.
+ * @param {Record<string, unknown>} raw
+ */
+export function pickPagespeed(raw) {
+  const psi = raw?.pagespeed_insights
+  if (!psi || typeof psi !== 'object') return undefined
+
+  const metricDisplay = (metrics, key) => {
+    if (!metrics || typeof metrics !== 'object') return null
+    const info = metrics[key]
+    if (info == null) return null
+    if (typeof info === 'string') {
+      const t = info.trim()
+      return t || null
+    }
+    if (typeof info === 'object') {
+      const display = info.displayValue != null ? String(info.displayValue).trim() : ''
+      if (display) return display.replace(/\s+/g, ' ')
+      if (info.value != null) {
+        const v = String(info.value).trim()
+        return v || null
+      }
+    }
+    return null
+  }
+
+  const asScore = (v) => {
+    const n = Number(v)
+    return Number.isFinite(n) ? Math.round(Math.min(100, Math.max(0, n))) : null
+  }
+
+  const pickDevice = (block) => {
+    if (!block || typeof block !== 'object') return null
+    if (block.status != null && String(block.status) !== 'SUCCESS') return null
+    const scores = block.scores && typeof block.scores === 'object' ? block.scores : {}
+    const metrics = block.metrics && typeof block.metrics === 'object' ? block.metrics : {}
+    const out = {
+      performance: asScore(scores.performance),
+      accessibility: asScore(scores.accessibility),
+      bestPractices: asScore(scores.best_practices),
+      seo: asScore(scores.seo),
+      fcp: metricDisplay(metrics, 'FCP'),
+      lcp: metricDisplay(metrics, 'LCP'),
+      cls: metricDisplay(metrics, 'CLS'),
+      tbt: metricDisplay(metrics, 'TBT'),
+      speedIndex: metricDisplay(metrics, 'Speed Index'),
+      tti: metricDisplay(metrics, 'TTI'),
+    }
+    return Object.values(out).some((v) => v != null && v !== '') ? out : null
+  }
+
+  const mobile = pickDevice(psi.mobile)
+  const desktop = pickDevice(psi.desktop)
+  if (!mobile && !desktop) return undefined
+  return { mobile: mobile || null, desktop: desktop || null }
+}
+
 /** Paid commercial packs email a PDF; Free is HTML-only. */
 export function planAttachesPdf(planSlug) {
   const { tier } = planToTier(planSlug)
@@ -91,7 +172,10 @@ export async function runQaAuditor(input) {
       overallScore: score,
       targetUrl: raw.target_url || targetUrl,
       timestamp: raw.timestamp || null,
-      scales: card.scales || card.pillars || undefined,
+      // Five scorecard scales (0–100); read by the calculator LP via /api/audit/report/[id]
+      pillars: pickPillars(card),
+      // Lighthouse mobile+desktop for CWV table / why-copy on the leak LP
+      pagespeed: pickPagespeed(raw),
       detectedTechnologies,
     }
   } catch (err) {

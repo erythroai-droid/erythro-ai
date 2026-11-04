@@ -2187,6 +2187,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-155 — `/api/audit/report/[id]` returns 500 when the submission id is missing
+
+**Tags:** `audit`, `payload`, `api`, `leak-lp`, `deep-link`
+**Seen:** 2026-11-03 — `GET /api/audit/report/1?k=…` on leak-ru / erythro.ai → `{"message":"Server error"}` (500); LP deep-link stayed on «Открываем результаты…»
+
+**Symptom:** Poll never reaches 404 for a bad/missing id. Client keeps retrying; email deep-link looks stuck.
+
+**Cause:** `payload.findByID` throws Not Found (status 404) for missing rows. `findAuditSubmission` did not catch it; the route’s `catch` mapped every throw to HTTP 500. The LP only stops on 400/404.
+
+**Fix:** In `auditReportLoad.findAuditSubmission`, catch Not Found / status 404 and return `null` so the route responds 404. Leak deep-link: stage `opening` → immediate fetch → `report_sent` = step 4 (do not open CalcWaiting first).
+
+**Prevent:** Never let Payload Not Found bubble as 500 on public report status endpoints. Client polls must treat 404 as terminal.
+
+---
+
 ## PIT-153 — Top-3 ordered by internal weight, GA4 shown with two statuses, "1." in the accessibility card (MI-002, MI-006, MI-011)
 
 **Tags:** `audit`, `render-v2`, `top-3`, `status`, `wording`
@@ -2678,3 +2693,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Per-letter spans in RTL text: wrap Latin/digit runs in a direction:ltr box (appendGlyphs), or they read mirrored (PIT-152)
 - [ ] Top-3 and the plan follow the status the card shows (`top_candidates` + `sevIdx`); a finding takes its status from its checklist row (PIT-153)
 - [ ] Home pin + lead-in: upstream `pinSpacing: false` end must cover next section’s `160vh` lead-in + overlay (`+=260%`, PIT-154)
+- [ ] `/api/audit/report/[id]`: Payload missing id → 404 not 500 (`findAuditSubmission` catches Not Found, PIT-155)

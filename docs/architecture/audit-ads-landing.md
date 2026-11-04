@@ -2,7 +2,7 @@
 
 Отдельные посадочные для Google Ads / Meta с **жёстко зафиксированным** языком UI. Не путать с `/audit` (там язык из cookie / переключателя).
 
-Три продукта: **Free** (экспресс), **Diagnostic** (₪99), **Pro** (₪490). UI-шелл общий (`AuditLpClient` + `product`).
+Четыре продукта: **Free** (экспресс), **Diagnostic** (₪99), **Pro** (₪490), **Calc** (калькулятор утечек → free-аудит). UI-шелл общий (`AuditLpClient` + `product`); calc — отдельный UI (`AuditCalcClient`).
 
 ## Хосты (Final URL)
 
@@ -30,11 +30,23 @@
 | `https://audit-pro-ru.erythro.ai/` | `ru` | `/lp/audit/pro/ru` |
 | `https://audit-pro-he.erythro.ai/` | `he` | `/lp/audit/pro/he` |
 
-DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → Domains: все девять.
+### Calc (revenue-leak calculator)
+
+| Host | Locale | Internal route |
+|------|--------|----------------|
+| `https://leak-en.erythro.ai/` | `en` | `/lp/audit/calc/en` |
+| `https://leak-ru.erythro.ai/` | `ru` | `/lp/audit/calc/ru` |
+| `https://leak-he.erythro.ai/` | `he` | `/lp/audit/calc/he` |
+
+**Admin / CRM:** заявки с `leak-*` пишутся как `source=audit` + `leadChannel=leak_calc` (воркер тот же). В сайдбаре Payload — отдельный список **Leak Calculator**; **AI Audit Orders** их не показывает. Staff-письмо: subject `Erythro.ai leak calculator…`. Pro/Diagnostic upsell-письма для leak **не** шлются (`proOfferStatus=skipped`) — допродажи только через WhatsApp. Тариф один: free.
+
+**Client report email (leak):** ссылка не на `/audit/report/…`, а на шаг 4 калькулятора: `https://leak-{locale}.erythro.ai/?report={id}&k={token}` (+ опционально `rev` / `clients` из шага 2). LP при открытии поднимает waiting→ready (CalcResult).
+
+DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → Domains: все двенадцать.
 
 Публичный RU free-хост — **`audit-ru`**. Label `audit-rus` в коде только как alias middleware (DNS на него не публиковался → NXDOMAIN).
 
-Парсинг хоста: `audit-pro-*` / `audit-diag-*` **до** короткого `audit-*` (`src/lib/auditLp.ts`).
+Парсинг хоста: exact map в `AUDIT_LP_HOSTS_BY_PRODUCT` (`src/lib/auditLp.ts`); product `calc` — отдельный ключ.
 
 ## Почему не cookie
 
@@ -70,13 +82,14 @@ Paid: редирект на hosted Grow; лаборатория стартует
 - Free: `/lp/audit/ru` (и `en` / `he`)
 - Pro: `/lp/audit/pro/ru`
 - Diagnostic: `/lp/audit/diagnostic/he`
+- Calc: `/lp/audit/calc/ru`
 
 Path lock в bootstrap + `lockedLocale`.
 
 ## Деплой checklist
 
-1. Domains в Vercel + DNS (9 хостов).
-2. **Cloudflare Turnstile → Widget → Domains:** все `audit-*.erythro.ai` (free + pro + diag). Без этого виджет не выдаёт токен / siteverify падает — форма «не работает».
+1. Domains в Vercel + DNS (12 хостов: free + pro + diag + calc).
+2. **Cloudflare Turnstile → Widget → Domains:** все `audit-*.erythro.ai` (free + pro + diag + calc). Без этого виджет не выдаёт токен / siteverify падает — форма «не работает».
 3. `TURNSTILE_HOSTNAMES` на Vercel: код сам подмешивает LP-хосты (`AUDIT_LP_ALL_HOSTS`); в env достаточно apex + www.
 4. Ads Final URL = нужный субдомен продукта + языка.
 5. Tag Assistant на субдомене после «Принять» cookie.

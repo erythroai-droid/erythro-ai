@@ -16,7 +16,11 @@ import { isContactHoneypotTriggered } from '@/lib/contactHoneypot'
 import { guardContactSubmission } from '@/lib/contactSubmissionGuard'
 import { triggerAuditAgent } from '@/lib/auditAgentTrigger'
 import { checkFreeAuditCooldown, isAuditIntakeLimitsDisabled } from '@/lib/auditRateLimit'
-import { AUDIT_LP_TURNSTILE_ENABLED, isAuditLpHost } from '@/lib/auditLp'
+import {
+  AUDIT_LP_TURNSTILE_ENABLED,
+  auditLeadChannelFromHost,
+  isAuditLpHost,
+} from '@/lib/auditLp'
 import { buildAuditReportPath } from '@/lib/auditReport'
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
 import {
@@ -101,6 +105,8 @@ export async function POST(request: NextRequest) {
     planSlug,
     planTotal,
     auditStatus,
+    calcRevenue,
+    calcClients,
   } = guarded.data
 
   try {
@@ -136,8 +142,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const leadChannel =
-      source === 'audit' && requestFromAuditLp ? ('meta_ads' as const) : ('organic' as const)
+    const host = requestHost(request.headers)
+    const leadChannel = source === 'audit' ? auditLeadChannelFromHost(host) : null
+    const isLeakCalc = leadChannel === 'leak_calc'
 
     const created = await payload.create({
       collection: 'contact-submissions',
@@ -156,8 +163,17 @@ export async function POST(request: NextRequest) {
         ...(source === 'audit'
           ? {
               auditStatus: auditStatus || 'new',
-              leadChannel,
-              proOfferStatus: 'none',
+              leadChannel: leadChannel ?? 'organic',
+              // Leak LP: free check only — no Pro/Diagnostic upsell emails (WhatsApp follow-up).
+              proOfferStatus: isLeakCalc ? 'skipped' : 'none',
+              ...(isLeakCalc && (calcRevenue != null || calcClients != null)
+                ? {
+                    auditSummary: {
+                      ...(calcRevenue != null ? { calcRevenue } : {}),
+                      ...(calcClients != null ? { calcClients } : {}),
+                    },
+                  }
+                : {}),
             }
           : {}),
       },
@@ -183,6 +199,7 @@ export async function POST(request: NextRequest) {
       planSlug,
       planTotal,
       submissionId: created.id,
+      ...(leadChannel ? { leadChannel } : {}),
     })
     if (!mailed.sent) {
       console.error('[api/contact] saved submission but email was not sent:', mailed.reason)

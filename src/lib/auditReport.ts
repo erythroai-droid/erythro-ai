@@ -1,4 +1,6 @@
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
+import type { AuditPillars } from '@/lib/revenueLeak'
+import type { PagespeedSnapshot } from '@/lib/pagespeedSnapshot'
 
 export type AuditReportStatus = 'new' | 'in_progress' | 'report_sent' | 'failed'
 
@@ -8,6 +10,10 @@ export type AuditReportPublicPayload = {
   orderId: string
   status: AuditReportStatus
   auditScore: number | null
+  /** Five scorecard scales for the calculator LP; null for audits made before the worker stored them. */
+  pillars: AuditPillars | null
+  /** Lighthouse mobile+desktop snapshot; null for audits before the worker stored pagespeed. */
+  pagespeed: PagespeedSnapshot | null
   reportUrl: string | null
   /** @deprecated Report opens as full page via readyHtmlUrl; kept null for older clients */
   htmlPreview: string | null

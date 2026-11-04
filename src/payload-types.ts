@@ -797,9 +797,9 @@ export interface ContactSubmission {
    */
   source?: ('order' | 'audit' | 'contact') | null;
   /**
-   * Traffic attribution: meta_ads when submitted from audit-*.erythro.ai ads LP
+   * Traffic: organic=/audit; meta_ads=audit-*.erythro.ai; leak_calc=leak-*.erythro.ai
    */
-  leadChannel?: ('organic' | 'meta_ads') | null;
+  leadChannel?: ('organic' | 'meta_ads' | 'leak_calc') | null;
   /**
    * Site language the visitor used
    */

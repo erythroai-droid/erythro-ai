@@ -1,43 +1,68 @@
 import React from 'react'
 import type { ServerProps } from 'payload'
-import {
-  CONTACT_SUBMISSION_SOURCES,
-  submissionListHref,
-  type ContactSubmissionSourceId,
-} from '@/lib/contactSubmissionSources'
+import { SUBMISSION_NAV_LINKS, type SubmissionNavId } from '@/lib/contactSubmissionSources'
 
 /**
- * Dashboard card: submission counts per intake channel + quick links.
+ * Dashboard card: submission counts per sidebar channel + quick links.
+ * Leak calculator is source=audit + leadChannel=leak_calc (separate from AI Audit Orders).
  */
 export const SubmissionsOverview: React.FC<ServerProps> = async ({ payload, user }) => {
   if (!user) return null
 
-  const counts: Record<ContactSubmissionSourceId, number> = {
+  const counts: Record<SubmissionNavId, number> = {
     contact: 0,
     order: 0,
     audit: 0,
+    leak: 0,
   }
 
   try {
-    const results = await Promise.all(
-      CONTACT_SUBMISSION_SOURCES.map((source) =>
-        payload.count({
-          collection: 'contact-submissions',
-          where: { source: { equals: source.id } },
-          user,
-          overrideAccess: false,
-        }),
-      ),
-    )
-    CONTACT_SUBMISSION_SOURCES.forEach((source, i) => {
-      counts[source.id] = results[i]?.totalDocs ?? 0
-    })
+    const [order, contact, audit, leak] = await Promise.all([
+      payload.count({
+        collection: 'contact-submissions',
+        where: { source: { equals: 'order' } },
+        user,
+        overrideAccess: false,
+      }),
+      payload.count({
+        collection: 'contact-submissions',
+        where: { source: { equals: 'contact' } },
+        user,
+        overrideAccess: false,
+      }),
+      payload.count({
+        collection: 'contact-submissions',
+        where: {
+          and: [
+            { source: { equals: 'audit' } },
+            { leadChannel: { not_equals: 'leak_calc' } },
+          ],
+        },
+        user,
+        overrideAccess: false,
+      }),
+      payload.count({
+        collection: 'contact-submissions',
+        where: {
+          and: [
+            { source: { equals: 'audit' } },
+            { leadChannel: { equals: 'leak_calc' } },
+          ],
+        },
+        user,
+        overrideAccess: false,
+      }),
+    ])
+    counts.order = order?.totalDocs ?? 0
+    counts.contact = contact?.totalDocs ?? 0
+    counts.audit = audit?.totalDocs ?? 0
+    counts.leak = leak?.totalDocs ?? 0
   } catch (err) {
     console.error('[SubmissionsOverview] count failed:', err)
     return null
   }
 
-  const total = counts.contact + counts.order + counts.audit
+  const total = counts.contact + counts.order + counts.audit + counts.leak
 
   return (
     <div
@@ -70,14 +95,14 @@ export const SubmissionsOverview: React.FC<ServerProps> = async ({ payload, user
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, minmax(0, 118px))',
+          gridTemplateColumns: 'repeat(4, minmax(0, 118px))',
           gap: 8,
         }}
       >
-        {CONTACT_SUBMISSION_SOURCES.map((source) => (
+        {SUBMISSION_NAV_LINKS.map((link) => (
           <a
-            key={source.id}
-            href={submissionListHref(source.id)}
+            key={link.id}
+            href={link.href}
             style={{
               display: 'block',
               padding: '10px 12px',
@@ -89,10 +114,10 @@ export const SubmissionsOverview: React.FC<ServerProps> = async ({ payload, user
             }}
           >
             <div style={{ fontSize: 11, color: 'var(--theme-elevation-600)' }}>
-              {source.navLabel}
+              {link.navLabel}
             </div>
             <div style={{ marginTop: 4, fontSize: 22, fontWeight: 700 }}>
-              {counts[source.id]}
+              {counts[link.id]}
             </div>
           </a>
         ))}
