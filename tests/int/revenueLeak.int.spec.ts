@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  ENGINEER_HOUR_ILS,
   LEAK_TOTAL_MAX,
-  SPRINT_PRICE_ILS,
+  SPRINT_PRICE_MIN_ILS,
   computeLeak,
   leakBreakdown,
+  leakingAreaCount,
   lightFor,
   monthlyRevenueOf,
   parseMoneyInput,
@@ -11,6 +13,7 @@ import {
   pillarsFromAuditSummary,
   pillarsFromOverall,
   scoreLabelKey,
+  sprintPriceIls,
 } from '@/lib/revenueLeak'
 
 describe('leakBreakdown', () => {
@@ -152,19 +155,30 @@ describe('monthlyRevenueOf', () => {
   })
 })
 
+describe('sprintPriceIls', () => {
+  it('charges one engineer hour per leaking area, with a one-hour floor', () => {
+    expect(sprintPriceIls({ speed: 0, forms: 0, visibility: 0, security: 0, total: 0 })).toBe(SPRINT_PRICE_MIN_ILS)
+    expect(sprintPriceIls({ speed: 5, forms: 0, visibility: 0, security: 0, total: 5 })).toBe(ENGINEER_HOUR_ILS)
+    expect(sprintPriceIls({ speed: 5, forms: 3, visibility: 0, security: 0, total: 8 })).toBe(2 * ENGINEER_HOUR_ILS)
+    expect(sprintPriceIls({ speed: 5, forms: 3, visibility: 2, security: 1, total: 11 })).toBe(4 * ENGINEER_HOUR_ILS)
+  })
+
+  it('counts only areas with a positive loss', () => {
+    expect(leakingAreaCount({ speed: 4, forms: 0, visibility: 1, security: 0, total: 5 })).toBe(2)
+  })
+})
+
 describe('computeLeak', () => {
   it('applies revenue × p / (1 − p)', () => {
-    // 20% lost → loss is a quarter of today's revenue
-    const result = computeLeak(
-      { speed: 0, forms: 0, visibility: 0, security: 0, total: 20 },
-      { mode: 'revenue', monthlyRevenue: 28000 },
-    )
+    // 20% lost → loss is a quarter of today's revenue; one area → ₪600 sprint
+    const breakdown = { speed: 20, forms: 0, visibility: 0, security: 0, total: 20 }
+    const result = computeLeak(breakdown, { mode: 'revenue', monthlyRevenue: 28000 })
     expect(result.monthly).toBe(7000)
     expect(result.yearly).toBe(84000)
     expect(result.percent).toBe(20)
-    expect(result.sprintPrice).toBe(SPRINT_PRICE_ILS)
-    // 2200 / (7000 / 30) = 9.43 → 10 days
-    expect(result.paybackDays).toBe(10)
+    expect(result.sprintPrice).toBe(ENGINEER_HOUR_ILS)
+    // 600 / (7000 / 30) = 2.57 → 3 days
+    expect(result.paybackDays).toBe(3)
   })
 
   it('returns no loss and no payback when revenue is empty', () => {
