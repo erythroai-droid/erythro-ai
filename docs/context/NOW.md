@@ -1,20 +1,14 @@
 # Latest changes
 
-Обновлено: 2026-11-02 (og:image audit LP — картинка с erythro.ai, не r2.dev)  
-Статус: В работе (нужен редеплой + сброс кэша мессенджера)
+Обновлено: 2026-11-04 (Vercel: сняты obsolete audit-calc-*)  
+Статус: ops закрыт
 
 ---
 
-## 1. og:image на audit-en.erythro.ai — PIT-079 follow-up
-- **Проверка после деплоя:** в HTML уже есть полный блок `og:image` / `twitter:image` (Microlink видит 1200×630 JPEG).
-- **Почему в чатах пусто:** (1) кэш WhatsApp/Telegram/Facebook держит старый scrape без картинки; (2) `og:image` указывал на `pub-*.r2.dev` (rate-limit, хуже тянется краулерами, чем ассеты с `erythro.ai`).
-- **Фикс:** карточка лежит в `public/images/og/ai-audit.jpg`, URL `https://erythro.ai/images/og/ai-audit.jpg` через `ogImages.ts` (`audit-free|diagnostic|pro`).
-- **После деплоя сбросить превью:**
-  - Facebook: [Sharing Debugger](https://developers.facebook.com/tools/debug/) → Scrape Again для `https://audit-en.erythro.ai/`
-  - WhatsApp/Telegram: новая ссылка с `?v=2` (или `@webpagebot` в Telegram)
-- **Следующий шаг:** задеплоить этот коммит, затем scrape again / `?v=2`.
+## 1. Vercel misconfigured domains — закрыто
+- Письмо Vercel: `audit-calc-{en,ru,he}.erythro.ai` misconfigured на проекте erythro-ai.
+- Причина: старые имена калькулятора; канон теперь `leak-{en,ru,he}.erythro.ai` (DNS + Vercel OK). У `audit-calc-*` в CF DNS нет записей (NXDOMAIN).
+- **Сделано:** удалены 3 домена из Vercel Project Domains. `leak-*` / audit / diag / pro на месте (14 доменов).
 
----
-
-## 2. ЛП калькулятора v2 / Hero RTL / 244 / paid LP
-- Без изменений в этой сессии.
+## 2. og:image на audit-en.erythro.ai — PIT-079 follow-up
+- Без изменений: после деплоя — scrape again / `?v=2` для мессенджеров (см. предыдущую эстафету).
