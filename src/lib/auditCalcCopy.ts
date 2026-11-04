@@ -815,9 +815,9 @@ export const auditCalcCopy = {
     he: 'צווארי הבקבוק במשפך הגורמים לנשירת הלקוחות הגבוהה ביותר טרם השלמת הפנייה',
   } satisfies Localized,
   step4RowProblem: {
-    en: 'Where the breakdown occurs',
-    ru: 'Где возник сбой',
-    he: 'היכן אירע הכשל',
+    en: 'Where people get stuck',
+    ru: 'Где клиент спотыкается',
+    he: 'היכן הלקוח נתקע',
   } satisfies Localized,
   step4RowImpact: {
     en: 'Conversion impact',
@@ -878,16 +878,16 @@ export const auditCalcCopy = {
   /** Free audit always walks 1 homepage. */
   step4CwvFunnelCount: { en: '1/1', ru: '1/1', he: '1/1' } satisfies Localized,
   step4SprintCta: {
-    en: 'Fix Sprint: Eliminate all identified funnel bottlenecks in 3–5 days',
-    ru: 'Спринт исправлений: устраняем все найденные сбои воронки за 3–5 дней',
-    he: 'ספרינט תיקונים: ביטול כל כשלי המשפך שאותרו תוך 3–5 ימים',
+    en: 'Fix sprint: we clear the problems found on the path to an inquiry in 3–5 days',
+    ru: 'Спринт исправлений: устраняем найденные проблемы на пути к заявке за 3–5 дней',
+    he: 'ספרינט תיקונים: מתקנים את הבעיות שמצאנו בדרך לפנייה תוך 3–5 ימים',
   } satisfies Localized,
 
   /* ---- Step 4: Vertical Funnel Journey (Option 1) ---- */
   step4JourneyKicker: {
-    en: '§ 04 — USER JOURNEY & FUNNEL BREAKDOWN',
-    ru: '§ 04 — АНАТОМИЯ ВОРОНКИ И ТОЧКИ СБОЕВ',
-    he: '§ 04 — מסלול הלקוח ונקודות הכשל במשפך',
+    en: '§ 04 — Where clients leave along the way',
+    ru: '§ 04 — Где клиенты уходят по пути',
+    he: '§ 04 — היכן לקוחות עוזבים בדרך',
   } satisfies Localized,
   step4HeadlinePrefix: {
     en: 'Where your website loses up to ',
@@ -911,8 +911,8 @@ export const auditCalcCopy = {
   } satisfies Localized,
   step4PillBottlenecks: {
     en: '{n} critical drop-off points',
-    ru: '{n} критических сбоя воронки',
-    he: '{n} נקודות כשל קריטיות',
+    ru: '{n} критических точек ухода',
+    he: '{n} נקודות נשירה קריטיות',
   } satisfies Localized,
   step4PillUpside: {
     en: 'Growth upside: +{p}% leads',
@@ -930,9 +930,9 @@ export const auditCalcCopy = {
     he: 'מה עושה הלקוח',
   } satisfies Localized,
   step4CardColIssue: {
-    en: 'Where friction occurs',
-    ru: 'Где возникает сбой',
-    he: 'היכן מתרחש הכשל',
+    en: 'Where people get stuck',
+    ru: 'Где клиент спотыкается',
+    he: 'היכן הלקוח נתקע',
   } satisfies Localized,
   step4JourneyHeroL1: {
     en: 'WHERE YOUR WEBSITE LOSES',
@@ -950,9 +950,9 @@ export const auditCalcCopy = {
     he: 'פירוק שלב-אחר-שלב של מסלול המבקר מחיפוש ראשוני ועד שליחת פנייה. בדקנו את השלבים המרכזיים ואיתרנו היכן לקוחות נושרים ועוברים למתחרים.',
   } satisfies Localized,
   step4JourneyVerdict: {
-    en: 'Funnel Verdict: Out of 100 potential customers, only ~{retained} reach checkout. The funnel breaks down at key friction points.',
-    ru: 'Вердикт воронки: из 100 потенциальных клиентов до заявки доходят только ~{retained}. Воронка даёт сбой на ключевых этапах пути.',
-    he: 'פסיקת המשפך: מתוך 100 לקוחות פוטנציאליים, רק כ-~{retained} מגיעים להשלמת פנייה. המשפך כושל בנקודות חיכוך קריטיות.',
+    en: 'Out of 100 potential customers, only ~{retained} leave an inquiry. People drop off at key steps along the way.',
+    ru: 'Из 100 потенциальных клиентов до заявки доходят только ~{retained}. На ключевых шагах пути люди уходят.',
+    he: 'מתוך 100 לקוחות פוטנציאליים, רק כ-~{retained} משאירים פנייה. בשלבים מרכזיים בדרך אנשים עוזבים.',
   } satisfies Localized,
   step4JourneySummaryLossLabel: {
     en: 'Funnel conversion leak',
@@ -1007,24 +1007,24 @@ export const auditCalcCopy = {
     he: 'מחפש את השירותים שלכם בגוגל או מבקש המלצות מ-ChatGPT ומ-Perplexity.',
   } satisfies Localized,
   step4Stage1IssueLabel: {
-    en: 'Where the friction occurs:',
-    ru: 'Где возникает сбой:',
-    he: 'היכן מתרחש הכשל:',
+    en: 'Where people get stuck:',
+    ru: 'Где клиент спотыкается:',
+    he: 'היכן הלקוח נתקע:',
   } satisfies Localized,
   step4Stage1IssueDesc: {
-    en: 'Missing structured data (Schema.org), weak snippets, or poor indexing cause search engines and AI to overlook your services.',
-    ru: 'Отсутствие микроразметки (Schema.org), слабые сниппеты и проблемы индексации мешают сайту попадать в топ и в ответы AI.',
-    he: 'היעדר נתונים מובנים (Schema.org), תגיות חלשות ואינדוקס לקוי גורמים למנועי חיפוש ול-AI לפספס את השירותים שלכם.',
+    en: 'The site is hard to find in Google and in AI answers, so new customers never reach you.',
+    ru: 'Сайт плохо находится в Google и в ответах AI — новые клиенты до вас просто не доходят.',
+    he: 'קשה למצוא את האתר בגוגל ובתשובות AI — לקוחות חדשים פשוט לא מגיעים אליכם.',
   } satisfies Localized,
   step4Stage1IssueMetrics: {
-    en: 'Lighthouse SEO mobile {seoM}/100, desktop {seoD}/100; AI visibility {ai}/100. About {loss}% of the leak is demand that never reaches the site.',
-    ru: 'Lighthouse SEO: телефон {seoM}/100, десктоп {seoD}/100; AI-видимость {ai}/100. Около {loss}% утечки — спрос, который до сайта не доходит.',
-    he: 'Lighthouse SEO: מובייל {seoM}/100, דסקטופ {seoD}/100; נראות AI {ai}/100. כ-{loss}% מהדליפה — ביקוש שלא מגיע לאתר.',
+    en: 'Search on phones {seoM}/100, on desktop {seoD}/100; AI visibility {ai}/100. About {loss}% of demand never reaches the site.',
+    ru: 'Поиск на телефоне {seoM}/100, на компьютере {seoD}/100; видимость в AI {ai}/100. Около {loss}% спроса до сайта не доходит.',
+    he: 'חיפוש בטלפון {seoM}/100, במחשב {seoD}/100; נראות ב-AI {ai}/100. כ-{loss}% מהביקוש לא מגיע לאתר.',
   } satisfies Localized,
   step4Stage1IssueScore: {
-    en: 'Search {seo}/100 and AI {ai}/100 — about {loss}% of the leak is demand that never finds the site (snippets, index, AI crawlers).',
-    ru: 'Поиск {seo}/100 и AI {ai}/100 — около {loss}% утечки: спрос не находит сайт (сниппеты, индекс, AI-краулеры).',
-    he: 'חיפוש {seo}/100 ו-AI {ai}/100 — כ-{loss}% מהדליפה: ביקוש שלא מוצא את האתר (snippet, אינדקס, בוטי AI).',
+    en: 'Search {seo}/100 and AI {ai}/100 — about {loss}% of demand never finds the site.',
+    ru: 'Поиск {seo}/100 и AI {ai}/100 — около {loss}% спроса сайт не находит.',
+    he: 'חיפוש {seo}/100 ו-AI {ai}/100 — כ-{loss}% מהביקוש לא מוצא את האתר.',
   } satisfies Localized,
   step4Stage1LossText: {
     en: 'Lost search & AI potential',
@@ -1053,25 +1053,25 @@ export const auditCalcCopy = {
     he: 'מקליק על קישור או מודעה בסמארטפון וממתין להופעת התוכן.',
   } satisfies Localized,
   step4Stage2IssueLabel: {
-    en: 'Where the friction occurs:',
-    ru: 'Где возникает сбой:',
-    he: 'היכן מתרחש הכשל:',
+    en: 'Where people get stuck:',
+    ru: 'Где клиент спотыкается:',
+    he: 'היכן הלקוח נתקע:',
   } satisfies Localized,
   step4Stage2IssueDesc: {
-    en: 'Slow mobile render (>2.5s on 4G) and layout jumps (CLS). Visitors leave before the page even finishes loading.',
-    ru: 'Задержка отрисовки экрана более 2.5–3.5 секунд на 4G и скачки вёрстки. Посетители закрывают вкладку, не дождавшись загрузки.',
-    he: 'עיכוב בטעינת מסך ראשון מעל 2.5–3.5 שניות ב-4G ותזוזות עימוד. גולשים סוגרים את הדף עוד לפני שהוצג במלואו.',
+    en: 'The page takes too long on a phone, or the screen jumps while loading. Visitors close the tab before they see your offer.',
+    ru: 'На телефоне страница долго открывается или экран прыгает при загрузке. Посетители закрывают вкладку, так и не увидев предложение.',
+    he: 'בטלפון העמוד נפתח לאט או קופץ בזמן הטעינה. גולשים סוגרים את הלשונית בלי לראות את ההצעה.',
   } satisfies Localized,
   /** Speed issue with lab numbers (mobile Lighthouse). */
   step4Stage2IssueMetrics: {
-    en: 'Lab: mobile Performance {perf}/100, LCP {lcp}, CLS {cls}. Above ~2.5 s LCP or a jumpy layout, people close the tab before the screen settles.',
-    ru: 'Замер: Performance на телефоне {perf}/100, LCP {lcp}, CLS {cls}. При LCP выше ~2.5 с или скачках вёрстки вкладку закрывают до отрисовки экрана.',
-    he: 'מדידה: Performance במובייל {perf}/100, LCP {lcp}, CLS {cls}. מעל ~2.5 שנ׳ LCP או קפיצות עימוד — סוגרים את הלשונית לפני שהמסך מתייצב.',
+    en: 'On phones: speed score {perf}/100, main content in {lcp}, layout shift {cls}. If loading takes more than ~2.5 s or the screen jumps, people leave.',
+    ru: 'На телефоне: оценка скорости {perf}/100, основной контент за {lcp}, сдвиг экрана {cls}. Если загрузка дольше ~2.5 с или экран прыгает — уходят.',
+    he: 'בטלפון: ציון מהירות {perf}/100, תוכן עיקרי תוך {lcp}, תזוזת מסך {cls}. אם הטעינה מעל ~2.5 שנ׳ או המסך קופץ — עוזבים.',
   } satisfies Localized,
   step4Stage2IssueScore: {
-    en: 'Speed scale {score}/100 — about {loss}% of visits still drop while the page loads on phones.',
-    ru: 'Шкала скорости {score}/100 — около {loss}% визитов всё ещё срывается на загрузке на телефоне.',
-    he: 'מדד מהירות {score}/100 — כ-{loss}% מהביקורים עדיין נושרים בטעינה במובייל.',
+    en: 'Speed {score}/100 — about {loss}% of visits still leave while the page loads on phones.',
+    ru: 'Скорость {score}/100 — около {loss}% визитов уходят, пока страница грузится на телефоне.',
+    he: 'מהירות {score}/100 — כ-{loss}% מהביקורים עוזבים בזמן שהעמוד נטען בטלפון.',
   } satisfies Localized,
   step4Stage2LossText: {
     en: 'Lost mobile visits',
@@ -1100,24 +1100,24 @@ export const auditCalcCopy = {
     he: 'בוחן את אמינות העסק, שם לב לרמת האבטחה בדפדפן ומצפה לחוויה יציבה ללא תקלות.',
   } satisfies Localized,
   step4Stage3IssueLabel: {
-    en: 'Where the friction occurs:',
-    ru: 'Где возникает сбой:',
-    he: 'היכן מתרחש הכשל:',
+    en: 'Where people get stuck:',
+    ru: 'Где клиент спотыкается:',
+    he: 'היכן הלקוח נתקע:',
   } satisfies Localized,
   step4Stage3IssueDesc: {
-    en: 'Missing security headers (CSP/HSTS), console script errors, or risks of browser security alerts scare clients away.',
-    ru: 'Ошибки скриптов в консоли, неполные заголовки безопасности (CSP/HSTS) или риски предупреждений браузера.',
-    he: 'שגיאות סקריפט, כותרי אבטחה חסרים (CSP/HSTS) וסיכון להתראות אבטחה שמרתיעות לקוחות.',
+    en: 'The page feels unstable, or the browser may show a security warning — visitors leave before they trust you.',
+    ru: 'Страница ведёт себя нестабильно, или браузер может показать предупреждение о безопасности — посетители уходят, не успев довериться.',
+    he: 'העמוד מרגיש לא יציב, או שהדפדפן עלול להציג אזהרת אבטחה — גולשים עוזבים לפני שיש אמון.',
   } satisfies Localized,
   step4Stage3IssueScore: {
-    en: 'Security & stability {score}/100 — about {loss}% of the leak. Typical gaps: CSP/HSTS headers, console script errors, or browser warning risk.',
-    ru: 'Безопасность и стабильность {score}/100 — около {loss}% утечки. Типичные пробелы: заголовки CSP/HSTS, ошибки скриптов в консоли или риск предупреждения браузера.',
-    he: 'אבטחה ויציבות {score}/100 — כ-{loss}% מהדליפה. פערים אופייניים: כותרי CSP/HSTS, שגיאות סקריפט או סיכון להתראת דפדפן.',
+    en: 'Trust and safety {score}/100 — about {loss}% of the loss. The site may feel unreliable or trigger a browser warning.',
+    ru: 'Доверие и безопасность {score}/100 — около {loss}% потерь. Сайт может казаться ненадёжным или вызвать предупреждение браузера.',
+    he: 'אמון ובטיחות {score}/100 — כ-{loss}% מהאובדן. האתר עלול להרגיש לא אמין או להפעיל אזהרת דפדפן.',
   } satisfies Localized,
   step4Stage3LossText: {
     en: 'Lost to trust concerns',
-    ru: 'Потери из-за сбоев доверия',
-    he: 'אובדן עקב כשלי אמון ואבטחה',
+    ru: 'Потери из-за недоверия',
+    he: 'אובדן בגלל חוסר אמון',
   } satisfies Localized,
 
   step4Stage4Tag: {
@@ -1141,19 +1141,19 @@ export const auditCalcCopy = {
     he: 'מוכן לפנות: מזין טלפון/מייל, לוחץ על כפתור השליחה או פותח וואטסאפ.',
   } satisfies Localized,
   step4Stage4IssueLabel: {
-    en: 'Where the friction occurs:',
-    ru: 'Где возникает сбой:',
-    he: 'היכן מתרחש הכשל:',
+    en: 'Where people get stuck:',
+    ru: 'Где клиент спотыкается:',
+    he: 'היכן הלקוח נתקע:',
   } satisfies Localized,
   step4Stage4IssueDesc: {
-    en: 'Unresponsive mobile buttons, rigid input masking, or form validation crashes cause high-intent buyers to drop off right at the finish line.',
-    ru: 'Неотзывчивые кнопки на смартфонах, сбои маски ввода телефона или зависание формы срывают готовую заявку в самый последний момент.',
-    he: 'כפתורים שאינם מגיבים במובייל, אימות שדות קשיח או תקיעת הטופס מובילים לנשירת לקוחות בשלים ממש על קו הסיום.',
+    en: 'On a phone the button does not respond, the phone field is hard to fill in, or the form freezes on submit — right when the client is ready to write.',
+    ru: 'На телефоне кнопка не нажимается, поле телефона мешает вводу или форма зависает при отправке — в момент, когда клиент уже готов оставить заявку.',
+    he: 'בטלפון הכפתור לא מגיב, שדה הטלפון מקשה על ההקלדה, או שהטופס נתקע בשליחה — בדיוק כשהלקוח מוכן לפנות.',
   } satisfies Localized,
   step4Stage4IssueScore: {
-    en: 'Forms & inquiries {score}/100 — about {loss}% drop at the finish: mobile taps, phone masks, spam filters, or a stuck submit.',
-    ru: 'Формы и заявки {score}/100 — около {loss}% срыва на финише: тапы на смартфоне, маска телефона, антиспам или зависшая отправка.',
-    he: 'טפסים ופניות {score}/100 — כ-{loss}% נשירה בקו הסיום: לחיצות במובייל, מסכת טלפון, אנטי-ספאם או שליחה שנתקעת.',
+    en: 'Forms and inquiries {score}/100 — about {loss}% drop at the finish: a stuck button, awkward phone field, or a form that will not send.',
+    ru: 'Формы и заявки {score}/100 — около {loss}% срыва на финише: кнопка не срабатывает, поле телефона мешает или форма не отправляется.',
+    he: 'טפסים ופניות {score}/100 — כ-{loss}% נשירה בקו הסיום: כפתור שלא מגיב, שדה טלפון מפריע או טופס שלא נשלח.',
   } satisfies Localized,
   step4Stage4LossText: {
     en: 'Lost checkout inquiries',
@@ -1216,13 +1216,14 @@ export const auditCalcCopy = {
   step4StatYear: { en: 'lost per year', ru: 'теряется за год', he: 'אובדים בשנה' } satisfies Localized,
   step4StatClients: { en: 'clients lost per month', ru: 'клиентов уходят в месяц', he: 'לקוחות אובדים בחודש' } satisfies Localized,
   step4StatReach: { en: 'of 100 visitors leave an inquiry', ru: 'из 100 посетителей оставляют заявку', he: 'מתוך 100 מבקרים משאירים פנייה' } satisfies Localized,
-  step4StatUpside: { en: 'more inquiries once leaks are closed', ru: 'больше заявок, если закрыть утечки', he: 'יותר פניות אחרי סגירת הדליפות' } satisfies Localized,
+  step4StatUpside: { en: 'more inquiries once problems are fixed', ru: 'больше заявок, если устранить проблемы', he: 'יותר פניות אחרי תיקון הבעיות' } satisfies Localized,
   step4StatScore: { en: 'funnel score', ru: 'оценка воронки', he: 'ציון המשפך' } satisfies Localized,
   /** Middle plaque on hero stat tiles (same shape as the score level badge). */
   step4StatBadgeLoss: { en: 'Loss', ru: 'Потеря', he: 'אובדן' } satisfies Localized,
-  step4StatBadgeClients: { en: 'Churn', ru: 'Уходят', he: 'נושרים' } satisfies Localized,
-  step4StatBadgeUpside: { en: 'Upside', ru: 'Прирост', he: 'פוטנציאל' } satisfies Localized,
-  step4StatBadgeStages: { en: 'Leaking', ru: 'Утечки', he: 'דולפים' } satisfies Localized,
+  /** Same word as loss — kept for callers that still reference the clients key. */
+  step4StatBadgeClients: { en: 'Loss', ru: 'Потеря', he: 'אובדן' } satisfies Localized,
+  step4StatBadgeUpside: { en: 'Gain', ru: 'Прирост', he: 'גידול' } satisfies Localized,
+  step4StatBadgeStages: { en: 'Weak spots', ru: 'Слабые места', he: 'נקודות חולשה' } satisfies Localized,
   step4WhereTitle: { en: 'Where the money leaks', ru: 'Куда уходят деньги', he: 'לאן הכסף דולף' } satisfies Localized,
   step4WhereSub: {
     en: 'Losses by funnel stage, from the biggest to the smallest.',
@@ -1316,7 +1317,7 @@ export const auditCalcCopy = {
     he: 'היכן בדיוק הלקוחות נושרים',
   } satisfies Localized,
   step4StageClient: { en: 'Visitor', ru: 'Клиент', he: 'הלקוח' } satisfies Localized,
-  step4StageFailure: { en: 'Failure', ru: 'Сбой', he: 'הכשל' } satisfies Localized,
+  step4StageFailure: { en: 'Problem', ru: 'Проблема', he: 'הבעיה' } satisfies Localized,
   step4StageScore: { en: 'score {score}/100', ru: 'балл {score}/100', he: 'ציון {score}/100' } satisfies Localized,
   step4StageNoLoss: { en: 'no loss', ru: 'без потерь', he: 'ללא אובדן' } satisfies Localized,
   step4BiggestLeak: { en: 'Biggest leak', ru: 'Главная утечка', he: 'הדליפה הגדולה' } satisfies Localized,
@@ -1338,9 +1339,9 @@ export const auditCalcCopy = {
     he: 'אבחנה מסכמת: האתר מאבד עד {p}% מהפניות',
   } satisfies Localized,
   step4OutcomeDesc: {
-    en: 'Every bottleneck above chips away at your conversion rate. Eliminating these 4 friction points recovers lost inquiries without increasing ad spend.',
-    ru: 'Каждое узкое место выше отсекает часть посетителей. Устранение этих 4 сбоев возвращает потерянные заявки без увеличения рекламного бюджета.',
-    he: 'כל נקודת כשל לעיל גורעת מהמרת האתר. ביטול 4 צווארי הבקבוק הללו מחזיר פניות אבודות לעסק ללא הגדלת תקציב הפרסום.',
+    en: 'Each weak spot above cuts into your inquiries. Fixing these four problems brings lost clients back without raising the ad budget.',
+    ru: 'Каждое слабое место выше отсекает часть посетителей. Устранение этих четырёх проблем возвращает потерянные заявки без увеличения рекламного бюджета.',
+    he: 'כל נקודת חולשה לעיל גורעת מהפניות. תיקון ארבע הבעיות האלה מחזיר לקוחות אבודים בלי להגדיל את תקציב הפרסום.',
   } satisfies Localized,
 
   /* Tech Details Accordion */
