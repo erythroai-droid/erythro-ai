@@ -5,7 +5,9 @@
 
 ---
 
-## 0. Калькулятор отдельно от аудита + Meta CAPI (2026-11-06, не закоммичено)
+## 0. Калькулятор отдельно от аудита + Meta CAPI (2026-11-06, прод: PR #383, dpl_21aR…)
+- **Статус:** задеплоено; env `META_CAPI_ACCESS_TOKEN` + `META_CAPI_TEST_EVENT_CODE=TEST82430` в Production. Тестовая заявка 262 (leak-he) — без ошибки CAPI в логах, но в Test Events пусто. Добавлены логи `Meta CAPI Lead sent|skipped|failed` (follow-up коммит) → после деплоя новая заявка (инкогнито, «Принять», новый сайт/email) → читать логи `/api/contact`. Затем удалить test code + redeploy.
+- В пикселе «Лид» уже был «Браузер • Сервер» до PR #383 (70 событий, EMQ 0.0) — внешний источник серверных событий не из этого репо (Make / интеграция Meta?), выяснить.
 - **Split:** `AuditCalcFlow` → `AuditLpForm leadChannel="leak_calc"` → `trackFreeAuditLead(id, 'leak_calc')`: Meta `content_name: leak_calc`, GA4 `qualify_lead.lead_source: leak_calc`. Аудит без изменений (`free_audit` / `audit`). Google Ads conversion общая.
 - **CAPI:** `src/lib/metaCapi.ts` + `/api/contact` (`after()`), `event_id` = submissionId (dedup с Pixel), общий `metaLeadContentName` (`src/lib/metaLead.ts`). Пропуск при `cookie_consent=declined` или без `META_CAPI_ACCESS_TOKEN`.
 - `generate_lead` сознательно не добавлен (Ads уже считает через AW send_to; риск двойного счёта).
