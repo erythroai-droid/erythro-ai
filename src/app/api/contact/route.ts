@@ -186,7 +186,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    if (isMetaCapiConfigured() && !hasDeclinedConsent(request)) {
+    if (!isMetaCapiConfigured()) {
+      console.warn('[api/contact] Meta CAPI Lead skipped: META_CAPI_ACCESS_TOKEN not set id=', created.id)
+    } else if (hasDeclinedConsent(request)) {
+      console.info('[api/contact] Meta CAPI Lead skipped: cookie consent declined id=', created.id)
+    } else {
       const metaLead = metaLeadEventFromRequest(request, {
         eventId: String(created.id),
         contentName: metaLeadContentName({ source, planSlug, leadChannel }),
@@ -198,7 +202,24 @@ export async function POST(request: NextRequest) {
         const sent = await sendMetaLeadEvent(metaLead)
         if (!sent.ok) {
           console.error('[api/contact] Meta CAPI Lead failed:', sent.reason, 'id=', created.id)
+          return
         }
+        console.info(
+          '[api/contact] Meta CAPI Lead sent id=',
+          created.id,
+          'content_name=',
+          metaLead.contentName,
+          'events_received=',
+          sent.eventsReceived,
+          'fbtrace_id=',
+          sent.fbtraceId,
+          'test_event_code=',
+          sent.testEventCode ?? 'none',
+          'fbp=',
+          Boolean(metaLead.fbp),
+          'fbc=',
+          Boolean(metaLead.fbc),
+        )
       })
     }
 

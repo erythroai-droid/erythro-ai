@@ -19,7 +19,9 @@ export type MetaLeadEvent = {
   eventSourceUrl?: string | null
 }
 
-export type MetaCapiResult = { ok: true } | { ok: false; reason: string }
+export type MetaCapiResult =
+  | { ok: true; eventsReceived: number | null; fbtraceId: string | null; testEventCode: string | null }
+  | { ok: false; reason: string }
 
 function accessToken(): string {
   return process.env.META_CAPI_ACCESS_TOKEN?.trim() || ''
@@ -121,11 +123,22 @@ export async function sendMetaLeadEvent(event: MetaLeadEvent): Promise<MetaCapiR
         signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
       },
     )
+    const text = await res.text().catch(() => '')
     if (!res.ok) {
-      const text = await res.text().catch(() => '')
       return { ok: false, reason: `HTTP ${res.status} ${text.slice(0, 300)}` }
     }
-    return { ok: true }
+    let json: { events_received?: unknown; fbtrace_id?: unknown } = {}
+    try {
+      json = JSON.parse(text)
+    } catch {
+      // Non-JSON 2xx body: report what we know.
+    }
+    return {
+      ok: true,
+      eventsReceived: typeof json.events_received === 'number' ? json.events_received : null,
+      fbtraceId: typeof json.fbtrace_id === 'string' ? json.fbtrace_id : null,
+      testEventCode: testEventCode || null,
+    }
   } catch (err) {
     return { ok: false, reason: err instanceof Error ? err.message : String(err) }
   }
