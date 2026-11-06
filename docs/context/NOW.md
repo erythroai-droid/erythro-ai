@@ -1,9 +1,15 @@
 # Latest changes
 
-Обновлено: 2026-11-04 (handoff: Vercel audit-calc + calc sprint price)  
-Статус: calc follow-up — цена от округлённых зон; Vercel ops закрыт
+Обновлено: 2026-11-06 (calc lead split + Meta CAPI)  
+Статус: код готов, не задеплоен; CAPI ждёт токен в Vercel
 
 ---
+
+## 0. Калькулятор отдельно от аудита + Meta CAPI (2026-11-06, не закоммичено)
+- **Split:** `AuditCalcFlow` → `AuditLpForm leadChannel="leak_calc"` → `trackFreeAuditLead(id, 'leak_calc')`: Meta `content_name: leak_calc`, GA4 `qualify_lead.lead_source: leak_calc`. Аудит без изменений (`free_audit` / `audit`). Google Ads conversion общая.
+- **CAPI:** `src/lib/metaCapi.ts` + `/api/contact` (`after()`), `event_id` = submissionId (dedup с Pixel), общий `metaLeadContentName` (`src/lib/metaLead.ts`). Пропуск при `cookie_consent=declined` или без `META_CAPI_ACCESS_TOKEN`.
+- `generate_lead` сознательно не добавлен (Ads уже считает через AW send_to; риск двойного счёта).
+- **Следующий шаг:** токен в Vercel Production (`META_CAPI_ACCESS_TOKEN`, временно `META_CAPI_TEST_EVENT_CODE`) → деплой → тестовая заявка → Test Events «Браузер и сервер» → убрать test code. Док: `docs/architecture/meta-pixel.md`.
 
 ## 1. Calc LP — сумма исправлений (из main / #380)
 - **Прод:** #380 задеплоен; фикс ₪2200 ушёл.

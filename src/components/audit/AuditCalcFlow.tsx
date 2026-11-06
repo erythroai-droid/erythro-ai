@@ -658,6 +658,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                       websiteFirst
                       calcRevenue={revenue}
                       calcClients={clients}
+                      leadChannel="leak_calc"
                       submitLabel={tCalc(
                         formStep === 1
                           ? copy.nextStepCalc
