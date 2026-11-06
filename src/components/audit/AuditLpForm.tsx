@@ -37,6 +37,7 @@ import {
   mainSiteUrl,
   mainSiteUrlWithLang,
   tAuditLp,
+  type AuditLeadChannel,
 } from '@/lib/auditLp'
 import { auditSampleReportHref, auditSampleReportLabel } from '@/lib/auditSampleReports'
 import { TurnstileField, isTurnstileSiteKeyConfigured, type TurnstileHandle } from '@/components/TurnstileField'
@@ -216,6 +217,7 @@ export default function AuditLpForm({
   onSubmitted,
   calcRevenue = null,
   calcClients = null,
+  leadChannel = null,
 }: {
   locale: string
   theme?: 'light' | 'dark'
@@ -246,6 +248,8 @@ export default function AuditLpForm({
   /** Leak calculator step-2 metrics — persisted for the report-ready email deep link. */
   calcRevenue?: number | null
   calcClients?: number | null
+  /** Ads/analytics attribution for the lead events (GA4 lead_source, Meta content_name). */
+  leadChannel?: AuditLeadChannel | null
 }) {
   const isLight = theme === 'light'
   const reportLanguage = (
@@ -435,7 +439,7 @@ export default function AuditLpForm({
       // `?lang=` carries LP locale — cookies/localStorage do not cross audit-*. → erythro.ai.
       setReportHref(path ? mainSiteUrl(path) : null)
       setOrderId(payload?.orderId || (sid != null ? `AUD-${sid}` : null))
-      if (sid != null) trackFreeAuditLead(String(sid))
+      if (sid != null) trackFreeAuditLead(String(sid), leadChannel)
       if (onSubmitted && sid != null) {
         let accessKey = typeof payload?.reportAccessToken === 'string' ? payload.reportAccessToken : null
         if (!accessKey && path) {

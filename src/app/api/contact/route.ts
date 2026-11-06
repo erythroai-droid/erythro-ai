@@ -29,6 +29,13 @@ import {
   verifyTurnstileToken,
 } from '@/lib/turnstile'
 import { requestHost } from '@/lib/vercelHost'
+import {
+  hasDeclinedConsent,
+  isMetaCapiConfigured,
+  metaLeadEventFromRequest,
+  sendMetaLeadEvent,
+} from '@/lib/metaCapi'
+import { metaLeadContentName } from '@/lib/metaLead'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -178,6 +185,22 @@ export async function POST(request: NextRequest) {
           : {}),
       },
     })
+
+    if (isMetaCapiConfigured() && !hasDeclinedConsent(request)) {
+      const metaLead = metaLeadEventFromRequest(request, {
+        eventId: String(created.id),
+        contentName: metaLeadContentName({ source, planSlug, leadChannel }),
+        email,
+        phone,
+        ip,
+      })
+      after(async () => {
+        const sent = await sendMetaLeadEvent(metaLead)
+        if (!sent.ok) {
+          console.error('[api/contact] Meta CAPI Lead failed:', sent.reason, 'id=', created.id)
+        }
+      })
+    }
 
     const settings = (await payload.findGlobal({
       slug: 'site-settings',

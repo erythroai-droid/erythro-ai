@@ -16,8 +16,19 @@ Pixel ID: `2395401914532727`.
 Вызывать только после успеха на сервере (бесплатный аудит), один раз на заявку.
 
 - Стандартное событие Meta: `fbq('track', 'Lead', …)`.
-- `eventID` = `submissionId` (для будущей дедупликации с Conversions API).
-- Точки вызова: `/audit` (`AuditBody`) и `/order/audit-free` (`OrderClient`) через `trackFreeAuditLead`.
+- `eventID` = `submissionId` — общий с Conversions API, Meta убирает дубль.
+- Точки вызова: `/audit` (`AuditBody`), `/order/audit-free` (`OrderClient`), LP аудита и калькулятора (`AuditLpForm`) через `trackFreeAuditLead`.
+- `content_name` (общий хелпер `metaLeadContentName` в `src/lib/metaLead.ts`): `free_audit` — аудит, `leak_calc` — калькулятор (`leak-{en,ru,he}`), slug плана — заказ, `source` — контактные формы. В GA4 `qualify_lead.lead_source`: `audit` / `leak_calc`.
+- Google Ads конверсия «Отправка формы» общая для аудита и калькулятора; разделять по кампании / URL.
+
+## 2a. Conversions API (сервер)
+
+- `src/lib/metaCapi.ts`, вызов в `/api/contact` после сохранения заявки, через `after()` (ответ форме не ждёт Meta).
+- Тот же `event_id` = `submissionId`, тот же `content_name`, `action_source: website`.
+- `user_data`: SHA-256 email и телефона (цифры с кодом страны), IP (`cf-connecting-ip`), User-Agent, `_fbp`, `_fbc` (или `fb.1.<ms>.<fbclid>` из Referer).
+- Не отправляется, если cookie `cookie_consent=declined` или нет `META_CAPI_ACCESS_TOKEN`.
+- Env (Vercel, Production): `META_CAPI_ACCESS_TOKEN`; для проверки — временно `META_CAPI_TEST_EVENT_CODE`.
+- Ошибки — в логах Vercel: `[api/contact] Meta CAPI Lead failed`.
 
 Тестовый прогон делать после «Принять» cookie.
 
@@ -39,3 +50,4 @@ Pixel ID: `2395401914532727`.
 2. Meta Pixel Helper / Events Manager Test Events на странице кампании после «Принять».
 3. Успех: `PageView` на загрузке; `Lead` после успешной отправки формы аудита.
 4. Без согласия cookie `_fbp` / `_fbc` не должны ставиться; после Decline — очищаются.
+5. CAPI: задать `META_CAPI_TEST_EVENT_CODE`, отправить заявку — в Test Events один `Lead` с пометкой «Браузер и сервер» (deduplicated). Затем удалить test code и передеплоить.

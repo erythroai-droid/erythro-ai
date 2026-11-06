@@ -1,5 +1,7 @@
 import { ANALYTICS_GA_ID, requestAnalyticsScripts } from '@/lib/analyticsEager'
 import { setConsentValue, CONSENT_ACCEPTED } from '@/lib/privacyConsent'
+import type { AuditLeadChannel } from '@/lib/auditLp'
+import { metaLeadContentName } from '@/lib/metaLead'
 
 const GA_ID = ANALYTICS_GA_ID
 const PURCHASE_SEND_TO = 'AW-18453652197/-mcPCMys6Z0dEOXFsd9E'
@@ -246,12 +248,21 @@ export function trackMetaLead(transactionId: string, contentName = 'free_audit')
   window.fbq('track', 'Lead', { content_name: contentName }, { eventID: transactionId })
 }
 
-/** Free-audit success: Google Ads + GA4 qualify_lead + Meta Lead (same transaction id). */
-export function trackFreeAuditLead(transactionId: string) {
+/**
+ * Free-audit success: Google Ads + GA4 qualify_lead + Meta Lead (same transaction id).
+ * `leak_calc` (calculator LP) gets its own GA4 lead_source and Meta content_name.
+ */
+export function trackFreeAuditLead(transactionId: string, leadChannel?: AuditLeadChannel | null) {
   ensureAnalyticsConsentAndGaConfig()
   trackAdsLead(transactionId)
-  trackGaLead(transactionId, { leadSource: 'audit', planSlug: 'audit-free' })
-  trackMetaLead(transactionId, 'free_audit')
+  trackGaLead(transactionId, {
+    leadSource: leadChannel === 'leak_calc' ? 'leak_calc' : 'audit',
+    planSlug: 'audit-free',
+  })
+  trackMetaLead(
+    transactionId,
+    metaLeadContentName({ source: 'audit', planSlug: 'audit-free', leadChannel }),
+  )
 }
 
 /** Package order lead (/order/free-start, /order/enterprise-custom, etc.). */
