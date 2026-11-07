@@ -11,6 +11,7 @@ import {
   type AuditLpLocale,
 } from '@/lib/auditLp'
 import { auditCalcCopy, tCalc } from '@/lib/auditCalcCopy'
+import { ogImageFields, ogImageForLeakCalc } from '@/lib/ogImages'
 
 export const dynamic = 'force-static'
 export const revalidate = 60
@@ -36,6 +37,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = `${tCalc(auditCalcCopy.sectionTitle, raw)} | Erythro.ai`
   const description = tCalc(auditCalcCopy.headline, raw)
   const canonical = auditLpCanonicalUrl(raw, 'calc')
+  // Child openGraph replaces layout OG — must include images (PIT-079).
+  const ogImage = ogImageForLeakCalc(raw)
+  const ogImages = [ogImageFields(ogImage, title)]
 
   return {
     title,
@@ -53,8 +57,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: 'Erythro.ai',
       type: 'website',
       locale: OG_LOCALE[raw],
+      images: ogImages,
     },
-    twitter: { card: 'summary_large_image', title, description },
+    twitter: { card: 'summary_large_image', title, description, images: [ogImage] },
   }
 }
 

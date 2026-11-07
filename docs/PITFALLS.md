@@ -1379,6 +1379,7 @@ Do not put a raw URL or hash into a fixed summary card. Clip the card even when 
 - Default image: Site Settings `Og.jpg` on R2 (`https://pub-bca1ac764c56451890e973c90029a977.r2.dev/Og.jpg`).
 - Business Automation: dedicated 1200×630 offer JPEG at `https://pub-bca1ac764c56451890e973c90029a977.r2.dev/og/Business-Automation-4.jpg` (source in `public/images/og/business-automation.jpg`). Helper: `src/lib/ogImages.ts`.
 - After deploy, refresh LinkedIn cache via [Post Inspector](https://www.linkedin.com/post-inspector/). LinkedInBot currently gets `200` HTML from `erythro.ai` (not a Bot Fight challenge).
+- **Repeat 2026-11-07:** calc LP `/lp/audit/calc/[locale]` (`leak-{en,ru,he}.erythro.ai`) had the same gap: `openGraph` and `twitter` without `images`. Fix: `ogImageForLeakCalc(locale)` with per-locale 1200x630 cards `public/images/og/leak-calc-{en,ru,he}.jpg`.
 
 **Prevent:** If a page sets `openGraph: { title, description, url }`, also set `images: [{ url, width: 1200, height: 630 }]`. Do not rely on the layout OG image leaking through. Prefer a public R2 JPEG (absolute URL) so the crawler does not have to fetch the image through the site’s Cloudflare zone.
 
