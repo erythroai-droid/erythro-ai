@@ -488,18 +488,26 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
           {/* Left column (desktop left / mobile first): big title and subtitle, enters from the left */}
           <div key={`hero-left-${currentStep}`} className="order-1 flex flex-col justify-center text-start animate-hero-left">
             {/* Kicker as the domain chip of the step 4 hero: translucent white on the dark panel */}
-            <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-[4px] border-[0.75px] border-white/25 bg-white/10 px-2 py-[3px] text-xs font-medium uppercase leading-[18px] tracking-[0.04em] text-white sm:mb-7">
-              <span className="relative flex size-1.5"><span className="absolute inline-flex size-full animate-ping rounded-full bg-[#86efac] opacity-75 motion-reduce:hidden" /><span className="relative inline-flex size-1.5 rounded-full bg-[#86efac]" /></span>
-              <span>
-                {tCalc(
-                  currentStep === 1
-                    ? copy.heroKicker
-                    : currentStep === 2
-                      ? copy.heroStep2Kicker
-                      : copy.heroStep3Kicker,
-                  locale,
-                )}
-              </span>
+            <div className="mb-5 flex flex-wrap items-center gap-2.5 sm:mb-7">
+              {currentStep === 1 ? (
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-[4px] bg-[#86efac] px-2.5 py-1 text-sm font-black uppercase leading-[18px] tracking-[0.06em] text-[#052e16] shadow-[0_0_24px_rgba(134,239,172,0.35)]">
+                  {tCalc(copy.heroFreeBadge, locale)}
+                  <span aria-hidden="true" className="font-bold">· 0 ₪</span>
+                </span>
+              ) : null}
+              <div className="inline-flex w-fit items-center gap-2 rounded-[4px] border-[0.75px] border-white/25 bg-white/10 px-2 py-[3px] text-xs font-medium uppercase leading-[18px] tracking-[0.04em] text-white">
+                <span className="relative flex size-1.5"><span className="absolute inline-flex size-full animate-ping rounded-full bg-[#86efac] opacity-75 motion-reduce:hidden" /><span className="relative inline-flex size-1.5 rounded-full bg-[#86efac]" /></span>
+                <span>
+                  {tCalc(
+                    currentStep === 1
+                      ? copy.heroKicker
+                      : currentStep === 2
+                        ? copy.heroStep2Kicker
+                        : copy.heroStep3Kicker,
+                    locale,
+                  )}
+                </span>
+              </div>
             </div>
 
             <h2 className="m-0 font-black uppercase leading-[1.04] sm:leading-[1.03] lg:leading-[1.02] tracking-[-0.035em] text-white text-[clamp(26px,10vw,38px)] sm:text-[52px] lg:text-[56px] xl:text-[68px] 2xl:text-[80px] text-balance">
