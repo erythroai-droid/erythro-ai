@@ -307,9 +307,9 @@ export const auditCalcCopy = {
     he: 'הגדרת ביקורת מהירה',
   } satisfies Localized,
   step1Heading: {
-    en: 'Revenue Leak Calculation',
-    ru: 'Расчёт финансовых утечек',
-    he: 'חישוב דליפות הכנסה',
+    en: 'Free Revenue Leak Calculation',
+    ru: 'Бесплатный расчёт финансовых утечек',
+    he: 'חישוב דליפות הכנסה בחינם',
   } satisfies Localized,
   step1Sub: {
     en: 'Enter your website and email to calculate monthly revenue loss and drop-off points.',
@@ -1521,6 +1521,7 @@ export const auditCalcCopy = {
     ru: 'AI-аудит онлайн',
     he: 'AI Audit אונליין',
   } satisfies Localized,
+  heroFreeBadge: { en: 'Free', ru: 'Бесплатно', he: 'חינם' } satisfies Localized,
   heroLive: { en: 'Auditor online', ru: 'Аудитор онлайн', he: 'הבודק מחובר' } satisfies Localized,
   heroL1: { en: 'How much', ru: 'Сколько', he: 'כמה' } satisfies Localized,
   heroL2: { en: 'money', ru: 'денег', he: 'כסף' } satisfies Localized,
