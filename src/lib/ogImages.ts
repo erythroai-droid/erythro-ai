@@ -29,6 +29,17 @@ const PLAN_OG_IMAGES: Record<string, string> = {
   'audit-pro-ads': AUDIT_OG_IMAGE,
 }
 
+/** Per-locale 1200×630 share cards for the leak calculator LP (leak-{en,ru,he}). */
+const LEAK_CALC_OG_IMAGES: Record<'en' | 'ru' | 'he', string> = {
+  en: 'https://erythro.ai/images/og/leak-calc-en.jpg',
+  ru: 'https://erythro.ai/images/og/leak-calc-ru.jpg',
+  he: 'https://erythro.ai/images/og/leak-calc-he.jpg',
+}
+
+export function ogImageForLeakCalc(locale: 'en' | 'ru' | 'he'): string {
+  return LEAK_CALC_OG_IMAGES[locale]
+}
+
 export function ogImageForPlan(slug: string, siteOgImage?: string): string {
   return PLAN_OG_IMAGES[slug] || siteOgImage || DEFAULT_OG_IMAGE
 }

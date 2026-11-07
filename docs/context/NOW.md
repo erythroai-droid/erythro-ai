@@ -5,6 +5,11 @@
 
 ---
 
+## −2. Calc LP — og:image (2026-11-07, не задеплоено)
+- `leak-{en,ru,he}` отдавали OG без картинки (PIT-079, повтор). Теперь `openGraph.images` + `twitter.images` через `ogImageForLeakCalc(locale)` → `public/images/og/leak-calc-{en,ru,he}.jpg` (1200×630, ~62 КБ).
+- Файлы апскейлены из присланных 1024×537 (чат пережал). Если есть оригиналы 1200×630 — просто перезаписать те же файлы, код не трогать.
+- **Следующий шаг:** деплой по команде → Meta Sharing Debugger / LinkedIn Post Inspector, «Scrape again» для всех трёх `leak-*`.
+
 ## −1. Calc LP — «Бесплатно» на первом экране (2026-11-07, не задеплоено)
 - Шаг 1 hero: зелёный бейдж `heroFreeBadge` («Бесплатно · 0 ₪» / Free / חינם) перед кикером; заголовок формы `step1Heading` → «Бесплатный расчёт финансовых утечек» (EN/HE тоже).
 - Файлы: `src/lib/auditCalcCopy.ts`, `src/components/audit/AuditCalcFlow.tsx`. Проверки не запускались.
