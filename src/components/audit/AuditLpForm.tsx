@@ -197,6 +197,9 @@ export type AuditLpSubmitted = {
   accessKey: string | null
   website: string
   reportHref: string | null
+  /** Leak calculator metrics as sent with this submission (what the server saved). */
+  calcRevenue?: number | null
+  calcClients?: number | null
 }
 
 export default function AuditLpForm({
@@ -455,6 +458,8 @@ export default function AuditLpForm({
           accessKey,
           website: values.website.trim(),
           reportHref: path ? mainSiteUrl(path) : null,
+          calcRevenue: typeof calcRevenue === 'number' && calcRevenue > 0 ? calcRevenue : null,
+          calcClients: typeof calcClients === 'number' && calcClients > 0 ? calcClients : null,
         })
       } else {
         setStatus('success')
