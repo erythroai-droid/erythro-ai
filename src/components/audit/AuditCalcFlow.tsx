@@ -682,6 +682,10 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                       submitTargetId={SUBMIT_SLOT_ID}
                       submitClassName="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-full bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase text-white shadow-none transition-[box-shadow,transform,opacity] duration-300 ease-out hover:shadow-[0_4px_20px_0_rgba(229,36,33,0.45)] disabled:cursor-wait disabled:hover:shadow-none"
                       onSubmitted={(submitted) => {
+                        // The slider stays live while the form is sending: keep the numbers that were saved,
+                        // so this screen and the emailed report show the same loss (PIT-158).
+                        setRevenue(submitted.calcRevenue ?? null)
+                        setClients(submitted.calcClients ?? null)
                         setNow(Date.now())
                         setStage({ name: 'waiting', submitted, startedAt: Date.now() })
                       }}
