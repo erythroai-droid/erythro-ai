@@ -84,18 +84,32 @@
     {
       "parameters": {
         "conditions": {
-          "boolean": [
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
             {
-              "value1": "={{$json.skip}}",
-              "value2": false
+              "id": "da1d174e-2193-4efb-a31d-885b5b0bea69",
+              "leftValue": "={{$json.skip}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
             }
-          ]
-        }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       },
       "id": "if-should-reply",
       "name": "Should Send Reply?",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
+      "typeVersion": 2.2,
       "position": [
         520,
         130
@@ -104,18 +118,31 @@
     {
       "parameters": {
         "conditions": {
-          "string": [
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
             {
-              "value1": "={{$json.mailboxEmail}}",
-              "value2": "order@erythro.ai"
+              "id": "940c7d72-a91b-49fb-90d6-1bc42ba7301e",
+              "leftValue": "={{$json.mailboxEmail}}",
+              "rightValue": "order@erythro.ai",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
             }
-          ]
-        }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       },
       "id": "if-mailbox-order",
       "name": "Is order@erythro.ai?",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
+      "typeVersion": 2.2,
       "position": [
         760,
         110

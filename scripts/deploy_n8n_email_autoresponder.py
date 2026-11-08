@@ -14,6 +14,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 import paramiko
@@ -149,15 +150,34 @@ def main() -> None:
     print(listing.strip() or "(empty)")
 
     try:
+        # n8n 2.45+: update:workflow --active is deprecated; publish then restart
+        # so IMAP triggers load the published version (PIT-156).
         activate_out = exec_checked(
             client,
-            "docker exec -u node n8n n8n update:workflow "
-            f"--id={live['id']} --active=true",
+            "docker exec -u node n8n n8n publish:workflow "
+            f"--id={live['id']}",
         )
-        print("[n8n] update:workflow --active=true")
+        print("[n8n] publish:workflow")
         print((activate_out or "").encode("ascii", "replace").decode() or "(no output)")
+        print("[n8n] restart container so published version is loaded")
+        exec_checked(client, "cd /root/n8n && docker compose restart n8n")
+        healthy = False
+        for attempt in range(24):
+            time.sleep(5)
+            code_probe = (
+                'curl -fsS -o /dev/null -w "%{http_code}" https://n8n.erythro.ai/healthz '
+                '|| curl -fsS -o /dev/null -w "%{http_code}" https://n8n.erythro.ai/ || true'
+            )
+            _, stdout, _ = client.exec_command(code_probe)
+            status = stdout.read().decode("utf-8", errors="replace").strip()
+            if status in {"200", "204"}:
+                healthy = True
+                print(f"[n8n] healthz ok after restart (try {attempt + 1})")
+                break
+        if not healthy:
+            print("[n8n] WARN: healthz not 200 after restart; continuing verify anyway")
     except RuntimeError as err:
-        print(f"[n8n] WARN: CLI activate failed, workflow may stay inactive: {err}")
+        print(f"[n8n] WARN: CLI publish/restart failed, workflow may stay inactive: {err}")
 
     exec_checked(client, "docker exec -u node n8n n8n export:workflow --all --output=/tmp/wf-verify.json")
     exec_checked(client, f"docker cp n8n:/tmp/wf-verify.json {remote_dir}/wf-verify.json")

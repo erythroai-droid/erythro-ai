@@ -2203,6 +2203,66 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-156 — n8n Code node second output / dead Meta CAPI branch on autoresponder
+
+**Tags:** `n8n`, `email`, `autoresponder`, `connections`, `meta-capi`
+**Seen:** 2026-11-08 — UI warnings on live workflows after n8n 2.45.x; Email Autoresponder had `Is Audit Lead?` on Code output[1]
+
+**Symptom:** Yellow warning on the canvas. `Process & Sign Autoresponder` (Code, one main output) was wired as two branches: `out[0] → Should Send Reply?`, `out[1] → Is Audit Lead? → Trigger Meta CAPI`. The CAPI branch never received items. Form Lead CAPI already runs on Vercel (`/api/contact`).
+
+**Cause:** Fan-out must put both targets on **the same** Code output (`main: [[{A}, {B}]]`), not on a second output index. Live had drifted from repo (`infra/n8n/workflows/email-autoresponder.json`) with a dead CAPI add-on. CLI `update:workflow --active=true` is deprecated on 2.45+ and may require `publish:workflow` + container restart for IMAP triggers to load the published version.
+
+**Fix:** Redeploy repo autoresponder (SMTP path unchanged; drop dead CAPI nodes). Backup first under `/root/n8n/backups/<stamp>/`. After import: confirm `active=true`, only one Process branch → `Should Send Reply?`, then `docker compose restart n8n` and `/healthz` 200. Keep Meta CAPI as the separate webhook workflow / Vercel path — do not re-attach unsigned CAPI from IMAP without `event_id` dedup.
+
+**Prevent:** Diff live vs repo before n8n import. Never add a second Code output for fan-out. Prefer credentials over hardcoded tokens in HTTP nodes (Stage 2).
+
+---
+
+## PIT-159 — n8n 2.45 publish + Telegram token in HTTP URL
+
+**Tags:** `n8n`, `credentials`, `telegram`, `publish`, `sqlite`
+**Seen:** 2026-11-08 — Stage 2 migrate Meta/Gemini/Telegram off plaintext workflow JSON
+
+**Symptom:** After `import:workflow` + `publish:workflow`, Marketing Digest 404s on Telegram (`{"ok":false,"error_code":404}`). `activeVersionId` / `workflow_published_version` can diverge; CLI publish while the container is running often needs restart. SQLite copies without `-wal` hide new executions.
+
+**Cause:** (1) Bot token in an HTTP Request URL via `$env.TELEGRAM_BOT_TOKEN` or `$credentials.telegramApi.accessToken` often resolves empty → Telegram 404, even when `getMe` with `process.env` works. (2) n8n 2.45 publication uses `workflow_published_version` + outbox. (3) Meta/Gemini `httpQueryAuth` on HTTP Request works.
+
+**Fix:** Meta/Gemini → Generic Credential Type → Query Auth (`access_token` / `key`). Telegram → **native** `n8n-nodes-base.telegram` + `telegramApi` credential. After import: `publish:workflow --id=… --versionId=…`, then `docker compose restart n8n`. Verify `workflow_published_version` matches `activeVersionId`. Read executions via sqlite backup including WAL.
+
+**Prevent:** Do not put Telegram bot tokens in HTTP URLs/expressions. Do not trust CLI publish without checking `workflow_published_version` after restart. Copy `database.sqlite` + `-wal`/`-shm` when debugging executions. After publish+restart, webhook smoke can 404 for a few seconds — retry before declaring failure. IF v1→v2.x needs condition schema migration (legacy `string`/`boolean` arrays → filter `conditions`+`combinator`); do not only bump `typeVersion`.
+
+---
+
+## PIT-158 — Leak calculator: on-screen report and emailed report show different losses
+
+**Tags:** `leak-lp`, `calculator`, `report`, `state`
+**Seen:** 2026-11-08 — report 264 (erythro.ai): saved revenue ₪18,000, email showed ₪1,000 per month, the screen right after the check showed ₪56,000 (the result for ₪1,000,000, the slider maximum)
+
+**Symptom:** One report, two loss amounts.
+
+**Cause:** The email link takes revenue from the saved submission; step 4 used the live client `revenue` state. The slider is not disabled while the form checks the site and posts, so the two can diverge after the click. How the slider moved in report 264 was not confirmed.
+
+**Fix:** `AuditLpForm` returns the values it sent through `onSubmitted`; `AuditCalcFlow` sets `revenue` and `clients` from them.
+
+**Prevent:** A report must be computed from the persisted input, never from a control that can still change after submit.
+
+---
+
+## PIT-157 — Leak calculator LP stuck on the form: hidden scroll range in `overflow-hidden` main
+
+**Tags:** `leak-lp`, `mobile`, `facebook`, `in-app-browser`, `overflow`, `scroll`
+**Seen:** 2026-11-08 — leak-* LP opened from a Facebook ad on mobile: the page starts at the form fields; everything above is gone and cannot be scrolled back
+
+**Symptom:** Header stays, but the hero, step tracker and form heading are cut off. Swiping up does nothing.
+
+**Cause:** Decorative `.calc-loss-a` ends at 145% of the panel (`top: 55%` + `height: 90%`). It overflowed `<main class="overflow-hidden">`, giving main 630px of scroll range at 375px width (`scrollHeight` 2031 vs `clientHeight` 1401). `overflow: hidden` blocks user scrolling but not browser-initiated scrolling, so any scroll to the form moved main to its maximum and the user had no gesture to undo it. `window.scrollTo(0, 0)` does not reset it either.
+
+**Fix:** Clip the blobs on their own `aria-hidden` layer (`overflow-hidden`) and make the panel `overflow-clip`, which is not a scroll container. Applied to `AuditCalcFlow` main and both blob sections in `CalcReport`.
+
+**Prevent:** A panel with oversized decorative children and focusable content must not rely on `overflow-hidden` on the content's ancestor. Clip decoration on its own layer; use `overflow-clip` on the panel. Check `scrollHeight === clientHeight` on the panel.
+
+---
+
 ## PIT-153 — Top-3 ordered by internal weight, GA4 shown with two statuses, "1." in the accessibility card (MI-002, MI-006, MI-011)
 
 **Tags:** `audit`, `render-v2`, `top-3`, `status`, `wording`
@@ -2695,3 +2755,5 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Top-3 and the plan follow the status the card shows (`top_candidates` + `sevIdx`); a finding takes its status from its checklist row (PIT-153)
 - [ ] Home pin + lead-in: upstream `pinSpacing: false` end must cover next section’s `160vh` lead-in + overlay (`+=260%`, PIT-154)
 - [ ] `/api/audit/report/[id]`: Payload missing id → 404 not 500 (`findAuditSubmission` catches Not Found, PIT-155)
+- [ ] n8n Code fan-out: both targets on output[0]; after CLI import prefer `publish:workflow` + restart n8n for IMAP (PIT-156)
+- [ ] n8n Telegram: native Telegram node + telegramApi cred; Meta/Gemini via httpQueryAuth; verify `workflow_published_version` after restart (PIT-159)

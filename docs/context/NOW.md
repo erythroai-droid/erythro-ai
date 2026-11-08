@@ -1,9 +1,43 @@
 # Latest changes
 
-Обновлено: 2026-11-06 (calc lead split + Meta CAPI)  
-Статус: код готов, не задеплоен; CAPI ждёт токен в Vercel
+Обновлено: 2026-11-08 (n8n Stage 3 — typeVersion)  
+Статус: Stage 1–3 на VPS; ротация токенов отложена
 
 ---
+
+## −7. n8n Stage 3 — IF/HTTP typeVersion (2026-11-08)
+- **Сделано:** HTTP Request `4.2→4.3`; IF legacy `1→2.2` (миграции schema). Скрипт `deploy_n8n_stage3_typeversions.py`. Бэкапы `/root/n8n/backups/*stage3*`.
+- Active: Meta CAPI, Marketing Digest, Telegram Bot, Email Autoresponder. Inactive reconcile/walker — только import.
+- Repo: `infra/n8n/workflows/email-autoresponder.json` IF тоже 2.2.
+- **Smoke:** CAPI #403 success; digest #404 success; TG `/start` #405 success; order@/team@ автоответы (`SMOKE-*-20261108-1238`) executions #406/#407 success.
+- **Следующий шаг:** ротация Meta/Gemini/Telegram credentials (по желанию). UI warnings typeVersion закрыты.
+
+## −6. n8n Stage 2 — secrets → Credentials (2026-11-08)
+- **Сделано:** Meta Graph + Gemini → `httpQueryAuth`; Telegram → native `telegram` + `telegramApi` (HTTP URL/`$env`/`$credentials` → 404, PIT-159).
+- Active: Marketing Digest, Telegram Bot, Meta CAPI — plaintext токенов в node params нет.
+- **Smoke:** digest execution **success** (#400); meta-lead **success** (#401).
+- Скрипты: `deploy_n8n_marketing_credentials.py`, `repair_n8n_stage2h2.py`. Бэкапы `/root/n8n/backups/*stage2*`.
+- **Ротация токенов не сделана** (значения перенесены as-is; пользователь оставил as-is).
+
+## −5. Calc LP — разная сумма на экране и в письме (2026-11-08, не задеплоено)
+- **Симптом:** отчёт 264: в базе выручка 18 000 ₪, в письме 1 000 ₪/мес, на экране сразу после проверки 56 000 ₪ (это результат для 1 000 000 ₪, максимум ползунка). PIT-158.
+- **Причина:** экран брал живое значение ползунка, письмо — сохранённое. Как именно сдвинулся ползунок, не установлено.
+- **Сделано:** `AuditLpForm` возвращает отправленные значения в `onSubmitted`, `AuditCalcFlow` считает отчёт по ним. Не собрано и не проверено в браузере: здесь нет `node_modules`, проверка на проде создала бы заявку.
+- **Следующий шаг:** запушено в `hotfix/calc-report-saved-revenue` (`c1a103b`). Осталось: GitHub PR, merge, Vercel site deploy, затем тестовая заявка.
+
+## −4. Calc LP — страница «застревала» на форме (2026-11-08, прод: PR #387, проверено на leak-ru: `overflow: clip`, скрытой прокрутки нет)
+- **Симптом:** переход из Facebook на мобильном — страница начинается с полей формы, вверх не скроллится (PIT-157).
+- **Причина:** пятно `.calc-loss-a` давало `<main overflow-hidden>` скрытые 630 px прокрутки; браузер мог прокрутить их сам, пользователь обратно — нет.
+- **Сделано:** `overflow-clip` на панели + `overflow-hidden` на слое пятен: `AuditCalcFlow.tsx` и два блока в `CalcReport.tsx`.
+- **Проверено:** баг воспроизведён на проде (375×812); те же CSS-значения, применённые к живой странице, его убирают. Сборка не запускалась; в настоящем браузере Facebook не проверено; что именно запускает автоскролл в FB, не установлено.
+- **Следующий шаг:** открыть объявление на телефоне. Запись PIT-157 в `docs/PITFALLS.md` пока только локально, в main не закоммичена.
+
+## −3. n8n warnings — Stage 1 Email Autoresponder (2026-11-08)
+- **Сделано:** бэкап `/root/n8n/backups/20261108T083053Z` (+ scrubbed local under `infra/n8n/backups/`, gitignored). Live vs repo: SMTP-цепочка идентична; на live висела мёртвая ветка `Process out[1] → Is Audit Lead? → Meta CAPI` (Code имеет 1 выход — PIT-156).
+- Задеплоен repo JSON через `deploy_n8n_email_autoresponder.py` (credentials сохранены). Убраны мёртвые CAPI-ноды. `active=true`, `publish` + `docker compose restart n8n`, healthz 200. Marketing / Meta CAPI webhook / reconcile не трогали.
+- Скрипт обновлён: `publish:workflow` вместо deprecated `update:workflow --active`.
+- **Smoke (2026-11-08):** с `webmechanik@gmail.com` → `order@` и `team@` (маркер `SMOKE-*-20261108-1055`). Оба автоответа за ~1 мин: `Erythro.ai Orders <order@…>` / `Erythro.ai Support <team@…>`, subject `Re: …`, branded body OK.
+- Stage 2 credentials — см. −6.
 
 ## −2. Calc LP — og:image (2026-11-07, не задеплоено)
 - `leak-{en,ru,he}` отдавали OG без картинки (PIT-079, повтор). Теперь `openGraph.images` + `twitter.images` через `ogImageForLeakCalc(locale)` → `public/images/og/leak-calc-{en,ru,he}.jpg` (1200×630, ~62 КБ).
@@ -16,7 +50,9 @@
 - **Следующий шаг:** визуально проверить leak-{ru,en,he} (RTL, мобайл), затем коммит/деплой по команде.
 
 ## 0. Калькулятор отдельно от аудита + Meta CAPI (2026-11-06, прод: PR #383, dpl_21aR…)
-- **Статус:** задеплоено; env `META_CAPI_ACCESS_TOKEN` + `META_CAPI_TEST_EVENT_CODE=TEST82430` в Production. Тестовая заявка 262 (leak-he) — без ошибки CAPI в логах, но в Test Events пусто. Добавлены логи `Meta CAPI Lead sent|skipped|failed` (follow-up коммит) → после деплоя новая заявка (инкогнито, «Принять», новый сайт/email) → читать логи `/api/contact`. Затем удалить test code + redeploy.
+- **Статус: CAPI работает.** Заявка 263 (leak-he, 00:41): Test Events — Lead браузер + Lead сервер, оба `event_id=263`, `content_name: leak_calc`; сервер: email, IP, UA. (262 не видна — вкладка Test Events была закрыта.)
+- **Закрыто:** `META_CAPI_TEST_EVENT_CODE` удалён; логирование в main (PR #384), прод redeploy `dpl_BUTj…` (2026-11-07 00:46).
+- **Осталось:** через сутки — Обзор пикселя: «Лид» без удвоения. Опционально: передавать `_fbp` с клиента (EMQ); выяснить внешний серверный источник Lead до #383.
 - В пикселе «Лид» уже был «Браузер • Сервер» до PR #383 (70 событий, EMQ 0.0) — внешний источник серверных событий не из этого репо (Make / интеграция Meta?), выяснить.
 - **Split:** `AuditCalcFlow` → `AuditLpForm leadChannel="leak_calc"` → `trackFreeAuditLead(id, 'leak_calc')`: Meta `content_name: leak_calc`, GA4 `qualify_lead.lead_source: leak_calc`. Аудит без изменений (`free_audit` / `audit`). Google Ads conversion общая.
 - **CAPI:** `src/lib/metaCapi.ts` + `/api/contact` (`after()`), `event_id` = submissionId (dedup с Pixel), общий `metaLeadContentName` (`src/lib/metaLead.ts`). Пропуск при `cookie_consent=declined` или без `META_CAPI_ACCESS_TOKEN`.

@@ -52,6 +52,9 @@ node_modules/
 # Database dumps (pnpm db:backup)
 /backups/
 
+# n8n workflow backups (may contain secrets even when scrubbed)
+/infra/n8n/backups/
+
 # QA test screenshots
 /qa/
 /public/images/Let`s talk.png
