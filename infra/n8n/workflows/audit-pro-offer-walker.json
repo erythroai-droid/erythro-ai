@@ -35,7 +35,7 @@
       "id": "http-pro-offer-walker",
       "name": "POST reconcile (Pro Walker)",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "typeVersion": 4.3,
       "position": [280, 0],
       "credentials": {
         "httpHeaderAuth": {
