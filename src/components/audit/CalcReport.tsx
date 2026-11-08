@@ -1376,8 +1376,8 @@ function LossHero({
   }
 
   return (
-    <section className="calc-loss-flow calc-snap-panel relative isolate ms-[calc(50%-50vw)] flex min-h-[calc(100svh-var(--calc-top,0px))] w-screen scroll-mt-[var(--calc-top,0px)] items-center overflow-hidden text-white">
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+    <section className="calc-loss-flow calc-snap-panel relative isolate ms-[calc(50%-50vw)] flex min-h-[calc(100svh-var(--calc-top,0px))] w-screen scroll-mt-[var(--calc-top,0px)] items-center overflow-clip text-white">
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="calc-lq-blob calc-loss-a" />
         <div className="calc-lq-blob calc-loss-b" />
         <div className="calc-lq-blob calc-loss-c" />
@@ -2628,8 +2628,8 @@ function FixSprintHero({
   const star = <span aria-hidden className="ms-0.5 align-super text-[0.5em] font-bold opacity-75">*</span>
 
   return (
-    <section id="calc-offer" className="calc-fix-flow calc-snap-panel relative isolate ms-[calc(50%-50vw)] flex min-h-svh w-screen items-center overflow-hidden text-white">
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+    <section id="calc-offer" className="calc-fix-flow calc-snap-panel relative isolate ms-[calc(50%-50vw)] flex min-h-svh w-screen items-center overflow-clip text-white">
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="calc-lq-blob calc-fix-a" />
         <div className="calc-lq-blob calc-fix-b" />
         <div className="calc-lq-blob calc-fix-c" />

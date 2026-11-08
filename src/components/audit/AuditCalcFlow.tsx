@@ -476,9 +476,10 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
           </div>
         </main>
       ) : (
-        <main className="calc-loss-flow relative isolate overflow-hidden w-full flex-1 min-h-0 flex flex-col text-white pt-7 sm:pt-9 md:pt-11 pb-0 lg:pt-1 xl:pt-2">
-        {/* Same deep lilac panel and slow glows as the loss hero of step 4 */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <main className="calc-loss-flow relative isolate overflow-clip w-full flex-1 min-h-0 flex flex-col text-white pt-7 sm:pt-9 md:pt-11 pb-0 lg:pt-1 xl:pt-2">
+        {/* Same deep lilac panel and slow glows as the loss hero of step 4.
+            The glows are clipped on this layer: left to main they add hidden scroll range that traps the page (PIT-157). */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <div className="calc-lq-blob calc-loss-a" />
           <div className="calc-lq-blob calc-loss-b" />
           <div className="calc-lq-blob calc-loss-c" />
