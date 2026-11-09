@@ -724,27 +724,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
                   {formStep === 2 ? (
                     <div className="flex flex-col gap-3.5 sm:gap-4">
-                      <CalcNumbers
-                        locale={locale}
-                        revenue={revenue}
-                        clients={clients}
-                        onRevenue={(r) => {
-                          setRevenue(r)
-                          setSkipToPercent(false)
-                        }}
-                        onClients={(c) => {
-                          setClients(c)
-                          setSkipToPercent(false)
-                        }}
-                        onReset={() => {
-                          setRevenue(null)
-                          setClients(null)
-                        }}
-                        theme="dark"
-                        disabled={skipToPercent}
-                      />
-
-                      {/* Opt-in for ₪: off by default so revenue fields stay disabled */}
+                      {/* Phones: checkbox first; sliders stay hidden until opt-in. Desktop keeps numbers above. */}
                       <button
                         type="button"
                         role="switch"
@@ -758,7 +738,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                             setClients(null)
                           }
                         }}
-                        className={`group w-full flex items-center justify-between gap-3 rounded-[12px] border p-3 sm:p-3.5 lg:p-2.5 text-start transition-all duration-200 cursor-pointer ${
+                        className={`group order-1 sm:order-2 w-full flex items-center justify-between gap-3 rounded-[12px] border p-3 sm:p-3.5 lg:p-2.5 text-start transition-all duration-200 cursor-pointer ${
                           !skipToPercent
                             ? 'border-[#c4b5fd]/60 bg-[#8b74c7]/25'
                             : 'border-white/15 bg-white/[0.06] hover:border-white/30 hover:bg-white/10'
@@ -793,6 +773,28 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                           {skipToPercent ? '%' : '₪'}
                         </span>
                       </button>
+
+                      <div className={`order-2 sm:order-1 ${skipToPercent ? 'hidden sm:block' : 'block'}`}>
+                        <CalcNumbers
+                          locale={locale}
+                          revenue={revenue}
+                          clients={clients}
+                          onRevenue={(r) => {
+                            setRevenue(r)
+                            setSkipToPercent(false)
+                          }}
+                          onClients={(c) => {
+                            setClients(c)
+                            setSkipToPercent(false)
+                          }}
+                          onReset={() => {
+                            setRevenue(null)
+                            setClients(null)
+                          }}
+                          theme="dark"
+                          disabled={skipToPercent}
+                        />
+                      </div>
                     </div>
                   ) : null}
 
