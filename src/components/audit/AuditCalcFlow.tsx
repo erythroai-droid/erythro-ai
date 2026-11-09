@@ -77,7 +77,8 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
   const [now, setNow] = useState(() => Date.now())
   const [waText, setWaText] = useState('')
   const [formStep, setFormStep] = useState<1 | 2>(1)
-  const [skipToPercent, setSkipToPercent] = useState(false)
+  /** Off by default: revenue fields stay disabled until the user opts in for ₪. */
+  const [skipToPercent, setSkipToPercent] = useState(true)
   const [revenue, setRevenue] = useState<number | null>(null)
   const [clients, setClients] = useState<number | null>(null)
   /** Keep ?report=&k=&rev=&clients= when switching leak-{locale} hosts. */
@@ -199,6 +200,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     } else if (preview === 'failed') {
       setStage({ name: 'failed', submitted })
     } else if (preview === 'step2') {
+      setSkipToPercent(true)
       setFormStep(2)
     }
   }, [])
@@ -371,7 +373,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
   // Tracker above the glass form: white on the dark panel, an almost white fill like the loss bars of the step 4 hero
   const tracker = (
-    <div className={`w-full flex-col gap-2 shrink-0 ${currentStep === 1 ? 'hidden sm:flex' : 'flex'}`}>
+    <div className={`w-full flex-col gap-2 shrink-0 ${currentStep <= 2 ? 'hidden sm:flex' : 'flex'}`}>
       <div className="flex items-center gap-2.5">
         <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/15 text-xs font-bold tabular-nums text-white">
           {currentStep}
@@ -578,7 +580,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </span>
             </p>
 
-            <div className={`mt-5 sm:mt-6 flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/70 ${currentStep === 1 ? 'hidden sm:flex' : 'flex'}`}>
+            <div className={`mt-5 sm:mt-6 flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/70 ${currentStep <= 2 ? 'hidden sm:flex' : 'flex'}`}>
               {currentStep === 1 ? (
                 <>
                   <span className="inline-flex items-center gap-2">
@@ -660,10 +662,12 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                   ) : (
                     <div>
                       <h3 className="m-0 flex items-stretch gap-3 before:block before:w-[2px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#ff4542] text-lg font-bold leading-[1.3] tracking-[-0.01em] text-white sm:text-xl">
-                        {tCalc(copy.step2Heading, locale)}
+                        <span className="sm:hidden">{tCalc(copy.mobile.step2Heading, locale)}</span>
+                        <span className="hidden sm:inline">{tCalc(copy.step2Heading, locale)}</span>
                       </h3>
                       <p className="m-0 mt-1.5 text-sm leading-[1.5] text-white/70">
-                        {tCalc(copy.step2Sub, locale)}
+                        <span className="sm:hidden">{tCalc(copy.mobile.step2Sub, locale)}</span>
+                        <span className="hidden sm:inline">{tCalc(copy.step2Sub, locale)}</span>
                       </p>
                     </div>
                   )}
@@ -680,7 +684,14 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                       calcRevenue={revenue}
                       calcClients={clients}
                       leadChannel="leak_calc"
-                      submitLabelMobile={formStep === 1 ? tCalc(copy.mobile.submit, locale) : undefined}
+                      submitLabelMobile={tCalc(
+                        formStep === 1
+                          ? copy.mobile.submit
+                          : skipToPercent
+                            ? copy.mobile.step2SubmitPercent
+                            : copy.mobile.step2SubmitMoney,
+                        locale,
+                      )}
                       submitLabel={tCalc(
                         formStep === 1
                           ? copy.nextStepCalc
@@ -690,7 +701,12 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                         locale,
                       )}
                       holdSubmit={formStep === 1}
-                      onValidated={() => setFormStep(2)}
+                      onValidated={() => {
+                        setSkipToPercent(true)
+                        setRevenue(null)
+                        setClients(null)
+                        setFormStep(2)
+                      }}
                       onInvalid={() => setFormStep(1)}
                       legalTargetId={LEGAL_SLOT_ID}
                       submitTargetId={SUBMIT_SLOT_ID}
@@ -728,30 +744,30 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                         disabled={skipToPercent}
                       />
 
-                      {/* Styled Technical Segment / Switch for Percent mode */}
+                      {/* Opt-in for ₪: off by default so revenue fields stay disabled */}
                       <button
                         type="button"
                         role="switch"
-                        aria-checked={skipToPercent}
+                        aria-checked={!skipToPercent}
                         onClick={() => {
-                          const next = !skipToPercent
-                          setSkipToPercent(next)
-                          if (next) {
+                          if (skipToPercent) {
+                            setSkipToPercent(false)
+                          } else {
+                            setSkipToPercent(true)
                             setRevenue(null)
                             setClients(null)
                           }
                         }}
                         className={`group w-full flex items-center justify-between gap-3 rounded-[12px] border p-3 sm:p-3.5 lg:p-2.5 text-start transition-all duration-200 cursor-pointer ${
-                          skipToPercent
+                          !skipToPercent
                             ? 'border-[#c4b5fd]/60 bg-[#8b74c7]/25'
                             : 'border-white/15 bg-white/[0.06] hover:border-white/30 hover:bg-white/10'
                         }`}
                       >
                         <div className="flex items-center gap-3 text-start">
-                          {/* Glass checkbox: lilac fill with a check when on */}
                           <span
                             className={`flex size-5 shrink-0 items-center justify-center rounded-[5px] border transition-all ${
-                              skipToPercent
+                              !skipToPercent
                                 ? 'border-[#c4b5fd] bg-[#8b74c7] text-white'
                                 : 'border-white/30 bg-white/5 text-transparent group-hover:border-white/50'
                             }`}
@@ -760,20 +776,16 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                           </span>
                           <div className="flex flex-col">
                             <span className="text-sm font-semibold leading-snug text-white">
-                              {tCalc(copy.step2SkipCheckbox, locale)}
+                              {tCalc(copy.step2EnableRevenue, locale)}
                             </span>
                             <span className="mt-0.5 text-xs leading-snug text-white/60">
-                              {locale === 'he'
-                                ? 'חישוב נתוני נשירה באחוזים בלבד ללא המרה לשקלים'
-                                : locale === 'ru'
-                                  ? 'Расчёт конверсии в % без перевода в валюту'
-                                  : 'Conversion % report without monetary loss'}
+                              {tCalc(copy.step2EnableRevenueHint, locale)}
                             </span>
                           </div>
                         </div>
                         <span
                           className={`flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-bold transition-colors ${
-                            skipToPercent
+                            !skipToPercent
                               ? 'border-[#c4b5fd]/60 bg-[#8b74c7] text-white'
                               : 'border-white/20 bg-white/10 text-white/80'
                           }`}
@@ -800,14 +812,18 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                           type="button"
                           onClick={() => {
                             setFormStep(1)
-                            setSkipToPercent(false)
+                            setSkipToPercent(true)
+                            setRevenue(null)
+                            setClients(null)
                           }}
                           className="cursor-pointer inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                         >
                           <span aria-hidden="true" className="rtl:rotate-180">←</span>
-                          <span>{tCalc(copy.backToPreviousStep, locale)}</span>
+                          <span className="sm:hidden">{tCalc(copy.back, locale)}</span>
+                          <span className="hidden sm:inline">{tCalc(copy.backToPreviousStep, locale)}</span>
                         </button>
 
+                        {/* Desktop only: on phones % is already the default CTA */}
                         <button
                           type="button"
                           onClick={() => {
@@ -819,7 +835,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                               btn?.click()
                             }, 0)
                           }}
-                          className="cursor-pointer inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+                          className="hidden sm:inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[13px] font-medium text-white/60 transition-colors hover:bg-white/10 hover:text-white"
                         >
                           <span>{tCalc(copy.skipStep, locale)}</span>
                           <span aria-hidden="true" className="rtl:rotate-180">→</span>

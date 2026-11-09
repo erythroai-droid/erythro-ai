@@ -353,6 +353,26 @@ export const auditCalcCopy = {
       ru: 'Проверить сайт бесплатно',
       he: 'בדקו את האתר בחינם',
     } satisfies Localized,
+    step2Heading: {
+      en: 'Revenue is optional',
+      ru: 'Доход — по желанию',
+      he: 'הכנסה — לא חובה',
+    } satisfies Localized,
+    step2Sub: {
+      en: 'Continue with % only, or add a rough monthly figure for losses in ₪.',
+      ru: 'Можно сразу смотреть потери в %. Доход — только если нужны суммы в ₪.',
+      he: 'אפשר להמשיך באחוזים בלבד. הכנסה — רק אם רוצים סכומים בש״ח.',
+    } satisfies Localized,
+    step2SubmitPercent: {
+      en: 'Show losses in %',
+      ru: 'Показать потери в %',
+      he: 'הציגו הפסדים ב-%',
+    } satisfies Localized,
+    step2SubmitMoney: {
+      en: 'Show losses in ₪',
+      ru: 'Показать потери в ₪',
+      he: 'הציגו הפסדים בש״ח',
+    } satisfies Localized,
   },
   step1ScopeTitle: {
     en: 'What will be audited in ~5 minutes:',
@@ -1616,10 +1636,16 @@ export const auditCalcCopy = {
     ru: 'Пропустить шаг (расчёт в %)',
     he: 'דילוג על השלב (חישוב ב-%)',
   } satisfies Localized,
-  step2SkipCheckbox: {
-    en: 'Calculate in % only (skip revenue)',
-    ru: 'Рассчитать только в процентах (без ввода выручки)',
-    he: 'חישוב באחוזים בלבד (ללא הזנת הכנסות)',
+  /** Opt-in: enable revenue fields for ₪ losses (off / % mode by default). */
+  step2EnableRevenue: {
+    en: 'Add revenue to see losses in ₪',
+    ru: 'Указать доход, чтобы увидеть потери в ₪',
+    he: 'הוסיפו הכנסה כדי לראות הפסדים בש״ח',
+  } satisfies Localized,
+  step2EnableRevenueHint: {
+    en: 'Leave off for a % only report',
+    ru: 'Если выключено — отчёт только в процентах',
+    he: 'כבוי = דוח באחוזים בלבד',
   } satisfies Localized,
   submitPercent: {
     en: 'Calculate losses in %',
