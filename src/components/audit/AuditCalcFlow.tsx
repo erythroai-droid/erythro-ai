@@ -373,7 +373,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
   // Tracker above the glass form: white on the dark panel, an almost white fill like the loss bars of the step 4 hero
   const tracker = (
-    <div className={`w-full flex-col gap-2 shrink-0 ${currentStep <= 2 ? 'hidden sm:flex' : 'flex'}`}>
+    <div className={`w-full flex-col gap-2 shrink-0 ${currentStep <= 3 ? 'hidden sm:flex' : 'flex'}`}>
       <div className="flex items-center gap-2.5">
         <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/15 text-xs font-bold tabular-nums text-white">
           {currentStep}
@@ -580,7 +580,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </span>
             </p>
 
-            <div className={`mt-5 sm:mt-6 flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/70 ${currentStep <= 2 ? 'hidden sm:flex' : 'flex'}`}>
+            <div className={`mt-5 sm:mt-6 flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/70 ${currentStep <= 3 ? 'hidden sm:flex' : 'flex'}`}>
               {currentStep === 1 ? (
                 <>
                   <span className="inline-flex items-center gap-2">
