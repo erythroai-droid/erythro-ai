@@ -31,7 +31,6 @@ import {
 import { AUDIT_LP_LOCALES, auditLpHrefForLocale, mainSiteUrl, type AuditLpLocale } from '@/lib/auditLp'
 import { auditCalcCopy as copy, fillCalc, tCalc } from '@/lib/auditCalcCopy'
 import { pillarsFromOverall, type AuditPillars } from '@/lib/revenueLeak'
-import { calcFunnel, startCalcFunnel } from '@/lib/calcFunnelTest'
 
 type Stage =
   | { name: 'form' }
@@ -52,6 +51,8 @@ function startedAtFromReport(json: AuditReportPublicPayload): number {
 
 /** Element inside the form card that receives the audit form's submit button. */
 const SUBMIT_SLOT_ID = 'calc-submit-slot'
+/** Element under the submit button that receives the form's legal note. */
+const LEGAL_SLOT_ID = 'calc-legal-slot'
 
 /** Host without protocol / www / path, for headings and the WhatsApp text. */
 export function displayDomain(website: string): string {
@@ -122,7 +123,6 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     const reportIdRaw = q.get('report')
     const accessKey = q.get('k')?.trim() || null
     const reportId = reportIdRaw && /^\d+$/.test(reportIdRaw) ? Number(reportIdRaw) : null
-    startCalcFunnel(reportId && accessKey ? 'email_return' : 'landing')
     if (reportId && accessKey) {
       const siteParam = q.get('site') || q.get('website') || ''
       setResumeSearch(window.location.search || '')
@@ -236,7 +236,6 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
             website: submitted.website || json.website || '',
           }
           if (json.status === 'report_sent') {
-            if (!fromDeepLink) calcFunnel('calc_06_report_ready')
             setStage({
               name: 'ready',
               submitted: nextSubmitted,
@@ -245,7 +244,6 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
             return
           }
           if (json.status === 'failed') {
-            if (!fromDeepLink) calcFunnel('calc_err_audit')
             setStage({ name: 'failed', submitted: nextSubmitted })
             return
           }
@@ -461,12 +459,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
       {/* ================= 2. MAIN CONTENT ================= */}
       {stage.name === 'ready' && report && pillars ? (
-        <main
-          className="w-full flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pb-8 sm:pb-10 lg:pb-14 animate-hero-fade"
-          onClickCapture={(e) => {
-            if ((e.target as HTMLElement).closest('a[href^="https://wa.me"]')) calcFunnel('calc_07_whatsapp_click')
-          }}
-        >
+        <main className="w-full flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pb-8 sm:pb-10 lg:pb-14 animate-hero-fade">
           {/* Same side padding and content width as the full-bleed loss panel, so every block below lines up with it */}
           <div className="w-full max-w-[1440px] mx-auto">
             <CalcResult
@@ -676,7 +669,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                   )}
 
                   {/* The audit form stays mounted on step 2 (hidden) so its values and validation survive. */}
-                  <div className={formStep === 1 ? 'block' : 'hidden'} onFocusCapture={() => calcFunnel('calc_02_form_focus')}>
+                  <div className={formStep === 1 ? 'block' : 'hidden'}>
                     <AuditLpForm
                       locale={locale}
                       theme="dark"
@@ -697,23 +690,14 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                         locale,
                       )}
                       holdSubmit={formStep === 1}
-                      onValidated={() => {
-                        calcFunnel('calc_03_step1_done')
-                        setFormStep(2)
-                      }}
-                      onInvalid={() => {
-                        calcFunnel('calc_err_invalid', { form_step: formStep })
-                        setFormStep(1)
-                      }}
-                      onSubmitFailed={(status) => calcFunnel('calc_err_submit', { http_status: status })}
+                      onValidated={() => setFormStep(2)}
+                      onInvalid={() => setFormStep(1)}
+                      legalTargetId={LEGAL_SLOT_ID}
                       submitTargetId={SUBMIT_SLOT_ID}
                       submitClassName="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-full bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase text-white shadow-none transition-[box-shadow,transform,opacity] duration-300 ease-out hover:shadow-[0_4px_20px_0_rgba(229,36,33,0.45)] disabled:cursor-wait disabled:hover:shadow-none"
                       onSubmitted={(submitted) => {
                         // The slider stays live while the form is sending: keep the numbers that were saved,
                         // so this screen and the emailed report show the same loss (PIT-158).
-                        calcFunnel('calc_05_lead_sent', {
-                          report_mode: submitted.calcRevenue || submitted.calcClients ? 'money' : 'percent',
-                        })
                         setRevenue(submitted.calcRevenue ?? null)
                         setClients(submitted.calcClients ?? null)
                         setNow(Date.now())
@@ -729,12 +713,10 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                         revenue={revenue}
                         clients={clients}
                         onRevenue={(r) => {
-                          if (r != null) calcFunnel('calc_04_step2_input')
                           setRevenue(r)
                           setSkipToPercent(false)
                         }}
                         onClients={(c) => {
-                          if (c != null) calcFunnel('calc_04_step2_input')
                           setClients(c)
                           setSkipToPercent(false)
                         }}
@@ -753,7 +735,6 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                         aria-checked={skipToPercent}
                         onClick={() => {
                           const next = !skipToPercent
-                          if (next) calcFunnel('calc_percent_mode')
                           setSkipToPercent(next)
                           if (next) {
                             setRevenue(null)
@@ -810,16 +791,10 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                   }`}>
                     <div id={SUBMIT_SLOT_ID} className="flex w-full justify-center h-[46px] sm:h-[48px] lg:h-[48px] xl:h-[52px] [&_button]:!w-full [&_button]:!text-sm [&_button]:!font-medium [&_button]:!uppercase" />
 
-                    {formStep === 1 ? (
-                      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-center text-xs font-medium text-white/75">
-                        {[copy.step1Guarantee1, copy.step1Guarantee3].map((g) => (
-                          <span key={g.en} className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                            <svg className="size-3.5 shrink-0 text-[#86efac]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
-                            {tCalc(g, locale)}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
+                    {/* Stays mounted on step 2 (hidden): the form's portal keeps this element. */}
+                    <div id={LEGAL_SLOT_ID} className={formStep === 1 ? 'w-full' : 'hidden'} />
+
+                    {formStep === 1 ? null : (
                       <div className="flex items-center justify-between w-full px-1 pt-0.5">
                         <button
                           type="button"
@@ -838,7 +813,6 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                           onClick={() => {
                             setRevenue(null)
                             setClients(null)
-                            calcFunnel('calc_skip_step2')
                             setSkipToPercent(true)
                             setTimeout(() => {
                               const btn = document.getElementById(SUBMIT_SLOT_ID)?.querySelector('button')

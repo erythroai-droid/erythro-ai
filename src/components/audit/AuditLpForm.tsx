@@ -211,6 +211,7 @@ export default function AuditLpForm({
   submitLabel,
   submitLabelMobile,
   submitTargetId,
+  legalTargetId,
   submitClassName,
   neon = false,
   showName = false,
@@ -219,7 +220,6 @@ export default function AuditLpForm({
   onValidated,
   onInvalid,
   onSubmitted,
-  onSubmitFailed,
   calcRevenue = null,
   calcClients = null,
   leadChannel = null,
@@ -239,6 +239,8 @@ export default function AuditLpForm({
   submitLabelMobile?: string
   /** Id of an element elsewhere on the page; the submit button is rendered into it instead of the form. */
   submitTargetId?: string
+  /** Id of an element elsewhere on the page; the legal note is rendered into it instead of the form. */
+  legalTargetId?: string
   /** Replaces the default submit button look. */
   submitClassName?: string
   /** Dark glass fields (calculator LP). */
@@ -252,8 +254,6 @@ export default function AuditLpForm({
   onInvalid?: () => void
   /** When set, the caller continues the flow and the success modal is not shown. */
   onSubmitted?: (info: AuditLpSubmitted) => void
-  /** HTTP status of a rejected submission, 0 for a network error. */
-  onSubmitFailed?: (status: number) => void
   /** Leak calculator step-2 metrics — persisted for the report-ready email deep link. */
   calcRevenue?: number | null
   calcClients?: number | null
@@ -298,6 +298,7 @@ export default function AuditLpForm({
 
   const formId = useId()
   const [submitMount, setSubmitMount] = useState<HTMLElement | null>(null)
+  const [legalMount, setLegalMount] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
     setPortalReady(true)
@@ -307,6 +308,10 @@ export default function AuditLpForm({
   useEffect(() => {
     setSubmitMount(submitTargetId ? document.getElementById(submitTargetId) : null)
   }, [submitTargetId])
+
+  useEffect(() => {
+    setLegalMount(legalTargetId ? document.getElementById(legalTargetId) : null)
+  }, [legalTargetId])
 
   useEffect(() => {
     setValues((current) => ({ ...current, auditLanguage: reportLanguage }))
@@ -408,7 +413,6 @@ export default function AuditLpForm({
           : {}),
       })
       if (!res.ok) {
-        onSubmitFailed?.(res.status)
         const errPayload = await readContactSubmitErrorBody(res)
         if (isFreeAuditCooldownError(res.status, errPayload)) {
           setCooldownNotice({
@@ -481,7 +485,6 @@ export default function AuditLpForm({
       setFieldErrors({})
       resetChecks()
     } catch {
-      onSubmitFailed?.(0)
       setSubmitError(tForm(contactForm.error))
       setStatus('error')
     } finally {
@@ -517,6 +520,40 @@ export default function AuditLpForm({
         </>
       )}
     </button>
+  )
+
+  const legalNote = (
+    <p
+      className={`m-0 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 px-1 text-[11px] font-light leading-snug ${
+        neon ? 'justify-center text-center' : ''
+      } ${fieldLabelClass}`}
+    >
+      <span>
+        {tAuditLp(auditLpCopy.legalNote, locale)}{' '}
+        <a
+          href={mainSiteUrl('/privacy')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={
+            isLight
+              ? 'font-normal text-coal-900/80 underline underline-offset-2 decoration-coal-900/25 transition-colors hover:text-erythro-500 hover:decoration-erythro-500'
+              : 'font-normal text-gold-500/90 underline underline-offset-2 decoration-gold-500/35 transition-colors hover:text-gold-100 hover:decoration-gold-100'
+          }
+        >
+          {tForm(locale === 'ru' ? contactForm.privacyLink : contactForm.privacyPolicy)}
+        </a>
+        {locale === 'ru' ? '' : '.'}
+      </span>
+      <span className="inline-flex items-baseline gap-1">
+        <span className="text-erythro-500" aria-hidden="true">
+          *
+        </span>
+        <span>
+          {'— '}
+          {tAudit(page.form.requiredNote, locale)}
+        </span>
+      </span>
+    </p>
   )
 
   const card = (
@@ -743,37 +780,7 @@ export default function AuditLpForm({
               />
             )}
 
-            <p
-              className={`m-0 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 px-1 text-[11px] font-light leading-snug ${
-                neon ? 'justify-center text-center' : ''
-              } ${fieldLabelClass}`}
-            >
-              <span>
-                {tAuditLp(auditLpCopy.legalNote, locale)}{' '}
-                <a
-                  href={mainSiteUrl('/privacy')}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={
-                    isLight
-                      ? 'font-normal text-coal-900/80 underline underline-offset-2 decoration-coal-900/25 transition-colors hover:text-erythro-500 hover:decoration-erythro-500'
-                      : 'font-normal text-gold-500/90 underline underline-offset-2 decoration-gold-500/35 transition-colors hover:text-gold-100 hover:decoration-gold-100'
-                  }
-                >
-                  {tForm(locale === 'ru' ? contactForm.privacyLink : contactForm.privacyPolicy)}
-                </a>
-                {locale === 'ru' ? '' : '.'}
-              </span>
-              <span className="inline-flex items-baseline gap-1">
-                <span className="text-erythro-500" aria-hidden="true">
-                  *
-                </span>
-                <span>
-                  {'— '}
-                  {tAudit(page.form.requiredNote, locale)}
-                </span>
-              </span>
-            </p>
+            {legalTargetId ? null : legalNote}
           </div>
 
           {status === 'error' ? (
@@ -831,6 +838,7 @@ export default function AuditLpForm({
       )}
 
       {submitMount ? createPortal(submitButton, submitMount) : null}
+      {legalMount ? createPortal(legalNote, legalMount) : null}
 
       {portalReady && status === 'success' ? (
         <AuditLpSuccessModal
