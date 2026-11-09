@@ -25,15 +25,13 @@ export const Header: GlobalConfig = {
               'Subtitle under the burger-menu title (e.g. “What we can build for you”). Leave empty to hide.',
           },
         }),
-        {
-          name: 'href',
-          type: 'text',
+        locText('href', {
           required: true,
           admin: {
             description:
-              'Parent link target, e.g. #services, #solutions, /contacts. Clicking the parent still scrolls/navigates here when there is no submenu handler.',
+              'Parent link per locale, e.g. #services, #solutions, /contacts, https://audit-ru.erythro.ai. Switch EN/RU/HE in the admin locale bar — each language stores its own Href.',
           },
-        },
+        }),
         {
           name: 'children',
           type: 'array',
@@ -45,14 +43,13 @@ export const Header: GlobalConfig = {
           },
           fields: [
             locText('label', { required: true }),
-            {
-              name: 'href',
-              type: 'text',
+            locText('href', {
               required: true,
               admin: {
-                description: 'e.g. /services/design, /order/business-automation, #cases',
+                description:
+                  'Per-locale link, e.g. /audit, https://audit-ru.erythro.ai, https://diag-he.erythro.ai. Switch locale in the admin bar to edit EN/RU/HE separately (Audit technical vs commercial).',
               },
-            },
+            }),
           ],
         },
       ],

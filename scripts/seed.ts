@@ -115,10 +115,10 @@ async function run() {
       navItems: navbar.navItems.map((n) => ({
         label: n.label[loc],
         description: n.description?.[loc] ?? '',
-        href: n.href,
+        href: typeof n.href === 'string' ? n.href : (n.href[loc] ?? n.href.en ?? '#'),
         children: (n.children ?? []).map((c) => ({
           label: c.label[loc],
-          href: c.href,
+          href: typeof c.href === 'string' ? c.href : (c.href[loc] ?? c.href.en ?? '#'),
         })),
       })),
       ctaLabel: navbar.ctaLabel[loc],

@@ -33,6 +33,32 @@ function L(v: any, fallback: Localized): Localized {
   return out
 }
 
+/** Same path for every locale (fallback auto-generated nav children). */
+function sameHref(path: string): Localized {
+  return { en: path, ru: path, he: path }
+}
+
+/** Normalize a nav href locale map; legacy `#contacts` → `/contacts`. */
+function navHref(v: any, fallback: Localized | string): Localized {
+  const fb = typeof fallback === 'string' ? sameHref(fallback) : fallback
+  const out = L(v, fb)
+  for (const l of LOCALES) {
+    if (out[l] === '#contacts') out[l] = '/contacts'
+  }
+  return out
+}
+
+function navHrefMatches(href: Localized, target: string): boolean {
+  return LOCALES.some((l) => href[l] === target)
+}
+
+function primaryNavHref(href: Localized | string | undefined): string {
+  if (!href) return ''
+  if (typeof href === 'string') return href === '#contacts' ? '/contacts' : href
+  const raw = href.en || href.ru || href.he || ''
+  return raw === '#contacts' ? '/contacts' : raw
+}
+
 /** Flatten Lexical (or plain) localized values into plain Localized strings. */
 function LPlainFromLexical(v: any, fallback: Localized): Localized {
   const out: Localized = { ...fallback }
@@ -191,18 +217,19 @@ export async function getSiteContent(): Promise<SiteContent> {
     // --- Navbar (Header global) ---
     if (Array.isArray(header?.navItems) && header.navItems.length) {
       content.navbar.navItems = header.navItems.map((n: any, i: number) => {
-        const rawHref = n.href ?? defaultSiteContent.navbar.navItems[i]?.href ?? '#'
-        const matchingDefault = defaultSiteContent.navbar.navItems.find(
-          (item) => item.href === rawHref || (rawHref === '#contacts' && item.href === '/contacts'),
-        )
+        const href = navHref(n.href, defaultSiteContent.navbar.navItems[i]?.href ?? '#')
+        const matchingDefault = defaultSiteContent.navbar.navItems.find((item) => {
+          const def = primaryNavHref(item.href)
+          return navHrefMatches(href, def) || (navHrefMatches(href, '/contacts') && def === '/contacts')
+        })
         const children = Array.isArray(n.children)
           ? n.children
               .map((c: any) => {
-                const childHref = typeof c?.href === 'string' ? c.href.trim() : ''
-                if (!childHref) return null
+                const childHref = navHref(c?.href, { en: '', ru: '', he: '' })
+                if (!LOCALES.some((l) => childHref[l])) return null
                 return {
                   label: L(c.label, { en: '', ru: '', he: '' }),
-                  href: childHref === '#contacts' ? '/contacts' : childHref,
+                  href: childHref,
                 }
               })
               .filter(Boolean)
@@ -217,8 +244,7 @@ export async function getSiteContent(): Promise<SiteContent> {
               he: '',
             },
           ),
-          // Legacy hash target → dedicated contacts page
-          href: rawHref === '#contacts' ? '/contacts' : rawHref,
+          href,
           children,
         }
       })
@@ -466,24 +492,24 @@ export async function getSiteContent(): Promise<SiteContent> {
     content.navbar.navItems = content.navbar.navItems.map((item) => {
       if (Array.isArray(item.children) && item.children.length > 0) return item
 
-      if (item.href === '#services') {
+      if (navHrefMatches(item.href, '#services')) {
         const children = content.services.items
           .map((service) => {
             const slug = service.slug || (service.id ? SERVICE_ID_TO_SLUG[service.id] : undefined)
             if (!slug) return null
             return {
               label: service.title,
-              href: `/services/${slug}`,
+              href: sameHref(`/services/${slug}`),
             }
           })
-          .filter(Boolean) as Array<{ label: Localized; href: string }>
+          .filter(Boolean) as Array<{ label: Localized; href: Localized }>
         return { ...item, children }
       }
 
-      if (item.href === '#solutions') {
+      if (navHrefMatches(item.href, '#solutions')) {
         const children = content.solutions.cards.map((card) => ({
           label: card.title,
-          href: `/order/${card.id}`,
+          href: sameHref(`/order/${card.id}`),
         }))
         return { ...item, children }
       }
@@ -688,18 +714,19 @@ export async function getShellSiteContent(): Promise<SiteContent> {
     ])
     if (Array.isArray(header?.navItems) && header.navItems.length) {
       content.navbar.navItems = header.navItems.map((n: any, i: number) => {
-        const rawHref = n.href ?? defaultSiteContent.navbar.navItems[i]?.href ?? '#'
-        const matchingDefault = defaultSiteContent.navbar.navItems.find(
-          (item) => item.href === rawHref || (rawHref === '#contacts' && item.href === '/contacts'),
-        )
+        const href = navHref(n.href, defaultSiteContent.navbar.navItems[i]?.href ?? '#')
+        const matchingDefault = defaultSiteContent.navbar.navItems.find((item) => {
+          const def = primaryNavHref(item.href)
+          return navHrefMatches(href, def) || (navHrefMatches(href, '/contacts') && def === '/contacts')
+        })
         const children = Array.isArray(n.children)
           ? n.children
               .map((c: any) => {
-                const childHref = typeof c?.href === 'string' ? c.href.trim() : ''
-                if (!childHref) return null
+                const childHref = navHref(c?.href, { en: '', ru: '', he: '' })
+                if (!LOCALES.some((l) => childHref[l])) return null
                 return {
                   label: L(c.label, { en: '', ru: '', he: '' }),
-                  href: childHref === '#contacts' ? '/contacts' : childHref,
+                  href: childHref,
                 }
               })
               .filter(Boolean)
@@ -710,7 +737,7 @@ export async function getShellSiteContent(): Promise<SiteContent> {
             n.description,
             matchingDefault?.description ?? { en: '', ru: '', he: '' },
           ),
-          href: rawHref === '#contacts' ? '/contacts' : rawHref,
+          href,
           children,
         }
       })
@@ -763,24 +790,24 @@ export async function getShellSiteContent(): Promise<SiteContent> {
     content.navbar.navItems = content.navbar.navItems.map((item) => {
       if (Array.isArray(item.children) && item.children.length > 0) return item
 
-      if (item.href === '#services') {
+      if (navHrefMatches(item.href, '#services')) {
         const children = content.services.items
           .map((service) => {
             const slug = service.slug || (service.id ? SERVICE_ID_TO_SLUG[service.id] : undefined)
             if (!slug) return null
             return {
               label: service.title,
-              href: `/services/${slug}`,
+              href: sameHref(`/services/${slug}`),
             }
           })
-          .filter(Boolean) as Array<{ label: Localized; href: string }>
+          .filter(Boolean) as Array<{ label: Localized; href: Localized }>
         return { ...item, children }
       }
 
-      if (item.href === '#solutions') {
+      if (navHrefMatches(item.href, '#solutions')) {
         const children = content.solutions.cards.map((card) => ({
           label: card.title,
-          href: `/order/${card.id}`,
+          href: sameHref(`/order/${card.id}`),
         }))
         return { ...item, children }
       }

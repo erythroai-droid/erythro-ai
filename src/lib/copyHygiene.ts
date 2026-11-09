@@ -32,6 +32,20 @@ export function sanitizeOrderHref(href: string | undefined): string {
   return href.replace(/\/order\/ai-business-card(?=[/?#]|$)/i, '/order/ai-smart-card')
 }
 
+/** Per-locale nav href map (Header submenu links). */
+export function sanitizeLocalizedHref(href: Localized | string | undefined): Localized {
+  if (!href) return { en: '', ru: '', he: '' }
+  if (typeof href === 'string') {
+    const cleaned = sanitizeOrderHref(href)
+    return { en: cleaned, ru: cleaned, he: cleaned }
+  }
+  return {
+    en: sanitizeOrderHref(href.en),
+    ru: sanitizeOrderHref(href.ru),
+    he: sanitizeOrderHref(href.he),
+  }
+}
+
 export function sanitizeCtaLabel(label: Localized): Localized {
   if (trim(label.en) === 'Get a start') return { ...label, en: 'Get started' }
   return label
@@ -162,11 +176,22 @@ export function applySiteContentCopyHygiene(content: SiteContent): SiteContent {
   }))
   content.navbar.navItems = content.navbar.navItems.map((item) => ({
     ...item,
-    children: (item.children || []).map((child) => ({
-      ...child,
-      label: sanitizePlanTitle(slugFromOrderHref(child.href) || child.href, child.label),
-      href: sanitizeOrderHref(child.href),
-    })),
+    href: sanitizeLocalizedHref(item.href),
+    children: (item.children || []).map((child) => {
+      const href = sanitizeLocalizedHref(child.href)
+      const slugHint =
+        slugFromOrderHref(href.en) ||
+        slugFromOrderHref(href.ru) ||
+        slugFromOrderHref(href.he) ||
+        href.en ||
+        href.ru ||
+        href.he
+      return {
+        ...child,
+        label: sanitizePlanTitle(slugHint, child.label),
+        href,
+      }
+    }),
   }))
   return content
 }

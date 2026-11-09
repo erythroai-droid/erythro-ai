@@ -3,6 +3,8 @@ export interface TranslationDict {
 }
 
 // 1. Navbar translations
+const navHref = (path: string): TranslationDict => ({ en: path, ru: path, he: path })
+
 export const navbar = {
   navItems: [
     {
@@ -12,8 +14,8 @@ export const navbar = {
         ru: 'Смотреть избранные работы',
         he: 'צפו בעבודות נבחרות',
       },
-      href: '#cases',
-      children: [] as Array<{ label: TranslationDict; href: string }>,
+      href: navHref('#cases'),
+      children: [] as Array<{ label: TranslationDict; href: TranslationDict }>,
     },
     {
       label: { en: 'SERVICES', ru: 'УСЛУГИ', he: 'שירותים' },
@@ -22,8 +24,8 @@ export const navbar = {
         ru: 'Что мы можем сделать для вас',
         he: 'מה נוכל לבנות בשבילכם',
       },
-      href: '#services',
-      children: [] as Array<{ label: TranslationDict; href: string }>,
+      href: navHref('#services'),
+      children: [] as Array<{ label: TranslationDict; href: TranslationDict }>,
     },
     {
       label: { en: 'SOLUTIONS', ru: 'РЕШЕНИЯ', he: 'פתרונות' },
@@ -32,8 +34,8 @@ export const navbar = {
         ru: 'Готовые пакеты решений',
         he: 'חבילות מוכנות',
       },
-      href: '#solutions',
-      children: [] as Array<{ label: TranslationDict; href: string }>,
+      href: navHref('#solutions'),
+      children: [] as Array<{ label: TranslationDict; href: TranslationDict }>,
     },
     {
       label: { en: 'CONTACTS', ru: 'КОНТАКТЫ', he: 'יצירת קשר' },
@@ -42,8 +44,8 @@ export const navbar = {
         ru: 'Связаться с нами',
         he: 'צרו קשר ומצאו אותנו',
       },
-      href: '/contacts',
-      children: [] as Array<{ label: TranslationDict; href: string }>,
+      href: navHref('/contacts'),
+      children: [] as Array<{ label: TranslationDict; href: TranslationDict }>,
     },
   ],
   ctaLabel: {
