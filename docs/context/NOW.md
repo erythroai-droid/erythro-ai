@@ -1,9 +1,21 @@
 # Latest changes
 
-Обновлено: 2026-11-08 (n8n Stage 3 — typeVersion)  
+Обновлено: 2026-11-09 (Calc LP — первый экран на телефоне)  
 Статус: Stage 1–3 на VPS; ротация токенов отложена
 
 ---
+
+## −9. Calc LP — ВРЕМЕННЫЙ тест воронки в GA4 до согласия (2026-11-09, не задеплоено)
+- **Решение пользователя:** временно, чтобы понять, где теряются клиенты; после выводов убрать. Текст cookie-баннера на время теста расходится с фактом.
+- **Сделано:** `src/lib/calcFunnelTest.ts`, вызовы `calcFunnel` в `AuditCalcFlow.tsx`, `onSubmitFailed` в `AuditLpForm.tsx`. `analytics_storage` granted до согласия, `client_storage: 'none'`, реклама denied, «Отклонить» отключает. Новый номер визита при перезагрузке. URL с ключом отчёта в GA4 не уходит.
+- **События:** `calc_01_view`, `02_form_focus`, `03_step1_done`, `04_step2_input`, `05_lead_sent`, `06_report_ready`, `07_whatsapp_click`; побочные `calc_return_from_email`, `calc_skip_step2`, `calc_percent_mode`, `calc_err_invalid`, `calc_err_submit`, `calc_err_audit`.
+- **Не проверено:** сборка и браузер. **Следующий шаг:** ветка `feat/calc-lp-mobile-funnel-test`: merge GitHub PR, Vercel site deploy по команде, затем GA4 DebugView/Realtime. **Удаление:** файл, вызовы и проп (см. комментарий в файле).
+
+## −8. Calc LP — первый экран на телефоне (2026-11-09, не задеплоено)
+- **Сделано (только ниже `sm`, EN/RU/HE):** на шаге 1 скрыты три пункта под текстом и блок «Шаг 1 из 4»; короче подзаголовок, заголовок и описание формы, кнопка «Проверить сайт бесплатно» (`copy.mobile`). `sm` и шире не менялись.
+- **Заодно (PIT-160):** экран «Не удалось завершить аудит» возвращался раньше двух хуков и ронял React; `return` перенесён ниже всех хуков. Ошибка найдена по коду, вживую не воспроизводилась.
+- Файлы: `AuditCalcFlow.tsx`, `AuditLpForm.tsx` (`submitLabelMobile`), `auditCalcCopy.ts`. Не собрано и не проверено в браузере (проверки только по команде).
+- **Следующий шаг:** посмотреть 320/375 px на Vercel preview (тот же PR, что и −9), затем merge и Vercel site deploy по команде.
 
 ## −7. n8n Stage 3 — IF/HTTP typeVersion (2026-11-08)
 - **Сделано:** HTTP Request `4.2→4.3`; IF legacy `1→2.2` (миграции schema). Скрипт `deploy_n8n_stage3_typeversions.py`. Бэкапы `/root/n8n/backups/*stage3*`.

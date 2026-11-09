@@ -326,6 +326,34 @@ export const auditCalcCopy = {
     ru: 'Укажите доход, чтобы калькулятор перевёл технические ошибки в точные суммы потерь.',
     he: 'הזינו הכנסות כדי שהמחשבון יתרגם ליקויים טכניים להפסד כספי חודשי מדויק.',
   } satisfies Localized,
+  /** Shorter first-screen copy for phones (below `sm`). */
+  mobile: {
+    heroSubPrefix: {
+      en: 'We check mobile speed, how your lead form works, and visibility in Google, ChatGPT, and Perplexity — and calculate ',
+      ru: 'Проверяем мобильную скорость, как работает форма заявки и видимость в Google, ChatGPT, Perplexity — и считаем, ',
+      he: 'בודקים מהירות במובייל, איך עובד טופס הפניות ונראות ב-Google,‏ ChatGPT ו-Perplexity — ומחשבים ',
+    } satisfies Localized,
+    heroSubHighlight: {
+      en: 'how many leads and how much money your site loses',
+      ru: 'сколько заявок и денег теряет сайт',
+      he: 'כמה פניות וכסף האתר מפסיד',
+    } satisfies Localized,
+    step1Heading: {
+      en: 'Free website check',
+      ru: 'Бесплатная проверка сайта',
+      he: 'בדיקת אתר בחינם',
+    } satisfies Localized,
+    step1Sub: {
+      en: 'Enter your website and email: we will calculate how many leads and how much money it loses each month.',
+      ru: 'Укажите сайт и email: посчитаем, сколько заявок и денег сайт теряет в месяц.',
+      he: 'הזינו כתובת אתר ומייל: נחשב כמה פניות וכסף האתר מפסיד בכל חודש.',
+    } satisfies Localized,
+    submit: {
+      en: 'Check my site for free',
+      ru: 'Проверить сайт бесплатно',
+      he: 'בדקו את האתר בחינם',
+    } satisfies Localized,
+  },
   step1ScopeTitle: {
     en: 'What will be audited in ~5 minutes:',
     ru: 'Что проверяет лаборатория за 5 минут:',

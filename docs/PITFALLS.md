@@ -2218,6 +2218,19 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-160 — Leak calculator: failed view returned before hooks
+
+**Tags:** `leak-lp`, `react`, `hooks`, `error-state`
+**Seen:** 2026-11-09 — found by reading `AuditCalcFlow.tsx`; not reproduced live
+
+**Symptom:** When an audit fails while the page is open, React should throw "Rendered fewer hooks than expected" instead of showing the "could not finish the audit" screen.
+
+**Cause:** `if (stage.name === 'failed') return …` sat above `useRef` and `useEffect` for the `--calc-top` header height, so the failed render called fewer hooks than the renders before it.
+
+**Fix:** Move the early return below every hook in the component.
+
+---
+
 ## PIT-159 — n8n 2.45 publish + Telegram token in HTTP URL
 
 **Tags:** `n8n`, `credentials`, `telegram`, `publish`, `sqlite`
