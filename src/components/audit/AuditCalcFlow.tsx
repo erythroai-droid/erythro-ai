@@ -800,7 +800,8 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
                   <div className={`flex flex-col items-center ${
                     formStep === 2
-                      ? 'gap-2 sm:gap-2.5 pt-0'
+                      ? // Phones: keep submit clear of the "clients / month" chips when revenue is open
+                        `gap-2 sm:gap-2.5 ${skipToPercent ? 'pt-0' : 'pt-5 sm:pt-0'}`
                       : 'gap-4 sm:gap-4.5 pt-2 sm:pt-2.5'
                   }`}>
                     <div id={SUBMIT_SLOT_ID} className="flex w-full justify-center h-[46px] sm:h-[48px] lg:h-[48px] xl:h-[52px] [&_button]:!w-full [&_button]:!text-sm [&_button]:!font-medium [&_button]:!uppercase" />
