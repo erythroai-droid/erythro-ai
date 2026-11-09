@@ -385,9 +385,7 @@ export const auditCalcCopy = {
       desc: { en: 'ChatGPT, Claude, SSL, CSP headers', ru: 'ChatGPT, Claude, SSL и заголовки CSP', he: 'ChatGPT, Claude, תעודת SSL ואבטחה' },
     },
   ],
-  step1Guarantee1: { en: '0 ₪ · No card needed', ru: '0 ₪ · Без оплаты и карты', he: '0 ₪ · ללא צורך בכרטיס' } satisfies Localized,
   step1Guarantee2: { en: '1 domain / 7 days', ru: '1 домен / 7 дней', he: 'דומיין 1 / 7 ימים' } satisfies Localized,
-  step1Guarantee3: { en: 'Full report sent to email', ru: 'Отчёт придёт и на почту', he: 'הדוח יישלח גם למייל' } satisfies Localized,
   nextStepCalc: {
     en: 'Next step →',
     ru: 'Следующий шаг →',
