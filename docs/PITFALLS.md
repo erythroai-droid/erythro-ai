@@ -2218,6 +2218,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-161 — Header nav Href was shared across locales
+
+**Tags:** `cms`, `header`, `localization`, `nav`, `audit-lp`
+**Seen:** 2026-11-09 — Audit submenu (technical / commercial) could not keep per-language links
+
+**Symptom:** In Payload admin, editing Href under RU or HE still showed / saved the same URL as EN. Submenu Audit links duplicated the first locale’s target.
+
+**Cause:** `header.navItems.href` and `navItems.children.href` were non-localized `text` fields (stored once on the parent row), while labels were already localized.
+
+**Fix:** Mark both Href fields `localized: true`; migrate columns into `header_nav_items_locales` / `header_nav_items_children_locales`; frontend reads `{en,ru,he}` and picks the current locale. Migration: `20261109_180000_header_nav_href_localized`.
+
+**Prevent:** Any nav/CTA URL that must differ by language needs `locText` / `localized: true` from day one — do not reuse a single shared `href` string for multilingual destinations.
+
+---
+
 ## PIT-160 — Leak calculator: failed view returned before hooks
 
 **Tags:** `leak-lp`, `react`, `hooks`, `error-state`
@@ -2770,3 +2785,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] `/api/audit/report/[id]`: Payload missing id → 404 not 500 (`findAuditSubmission` catches Not Found, PIT-155)
 - [ ] n8n Code fan-out: both targets on output[0]; after CLI import prefer `publish:workflow` + restart n8n for IMAP (PIT-156)
 - [ ] n8n Telegram: native Telegram node + telegramApi cred; Meta/Gemini via httpQueryAuth; verify `workflow_published_version` after restart (PIT-159)
+- [ ] Header / Audit submenu Href: per-locale `localized: true` links; never one shared href for EN/RU/HE destinations (PIT-161)

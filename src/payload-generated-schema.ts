@@ -1054,7 +1054,6 @@ export const header_nav_items = pgTable(
     _order: integer('_order').notNull(),
     _parentID: integer('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
-    href: varchar('href').notNull(),
   },
   (columns) => [
     index('header_nav_items_order_idx').on(columns._order),
@@ -1072,6 +1071,7 @@ export const header_nav_items_locales = pgTable(
   {
     label: varchar('label').notNull(),
     description: varchar('description'),
+    href: varchar('href').notNull(),
     id: serial('id').primaryKey(),
     _locale: enum__locales('_locale').notNull(),
     _parentID: varchar('_parent_id').notNull(),
@@ -1095,7 +1095,6 @@ export const header_nav_items_children = pgTable(
     _order: integer('_order').notNull(),
     _parentID: varchar('_parent_id').notNull(),
     id: varchar('id').primaryKey(),
-    href: varchar('href').notNull(),
   },
   (columns) => [
     index('header_nav_items_children_order_idx').on(columns._order),
@@ -1112,6 +1111,7 @@ export const header_nav_items_children_locales = pgTable(
   'header_nav_items_children_locales',
   {
     label: varchar('label').notNull(),
+    href: varchar('href').notNull(),
     id: serial('id').primaryKey(),
     _locale: enum__locales('_locale').notNull(),
     _parentID: varchar('_parent_id').notNull(),

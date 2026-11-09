@@ -47,6 +47,7 @@ import * as migration_20261019_220000_mail_unsubscribes from './20261019_220000_
 import * as migration_20261019_233000_contact_submissions_pro_offer_nudge from './20261019_233000_contact_submissions_pro_offer_nudge'
 import * as migration_20261023_120000_contact_submissions_pro_offer_lock from './20261023_120000_contact_submissions_pro_offer_lock'
 import * as migration_20261024_120000_mail_opens from './20261024_120000_mail_opens'
+import * as migration_20261109_180000_header_nav_href_localized from './20261109_180000_header_nav_href_localized'
 
 export const migrations = [
   {
@@ -293,5 +294,10 @@ export const migrations = [
     up: migration_20261024_120000_mail_opens.up,
     down: migration_20261024_120000_mail_opens.down,
     name: '20261024_120000_mail_opens',
+  },
+  {
+    up: migration_20261109_180000_header_nav_href_localized.up,
+    down: migration_20261109_180000_header_nav_href_localized.down,
+    name: '20261109_180000_header_nav_href_localized',
   },
 ]
