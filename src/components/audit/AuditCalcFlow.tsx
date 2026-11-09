@@ -31,6 +31,7 @@ import {
 import { AUDIT_LP_LOCALES, auditLpHrefForLocale, mainSiteUrl, type AuditLpLocale } from '@/lib/auditLp'
 import { auditCalcCopy as copy, fillCalc, tCalc } from '@/lib/auditCalcCopy'
 import { pillarsFromOverall, type AuditPillars } from '@/lib/revenueLeak'
+import { calcFunnel, startCalcFunnel } from '@/lib/calcFunnelTest'
 
 type Stage =
   | { name: 'form' }
@@ -121,6 +122,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     const reportIdRaw = q.get('report')
     const accessKey = q.get('k')?.trim() || null
     const reportId = reportIdRaw && /^\d+$/.test(reportIdRaw) ? Number(reportIdRaw) : null
+    startCalcFunnel(reportId && accessKey ? 'email_return' : 'landing')
     if (reportId && accessKey) {
       const siteParam = q.get('site') || q.get('website') || ''
       setResumeSearch(window.location.search || '')
@@ -234,6 +236,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
             website: submitted.website || json.website || '',
           }
           if (json.status === 'report_sent') {
+            if (!fromDeepLink) calcFunnel('calc_06_report_ready')
             setStage({
               name: 'ready',
               submitted: nextSubmitted,
@@ -242,6 +245,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
             return
           }
           if (json.status === 'failed') {
+            if (!fromDeepLink) calcFunnel('calc_err_audit')
             setStage({ name: 'failed', submitted: nextSubmitted })
             return
           }
@@ -314,7 +318,23 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
   const waNumber = phone.replace(/[^0-9]/g, '')
   const waHref = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}` : ''
 
-  // Failed view
+  // The report's full-screen panels fill the viewport below this top bar: expose its height as --calc-top
+  const headerRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const root = document.documentElement
+    const sync = () => root.style.setProperty('--calc-top', `${el.offsetHeight}px`)
+    sync()
+    const ro = new ResizeObserver(sync)
+    ro.observe(el)
+    return () => {
+      ro.disconnect()
+      root.style.removeProperty('--calc-top')
+    }
+  }, [])
+
+  // Failed view. Must stay below every hook: an earlier return changes the hook count and crashes React (PIT-160).
   if (stage.name === 'failed') {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen px-4 py-8">
@@ -351,25 +371,9 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     )
   }
 
-  // The report's full-screen panels fill the viewport below this top bar: expose its height as --calc-top
-  const headerRef = useRef<HTMLElement>(null)
-  useEffect(() => {
-    const el = headerRef.current
-    if (!el) return
-    const root = document.documentElement
-    const sync = () => root.style.setProperty('--calc-top', `${el.offsetHeight}px`)
-    sync()
-    const ro = new ResizeObserver(sync)
-    ro.observe(el)
-    return () => {
-      ro.disconnect()
-      root.style.removeProperty('--calc-top')
-    }
-  }, [])
-
   // Tracker above the glass form: white on the dark panel, an almost white fill like the loss bars of the step 4 hero
   const tracker = (
-    <div className="w-full flex flex-col gap-2 shrink-0">
+    <div className={`w-full flex-col gap-2 shrink-0 ${currentStep === 1 ? 'hidden sm:flex' : 'flex'}`}>
       <div className="flex items-center gap-2.5">
         <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/15 text-xs font-bold tabular-nums text-white">
           {currentStep}
@@ -457,7 +461,12 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
       {/* ================= 2. MAIN CONTENT ================= */}
       {stage.name === 'ready' && report && pillars ? (
-        <main className="w-full flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pb-8 sm:pb-10 lg:pb-14 animate-hero-fade">
+        <main
+          className="w-full flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pb-8 sm:pb-10 lg:pb-14 animate-hero-fade"
+          onClickCapture={(e) => {
+            if ((e.target as HTMLElement).closest('a[href^="https://wa.me"]')) calcFunnel('calc_07_whatsapp_click')
+          }}
+        >
           {/* Same side padding and content width as the full-bleed loss panel, so every block below lines up with it */}
           <div className="w-full max-w-[1440px] mx-auto">
             <CalcResult
@@ -547,7 +556,15 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </span>
             </h2>
 
-            <p className="m-0 mt-5 sm:mt-6 max-w-2xl text-base leading-[1.6] text-white/75 sm:text-lg lg:text-base xl:text-lg">
+            {currentStep === 1 ? (
+              <p className="m-0 mt-5 max-w-2xl text-base leading-[1.6] text-white/75 sm:hidden">
+                {tCalc(copy.mobile.heroSubPrefix, locale)}
+                <span className="rounded-[3px] bg-[#e52421] px-1.5 font-bold text-white [box-decoration-break:clone]">
+                  {tCalc(copy.mobile.heroSubHighlight, locale)}
+                </span>
+              </p>
+            ) : null}
+            <p className={`m-0 mt-5 sm:mt-6 max-w-2xl text-base leading-[1.6] text-white/75 sm:text-lg lg:text-base xl:text-lg ${currentStep === 1 ? 'hidden sm:block' : ''}`}>
               {tCalc(
                 currentStep === 1
                   ? copy.heroSubFormPrefix
@@ -568,7 +585,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </span>
             </p>
 
-            <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/70">
+            <div className={`mt-5 sm:mt-6 flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/70 ${currentStep === 1 ? 'hidden sm:flex' : 'flex'}`}>
               {currentStep === 1 ? (
                 <>
                   <span className="inline-flex items-center gap-2">
@@ -639,10 +656,12 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                   {formStep === 1 ? (
                     <div>
                       <h3 className="m-0 flex items-stretch gap-3 before:block before:w-[2px] before:h-[0.727em] before:mt-[calc((1lh-1.21em)/2+0.242em)] before:self-start before:shrink-0 before:bg-[#ff4542] text-lg font-bold leading-[1.3] tracking-[-0.01em] text-white sm:text-xl">
-                        {tCalc(copy.step1Heading, locale)}
+                        <span className="sm:hidden">{tCalc(copy.mobile.step1Heading, locale)}</span>
+                        <span className="hidden sm:inline">{tCalc(copy.step1Heading, locale)}</span>
                       </h3>
                       <p className="m-0 mt-1.5 text-sm leading-[1.5] text-white/70">
-                        {tCalc(copy.step1Sub, locale)}
+                        <span className="sm:hidden">{tCalc(copy.mobile.step1Sub, locale)}</span>
+                        <span className="hidden sm:inline">{tCalc(copy.step1Sub, locale)}</span>
                       </p>
                     </div>
                   ) : (
@@ -657,7 +676,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                   )}
 
                   {/* The audit form stays mounted on step 2 (hidden) so its values and validation survive. */}
-                  <div className={formStep === 1 ? 'block' : 'hidden'}>
+                  <div className={formStep === 1 ? 'block' : 'hidden'} onFocusCapture={() => calcFunnel('calc_02_form_focus')}>
                     <AuditLpForm
                       locale={locale}
                       theme="dark"
@@ -668,6 +687,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                       calcRevenue={revenue}
                       calcClients={clients}
                       leadChannel="leak_calc"
+                      submitLabelMobile={formStep === 1 ? tCalc(copy.mobile.submit, locale) : undefined}
                       submitLabel={tCalc(
                         formStep === 1
                           ? copy.nextStepCalc
@@ -677,13 +697,23 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                         locale,
                       )}
                       holdSubmit={formStep === 1}
-                      onValidated={() => setFormStep(2)}
-                      onInvalid={() => setFormStep(1)}
+                      onValidated={() => {
+                        calcFunnel('calc_03_step1_done')
+                        setFormStep(2)
+                      }}
+                      onInvalid={() => {
+                        calcFunnel('calc_err_invalid', { form_step: formStep })
+                        setFormStep(1)
+                      }}
+                      onSubmitFailed={(status) => calcFunnel('calc_err_submit', { http_status: status })}
                       submitTargetId={SUBMIT_SLOT_ID}
                       submitClassName="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-full bg-erythro-500 px-8 py-3.5 text-sm font-medium uppercase text-white shadow-none transition-[box-shadow,transform,opacity] duration-300 ease-out hover:shadow-[0_4px_20px_0_rgba(229,36,33,0.45)] disabled:cursor-wait disabled:hover:shadow-none"
                       onSubmitted={(submitted) => {
                         // The slider stays live while the form is sending: keep the numbers that were saved,
                         // so this screen and the emailed report show the same loss (PIT-158).
+                        calcFunnel('calc_05_lead_sent', {
+                          report_mode: submitted.calcRevenue || submitted.calcClients ? 'money' : 'percent',
+                        })
                         setRevenue(submitted.calcRevenue ?? null)
                         setClients(submitted.calcClients ?? null)
                         setNow(Date.now())
@@ -699,10 +729,12 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                         revenue={revenue}
                         clients={clients}
                         onRevenue={(r) => {
+                          if (r != null) calcFunnel('calc_04_step2_input')
                           setRevenue(r)
                           setSkipToPercent(false)
                         }}
                         onClients={(c) => {
+                          if (c != null) calcFunnel('calc_04_step2_input')
                           setClients(c)
                           setSkipToPercent(false)
                         }}
@@ -721,6 +753,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                         aria-checked={skipToPercent}
                         onClick={() => {
                           const next = !skipToPercent
+                          if (next) calcFunnel('calc_percent_mode')
                           setSkipToPercent(next)
                           if (next) {
                             setRevenue(null)
@@ -805,6 +838,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                           onClick={() => {
                             setRevenue(null)
                             setClients(null)
+                            calcFunnel('calc_skip_step2')
                             setSkipToPercent(true)
                             setTimeout(() => {
                               const btn = document.getElementById(SUBMIT_SLOT_ID)?.querySelector('button')

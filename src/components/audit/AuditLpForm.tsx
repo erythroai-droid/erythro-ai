@@ -209,6 +209,7 @@ export default function AuditLpForm({
   kicker,
   bare = false,
   submitLabel,
+  submitLabelMobile,
   submitTargetId,
   submitClassName,
   neon = false,
@@ -218,6 +219,7 @@ export default function AuditLpForm({
   onValidated,
   onInvalid,
   onSubmitted,
+  onSubmitFailed,
   calcRevenue = null,
   calcClients = null,
   leadChannel = null,
@@ -233,6 +235,8 @@ export default function AuditLpForm({
   bare?: boolean
   /** Replaces the CMS submit button text. */
   submitLabel?: string
+  /** Replaces the submit text below the `sm` breakpoint only. */
+  submitLabelMobile?: string
   /** Id of an element elsewhere on the page; the submit button is rendered into it instead of the form. */
   submitTargetId?: string
   /** Replaces the default submit button look. */
@@ -248,6 +252,8 @@ export default function AuditLpForm({
   onInvalid?: () => void
   /** When set, the caller continues the flow and the success modal is not shown. */
   onSubmitted?: (info: AuditLpSubmitted) => void
+  /** HTTP status of a rejected submission, 0 for a network error. */
+  onSubmitFailed?: (status: number) => void
   /** Leak calculator step-2 metrics — persisted for the report-ready email deep link. */
   calcRevenue?: number | null
   calcClients?: number | null
@@ -402,6 +408,7 @@ export default function AuditLpForm({
           : {}),
       })
       if (!res.ok) {
+        onSubmitFailed?.(res.status)
         const errPayload = await readContactSubmitErrorBody(res)
         if (isFreeAuditCooldownError(res.status, errPayload)) {
           setCooldownNotice({
@@ -474,6 +481,7 @@ export default function AuditLpForm({
       setFieldErrors({})
       resetChecks()
     } catch {
+      onSubmitFailed?.(0)
       setSubmitError(tForm(contactForm.error))
       setStatus('error')
     } finally {
@@ -501,7 +509,12 @@ export default function AuditLpForm({
           <span>{tForm(contactForm.sending)}</span>
         </>
       ) : (
-        (submitLabel ?? tAudit(page.form.submit, locale))
+        <>
+          {submitLabelMobile ? <span className="sm:hidden">{submitLabelMobile}</span> : null}
+          <span className={submitLabelMobile ? 'hidden sm:inline' : undefined}>
+            {submitLabel ?? tAudit(page.form.submit, locale)}
+          </span>
+        </>
       )}
     </button>
   )
