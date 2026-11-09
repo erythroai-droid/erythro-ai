@@ -328,6 +328,21 @@ export const auditCalcCopy = {
   } satisfies Localized,
   /** Shorter first-screen copy for phones (below `sm`). */
   mobile: {
+    step2Heading: {
+      en: 'How much does your site earn per month?',
+      ru: 'Сколько сайт приносит в месяц?',
+      he: 'כמה האתר מכניס בחודש?',
+    } satisfies Localized,
+    step2Sub: {
+      en: 'A rough figure is enough: we will show your losses in ₪. You can skip this.',
+      ru: 'Хватит примерной цифры: покажем потери в ₪. Можно пропустить.',
+      he: 'מספיק מספר משוער: נציג את ההפסדים בש״ח. אפשר לדלג.',
+    } satisfies Localized,
+    step2Submit: {
+      en: 'Show my losses',
+      ru: 'Показать потери',
+      he: 'הציגו את ההפסדים',
+    } satisfies Localized,
     heroSubPrefix: {
       en: 'We check mobile speed, how your lead form works, and visibility in Google, ChatGPT, and Perplexity — and calculate ',
       ru: 'Проверяем мобильную скорость, как работает форма заявки и видимость в Google, ChatGPT, Perplexity — и считаем, ',
