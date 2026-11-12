@@ -174,6 +174,18 @@ export function auditLpCanonicalUrl(
   return `${auditLpPublicOrigin(locale, product)}/`
 }
 
+/** hreflang map for ads LP subdomains of one product. */
+export function auditLpLanguageAlternates(
+  product: AuditLpProduct = 'free',
+): Record<string, string> {
+  return {
+    en: auditLpCanonicalUrl('en', product),
+    ru: auditLpCanonicalUrl('ru', product),
+    he: auditLpCanonicalUrl('he', product),
+    'x-default': auditLpCanonicalUrl('en', product),
+  }
+}
+
 function usePathLpHref(currentHost?: string | null): boolean {
   const h = normalizeHost(currentHost)
   return (
@@ -239,6 +251,12 @@ type BenefitStep = {
 
 type AuditLpCopyBundle = {
   sectionTitle: Localized
+  /** Document / OG title when set; otherwise sectionTitle. */
+  metaTitle?: Localized
+  /** HTML meta description when set; CMS / subhead may still win on free LP. */
+  metaDescription?: Localized
+  /** Longer abstract for JSON-LD / AI agents. */
+  aiDescription?: Localized
   eyebrow: Localized
   headline: Localized
   subhead: Localized
@@ -342,6 +360,21 @@ export const auditLpCopy = {
     en: 'AI Audit Free',
     ru: 'AI Аудит Free',
     he: 'ביקורת AI Free',
+  } satisfies Localized,
+  metaTitle: {
+    en: 'Free AI Website Audit',
+    ru: 'Бесплатный AI-аудит сайта',
+    he: 'ביקורת אתר AI בחינם',
+  } satisfies Localized,
+  metaDescription: {
+    en: 'Free AI website audit: mobile PageSpeed, conversion risks, UX friction, and AI visibility in ChatGPT & Perplexity. Score 0–100 and top-3 risks — no card required.',
+    ru: 'Бесплатный AI-аудит сайта: PageSpeed mobile, риски конверсии, UX и видимость в ChatGPT и Perplexity. Оценка 0–100 и топ-3 риска — карта не нужна.',
+    he: 'ביקורת אתר AI בחינם: PageSpeed במובייל, סיכוני המרה, UX ונראות ב-ChatGPT ו-Perplexity. ציון 0–100 ו-3 סיכונים מובילים — בלי כרטיס אשראי.',
+  } satisfies Localized,
+  aiDescription: {
+    en: 'Erythro.ai Free AI Website Audit is an online tool that crawls a homepage and scores speed (mobile & desktop PageSpeed / Core Web Vitals), lead-form and CRO friction, SEO and security signals, plus AI Search Visibility for assistants such as ChatGPT, Claude and Perplexity. Users submit a URL and contact details; results include a 0–100 score, top-3 risks and an open HTML report. No payment card is required. Locales: English, Russian, Hebrew. Hosts: audit-en.erythro.ai, audit-ru.erythro.ai, audit-he.erythro.ai. Publisher: Erythro.ai.',
+    ru: 'Бесплатный AI-аудит сайта Erythro.ai — онлайн-инструмент: съём главной и оценка скорости (PageSpeed / Core Web Vitals mobile и desktop), трения форм и CRO, SEO и безопасности, плюс AI Search Visibility для ChatGPT, Claude и Perplexity. Нужны URL и контакты; в отчёте оценка 0–100, топ-3 риска и открытый HTML. Карта не нужна. Языки: EN, RU, HE. Домены: audit-en/ru/he.erythro.ai. Издатель: Erythro.ai.',
+    he: 'ביקורת אתר AI בחינם של Erythro.ai היא כלי מקוון שסורק את דף הבית ומעריך מהירות (PageSpeed / Core Web Vitals במובייל ובדסקטופ), חיכוך בטפסים ו-CRO, אותות SEO ואבטחה, וכן נראות חיפוש AI ב-ChatGPT, Claude ו-Perplexity. נדרשים כתובת אתר ופרטי קשר; בדוח ציון 0–100, 3 סיכונים מובילים ו-HTML פתוח. אין צורך בכרטיס אשראי. שפות: EN, RU, HE. דומיינים: audit-en/ru/he.erythro.ai. מפרסם: Erythro.ai.',
   } satisfies Localized,
   eyebrow: {
     en: 'Free AI audit',

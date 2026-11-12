@@ -37,6 +37,23 @@ export const auditCalcCopy = {
     ru: 'Калькулятор потерь',
     he: 'מחשבון אובדן הכנסות',
   } satisfies Localized,
+  /** Document title / H1 / OG — not the in-UI calculator badge. */
+  metaTitle: {
+    en: 'Website Loss Audit',
+    ru: 'Аудит потерь сайта',
+    he: 'ביקורת אובדן הכנסות מהאתר',
+  } satisfies Localized,
+  metaDescription: {
+    en: 'Free AI homepage audit: mobile speed, lead forms, and visibility in Google, ChatGPT & Perplexity. See monthly lead and ₪ revenue loss — no admin access, about 5 minutes.',
+    ru: 'Бесплатный AI-аудит главной: мобильная скорость, формы заявок и видимость в Google, ChatGPT и Perplexity. Потери в заявках и ₪ в месяц — без доступа к админке, около 5 минут.',
+    he: 'ביקורת AI חינם לדף הבית: מהירות במובייל, טפסי פניות ונראות ב-Google, ChatGPT ו-Perplexity. הפסד פניות והכנסות בש״ח לחודש — בלי גישה לאדמין, כ-5 דקות.',
+  } satisfies Localized,
+  /** Longer abstract for JSON-LD / AI agents (not the HTML meta description). */
+  aiDescription: {
+    en: 'Erythro.ai Website Loss Audit is a free online tool that runs a real technical audit of a website homepage and converts findings into estimated monthly revenue and lead loss in Israeli shekels (₪). It checks mobile and desktop speed (Core Web Vitals), lead-form and conversion friction, security basics, and visibility for Google search plus AI assistants (ChatGPT, Perplexity). Users enter a URL and email; optional monthly revenue or client volume turns defect scores into ₪ amounts. No CMS/admin access is required. Results appear on the page and by email in about 5–10 minutes, with top problems and a fix-sprint payback estimate. Locales: English, Russian, Hebrew. Hosts: leak-en.erythro.ai, leak-ru.erythro.ai, leak-he.erythro.ai. Publisher: Erythro.ai.',
+    ru: 'Аудит потерь сайта Erythro.ai — бесплатный онлайн-инструмент: реальный технический аудит главной страницы с переводом дефектов в оценку ежемесячных потерь заявок и выручки в шекелях (₪). Проверяются скорость mobile/desktop (Core Web Vitals), формы и конверсия, базовая безопасность и видимость в Google и у ИИ-ассистентов (ChatGPT, Perplexity). Нужны URL и email; доход или число клиентов — по желанию, для сумм в ₪. Доступ к админке не нужен. Результат на странице и на почте за ~5–10 минут: топ проблем и окупаемость спринта исправлений. Языки: EN, RU, HE. Домены: leak-en/ru/he.erythro.ai. Издатель: Erythro.ai.',
+    he: 'ביקורת אובדן הכנסות מהאתר של Erythro.ai היא כלי מקוון חינמי שמריץ ביקורת טכנית אמיתית לדף הבית וממיר ליקויים להערכת הפסד פניות והכנסות חודשי בשקלים (₪). נבדקים מהירות מובייל/דסקטופ (Core Web Vitals), חיכוך בטפסי לידים והמרה, אבטחה בסיסית ונראות בגוגל ובעוזרי AI (ChatGPT, Perplexity). נדרשים כתובת אתר ומייל; הכנסה או נפח לקוחות — אופציונלי לסכומים ב-₪. אין צורך בגישה לאדמין. התוצאה בעמוד ובמייל תוך כ-5–10 דקות, כולל הבעיות המובילות והחזר השקעה לספרינט תיקון. שפות: EN, RU, HE. דומיינים: leak-en/ru/he.erythro.ai. מפרסם: Erythro.ai.',
+  } satisfies Localized,
   headline: {
     en: 'How much is your website losing in ₪?',
     ru: 'Сколько ваш сайт теряет в шекелях?',

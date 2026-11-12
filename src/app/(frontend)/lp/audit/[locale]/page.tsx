@@ -2,6 +2,7 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import AuditLpClient from '@/components/audit/AuditLpClient'
+import WebApplicationJsonLd from '@/components/WebApplicationJsonLd'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getCachedAuditPage } from '@/lib/auditPage.server'
 import { tAudit } from '@/lib/auditPage'
@@ -9,6 +10,7 @@ import {
   AUDIT_LP_LOCALES,
   auditLpCanonicalUrl,
   auditLpCopyFor,
+  auditLpLanguageAlternates,
   auditLpPublicOrigin,
   isAuditLpLocale,
   tAuditLp,
@@ -40,8 +42,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const locale = raw
   const page = await getCachedAuditPage()
   const copy = auditLpCopyFor('free')
-  const title = `${tAuditLp(copy.sectionTitle, locale)} | Erythro.ai`
-  const description = tAudit(page.metaDescription, locale) || tAuditLp(copy.subhead, locale)
+  const title = `${tAuditLp(copy.metaTitle || copy.sectionTitle, locale)} | Erythro.ai`
+  const description =
+    tAudit(page.metaDescription, locale) ||
+    (copy.metaDescription ? tAuditLp(copy.metaDescription, locale) : '') ||
+    tAuditLp(copy.subhead, locale)
   const canonical = auditLpCanonicalUrl(locale)
   const origin = auditLpPublicOrigin(locale)
   // Child openGraph replaces layout OG — must include images (PIT-079).
@@ -51,11 +56,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      languages: auditLpLanguageAlternates('free'),
+    },
     robots: {
-      index: false,
-      follow: false,
-      googleBot: { index: false, follow: false },
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
     },
     openGraph: {
       title,
@@ -88,12 +102,30 @@ export default async function AuditLpPage({ params }: PageProps) {
     getCachedAuditPage(),
   ])
 
+  const copy = auditLpCopyFor('free')
+  const title = `${tAuditLp(copy.metaTitle || copy.sectionTitle, raw)} | Erythro.ai`
+  const canonical = auditLpCanonicalUrl(raw)
+  const description =
+    (copy.aiDescription ? tAuditLp(copy.aiDescription, raw) : '') ||
+    tAudit(auditPageContent.metaDescription, raw) ||
+    (copy.metaDescription ? tAuditLp(copy.metaDescription, raw) : '') ||
+    tAuditLp(copy.subhead, raw)
+
   return (
-    <AuditLpClient
-      locale={raw}
-      product="free"
-      content={content}
-      auditPageContent={auditPageContent}
-    />
+    <>
+      <WebApplicationJsonLd
+        name={title}
+        description={description}
+        locale={raw}
+        url={canonical}
+        id={`${canonical.replace(/\/$/, '')}#app`}
+      />
+      <AuditLpClient
+        locale={raw}
+        product="free"
+        content={content}
+        auditPageContent={auditPageContent}
+      />
+    </>
   )
 }
