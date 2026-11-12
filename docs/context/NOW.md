@@ -1,9 +1,15 @@
 # Latest changes
 
-Обновлено: 2026-11-13 (rosso-garage: 4 языка + AR)  
-Статус: CMS обновлён; кэш v26; нужен коммит/деплой
+Обновлено: 2026-11-13 (портфолио: La Scala)  
+Статус: CMS #9 создан; кэш v27; нужен коммит/деплой
 
-## 0. Портфолио — Rosso Garage описание как ORA 60A (2026-11-12)
+## 0. Портфолио — La Scala (2026-11-13)
+- **Сделано:** `pnpm import:project -- content/imports/la-scala --create` → CMS `portfolio-projects` **#9**, slug `la-scala`, категория `websites`. Live https://la-scala-one.vercel.app/. Медиа #182–#188.
+- Схема как ORA / Rosso: `brief.yaml` + `body.ts` (6 секций EN/RU/HE), highlights (языки **только RU/EN**, Lenis без ScrollSmoother, static ≤900px), без выдуманных PSI (API 429). `solutionPlan` → `ai-smart-card` (#2). Кэш `portfolio-projects-v27-la-scala`.
+- Учтены правки сегодняшних кейсов: честный счёт языков, честные метрики, плашка пакета, списки с жирными лидами, demo-stub брони без claim конверсии.
+- **Следующий шаг:** визуально `/portfolio/la-scala` (локально или после деплоя) → коммит/деплой по команде. Revalidate prod 401 (нет `REVALIDATION_TOKEN`).
+
+## −1. Портфолио — Rosso Garage описание как ORA 60A (2026-11-12)
 - **Сделано:** `body.ts` / `brief.yaml` — 6 секций + highlights + PSI; **#7**; `solutionPlan` → `ai-smart-card`. **2026-11-13:** везде EN/RU/HE/AR (иврит + арабский RTL) в body, summary, highlights; кэш `portfolio-projects-v26-rosso-ar`.
 - **Следующий шаг:** визуально `/portfolio/rosso-garage` → коммит/деплой по команде.
 
