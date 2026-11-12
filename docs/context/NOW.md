@@ -1,9 +1,13 @@
 # Latest changes
 
-Обновлено: 2026-11-13 (портфолио: La Scala)  
-Статус: CMS #9 создан; кэш v27; нужен коммит/деплой
+Обновлено: 2026-11-13 (portfolio hero: stronger overlay)  
+Статус: локально; нужен визуальный check + коммит/деплой
 
-## 0. Портфолио — La Scala (2026-11-13)
+## 0. Портфолио — Hero: сильнее затемнение фона (2026-11-13)
+- **Сделано:** поверх фото сплошная вуаль `bg-coal-900/55` на всё изображение + градиент снизу `from-coal-900 via-coal-900/50 to-transparent` (не только градиент). Мобайл-плашка текста: `via-coal-900/90`.
+- **Следующий шаг:** визуально кейс → коммит/деплой по команде.
+
+## −1. Портфолио — La Scala (2026-11-13)
 - **Сделано:** `pnpm import:project -- content/imports/la-scala --create` → CMS `portfolio-projects` **#9**, slug `la-scala`, категория `websites`. Live https://la-scala-one.vercel.app/. Медиа #182–#188.
 - Схема как ORA / Rosso: `brief.yaml` + `body.ts` (6 секций EN/RU/HE), highlights (языки **только RU/EN**, Lenis без ScrollSmoother, static ≤900px), без выдуманных PSI (API 429). `solutionPlan` → `ai-smart-card` (#2). Кэш `portfolio-projects-v27-la-scala`.
 - Учтены правки сегодняшних кейсов: честный счёт языков, честные метрики, плашка пакета, списки с жирными лидами, demo-stub брони без claim конверсии.
