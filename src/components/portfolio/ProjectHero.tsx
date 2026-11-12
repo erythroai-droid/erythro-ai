@@ -159,14 +159,16 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
           srcMobile={project.hero.srcMobile}
           typeMobile={project.hero.typeMobile}
         />
+        {/* Flat veil darkens the whole photo; gradient still lifts the bottom for copy. */}
+        <div className="absolute inset-0 bg-coal-900/55" aria-hidden />
         <div
-          className="absolute inset-0 hidden bg-gradient-to-t from-coal-900 via-coal-900/55 to-coal-900/20 lg:block"
+          className="absolute inset-0 bg-gradient-to-t from-coal-900 via-coal-900/50 to-transparent"
           aria-hidden
         />
       </div>
 
       {/* Mobile: black plate fades 0→100% so the photo shows through under the copy. */}
-      <div className="relative z-10 mt-auto w-full max-lg:bg-gradient-to-t max-lg:from-coal-900 max-lg:via-coal-900/80 max-lg:to-transparent">
+      <div className="relative z-10 mt-auto w-full max-lg:bg-gradient-to-t max-lg:from-coal-900 max-lg:via-coal-900/90 max-lg:to-transparent">
         <div className="mx-auto w-full max-w-[1170px] px-[30px] pb-16 pt-14 max-lg:pb-20 md:pt-8 lg:pb-28 lg:pt-[140px]">
           <p className="mb-3 font-sans text-xs uppercase tracking-[0.24em] text-white/55 md:mb-4">
             {categoryLabel}
