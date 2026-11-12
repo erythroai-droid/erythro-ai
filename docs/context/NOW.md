@@ -1,11 +1,11 @@
 # Latest changes
 
-Обновлено: 2026-11-12 (rosso-garage → AI-визитка badge)  
-Статус: CMS обновлён; кэш v25; нужен коммит/деплой
+Обновлено: 2026-11-13 (rosso-garage: 4 языка + AR)  
+Статус: CMS обновлён; кэш v26; нужен коммит/деплой
 
 ## 0. Портфолио — Rosso Garage описание как ORA 60A (2026-11-12)
-- **Сделано:** `content/imports/rosso-garage/body.ts` — 6 секций EN/RU/HE + таблица PSI 90/98 (2026-10-17). Highlights в `brief.yaml` (5 строк). `pnpm import:project` → **#7**. Client `Rosso Garage`. **`solutionPlan` → `ai-smart-card` (AI-визитка)**. Кэш `portfolio-projects-v25-rosso-badge`.
-- **Следующий шаг:** визуально `/portfolio/rosso-garage` (плашка) → коммит/деплой по команде.
+- **Сделано:** `body.ts` / `brief.yaml` — 6 секций + highlights + PSI; **#7**; `solutionPlan` → `ai-smart-card`. **2026-11-13:** везде EN/RU/HE/AR (иврит + арабский RTL) в body, summary, highlights; кэш `portfolio-projects-v26-rosso-ar`.
+- **Следующий шаг:** визуально `/portfolio/rosso-garage` → коммит/деплой по команде.
 
 ## −1. Портфолио — низ кейса: Visit ↗ + WhatsApp (2026-11-12)
 - **Сделано:** столбец по центру: «Открыть проект» ↗ → ряд Назад / «Все проекты» / Далее → зелёная «Обсудить в WhatsApp» (`#25D366`, EN/RU/HE); вертикальные отступы `gap-6`/`sm:gap-8`. Prefill с названием; номер из `siteSettings.phone`. Только portfolio (`discussWhatsApp`); order без WA.

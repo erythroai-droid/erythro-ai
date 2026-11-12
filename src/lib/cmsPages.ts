@@ -924,8 +924,8 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
   // v10: trim slugs + per-doc map (trailing-space slugs 404'd detail pages)
-  // v25: rosso-garage → ai-smart-card package badge
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v25-rosso-badge'], {
+  // v26: rosso-garage four languages (EN/RU/HE/AR)
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v26-rosso-ar'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
