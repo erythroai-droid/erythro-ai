@@ -1,14 +1,15 @@
 # Latest changes
 
-Обновлено: 2026-11-12 (portfolio package badge next to H1)  
-Статус: migrate на общей БД OK; нужен деплой
+Обновлено: 2026-11-12 (ora-60a 404 = PIT-166; cache v23)  
+Статус: локально OK (страница 200); нужен коммит/деплой
 
 ## 0. Портфолио — плашка пакета рядом с H1 (2026-11-12)
-- **Сделано:** у Portfolio Projects поле `solutionPlan` → Plans (`kind=solution`). На `/portfolio/[slug]` рядом с H1 — плашка с title пакета (EN/RU/HE), ссылка на `/order/[slug]`.
-- Миграция `20261112_210000_portfolio_project_solution_plan` применена (+ сид `ora-60a` → `ai-smart-card`). Кэш `portfolio-projects-v22-package-badge`.
+- **Сделано:** у Portfolio Projects поле `solutionPlan` → Plans (`kind=solution`). На `/portfolio/[slug]` H1 слева (start), плашка пакета справа (end), `justify-between`; светлая тема — обводка/текст `coal-900`, тёмная — `gold-500`; ссылка на `/order/[slug]`.
+- Миграция `20261112_210000_portfolio_project_solution_plan` применена (+ сид `ora-60a` → `ai-smart-card`).
+- **Фикс 404 на DevServer (PIT-166):** до migrate страница закэшировала seed-fallback без `ora-60a`; ключ кэша → `portfolio-projects-v23-package-badge`. Локально `/portfolio/ora-60a` → 200.
 - UI: `ProjectBody.tsx`. Маппинг: `cmsPages.mapPortfolioDoc` → `packageLabel` / `packageHref`.
-- Док: `docs/cases/CMS_FIELD_MAP.md` (+ копия в Obsidian `cases/`).
-- **Следующий шаг:** визуально `/portfolio/ora-60a` (RU: «AI-визитка») → деплой по команде. Для других кейсов — выбрать пакет в админке.
+- Док: `docs/cases/CMS_FIELD_MAP.md` (+ копия в Obsidian `cases/`); PIT-166 доп. кейс в `docs/PITFALLS.md`.
+- **Следующий шаг:** визуально плашка → коммит/деплой по команде.
 
 ## −1. Calc + Audit LP — meta / index / JSON-LD (2026-11-12)
 - **Calc (`leak-*`):** `noindex` снят → `index,follow`. Title: «Аудит потерь сайта» / Website Loss Audit / ביקורת אובדן הכנסות מהאתר. Отдельные `metaDescription` + длинный `aiDescription` в `auditCalcCopy`; H1 sr-only = metaTitle. OG/Twitter на тех же текстах. hreflang через `auditLpLanguageAlternates('calc')`. `WebApplication` JSON-LD с featureList под leak-калькулятор.
