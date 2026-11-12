@@ -324,6 +324,8 @@ export default function ProjectBody({
           portfolioHref={portfolioHref}
           visitHref={project.link || null}
           visitLabel={visitProjectLabel(locale)}
+          discussWhatsApp
+          projectTitle={title}
         />
       </div>
 

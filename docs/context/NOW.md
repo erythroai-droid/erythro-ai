@@ -1,9 +1,13 @@
 # Latest changes
 
-Обновлено: 2026-11-12 (ora-60a 404 = PIT-166; cache v23)  
-Статус: локально OK (страница 200); нужен коммит/деплой
+Обновлено: 2026-11-12 (portfolio nav stack: Visit → All → WhatsApp green)  
+Статус: локально; нужен коммит/деплой
 
-## 0. Портфолио — плашка пакета рядом с H1 (2026-11-12)
+## 0. Портфолио — низ кейса: Visit ↗ + WhatsApp (2026-11-12)
+- **Сделано:** столбец по центру: «Открыть проект» ↗ → ряд Назад / «Все проекты» / Далее → зелёная «Обсудить в WhatsApp» (`#25D366`, EN/RU/HE); вертикальные отступы `gap-6`/`sm:gap-8`. Prefill с названием; номер из `siteSettings.phone`. Только portfolio (`discussWhatsApp`); order без WA.
+- **Следующий шаг:** визуально light/dark + мобайл → коммит/деплой по команде.
+
+## −1. Портфолио — плашка пакета рядом с H1 (2026-11-12)
 - **Сделано:** у Portfolio Projects поле `solutionPlan` → Plans (`kind=solution`). На `/portfolio/[slug]` H1 слева (start), плашка пакета справа (end), `justify-between`; светлая тема — обводка/текст `coal-900`, тёмная — `gold-500`; ссылка на `/order/[slug]`.
 - Миграция `20261112_210000_portfolio_project_solution_plan` применена (+ сид `ora-60a` → `ai-smart-card`).
 - **Фикс 404 на DevServer (PIT-166):** до migrate страница закэшировала seed-fallback без `ora-60a`; ключ кэша → `portfolio-projects-v23-package-badge`. Локально `/portfolio/ora-60a` → 200.
