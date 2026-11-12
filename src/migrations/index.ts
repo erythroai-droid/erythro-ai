@@ -49,6 +49,7 @@ import * as migration_20261023_120000_contact_submissions_pro_offer_lock from '.
 import * as migration_20261024_120000_mail_opens from './20261024_120000_mail_opens'
 import * as migration_20261109_180000_header_nav_href_localized from './20261109_180000_header_nav_href_localized'
 import * as migration_20261112_180000_portfolio_project_highlights from './20261112_180000_portfolio_project_highlights'
+import * as migration_20261112_210000_portfolio_project_solution_plan from './20261112_210000_portfolio_project_solution_plan'
 
 export const migrations = [
   {
@@ -305,5 +306,10 @@ export const migrations = [
     up: migration_20261112_180000_portfolio_project_highlights.up,
     down: migration_20261112_180000_portfolio_project_highlights.down,
     name: '20261112_180000_portfolio_project_highlights',
+  },
+  {
+    up: migration_20261112_210000_portfolio_project_solution_plan.up,
+    down: migration_20261112_210000_portfolio_project_solution_plan.down,
+    name: '20261112_210000_portfolio_project_solution_plan',
   },
 ]

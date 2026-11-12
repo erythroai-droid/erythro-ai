@@ -634,6 +634,10 @@ export interface PortfolioProject {
    */
   categoryLabel?: string | null;
   /**
+   * Optional pricing package shown as a badge next to the project title (e.g. AI Smart Card / AI-визитка). Links to /order/[slug].
+   */
+  solutionPlan?: (number | null) | SolutionPlan;
+  /**
    * Short card description on /portfolio
    */
   description: string;
@@ -1431,6 +1435,7 @@ export interface PortfolioProjectsSelect<T extends boolean = true> {
   title?: T;
   category?: T;
   categoryLabel?: T;
+  solutionPlan?: T;
   description?: T;
   summary?: T;
   subtitle?: T;

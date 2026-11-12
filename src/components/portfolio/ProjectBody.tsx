@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -56,6 +57,8 @@ export default function ProjectBody({
   const isLight = theme === 'light'
   const sectionRef = useRef<HTMLElement | null>(null)
   const title = tLocale(project.title, locale)
+  const packageLabel = project.packageLabel ? tLocale(project.packageLabel, locale).trim() : ''
+  const packageHref = project.packageHref?.trim() || ''
   const highlights = (Array.isArray(project.highlights) ? project.highlights : [])
     .map((row) => {
       if (!row || typeof row !== 'object' || !('label' in row) || !('detail' in row)) {
@@ -125,10 +128,36 @@ export default function ProjectBody({
     >
       <div className="mx-auto flex w-full min-w-0 max-w-[1170px] flex-col gap-16 px-[30px] py-16 md:gap-20 md:py-24 lg:gap-24 lg:py-[120px]">
         <header className="flex flex-col gap-6 md:gap-8">
-          <h1 className="m-0 font-sans text-[36px] font-extralight uppercase leading-tight tracking-[0.06em] md:text-[52px] md:tracking-[0.08em] lg:text-[56px]">
-            <span className="text-erythro-500">{title.charAt(0)}</span>
-            <span>{title.slice(1)}</span>
-          </h1>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+            <h1 className="m-0 font-sans text-[36px] font-extralight uppercase leading-tight tracking-[0.06em] md:text-[52px] md:tracking-[0.08em] lg:text-[56px]">
+              <span className="text-erythro-500">{title.charAt(0)}</span>
+              <span>{title.slice(1)}</span>
+            </h1>
+            {packageLabel ? (
+              packageHref ? (
+                <Link
+                  href={packageHref}
+                  className={`inline-flex max-w-full min-w-0 items-center rounded-[4px] border px-2.5 py-1 font-sans text-[11px] font-medium uppercase leading-4 tracking-[0.14em] transition-colors md:text-xs ${
+                    isLight
+                      ? 'border-coal-900/20 bg-white/70 text-coal-900/75 hover:border-erythro-500 hover:text-erythro-500'
+                      : 'border-white/25 bg-white/5 text-white/75 hover:border-gold-500 hover:text-gold-500'
+                  }`}
+                >
+                  {packageLabel}
+                </Link>
+              ) : (
+                <span
+                  className={`inline-flex max-w-full min-w-0 items-center rounded-[4px] border px-2.5 py-1 font-sans text-[11px] font-medium uppercase leading-4 tracking-[0.14em] md:text-xs ${
+                    isLight
+                      ? 'border-coal-900/20 bg-white/70 text-coal-900/75'
+                      : 'border-white/25 bg-white/5 text-white/75'
+                  }`}
+                >
+                  {packageLabel}
+                </span>
+              )
+            ) : null}
+          </div>
           {highlights.length > 0 ? (
             <dl
               className={`m-0 flex w-full flex-col border-t ${

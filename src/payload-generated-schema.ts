@@ -742,6 +742,9 @@ export const portfolio_projects = pgTable(
       .references(() => portfolio_categories.id, {
         onDelete: 'set null',
       }),
+    solutionPlan: integer('solution_plan_id').references(() => solution_plans.id, {
+      onDelete: 'set null',
+    }),
     date: varchar('date'),
     client: varchar('client'),
     link: varchar('link'),
@@ -765,6 +768,7 @@ export const portfolio_projects = pgTable(
   (columns) => [
     uniqueIndex('portfolio_projects_slug_idx').on(columns.slug),
     index('portfolio_projects_category_idx').on(columns.category),
+    index('portfolio_projects_solution_plan_idx').on(columns.solutionPlan),
     index('portfolio_projects_card_image_idx').on(columns.cardImage),
     index('portfolio_projects_hero_media_idx').on(columns.heroMedia),
     index('portfolio_projects_hero_media_mobile_idx').on(columns.heroMediaMobile),
@@ -2144,6 +2148,11 @@ export const relations_portfolio_projects = relations(portfolio_projects, ({ one
     fields: [portfolio_projects.category],
     references: [portfolio_categories.id],
     relationName: 'category',
+  }),
+  solutionPlan: one(solution_plans, {
+    fields: [portfolio_projects.solutionPlan],
+    references: [solution_plans.id],
+    relationName: 'solutionPlan',
   }),
   stack: many(portfolio_projects_stack, {
     relationName: 'stack',
