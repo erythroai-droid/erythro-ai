@@ -40,9 +40,20 @@ export interface PortfolioProject {
   /** Optional lead under the body title. */
   subtitle?: LocaleMap
   subtitleRich?: LocaleLexicalMap | Record<string, unknown>
+  /**
+   * Spec rows under the body title (label + detail). CMS: Portfolio Projects → Highlights.
+   */
+  highlights?: PortfolioHighlight[]
   body: PortfolioBodySection[]
   seoTitle?: LocaleMap
   seoDescription?: LocaleMap
+}
+
+export interface PortfolioHighlight {
+  label: LocaleMap
+  detail: LocaleMap
+  metrics?: { value: string; label: LocaleMap }[]
+  metricsNote?: LocaleMap
 }
 
 /** Seed-only flat shape (English). Converted to LocaleMap at module load. */

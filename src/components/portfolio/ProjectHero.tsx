@@ -189,20 +189,38 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
               </div>
             ))}
             {project.link ? (
-              <div className="col-span-2 flex flex-col gap-1.5 md:col-span-4 lg:col-span-1">
-                <dt className="font-sans text-[10px] uppercase tracking-[0.2em] text-white/45">
-                  Link
-                </dt>
-                <dd>
-                  <Link
-                    href={project.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-sans text-sm text-gold-500 underline-offset-4 transition-colors duration-300 hover:text-white hover:underline md:text-[15px]"
+              <div className="col-span-2 flex items-end md:col-span-4 lg:col-span-1">
+                <Link
+                  href={project.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex h-11 max-w-full min-w-0 items-center justify-center gap-2 rounded-[var(--xl,40px)] border border-gold-500 bg-transparent px-5 font-sans text-[12px] font-medium uppercase tracking-[2px] text-gold-500 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-gold-500 hover:text-coal-900 active:scale-[0.97] active:bg-gold-500 active:text-coal-900 active:duration-100"
+                >
+                  {locale === 'ru'
+                    ? 'Открыть проект'
+                    : locale === 'he'
+                      ? 'לצפייה בפרויקט'
+                      : 'Visit project'}
+                  <svg
+                    viewBox="0 0 16 16"
+                    className="size-3.5 shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
                   >
-                    Visit project
-                  </Link>
-                </dd>
+                    <path d="M5 11 11 5M6 5h5v5" />
+                  </svg>
+                  <span className="sr-only">
+                    {locale === 'ru'
+                      ? '(откроется в новой вкладке)'
+                      : locale === 'he'
+                        ? '(נפתח בכרטיסייה חדשה)'
+                        : '(opens in a new tab)'}
+                  </span>
+                </Link>
               </div>
             ) : null}
           </dl>

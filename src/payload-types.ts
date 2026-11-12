@@ -674,6 +674,42 @@ export interface PortfolioProject {
     [k: string]: unknown;
   } | null;
   /**
+   * Rows under the project title: small label on the left, text on the right. Separate items with " · ". Leave empty to hide.
+   */
+  highlights?:
+    | {
+        /**
+         * e.g. "Tech stack", "CI"
+         */
+        label: string;
+        /**
+         * e.g. "Next.js · React · GSAP · TypeScript"
+         */
+        detail: string;
+        /**
+         * Optional big numbers with captions (e.g. Lighthouse scores).
+         */
+        metrics?:
+          | {
+              /**
+               * e.g. "96", "1.0 s", "10 ms"
+               */
+              value: string;
+              /**
+               * Caption under the number
+               */
+              label: string;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Small note under the metrics (source, date)
+         */
+        metricsNote?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * e.g. "2025" or "2024 — 2025"
    */
   date?: string | null;
@@ -1398,6 +1434,21 @@ export interface PortfolioProjectsSelect<T extends boolean = true> {
   description?: T;
   summary?: T;
   subtitle?: T;
+  highlights?:
+    | T
+    | {
+        label?: T;
+        detail?: T;
+        metrics?:
+          | T
+          | {
+              value?: T;
+              label?: T;
+              id?: T;
+            };
+        metricsNote?: T;
+        id?: T;
+      };
   date?: T;
   client?: T;
   link?: T;
@@ -1621,7 +1672,7 @@ export interface Header {
          */
         description?: string | null;
         /**
-         * Parent link target, e.g. #services, #solutions, /contacts. Clicking the parent still scrolls/navigates here when there is no submenu handler.
+         * Parent link per locale, e.g. #services, #solutions, /contacts, https://audit-ru.erythro.ai. Switch EN/RU/HE in the admin locale bar — each language stores its own Href.
          */
         href: string;
         /**
@@ -1631,7 +1682,7 @@ export interface Header {
           | {
               label: string;
               /**
-               * e.g. /services/design, /order/business-automation, #cases
+               * Per-locale link, e.g. /audit, https://audit-ru.erythro.ai, https://diag-he.erythro.ai. Switch locale in the admin bar to edit EN/RU/HE separately (Audit technical vs commercial).
                */
               href: string;
               id?: string | null;

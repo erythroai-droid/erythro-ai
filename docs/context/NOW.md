@@ -1,6 +1,37 @@
 # Latest changes
 
-Обновлено: 2026-11-09 (Header nav Href per locale)  
+Обновлено: 2026-11-12 (import:project → pro-interior body; portfolio highlights → CMS)  
+Статус: локально, нужен деплой
+
+## 0. Calc + Audit LP — meta / index / JSON-LD (2026-11-12)
+- **Calc (`leak-*`):** `noindex` снят → `index,follow`. Title: «Аудит потерь сайта» / Website Loss Audit / ביקורת אובדן הכנסות מהאתר. Отдельные `metaDescription` + длинный `aiDescription` в `auditCalcCopy`; H1 sr-only = metaTitle. OG/Twitter на тех же текстах. hreflang через `auditLpLanguageAlternates('calc')`. `WebApplication` JSON-LD с featureList под leak-калькулятор.
+- **Free audit (`audit-*`):** тоже `index,follow`; title «Бесплатный AI-аудит сайта» (EN/HE аналоги); description: CMS `metaDescription` → fallback `metaDescription`/`subhead` в `auditLpCopy`; `aiDescription` + JSON-LD. UI H1 (`sectionTitle` «AI Аудит Free») не трогали.
+- **Pro/Diagnostic LP:** `noindex` оставлен.
+- Файлы: `auditCalcCopy.ts`, `auditLp.ts`, `brandSchema.ts`, `WebApplicationJsonLd.tsx`, `lp/audit/calc/[locale]/page.tsx`, `lp/audit/[locale]/page.tsx`, `AuditCalcClient.tsx`.
+- **Следующий шаг:** коммит/PR/деплой по команде → проверить `curl` head на leak-ru / audit-ru (title, description, robots, ld+json, hreflang).
+
+## −1. Портфолио — ORA 60A highlights (2026-11-11)
+- **Сделано:** под H1 на `/portfolio/ora-60a` — таблица в 2 колонки (вид см. «Переделано» ниже). Короткие пункты (языки, стек) — мелкие теги с иконками (`HighlightIcon.tsx`: языки — флаги RU/UK/IL, арабский — флаг ОАЭ; стек — inline SVG Next.js/React/GSAP/TS, сопоставление по тексту); у языков и технологий обводки нет (иконка + текст); длинные — главная фраза + приглушённое уточнение через «—». Строки: мультиязычность (RU/AR/EN/HE), адаптивность, производительность, стек `Next.js · React · GSAP · TypeScript`, CI, ИИ-консультант.
+- В строке производительности — цифры Lighthouse 12 по живому `ora60a.erythro.ai` (замер 2026-11-11, локальный CLI; PSI API дал 429): mobile 96, desktop 89, FCP 1.0 s, LCP mobile 2.6 s (desktop 1.5 s), TBT 10 ms, CLS 0. Поля `metrics` / `metricsNote` у `PortfolioHighlight`.
+- Источник: `PROJECT_HIGHLIGHTS` в `portfolioProjects.ts`; `<dl>` в `ProjectBody.tsx`; кэш `portfolio-projects-v15-highlight-ci-copy` (строка CI переписана простыми словами: «Готовый шаблон для следующего товара — меняются бренд, тексты и кадры, выкладка на поддомен erythro.ai»).
+- CMS-поле пока нет. Subtitle под списком остаётся.
+- **Переделано (2026-11-11, по выбору пользователя — «редакционная таблица»):** плашки убраны. Строки разделены тонкими линиями; subgrid; без обводок у языков/стека; цифры без рамок, `border-s`, `<bdi>`. Пробовали и отклонили: плашки, сетку карточек.
+- **Построчно (2026-11-12):** как «Пакеты и цены» / референс Stack: `border-t/b`, мелкий label слева + описание крупнее справа. Без номеров/иконок. Subtitle под списком — на всю ширину (`max-w-none`). Языки: иврит и арабский оба с RTL. CI: GitHub · автотесты · деплой на Vercel. Метрики Lighthouse как раньше. Кэш `v18-highlight-ci-rtl`. В hero «Visit project» — кнопка gold-outline (EN/RU/HE), не текстовая ссылка. Локально.
+- **Highlights в CMS (2026-11-12):** поле `highlights` у Portfolio Projects (label, detail, metrics[value, label], metricsNote; всё кроме value — по локалям). Миграция `20261112_180000_portfolio_project_highlights` **уже применена к общей Supabase (прод-БД)**: 4 таблицы + сид 6 строк ORA 60A (#8). Сид в коде (`PROJECT_HIGHLIGHTS`) и `wide` удалены; `cmsPages` читает только CMS. Кэш `v20-highlights-cms` (PIT-166). Страница локально рендерит строки из БД; админку не смотрел (локальный логин). У «Visit project» в hero — стрелка ↗ + sr-only «(откроется в новой вкладке)».
+- Прод-сайт пока на старом коде (сид в коде) — новые таблицы ему не мешают. После деплоя правки строк — только в админке.
+- **Описание по образцу pro-interior (2026-11-12, записано в общую БД):** body ORA 60A заменён на 6 секций: Обзор проекта · Вызовы и задачи · Инженерное решение и архитектура (картинки #155/#156 сюда) · Ключевые возможности · Результаты аудита и метрики (таблица Lighthouse mobile/desktop от 2026-11-11 + инженерные заметки) · Результаты и бизнес-эффект. Списки с жирными лидами, `code`, таблица. Источник: `content/imports/ora-60a/body.ts`, скрипт `scripts/import-project/apply-rich-body.ts` (EN/RU/HE, одинаковая структура, id строк общие). Бэкап старого body: `content/imports/ora-60a/body-backup-2026-11-12.json`. Кэш `v21-ora-body`. Противоречие «балл не приводится» ушло вместе со старыми секциями.
+- **Внимание:** в репо Watch и templates нет GitHub workflows и тестов. Строка CI в highlights («автотесты») этим не подтверждается; в body написано только «GitHub → Vercel, сборка на каждый push».
+- **Import script → та же схема (2026-11-12):** `import:project` пишет 6 rich Lexical секций (overview→results), списки с `**лидом**`, опц. таблицу метрик, `highlights` только если заданы в brief (иначе CMS не трогает). `body.ts` в папке импорта подхватывается автоматически. Общие билдеры: `lib/rich-lexical.ts`. Пример/README/case-study-template/CMS_FIELD_MAP обновлены; копии в Obsidian `cases/`. Dry-run example + ora-60a (body.ts) OK.
+- **Следующий шаг:** коммит/PR/деплой по команде; визуально EN/RU/HE.
+
+## −1. Портфолио — ORA 60A (2026-11-10)
+- **Сделано:** `pnpm import:project -- content/imports/ora-60a --create`. CMS `portfolio-projects` **#8**, slug `ora-60a`, категория `websites`. EN/RU/HE. Ссылка https://ora60a.erythro.ai. Медиа #152–#156.
+- Кэш пользователь сбросил сам. Страница открывается (проверено: иврит, заголовок и пять секций на месте).
+- Заодно: в `scripts/import-project/lib/load-env.ts` снова подставляются секреты из `.env` вместо `[SENSITIVE]` (PIT-111). На проде `REVALIDATION_TOKEN` нет, поэтому локальный `/api/revalidate` отвечает 401.
+
+---
+
+Обновлено ранее: 2026-11-09 (Header nav Href per locale)  
 Статус: Stage 1–3 на VPS; ротация токенов отложена
 
 ---
