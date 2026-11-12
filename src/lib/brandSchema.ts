@@ -195,7 +195,16 @@ export type WebApplicationSchemaInput = {
   url?: string
   /** Fragment id on that page, default `#app` */
   id?: string
+  /** Override default /audit feature list (e.g. leak calculator LP). */
+  featureList?: string[]
 }
+
+const DEFAULT_AUDIT_FEATURE_LIST = [
+  'AI Search Visibility (ChatGPT, Claude, Perplexity)',
+  'PageSpeed mobile & desktop',
+  'CRO & UX friction',
+  'SEO & security signals',
+]
 
 /**
  * Free interactive tool on /audit — pairs with FAQPage for rich-result eligibility.
@@ -208,6 +217,11 @@ export function buildWebApplicationSchema(input: WebApplicationSchemaInput) {
   const name = input.name.trim()
   const description = input.description.trim()
   if (!name || !description) return null
+
+  const featureList =
+    input.featureList && input.featureList.length > 0
+      ? input.featureList
+      : DEFAULT_AUDIT_FEATURE_LIST
 
   return {
     '@type': 'WebApplication',
@@ -226,12 +240,7 @@ export function buildWebApplicationSchema(input: WebApplicationSchemaInput) {
       priceCurrency: 'ILS',
       availability: 'https://schema.org/InStock',
     },
-    featureList: [
-      'AI Search Visibility (ChatGPT, Claude, Perplexity)',
-      'PageSpeed mobile & desktop',
-      'CRO & UX friction',
-      'SEO & security signals',
-    ],
+    featureList,
     provider: { '@id': `${SITE_URL}/#organization` },
     publisher: { '@id': `${SITE_URL}/#organization` },
   }

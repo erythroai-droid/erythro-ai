@@ -48,7 +48,7 @@ export default function AuditCalcClient({
             : 'var(--font-inter), var(--font-inter-cyrillic), "Inter", system-ui, sans-serif',
         }}
       >
-        <h1 className="sr-only">{tCalc(copy.sectionTitle, locale)}</h1>
+        <h1 className="sr-only">{tCalc(copy.metaTitle, locale)}</h1>
         <InteractiveBackground />
         <AuditCalcFlow locale={locale} page={auditPageContent} />
         <WhatsAppButton
