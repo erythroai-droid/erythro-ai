@@ -924,7 +924,8 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
   // v10: trim slugs + per-doc map (trailing-space slugs 404'd detail pages)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v22-package-badge'], {
+  // v23: bust PIT-166 fallback cached before solution_plan_id migration landed
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v23-package-badge'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

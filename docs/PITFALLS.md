@@ -2223,11 +2223,11 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 ## PIT-166 — New CMS field before migration: page cached the seed fallback
 
 **Tags:** `payload`, `migrations`, `unstable_cache`, `portfolio`, `dev`
-**Seen:** 2026-11-12 — `/portfolio/ora-60a` → 404 locally right after adding `highlights` to Portfolio Projects and running the migration
+**Seen:** 2026-11-12 — `/portfolio/ora-60a` → 404 locally right after adding `highlights` to Portfolio Projects and running the migration. Same day again after `solutionPlan` / `solution_plan_id` (package badge): page opened before migrate → `column … does not exist` → fallback cached under `v22` → 404 after migrate until key bumped to `v23`.
 
-**Symptom:** After the migration succeeded and the data was in Postgres, the project page still returned 404 ("Project not found").
+**Symptom:** After the migration succeeded and the data was in Postgres, the project page still returned 404 ("Project not found"). Dev log may show `column portfolio_projects.solution_plan_id does not exist` (or missing highlights tables) on the first hit.
 
-**Cause:** The page was hit while the collection already had the new field but the tables did not exist yet (`PAYLOAD_DISABLE_PUSH=1`). `payload.find` failed, `fetchPortfolioProjects` returned the static `PORTFOLIO_PROJECTS` (no `ora-60a`), and `unstable_cache` (`revalidate: false`) stored that fallback under the new key.
+**Cause:** The page was hit while the collection already had the new field but the column/tables did not exist yet (`PAYLOAD_DISABLE_PUSH=1`). `payload.find` failed, `fetchPortfolioProjects` returned the static `PORTFOLIO_PROJECTS` (no `ora-60a`), and `unstable_cache` (`revalidate: false`) stored that fallback under the new key.
 
 **Fix:** Bump the `getCachedPortfolioProjects` cache key again after the migration (or revalidate `SITE_CONTENT_TAG`).
 
