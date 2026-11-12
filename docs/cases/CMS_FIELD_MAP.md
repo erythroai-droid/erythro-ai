@@ -12,6 +12,7 @@
 | URL segment | `slug` | text |
 | Filter category | `category` | relationship → Portfolio Categories |
 | Optional chip override | `categoryLabel` | loc text |
+| Pricing package badge next to body H1 | `solutionPlan` | relationship → Plans (`kind=solution`); title → badge, links to `/order/[slug]` |
 | `CLIENT_NAME` | `client` | text |
 | Period | `date` | text |
 | Demo URL | `link` | text |

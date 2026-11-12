@@ -296,6 +296,23 @@ export function mapPortfolioDoc(d: any): PortfolioProject {
         .filter((row: PortfolioHighlight) => LOCALES.some((l) => row.label[l]?.trim()))
     : fb.highlights
 
+  const planDoc =
+    d.solutionPlan && typeof d.solutionPlan === 'object' && !Array.isArray(d.solutionPlan)
+      ? d.solutionPlan
+      : null
+  const packageLabel = planDoc ? locMapCms(planDoc.title) : undefined
+  const hasPackageLabel = Boolean(
+    packageLabel && LOCALES.some((l) => Boolean(packageLabel[l]?.trim())),
+  )
+  const planSlugRaw =
+    typeof planDoc?.slug === 'string'
+      ? planDoc.slug.trim()
+      : typeof d.solutionPlan === 'string'
+        ? ''
+        : ''
+  const packageHref =
+    hasPackageLabel && planSlugRaw ? `/order/${planSlugRaw}` : undefined
+
   return {
     id: String(d.id ?? fb.id),
     slug: resolvedSlug,
@@ -328,6 +345,12 @@ export function mapPortfolioDoc(d: any): PortfolioProject {
         }
       : {}),
     ...(highlights ? { highlights } : {}),
+    ...(hasPackageLabel && packageLabel
+      ? {
+          packageLabel,
+          ...(packageHref ? { packageHref } : {}),
+        }
+      : {}),
     body,
     ...(hasSeoTitle ? { seoTitle } : {}),
     ...(hasSeoDescription ? { seoDescription } : {}),
@@ -901,7 +924,7 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
   // v10: trim slugs + per-doc map (trailing-space slugs 404'd detail pages)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v21-ora-body'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v22-package-badge'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

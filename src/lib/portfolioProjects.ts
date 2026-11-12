@@ -44,6 +44,12 @@ export interface PortfolioProject {
    * Spec rows under the body title (label + detail). CMS: Portfolio Projects → Highlights.
    */
   highlights?: PortfolioHighlight[]
+  /**
+   * Pricing-package badge next to the body H1 (from CMS solutionPlan relation).
+   */
+  packageLabel?: LocaleMap
+  /** Order page path when the related plan has a slug, e.g. /order/ai-smart-card. */
+  packageHref?: string
   body: PortfolioBodySection[]
   seoTitle?: LocaleMap
   seoDescription?: LocaleMap

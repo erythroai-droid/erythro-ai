@@ -56,6 +56,18 @@ export const PortfolioProjects: CollectionConfig = {
           'Optional override for the label on cards/hero. Leave empty to use the category’s localized label.',
       },
     }),
+    {
+      name: 'solutionPlan',
+      type: 'relationship',
+      relationTo: 'solution-plans',
+      admin: {
+        description:
+          'Optional pricing package shown as a badge next to the project title (e.g. AI Smart Card / AI-визитка). Links to /order/[slug].',
+      },
+      filterOptions: {
+        kind: { equals: 'solution' },
+      },
+    },
     locTextarea('description', {
       required: true,
       admin: { description: 'Short card description on /portfolio' },

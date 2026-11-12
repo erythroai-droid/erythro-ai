@@ -1,9 +1,16 @@
 # Latest changes
 
-Обновлено: 2026-11-12 (import:project → pro-interior body; portfolio highlights → CMS)  
-Статус: локально, нужен деплой
+Обновлено: 2026-11-12 (portfolio package badge next to H1)  
+Статус: migrate на общей БД OK; нужен деплой
 
-## 0. Calc + Audit LP — meta / index / JSON-LD (2026-11-12)
+## 0. Портфолио — плашка пакета рядом с H1 (2026-11-12)
+- **Сделано:** у Portfolio Projects поле `solutionPlan` → Plans (`kind=solution`). На `/portfolio/[slug]` рядом с H1 — плашка с title пакета (EN/RU/HE), ссылка на `/order/[slug]`.
+- Миграция `20261112_210000_portfolio_project_solution_plan` применена (+ сид `ora-60a` → `ai-smart-card`). Кэш `portfolio-projects-v22-package-badge`.
+- UI: `ProjectBody.tsx`. Маппинг: `cmsPages.mapPortfolioDoc` → `packageLabel` / `packageHref`.
+- Док: `docs/cases/CMS_FIELD_MAP.md` (+ копия в Obsidian `cases/`).
+- **Следующий шаг:** визуально `/portfolio/ora-60a` (RU: «AI-визитка») → деплой по команде. Для других кейсов — выбрать пакет в админке.
+
+## −1. Calc + Audit LP — meta / index / JSON-LD (2026-11-12)
 - **Calc (`leak-*`):** `noindex` снят → `index,follow`. Title: «Аудит потерь сайта» / Website Loss Audit / ביקורת אובדן הכנסות מהאתר. Отдельные `metaDescription` + длинный `aiDescription` в `auditCalcCopy`; H1 sr-only = metaTitle. OG/Twitter на тех же текстах. hreflang через `auditLpLanguageAlternates('calc')`. `WebApplication` JSON-LD с featureList под leak-калькулятор.
 - **Free audit (`audit-*`):** тоже `index,follow`; title «Бесплатный AI-аудит сайта» (EN/HE аналоги); description: CMS `metaDescription` → fallback `metaDescription`/`subhead` в `auditLpCopy`; `aiDescription` + JSON-LD. UI H1 (`sectionTitle` «AI Аудит Free») не трогали.
 - **Pro/Diagnostic LP:** `noindex` оставлен.
