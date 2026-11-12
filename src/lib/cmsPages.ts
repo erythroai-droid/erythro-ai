@@ -925,7 +925,7 @@ export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
   // v10: trim slugs + per-doc map (trailing-space slugs 404'd detail pages)
   // v26: rosso-garage four languages (EN/RU/HE/AR)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v26-rosso-ar'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v27-la-scala'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
