@@ -1857,6 +1857,8 @@ After a Payload or storage-plugin bump, diff the generated Drizzle schema agains
 
 **Fix:** `scripts/import-project/lib/load-env.ts` fills `[SENSITIVE]` from `.env` / `.env.local`, then deletes leftover placeholders so `NEXT_PUBLIC_SITE_URL` falls back to `https://erythro.ai`. Keep real `DATABASE_URL` / `PAYLOAD_SECRET` / R2 keys in `.env`. For live page cache: real `REVALIDATION_TOKEN` or **Save once** in production admin (PIT-109).
 
+**2026-11-10:** the filler was missing from `load-env.ts` again (import of ORA 60A hit `ENOTFOUND base`). Restored. A token that does not match Production still returns 401 from `/api/revalidate`; Save in admin is what busts the live portfolio cache.
+
 **Prevent:** After `vercel env pull`, never trust Production-only secrets in that file alone. Do not commit `.env*`.
 
 ---
@@ -2215,6 +2217,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 **Fix:** Redeploy repo autoresponder (SMTP path unchanged; drop dead CAPI nodes). Backup first under `/root/n8n/backups/<stamp>/`. After import: confirm `active=true`, only one Process branch → `Should Send Reply?`, then `docker compose restart n8n` and `/healthz` 200. Keep Meta CAPI as the separate webhook workflow / Vercel path — do not re-attach unsigned CAPI from IMAP without `event_id` dedup.
 
 **Prevent:** Diff live vs repo before n8n import. Never add a second Code output for fan-out. Prefer credentials over hardcoded tokens in HTTP nodes (Stage 2).
+
+---
+
+## PIT-166 — New CMS field before migration: page cached the seed fallback
+
+**Tags:** `payload`, `migrations`, `unstable_cache`, `portfolio`, `dev`
+**Seen:** 2026-11-12 — `/portfolio/ora-60a` → 404 locally right after adding `highlights` to Portfolio Projects and running the migration
+
+**Symptom:** After the migration succeeded and the data was in Postgres, the project page still returned 404 ("Project not found").
+
+**Cause:** The page was hit while the collection already had the new field but the tables did not exist yet (`PAYLOAD_DISABLE_PUSH=1`). `payload.find` failed, `fetchPortfolioProjects` returned the static `PORTFOLIO_PROJECTS` (no `ora-60a`), and `unstable_cache` (`revalidate: false`) stored that fallback under the new key.
+
+**Fix:** Bump the `getCachedPortfolioProjects` cache key again after the migration (or revalidate `SITE_CONTENT_TAG`).
+
+**Prevent:** Apply the migration first, then bump the cache key, then open the page. On prod the build runs `payload migrate` before `next build`, so this is a local-only trap.
 
 ---
 
@@ -2786,3 +2803,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] n8n Code fan-out: both targets on output[0]; after CLI import prefer `publish:workflow` + restart n8n for IMAP (PIT-156)
 - [ ] n8n Telegram: native Telegram node + telegramApi cred; Meta/Gemini via httpQueryAuth; verify `workflow_published_version` after restart (PIT-159)
 - [ ] Header / Audit submenu Href: per-locale `localized: true` links; never one shared href for EN/RU/HE destinations (PIT-161)
+- [ ] New Payload field: migrate first, then bump the `unstable_cache` key, then open the page — otherwise the seed fallback gets cached (PIT-166)

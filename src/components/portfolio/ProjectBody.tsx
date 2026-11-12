@@ -56,6 +56,34 @@ export default function ProjectBody({
   const isLight = theme === 'light'
   const sectionRef = useRef<HTMLElement | null>(null)
   const title = tLocale(project.title, locale)
+  const highlights = (Array.isArray(project.highlights) ? project.highlights : [])
+    .map((row) => {
+      if (!row || typeof row !== 'object' || !('label' in row) || !('detail' in row)) {
+        return null
+      }
+      const label = tLocale(row.label, locale).trim()
+      const detail = tLocale(row.detail, locale).trim()
+      if (!label || !detail) return null
+      const parts = detail.split(' · ').map((part) => part.trim()).filter(Boolean)
+      const metrics = (Array.isArray(row.metrics) ? row.metrics : [])
+        .map((metric) => ({
+          value: typeof metric?.value === 'string' ? metric.value : '',
+          label: metric?.label ? tLocale(metric.label, locale).trim() : '',
+        }))
+        .filter((metric) => metric.value && metric.label)
+      const metricsNote = row.metricsNote ? tLocale(row.metricsNote, locale).trim() : ''
+      return { label, parts, metrics, metricsNote }
+    })
+    .filter(
+      (
+        row,
+      ): row is {
+        label: string
+        parts: string[]
+        metrics: { value: string; label: string }[]
+        metricsNote: string
+      } => Boolean(row),
+    )
   const subtitlePlain = tLocale(project.subtitle, locale).trim()
   const subtitleDoc = pickRichDoc(
     project.subtitleRich as Record<string, unknown> | undefined,
@@ -96,14 +124,92 @@ export default function ProjectBody({
       }`}
     >
       <div className="mx-auto flex w-full min-w-0 max-w-[1170px] flex-col gap-16 px-[30px] py-16 md:gap-20 md:py-24 lg:gap-24 lg:py-[120px]">
-        <header className="flex flex-col gap-4 md:gap-5">
+        <header className="flex flex-col gap-6 md:gap-8">
           <h1 className="m-0 font-sans text-[36px] font-extralight uppercase leading-tight tracking-[0.06em] md:text-[52px] md:tracking-[0.08em] lg:text-[56px]">
             <span className="text-erythro-500">{title.charAt(0)}</span>
             <span>{title.slice(1)}</span>
           </h1>
+          {highlights.length > 0 ? (
+            <dl
+              className={`m-0 flex w-full flex-col border-t ${
+                isLight ? 'border-coal-900/15' : 'border-white/15'
+              }`}
+              aria-label={
+                locale === 'ru'
+                  ? 'Ключевые преимущества'
+                  : locale === 'he'
+                    ? 'יתרונות עיקריים'
+                    : 'Key highlights'
+              }
+            >
+              {highlights.map((row) => {
+                const hasMetrics = row.metrics.length > 0
+                const detailText =
+                  row.parts.length > 1 ? row.parts.join(' · ') : row.parts[0] || ''
+                return (
+                  <div
+                    key={row.label}
+                    className={`grid grid-cols-1 gap-3 border-b py-6 md:grid-cols-[minmax(9rem,22%)_minmax(0,1fr)] md:items-start md:gap-x-10 ${
+                      isLight ? 'border-coal-900/15' : 'border-white/15'
+                    }`}
+                  >
+                    <dt
+                      className={`m-0 font-sans text-sm font-normal leading-snug md:pt-1 ${
+                        isLight ? 'text-coal-900' : 'text-white'
+                      }`}
+                    >
+                      {row.label}
+                    </dt>
+                    <dd className="m-0 flex min-w-0 flex-col gap-5">
+                      <p
+                        className={`m-0 font-sans text-base font-light leading-7 md:text-lg md:leading-8 ${
+                          isLight ? 'text-coal-900/80' : 'text-white/75'
+                        }`}
+                      >
+                        {detailText}
+                      </p>
+                      {hasMetrics ? (
+                        <div className="flex flex-col gap-3">
+                          <ul className="m-0 grid list-none grid-cols-2 gap-x-6 gap-y-5 p-0 sm:grid-cols-3 lg:grid-cols-6">
+                            {row.metrics.map((metric) => (
+                              <li key={metric.label} className="flex min-w-0 flex-col gap-1.5">
+                                <span
+                                  className={`whitespace-nowrap font-sans text-[32px] font-extralight leading-none tabular-nums md:text-[40px] ${
+                                    isLight ? 'text-coal-900' : 'text-white'
+                                  }`}
+                                >
+                                  <bdi>{metric.value}</bdi>
+                                </span>
+                                <span
+                                  className={`font-sans text-xs leading-snug ${
+                                    isLight ? 'text-coal-400' : 'text-white/55'
+                                  }`}
+                                >
+                                  {metric.label}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                          {row.metricsNote ? (
+                            <p
+                              className={`m-0 font-sans text-xs leading-snug ${
+                                isLight ? 'text-coal-400' : 'text-white/45'
+                              }`}
+                            >
+                              {row.metricsNote}
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </dd>
+                  </div>
+                )
+              })}
+            </dl>
+          ) : null}
           {hasSubtitle ? (
             <div
-              className={`m-0 max-w-[720px] font-sans text-lg font-light leading-8 md:text-xl md:leading-9 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-[10px] [&_img]:shadow-[0_6px_20px_rgba(0,0,0,0.18)] [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
+              className={`m-0 w-full max-w-none font-sans text-lg font-light leading-8 md:text-xl md:leading-9 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-[10px] [&_img]:shadow-[0_6px_20px_rgba(0,0,0,0.18)] [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
                 isLight ? 'text-coal-900/70' : 'text-gold-500'
               }`}
             >

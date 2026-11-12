@@ -73,6 +73,50 @@ export const PortfolioProjects: CollectionConfig = {
       },
     }),
     {
+      name: 'highlights',
+      type: 'array',
+      labels: { singular: 'Highlight', plural: 'Highlights' },
+      admin: {
+        initCollapsed: true,
+        description:
+          'Rows under the project title: small label on the left, text on the right. Separate items with " · ". Leave empty to hide.',
+      },
+      fields: [
+        locText('label', {
+          required: true,
+          admin: { description: 'e.g. "Tech stack", "CI"' },
+        }),
+        locTextarea('detail', {
+          required: true,
+          admin: { description: 'e.g. "Next.js · React · GSAP · TypeScript"' },
+        }),
+        {
+          name: 'metrics',
+          type: 'array',
+          labels: { singular: 'Metric', plural: 'Metrics' },
+          admin: {
+            initCollapsed: true,
+            description: 'Optional big numbers with captions (e.g. Lighthouse scores).',
+          },
+          fields: [
+            {
+              name: 'value',
+              type: 'text',
+              required: true,
+              admin: { description: 'e.g. "96", "1.0 s", "10 ms"' },
+            },
+            locText('label', {
+              required: true,
+              admin: { description: 'Caption under the number' },
+            }),
+          ],
+        },
+        locText('metricsNote', {
+          admin: { description: 'Small note under the metrics (source, date)' },
+        }),
+      ],
+    },
+    {
       name: 'date',
       type: 'text',
       admin: { description: 'e.g. "2025" or "2024 — 2025"' },

@@ -8,6 +8,7 @@ import {
   isHiddenPortfolioSlug,
   type PortfolioCategory,
   type PortfolioFilter,
+  type PortfolioHighlight,
   type PortfolioProject,
   type PortfolioBodySection,
 } from './portfolioProjects'
@@ -274,10 +275,30 @@ export function mapPortfolioDoc(d: any): PortfolioProject {
     fb.subtitle || { en: '', ru: '', he: '' },
   )
   const hasSubtitle = LOCALES.some((l) => Boolean(subtitlePlain[l]?.trim()))
+  const resolvedSlug = slug || fb.slug
+  const highlights: PortfolioHighlight[] | undefined = Array.isArray(d.highlights)
+    ? d.highlights
+        .map((row: any): PortfolioHighlight => {
+          const metrics = (Array.isArray(row?.metrics) ? row.metrics : [])
+            .map((m: any) => ({
+              value: typeof m?.value === 'string' ? m.value.trim() : '',
+              label: locMapCms(m?.label),
+            }))
+            .filter((m: { value: string }) => m.value)
+          const metricsNote = locMapCms(row?.metricsNote)
+          return {
+            label: locMapCms(row?.label),
+            detail: locMapCms(row?.detail),
+            ...(metrics.length ? { metrics } : {}),
+            ...(LOCALES.some((l) => metricsNote[l]?.trim()) ? { metricsNote } : {}),
+          }
+        })
+        .filter((row: PortfolioHighlight) => LOCALES.some((l) => row.label[l]?.trim()))
+    : fb.highlights
 
   return {
     id: String(d.id ?? fb.id),
-    slug: slug || fb.slug,
+    slug: resolvedSlug,
     title: locMap(d.title, fb.title),
     category: categoryValue as Exclude<PortfolioCategory, 'all'>,
     categoryLabel,
@@ -306,6 +327,7 @@ export function mapPortfolioDoc(d: any): PortfolioProject {
           subtitleRich,
         }
       : {}),
+    ...(highlights ? { highlights } : {}),
     body,
     ...(hasSeoTitle ? { seoTitle } : {}),
     ...(hasSeoDescription ? { seoDescription } : {}),
@@ -879,7 +901,7 @@ async function fetchOrderPlans(): Promise<OrderPlan[]> {
 export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
   // v10: trim slugs + per-doc map (trailing-space slugs 404'd detail pages)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v11-r2'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v21-ora-body'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

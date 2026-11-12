@@ -2,12 +2,15 @@
 
 Self-contained tool: compose case copy from a brief and upsert **Pages → Portfolio Projects** via Payload Local API (no admin UI clicks).
 
+Body scheme matches **pro-interior / ORA 60A**: six rich Lexical sections (lists with bold leads, optional metrics table), plus optional **Highlights** under the title.
+
 ```
 scripts/import-project/
   README.md                 ← this file
-  import-project.ts         ← CLI
+  import-project.ts         ← CLI (brief + optional body.ts)
+  apply-rich-body.ts        ← body-only update from body.ts
   revalidate-site.ts        ← optional cache bust
-  lib/                      ← brief parser, yaml, env, revalidate ping
+  lib/                      ← brief parser, rich Lexical, yaml, env, revalidate ping
   example/brief.yaml        ← copy to a working folder
   github-action.example.yml ← template for later GHA (not wired)
 ```
@@ -20,11 +23,12 @@ Related CMS docs: [`docs/cases/case-study-template.md`](../../docs/cases/case-st
 
 ## How to use (manual)
 
-1. In `/admin` create the project and set **Slug** (other required fields can be stubs). Category `value` must already exist (**Portfolio Categories**, e.g. `websites`).
+1. In `/admin` create the project and set **Slug** (other required fields can be stubs), **or** pass `--create` with `category` in the brief. Category `value` must already exist (**Portfolio Categories**, e.g. `websites`).
 2. Copy `example/brief.yaml` → `content/imports/<slug>/brief.yaml`.
-3. Fill `facts.en` / `facts.ru` / `facts.he` (same keys as `{{ PLACEHOLDER }}` in the case template). No invented metrics.
-4. Optional images next to the brief: `card.*`, `hero.*`, `hero-mobile.*`, `body/frontend/*.png`.
-5. Run:
+3. Fill `facts.en` / `facts.ru` / `facts.he`. Optional: `highlights`, `features`, `metrics`. No invented metrics.
+4. Optional hand-authored rich body: `content/imports/<slug>/body.ts` (same shape EN/RU/HE). If present, it replaces the composed body.
+5. Optional images: `card.*`, `hero.*`, `hero-mobile.*`, `body/engineering/*`, `body/metrics/*`.
+6. Run:
 
 ```bash
 npx vercel env pull .env.production.local --environment=production
@@ -32,9 +36,15 @@ pnpm import:project -- content/imports/<slug> --dry-run
 pnpm import:project -- content/imports/<slug>
 ```
 
-6. Review the admin URL the script prints. The public page may stay stale until cache bust (see below).
+7. Review the admin URL the script prints. The public page may stay stale until cache bust (see below).
 
-The script fills `title`, `description`, `summary`, five `body` sections, SEO; uploads media to Blob; **updates the document by slug**.
+The script fills `title`, `description`, `summary`, `subtitle`, **six** `body` sections as rich Lexical, optional `highlights`, SEO; uploads media; **updates the document by slug**.
+
+Body-only (keep media/highlights as-is):
+
+```bash
+pnpm tsx scripts/import-project/apply-rich-body.ts content/imports/<slug>/body.ts --dry-run
+```
 
 ### Flags
 
@@ -49,51 +59,60 @@ Default: slug **must already exist**. Missing doc → error unless `--create`.
 
 ---
 
+## Body scheme (six sections)
+
+| `#` | id | Heading (EN) | Typical content |
+|---|---|---|---|
+| 1 | `overview` | Project overview | Lead + bullet list (client, industry, service, developer, stack, live) |
+| 2 | `challenges` | Challenges and goals | Context paragraph + bold “Key goals” + bullets |
+| 3 | `engineering` | Engineering solution and architecture | Numbered subsections (frontend / backend / delivery) with bullets |
+| 4 | `features` | Key features | Bullet list (`features:` in YAML or `KEY_FEATURES` lines) |
+| 5 | `metrics` | Audit results and engineering metrics | Intro + optional table + engineering notes |
+| 6 | `results` | Results and business impact | Bullet list of outcomes |
+
+Inline markup in composed / `body.ts` strings: `**bold**`, `` `code` ``.
+
+Empty facts, leftover `{{ KEY }}`, and `n/a` / `not used` are dropped. Missing RU/HE falls back to English for meta fields. Body shape must match across EN/RU/HE when using `body.ts`.
+
+---
+
 ## Working folder layout
 
 ```
 content/imports/<slug>/
   brief.yaml
+  body.ts                 # optional rich body override
   card.jpg
   hero.jpg
   hero-mobile.jpg
-  body/frontend/*.png
+  body/engineering/*.png
+  body/metrics/*.png
 ```
 
-```yaml
-slug: montblanc
-category: websites
-date: "2024 — 2025"
-client: Demo
-link: https://example.com
-stack: [Figma, React]
-tags: [website, react]
-media:
-  card: card.jpg
-  hero: hero.jpg
-  heroMobile: hero-mobile.jpg
-bodyImages:
-  frontend:
-    - shots/catalog.png
-```
+Legacy folders `body/frontend` and `body/results` still map to `engineering` / `metrics` images.
 
-Empty values, leftover `{{ KEY }}`, and `n/a` / `not used` are dropped. Missing RU/HE falls back to English.
+---
 
-| Facts / meta | CMS field |
+## Facts → CMS
+
+| Facts / brief | CMS field |
 |---|---|
 | `slug`, `category`, `date`, `client`, `link`, `stack`, `tags` | same |
 | `PROJECT_NAME` | `title` |
 | `SHORT_TAGLINE` | `description` |
 | `HIGH_LEVEL_SUMMARY` | `summary` (hero rich text) |
+| `OVERVIEW_LEAD` (else summary) | body overview lead |
 | `SUBTITLE` | `subtitle` |
-| challenges + goals | `body` Challenges |
-| frontend keys | `body` Frontend & UX |
-| backend / CMS / integrations | `body` Backend |
-| CI/CD + security | `body` Automation |
-| results keys | `body` Results |
+| `CLIENT_NAME`, `INDUSTRY`, `SERVICES_PROVIDED`, `DEVELOPER_TEAM`, `TECH_STACK_LIST`, `DEMO_URL*` | overview bullets |
+| challenges + goals keys | body challenges |
+| frontend / backend / CI / security keys | body engineering |
+| `features:` or `KEY_FEATURES` | body features |
+| `metrics:` or `METRICS_INTRO` / `ENGINEERING_NOTES` | body metrics |
+| results keys or `RESULTS_LIST` | body results |
+| `highlights:` | `highlights[]` (label, detail, metrics, metricsNote) |
 | `SEO_TITLE` / `SEO_DESC` | `seo.*` |
 
-Ready-made copy instead of facts: `copy:` in YAML (`lib/import-project-brief.ts`).
+Ready-made plain body instead of facts: `copy.body` in YAML (legacy paragraphs). Prefer `body.ts` for rich lists/tables.
 
 ---
 
