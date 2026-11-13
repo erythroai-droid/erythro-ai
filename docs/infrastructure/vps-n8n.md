@@ -15,7 +15,7 @@
 
 | Service | URL | Notes |
 |---|---|---|
-| n8n | `https://n8n.erythro.ai` | Image pinned `2.41.7`; DNS A (DNS only) → VPS |
+| n8n | `https://n8n.erythro.ai` | Image pinned `2.47.6`; DNS A (DNS only) → VPS |
 | Audit worker | `https://agent-api.erythro.ai` | `GET /health`, `POST /api/run-audit` |
 
 Until DNS exists, hit via IP + Host header for smoke tests.
@@ -37,7 +37,7 @@ Deploy from repo: `py -3 scripts/deploy_vps_audit_stack.py` (needs `VPS_PASSWORD
 
 **Новые контейнеры:** не публиковать порты на `0.0.0.0` — см. [`vps-docker-ports.md`](./vps-docker-ports.md) (PIT-053).
 
-**Image:** `docker.n8n.io/n8nio/n8n:2.41.7` in [`infra/n8n/docker-compose.yml`](../../infra/n8n/docker-compose.yml) (live: `/root/n8n/compose.yaml`). Do **not** use `:latest` — it is not auto-pulled. Security floor from n8n advisories (2026-10-01): `2.41.4` (stable) / `2.42.1` (beta) / `1.123.83` (v1). Stay on the stable patch line. `2.43.0` (2026-10-06) is still a pre-release.
+**Image:** `docker.n8n.io/n8nio/n8n:2.47.6` in [`infra/n8n/docker-compose.yml`](../../infra/n8n/docker-compose.yml) (live: `/root/n8n/compose.yaml`). Do **not** use `:latest` — it is not auto-pulled. Security floor from n8n advisories (2026-11-13): `2.47.6` (stable) / `2.48.3` (beta) / `1.123.96` (v1) / `3.2.2` (v3). Stay on the stable patch line.
 
 See also: [`caddy-dns-audit-worker.md`](./caddy-dns-audit-worker.md), [`n8n-audit-reconcile.md`](./n8n-audit-reconcile.md).
 
@@ -74,4 +74,4 @@ docker exec n8n n8n list:workflow --active=true
 curl -fsS https://n8n.erythro.ai/healthz
 ```
 
-Volume `n8n_data` must stay. Port 5678 must stay unpublished (PIT-053). After 2.39.6 → 2.41.4 (2026-10-01, advisories through GHSA-3qcw-p65v-c7vq) the Email Autoresponder stayed Active; optional Audit reconcile stayed inactive (Vercel Cron is primary). 2.41.4 → 2.41.7 (2026-10-07) stays on that stable line: 2.41.6 keeps the task runner up after an unhandled rejection; 2.41.7 is an API/editor patch. No newer security floor than 2.41.4.
+Volume `n8n_data` must stay. Port 5678 must stay unpublished (PIT-053). History: 2.39.6 → 2.41.4 (2026-10-01) → 2.41.7 (2026-10-07) → 2.47.6 (2026-11-13, GHSA-m7qq / q8rc / h59h / g333 / c772). Prefer `py -3 scripts/upgrade_n8n_image.py` (backup under `/root/n8n/backups/<stamp>/`, pull, recreate, healthz + active workflows). Optional Audit reconcile stays inactive (Vercel Cron is primary).
