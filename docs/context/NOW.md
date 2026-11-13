@@ -1,9 +1,25 @@
 # Latest changes
 
-Обновлено: 2026-11-13 (portfolio hero: stronger overlay)  
-Статус: локально; нужен визуальный check + коммит/деплой
+Обновлено: 2026-11-13 (n8n 2.47.6 security)  
+Статус: Live n8n на патче; репо-пин обновлён, коммит по команде
 
-## 0. Портфолио — Hero: сильнее затемнение фона (2026-11-13)
+## 0. n8n security upgrade → 2.47.6 (2026-11-13)
+- **Причина:** bi-weekly advisories (High: GHSA-m7qq, GHSA-q8rc; Medium: GHSA-h59h, GHSA-g333, GHSA-c772). Stable floor: `2.47.6`.
+- **Сделано:** pin `infra/n8n/docker-compose.yml` `2.41.7` → `2.47.6`; docs `vps-n8n.md` + `ai-audit-architecture.md` (+ Obsidian); скрипт `scripts/upgrade_n8n_image.py`.
+- **Live:** было `2.45.5` → стало `2.47.6`. Backup `/root/n8n/backups/20261113T122956Z-image-2.47.6`. healthz OK. Active: Email Autoresponder, Marketing Digest, Telegram Bot, Meta CAPI.
+- **Следующий шаг:** коммит репо по команде; опционально быстрый smoke IMAP/Telegram/CAPI.
+
+## −1. Splash — full logo draw video (2026-11-13)
+- **Сделано:** coal → `splash-logo-draw-coal.webm` / `.mp4` (~140 KB). **e**: белый stroke → белая заливка → отъезд; красная заливка **e** синхронно с заливкой плашки `.ai`.
+- Скрипты: `export-splash-logo-video.mjs --theme=coal`, `splash-logo-export-coal.html`.
+- **Следующий шаг:** открыть coal MP4; коммит по команде.
+
+## −1. Портфолио — MUSTANG 6663 RT (2026-11-13)
+- **Сделано:** `pnpm import:project -- content/imports/mustang-6663rt --create` → CMS `portfolio-projects` **#10**, slug `mustang-6663rt`, категория `websites`. Live https://mustang-ashy.vercel.app/. Медиа #189–#195.
+- Источники: `C:\dev\Mustang_6663RT` (product-scroll-landing / Vanta car). `brief.yaml` + `body.ts` (6 секций EN/RU/HE), highlights (EN/RU/HE/AR RTL, ScrollSmoother, 121-frame sheet-lift, static ≤900px), без выдуманных PSI. `solutionPlan` → `ai-smart-card` (#2). Кэш `portfolio-projects-v28-mustang-6663rt` + cards `v5-mustang-6663rt`.
+- **Следующий шаг:** визуально `/portfolio/mustang-6663rt` (локально или после деплоя) → коммит/деплой по команде. Revalidate prod 401 (нет `REVALIDATION_TOKEN`).
+
+## −1. Портфолио — Hero: сильнее затемнение фона (2026-11-13)
 - **Сделано:** поверх фото сплошная вуаль `bg-coal-900/55` на всё изображение + градиент снизу `from-coal-900 via-coal-900/50 to-transparent` (не только градиент). Мобайл-плашка текста: `via-coal-900/90`.
 - **Следующий шаг:** визуально кейс → коммит/деплой по команде.
 
