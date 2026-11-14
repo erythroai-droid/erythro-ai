@@ -10,6 +10,7 @@ import { tLocale } from '@/lib/portfolioProjects'
 import BidiText from '@/components/BidiText'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import { isLexicalDoc, lexicalFromText, lexicalToPlain } from '@/lib/lexical'
+import { richTextConverters } from '@/lib/richTextConverters'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -175,7 +176,7 @@ export default function ProjectHero({ project, locale = 'en' }: ProjectHeroProps
           </p>
           {hasSummary ? (
             <div className="max-w-[640px] font-sans text-base font-light leading-7 text-white/80 max-lg:line-clamp-4 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
-              <RichText data={summaryDoc as never} />
+              <RichText data={summaryDoc as never} converters={richTextConverters} />
             </div>
           ) : null}
 

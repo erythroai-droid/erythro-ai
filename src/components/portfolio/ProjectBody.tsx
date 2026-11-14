@@ -15,7 +15,12 @@ import {
   lexicalToPlain,
   type LexicalDoc,
 } from '@/lib/lexical'
+import { richTextConverters } from '@/lib/richTextConverters'
 import ProjectNav, { type ProjectNavNeighbor } from './ProjectNav'
+
+/** Shared Tailwind for Lexical body / subtitle media (img + video). */
+const richMediaClass =
+  '[&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-[10px] [&_img]:shadow-[0_6px_20px_rgba(0,0,0,0.18)] [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full [&_video]:mt-4 [&_video]:h-auto [&_video]:w-full [&_video]:max-w-full [&_video]:rounded-[10px] [&_video]:shadow-[0_6px_20px_rgba(0,0,0,0.18)]'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -236,11 +241,11 @@ export default function ProjectBody({
           ) : null}
           {hasSubtitle ? (
             <div
-              className={`m-0 w-full max-w-none font-sans text-lg font-light leading-8 md:text-xl md:leading-9 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-[10px] [&_img]:shadow-[0_6px_20px_rgba(0,0,0,0.18)] [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
+              className={`m-0 w-full max-w-none font-sans text-lg font-light leading-8 md:text-xl md:leading-9 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-3 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${richMediaClass} ${
                 isLight ? 'text-coal-900/70' : 'text-gold-500'
               }`}
             >
-              <RichText data={subtitleDoc as never} />
+              <RichText data={subtitleDoc as never} converters={richTextConverters} />
             </div>
           ) : null}
         </header>
@@ -279,11 +284,11 @@ export default function ProjectBody({
                 {paragraphDocs.map((doc, i) => (
                   <div
                     key={`${heading || index}-p-${i}-${lexicalToPlain(doc).slice(0, 32)}`}
-                    className={`min-w-0 font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-[10px] [&_img]:shadow-[0_6px_20px_rgba(0,0,0,0.18)] [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full ${
+                    className={`min-w-0 font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h1,h2,h3,h4,h5,h6,p)]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic ${richMediaClass} ${
                       isLight ? 'text-coal-900/85' : 'text-white/80'
                     }`}
                   >
-                    <RichText data={doc as never} />
+                    <RichText data={doc as never} converters={richTextConverters} />
                   </div>
                 ))}
               </div>
@@ -294,22 +299,35 @@ export default function ProjectBody({
                     section.images.length > 1 ? 'md:grid-cols-2' : 'grid-cols-1'
                   }`}
                 >
-                  {section.images.map((src) => (
-                    <div key={src} className="w-full">
-                      <Image
-                        src={src}
-                        alt=""
-                        width={1920}
-                        height={1080}
-                        sizes={
-                          section.images.length === 1
-                            ? '100vw'
-                            : '(max-width: 768px) 100vw, 50vw'
-                        }
-                        className="h-auto w-full rounded-[10px] shadow-[0_6px_20px_rgba(0,0,0,0.18)]"
-                      />
-                    </div>
-                  ))}
+                  {section.images.map((src) => {
+                    const isVideo = /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(src)
+                    return (
+                      <div key={src} className="w-full">
+                        {isVideo ? (
+                          <video
+                            src={src}
+                            controls
+                            playsInline
+                            preload="metadata"
+                            className="h-auto w-full rounded-[10px] shadow-[0_6px_20px_rgba(0,0,0,0.18)]"
+                          />
+                        ) : (
+                          <Image
+                            src={src}
+                            alt=""
+                            width={1920}
+                            height={1080}
+                            sizes={
+                              section.images.length === 1
+                                ? '100vw'
+                                : '(max-width: 768px) 100vw, 50vw'
+                            }
+                            className="h-auto w-full rounded-[10px] shadow-[0_6px_20px_rgba(0,0,0,0.18)]"
+                          />
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               ) : null}
             </div>
