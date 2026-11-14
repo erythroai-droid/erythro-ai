@@ -187,19 +187,28 @@ export const PortfolioProjects: CollectionConfig = {
           fields: [
             locRichText('text', {
               required: true,
-              admin: { description: 'Body paragraph (rich text)' },
+              admin: {
+                description:
+                  'Body paragraph (rich text). Upload images or videos from Media — videos render with a player on the site.',
+              },
             }),
           ],
         },
         {
           name: 'images',
           type: 'array',
+          labels: { singular: 'Media', plural: 'Media' },
+          admin: {
+            description:
+              'Optional gallery under the section paragraphs. Image or video (MP4/WebM). Videos also work when inserted into the rich-text paragraph above.',
+          },
           fields: [
             {
               name: 'image',
               type: 'upload',
               relationTo: 'media',
               required: true,
+              admin: { description: 'Image or video from Media' },
             },
           ],
         },

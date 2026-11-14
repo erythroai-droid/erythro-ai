@@ -1,9 +1,14 @@
 # Latest changes
 
-Обновлено: 2026-11-13 (n8n 2.47.6 security)  
-Статус: Live n8n на патче; репо-пин обновлён, коммит по команде
+Обновлено: 2026-11-14 (portfolio Lexical video)  
+Статус: Видео в rich-text описания портфолио рендерится; коммит/деплой по команде
 
-## 0. n8n security upgrade → 2.47.6 (2026-11-13)
+## 0. Портфолио — видео в описании (Lexical) (2026-11-14)
+- **Проблема:** в body/subtitle/summary можно вставить Media-видео, но на странице кейса оно не играло (дефолт Payload → ссылка на filename; галерея `images` всегда через `next/image`).
+- **Сделано:** `src/lib/richTextConverters.tsx` — upload video → `<video controls playsInline>` + `mediaDocUrl` (PIT-003). Подключено в `ProjectBody` / `ProjectHero`. Галерея секции детектит video по расширению. PIT-167 (+ Obsidian).
+- **Следующий шаг:** вставить видео в абзац кейса в админке → визуально `/portfolio/[slug]` → коммит/деплой по команде.
+
+## −1. n8n security upgrade → 2.47.6 (2026-11-13)
 - **Причина:** bi-weekly advisories (High: GHSA-m7qq, GHSA-q8rc; Medium: GHSA-h59h, GHSA-g333, GHSA-c772). Stable floor: `2.47.6`.
 - **Сделано:** pin `infra/n8n/docker-compose.yml` `2.41.7` → `2.47.6`; docs `vps-n8n.md` + `ai-audit-architecture.md` (+ Obsidian); скрипт `scripts/upgrade_n8n_image.py`.
 - **Live:** было `2.45.5` → стало `2.47.6`. Backup `/root/n8n/backups/20261113T122956Z-image-2.47.6`. healthz OK. Active: Email Autoresponder, Marketing Digest, Telegram Bot, Meta CAPI.

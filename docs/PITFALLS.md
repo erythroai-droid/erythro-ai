@@ -2220,6 +2220,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-167 — Lexical rich text: video upload renders as a filename link
+
+**Tags:** `portfolio`, `richtext`, `lexical`, `video`, `payload`
+**Seen:** 2026-11-14 — Portfolio project body: images inserted into paragraph rich text show; video inserts do not play / look missing.
+
+**Symptom:** In CMS you can attach a Media video inside a body paragraph (or subtitle/summary). On `/portfolio/[slug]` the video does not appear as a player (Payload default turns non-images into `<a>filename</a>`). Gallery `body[].images` always used `next/image`, so a video URL there also failed.
+
+**Cause:** `@payloadcms/richtext-lexical` `UploadJSXConverter` only emits `<img>` / `<picture>` for `mimeType` starting with `image`; everything else is a download link. No custom `converters` were passed to `<RichText>`.
+
+**Fix:** Shared `richTextConverters` (`src/lib/richTextConverters.tsx`) — video → `<video controls playsInline>` with `mediaDocUrl` (PIT-003). Wire `converters={richTextConverters}` on portfolio `RichText`. Gallery rows detect video by URL extension.
+
+**Prevent:** Any frontend `<RichText>` that may contain Media uploads must override the upload converter (or reuse `richTextConverters`). Do not assume Payload’s default JSX converter plays video.
+
+---
+
 ## PIT-166 — New CMS field before migration: page cached the seed fallback
 
 **Tags:** `payload`, `migrations`, `unstable_cache`, `portfolio`, `dev`
@@ -2804,3 +2819,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] n8n Telegram: native Telegram node + telegramApi cred; Meta/Gemini via httpQueryAuth; verify `workflow_published_version` after restart (PIT-159)
 - [ ] Header / Audit submenu Href: per-locale `localized: true` links; never one shared href for EN/RU/HE destinations (PIT-161)
 - [ ] New Payload field: migrate first, then bump the `unstable_cache` key, then open the page — otherwise the seed fallback gets cached (PIT-166)
+- [ ] Lexical `<RichText>` with Media uploads: use `richTextConverters` so video is `<video>`, not a filename link (PIT-167)
