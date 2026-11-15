@@ -1,14 +1,25 @@
 # Latest changes
 
-Обновлено: 2026-11-15 (ISR TTL 1h)  
-Статус: запушено `c7042a7` на `revert/calc-lp-step2-mobile`; ждёт merge/деплой
+Обновлено: 2026-11-15 (OG refresh из desktop/Og)  
+Статус: новые Mustang/Rosso/LaScala JPG → сайт + демо; деплой в процессе
 
-## 0. ISR — кэш 60s → 1h (2026-11-15)
+## 0. OG refresh — Mustang / Rosso / La Scala (2026-11-15)
+- **Источник:** `Desktop/Erythro.ai/Og/{Mustang,Rosso,LaScala}.jpg` (уже 1200×630).
+- **Сайт:** `public/images/og/{mustang-6663rt,rosso-garage,la-scala}.jpg`.
+- **Демо:** те же файлы → `app/opengraph-image.jpg` + `twitter-image.jpg` в Mustang / rosso-garage / LaScala.
+- **Следующий шаг:** дождаться READY → проверить Content-Length / хеш превью; Scrape again.
+
+## −1. Demo sites — og:image на субдоменах (2026-11-15)
+- **Сделано:** `app/opengraph-image.jpg` + `twitter-image.jpg` (1200×630) + `metadataBase` в Mustang / rosso-garage / LaScala redesign; пуш в `main`.
+- **Прод:** все три READY; `og:image` → `/opengraph-image.jpg` на mustang / rosso-garage / la-scala `.erythro.ai`.
+- **Следующий шаг:** Scrape again в мессенджерах при старом превью.
+
+## −1. ISR — кэш 60s → 1h (2026-11-15)
 - **Зачем:** Vercel weekly usage — ISR Writes 1.44M (~$5.8) при `revalidate=60` + много билдов.
 - **Сделано:** `revalidate = 3600` на layout, home, portfolio list, about/contacts/legal, services, LP audit/calc/diagnostic/pro. Свежесть после CMS — Save в админке (hooks) или `/api/revalidate` + токен.
-- **Не трогали:** sitemap `3600`, asset Cache-Control, демо-проекты Vercel.
-- **Напоминание агенту:** `.cursor/rules/isr-cache-save-reminder.mdc` — после правок контента напоминать Save в админке для сброса кэша.
-- **Следующий шаг:** PR/merge в main → прод; проверить `s-maxage=3600`; ISR Writes в следующем weekly summary.
+- **Прод (проверено):** merge #413 `069831b` содержит `c7042a7`; в `main` `revalidate=3600`. `/` и `/portfolio`: `x-vercel-cache: HIT`, `Age` ~33–40 мин (раньше TTL был 60s). Browser `Cache-Control` остаётся `max-age=0` (норма Next/Vercel); `s-maxage` в ответе не светится. about/contacts/leak-ru — `PRERENDER` после деплоя.
+- **Напоминание:** после правок CMS — Save в админке (час кэш).
+- **Следующий шаг:** смотреть ISR Writes в следующем weekly summary.
 
 ## −1. CMS — Visit/SEO/body на *.erythro.ai (2026-11-15)
 - **Прод-БД + деплой:** PR #412 / `dpl_6aABY…` READY. `/portfolio/{mustang-6663rt,la-scala,rosso-garage}` отдают Visit → `https://{mustang,la-scala,rosso-garage}.erythro.ai/` (старых vercel.app нет). Демо-хосты HTTP 200.
