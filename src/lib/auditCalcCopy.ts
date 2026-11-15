@@ -1418,9 +1418,9 @@ export const auditCalcCopy = {
     he: 'פרטים טכניים ופרוטוקול הביקורת',
   } satisfies Localized,
   step4TechSpoilerSub: {
-    en: 'Expand to view raw engineering scores, diagnostics breakdown, and complete audit checklist',
-    ru: 'Разверните, чтобы увидеть подробные шкалы, критерии диагностики и чеклист для разработчика',
-    he: 'הרחיבו לצפייה בציונים הנדסיים מפורטים, פירוק מדדים וצ׳ק-ליסט מלא למפתחים',
+    en: 'Raw engineering scores, Core Web Vitals, diagnostics breakdown, and complete audit checklist',
+    ru: 'Подробные инженерные шкалы, Core Web Vitals, критерии диагностики и чеклист для разработчика',
+    he: 'ציונים הנדסיים מפורטים, Core Web Vitals, פירוק מדדים וצ׳ק-ליסט מלא למפתחים',
   } satisfies Localized,
   scaleSpeed: { en: 'Speed & Mobile UX', ru: 'Скорость и мобильный UX', he: 'מהירות ו-UX למובייל' } satisfies Localized,
   scaleLeads: { en: 'Lead gen & Forms', ru: 'Лиды и формы', he: 'לידים וטפסים' } satisfies Localized,

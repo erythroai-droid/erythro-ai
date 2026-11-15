@@ -502,7 +502,6 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
       {/* ================= 2. MAIN CONTENT ================= */}
       {stage.name === 'ready' && report && pillars ? (
         <main className="w-full flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pb-8 sm:pb-10 lg:pb-14 animate-hero-fade">
-          <h1 className="sr-only">{tCalc(copy.metaTitle, locale)}</h1>
           {/* Same side padding and content width as the full-bleed loss panel, so every block below lines up with it */}
           <div className="w-full max-w-[1440px] mx-auto">
             <CalcResult
