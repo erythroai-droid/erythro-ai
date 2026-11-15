@@ -16,7 +16,7 @@ import { auditCalcCopy, tCalc } from '@/lib/auditCalcCopy'
 import { ogImageFields, ogImageForLeakCalc } from '@/lib/ogImages'
 
 export const dynamic = 'force-static'
-export const revalidate = 60
+export const revalidate = 3600
 
 const OG_LOCALE: Record<AuditLpLocale, string> = {
   en: 'en_US',

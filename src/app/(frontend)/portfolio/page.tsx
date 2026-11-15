@@ -16,7 +16,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
  * anywhere in this tree. Shell CMS + locale hydrate client-side.
  */
 export const dynamic = 'force-static'
-export const revalidate = 60
+export const revalidate = 3600
 
 const PORTFOLIO_TITLE = 'Portfolio | Erythro.ai'
 const PORTFOLIO_DESCRIPTION =

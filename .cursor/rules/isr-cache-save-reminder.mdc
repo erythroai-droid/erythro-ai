@@ -1,0 +1,16 @@
+---
+description: Remind user to Save in CMS admin to bust ISR cache after content changes
+alwaysApply: true
+---
+
+# ISR cache — напоминание про Save
+
+Frontend ISR TTL is **1 hour** (`revalidate = 3600`). Visitors may keep seeing old HTML until the cache is busted.
+
+**When to remind the user (short, plain language):**
+- After CMS content edits, portfolio/order/service imports, SQL/script writes to Payload data, or any change that does **not** go through a Production deploy of new page code.
+- When finishing a stage that updated live content and the next step is “check on prod” / “looks old” / handoff.
+
+**What to say:** Save the relevant doc/global in Production admin (or `POST /api/revalidate` with `REVALIDATION_TOKEN`) so the CDN drops the hour-long cache. Soft-save is enough if hooks run.
+
+**Do not nag** on pure code/CSS/layout-only work that only ships via deploy — a new deployment already replaces the build.
