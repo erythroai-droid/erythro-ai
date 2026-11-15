@@ -476,27 +476,29 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
           </span>
         </div>
 
-        {/* Language Selector */}
-        <nav aria-label="Language" className="flex items-center gap-0.5 rounded-full border border-[#cbd5e1] bg-white p-1">
-          {AUDIT_LP_LOCALES.map((l) => {
-            const base = auditLpHrefForLocale(l, 'calc')
-            const href = resumeSearch
-              ? `${base.replace(/\/?$/, '')}${resumeSearch.startsWith('?') ? resumeSearch : `?${resumeSearch}`}`
-              : base
-            return (
-              <a
-                key={l}
-                href={href}
-                aria-current={l === locale ? 'true' : undefined}
-                className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.04em] no-underline transition-all ${
-                  l === locale ? 'bg-[#0f172a] text-white' : 'text-[#64748b] hover:text-[#e52421]'
-                }`}
-              >
-                {l}
-              </a>
-            )
-          })}
-        </nav>
+        {/* Language Selector — available on step 1 only; later steps keep the chosen locale without resetting */}
+        {currentStep === 1 ? (
+          <nav aria-label="Language" className="flex items-center gap-0.5 rounded-full border border-[#cbd5e1] bg-white p-1">
+            {AUDIT_LP_LOCALES.map((l) => {
+              const base = auditLpHrefForLocale(l, 'calc')
+              const href = resumeSearch
+                ? `${base.replace(/\/?$/, '')}${resumeSearch.startsWith('?') ? resumeSearch : `?${resumeSearch}`}`
+                : base
+              return (
+                <a
+                  key={l}
+                  href={href}
+                  aria-current={l === locale ? 'true' : undefined}
+                  className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.04em] no-underline transition-all ${
+                    l === locale ? 'bg-[#0f172a] text-white' : 'text-[#64748b] hover:text-[#e52421]'
+                  }`}
+                >
+                  {l}
+                </a>
+              )
+            })}
+          </nav>
+        ) : null}
       </header>
 
       {/* ================= 2. MAIN CONTENT ================= */}
