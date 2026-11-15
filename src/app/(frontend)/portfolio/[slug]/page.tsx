@@ -11,7 +11,7 @@ import {
 } from '@/lib/cmsPages'
 import { getAllPortfolioSlugs, tLocale } from '@/lib/portfolioProjects'
 import { getRequestPrefs } from '@/lib/requestPrefs'
-import { ogImageFields } from '@/lib/ogImages'
+import { ogImageFields, ogImageForPortfolioProject } from '@/lib/ogImages'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -52,9 +52,9 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
   const metaTitle = tLocale(project.seoTitle, locale) || `${title} | Portfolio | Erythro.ai`
   const metaDescription = tLocale(project.seoDescription, locale) || summary
 
-  // Project pages may use a dedicated OG asset later; until then hero is fine.
   const ogTitle = tLocale(project.seoTitle, locale) || `${title} | Erythro.ai`
-  const shareImage = ogImageFields(project.hero.src, title)
+  const ogImage = ogImageForPortfolioProject(project.slug, project.hero.src)
+  const shareImage = ogImageFields(ogImage, title)
 
   return {
     title: metaTitle,
@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
       card: 'summary_large_image',
       title: ogTitle,
       description: metaDescription,
-      images: [project.hero.src],
+      images: [ogImage],
     },
   }
 }
