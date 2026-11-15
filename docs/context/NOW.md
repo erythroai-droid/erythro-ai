@@ -1,29 +1,23 @@
 # Latest changes
 
-Обновлено: 2026-11-15 (portfolio project OG)  
-Статус: Rosso / Mustang / La Scala — dedicated og:image; остальные кейсы → hero
+Обновлено: 2026-11-15 (CMS demo links → erythro.ai)  
+Статус: Visit/SEO/body в CMS на новых субдоменах; кэш v29 — нужен деплой сайта
 
-## 0. og:image — dedicated cards для кейсов (2026-11-15)
+## 0. CMS — Visit/SEO/body на *.erythro.ai (2026-11-15)
+- **Прод-БД:** `link` #7 rosso-garage / #9 la-scala / #10 mustang-6663rt → `https://{slug}.erythro.ai/`.
+- Заменены leftover `*.vercel.app` в `seo_description`, body paragraphs, rosso `highlights.metrics_note` (0 leftover).
+- Import sources: `content/imports/{mustang-6663rt,la-scala,rosso-garage}/{brief.yaml,body.ts}`.
+- Кэш: `portfolio-projects-v29-erythro-demo-links`, cards `v6-…`.
+- **Следующий шаг:** коммит/деплой erythro.ai по команде → Visit на `/portfolio/{slug}`.
+
+## −1. og:image — dedicated cards для кейсов (2026-11-15)
 - **Сделано:** присланные OG (чат 1024×537) → `public/images/og/{rosso-garage,mustang-6663rt,la-scala}.jpg` 1200×630. `ogImageForPortfolioProject(slug)` на `/portfolio/[slug]`; без карты — hero.
-- **Следующий шаг:** коммит/деплой → Scrape again для трёх URL; ora-60a и новые кейсы — когда будут картинки.
-
-## −1. og:image — лого на красном для основных страниц (2026-11-15)
-- **Проблема:** `/portfolio` (и about/contacts/legal) задавали свой `openGraph` без `images` (PIT-079) → мессенджеры брали первое фото карточки (La Scala).
-- **Сделано:** `defaultShareImages()` → `DEFAULT_OG_IMAGE` (R2 `Og.jpg`, лого на красном) на portfolio / about / contacts / terms / privacy / accessibility / services / audit report; layout fallback на тот же URL.
-- Файлы: `src/lib/ogImages.ts`, страницы выше, PIT-079 (+ Obsidian).
-- **Следующий шаг:** коммит/деплой → Scrape again в Meta/LinkedIn для `/portfolio` (и about/contacts).
+- **Прод (проверено после деплоя):** `/portfolio` + `/about` → `Og.jpg` (лого на красном); три кейса → свои JPG (200 OK).
+- **Следующий шаг:** Scrape again в Meta/LinkedIn для старых превью; ora-60a и новые кейсы — когда будут картинки.
 
 ## −1. Демо-сайты портфолио — субдомены erythro.ai (2026-11-15)
-- **Сделано:** как у `ora60a.erythro.ai` — домены в Vercel team `erythro-ai` + CNAME в Cloudflare (DNS-only, не Proxied):
-  - https://mustang.erythro.ai/ → project `mustang`
-  - https://la-scala.erythro.ai/ → project `la-scala`
-  - https://rosso-garage.erythro.ai/ → project `rosso-garage`
-- Vercel: `verified`, aliases на production; `misconfigured: false`. Старые `*.vercel.app` остаются.
-- Cloudflare (2026-11-15 fix): CNAME → `cname.vercel-dns.com` **Proxied** (как `leak-*` / audit LP), не DNS-only на `*.vercel-dns-016.com`. HTTPS 200 + `server: cloudflare` снаружи.
-- Briefs: `content/imports/{mustang-6663rt,la-scala,rosso-garage}/brief.yaml` → новые `link`.
-- **Локально/мобильный Wi‑Fi:** ISP DNS (`2a00:a040:…`) держит NXDOMAIN на новые имена (ora60a/leak-ru на том же DNS ок). 1.1.1.1/8.8.8.8 резолвят. Обход: DNS 1.1.1.1, Wi‑Fi off на телефоне, или ждать сброс negative cache (~30 мин SOA).
-- **Не сделано:** поле `link` в CMS Portfolio Projects (#7/#9/#10) — Visit на сайте всё ещё на vercel.app.
-- **Следующий шаг:** пользователь меняет DNS / проверяет с LTE → обновить CMS `link` → коммит briefs по команде.
+- Vercel + Cloudflare Proxied `cname.vercel-dns.com`: mustang / la-scala / rosso-garage `.erythro.ai`.
+- ПК: DNS → Cloudflare `1.1.1.1` (IPv4+IPv6); сайты открываются. CMS links — см. §0.
 
 ## −1. Портфолио — видео в описании (Lexical) (2026-11-14)
 - **Проблема:** в body/subtitle/summary можно вставить Media-видео, но на странице кейса оно не играло (дефолт Payload → ссылка на filename; галерея `images` всегда через `next/image`).
