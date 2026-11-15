@@ -13,8 +13,8 @@ import { SPLASH_SKIP_BOOTSTRAP_SCRIPT } from '@/lib/splash'
 import { DEFAULT_OG_IMAGE } from '@/lib/ogImages'
 import './styles.css'
 
-/** Layout shell is locale-agnostic; pages that can be static use ISR revalidate. */
-export const revalidate = 60
+/** Layout shell is locale-agnostic; pages that can be static use ISR (1h; CMS Save busts cache). */
+export const revalidate = 3600
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he'] as const
 type Locale = (typeof SUPPORTED_LOCALES)[number]

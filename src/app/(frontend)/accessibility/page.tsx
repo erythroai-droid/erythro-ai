@@ -14,7 +14,7 @@ const PAGE_ID = 'accessibility' as const
  * anywhere in this tree. Locale hydrates client-side (PIT-056).
  */
 export const dynamic = 'force-static'
-export const revalidate = 60
+export const revalidate = 3600
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getCachedLegalPage(PAGE_ID)

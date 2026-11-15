@@ -8,7 +8,7 @@ import { heroStillSrc } from '@/lib/heroImage'
  * anywhere in this tree (layout, not-found, or CMS loaders). Locale hydrates client-side.
  */
 export const dynamic = 'force-static'
-export const revalidate = 60
+export const revalidate = 3600
 
 export default async function HomePage() {
   const content = await getCachedSiteContent()

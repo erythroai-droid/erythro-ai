@@ -12,7 +12,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
  * anywhere in this tree. Locale hydrates client-side (PIT-056).
  */
 export const dynamic = 'force-static'
-export const revalidate = 60
+export const revalidate = 3600
 
 const ABOUT_TITLE = `${tAbout(aboutPage.title, 'en')} | Erythro.ai`
 const ABOUT_DESCRIPTION = tAbout(aboutPage.metaDescription, 'en')

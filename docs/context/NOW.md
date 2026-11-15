@@ -1,14 +1,19 @@
 # Latest changes
 
-Обновлено: 2026-11-15 (CMS demo links → erythro.ai)  
-Статус: Visit/SEO/body в CMS на новых субдоменах; кэш v29 — нужен деплой сайта
+Обновлено: 2026-11-15 (ISR TTL 1h)  
+Статус: запушено `c7042a7` на `revert/calc-lp-step2-mobile`; ждёт merge/деплой
 
-## 0. CMS — Visit/SEO/body на *.erythro.ai (2026-11-15)
-- **Прод-БД:** `link` #7 rosso-garage / #9 la-scala / #10 mustang-6663rt → `https://{slug}.erythro.ai/`.
-- Заменены leftover `*.vercel.app` в `seo_description`, body paragraphs, rosso `highlights.metrics_note` (0 leftover).
-- Import sources: `content/imports/{mustang-6663rt,la-scala,rosso-garage}/{brief.yaml,body.ts}`.
-- Кэш: `portfolio-projects-v29-erythro-demo-links`, cards `v6-…`.
-- **Следующий шаг:** коммит/деплой erythro.ai по команде → Visit на `/portfolio/{slug}`.
+## 0. ISR — кэш 60s → 1h (2026-11-15)
+- **Зачем:** Vercel weekly usage — ISR Writes 1.44M (~$5.8) при `revalidate=60` + много билдов.
+- **Сделано:** `revalidate = 3600` на layout, home, portfolio list, about/contacts/legal, services, LP audit/calc/diagnostic/pro. Свежесть после CMS — Save в админке (hooks) или `/api/revalidate` + токен.
+- **Не трогали:** sitemap `3600`, asset Cache-Control, демо-проекты Vercel.
+- **Напоминание агенту:** `.cursor/rules/isr-cache-save-reminder.mdc` — после правок контента напоминать Save в админке для сброса кэша.
+- **Следующий шаг:** PR/merge в main → прод; проверить `s-maxage=3600`; ISR Writes в следующем weekly summary.
+
+## −1. CMS — Visit/SEO/body на *.erythro.ai (2026-11-15)
+- **Прод-БД + деплой:** PR #412 / `dpl_6aABY…` READY. `/portfolio/{mustang-6663rt,la-scala,rosso-garage}` отдают Visit → `https://{mustang,la-scala,rosso-garage}.erythro.ai/` (старых vercel.app нет). Демо-хосты HTTP 200.
+- Import sources + кэш `v29` / cards `v6`.
+- **Следующий шаг:** нет (закрыто), кроме опц. Scrape OG если Visit менял шаринг.
 
 ## −1. og:image — dedicated cards для кейсов (2026-11-15)
 - **Сделано:** присланные OG (чат 1024×537) → `public/images/og/{rosso-garage,mustang-6663rt,la-scala}.jpg` 1200×630. `ogImageForPortfolioProject(slug)` на `/portfolio/[slug]`; без карты — hero.

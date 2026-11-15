@@ -15,7 +15,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
  * anywhere in this tree. Locale/theme hydrate client-side (PIT-056).
  */
 export const dynamic = 'force-static'
-export const revalidate = 60
+export const revalidate = 3600
 
 interface ServicePageProps {
   params: Promise<{ slug: string }>

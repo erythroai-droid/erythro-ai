@@ -16,7 +16,7 @@ import {
 import { ogImageFields, ogImageForPlan } from '@/lib/ogImages'
 
 export const dynamic = 'force-static'
-export const revalidate = 60
+export const revalidate = 3600
 
 const PRODUCT = 'diagnostic' as const
 
