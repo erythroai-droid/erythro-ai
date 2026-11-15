@@ -41,12 +41,28 @@ const LEAK_CALC_OG_IMAGES: Record<'en' | 'ru' | 'he', string> = {
   he: 'https://erythro.ai/images/og/leak-calc-he.jpg',
 }
 
+/**
+ * Dedicated 1200×630 OG cards for portfolio project pages.
+ * Hosted on the site origin (same rationale as audit OG — avoid r2.dev rate limits).
+ * Source files: `public/images/og/{slug}.jpg` (upscaled from chat 1024×537 if needed).
+ */
+const PORTFOLIO_OG_IMAGES: Record<string, string> = {
+  'rosso-garage': 'https://erythro.ai/images/og/rosso-garage.jpg',
+  'mustang-6663rt': 'https://erythro.ai/images/og/mustang-6663rt.jpg',
+  'la-scala': 'https://erythro.ai/images/og/la-scala.jpg',
+}
+
 export function ogImageForLeakCalc(locale: 'en' | 'ru' | 'he'): string {
   return LEAK_CALC_OG_IMAGES[locale]
 }
 
 export function ogImageForPlan(slug: string, siteOgImage?: string): string {
   return PLAN_OG_IMAGES[slug] || siteOgImage || DEFAULT_OG_IMAGE
+}
+
+/** Dedicated project OG, else hero/fallback. */
+export function ogImageForPortfolioProject(slug: string, fallback?: string): string {
+  return PORTFOLIO_OG_IMAGES[slug] || fallback || DEFAULT_OG_IMAGE
 }
 
 export function ogImageFields(url: string, alt: string) {
