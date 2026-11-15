@@ -411,9 +411,9 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     )
   }
 
-  // Tracker above the glass form: white on the dark panel, an almost white fill like the loss bars of the step 4 hero
+  // Tracker above the glass form: hidden on steps 1–3 across all viewports to avoid 4-step friction
   const tracker = (
-    <div className={`w-full flex-col gap-2 shrink-0 ${currentStep <= 3 ? 'hidden sm:flex' : 'flex'}`}>
+    <div className={`w-full flex-col gap-2 shrink-0 ${currentStep <= 3 ? 'hidden' : 'flex'}`}>
       <div className="flex items-center gap-2.5">
         <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/15 text-xs font-bold tabular-nums text-white">
           {currentStep}
