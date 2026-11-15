@@ -30,6 +30,7 @@ import {
 } from '@/lib/auditReport'
 import { AUDIT_LP_LOCALES, auditLpHrefForLocale, mainSiteUrl, type AuditLpLocale } from '@/lib/auditLp'
 import { auditCalcCopy as copy, fillCalc, tCalc } from '@/lib/auditCalcCopy'
+import { auditSampleReportHref, auditSampleReportLabel } from '@/lib/auditSampleReports'
 import { pillarsFromOverall, type AuditPillars } from '@/lib/revenueLeak'
 
 type Stage =
@@ -317,6 +318,8 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
   const waNumber = phone.replace(/[^0-9]/g, '')
   const waHref = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}` : ''
+  const sampleReportPath = auditSampleReportHref('audit-free', locale)
+  const sampleReportHref = sampleReportPath ? mainSiteUrl(sampleReportPath) : null
 
   // The report's full-screen panels fill the viewport below this top bar: expose its height as --calc-top
   const headerRef = useRef<HTMLElement>(null)
@@ -844,14 +847,28 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                     formStep === 2
                       ? // Phones: keep submit clear of the "clients / month" chips when revenue is open
                         `gap-2 sm:gap-2.5 ${skipToPercent ? 'pt-0' : 'pt-5 sm:pt-0'}`
-                      : 'gap-4 sm:gap-4.5 pt-2 sm:pt-2.5'
+                      : 'gap-3 sm:gap-3.5 pt-2 sm:pt-2.5'
                   }`}>
                     <div id={SUBMIT_SLOT_ID} className="flex w-full justify-center h-[46px] sm:h-[48px] lg:h-[48px] xl:h-[52px] [&_button]:!w-full [&_button]:!text-sm [&_button]:!font-medium [&_button]:!uppercase" />
 
                     {/* Stays mounted on step 2 (hidden): the form's portal keeps this element. */}
                     <div id={LEGAL_SLOT_ID} className={formStep === 1 ? 'w-full' : 'hidden'} />
 
-                    {formStep === 1 ? null : (
+                    {formStep === 1 ? (
+                      sampleReportHref ? (
+                        <a
+                          href={sampleReportHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex max-w-full items-center justify-center gap-1.5 text-[13px] font-medium text-white/80 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white hover:decoration-white"
+                        >
+                          <span>{auditSampleReportLabel(locale)}</span>
+                          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="size-3.5 shrink-0 rtl:-scale-x-100">
+                            <path d="M5 3.5h7.5V11M12.5 3.5 3.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </a>
+                      ) : null
+                    ) : (
                       <div className="flex items-center justify-between w-full px-1 pt-0.5">
                         <button
                           type="button"
