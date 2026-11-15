@@ -338,18 +338,24 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
   useEffect(() => {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
-    const content = (params.get('utm_content') || '').trim()
+    const content = (params.get('utm_content') || '').trim().toLowerCase()
     const term = (params.get('utm_term') || params.get('keyword') || '').toLowerCase()
     if (
       content === '197400968130' ||
       content === '204838307449' ||
-      /ai|geo|aeo|chatgpt|perplexity|claude|llm|סוכני|בינה/i.test(term)
+      content === 'ai_geo' ||
+      /(?:^|[^a-zа-яё\u0590-\u05ff])(?:ai|geo|aeo|llm|ии)(?:$|[^a-zа-яё\u0590-\u05ff])|chatgpt|perplexity|claude|סוכני|בינה|нейросет|чатгпт|перплексити/i.test(
+        term,
+      )
     ) {
       setIntentVariant('ai_geo')
     } else if (
       content === '205134464874' ||
       content === '202376409095' ||
-      /cro|conversion|convert|lead|drop|funnel|המרה|המרות|לידים|נשירת/i.test(term)
+      content === 'cro' ||
+      /(?:^|[^a-zа-яё\u0590-\u05ff])cro(?:$|[^a-zа-яё\u0590-\u05ff])|conversion|convert|lead|drop|funnel|המרה|המרות|לידים|נשירת|конверс|лид|заявк|воронк|продаж|отказ/i.test(
+        term,
+      )
     ) {
       setIntentVariant('cro')
     }
