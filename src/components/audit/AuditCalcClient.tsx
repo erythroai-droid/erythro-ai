@@ -48,12 +48,11 @@ export default function AuditCalcClient({
             : 'var(--font-inter), var(--font-inter-cyrillic), "Inter", system-ui, sans-serif',
         }}
       >
-        <h1 className="sr-only">{tCalc(copy.metaTitle, locale)}</h1>
         <InteractiveBackground />
         <AuditCalcFlow locale={locale} page={auditPageContent} />
         <WhatsAppButton
           alwaysVisible
-          className="fixed bottom-[66px] sm:bottom-[82px] end-5 sm:end-8 z-[70] flex h-[54px] w-[54px] items-center justify-center"
+          className="fixed bottom-3 sm:bottom-4 end-3 sm:end-5 z-[70] flex h-[44px] w-[44px] sm:h-[48px] sm:w-[48px] items-center justify-center opacity-90 hover:opacity-100 transition-opacity"
         />
         <CookieConsent locale={locale} theme="light" privacyHref={mainSiteUrl('/privacy')} />
       </div>

@@ -1,14 +1,26 @@
 # Latest changes
 
-Обновлено: 2026-11-15 (ISR TTL 1h)  
-Статус: запушено `c7042a7` на `revert/calc-lp-step2-mobile`; ждёт merge/деплой
+Обновлено: 2026-11-15 (Calc LP leak-* AI Audit / CRO / GEO copy + H1/UTM — commit & push на revert/calc-lp-step2-mobile; OG refresh прод OK)  
+Статус: Calc LP правки закоммичены и запушены в `revert/calc-lp-step2-mobile`; новые Mustang/Rosso/LaScala JPG на сайте и демо
 
-## 0. ISR — кэш 60s → 1h (2026-11-15)
+## 0. OG refresh — Mustang / Rosso / La Scala (2026-11-15)
+- **Источник:** `Desktop/Erythro.ai/Og/{Mustang,Rosso,LaScala}.jpg` (1200×630).
+- **Сайт:** `public/images/og/{mustang-6663rt,rosso-garage,la-scala}.jpg` → prod `dpl_3E1Jr…` + promote; Content-Length совпал (122414 / 112665 / 197093).
+- **Демо:** те же файлы в Mustang / rosso-garage / LaScala `main` — уже отдают новые размеры.
+- **Git:** коммит на `revert/calc-lp-step2-mobile` (`036cd34`); в `main` ещё не смержен (protected push).
+- **Следующий шаг:** merge в `main` по желанию; Scrape again при старом превью.
+
+## −1. Demo sites — og:image на субдоменах (2026-11-15)
+- **Сделано:** `app/opengraph-image.jpg` + `twitter-image.jpg` (1200×630) + `metadataBase` в Mustang / rosso-garage / LaScala redesign; пуш в `main`.
+- **Прод:** все три READY; `og:image` → `/opengraph-image.jpg` на mustang / rosso-garage / la-scala `.erythro.ai`.
+- **Следующий шаг:** Scrape again в мессенджерах при старом превью.
+
+## −1. ISR — кэш 60s → 1h (2026-11-15)
 - **Зачем:** Vercel weekly usage — ISR Writes 1.44M (~$5.8) при `revalidate=60` + много билдов.
 - **Сделано:** `revalidate = 3600` на layout, home, portfolio list, about/contacts/legal, services, LP audit/calc/diagnostic/pro. Свежесть после CMS — Save в админке (hooks) или `/api/revalidate` + токен.
-- **Не трогали:** sitemap `3600`, asset Cache-Control, демо-проекты Vercel.
-- **Напоминание агенту:** `.cursor/rules/isr-cache-save-reminder.mdc` — после правок контента напоминать Save в админке для сброса кэша.
-- **Следующий шаг:** PR/merge в main → прод; проверить `s-maxage=3600`; ISR Writes в следующем weekly summary.
+- **Прод (проверено):** merge #413 `069831b` содержит `c7042a7`; в `main` `revalidate=3600`. `/` и `/portfolio`: `x-vercel-cache: HIT`, `Age` ~33–40 мин (раньше TTL был 60s). Browser `Cache-Control` остаётся `max-age=0` (норма Next/Vercel); `s-maxage` в ответе не светится. about/contacts/leak-ru — `PRERENDER` после деплоя.
+- **Напоминание:** после правок CMS — Save в админке (час кэш).
+- **Следующий шаг:** смотреть ISR Writes в следующем weekly summary.
 
 ## −1. CMS — Visit/SEO/body на *.erythro.ai (2026-11-15)
 - **Прод-БД + деплой:** PR #412 / `dpl_6aABY…` READY. `/portfolio/{mustang-6663rt,la-scala,rosso-garage}` отдают Visit → `https://{mustang,la-scala,rosso-garage}.erythro.ai/` (старых vercel.app нет). Демо-хосты HTTP 200.
@@ -114,6 +126,15 @@
 - **Ниже `sm`:** когда открыт доход (`!skipToPercent`), у блока submit `pt-5`, чтобы кнопка не липла к chips клиентов.
 - Плюс ранее: ползунки скрыты до opt-in. Файл: `AuditCalcFlow.tsx`. Не собрано / не проверено.
 - **Следующий шаг:** коммит/PR/деплой по команде.
+
+### −11. Calc LP (leak-en / leak-he / leak-ru) — AI Audit / CRO / GEO copy alignment, dynamic UTM headline, visible H1 & WhatsApp button position (2026-11-15, commit + push)
+- **Причина:** на `leak-en` и `leak-he` в первом экране доминировал абстрактный «How much money does your site lose?» и упоминание `checkout flow` (`תהליך ההזמנה`), из-за чего реклама под AI-аудит, GEO и CRO проигрывала в Message Match; также `<h1>` был только `sr-only`, а плавающая кнопка WhatsApp на мобильном и десктопе перекрывала нижнюю часть экрана.
+- **Сделано:**
+  - `src/lib/auditCalcCopy.ts`: обновлены `metaTitle` (без повторного `| Erythro.ai`, т.к. его добавляет `page.tsx`), `heroKicker`, `heroL1`–`heroL3`, `heroSubForm*`, `step1Heading`, `step1Sub`, `nextStepCalc`, `mobile.*` под оффер **AI Website Audit (CRO & GEO) + Revenue Leak** (`checkout flow` → `lead forms (CRO)`, `תהליך ההזמנה` → `טפסי לידים (CRO)`), добавлен словарь `heroVariants` (`ai_geo`, `cro`).
+  - `src/components/audit/AuditCalcFlow.tsx`: добавлен клиентский разбор `utm_content` (`197400968130` / `204838307449` → `ai_geo`, `205134464874` / `202376409095` → `cro`) и `utm_term` / `keyword` (хуки размещены строго выше `if (stage.name === 'failed')` по PIT-160); видимый Hero-заголовок на шагах 1–3 переведён с `<h2>` на `<h1>`, для `ready` и `failed` добавлен `sr-only` `<h1>`. Сохранены `overflow-clip` (PIT-157) и `onSubmitted` revenue/clients (PIT-158).
+  - `src/components/audit/AuditCalcClient.tsx`: убран дублирующий `<h1 className="sr-only">`; `WhatsAppButton` перемещён в правый/RTL-левый угол (`bottom-3 sm:bottom-4 end-3 sm:end-5`, `44px`/`48px`).
+- **Git:** commit и push на `origin/revert/calc-lp-step2-mobile` (по команде пользователя).
+- **Следующий шаг:** merge в `main` / Vercel deploy по желанию, затем проверить живые `leak-en` / `leak-he` с `?utm_content=197400968130` и `?utm_content=205134464874` и без UTM.
 
 ## −10c. Calc LP — шаг 3 на мобе как 1–2 (2026-11-09)
 - **Мобайл:** трекер и три бейджа скрыты; большой заголовок остаётся.
