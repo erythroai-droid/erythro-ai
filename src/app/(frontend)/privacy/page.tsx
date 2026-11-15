@@ -4,6 +4,7 @@ import LegalPageClient from '../legal/LegalPageClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getCachedLegalPage } from '@/lib/legalPages.server'
 import { tLegal } from '@/lib/legalPages'
+import { defaultShareImages } from '@/lib/ogImages'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 const PAGE_ID = 'privacy' as const
@@ -19,17 +20,26 @@ export async function generateMetadata(): Promise<Metadata> {
   const page = await getCachedLegalPage(PAGE_ID)
   const title = `${tLegal(page.title, 'en')} | Erythro.ai`
   const description = tLegal(page.metaDescription, 'en')
+  const { openGraphImages, twitterImages } = defaultShareImages(title)
 
   return {
     title,
     description,
     alternates: { canonical: `/${page.slug}` },
+    // Child openGraph replaces layout OG — must include images (PIT-079).
     openGraph: {
       title,
       description,
       url: `${SITE_URL}/${page.slug}`,
       siteName: 'Erythro.ai',
       type: 'website',
+      images: openGraphImages,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: twitterImages,
     },
   }
 }

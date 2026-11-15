@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import ContactsClient from './ContactsClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { contactsPage, tContacts } from '@/lib/contactsPage'
+import { defaultShareImages } from '@/lib/ogImages'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
@@ -13,16 +14,28 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 export const dynamic = 'force-static'
 export const revalidate = 60
 
+const CONTACTS_TITLE = `${tContacts(contactsPage.title, 'en')} | Erythro.ai`
+const CONTACTS_DESCRIPTION = tContacts(contactsPage.metaDescription, 'en')
+const { openGraphImages, twitterImages } = defaultShareImages(CONTACTS_TITLE)
+
 export const metadata: Metadata = {
-  title: `${tContacts(contactsPage.title, 'en')} | Erythro.ai`,
-  description: tContacts(contactsPage.metaDescription, 'en'),
+  title: CONTACTS_TITLE,
+  description: CONTACTS_DESCRIPTION,
   alternates: { canonical: `/${contactsPage.slug}` },
+  // Child openGraph replaces layout OG — must include images (PIT-079).
   openGraph: {
-    title: `${tContacts(contactsPage.title, 'en')} | Erythro.ai`,
-    description: tContacts(contactsPage.metaDescription, 'en'),
+    title: CONTACTS_TITLE,
+    description: CONTACTS_DESCRIPTION,
     url: `${SITE_URL}/${contactsPage.slug}`,
     siteName: 'Erythro.ai',
     type: 'website',
+    images: openGraphImages,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: CONTACTS_TITLE,
+    description: CONTACTS_DESCRIPTION,
+    images: twitterImages,
   },
 }
 

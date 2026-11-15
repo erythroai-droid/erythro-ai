@@ -22,6 +22,7 @@ import {
   normalizeAuditStatus,
   resolveAuditReportHtml,
 } from '@/lib/auditReportLoad'
+import { defaultShareImages } from '@/lib/ogImages'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -45,18 +46,27 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
   const title = `${tReport(auditReportCopy.title, locale)} | Erythro.ai`
   const description = tReport(auditReportCopy.waiting, locale)
+  const { openGraphImages, twitterImages } = defaultShareImages(title)
 
   return {
     title,
     description,
     robots: { index: false, follow: false },
     alternates: { canonical: `/audit/report/${id}` },
+    // Child openGraph replaces layout OG — must include images (PIT-079).
     openGraph: {
       title,
       description,
       url: `${SITE_URL}/audit/report/${id}`,
       siteName: 'Erythro.ai',
       type: 'website',
+      images: openGraphImages,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: twitterImages,
     },
   }
 }

@@ -1,9 +1,25 @@
 # Latest changes
 
-Обновлено: 2026-11-14 (portfolio Lexical video)  
-Статус: Видео в rich-text описания портфолио рендерится; коммит/деплой по команде
+Обновлено: 2026-11-15 (og:image main pages)  
+Статус: основные страницы → лого на красном; подстраницы — отдельные OG позже
 
-## 0. Портфолио — видео в описании (Lexical) (2026-11-14)
+## 0. og:image — лого на красном для основных страниц (2026-11-15)
+- **Проблема:** `/portfolio` (и about/contacts/legal) задавали свой `openGraph` без `images` (PIT-079) → мессенджеры брали первое фото карточки (La Scala).
+- **Сделано:** `defaultShareImages()` → `DEFAULT_OG_IMAGE` (R2 `Og.jpg`, лого на красном) на portfolio / about / contacts / terms / privacy / accessibility / services / audit report; layout fallback на тот же URL. Кейсы `/portfolio/[slug]` по-прежнему на hero (отдельные OG — когда пришлёте).
+- Файлы: `src/lib/ogImages.ts`, страницы выше, PIT-079 (+ Obsidian).
+- **Следующий шаг:** коммит/деплой → Scrape again в Meta/LinkedIn для `/portfolio` (и about/contacts).
+
+## −1. Демо-сайты портфолио — субдомены erythro.ai (2026-11-15)
+- **Сделано:** как у `ora60a.erythro.ai` — домены в Vercel team `erythro-ai` + CNAME в Cloudflare (DNS-only, не Proxied):
+  - https://mustang.erythro.ai/ → project `mustang`
+  - https://la-scala.erythro.ai/ → project `la-scala`
+  - https://rosso-garage.erythro.ai/ → project `rosso-garage`
+- Vercel: `verified`, `misconfigured: false`. HTTPS 200. Старые `*.vercel.app` aliases остаются.
+- Briefs: `content/imports/{mustang-6663rt,la-scala,rosso-garage}/brief.yaml` → новые `link`.
+- **Не сделано:** поле `link` в CMS Portfolio Projects (#7/#9/#10) — Visit на сайте всё ещё на vercel.app, пока не обновить в админке или re-import.
+- **Следующий шаг:** обновить CMS `link` (или `import:project`) → коммит briefs по команде.
+
+## −1. Портфолио — видео в описании (Lexical) (2026-11-14)
 - **Проблема:** в body/subtitle/summary можно вставить Media-видео, но на странице кейса оно не играло (дефолт Payload → ссылка на filename; галерея `images` всегда через `next/image`).
 - **Сделано:** `src/lib/richTextConverters.tsx` — upload video → `<video controls playsInline>` + `mediaDocUrl` (PIT-003). Подключено в `ProjectBody` / `ProjectHero`. Галерея секции детектит video по расширению. PIT-167 (+ Obsidian).
 - **Следующий шаг:** вставить видео в абзац кейса в админке → визуально `/portfolio/[slug]` → коммит/деплой по команде.
