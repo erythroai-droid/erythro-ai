@@ -5,6 +5,7 @@ import ServiceClient from './ServiceClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getAllServiceSlugsCms, getServicePageBySlug } from '@/lib/cmsPages'
 import { getAllServiceSlugs, tLocale } from '@/lib/servicePages'
+import { defaultShareImages } from '@/lib/ogImages'
 
 const DEFAULT_LOCALE = 'en'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
@@ -48,6 +49,9 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
   const title = customTitle || `${pageTitle} | Services | Erythro.ai`
   const summary = customDescription || tLocale(service.summary, locale)
   const url = `${SITE_URL}/services/${service.slug}`
+  const ogTitle = customTitle || `${pageTitle} | Erythro.ai`
+  // Main service pages use logo on red until a dedicated OG asset is provided.
+  const { openGraphImages, twitterImages } = defaultShareImages(ogTitle)
 
   return {
     title,
@@ -56,17 +60,18 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
       canonical: `/services/${service.slug}`,
     },
     openGraph: {
-      title: customTitle || `${pageTitle} | Erythro.ai`,
+      title: ogTitle,
       description: summary,
       url,
       siteName: 'Erythro.ai',
       type: 'website',
-      images: [
-        {
-          url: service.hero.src,
-          alt: pageTitle,
-        },
-      ],
+      images: openGraphImages,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: ogTitle,
+      description: summary,
+      images: twitterImages,
     },
   }
 }

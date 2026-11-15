@@ -7,6 +7,7 @@ import {
   getCachedPortfolioProjectCards,
 } from '@/lib/cmsPages'
 import { buildPortfolioFilters } from '@/lib/portfolioProjects'
+import { defaultShareImages } from '@/lib/ogImages'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
@@ -17,18 +18,32 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 export const dynamic = 'force-static'
 export const revalidate = 60
 
+const PORTFOLIO_TITLE = 'Portfolio | Erythro.ai'
+const PORTFOLIO_DESCRIPTION =
+  'Projects built end-to-end — AI agents, CRM systems, websites, and digital products by Erythro.ai.'
+const { openGraphImages, twitterImages } = defaultShareImages(PORTFOLIO_TITLE)
+
 export const metadata: Metadata = {
-  title: 'Portfolio | Erythro.ai',
-  description: 'Projects built end-to-end — AI agents, CRM systems, websites, and digital products by Erythro.ai.',
+  title: PORTFOLIO_TITLE,
+  description: PORTFOLIO_DESCRIPTION,
   alternates: {
     canonical: '/portfolio',
   },
+  // Child openGraph replaces layout OG — must include images (PIT-079).
+  // Without this, messengers scrape the first project card (e.g. La Scala).
   openGraph: {
-    title: 'Portfolio | Erythro.ai',
+    title: PORTFOLIO_TITLE,
     description: 'Projects built end-to-end by Erythro.ai.',
     url: `${SITE_URL}/portfolio`,
     siteName: 'Erythro.ai',
     type: 'website',
+    images: openGraphImages,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: PORTFOLIO_TITLE,
+    description: PORTFOLIO_DESCRIPTION,
+    images: twitterImages,
   },
 }
 

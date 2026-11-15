@@ -11,6 +11,7 @@ import {
 } from '@/lib/cmsPages'
 import { getAllPortfolioSlugs, tLocale } from '@/lib/portfolioProjects'
 import { getRequestPrefs } from '@/lib/requestPrefs'
+import { ogImageFields } from '@/lib/ogImages'
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'he']
 const DEFAULT_LOCALE = 'en'
@@ -51,6 +52,10 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
   const metaTitle = tLocale(project.seoTitle, locale) || `${title} | Portfolio | Erythro.ai`
   const metaDescription = tLocale(project.seoDescription, locale) || summary
 
+  // Project pages may use a dedicated OG asset later; until then hero is fine.
+  const ogTitle = tLocale(project.seoTitle, locale) || `${title} | Erythro.ai`
+  const shareImage = ogImageFields(project.hero.src, title)
+
   return {
     title: metaTitle,
     description: metaDescription,
@@ -58,17 +63,18 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
       canonical: `/portfolio/${project.slug}`,
     },
     openGraph: {
-      title: tLocale(project.seoTitle, locale) || `${title} | Erythro.ai`,
+      title: ogTitle,
       description: metaDescription,
       url,
       siteName: 'Erythro.ai',
       type: 'article',
-      images: [
-        {
-          url: project.hero.src,
-          alt: title,
-        },
-      ],
+      images: [shareImage],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: ogTitle,
+      description: metaDescription,
+      images: [project.hero.src],
     },
   }
 }

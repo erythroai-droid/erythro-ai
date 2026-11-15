@@ -10,6 +10,7 @@ import NavigationTopLoader from '@/components/NavigationTopLoader'
 import SkipToContent from '@/components/SkipToContent'
 import { LOCALE_BOOTSTRAP_SCRIPT, THEME_BOOTSTRAP_SCRIPT } from '@/lib/sitePrefs'
 import { SPLASH_SKIP_BOOTSTRAP_SCRIPT } from '@/lib/splash'
+import { DEFAULT_OG_IMAGE } from '@/lib/ogImages'
 import './styles.css'
 
 /** Layout shell is locale-agnostic; pages that can be static use ISR revalidate. */
@@ -81,7 +82,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const seo = await getCachedSeoSettings()
   const title = seo.title?.[locale] || SITE_TITLES[locale]
   const description = seo.description?.[locale] || DESCRIPTIONS[locale]
-  const ogImage = seo.ogImage || '/images/og-image.png'
+  // Prefer CMS OG when set; otherwise logo on red (same asset as DEFAULT_OG_IMAGE).
+  const ogImage = seo.ogImage || DEFAULT_OG_IMAGE
 
   return {
     metadataBase: new URL(SITE_URL),

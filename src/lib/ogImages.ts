@@ -4,8 +4,13 @@
  * Child `generateMetadata` replaces parent `openGraph` instead of merging
  * `images`, so every route that sets its own OG block must include an image
  * or LinkedIn/WhatsApp render an empty placeholder (PIT-079).
+ *
+ * Main site pages → {@link DEFAULT_OG_IMAGE} (logo on red).
+ * Subpages (portfolio projects, LPs, consultants, offer cards) may override
+ * with a dedicated 1200×630 asset when one exists.
  */
 
+/** Logo on red — default share card for all main pages. */
 export const DEFAULT_OG_IMAGE =
   'https://pub-bca1ac764c56451890e973c90029a977.r2.dev/Og.jpg'
 
@@ -50,5 +55,14 @@ export function ogImageFields(url: string, alt: string) {
     width: OG_IMAGE_WIDTH,
     height: OG_IMAGE_HEIGHT,
     alt,
+  }
+}
+
+/** OG + Twitter image blocks for main pages (logo on red). */
+export function defaultShareImages(alt: string) {
+  const image = ogImageFields(DEFAULT_OG_IMAGE, alt)
+  return {
+    openGraphImages: [image],
+    twitterImages: [DEFAULT_OG_IMAGE],
   }
 }
