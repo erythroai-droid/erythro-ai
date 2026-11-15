@@ -1,9 +1,14 @@
 # Latest changes
 
-Обновлено: 2026-11-15 (Calc LP leak-* AI Audit / CRO / GEO copy + H1/UTM — commit & push на revert/calc-lp-step2-mobile; OG refresh прод OK)  
-Статус: Calc LP правки закоммичены и запушены в `revert/calc-lp-step2-mobile`; новые Mustang/Rosso/LaScala JPG на сайте и демо
+Обновлено: 2026-11-15 (OG refresh leak-calc из Desktop/Erythro.ai/Og/Leak.jpg; Calc LP правки на revert/calc-lp-step2-mobile)  
+Статус: Calc LP правки и новый OG (`leak-calc-{en,ru,he}.jpg`) в `revert/calc-lp-step2-mobile`; ждут merge/деплоя на прод
 
-## 0. OG refresh — Mustang / Rosso / La Scala (2026-11-15)
+## 0. OG refresh — Leak Calc (2026-11-15)
+- **Источник:** `Desktop/Erythro.ai/Og/Leak.jpg` (1200×630, 198271 bytes).
+- **Сайт:** скопирован в `public/images/og/leak-calc-{en,ru,he}.jpg` (1200×630, 198271 bytes; код `src/lib/ogImages.ts` без изменений).
+- **Следующий шаг:** merge в `main` / деплой → проверить Content-Length на прод и «Scrape again» в Meta Sharing Debugger / LinkedIn Post Inspector для `leak-{en,ru,he}`.
+
+## −1. OG refresh — Mustang / Rosso / La Scala (2026-11-15)
 - **Источник:** `Desktop/Erythro.ai/Og/{Mustang,Rosso,LaScala}.jpg` (1200×630).
 - **Сайт:** `public/images/og/{mustang-6663rt,rosso-garage,la-scala}.jpg` → prod `dpl_3E1Jr…` + promote; Content-Length совпал (122414 / 112665 / 197093).
 - **Демо:** те же файлы в Mustang / rosso-garage / LaScala `main` — уже отдают новые размеры.
