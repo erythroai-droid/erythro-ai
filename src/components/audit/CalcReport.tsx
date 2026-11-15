@@ -1874,7 +1874,7 @@ export function CalcResult({
   onWaText: (text: string) => void
 }) {
   const breakdown = useMemo(() => leakBreakdown(pillars), [pillars])
-  const [techOpen, setTechOpen] = useState(false)
+  const [techOpen, setTechOpen] = useState(true)
   const techId = useId()
   const negligible = breakdown.total < LEAK_NEGLIGIBLE_BELOW
   const areas = areaScores(pillars)
@@ -2139,7 +2139,7 @@ export function CalcResult({
         waHref={waHref}
       />
 
-      {/* 4. Technical details for developers: full-bleed light lilac panel right under the sprint, collapsed by default */}
+      {/* 4. Technical details for developers: full-bleed light lilac panel right under the sprint, open by default */}
       <section className="calc-tech-flow ms-[calc(50%-50vw)] -mt-8 w-screen sm:-mt-10">
         <div className="mx-auto w-full max-w-[1536px] px-4 py-10 sm:px-8 sm:py-14 lg:px-12 lg:py-16">
           <button
