@@ -1,14 +1,14 @@
 # Latest changes
 
 Обновлено: 2026-11-15 (ISR TTL 1h)  
-Статус: локально `revalidate=3600`; ждёт деплой
+Статус: запушено `c7042a7` на `revert/calc-lp-step2-mobile`; ждёт merge/деплой
 
 ## 0. ISR — кэш 60s → 1h (2026-11-15)
 - **Зачем:** Vercel weekly usage — ISR Writes 1.44M (~$5.8) при `revalidate=60` + много билдов.
 - **Сделано:** `revalidate = 3600` на layout, home, portfolio list, about/contacts/legal, services, LP audit/calc/diagnostic/pro. Свежесть после CMS — Save в админке (hooks) или `/api/revalidate` + токен.
 - **Не трогали:** sitemap `3600`, asset Cache-Control, демо-проекты Vercel.
 - **Напоминание агенту:** `.cursor/rules/isr-cache-save-reminder.mdc` — после правок контента напоминать Save в админке для сброса кэша.
-- **Следующий шаг:** коммит/деплой по команде → на проде `Cache-Control: s-maxage=3600`; смотреть ISR Writes в следующем weekly summary.
+- **Следующий шаг:** PR/merge в main → прод; проверить `s-maxage=3600`; ISR Writes в следующем weekly summary.
 
 ## −1. CMS — Visit/SEO/body на *.erythro.ai (2026-11-15)
 - **Прод-БД + деплой:** PR #412 / `dpl_6aABY…` READY. `/portfolio/{mustang-6663rt,la-scala,rosso-garage}` отдают Visit → `https://{mustang,la-scala,rosso-garage}.erythro.ai/` (старых vercel.app нет). Демо-хосты HTTP 200.
