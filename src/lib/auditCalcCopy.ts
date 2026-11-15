@@ -351,9 +351,9 @@ export const auditCalcCopy = {
       he: 'בודקים מהירות במובייל, טפסי לידים (CRO) ונראות ב-Google,‏ ChatGPT ו-Perplexity — ומחשבים ',
     } satisfies Localized,
     heroSubHighlight: {
-      en: 'how many leads and how much money your site loses',
-      ru: 'сколько заявок и денег теряет сайт',
-      he: 'כמה פניות וכסף האתר מפסיד',
+      en: 'where your site loses leads & clients',
+      ru: 'сколько заявок и клиентов теряет сайт',
+      he: 'כמה פניות ולקוחות האתר מפסיד',
     } satisfies Localized,
     step1Heading: {
       en: 'Free AI Website Audit',
@@ -1586,9 +1586,9 @@ export const auditCalcCopy = {
   } satisfies Localized,
   heroFreeBadge: { en: 'Free', ru: 'Бесплатно', he: 'חינם' } satisfies Localized,
   heroLive: { en: 'Auditor online', ru: 'Аудитор онлайн', he: 'הבודק מחובר' } satisfies Localized,
-  heroL1: { en: 'AI website audit:', ru: 'AI-аудит сайта:', he: 'ביקורת אתר AI:' } satisfies Localized,
-  heroL2: { en: 'how much money', ru: 'сколько денег', he: 'כמה כסף ולידים' } satisfies Localized,
-  heroL3: { en: 'does your site lose?', ru: 'теряет ваш сайт?', he: 'האתר שלכם מפסיד?' } satisfies Localized,
+  heroL1: { en: 'AI, CRO & GEO audit:', ru: 'AI, CRO и GEO аудит:', he: 'ביקורת AI, המרות ו-GEO:' } satisfies Localized,
+  heroL2: { en: 'where you lose leads', ru: 'где вы теряете заявки', he: 'איפה האתר מאבד לידים' } satisfies Localized,
+  heroL3: { en: 'in Google & AI search', ru: 'в Google и AI-поиске', he: 'בגוגל ובחיפוש AI?' } satisfies Localized,
   heroVariants: {
     ai_geo: {
       kicker: {
