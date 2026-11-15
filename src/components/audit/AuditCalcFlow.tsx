@@ -334,10 +334,44 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
     }
   }, [])
 
+  const [intentVariant, setIntentVariant] = useState<'default' | 'ai_geo' | 'cro'>('default')
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const content = (params.get('utm_content') || '').trim()
+    const term = (params.get('utm_term') || params.get('keyword') || '').toLowerCase()
+    if (
+      content === '197400968130' ||
+      content === '204838307449' ||
+      /ai|geo|aeo|chatgpt|perplexity|claude|llm|סוכני|בינה/i.test(term)
+    ) {
+      setIntentVariant('ai_geo')
+    } else if (
+      content === '205134464874' ||
+      content === '202376409095' ||
+      /cro|conversion|convert|lead|drop|funnel|המרה|המרות|לידים|נשירת/i.test(term)
+    ) {
+      setIntentVariant('cro')
+    }
+  }, [])
+
+  const step1HeroCopy = useMemo(() => {
+    if (intentVariant !== 'default' && copy.heroVariants[intentVariant]) {
+      return copy.heroVariants[intentVariant]
+    }
+    return {
+      kicker: copy.heroKicker,
+      l1: copy.heroL1,
+      l2: copy.heroL2,
+      l3: copy.heroL3,
+    }
+  }, [intentVariant])
+
   // Failed view. Must stay below every hook: an earlier return changes the hook count and crashes React (PIT-160).
   if (stage.name === 'failed') {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen px-4 py-8">
+        <h1 className="sr-only">{tCalc(copy.metaTitle, locale)}</h1>
         <section className={`${CARD} flex flex-col items-start gap-4 max-w-[600px] w-full p-8`}>
           <CardTitle>{tCalc(copy.failedTitle, locale)}</CardTitle>
           <p className="m-0 text-[15px] text-[#6b6254]">
@@ -462,6 +496,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
       {/* ================= 2. MAIN CONTENT ================= */}
       {stage.name === 'ready' && report && pillars ? (
         <main className="w-full flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pb-8 sm:pb-10 lg:pb-14 animate-hero-fade">
+          <h1 className="sr-only">{tCalc(copy.metaTitle, locale)}</h1>
           {/* Same side padding and content width as the full-bleed loss panel, so every block below lines up with it */}
           <div className="w-full max-w-[1440px] mx-auto">
             <CalcResult
@@ -505,7 +540,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                 <span>
                   {tCalc(
                     currentStep === 1
-                      ? copy.heroKicker
+                      ? step1HeroCopy.kicker
                       : currentStep === 2
                         ? copy.heroStep2Kicker
                         : copy.heroStep3Kicker,
@@ -515,12 +550,12 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               </div>
             </div>
 
-            <h2 className="m-0 font-black uppercase leading-[1.04] sm:leading-[1.03] lg:leading-[1.02] tracking-[-0.035em] text-white text-[clamp(26px,10vw,38px)] sm:text-[52px] lg:text-[56px] xl:text-[68px] 2xl:text-[80px] text-balance">
+            <h1 className="m-0 font-black uppercase leading-[1.04] sm:leading-[1.03] lg:leading-[1.02] tracking-[-0.035em] text-white text-[clamp(26px,10vw,38px)] sm:text-[52px] lg:text-[56px] xl:text-[68px] 2xl:text-[80px] text-balance">
               {/* One run of text: lines break by width, not after each phrase */}
               <span>
                 {tCalc(
                   currentStep === 1
-                    ? copy.heroL1
+                    ? step1HeroCopy.l1
                     : currentStep === 2
                       ? copy.heroStep2L1
                       : copy.heroStep3L1,
@@ -530,7 +565,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                   <bdi>
                     {tCalc(
                       currentStep === 1
-                        ? copy.heroL2
+                        ? step1HeroCopy.l2
                         : currentStep === 2
                           ? copy.heroStep2L2
                           : copy.heroStep3L2,
@@ -542,14 +577,14 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
               <span>
                 {tCalc(
                   currentStep === 1
-                    ? copy.heroL3
+                    ? step1HeroCopy.l3
                     : currentStep === 2
                       ? copy.heroStep2L3
                       : copy.heroStep3L3,
                   locale,
                 )}
               </span>
-            </h2>
+            </h1>
 
             {currentStep === 1 ? (
               <p className="m-0 mt-5 max-w-2xl text-base leading-[1.6] text-white/75 sm:hidden">

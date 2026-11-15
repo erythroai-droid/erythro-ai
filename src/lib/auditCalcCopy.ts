@@ -39,9 +39,9 @@ export const auditCalcCopy = {
   } satisfies Localized,
   /** Document title / H1 / OG — not the in-UI calculator badge. */
   metaTitle: {
-    en: 'Website Loss Audit',
-    ru: 'Аудит потерь сайта',
-    he: 'ביקורת אובדן הכנסות מהאתר',
+    en: 'Free AI Website Audit & Revenue Leak Calculator',
+    ru: 'Бесплатный AI-аудит сайта и калькулятор потерь выручки',
+    he: 'ביקורת אתר AI חינם ומחשבון אובדן הכנסות',
   } satisfies Localized,
   metaDescription: {
     en: 'Free AI homepage audit: mobile speed, lead forms, and visibility in Google, ChatGPT & Perplexity. See monthly lead and ₪ revenue loss — no admin access, about 5 minutes.',
@@ -324,14 +324,14 @@ export const auditCalcCopy = {
     he: 'הגדרת ביקורת מהירה',
   } satisfies Localized,
   step1Heading: {
-    en: 'Free Revenue Leak Calculation',
-    ru: 'Бесплатный расчёт финансовых утечек',
-    he: 'חישוב דליפות הכנסה בחינם',
+    en: 'Free AI Website Audit & Loss Calculator',
+    ru: 'Бесплатный AI-аудит и расчёт потерь',
+    he: 'ביקורת AI לאתר וחישוב הפסדים בחינם',
   } satisfies Localized,
   step1Sub: {
-    en: 'Enter your website and email to calculate monthly revenue loss and drop-off points.',
-    ru: 'Укажите сайт и email, чтобы рассчитать ежемесячные потери бюджета и точки срыва заявок.',
-    he: 'הזינו כתובת אתר ומייל כדי לחשב אובדן הכנסות חודשי ומוקדי נשירת לקוחות.',
+    en: 'Enter your website and email to find conversion bottlenecks, AI search blindspots, and monthly revenue loss.',
+    ru: 'Укажите сайт и email, чтобы выявить точки срыва заявок, слепые зоны AI-поиска и ежемесячные потери.',
+    he: 'הזינו כתובת אתר ומייל לאיתור חסמי המרה, פערי נראות ב-AI ואובדן הכנסות חודשי.',
   } satisfies Localized,
   step2Heading: {
     en: 'Revenue & Business Scale',
@@ -346,9 +346,9 @@ export const auditCalcCopy = {
   /** Shorter first-screen copy for phones (below `sm`). */
   mobile: {
     heroSubPrefix: {
-      en: 'We check mobile speed, how your lead form works, and visibility in Google, ChatGPT, and Perplexity — and calculate ',
-      ru: 'Проверяем мобильную скорость, как работает форма заявки и видимость в Google, ChatGPT, Perplexity — и считаем, ',
-      he: 'בודקים מהירות במובייל, איך עובד טופס הפניות ונראות ב-Google,‏ ChatGPT ו-Perplexity — ומחשבים ',
+      en: 'We check mobile speed, lead forms (CRO), and visibility in Google, ChatGPT, and Perplexity — and calculate ',
+      ru: 'Проверяем мобильную скорость, формы заявок (CRO) и видимость в Google, ChatGPT, Perplexity — и считаем, ',
+      he: 'בודקים מהירות במובייל, טפסי לידים (CRO) ונראות ב-Google,‏ ChatGPT ו-Perplexity — ומחשבים ',
     } satisfies Localized,
     heroSubHighlight: {
       en: 'how many leads and how much money your site loses',
@@ -356,19 +356,19 @@ export const auditCalcCopy = {
       he: 'כמה פניות וכסף האתר מפסיד',
     } satisfies Localized,
     step1Heading: {
-      en: 'Free website check',
-      ru: 'Бесплатная проверка сайта',
-      he: 'בדיקת אתר בחינם',
+      en: 'Free AI Website Audit',
+      ru: 'Бесплатный AI-аудит сайта',
+      he: 'ביקורת אתר AI בחינם',
     } satisfies Localized,
     step1Sub: {
-      en: 'Enter your website and email: we will calculate how many leads and how much money it loses each month.',
-      ru: 'Укажите сайт и email: посчитаем, сколько заявок и денег сайт теряет в месяц.',
-      he: 'הזינו כתובת אתר ומייל: נחשב כמה פניות וכסף האתר מפסיד בכל חודש.',
+      en: 'Enter your website and email: get a 230+ check audit (CRO, speed, AI search) & revenue loss estimate.',
+      ru: 'Укажите сайт и email: получите аудит по 230+ параметрам (CRO, скорость, AI) и расчёт потерь.',
+      he: 'הזינו כתובת אתר ומייל: קבלו דוח של 230+ בדיקות (המרות, מהירות, AI) וחישוב הפסדים.',
     } satisfies Localized,
     submit: {
-      en: 'Check my site for free',
-      ru: 'Проверить сайт бесплатно',
-      he: 'בדקו את האתר בחינם',
+      en: 'Run Free AI Audit →',
+      ru: 'Запустить AI-аудит бесплатно',
+      he: 'הפעילו ביקורת AI בחינם',
     } satisfies Localized,
     step2Heading: {
       en: 'Revenue is optional',
@@ -424,9 +424,9 @@ export const auditCalcCopy = {
   ],
   step1Guarantee2: { en: '1 domain / 7 days', ru: '1 домен / 7 дней', he: 'דומיין 1 / 7 ימים' } satisfies Localized,
   nextStepCalc: {
-    en: 'Next step →',
-    ru: 'Следующий шаг →',
-    he: 'השלב הבא ←',
+    en: 'Run Free AI Audit →',
+    ru: 'Запустить AI-аудит →',
+    he: 'הפעילו ביקורת AI חינם ←',
   } satisfies Localized,
   calcHint: {
     en: 'Enter your numbers: the estimate is based on the audit of your site.',
@@ -1580,33 +1580,55 @@ export const auditCalcCopy = {
 
   /* ---- hero (giant headings, background words) ---- */
   heroKicker: {
-    en: 'AI Audit Online',
-    ru: 'AI-аудит онлайн',
-    he: 'AI Audit אונליין',
+    en: 'AI Website Audit · CRO & GEO · 230+ Checks',
+    ru: 'AI-аудит сайта · CRO и GEO · 230+ проверок',
+    he: 'ביקורת אתר AI · המרות ו-GEO · 230+ בדיקות',
   } satisfies Localized,
   heroFreeBadge: { en: 'Free', ru: 'Бесплатно', he: 'חינם' } satisfies Localized,
   heroLive: { en: 'Auditor online', ru: 'Аудитор онлайн', he: 'הבודק מחובר' } satisfies Localized,
-  heroL1: { en: 'How much', ru: 'Сколько', he: 'כמה' } satisfies Localized,
-  heroL2: { en: 'money', ru: 'денег', he: 'כסף' } satisfies Localized,
+  heroL1: { en: 'AI website audit:', ru: 'AI-аудит сайта:', he: 'ביקורת אתר AI:' } satisfies Localized,
+  heroL2: { en: 'how much money', ru: 'сколько денег', he: 'כמה כסף ולידים' } satisfies Localized,
   heroL3: { en: 'does your site lose?', ru: 'теряет ваш сайт?', he: 'האתר שלכם מפסיד?' } satisfies Localized,
+  heroVariants: {
+    ai_geo: {
+      kicker: {
+        en: 'AI Search & GEO Readiness · 230+ Checks',
+        ru: 'AI-видимость (GEO) и аудит · 230+ проверок',
+        he: 'נראות ב-AI (GEO) וביקורת אתר · 230+ בדיקות',
+      } satisfies Localized,
+      l1: { en: 'AI & GEO website audit:', ru: 'AI и GEO аудит сайта:', he: 'אודיט AI ו-GEO לאתר:' } satisfies Localized,
+      l2: { en: 'where you lose clients', ru: 'где вы теряете клиентов', he: 'איפה אתם מאבדים לקוחות' } satisfies Localized,
+      l3: { en: 'in Google & ChatGPT', ru: 'в Google и ChatGPT', he: 'ב-Google וב-ChatGPT' } satisfies Localized,
+    },
+    cro: {
+      kicker: {
+        en: 'CRO & Funnel Diagnostics · 230+ Checks',
+        ru: 'CRO-диагностика воронки · 230+ проверок',
+        he: 'אבחון המרות (CRO) ומשפך · 230+ בדיקות',
+      } satisfies Localized,
+      l1: { en: 'CRO & funnel audit:', ru: 'CRO-аудит воронки:', he: 'אבחון המרות ולידים:' } satisfies Localized,
+      l2: { en: 'why visitors leave', ru: 'почему уходят клиенты', he: 'למה גולשים נוטשים' } satisfies Localized,
+      l3: { en: 'without a lead', ru: 'без заявки?', he: 'בלי להשאיר פנייה?' } satisfies Localized,
+    },
+  } as const,
   heroWaitL1: { en: 'Auditing', ru: 'Проверяем', he: 'בודקים' } satisfies Localized,
   heroWaitL3: { en: 'right now', ru: 'прямо сейчас', he: 'ממש עכשיו' } satisfies Localized,
   heroReadyL1: { en: 'Done,', ru: 'Готово,', he: 'מוכן,' } satisfies Localized,
   heroReadyL3: { en: 'here is where the money leaks', ru: 'вот где утекают деньги', he: 'כאן הכסף מדלף' } satisfies Localized,
   heroSubForm: {
-    en: 'We audit mobile speed, checkout flow, and visibility across Google, ChatGPT, and Perplexity — and calculate your lost revenue.',
-    ru: 'Проверяем мобильную скорость, работу заказа и видимость в Google, ChatGPT, Perplexity — рассчитаем сумму упущенной выгоды.',
-    he: 'בודקים מהירות במובייל, תקינות תהליך ההזמנה ונראות ב-Google,‏ ChatGPT ו-Perplexity — ומחשבים את ההכנסות האבודות שלכם.',
+    en: 'We check mobile speed, lead forms (CRO), and AI visibility across Google, ChatGPT, and Perplexity — and calculate your lost leads & revenue.',
+    ru: 'Проверяем мобильную скорость, формы заявок (CRO) и видимость в Google, ChatGPT, Perplexity — и считаем сумму потерянных заявок и выручки.',
+    he: 'בודקים מהירות במובייל, תקינות טפסי לידים (CRO) ונראות ב-Google,‏ ChatGPT ו-Perplexity — ומחשבים את הפניות וההכנסות האבודות שלכם.',
   } satisfies Localized,
   heroSubFormPrefix: {
-    en: 'We audit mobile speed, checkout flow, and visibility across Google, ChatGPT, and Perplexity — and calculate your ',
-    ru: 'Проверяем мобильную скорость, работу заказа и видимость в Google, ChatGPT, Perplexity — рассчитаем сумму ',
-    he: 'בודקים מהירות במובייל, תקינות תהליך ההזמנה ונראות ב-Google,‏ ChatGPT ו-Perplexity — ומחשבים את ',
+    en: 'We check mobile speed, lead forms (CRO), and AI visibility across Google, ChatGPT, and Perplexity — and calculate your ',
+    ru: 'Проверяем мобильную скорость, формы заявок (CRO) и видимость в Google, ChatGPT, Perplexity — и считаем сумму ',
+    he: 'בודקים מהירות במובייל, תקינות טפסי לידים (CRO) ונראות ב-Google,‏ ChatGPT ו-Perplexity — ומחשבים את ',
   } satisfies Localized,
   heroSubFormHighlight: {
-    en: 'lost revenue',
-    ru: 'упущенной выгоды',
-    he: 'ההכנסות האבודות שלכם',
+    en: 'lost leads & revenue',
+    ru: 'потерянных заявок и выручки',
+    he: 'הפניות וההכנסות האבודות שלכם',
   } satisfies Localized,
   heroStep2Kicker: {
     en: 'Business Scale & Metrics',
