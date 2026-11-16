@@ -925,14 +925,14 @@ export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
   // v10: trim slugs + per-doc map (trailing-space slugs 404'd detail pages)
   // v26: rosso-garage four languages (EN/RU/HE/AR)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v29-erythro-demo-links'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v30-ember'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
 
 /** Lean list for `/portfolio` index — avoids shipping every project body Lexical tree. */
 export const getCachedPortfolioProjectCards = () =>
-  unstable_cache(() => fetchPortfolioProjectCards(), ['portfolio-project-cards-v6-erythro-demo-links'], {
+  unstable_cache(() => fetchPortfolioProjectCards(), ['portfolio-project-cards-v7-ember'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
