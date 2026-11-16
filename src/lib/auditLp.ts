@@ -138,6 +138,26 @@ export function buildLeakCalcResultsUrl(input: {
   return u.toString()
 }
 
+/**
+ * Public demo used as the step-1 “sample report” on leak-*.erythro.ai.
+ * Opens the calc step-4 UI (not `/samples/audit/free-*.html`).
+ * Dedicated CMS row: contact-submissions #271 (leadChannel=leak_calc,
+ * website=mustang.erythro.ai, name “Leak Calc Public Sample”). Do not delete.
+ * Token is intentionally public — same as a shareable email deep link.
+ */
+export const LEAK_CALC_SAMPLE_REPORT = {
+  submissionId: 271,
+  token: 'nSfEylk0oFVPAXynYE_o8YVUA4HOT0z1',
+} as const
+
+export function buildLeakCalcSampleReportUrl(locale: AuditLpLocale | string): string {
+  return buildLeakCalcResultsUrl({
+    locale,
+    submissionId: LEAK_CALC_SAMPLE_REPORT.submissionId,
+    token: LEAK_CALC_SAMPLE_REPORT.token,
+  })
+}
+
 /** Internal App Router path after middleware rewrite. */
 export function auditLpInternalPath(product: AuditLpProduct, locale: AuditLpLocale): string {
   if (product === 'free') return `/lp/audit/${locale}`
