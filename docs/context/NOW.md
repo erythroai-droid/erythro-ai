@@ -1,9 +1,17 @@
 # Latest changes
 
-Обновлено: 2026-11-16 (Calc LP sample → dedicated #271)  
-Статус: пример отчёта = отдельная demo-заявка #271 в prod БД; код на `revert/calc-lp-step2-mobile`, ждут commit/deploy. #270 можно удалять.
+Обновлено: 2026-11-17 (portfolio: EMBER Steakhouse)  
+Статус: CMS запись #11 в прод-БД; код кэша/OG локально — ждут commit/deploy. После деплоя — Save в админке (ISR 1h).
 
-## 0. Calc LP — sample report = dedicated #271 (2026-11-16)
+## 0. Портфолио — EMBER Steakhouse (2026-11-17)
+- **Запрос:** новый кейс по https://ember.erythro.ai/
+- **Сделано:** `pnpm import:project -- content/imports/ember --create` → CMS `portfolio-projects` **#11**, slug `ember`, категория `websites`. Live https://ember.erythro.ai/. Медиа #207–#216.
+- Источники: `C:\dev\Steak house` (AI Smart Card fork → scroll-film). `brief.yaml` + `body.ts` (6 секций EN/RU/HE), highlights (EN/RU/HE/AR RTL, ScrollSmoother, 211-frame fixed film + portrait 540, static ≤900px), без выдуманных PSI. `solutionPlan` → `ai-smart-card` (#2).
+- Код: кэш `portfolio-projects-v30-ember` + cards `v7-ember`; OG `public/images/og/ember.jpg` + `ogImageForPortfolioProject('ember')`.
+- Админ: https://erythro.ai/admin/collections/portfolio-projects/11 · страница: `/portfolio/ember` (после деплоя + Save).
+- **Следующий шаг:** визуально `/portfolio/ember` после commit/deploy → Soft-save Ember в Production admin (ISR 1h). Revalidate prod 401 (нет `REVALIDATION_TOKEN`).
+
+## −1. Calc LP — sample report = dedicated #271 (2026-11-16)
 - **Запрос:** не ссылаться на личный отчёт; завести отдельный demo в БД.
 - **Сделано:** `POST leak-en.erythro.ai/api/contact` → заявка **#271** (`leadChannel=leak_calc`, name `Leak Calc Public Sample`, website `https://mustang.erythro.ai`). Worker → `report_sent`, score **69**, pillars OK.
 - **Ссылка EN:** https://leak-en.erythro.ai/?report=271&k=nSfEylk0oFVPAXynYE_o8YVUA4HOT0z1 (RU/HE — тот же id/k на leak-ru / leak-he).

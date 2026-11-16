@@ -50,6 +50,7 @@ const PORTFOLIO_OG_IMAGES: Record<string, string> = {
   'rosso-garage': 'https://erythro.ai/images/og/rosso-garage.jpg',
   'mustang-6663rt': 'https://erythro.ai/images/og/mustang-6663rt.jpg',
   'la-scala': 'https://erythro.ai/images/og/la-scala.jpg',
+  ember: 'https://erythro.ai/images/og/ember.jpg',
 }
 
 export function ogImageForLeakCalc(locale: 'en' | 'ru' | 'he'): string {
