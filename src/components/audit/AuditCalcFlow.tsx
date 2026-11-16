@@ -28,9 +28,14 @@ import {
   nextAuditPollDelayMs,
   type AuditReportPublicPayload,
 } from '@/lib/auditReport'
-import { AUDIT_LP_LOCALES, auditLpHrefForLocale, mainSiteUrl, type AuditLpLocale } from '@/lib/auditLp'
+import {
+  AUDIT_LP_LOCALES,
+  auditLpHrefForLocale,
+  buildLeakCalcSampleReportUrl,
+  mainSiteUrl,
+  type AuditLpLocale,
+} from '@/lib/auditLp'
 import { auditCalcCopy as copy, fillCalc, tCalc } from '@/lib/auditCalcCopy'
-import { auditSampleReportHref, auditSampleReportLabel } from '@/lib/auditSampleReports'
 import { pillarsFromOverall, type AuditPillars } from '@/lib/revenueLeak'
 
 type Stage =
@@ -318,8 +323,7 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
 
   const waNumber = phone.replace(/[^0-9]/g, '')
   const waHref = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}` : ''
-  const sampleReportPath = auditSampleReportHref('audit-free', locale)
-  const sampleReportHref = sampleReportPath ? mainSiteUrl(sampleReportPath) : null
+  const sampleReportHref = buildLeakCalcSampleReportUrl(locale)
 
   // The report's full-screen panels fill the viewport below this top bar: expose its height as --calc-top
   const headerRef = useRef<HTMLElement>(null)
@@ -855,19 +859,17 @@ export default function AuditCalcFlow({ locale, page }: { locale: string; page: 
                     <div id={LEGAL_SLOT_ID} className={formStep === 1 ? 'w-full' : 'hidden'} />
 
                     {formStep === 1 ? (
-                      sampleReportHref ? (
-                        <a
-                          href={sampleReportHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex max-w-full items-center justify-center gap-1.5 text-[13px] font-medium text-white/80 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white hover:decoration-white"
-                        >
-                          <span>{auditSampleReportLabel(locale)}</span>
-                          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="size-3.5 shrink-0 rtl:-scale-x-100">
-                            <path d="M5 3.5h7.5V11M12.5 3.5 3.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </a>
-                      ) : null
+                      <a
+                        href={sampleReportHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex max-w-full items-center justify-center gap-1.5 text-[13px] font-medium text-white/80 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white hover:decoration-white"
+                      >
+                        <span>{tCalc(copy.sampleReport, locale)}</span>
+                        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="size-3.5 shrink-0 rtl:-scale-x-100">
+                          <path d="M5 3.5h7.5V11M12.5 3.5 3.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </a>
                     ) : (
                       <div className="flex items-center justify-between w-full px-1 pt-0.5">
                         <button

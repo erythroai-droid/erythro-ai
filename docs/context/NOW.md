@@ -1,9 +1,17 @@
 # Latest changes
 
-Обновлено: 2026-11-15 (OG refresh leak-calc из Desktop/Erythro.ai/Og/Leak.jpg; Calc LP правки на revert/calc-lp-step2-mobile)  
-Статус: Calc LP правки и новый OG (`leak-calc-{en,ru,he}.jpg`) в `revert/calc-lp-step2-mobile`; ждут merge/деплоя на прод
+Обновлено: 2026-11-16 (Calc LP sample → dedicated #271)  
+Статус: пример отчёта = отдельная demo-заявка #271 в prod БД; код на `revert/calc-lp-step2-mobile`, ждут commit/deploy. #270 можно удалять.
 
-## 0. OG refresh — Leak Calc (2026-11-15)
+## 0. Calc LP — sample report = dedicated #271 (2026-11-16)
+- **Запрос:** не ссылаться на личный отчёт; завести отдельный demo в БД.
+- **Сделано:** `POST leak-en.erythro.ai/api/contact` → заявка **#271** (`leadChannel=leak_calc`, name `Leak Calc Public Sample`, website `https://mustang.erythro.ai`). Worker → `report_sent`, score **69**, pillars OK.
+- **Ссылка EN:** https://leak-en.erythro.ai/?report=271&k=nSfEylk0oFVPAXynYE_o8YVUA4HOT0z1 (RU/HE — тот же id/k на leak-ru / leak-he).
+- **Код:** `LEAK_CALC_SAMPLE_REPORT` = `{271, token}` + `buildLeakCalcSampleReportUrl`; шаг 1 не ведёт на Free HTML.
+- **Не удалять** в админке submission #271 (публичный sample).
+- **Следующий шаг:** commit/PR/deploy по команде → клик на leak-* → step 4 #271. Личный #270 пользователь удалит сам.
+
+## −1. OG refresh — Leak Calc (2026-11-15)
 - **Источник:** `Desktop/Erythro.ai/Og/Leak.jpg` (1200×630, 198271 bytes).
 - **Сайт:** скопирован в `public/images/og/leak-calc-{en,ru,he}.jpg` (1200×630, 198271 bytes; код `src/lib/ogImages.ts` без изменений).
 - **Следующий шаг:** merge в `main` / деплой → проверить Content-Length на прод и «Scrape again» в Meta Sharing Debugger / LinkedIn Post Inspector для `leak-{en,ru,he}`.

@@ -1585,6 +1585,12 @@ export const auditCalcCopy = {
     he: 'ביקורת אתר AI · המרות ו-GEO · 230+ בדיקות',
   } satisfies Localized,
   heroFreeBadge: { en: 'Free', ru: 'Бесплатно', he: 'חינם' } satisfies Localized,
+  /** Step 1 under submit — opens live calc sample (`?report=&k=`), not Free HTML. */
+  sampleReport: {
+    en: 'View sample report',
+    ru: 'Смотреть пример отчёта',
+    he: 'צפו בדוגמת דוח',
+  } satisfies Localized,
   heroLive: { en: 'Auditor online', ru: 'Аудитор онлайн', he: 'הבודק מחובר' } satisfies Localized,
   heroL1: { en: 'AI, CRO & GEO audit:', ru: 'AI, CRO и GEO аудит:', he: 'ביקורת AI, המרות ו-GEO:' } satisfies Localized,
   heroL2: { en: 'where you lose leads', ru: 'где вы теряете заявки', he: 'איפה האתר מאבד לידים' } satisfies Localized,
