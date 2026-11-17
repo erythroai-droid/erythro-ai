@@ -1,7 +1,14 @@
 # Latest changes
 
-Обновлено: 2026-11-17 (portfolio: EMBER Steakhouse)  
+Обновлено: 2026-11-17 (leak LP Searchable-style; portfolio: EMBER)  
 Статус: CMS запись #11 в прод-БД; код кэша/OG локально — ждут commit/deploy. После деплоя — Save в админке (ISR 1h).
+
+## 0. Leak LP — премиальный лендинг калькулятора (Searchable-style) (2026-11-17)
+- **Запрос:** новый лендинг калькулятора потерь в стиле searchable.com (референс `D:\Obsidian\Knowledge-Base\Design-References\References\searchable.md`), акцент #E52421. Старый `lp/audit/calc` не трогали.
+- **Сделано (5df6fa4):** `src/lib/leakLpCopy.ts` (EN/RU/HE), `src/components/leak-lp/{motion.tsx, leakLp.css, useLeakCalcFlow.ts, LeakCalcPanel.tsx, LeakShowcase.tsx}`.
+- **Сделано (не закоммичено):** `src/components/leak-lp/LeakLpClient.tsx` — красная полоса, sticky-хедер (якоря, языки только на шаге 1, CTA), hero (H1 без декора, ротация ChatGPT/Perplexity/Gemini/Claude), окно продукта (форма слева, 4 таба с автопереключением 6.5s + линия прогресса), Measured with, bento (red dither + бары), тёмная «Как это работает» + статы + карточка sample-отчёта, FAQ-аккордеон, тёмный CTA, футер. stage=ready → `CalcResult` с `--calc-top`. Маршрут `src/app/(frontend)/lp/audit/leak/[locale]/page.tsx` (noindex, canonical `erythro.ai/lp/audit/leak/{l}`, OG leak-calc).
+- **Не проверено:** tsc/сборка/браузер не запускались (правило AGENTS).
+- **Следующий шаг:** по команде — `pnpm dev` → `/lp/audit/leak/{en,ru,he}` на 390/768/1024/1280/1440/1920 (+ `?preview=step2|waiting|ready|failed`), поправить вёрстку → коммит. Позже — субдомен/хост в `auditLp` и снятие noindex.
 
 ## 0. Портфолио — EMBER Steakhouse (2026-11-17)
 - **Запрос:** новый кейс по https://ember.erythro.ai/
