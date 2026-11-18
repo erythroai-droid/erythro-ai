@@ -52,16 +52,12 @@ export function Reveal({
   className?: string
   as?: 'div' | 'section' | 'li' | 'header'
 }) {
-  const [ref, inView] = useInView<HTMLDivElement>()
-  return (
-    <Tag
-      ref={ref as React.Ref<HTMLDivElement>}
-      data-in={inView ? '' : undefined}
-      className={`lk-reveal ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      {children}
-    </Tag>
+  const [ref, inView] = useInView<HTMLElement>()
+  // createElement: with a union tag, JSX intersects every element's ref type and rejects a single ref.
+  return React.createElement(
+    Tag,
+    { ref, 'data-in': inView ? '' : undefined, className: `lk-reveal ${className}`, style: { transitionDelay: `${delay}ms` } },
+    children,
   )
 }
 

@@ -5,11 +5,53 @@ import AuditLpForm from '@/components/audit/AuditLpForm'
 import { CalcNumbers, CalcWaiting } from '@/components/audit/CalcReport'
 import { displayDomain } from '@/components/audit/AuditCalcFlow'
 import type { AuditPageContent } from '@/lib/auditPage'
-import { auditCalcCopy as copy, fillCalc, tCalc } from '@/lib/auditCalcCopy'
+import { auditCalcCopy as baseCopy, fillCalc, tCalc } from '@/lib/auditCalcCopy'
 import type { useLeakCalcFlow } from '@/components/leak-lp/useLeakCalcFlow'
 
 const SUBMIT_SLOT_ID = 'leak-submit-slot'
 const LEGAL_SLOT_ID = 'leak-legal-slot'
+
+// This landing sells an audit, not a loss calculator: the shared funnel copy is reworded here (this LP only),
+// so the form talks about the audit and an optional impact estimate instead of "losses".
+const copy = {
+  ...baseCopy,
+  step1Heading: { en: 'Free AI website audit', ru: 'Бесплатный AI-аудит сайта', he: 'אודיט AI חינמי לאתר' },
+  step1Sub: {
+    en: 'Enter your website and email — we check speed, lead forms and visibility in Google and AI search.',
+    ru: 'Укажите сайт и email — проверим скорость, формы заявок и видимость в Google и AI-поиске.',
+    he: 'הזינו אתר ואימייל — נבדוק מהירות, טפסי לידים ונראות בגוגל ובחיפוש AI.',
+  },
+  step2Heading: { en: 'Business details', ru: 'Параметры бизнеса', he: 'פרטי העסק' },
+  step2Sub: {
+    en: 'Optional: add revenue and clients to estimate the impact of fixes in ₪.',
+    ru: 'По желанию: укажите выручку и клиентов — оценим эффект исправлений в ₪.',
+    he: 'לא חובה: הוסיפו הכנסה ולקוחות כדי להעריך את השפעת התיקונים ב-₪.',
+  },
+  step2EnableRevenue: { en: 'Add an impact estimate in ₪', ru: 'Добавить оценку эффекта в ₪', he: 'להוסיף הערכת השפעה ב-₪' },
+  step2EnableRevenueHint: {
+    en: 'If off, the audit runs without a financial estimate',
+    ru: 'Если выключено — аудит без финансовой оценки',
+    he: 'כבוי — האודיט ללא הערכה כספית',
+  },
+  submitMoney: { en: 'Run the audit →', ru: 'Запустить аудит →', he: 'להפעלת האודיט ←' },
+  submitPercent: { en: 'Run the audit →', ru: 'Запустить аудит →', he: 'להפעלת האודיט ←' },
+  mobile: {
+    ...baseCopy.mobile,
+    step2SubmitMoney: { en: 'Run the audit', ru: 'Запустить аудит', he: 'להפעלת האודיט' },
+    step2SubmitPercent: { en: 'Run the audit', ru: 'Запустить аудит', he: 'להפעלת האודיט' },
+  },
+}
+
+// Form header meta and the "you get" list shown on step 1.
+const FORM_META = {
+  kind: { en: 'Express audit · Free', ru: 'Экспресс-аудит · Free', he: 'אודיט מהיר · חינם' },
+  time: { en: '~5 min', ru: '~5 мин', he: '~5 דק׳' },
+  gets: [
+    { en: 'Prioritised fix plan', ru: 'План исправлений по приоритету', he: 'תוכנית תיקונים לפי עדיפות' },
+    { en: 'Top-3 issues', ru: 'Топ-3 проблемы', he: '3 הבעיות המרכזיות' },
+    { en: 'Report by email', ru: 'Отчёт на email', he: 'דוח למייל' },
+  ],
+}
 
 type Flow = ReturnType<typeof useLeakCalcFlow>
 
@@ -29,12 +71,11 @@ export default function LeakCalcPanel({
 }) {
   const { stage, formStep, skipToPercent, revenue, clients } = flow
   const t = (f: { en: string; ru: string; he: string }) => tCalc(f, locale)
-  const stepNow = stage.name === 'waiting' || stage.name === 'opening' ? 3 : formStep
 
   if (stage.name === 'failed') {
     return (
-      <div className="flex flex-col gap-4 p-6 sm:p-8">
-        <h3 className="lk-bar m-0 text-lg font-semibold leading-[1.3] text-[var(--lk-ink)]">{t(copy.failedTitle)}</h3>
+      <div className="flex flex-col gap-4 p-7 sm:p-10">
+        <h3 className="lk-bar m-0 text-lg leading-[1.3] text-[var(--lk-ink)]">{t(copy.failedTitle)}</h3>
         <p className="m-0 text-[15px] leading-[1.6] text-[var(--lk-muted)]">
           {stage.submitted.website
             ? fillCalc(t(copy.failedLeadWithDomain), { domain: displayDomain(stage.submitted.website) })
@@ -57,29 +98,41 @@ export default function LeakCalcPanel({
 
   return (
     <div className="flex flex-col">
-      {/* Step rail */}
-      <div className="flex items-center gap-1.5 border-b border-[var(--lk-line)] px-5 py-3 sm:px-7">
-        {[1, 2, 3].map((n) => (
-          <span
-            key={n}
-            className={`h-1 flex-1 rounded-full transition-colors duration-500 ${n <= stepNow ? 'bg-[var(--lk-red)]' : 'bg-[var(--lk-stone-150)]'}`}
-          />
-        ))}
-        <span className="ms-2 shrink-0 text-xs font-medium tabular-nums text-[var(--lk-faint)]">
-          {fillCalc(t(copy.stepOf), { n: stepNow, total: 3 })}
-        </span>
-      </div>
-
       {stage.name === 'form' ? (
-        <div className="flex flex-col gap-4 p-5 sm:p-7">
+        <div className="flex flex-col gap-4 p-6 sm:p-9">
+          {/* Report-style meta row: what this is and how long it takes. */}
+          <div className="-mt-1 flex items-center justify-between gap-3 border-b border-[var(--lk-line)] pb-3.5">
+            <span className="lk-label">{t(FORM_META.kind)}</span>
+            <span className="inline-flex items-center gap-1.5 text-xs text-[var(--lk-faint)]">
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="size-3.5">
+                <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M8 5v3l2 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+              {t(FORM_META.time)}
+            </span>
+          </div>
           <div>
-            <h3 className="lk-bar m-0 text-lg font-semibold leading-[1.3] tracking-[-0.01em] text-[var(--lk-ink)] sm:text-xl">
+            <h3 className="m-0 text-[22px] !font-semibold leading-[1.2] tracking-[-0.02em] text-[var(--lk-ink)] sm:text-[26px]">
               {formStep === 1 ? t(copy.step1Heading) : t(copy.step2Heading)}
             </h3>
-            <p className="m-0 mt-1.5 text-sm leading-[1.5] text-[var(--lk-muted)]">
+            <p className="m-0 mt-2.5 text-sm leading-[1.5] text-[var(--lk-muted)]">
               {formStep === 1 ? t(copy.step1Sub) : t(copy.step2Sub)}
             </p>
           </div>
+          {formStep === 1 ? (
+            // What the visitor gets back, so the two fields feel worth filling.
+            <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-2 p-0">
+              {FORM_META.gets.map((g) => (
+                <li key={g.en} className="inline-flex items-center gap-1.5 text-[13px] leading-[1.4] text-[var(--lk-ink-2)]">
+                  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="size-4 shrink-0 text-[var(--lk-green)]">
+                    <circle cx="8" cy="8" r="7" fill="currentColor" fillOpacity="0.12" />
+                    <path d="M5 8.2l2 2 4-4.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {t(g)}
+                </li>
+              ))}
+            </ul>
+          ) : null}
 
           <div className={`lk-form ${formStep === 1 ? 'block' : 'hidden'}`}>
             <AuditLpForm
@@ -103,7 +156,7 @@ export default function LeakCalcPanel({
               onInvalid={() => flow.setFormStep(1)}
               legalTargetId={LEGAL_SLOT_ID}
               submitTargetId={SUBMIT_SLOT_ID}
-              submitClassName="lk-btn-primary flex w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] px-6 text-[15px] font-medium disabled:cursor-wait"
+              submitClassName="lk-btn-red flex w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] px-6 text-[15px] font-medium disabled:cursor-wait"
               onSubmitted={(submitted) => {
                 flow.setRevenue(submitted.calcRevenue ?? null)
                 flow.setClients(submitted.calcClients ?? null)
@@ -128,12 +181,12 @@ export default function LeakCalcPanel({
                   }
                 }}
                 className={`group flex w-full cursor-pointer items-center justify-between gap-3 rounded-[10px] border p-3.5 text-start transition-colors ${
-                  !skipToPercent ? 'border-[var(--lk-red)]/40 bg-[var(--lk-red)]/[0.04]' : 'border-[var(--lk-line)] bg-white hover:bg-[var(--lk-stone-50)]'
+                  !skipToPercent ? 'border-[var(--lk-ink)]/25 bg-[var(--lk-stone-50)]' : 'border-[var(--lk-line)] bg-white hover:bg-[var(--lk-stone-50)]'
                 }`}
               >
                 <span className="flex items-center gap-3">
                   <span
-                    className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${!skipToPercent ? 'bg-[var(--lk-red)]' : 'bg-[var(--lk-stone-150)]'}`}
+                    className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${!skipToPercent ? 'bg-[var(--lk-ink)]' : 'bg-[var(--lk-stone-150)]'}`}
                   >
                     <span
                       className={`absolute top-0.5 size-4 rounded-full bg-white shadow-sm transition-[inset-inline-start] duration-200 ${!skipToPercent ? 'start-[18px]' : 'start-0.5'}`}
@@ -149,7 +202,7 @@ export default function LeakCalcPanel({
                 </span>
               </button>
 
-              <div className={skipToPercent ? 'hidden' : 'block'}>
+              <div className={`lk-calc ${skipToPercent ? 'hidden' : 'block'}`}>
                 <CalcNumbers
                   locale={locale}
                   revenue={revenue}
@@ -236,7 +289,7 @@ export default function LeakCalcPanel({
       ) : null}
 
       {stage.name === 'waiting' ? (
-        <div className="flex flex-col gap-3 p-5 sm:p-7">
+        <div className="flex flex-col gap-3 p-6 sm:p-9">
           <CalcWaiting locale={locale} domain={displayDomain(stage.submitted.website)} progress={flow.progress} theme="light" />
         </div>
       ) : null}
