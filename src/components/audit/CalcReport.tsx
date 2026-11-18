@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
+import React, { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
-  auditCalcCopy as copy,
+  auditCalcCopy as baseCopy,
   fillCalc,
   formatIls,
   formatPercent,
@@ -37,6 +37,19 @@ import { hasPagespeedData, type PagespeedSnapshot } from '@/lib/pagespeedSnapsho
  * 4-segment scales, big light numerals, ring gauge, top-3 cards, flow block, accordion checks, centred CTA.
  * Colours, sizes and spacing are measured from the report (render-v2-reports.mjs); the site font is Inter only.
  */
+
+/**
+ * Copy for the calculator report. Defaults to the shared auditCalcCopy; a landing can pass its own wording
+ * (the AI audit LP avoids "loss" framing) via <CalcCopyProvider value={{ ...auditCalcCopy, ...overrides }}>.
+ */
+export type CalcCopy = typeof baseCopy
+const CalcCopyContext = createContext<CalcCopy>(baseCopy)
+export function CalcCopyProvider({ value, children }: { value: CalcCopy; children: React.ReactNode }) {
+  return <CalcCopyContext.Provider value={value}>{children}</CalcCopyContext.Provider>
+}
+function useCalcCopy(): CalcCopy {
+  return useContext(CalcCopyContext)
+}
 
 export const INK = '#0f172a'
 export const MUTE = '#64748b'
@@ -183,6 +196,7 @@ function Gauge({ fraction, label, color, size = 150 }: { fraction: number; label
 
 /** Tag row above the card, right under the logo: gold badge, outlined step / date tags, live indicator. */
 export function CalcTags({ locale, kind, step }: { locale: string; kind: 'form' | 'waiting' | 'ready'; step: 1 | 2 | 3 | 4 }) {
+  const copy = useCalcCopy()
   const [date, setDate] = useState('')
   useEffect(() => {
     setDate(new Intl.DateTimeFormat(intlTag(locale), { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date()))
@@ -536,6 +550,7 @@ export function CalcHead({
   showFacts?: boolean
   compact?: boolean
 }) {
+  const copy = useCalcCopy()
   const isForm = kind === 'form'
   const l1 = tCalc(isForm ? copy.heroL1 : kind === 'waiting' ? copy.heroWaitL1 : copy.heroReadyL1, locale)
   const l3 = tCalc(isForm ? copy.heroL3 : kind === 'waiting' ? copy.heroWaitL3 : copy.heroReadyL3, locale)
@@ -639,6 +654,7 @@ export function CalcSplit({ locale, left, right }: { locale: string; left: React
 
 /** Step tracker: done steps ink, current step red, the rest grey. */
 export function CalcStepper({ locale, current }: { locale: string; current: 1 | 2 | 3 | 4 }) {
+  const copy = useCalcCopy()
   return (
     <ol className="m-0 grid list-none grid-cols-4 gap-1.5 p-0">
       {copy.stepper.map((label, i) => {
@@ -843,6 +859,7 @@ export function CalcFormShell({
   step: 1 | 2
   children: React.ReactNode
 }) {
+  const copy = useCalcCopy()
   const isStep1 = step === 1
   const steps = [
     { id: 1, label: locale === 'he' ? 'אתר' : locale === 'ru' ? 'Сайт' : 'Site' },
@@ -918,6 +935,7 @@ export function CalcNumbers({
   theme?: 'light' | 'dark'
   disabled?: boolean
 }) {
+  const copy = useCalcCopy()
   const isDark = theme === 'dark'
   const isRtl = locale === 'he'
   const id = useId()
@@ -1056,6 +1074,7 @@ export function CalcWaiting({
   progress: CalcProgress
   theme?: 'light' | 'dark'
 }) {
+  const copy = useCalcCopy()
   const isDark = theme === 'dark'
   const stages = copy.progressStages
   const current = Math.min(stages.length - 1, Math.floor((progress.percent / 100) * stages.length))
@@ -1256,6 +1275,7 @@ function LossHero({
   scoreLevel: ScoreLabelKey
   waHref: string | null
 }) {
+  const copy = useCalcCopy()
   const money = monthly > 0
   const animated = useAnimatedNumber(money ? monthly : lostPct, 1400)
   const big = money ? formatIls(Math.round(animated / 10) * 10, locale) : `${Math.round(animated)}%`
@@ -1571,6 +1591,7 @@ const TITLE_SUB = 'm-0 ps-[14px] text-base leading-[1.5] text-[#475569] sm:ps-[1
 
 /** Where the loss goes: stages ranked from the biggest leak with lilac share bars; red only marks the biggest leak and the total. */
 function LossBreakdown({ locale, stages, monthly, total }: { locale: string; stages: FunnelStage[]; monthly: number; total: number }) {
+  const copy = useCalcCopy()
   const [shown, setShown] = useState(false)
   useEffect(() => {
     const id = requestAnimationFrame(() => setShown(true))
@@ -1725,6 +1746,7 @@ function StageIcon({ kind, stage }: { kind: 'action' | 'issue'; stage: CalcArea 
 
 /** Why it happens: the same ranked stages as the breakdown, each a card with "what the visitor does" and "where it breaks", joined by a timeline. */
 function StageTimeline({ locale, stages, biggestKey, total }: { locale: string; stages: FunnelStage[]; biggestKey: CalcArea; total: number }) {
+  const copy = useCalcCopy()
   const share = (s: FunnelStage) => (total > 0 ? Math.round((s.loss / total) * 100) : 0)
   return (
     <section className="my-2 flex flex-col gap-6 sm:my-0 sm:gap-8">
@@ -1873,6 +1895,7 @@ export function CalcResult({
   waHref: string | null
   onWaText: (text: string) => void
 }) {
+  const copy = useCalcCopy()
   const breakdown = useMemo(() => leakBreakdown(pillars), [pillars])
   const [techOpen, setTechOpen] = useState(true)
   const techId = useId()
@@ -2301,6 +2324,7 @@ function CwvPlain({ value }: { value: string | null | undefined }) {
 
 /** Same layout as the Free HTML report speed card: score pills + plain lab timings + funnel row. */
 function CwvTable({ locale, pagespeed }: { locale: string; pagespeed: PagespeedSnapshot }) {
+  const copy = useCalcCopy()
   const mobile = pagespeed.mobile
   const desktop = pagespeed.desktop
   const scoreRows: { label: string; key: 'performance' | 'accessibility' | 'bestPractices' | 'seo' }[] = [
@@ -2419,6 +2443,7 @@ function TechReport({
   approximate: boolean
   reportHref: string | null
 }) {
+  const copy = useCalcCopy()
   const [filter, setFilter] = useState<CheckFilter>('all')
   const shown = scales.filter((s) => filter === 'all' || lightFor(s.score) === filter)
   const filters: { key: CheckFilter; label: string }[] = [
@@ -2601,6 +2626,7 @@ function FixSprintHero({
   paybackDays: number | null
   waHref: string | null
 }) {
+  const copy = useCalcCopy()
   const leaking = stages.filter((s) => s.loss > 0)
   const kept = 100 - lostPct
   const upside = kept > 0 ? Math.round((lostPct / kept) * 100) : 0
@@ -2778,6 +2804,7 @@ export function CalcCta({
   showNote: boolean
   sprintPrice: number
 }) {
+  const copy = useCalcCopy()
   return (
     <>
       <section className="relative isolate flex flex-col items-center gap-4 px-[22px] py-12 text-center sm:gap-6 sm:px-8 sm:py-20 lg:px-[60px] lg:py-28">

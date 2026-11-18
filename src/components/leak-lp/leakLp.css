@@ -1,0 +1,1011 @@
+/* Premium Revenue Leak LP (/lp/audit/leak/*). Scoped under .lk-root. */
+
+/* Tokens follow the HTML audit report (samples/audit/free-*.html): neutral grays, white cards, ink, gold on dark. */
+.lk-root {
+  --lk-bg: #f3f3f3;
+  --lk-card: #fff;
+  --lk-stone-50: #f8f8f8;
+  --lk-stone-100: #eeeeee;
+  --lk-stone-150: #e3e3e3;
+  --lk-line: #e0e0e0;
+  --lk-line-2: #d6d6d6;
+  --lk-ink: #1e1e1e;
+  --lk-ink-2: #333;
+  --lk-muted: #554f42;
+  --lk-faint: #6b6254;
+  --lk-gold: #ffe9c7;
+  --lk-red: #e52421;
+  --lk-red-600: #c21d1a;
+  --lk-red-700: #9c1714;
+  --lk-dark: #1e1e1e;
+  --lk-green: #22bf16;
+  background: var(--lk-bg);
+  color: var(--lk-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Site-wide h1/h2 are uppercase; this LP uses sentence case. */
+.lk-root h1,
+.lk-root h2,
+.lk-root h3 {
+  text-transform: none;
+}
+
+/* Report type: light headings, weight comes from size, not boldness. */
+.lk-root h1 {
+  font-weight: 500;
+}
+.lk-root h2 {
+  font-weight: 400;
+}
+.lk-root h3 {
+  font-weight: 500;
+}
+.lk-root .lk-display {
+  letter-spacing: -0.035em;
+}
+.lk-root .lk-h2 {
+  letter-spacing: -0.02em;
+}
+
+/* Report labels: small uppercase, tracked. */
+.lk-label {
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lk-faint);
+}
+.lk-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--lk-line-2);
+  border-radius: 4px;
+  background: #fff;
+  padding: 3px 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lk-ink);
+}
+.lk-badge-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--lk-ink);
+  border-radius: 4px;
+  background: var(--lk-ink);
+  padding: 3px 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lk-gold);
+}
+.lk-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--lk-line-2);
+  border-radius: 999px;
+  background: #fff;
+  padding: 7px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--lk-ink);
+}
+.lk-root[dir='rtl'] .lk-label,
+.lk-root[dir='rtl'] .lk-tag,
+.lk-root[dir='rtl'] .lk-badge-dark {
+  letter-spacing: 0;
+}
+/* Pill segmented control (language, window view): report filter style. */
+.lk-seg {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--lk-line-2);
+  border-radius: 999px;
+  background: #fff;
+  padding: 2px;
+}
+.lk-seg > * {
+  border-radius: 999px !important;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.lk-card {
+  border: 1px solid var(--lk-line);
+  border-radius: 10px;
+  background: var(--lk-card);
+}
+.lk-root[dir='rtl'] .lk-display,
+.lk-root[dir='rtl'] .lk-h2 {
+  letter-spacing: -0.01em;
+}
+
+/* Report buttons: pill, 1px ink border, 14px semibold. Primary is ink; red is reserved for narrow accents. */
+.lk-btn-primary,
+.lk-btn-secondary,
+.lk-btn-dark {
+  border-radius: 999px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+}
+.lk-btn-primary {
+  background: var(--lk-ink);
+  border: 1px solid var(--lk-ink);
+  color: #fff;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+.lk-btn-primary:hover {
+  background: #000;
+  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.5);
+}
+/* Main form CTA: red, with a red glow on hover. */
+.lk-btn-red {
+  border-radius: 999px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+  background: var(--lk-red);
+  border: 1px solid var(--lk-red);
+  color: #fff;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.25s ease;
+}
+.lk-btn-red:hover {
+  box-shadow: 0 10px 28px -8px rgba(229, 36, 33, 0.55);
+}
+.lk-btn-red:active {
+  transform: translateY(1px) scale(0.99);
+}
+.lk-btn-red:focus-visible {
+  outline: 2px solid var(--lk-red);
+  outline-offset: 2px;
+}
+.lk-btn-primary:active {
+  transform: translateY(1px) scale(0.99);
+}
+.lk-btn-primary:focus-visible,
+.lk-btn-secondary:focus-visible {
+  outline: 2px solid var(--lk-ink);
+  outline-offset: 2px;
+}
+.lk-btn-dark:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.lk-btn-secondary {
+  background: #fff;
+  border: 1px solid var(--lk-ink);
+  color: var(--lk-ink);
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+.lk-btn-secondary:hover {
+  background: var(--lk-stone-50);
+}
+.lk-btn-secondary:active {
+  transform: translateY(1px);
+}
+.lk-btn-dark {
+  background: #fff;
+  color: var(--lk-ink);
+  border: 1px solid #fff;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
+}
+.lk-btn-dark:hover {
+  background: var(--lk-gold);
+  border-color: var(--lk-gold);
+}
+
+/* Section headings (non-H1): 1px bar, full text height. */
+.lk-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 28px;
+}
+/* Drawn as a border, not a fixed-width box: borders snap to whole device pixels, so the line stays crisp at fractional zoom. */
+.lk-bar::before {
+  content: '';
+  display: block;
+  width: 0;
+  flex-shrink: 0;
+  border-left: 2px solid var(--lk-red);
+}
+
+/* Halftone dot matrix on the red panel. */
+.lk-dither {
+  background-color: var(--lk-red);
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.22) 1px, transparent 1.2px),
+    radial-gradient(120% 80% at 0% 100%, rgba(255, 140, 110, 0.55), transparent 60%);
+  background-size:
+    8px 8px,
+    100% 100%;
+}
+.lk-dots-dark {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1.2px);
+  background-size: 10px 10px;
+}
+.lk-dashed-v {
+  background-image: linear-gradient(to bottom, var(--lk-line) 50%, transparent 50%);
+  background-size: 1px 8px;
+  background-repeat: repeat-y;
+  width: 1px;
+}
+
+/* Reveal on scroll. */
+.lk-reveal {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.lk-reveal[data-in] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hero entrance (staggered). */
+@keyframes lk-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+.lk-rise {
+  animation: lk-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Rotating engine name. */
+@keyframes lk-swap {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 60%, 0);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+.lk-swap {
+  animation: lk-swap 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Tab progress line. */
+@keyframes lk-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.lk-tab-progress {
+  transform-origin: left;
+  animation: lk-progress linear both;
+}
+.lk-root[dir='rtl'] .lk-tab-progress {
+  transform-origin: right;
+}
+
+/* Chart line draw. */
+.lk-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.3, 0.6, 0.2, 1);
+}
+.lk-draw[data-in] {
+  stroke-dashoffset: 0;
+}
+.lk-fade-area {
+  opacity: 0;
+  transition: opacity 1s ease 0.6s;
+}
+.lk-fade-area[data-in] {
+  opacity: 1;
+}
+
+/* Bars grow. */
+.lk-bar-grow {
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.lk-bar-grow[data-in] {
+  transform: scaleY(1);
+}
+
+/* Panel swap in the product window. */
+@keyframes lk-panel {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lk-panel {
+  animation: lk-panel 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Typing caret. */
+@keyframes lk-caret {
+  50% {
+    opacity: 0;
+  }
+}
+.lk-caret {
+  animation: lk-caret 1s step-end infinite;
+}
+
+/* Live dot. */
+@keyframes lk-ping {
+  75%,
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+.lk-ping {
+  animation: lk-ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Form inside the product window: pill fields like the report's pill buttons, ink focus. */
+.lk-form input,
+.lk-form select {
+  font-size: 15px;
+}
+.lk-form .audit-pill-shell {
+  border-radius: 999px !important;
+  border-color: var(--lk-line-2);
+  box-shadow: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.lk-form .audit-pill-shell:hover {
+  border-color: #b5b5b5;
+}
+.lk-form .audit-pill-shell:focus-within {
+  border-color: var(--lk-ink);
+  box-shadow: 0 0 0 3px rgba(30, 30, 30, 0.08);
+}
+.lk-form .audit-pill-shell.border-erythro-500 {
+  border-color: var(--lk-red);
+}
+.lk-form .audit-pill-shell input {
+  height: 46.5px;
+}
+.lk-root ::selection {
+  background: rgba(255, 233, 199, 0.9);
+}
+/* Step 2 sliders: ink thumb instead of red. */
+.lk-calc input[type='range']::-webkit-slider-thumb {
+  background: var(--lk-ink) !important;
+  box-shadow: 0 1px 4px rgba(28, 25, 23, 0.35) !important;
+}
+.lk-calc input[type='range']::-moz-range-thumb {
+  background: var(--lk-ink) !important;
+}
+
+/* Final CTA stage: drifting grid, scanning light, query feed. Loops run only while visible. */
+@keyframes lk-marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@keyframes lk-grid-drift {
+  to {
+    background-position: 10px 10px;
+  }
+}
+@keyframes lk-scan {
+  from {
+    transform: translate3d(-120%, 0, 0);
+  }
+  to {
+    transform: translate3d(320%, 0, 0);
+  }
+}
+.lk-marquee {
+  animation: lk-marquee 48s linear infinite;
+}
+.lk-marquee-rev {
+  animation-direction: reverse;
+  animation-duration: 56s;
+}
+.lk-feed {
+  overflow: hidden;
+}
+.lk-feed > :nth-child(2) {
+  margin-left: -180px;
+}
+.lk-feed:last-child .lk-marquee {
+  animation-duration: 64s;
+}
+.lk-grid-drift {
+  animation: lk-grid-drift 3s linear infinite;
+}
+.lk-scan {
+  left: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07) 50%, transparent);
+  animation: lk-scan 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+.lk-feed {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+}
+.lk-stage .lk-marquee,
+.lk-stage .lk-grad-move,
+.lk-stage .lk-scan {
+  animation-play-state: paused;
+}
+.lk-stage[data-play] .lk-marquee,
+.lk-stage[data-play] .lk-grad-move,
+.lk-stage[data-play] .lk-scan {
+  animation-play-state: running;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lk-reveal,
+  .lk-rise,
+  .lk-swap,
+  .lk-panel,
+  .lk-draw,
+  .lk-fade-area,
+  .lk-bar-grow {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+  .lk-tab-progress,
+  .lk-ping,
+  .lk-caret,
+  .lk-marquee,
+  .lk-grad-move,
+  .lk-scan {
+    animation: none !important;
+  }
+}
+
+/* Tools graph ("Measured with"): dashes flow into the site node, halo breathes, gold scan sweeps it. */
+@keyframes lk-wire {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+@keyframes lk-halo {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes lk-center-scan {
+  from {
+    transform: translateX(-40%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+@keyframes lk-svg-ping {
+  from {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+.lk-wire {
+  animation: lk-wire 1.6s linear infinite;
+}
+.lk-halo {
+  animation: lk-halo 3.2s ease-in-out infinite;
+}
+.lk-svg-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lk-svg-ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.lk-graph .lk-wire,
+.lk-graph .lk-halo,
+.lk-graph .lk-center-scan,
+.lk-graph .lk-svg-ping {
+  animation-play-state: paused;
+}
+.lk-graph[data-play] .lk-wire,
+.lk-graph[data-play] .lk-halo,
+.lk-graph[data-play] .lk-center-scan,
+.lk-graph[data-play] .lk-svg-ping {
+  animation-play-state: running;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-wire,
+  .lk-halo,
+  .lk-center-scan,
+  .lk-svg-ping {
+    animation: none !important;
+  }
+  .lk-center-scan,
+  .lk-svg-ping {
+    display: none;
+  }
+}
+
+/* Hero: rotating engine name on a red pill. Fixed width (longest name), cross-fade only. */
+.lk-engine {
+  display: inline-grid;
+  overflow: hidden;
+  vertical-align: baseline;
+  margin-inline: 0.1em;
+  padding: 0 0.5em;
+  border-radius: 3px;
+  background: var(--lk-red);
+  color: #fff;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.lk-engine-sizer {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+  visibility: hidden;
+}
+/* Letters roll inside the pill; the pill clips them. */
+.lk-engine-roll {
+  grid-area: 1 / 1;
+  justify-self: center;
+  display: inline-flex;
+  white-space: nowrap;
+}
+.lk-engine-ch {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* Dark surfaces: soft gradient (gold light top-left, faint red bottom-right) instead of dot grids. */
+.lk-grad-dark {
+  background-color: var(--lk-dark);
+  background-image:
+    radial-gradient(70% 90% at 0% 0%, rgba(255, 233, 199, 0.16), transparent 60%),
+    radial-gradient(60% 80% at 100% 100%, rgba(229, 36, 33, 0.14), transparent 65%),
+    linear-gradient(160deg, #262626 0%, #161616 100%);
+}
+/* Final CTA: the same gradient, slowly drifting. */
+@keyframes lk-grad-move {
+  0% {
+    transform: translate3d(-4%, -3%, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(4%, 3%, 0) rotate(8deg);
+  }
+  100% {
+    transform: translate3d(-4%, -3%, 0) rotate(0deg);
+  }
+}
+.lk-grad-move {
+  background-color: var(--lk-dark);
+  background-image:
+    radial-gradient(40% 55% at 22% 30%, rgba(255, 233, 199, 0.22), transparent 70%),
+    radial-gradient(35% 50% at 80% 70%, rgba(229, 36, 33, 0.2), transparent 70%),
+    radial-gradient(30% 40% at 60% 15%, rgba(255, 255, 255, 0.07), transparent 70%),
+    linear-gradient(160deg, #262626 0%, #141414 100%);
+  animation: lk-grad-move 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Tools graph cloud: edges flicker in sequence, a few nodes pulse, glow breathes. */
+@keyframes lk-edge {
+  0%,
+  100% {
+    stroke-opacity: 0.14;
+  }
+  40% {
+    stroke-opacity: 0.6;
+  }
+}
+@keyframes lk-cloud-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.7);
+    opacity: 0.55;
+  }
+}
+@keyframes lk-cloud-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.lk-edge {
+  stroke-opacity: 0.18;
+  animation: lk-edge 4.2s ease-in-out infinite;
+}
+.lk-cloud-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lk-cloud-pulse 2.8s ease-in-out infinite;
+}
+.lk-cloud-glow {
+  animation: lk-cloud-glow 5s ease-in-out infinite;
+}
+.lk-graph .lk-edge,
+.lk-graph .lk-cloud-pulse,
+.lk-graph .lk-cloud-glow {
+  animation-play-state: paused;
+}
+.lk-graph[data-play] .lk-edge,
+.lk-graph[data-play] .lk-cloud-pulse,
+.lk-graph[data-play] .lk-cloud-glow {
+  animation-play-state: running;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-edge,
+  .lk-cloud-pulse,
+  .lk-cloud-glow,
+  .lk-grad-move {
+    animation: none !important;
+  }
+}
+/* Tools graph: activity meters on tool cards and the live counter dot. */
+@keyframes lk-eq {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+@keyframes lk-live {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.lk-graph .lk-eq rect {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  transform: scaleY(0.6);
+  animation: lk-eq 1.3s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.lk-graph .lk-live {
+  animation: lk-live 1.6s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.lk-graph[data-play] .lk-eq rect,
+.lk-graph[data-play] .lk-live {
+  animation-play-state: running;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-graph .lk-eq rect,
+  .lk-graph .lk-live {
+    animation: none;
+  }
+}
+/* Card outlines in the tools graph: exactly one device pixel, independent of the SVG's scale. */
+.lk-graph .lk-hair {
+  vector-effect: non-scaling-stroke;
+  stroke-width: var(--lk-hair, 1px);
+}
+
+/* "How it works": links between step numbers, with a red pulse running from one step to the next. */
+.lk-step-link {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.1));
+}
+.lk-root[dir='rtl'] .lk-step-link {
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.1));
+}
+.lk-step-link-v,
+.lk-root[dir='rtl'] .lk-step-link-v {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.1));
+}
+.lk-step-run {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 0;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 999px;
+  background: var(--lk-red);
+  box-shadow: 0 0 0 3px rgba(229, 36, 33, 0.18);
+  opacity: 0;
+  animation: lk-step-run 2.8s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+.lk-step-link-v .lk-step-run {
+  top: 0;
+  inset-inline-start: 50%;
+  margin-top: 0;
+  margin-inline-start: -3px;
+  animation-name: lk-step-run-v;
+}
+@keyframes lk-step-run {
+  0% {
+    inset-inline-start: 0;
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    inset-inline-start: calc(100% - 10px);
+    opacity: 0;
+  }
+}
+@keyframes lk-step-run-v {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    top: calc(100% - 10px);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-step-run {
+    display: none;
+  }
+}
+
+/* Stacked sections: each one is a full-screen sticky layer; the next slides over it and docks under the header. */
+.lk-stack {
+  position: sticky;
+  top: var(--lk-head, 72px);
+  min-height: calc(100svh - var(--lk-head, 72px));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  scroll-snap-align: start;
+}
+.lk-stack + .lk-stack {
+  box-shadow: 0 -18px 40px -24px rgba(30, 30, 30, 0.22);
+}
+/* Taller than the screen: no sticking (it would have to slide under the header); scrolls like a normal block. */
+.lk-stack[data-tall] {
+  position: relative;
+  top: auto;
+}
+/* The footer is its own snap point, so reaching the end of the page doesn't snap back to the last section. */
+.lk-root footer {
+  scroll-snap-align: end;
+}
+/* Hold: after a section docks it stays fully visible for a stretch of scrolling before the next one starts to slide over.
+   The empty margin scrolls "behind" the stuck section. Not on tall sections (they scroll normally) or the last one. */
+.lk-stack:not([data-tall]):not(:last-of-type) {
+  margin-bottom: 40svh;
+}
+
+/* Inner containers use mx-auto + max-width; in a flex column that would shrink them to their content.
+   Full width keeps every section's content area identical (1200px minus side padding). */
+.lk-stack > * {
+  width: 100%;
+}
+
+/* Side scroll control (as on the main site): 9px tracked caps, 1px track, red beacon running down. Light text over dark blocks. */
+.lk-side {
+  --side-ink: rgba(30, 30, 30, 0.62);
+  --side-soft: rgba(30, 30, 30, 0.32);
+  --side-track: rgba(30, 30, 30, 0.16);
+  transition: color 0.3s ease;
+}
+.lk-side[data-dark] {
+  --side-ink: rgba(255, 255, 255, 0.85);
+  --side-soft: rgba(255, 233, 199, 0.55);
+  --side-track: rgba(255, 255, 255, 0.2);
+}
+.lk-side-word {
+  cursor: pointer;
+  color: var(--side-ink, rgba(30, 30, 30, 0.62));
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  transition: color 0.3s ease;
+}
+.lk-side-word:hover,
+.lk-side-word:focus-visible {
+  color: var(--lk-red);
+  outline: none;
+}
+.lk-side-word-h {
+  writing-mode: horizontal-tb;
+  transform: none;
+}
+.lk-side-num {
+  color: var(--side-ink);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  font-variant-numeric: tabular-nums;
+}
+.lk-side-num-muted {
+  color: var(--side-soft);
+}
+.lk-side-track {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 64px;
+  overflow: hidden;
+  background: var(--side-track, rgba(30, 30, 30, 0.16));
+}
+.lk-side-beacon {
+  position: absolute;
+  inset: 0;
+  background: var(--lk-red);
+  animation: lk-side-beacon 2.4s ease infinite;
+}
+@keyframes lk-side-beacon {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+/* Mobile cue: word + short track, centred at the bottom of the first screen. */
+.lk-scroll-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transform: translateX(-50%);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+.lk-scroll-hint .lk-side-track {
+  height: 36px;
+}
+.lk-scroll-hint[data-hide] {
+  opacity: 0;
+  transform: translate(-50%, 10px);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-side-beacon {
+    animation: none;
+    opacity: 0.55;
+  }
+}
+
+/* Final CTA right panel: query cards gently floating over the live graph; soft fade at the edge next to the copy. */
+@keyframes lk-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+.lk-float {
+  animation: lk-float 5.5s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.lk-stage[data-play] .lk-float {
+  animation-play-state: running;
+}
+.lk-net {
+  mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 100%);
+}
+@media (max-width: 1023px) {
+  .lk-net {
+    mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-float {
+    animation: none;
+  }
+}
+@media (min-width: 1024px) {
+  .lk-root[dir='rtl'] .lk-net {
+    mask-image: linear-gradient(to left, transparent 0, #000 12%, #000 100%);
+  }
+}
+
+/* FAQ accordion: height animates via grid rows (0fr → 1fr), answer fades and slides in. */
+.lk-acc {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.4s ease;
+}
+.lk-acc[data-open] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.lk-acc > div {
+  min-height: 0;
+}
+.lk-acc p {
+  transform: translateY(-4px);
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lk-acc[data-open] p {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-acc,
+  .lk-acc p {
+    transition: none;
+  }
+}
+
+/* Outline button: white with an ink border; fills ink on hover. */
+.lk-btn-outline {
+  border: 1px solid var(--lk-ink);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--lk-ink);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+.lk-btn-outline:hover {
+  background: var(--lk-ink);
+  color: #fff;
+}
+.lk-btn-outline:focus-visible {
+  outline: 2px solid var(--lk-ink);
+  outline-offset: 2px;
+}
