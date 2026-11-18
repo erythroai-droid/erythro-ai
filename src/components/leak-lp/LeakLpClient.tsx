@@ -6,7 +6,7 @@ import { useBackdropContrast } from '@/hooks/useBackdropContrast'
 import CookieConsent from '@/components/CookieConsent'
 import WhatsAppButton from '@/components/WhatsAppButton'
 import { SiteContentProvider, useSiteContent } from '@/components/SiteContentProvider'
-import { CalcCopyProvider, CalcResult } from '@/components/audit/CalcReport'
+import { CalcCopyProvider, CalcPaletteProvider, CalcResult, type CalcPalette } from '@/components/audit/CalcReport'
 import { leakResultCopy } from '@/lib/leakResultCopy'
 import { displayDomain } from '@/components/audit/AuditCalcFlow'
 import LeakCalcPanel from '@/components/leak-lp/LeakCalcPanel'
@@ -20,6 +20,12 @@ import { AUDIT_LP_LOCALES, buildLeakCalcSampleReportUrl, mainSiteUrl, type Audit
 import { tCalc, type Localized } from '@/lib/auditCalcCopy'
 import { leakLpCopy as c } from '@/lib/leakLpCopy'
 import './leakLp.css'
+
+// Report accents in the landing palette: ink instead of lilac, the brand red instead of coral.
+const LK_REPORT_PALETTE: CalcPalette = {
+  lilac: { deep: '#1e1e1e', base: '#1e1e1e', mid: '#1e1e1e', soft: '#eeeeee', wash: '#f8f8f8', ring: '#e0e0e0' },
+  coral: '#e52421',
+}
 
 const ENGINES = ['ChatGPT', 'Perplexity', 'Gemini', 'Google']
 const WINDOW_ID = 'lk-window'
@@ -340,7 +346,7 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
     return (
       <>
         {header}
-        <main className="mx-auto w-full max-w-[1440px] px-4 pb-14 pt-6 sm:px-8 lg:px-12">
+        <main className="lk-result mx-auto w-full max-w-[1440px] px-4 pb-14 pt-6 sm:px-8 lg:px-12">
           <CalcResult
             locale={locale}
             domain={displayDomain(stage.submitted.website)}
@@ -595,6 +601,12 @@ export default function LeakLpClient({
     document.documentElement.dir = isHebrew ? 'rtl' : 'ltr'
   }, [locale, isHebrew])
 
+  // Marks <html> while this landing is open, for report elements portalled to <body> (outside .lk-root).
+  useEffect(() => {
+    document.documentElement.setAttribute('data-lk', '')
+    return () => document.documentElement.removeAttribute('data-lk')
+  }, [])
+
   const font = isHebrew
     ? 'var(--font-heebo), "Heebo", system-ui, sans-serif'
     : 'var(--font-inter), var(--font-inter-cyrillic), "Inter", system-ui, sans-serif'
@@ -609,7 +621,9 @@ export default function LeakLpClient({
       >
         {/* Audit wording for the shared report (result + waiting screens) on this landing only. */}
         <CalcCopyProvider value={leakResultCopy}>
-          <LeakLpInner locale={locale} page={auditPageContent} />
+          <CalcPaletteProvider value={LK_REPORT_PALETTE}>
+            <LeakLpInner locale={locale} page={auditPageContent} />
+          </CalcPaletteProvider>
         </CalcCopyProvider>
         <WhatsAppButton
           alwaysVisible

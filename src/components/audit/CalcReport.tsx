@@ -1276,6 +1276,7 @@ function LossHero({
   waHref: string | null
 }) {
   const copy = useCalcCopy()
+  const { lilac: LILAC, coral: CORAL } = useCalcPalette()
   const money = monthly > 0
   const animated = useAnimatedNumber(money ? monthly : lostPct, 1400)
   const big = money ? formatIls(Math.round(animated / 10) * 10, locale) : `${Math.round(animated)}%`
@@ -1574,6 +1575,19 @@ const CORAL = '#ff4542'
 /* Lilac from the loss panel, reused as the report's second brand colour below it. */
 export const LILAC = { deep: '#3d2c66', base: '#54408a', mid: '#8b74c7', soft: '#f1edfa', wash: '#f9f7fd', ring: '#d6cfe6' } as const
 
+/**
+ * Accent palette of the report. Defaults to lilac + coral; a landing with its own look (the AI audit LP)
+ * passes an ink/stone palette via <CalcPaletteProvider>. Components shadow LILAC / CORAL with the context value.
+ */
+export type CalcPalette = { lilac: { deep: string; base: string; mid: string; soft: string; wash: string; ring: string }; coral: string }
+const CalcPaletteContext = createContext<CalcPalette>({ lilac: LILAC, coral: CORAL })
+export function CalcPaletteProvider({ value, children }: { value: CalcPalette; children: React.ReactNode }) {
+  return <CalcPaletteContext.Provider value={value}>{children}</CalcPaletteContext.Provider>
+}
+function useCalcPalette(): CalcPalette {
+  return useContext(CalcPaletteContext)
+}
+
 /** Smooth in-page jump to an element id (instant when the visitor prefers reduced motion). */
 function scrollToId(e: React.MouseEvent, id: string) {
   const el = document.getElementById(id)
@@ -1592,6 +1606,7 @@ const TITLE_SUB = 'm-0 ps-[14px] text-base leading-[1.5] text-[#475569] sm:ps-[1
 /** Where the loss goes: stages ranked from the biggest leak with lilac share bars; red only marks the biggest leak and the total. */
 function LossBreakdown({ locale, stages, monthly, total }: { locale: string; stages: FunnelStage[]; monthly: number; total: number }) {
   const copy = useCalcCopy()
+  const { lilac: LILAC, coral: CORAL } = useCalcPalette()
   const [shown, setShown] = useState(false)
   useEffect(() => {
     const id = requestAnimationFrame(() => setShown(true))
@@ -1747,6 +1762,7 @@ function StageIcon({ kind, stage }: { kind: 'action' | 'issue'; stage: CalcArea 
 /** Why it happens: the same ranked stages as the breakdown, each a card with "what the visitor does" and "where it breaks", joined by a timeline. */
 function StageTimeline({ locale, stages, biggestKey, total }: { locale: string; stages: FunnelStage[]; biggestKey: CalcArea; total: number }) {
   const copy = useCalcCopy()
+  const { lilac: LILAC, coral: CORAL } = useCalcPalette()
   const share = (s: FunnelStage) => (total > 0 ? Math.round((s.loss / total) * 100) : 0)
   return (
     <section className="my-2 flex flex-col gap-6 sm:my-0 sm:gap-8">
@@ -1896,6 +1912,7 @@ export function CalcResult({
   onWaText: (text: string) => void
 }) {
   const copy = useCalcCopy()
+  const { lilac: LILAC, coral: CORAL } = useCalcPalette()
   const breakdown = useMemo(() => leakBreakdown(pillars), [pillars])
   const [techOpen, setTechOpen] = useState(true)
   const techId = useId()
@@ -2444,6 +2461,7 @@ function TechReport({
   reportHref: string | null
 }) {
   const copy = useCalcCopy()
+  const { lilac: LILAC, coral: CORAL } = useCalcPalette()
   const [filter, setFilter] = useState<CheckFilter>('all')
   const shown = scales.filter((s) => filter === 'all' || lightFor(s.score) === filter)
   const filters: { key: CheckFilter; label: string }[] = [
@@ -2627,6 +2645,7 @@ function FixSprintHero({
   waHref: string | null
 }) {
   const copy = useCalcCopy()
+  const { lilac: LILAC, coral: CORAL } = useCalcPalette()
   const leaking = stages.filter((s) => s.loss > 0)
   const kept = 100 - lostPct
   const upside = kept > 0 ? Math.round((lostPct / kept) * 100) : 0

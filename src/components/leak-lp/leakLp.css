@@ -1009,3 +1009,385 @@
   outline: 2px solid var(--lk-ink);
   outline-offset: 2px;
 }
+
+/* ===== Result screen (shared CalcReport) in the landing style — scoped to .lk-root, the calc LP is untouched ===== */
+/* No dark panels on this landing: the report's two dark panels become light (page background, ink text). */
+.lk-root .calc-loss-flow,
+.lk-root .calc-fix-flow {
+  background: var(--lk-bg) !important;
+  color: var(--lk-ink) !important;
+  animation: none !important;
+}
+.lk-root .calc-loss-flow .calc-lq-blob,
+.lk-root .calc-fix-flow .calc-lq-blob,
+.lk-root .calc-loss-flow [class~='from-[#150f26]/10'] {
+  display: none;
+}
+/* Invert the white-on-dark utilities, except on red buttons / badges (their white text stays).
+   Attribute selectors ([class~=…]) avoid escaping Tailwind's brackets and slashes. */
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) .text-white:not([class*='bg-[#e52421]'], [class*='bg-[#d11d1a]'], [class*='bg-[#ff4542]']) {
+  color: var(--lk-ink) !important;
+}
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) :is([class*='bg-[#e52421]'], [class*='bg-[#d11d1a]'], [class*='bg-[#ff4542]']) .text-white {
+  color: #fff !important;
+}
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) :is([class~='text-white/80'], [class~='text-white/75'], [class~='text-white/70']) {
+  color: var(--lk-muted) !important;
+}
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) :is([class~='text-white/65'], [class~='text-white/60'], [class~='text-white/55']) {
+  color: var(--lk-faint) !important;
+}
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) :is([class~='bg-white/10'], [class~='bg-white/[0.06]'], [class~='bg-white/[0.07]'], [class~='bg-white/[0.08]']) {
+  background-color: #fff !important;
+}
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) [class*='border-white/'] {
+  border-color: var(--lk-line) !important;
+}
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) [class~='text-[#ff6b68]'] {
+  color: var(--lk-red) !important;
+}
+.lk-root .calc-tech-flow {
+  background: var(--lk-bg) !important;
+}
+/* Headlines: the landing's display type, not all-caps black. */
+.lk-root .calc-loss-flow h1 span,
+.lk-root .calc-fix-flow h2 span {
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+/* Inter only (no mono badges). */
+.lk-root .font-mono {
+  font-family: inherit !important;
+}
+/* Radii as on the landing. */
+.lk-root .rounded-\[16px\],
+.lk-root .rounded-\[14px\],
+.lk-root .rounded-\[12px\] {
+  border-radius: 10px !important;
+}
+/* Lilac / indigo utility colours → ink and stone. */
+.lk-root .bg-\[\#4840bb\],
+.lk-root .bg-\[\#8b74c7\] {
+  background-color: var(--lk-ink) !important;
+}
+.lk-root .bg-\[\#4840bb\]\/10,
+.lk-root .bg-\[\#f1edfa\] {
+  background-color: var(--lk-stone-100) !important;
+}
+.lk-root .bg-\[\#8b74c7\]\/25 {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+.lk-root .hover\:bg-\[\#54408a\]:hover {
+  background-color: #000 !important;
+}
+.lk-root .border-\[\#4840bb\],
+.lk-root .border-\[\#4840bb\]\/35,
+.lk-root .hover\:border-\[\#54408a\]:hover {
+  border-color: var(--lk-ink) !important;
+}
+.lk-root .border-\[\#d6cfe6\] {
+  border-color: var(--lk-line) !important;
+}
+.lk-root .border-\[\#c4b5fd\]\/50 {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+.lk-root .border-s-\[\#8b74c7\] {
+  border-inline-start-color: var(--lk-line) !important;
+}
+.lk-root .border-t-\[\#4840bb\] {
+  border-top-color: var(--lk-ink) !important;
+}
+.lk-root .ring-\[\#4840bb\]\/20 {
+  --tw-ring-color: rgba(30, 30, 30, 0.15) !important;
+}
+.lk-root .text-\[\#3d2c66\],
+.lk-root .text-\[\#4840bb\],
+.lk-root .text-\[\#54408a\],
+.lk-root .text-\[\#8b74c7\] {
+  color: var(--lk-ink) !important;
+}
+.lk-root .text-\[\#c4b5fd\] {
+  color: var(--lk-gold) !important;
+}
+/* Offer cards: indigo glass (inline GAIN.soft) → white cards with a hairline on the light panel. */
+.lk-root .calc-fix-flow [style*='rgba(20, 18, 60'] {
+  background: #fff !important;
+  box-shadow: inset 0 0 0 1px var(--lk-line) !important;
+}
+/* Inline colours in the (now light) offer panel: white figures → ink, mint gains → a green readable on white. */
+.lk-root .calc-fix-flow [style*='color: rgb(255, 255, 255)'] {
+  color: var(--lk-ink) !important;
+}
+.lk-root :is(.calc-fix-flow, .calc-loss-flow) [style*='color: rgb(134, 239, 172)'] {
+  color: #1d7a12 !important;
+}
+/* "Total" bar of the breakdown (inline lilac gradient, ink with this palette) → a light card, no dark block. */
+.lk-root [style*='linear-gradient(120deg, rgb(30, 30, 30)'] {
+  background: #fff !important;
+  box-shadow: inset 0 0 0 1px var(--lk-line) !important;
+  color: var(--lk-ink) !important;
+}
+.lk-root [style*='linear-gradient(120deg, rgb(30, 30, 30)'] :is(.text-white, [class*='text-white/']) {
+  color: var(--lk-ink) !important;
+}
+
+/* ===== Result screen: no black plates, red only for the two main CTAs and tiny markers (calm, not "critical") ===== */
+/* Red and dark plates (badges, number circles, icon squares, the priority pill, filter chip) → light stone, ink text. */
+.lk-result :is(span, b, i, div, button, a):is(
+    [class*='bg-[#e52421]'], [class*='bg-[#ff4542]'], [class*='bg-[#d11d1a]'],
+    [class*='bg-[#0f172a]'], [class*='bg-[#1e1e1e]'], [class~='bg-black'],
+    [style*='background: rgb(229, 36, 33)'], [style*='background: rgb(255, 69, 66)'], [style*='background: rgb(209, 29, 26)'],
+    [style*='background: rgb(30, 30, 30)'], [style*='background: rgb(15, 23, 42)'], [style*='background-color: rgb(30, 30, 30)']
+  ):not(a[class*='rounded-full'][class*='px-6'], a[class*='rounded-full'][class*='px-7'], [class~='size-1.5'], [class~='w-[2px]'], [class*='w-[2px]']) {
+  background: var(--lk-stone-100) !important;
+  background-color: var(--lk-stone-100) !important;
+  color: var(--lk-ink) !important;
+  border-color: var(--lk-line) !important;
+  box-shadow: none !important;
+}
+.lk-result :is(span, b, i, div, button, a):is(
+    [class*='bg-[#e52421]'], [class*='bg-[#ff4542]'], [class*='bg-[#d11d1a]'],
+    [class*='bg-[#0f172a]'], [class*='bg-[#1e1e1e]'], [class~='bg-black'],
+    [style*='background: rgb(229, 36, 33)'], [style*='background: rgb(255, 69, 66)'], [style*='background: rgb(209, 29, 26)'],
+    [style*='background: rgb(30, 30, 30)'], [style*='background: rgb(15, 23, 42)']
+  ):not(a[class*='rounded-full'][class*='px-6'], a[class*='rounded-full'][class*='px-7']) :is(*, svg) {
+  color: var(--lk-ink) !important;
+}
+/* Thin progress bars: muted, not red/black. */
+.lk-result [class*='h-full'][class*='rounded-full']:is([class*='bg-[#ff4542]'], [class*='bg-[#e52421]'], [style*='background: rgb(30, 30, 30)'], [style*='background: rgb(229, 36, 33)']),
+.lk-result [class*='h-full'][class*='bg-[#ff4542]'] {
+  background: var(--lk-faint) !important;
+}
+/* Numbers, deltas, "critical" labels and the red headline line → ink. */
+.lk-result :is(bdi, [class~='text-[#e52421]'], [class~='text-[#ff4542]'], [class~='text-[#d11d1a]'], [class*='text-[#e52421]'], [class*='text-[#ff4542]']),
+.lk-result [style*='color: rgb(229, 36, 33)'],
+.lk-result [style*='color: rgb(255, 69, 66)'] {
+  color: var(--lk-ink) !important;
+}
+/* Gauge ring and its legend square: ink instead of red. */
+.lk-result svg :is([stroke='#e52421'], [stroke='#ff4542'], [stroke='#d11d1a']) {
+  stroke: var(--lk-ink) !important;
+}
+.lk-result i[class*='size-2.5'][class*='bg-[#ff4542]'] {
+  background: var(--lk-ink) !important;
+}
+/* "Открыть отчёт Free" and the active filter chip: outline buttons, not black plates. */
+.lk-result a[class*='max-w-md'][class*='min-h-14'],
+.lk-result button[class*='rounded-full'][class*='border'][class*='text-xs'] {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  border: 1px solid var(--lk-ink) !important;
+}
+/* "/ 100" next to scores: readable secondary text. */
+.lk-result [class*='text-[#94a3b8]'] {
+  color: var(--lk-faint) !important;
+}
+/* Report's floating "scroll down" button is portalled to <body>: calm white circle instead of a glowing red one. */
+html[data-lk] [class*='bottom-[4.5rem]'][class*='bg-[#e52421]'] {
+  background: #fff !important;
+  color: #1e1e1e !important; /* literal: the button is portalled outside .lk-root, where the tokens are undefined */
+  border: 1px solid #e0e0e0 !important;
+  box-shadow: 0 6px 18px -10px rgba(30, 30, 30, 0.35) !important;
+}
+
+/* ===== Result screen in the audit-report look (erythro.ai/samples/audit/free-ru.html) =====
+   Every block is a report card: #f8f8f8, 0.75px #e0e0e0 hairline, 10px radius, 60px padding on desktop; no full-bleed panels. */
+.lk-result :is(.calc-loss-flow, .calc-fix-flow),
+.lk-result > div > section:nth-of-type(3),
+.lk-result > div > section:last-of-type {
+  width: auto !important;
+  margin-inline: 0 !important;
+  min-height: 0 !important;
+  background: #f8f8f8 !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+.lk-result .calc-tech-flow {
+  width: auto !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+.lk-result > div > section:nth-of-type(3) {
+  padding: 32px 20px;
+}
+@media (min-width: 640px) {
+  .lk-result > div > section:nth-of-type(3) {
+    padding: 40px;
+  }
+}
+@media (min-width: 1024px) {
+  .lk-result > div > section:nth-of-type(3) {
+    padding: 60px;
+  }
+}
+/* Section titles as in the report: 26px, regular weight (the red hairline before them stays). */
+.lk-result :is(#loss-breakdown, section:nth-of-type(3)) h2 {
+  font-size: 26px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  letter-spacing: -0.01em !important;
+}
+/* Hero / offer headlines and big figures: regular weight, like the report's score. */
+.lk-result :is(.calc-loss-flow, .calc-fix-flow) :is(h1, h2) span {
+  font-weight: 400 !important;
+}
+/* Closing CTA: a report-size headline instead of a 96px poster line. */
+.lk-result > div > section:last-of-type h2 {
+  font-size: clamp(30px, 4vw, 44px) !important;
+  font-weight: 400 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.02em !important;
+}
+/* Hero ring on a light card: reached-an-inquiry arc in ink, the rest light grey, no red glow; legend squares follow. */
+.lk-result .calc-loss-flow svg circle[stroke='#ff4542'] {
+  stroke: var(--lk-line-2) !important;
+  filter: none !important;
+}
+.lk-result .calc-loss-flow svg circle[stroke='#f1f5f9'] {
+  stroke: var(--lk-ink) !important;
+}
+.lk-result .calc-loss-flow i[class*='bg-[#f1f5f9]'] {
+  background: var(--lk-ink) !important;
+}
+.lk-result .calc-loss-flow i[class*='bg-[#ff4542]'] {
+  background: var(--lk-line-2) !important;
+}
+/* No glows: the hero figure had a red text-shadow. */
+.lk-result :is(.calc-loss-flow, .calc-fix-flow) :is(span, bdi, b, p) {
+  text-shadow: none !important;
+}
+/* KPI status badges (filled green / orange / red): outline tags as in the report, colour only in the text. */
+.lk-result span[class*='rounded-[4px]'][class*='uppercase'][class*='text-[11px]']:not([class*='whitespace-nowrap']) {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  color: var(--lk-muted) !important;
+}
+.lk-result span[class*='rounded-[4px]'][class*='uppercase'][class*='text-[11px]']:not([class*='whitespace-nowrap'])[style*='background: rgb(34, 191, 22)'] {
+  color: #1d7a12 !important;
+}
+.lk-result span[class*='rounded-[4px]'][class*='uppercase'][class*='text-[11px]']:not([class*='whitespace-nowrap'])[style*='background: rgb(255, 121, 0)'] {
+  color: #b45309 !important;
+}
+/* Ring as in the report gauge: thin, the "reached an inquiry" share in calm green instead of a heavy black arc. */
+.lk-result .calc-loss-flow svg circle[stroke='#ff4542'],
+.lk-result .calc-loss-flow svg circle[stroke='#f1f5f9'] {
+  stroke-width: 7px !important;
+}
+.lk-result .calc-loss-flow svg circle[stroke='#f1f5f9'] {
+  stroke: var(--lk-green) !important;
+}
+.lk-result .calc-loss-flow i[class*='bg-[#f1f5f9]'] {
+  background: var(--lk-green) !important;
+}
+/* …and no red pulsing halo behind it. */
+html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
+  display: none !important;
+}
+
+/* ===== Report colours (as in erythro.ai/samples/audit/free-ru.html): status colour in tags, bars and a 3px top stripe;
+   numbers stay ink; red only as a thin stripe / hairline, never as a filled plate or a coloured figure. ===== */
+/* Status tags of the report: "Критично" uses the sample's orange "attention" style instead of red. */
+.lk-result span[class*='whitespace-nowrap'][class*='rounded-[4px]'][class*='text-[#b91c1c]'] {
+  background: #ffe6cf !important;
+  border-color: #ff7900 !important;
+  color: #8f3f00 !important;
+}
+/* KPI tiles under the hero: white stat cards with a 3px coloured top stripe (green / gold / coral / red), like the sample's stats. */
+.lk-result .calc-loss-flow dl > div {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-top: 3px solid #10b981 !important;
+  border-radius: 10px !important;
+}
+.lk-result .calc-loss-flow dl > div:nth-child(2) {
+  border-top-color: #c99839 !important;
+}
+.lk-result .calc-loss-flow dl > div:nth-child(3) {
+  border-top-color: #e07a5f !important;
+}
+.lk-result .calc-loss-flow dl > div:nth-child(4) {
+  border-top-color: #e52421 !important;
+}
+/* KPI badges: green pill for gain, orange "attention" tag for the rest. */
+.lk-result span[class*='rounded-[4px]'][class*='uppercase'][class*='text-[11px]']:not([class*='whitespace-nowrap']) {
+  background: #ffe6cf !important;
+  border: 0.75px solid #ff7900 !important;
+  color: #8f3f00 !important;
+}
+.lk-result span[class*='rounded-[4px]'][class*='uppercase'][class*='text-[11px]']:not([class*='whitespace-nowrap'])[style*='background: rgb(34, 191, 22)'] {
+  background: #d6f5d2 !important;
+  border-color: transparent !important;
+  color: #0e5a06 !important;
+}
+/* Hero ring = the sample gauge: thin grey track, 7px orange arc; legend follows. */
+.lk-result .calc-loss-flow svg circle[stroke='#ff4542'] {
+  stroke: #b3b3b3 !important;
+  stroke-width: 3px !important;
+}
+.lk-result .calc-loss-flow svg circle[stroke='#f1f5f9'] {
+  stroke: #ff7900 !important;
+  stroke-width: 7px !important;
+}
+.lk-result .calc-loss-flow i[class*='bg-[#f1f5f9]'] {
+  background: #ff7900 !important;
+}
+.lk-result .calc-loss-flow i[class*='bg-[#ff4542]'] {
+  background: #b3b3b3 !important;
+}
+/* Potential bars per stage: orange segments on a #d6d6d6 track, as the sample's "attention" scales. */
+.lk-result #loss-breakdown [class*='h-full'][class*='rounded-full'] {
+  background: #ff7900 !important;
+}
+/* Priority tag ("Главный приоритет"): orange attention tag; the other share tags stay neutral outline. */
+.lk-result span[class*='rounded-[3px]'][class*='uppercase'][class*='text-[10px]'] {
+  background: #fff !important;
+  border: 0.75px solid #d6d6d6 !important;
+  color: var(--lk-ink) !important;
+}
+.lk-result span[class*='rounded-[3px]'][class*='uppercase'][class*='text-[10px]'][style*='background: rgb(229, 36, 33)'] {
+  background: #ffe6cf !important;
+  border-color: #ff7900 !important;
+  color: #8f3f00 !important;
+}
+/* "Why it happens" cards = the sample's top-3 cards: white, 12px, red 3px top stripe on the first, grey on the rest. */
+.lk-result > div > section:nth-of-type(3) article {
+  border-top: 3px solid #6b6b6b !important;
+  border-radius: 12px !important;
+}
+.lk-result > div > section:nth-of-type(3) li:first-of-type article {
+  border-top-color: #e52421 !important;
+}
+/* Step numbers: white with a red hairline (index of the sample's top-3), ink digits — no filled red plate. */
+.lk-result > div > section:nth-of-type(3) span[style*='background: rgb(229, 36, 33)'],
+.lk-result > div > section:nth-of-type(3) span[style*='background: rgb(255, 69, 66)'],
+.lk-result > div > section:nth-of-type(3) span[style*='background: rgb(30, 30, 30)'] {
+  background: #fff !important;
+  border: 1px solid #e52421 !important;
+  color: var(--lk-ink) !important;
+}
+/* Offer: gains ("+10% посетителей обратно") in the sample's green pill colours. */
+.lk-result .calc-fix-flow [style*='color: rgb(134, 239, 172)'],
+.lk-result .calc-fix-flow [style*='color: rgb(134, 239, 172)'] bdi {
+  color: #0e5a06 !important;
+}
+/* Only the top stripe is coloured; the rest of the frame stays a hairline (the source paints the priority card's whole border red). */
+.lk-result > div > section:nth-of-type(3) article {
+  border-left-color: var(--lk-line) !important;
+  border-right-color: var(--lk-line) !important;
+  border-bottom-color: var(--lk-line) !important;
+  box-shadow: none !important;
+}
+/* Report scales keep their status colours (green / orange / grey); the red "critical" segments use the sample's orange. */
+.lk-result i[class*='h-[3px]'][style*='rgb(229, 36, 33)'] {
+  background: #ff7900 !important;
+}
+/* First KPI tile: same specificity as the others, so its green stripe wins over the inverted hairline rule. */
+.lk-result .calc-loss-flow dl > div:nth-child(1) {
+  border-top-color: #10b981 !important;
+}
+/* Main CTAs stay red (the one allowed accent) but without the red glow under them. */
+.lk-result a[class*='bg-[#e52421]'] {
+  box-shadow: none !important;
+}

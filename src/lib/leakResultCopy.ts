@@ -70,6 +70,11 @@ const overrides = {
       },
     },
   },
+  step4Stage3IssueScore: {
+    en: 'Trust and safety {score}/100 — about {loss}% of visitors drop off here. The site may feel unreliable or trigger a browser warning.',
+    ru: 'Доверие и безопасность {score}/100 — здесь отсеивается около {loss}% посетителей. Сайт может казаться ненадёжным или вызвать предупреждение браузера.',
+    he: 'אמון ובטיחות {score}/100 — כ-{loss}% מהמבקרים נושרים כאן. האתר עלול להרגיש לא אמין או להפעיל אזהרת דפדפן.',
+  },
   step4TechLoss: { en: 'Impact', ru: 'Эффект', he: 'השפעה' },
   protoNotes: [
     {
