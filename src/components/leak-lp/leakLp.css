@@ -17,6 +17,10 @@
   --lk-red: #e52421;
   --lk-red-600: #c21d1a;
   --lk-red-700: #9c1714;
+  --lk-coral: #ff4542;
+  --lk-coral-soft: #fff0ef;
+  --lk-coral-mid: #ffd0cd;
+  --lk-coral-ink: #b91c1c;
   --lk-dark: #1e1e1e;
   --lk-green: #22bf16;
   background: var(--lk-bg);
@@ -1008,4 +1012,2750 @@
 .lk-btn-outline:focus-visible {
   outline: 2px solid var(--lk-ink);
   outline-offset: 2px;
+}
+
+/* ===== Result screen: light report cards (dark full-bleed is too heavy; landing uses dark sparingly). ===== */
+.lk-root .calc-loss-flow,
+.lk-root .calc-fix-flow {
+  background: #f8f8f8 !important;
+  color: var(--lk-ink) !important;
+  animation: none !important;
+}
+.lk-root .calc-loss-flow .calc-lq-blob,
+.lk-root .calc-fix-flow .calc-lq-blob,
+.lk-root .calc-loss-flow [class~='from-[#150f26]/10'] {
+  display: none !important;
+}
+/* White-on-dark utilities → ink on light cards (red CTAs keep white text).
+   Dark KPI mini-cards (`.calc-kpi-row`) keep real white text — excluded here. */
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) .text-white:not([class*='bg-[#e52421]'], [class*='bg-[#d11d1a]'], [class*='bg-[#ff4542]']):not(.calc-kpi-row *):not(.calc-kpi-row):not(.calc-insight-badge) {
+  color: var(--lk-ink) !important;
+}
+.lk-result .calc-insight-badge,
+.lk-result .calc-insight-badge.text-white {
+  color: #fff !important;
+  justify-content: flex-start !important;
+  text-align: start !important;
+}
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) :is([class*='bg-[#e52421]'], [class*='bg-[#d11d1a]'], [class*='bg-[#ff4542]']) .text-white {
+  color: #fff !important;
+}
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) :is([class~='text-white/80'], [class~='text-white/75'], [class~='text-white/70']):not(.calc-kpi-row *) {
+  color: var(--lk-muted) !important;
+}
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) :is([class~='text-white/65'], [class~='text-white/60'], [class~='text-white/55'], [class~='text-white/50']):not(.calc-kpi-row *) {
+  color: var(--lk-faint) !important;
+}
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) :is([class~='bg-white/10'], [class~='bg-white/[0.06]'], [class~='bg-white/[0.07]'], [class~='bg-white/[0.08]']):not(.calc-kpi-row *) {
+  background-color: #fff !important;
+}
+.lk-root :is(.calc-loss-flow, .calc-fix-flow) [class*='border-white/']:not(.calc-kpi-row):not(.calc-kpi-row *) {
+  border-color: var(--lk-line) !important;
+}
+.lk-root .calc-tech-flow {
+  background: var(--lk-bg) !important;
+}
+.lk-root .calc-loss-flow h1 span,
+.lk-root .calc-fix-flow h2 span {
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--lk-ink);
+}
+/* Inter only (no mono badges). */
+.lk-root .font-mono {
+  font-family: inherit !important;
+}
+/* Radii as on the landing. */
+.lk-root .rounded-\[16px\],
+.lk-root .rounded-\[14px\],
+.lk-root .rounded-\[12px\] {
+  border-radius: 10px !important;
+}
+/* Lilac / indigo utility colours → ink and stone. */
+.lk-root .bg-\[\#4840bb\],
+.lk-root .bg-\[\#8b74c7\] {
+  background-color: var(--lk-ink) !important;
+}
+.lk-root .bg-\[\#4840bb\]\/10,
+.lk-root .bg-\[\#f1edfa\] {
+  background-color: var(--lk-stone-100) !important;
+}
+.lk-root .bg-\[\#8b74c7\]\/25 {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+.lk-root .hover\:bg-\[\#54408a\]:hover {
+  background-color: #000 !important;
+}
+.lk-root .border-\[\#4840bb\],
+.lk-root .border-\[\#4840bb\]\/35,
+.lk-root .hover\:border-\[\#54408a\]:hover {
+  border-color: var(--lk-ink) !important;
+}
+.lk-root .border-\[\#d6cfe6\] {
+  border-color: var(--lk-line) !important;
+}
+.lk-root .border-\[\#c4b5fd\]\/50 {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+.lk-root .border-s-\[\#8b74c7\] {
+  border-inline-start-color: var(--lk-line) !important;
+}
+.lk-root .border-t-\[\#4840bb\] {
+  border-top-color: var(--lk-ink) !important;
+}
+.lk-root .ring-\[\#4840bb\]\/20 {
+  --tw-ring-color: rgba(30, 30, 30, 0.15) !important;
+}
+.lk-root .text-\[\#3d2c66\],
+.lk-root .text-\[\#4840bb\],
+.lk-root .text-\[\#54408a\],
+.lk-root .text-\[\#8b74c7\] {
+  color: var(--lk-ink) !important;
+}
+.lk-root .text-\[\#c4b5fd\] {
+  color: var(--lk-gold) !important;
+}
+/* Offer bonus card: indigo glass → white card with hairline. */
+.lk-root .calc-fix-flow [style*='rgba(20, 18, 60'] {
+  background: #fff !important;
+  box-shadow: inset 0 0 0 1px var(--lk-line) !important;
+}
+/* Mint gains → readable green on light. */
+.lk-root :is(.calc-fix-flow, .calc-loss-flow) [style*='color: rgb(134, 239, 172)'] {
+  color: #0e5a06 !important;
+}
+/* Calm plates on light result (skip zone fills + main CTAs). */
+.lk-result :is(span, b, i, div, button, a):is(
+    [class*='bg-[#e52421]'], [class*='bg-[#ff4542]'], [class*='bg-[#d11d1a]'],
+    [class*='bg-[#0f172a]'], [class*='bg-[#1e1e1e]'], [class~='bg-black'],
+    [style*='background: rgb(229, 36, 33)'], [style*='background: rgb(255, 69, 66)'], [style*='background: rgb(209, 29, 26)'],
+    [style*='background: rgb(30, 30, 30)'], [style*='background: rgb(15, 23, 42)'], [style*='background-color: rgb(30, 30, 30)']
+  ):not(a[class*='rounded-full'][class*='px-6'], a[class*='rounded-full'][class*='px-7'], .calc-scroll-btn, .calc-scroll-btn *, [class~='size-1.5'], [class~='w-[2px]'], [class*='w-[2px]'], [data-zone], [data-lost]) {
+  background: var(--lk-stone-100) !important;
+  background-color: var(--lk-stone-100) !important;
+  color: var(--lk-ink) !important;
+  border-color: var(--lk-line) !important;
+  box-shadow: none !important;
+}
+.lk-result [class*='h-full'][class*='rounded-full']:is([class*='bg-[#ff4542]'], [class*='bg-[#e52421]']):not([data-zone]),
+.lk-result [class*='h-full'][class*='bg-[#ff4542]']:not([data-zone]) {
+  background: var(--lk-faint) !important;
+}
+/* Hero coral figures (big % / stage totals that use coral classes). */
+.lk-result .calc-loss-flow h1 [data-zone],
+.lk-result .calc-loss-flow h1 [data-zone] bdi {
+  color: var(--lk-coral) !important;
+}
+.lk-result .calc-loss-flow :is([class~='text-[#ff6b68]'], [class*='text-[#ff6b68]'], [class~='text-[#ff4542]'], [class*='text-[#ff4542]']):not(b[data-zone]):not(b[data-zone] *),
+.lk-result .calc-loss-flow :is([class~='text-[#ff6b68]'], [class*='text-[#ff6b68]'], [class~='text-[#ff4542]'], [class*='text-[#ff4542]']):not(b[data-zone]) bdi {
+  color: var(--lk-coral) !important;
+}
+/* "Открыть отчёт Free" and the active filter chip: outline buttons, not black plates. */
+.lk-result a[class*='max-w-md'][class*='min-h-14'],
+.lk-result button[class*='rounded-full'][class*='border'][class*='text-xs'] {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  border: 1px solid var(--lk-ink) !important;
+}
+/* "/ 100" next to scores: readable secondary text. */
+.lk-result [class*='text-[#94a3b8]'] {
+  color: var(--lk-faint) !important;
+}
+/* Report's floating "scroll down" button is portalled to <body>: calm white circle instead of a glowing red one. */
+html[data-lk] [class*='bottom-[4.5rem]'][class*='bg-[#e52421]'] {
+  background: #fff !important;
+  color: #1e1e1e !important; /* literal: the button is portalled outside .lk-root, where the tokens are undefined */
+  border: 1px solid #e0e0e0 !important;
+  box-shadow: 0 6px 18px -10px rgba(30, 30, 30, 0.35) !important;
+}
+
+/* All result blocks = report cards (light, contained — no full-bleed dark). */
+.lk-result :is(.calc-loss-flow, .calc-fix-flow),
+.lk-result > div > section:nth-of-type(3),
+.lk-result > div > section:last-of-type {
+  width: auto !important;
+  margin-inline: 0 !important;
+  min-height: 0 !important;
+  background: #f8f8f8 !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+.lk-result .calc-tech-flow {
+  width: auto !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+.lk-result > div > section:nth-of-type(3) {
+  padding: 32px 20px;
+}
+@media (min-width: 640px) {
+  .lk-result > div > section:nth-of-type(3) {
+    padding: 40px;
+  }
+}
+@media (min-width: 1024px) {
+  .lk-result > div > section:nth-of-type(3) {
+    padding: 60px;
+  }
+}
+/* Section titles as in the report: 26px, regular weight (the red hairline before them stays). */
+.lk-result :is(#loss-breakdown, section:nth-of-type(3)) h2 {
+  font-size: 26px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  letter-spacing: -0.01em !important;
+}
+/* Light hero: ink labels; big figure coral. Kicker «По результатам» is excluded — it stays faint and heavy. */
+.lk-result :is(.calc-loss-flow, .calc-fix-flow) :is(h1, h2) span:not([data-zone]):not(.calc-hero-label) {
+  font-weight: 400 !important;
+  color: var(--lk-ink) !important;
+}
+.lk-result .calc-loss-flow h1 [data-zone],
+.lk-result .calc-loss-flow h1 [data-zone] bdi {
+  font-weight: 600 !important;
+  color: var(--lk-coral) !important;
+  text-shadow: none !important;
+}
+.lk-result > div > section:last-of-type h2,
+.lk-result .calc-fix-flow h2 {
+  font-size: clamp(30px, 4vw, 44px) !important;
+  font-weight: 400 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.02em !important;
+}
+.lk-result :is(.calc-loss-flow, .calc-fix-flow) :is(span, bdi, b, p) {
+  text-shadow: none !important;
+}
+html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
+  display: none !important;
+}
+
+/* ===== Light hero: zoneOf by % for diagrams; KPI row uses dark mini-cards below. ===== */
+.lk-result .calc-loss-flow dl:not(.calc-kpi-row) > div {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+}
+.lk-result .calc-loss-flow dl:not(.calc-kpi-row) > div dd {
+  color: var(--lk-ink) !important;
+}
+.lk-result .calc-loss-flow dl:not(.calc-kpi-row) > div dt {
+  color: var(--lk-ink) !important;
+}
+.lk-result .calc-loss-flow dl:not(.calc-kpi-row) > div p {
+  color: var(--lk-muted) !important;
+}
+/* Ring + bars: 4 zones — excellent≥95 green · good≥85 yellow · warn≥76 orange · else red. */
+.lk-result {
+  --lk-zone-excellent: #22bf16;
+  --lk-zone-good: #e6b400;
+  --lk-zone-warn: #ff7900;
+  --lk-zone-bad: #e52421;
+  --lk-zone-track: #c9c9c9;
+}
+/* Ring only: fine dashed track + thin coloured arc. Stage bars stay solid. */
+.lk-result .calc-loss-flow svg[data-zone] circle[stroke='#ff4542'] {
+  stroke: var(--lk-zone-track) !important;
+  stroke-width: 1.25px !important;
+  stroke-dasharray: 0.75 3.25 !important;
+  stroke-linecap: round !important;
+  filter: none !important;
+}
+.lk-result .calc-loss-flow svg[data-zone] circle[stroke='#f1f5f9'] {
+  stroke-width: 4px !important;
+  stroke-linecap: round !important;
+}
+.lk-result .calc-loss-flow svg[data-zone='excellent'] circle[stroke='#f1f5f9'] {
+  stroke: var(--lk-zone-excellent) !important;
+}
+.lk-result .calc-loss-flow svg[data-zone='good'] circle[stroke='#f1f5f9'] {
+  stroke: var(--lk-zone-good) !important;
+}
+.lk-result .calc-loss-flow svg[data-zone='warn'] circle[stroke='#f1f5f9'] {
+  stroke: var(--lk-zone-warn) !important;
+}
+.lk-result .calc-loss-flow svg[data-zone='bad'] circle[stroke='#f1f5f9'] {
+  stroke: var(--lk-zone-bad) !important;
+}
+/* Ring center % stays ink; zone colour is only on the arc + legend swatch. */
+.lk-result .calc-insight-card b[data-zone],
+.lk-result .calc-insight-card b[data-zone].text-white,
+.lk-result .calc-insight-card b[data-zone] bdi {
+  color: var(--lk-ink) !important;
+}
+.lk-result .calc-loss-flow i[data-zone='excellent'] {
+  background: var(--lk-zone-excellent) !important;
+  background-color: var(--lk-zone-excellent) !important;
+}
+.lk-result .calc-loss-flow i[data-zone='good'] {
+  background: var(--lk-zone-good) !important;
+  background-color: var(--lk-zone-good) !important;
+}
+.lk-result .calc-loss-flow i[data-zone='warn'] {
+  background: var(--lk-zone-warn) !important;
+  background-color: var(--lk-zone-warn) !important;
+}
+.lk-result .calc-loss-flow i[data-zone='bad'] {
+  background: var(--lk-zone-bad) !important;
+  background-color: var(--lk-zone-bad) !important;
+}
+.lk-result .calc-ring-legend i[data-lost] {
+  background: var(--lk-zone-track) !important;
+  background-color: var(--lk-zone-track) !important;
+}
+/* Stage / breakdown bars: fill by zoneOf(score). */
+.lk-result .calc-loss-flow [data-zone='excellent'][class*='h-full'],
+.lk-result #loss-breakdown [data-zone='excellent'][class*='h-full'] {
+  background: var(--lk-zone-excellent) !important;
+  background-color: var(--lk-zone-excellent) !important;
+}
+.lk-result .calc-loss-flow [data-zone='good'][class*='h-full'],
+.lk-result #loss-breakdown [data-zone='good'][class*='h-full'] {
+  background: var(--lk-zone-good) !important;
+  background-color: var(--lk-zone-good) !important;
+}
+.lk-result .calc-loss-flow [data-zone='warn'][class*='h-full'],
+.lk-result #loss-breakdown [data-zone='warn'][class*='h-full'] {
+  background: var(--lk-zone-warn) !important;
+  background-color: var(--lk-zone-warn) !important;
+}
+.lk-result .calc-loss-flow [data-zone='bad'][class*='h-full'],
+.lk-result #loss-breakdown [data-zone='bad'][class*='h-full'] {
+  background: var(--lk-zone-bad) !important;
+  background-color: var(--lk-zone-bad) !important;
+}
+.lk-result #loss-breakdown [class*='h-full'][class*='rounded-full']:not([data-zone]) {
+  background: var(--lk-zone-warn) !important;
+}
+/* Biggest-leak amounts: coral (critical), others stay ink from the palette. */
+.lk-result #loss-breakdown [class~='text-[#e52421]'],
+.lk-result #loss-breakdown [class*='text-[#e52421]'],
+.lk-result #loss-breakdown [class~='text-[#e52421]'] bdi,
+.lk-result #loss-breakdown [class*='text-[#e52421]'] bdi {
+  color: var(--lk-coral) !important;
+}
+/* Priority tag: soft coral; other share tags stay outline. */
+.lk-result span[class*='rounded-[3px]'][class*='uppercase'][class*='text-[10px]'] {
+  background: #fff !important;
+  border: 0.75px solid #d6d6d6 !important;
+  color: var(--lk-ink) !important;
+}
+.lk-result span[class*='rounded-[3px]'][class*='uppercase'][class*='text-[10px]'][style*='background: rgb(229, 36, 33)'],
+.lk-result span[class*='rounded-[3px]'][class*='uppercase'][class*='text-[10px]'][style*='background: rgb(255, 69, 66)'] {
+  background: var(--lk-coral-soft) !important;
+  border-color: var(--lk-coral) !important;
+  color: var(--lk-coral-ink) !important;
+}
+/* "Why it happens" cards: coral stripe on the first, grey on the rest. */
+.lk-result > div > section:nth-of-type(3) article {
+  border-top: 3px solid #6b6b6b !important;
+  border-radius: 12px !important;
+  border-left-color: var(--lk-line) !important;
+  border-right-color: var(--lk-line) !important;
+  border-bottom-color: var(--lk-line) !important;
+  box-shadow: none !important;
+}
+.lk-result > div > section:nth-of-type(3) li:first-of-type article {
+  border-top-color: var(--lk-coral) !important;
+}
+/* Step numbers: white with coral hairline. */
+.lk-result > div > section:nth-of-type(3) span[style*='background: rgb(229, 36, 33)'],
+.lk-result > div > section:nth-of-type(3) span[style*='background: rgb(255, 69, 66)'],
+.lk-result > div > section:nth-of-type(3) span[style*='background: rgb(30, 30, 30)'] {
+  background: #fff !important;
+  border: 1px solid var(--lk-coral) !important;
+  color: var(--lk-ink) !important;
+}
+/* Offer: gains stay green. */
+.lk-result .calc-fix-flow [style*='color: rgb(134, 239, 172)'],
+.lk-result .calc-fix-flow [style*='color: rgb(134, 239, 172)'] bdi {
+  color: #0e5a06 !important;
+}
+/* Tech scales: keep status colours (green / orange / coral-red). */
+.lk-result i[class*='h-[3px]'][style*='rgb(229, 36, 33)'],
+.lk-result i[class*='h-[3px]'][style*='rgb(255, 69, 66)'] {
+  background: var(--lk-coral) !important;
+}
+/* Main CTAs stay brand red, no glow. */
+.lk-result a[class*='bg-[#e52421]'] {
+  box-shadow: none !important;
+}
+
+/* ===== Calm, like searchable.com/solutions/agencies: ink type, one coral accent, lots of air.
+   Zone still shows (thin stripe, bar, ring) — not as filled pills. ===== */
+.lk-result > div {
+  gap: 56px !important;
+}
+.lk-result :is(.calc-loss-flow, .calc-fix-flow) > div {
+  padding-top: 40px !important;
+  padding-bottom: 40px !important;
+}
+@media (min-width: 1024px) {
+  .lk-result > div {
+    gap: 80px !important;
+  }
+}
+/* Compact dark KPI strip — homepage `.dark-gradient-bg` family, short row. */
+.lk-result .calc-loss-flow dl.calc-kpi-row {
+  margin-top: 24px !important;
+  gap: 10px !important;
+}
+.lk-result .calc-loss-flow .calc-hero-ctas {
+  margin-top: 28px !important;
+  justify-content: center !important;
+}
+@keyframes lk-scroll-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-result a.calc-hero-more svg {
+    animation: none !important;
+  }
+}
+.lk-result .calc-loss-flow .calc-kpi-card {
+  /* Same stack as homepage `.dark-gradient-bg` (styles.css). */
+  background-color: #141414 !important;
+  background-image:
+    radial-gradient(
+      ellipse 130% 110% at 82% 14%,
+      rgba(196, 206, 220, 0.11) 0%,
+      rgba(196, 206, 220, 0.05) 22%,
+      rgba(30, 30, 30, 0.03) 48%,
+      transparent 78%
+    ),
+    radial-gradient(
+      ellipse 100% 90% at -8% 108%,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0.2) 35%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 75% 65% at 4% -2%,
+      rgba(0, 0, 0, 0.3) 0%,
+      rgba(0, 0, 0, 0.1) 30%,
+      transparent 62%
+    ),
+    radial-gradient(ellipse 110% 95% at 50% 55%, #1e1e1e 0%, #161616 55%, #121212 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 3px !important;
+  box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.65) !important;
+  padding: 10px 12px !important;
+  align-items: center !important;
+  min-height: 0 !important;
+  text-align: start !important;
+  backdrop-filter: none !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-card,
+.lk-result .calc-loss-flow .calc-kpi-card :is(dd, dt, p, span, bdi) {
+  color: #fff !important;
+  text-align: start !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-card .min-w-0,
+.lk-result .calc-loss-flow .calc-kpi-card p {
+  min-width: 0 !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-card dd,
+.lk-result .calc-loss-flow .calc-kpi-card dt,
+.lk-result .calc-loss-flow .calc-kpi-card dt.min-w-0 {
+  font-size: 14px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-card dt {
+  flex: 0 0 auto;
+  overflow: visible !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-card dt span {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-card p:not(.calc-kpi-pop) {
+  color: rgba(255, 255, 255, 0.55) !important;
+  overflow: hidden !important;
+  max-height: 1.3em;
+  transition: max-height 0.45s ease;
+}
+/* Plaque stays number + title. Hover opens a description popup and does not resize the row. */
+.lk-result .calc-kpi-cell {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+.lk-result .calc-kpi-cell:hover {
+  z-index: 8;
+}
+.lk-result .calc-kpi-card {
+  position: relative;
+  cursor: default;
+}
+.lk-result .calc-kpi-cell > .calc-kpi-card :is(dd, dt, span, bdi) {
+  transition: color 0.4s ease;
+}
+.lk-result .calc-loss-flow .calc-kpi-card p.calc-kpi-pop {
+  position: absolute;
+  z-index: 9;
+  top: auto;
+  bottom: calc(100% + 8px);
+  inset-inline: 0;
+  width: auto;
+  margin: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 10px 12px;
+  border: 1px solid rgba(30, 30, 30, 0.08) !important;
+  border-radius: 3px !important;
+  background: #fff !important;
+  background-image: none !important;
+  color: #1e1e1e !important;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: start !important;
+  box-shadow: 0 14px 32px -14px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+}
+.lk-result .calc-loss-flow .calc-kpi-card[data-tone='gain'] p.calc-kpi-pop {
+  border-top: 2px solid #22bf16 !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-card[data-tone='warn'] p.calc-kpi-pop {
+  border-top: 2px solid #ff7900 !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-card[data-tone='loss'] p.calc-kpi-pop {
+  border-top: 2px solid #e52421 !important;
+}
+/* Invisible bridge across the gap, so the pointer can move onto the popup without it closing. */
+.lk-result .calc-loss-flow .calc-kpi-card p.calc-kpi-pop::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  height: 14px;
+}
+.lk-result .calc-loss-flow .calc-kpi-help-wrap:hover p.calc-kpi-pop,
+.lk-result .calc-loss-flow .calc-kpi-help-wrap:focus-within p.calc-kpi-pop {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+}
+.lk-result .calc-kpi-arrows {
+  position: relative;
+  flex: 1 1 0;
+  align-self: center;
+  min-width: 12px;
+  height: 5px;
+  background: none;
+}
+.lk-result .calc-kpi-run {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 0;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 999px;
+  background: #fff;
+  opacity: 0;
+  animation: lk-kpi-run 1.8s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+.lk-result .calc-kpi-card[data-tone='gain'] .calc-kpi-run { background: #22bf16; }
+.lk-result .calc-kpi-card[data-tone='warn'] .calc-kpi-run { background: #ff7900; }
+.lk-result .calc-kpi-card[data-tone='loss'] .calc-kpi-run { background: #e52421; }
+@keyframes lk-kpi-run {
+  0% { inset-inline-start: 0; opacity: 0; }
+  12%, 78% { opacity: 1; }
+  100% { inset-inline-start: calc(100% - 6px); opacity: 0; }
+}
+.lk-result .calc-kpi-help-wrap {
+  position: static;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  align-self: center;
+  line-height: 0;
+  margin-inline-start: 4px;
+}
+.lk-result .calc-loss-flow .calc-kpi-help {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  font-family: inherit;
+}
+/* Column above the button, so the pointer can reach the popup without crossing the plaque. */
+.lk-result .calc-loss-flow .calc-kpi-help::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 100%;
+  height: 56px;
+  pointer-events: none;
+}
+.lk-result .calc-loss-flow .calc-kpi-help-wrap:hover .calc-kpi-help::before,
+.lk-result .calc-loss-flow .calc-kpi-help-wrap:focus-within .calc-kpi-help::before {
+  pointer-events: auto;
+}
+.lk-result .calc-loss-flow .calc-kpi-card[data-tone='gain'] .calc-kpi-help:hover,
+.lk-result .calc-loss-flow .calc-kpi-card[data-tone='gain'] .calc-kpi-help:focus-visible {
+  background: #22bf16 !important;
+  border-color: #22bf16 !important;
+  color: #fff !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-card[data-tone='warn'] .calc-kpi-help:hover,
+.lk-result .calc-loss-flow .calc-kpi-card[data-tone='warn'] .calc-kpi-help:focus-visible {
+  background: #ff7900 !important;
+  border-color: #ff7900 !important;
+  color: #fff !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-card[data-tone='loss'] .calc-kpi-help:hover,
+.lk-result .calc-loss-flow .calc-kpi-card[data-tone='loss'] .calc-kpi-help:focus-visible {
+  background: #e52421 !important;
+  border-color: #e52421 !important;
+  color: #fff !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-result .calc-kpi-card,
+  .lk-result .calc-kpi-pop {
+    transition: none !important;
+  }
+  .lk-result .calc-kpi-run {
+    display: none;
+  }
+}
+/* Tone bar sits between the figure and the title block (2px, like `.lk-bar`). */
+.lk-result .calc-kpi-row .calc-kpi-bar {
+  display: block;
+  width: 0;
+  height: 14px;
+  min-height: 0 !important;
+  border-inline-start: 2px solid #fff;
+  align-self: center !important;
+}
+.lk-result .calc-kpi-card[data-tone='gain'] .calc-kpi-bar {
+  border-inline-start-color: #22bf16;
+}
+.lk-result .calc-kpi-card[data-tone='warn'] .calc-kpi-bar {
+  border-inline-start-color: #ff7900;
+}
+.lk-result .calc-kpi-card[data-tone='loss'] .calc-kpi-bar {
+  border-inline-start-color: #e52421;
+}
+/* Stage amounts stay ink; the bar carries the zone. Hero figure stays coral. */
+.lk-result .calc-loss-flow li b[data-zone],
+.lk-result .calc-loss-flow li b[data-zone].text-white,
+.lk-result .calc-loss-flow li b[data-zone] bdi {
+  color: var(--lk-ink) !important;
+}
+/* Total row was a black plate (palette deep = ink). Light card, one coral figure. */
+.lk-result #loss-breakdown > div[style*='linear-gradient'] {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  color: var(--lk-ink) !important;
+  margin-top: 28px !important;
+  padding: 28px 32px !important;
+}
+.lk-result #loss-breakdown > div[style*='linear-gradient'] :is(.text-white, [class*='text-white']):not(b) {
+  color: var(--lk-ink) !important;
+}
+.lk-result #loss-breakdown > div[style*='linear-gradient'] b.text-white,
+.lk-result #loss-breakdown > div[style*='linear-gradient'] b.text-white bdi {
+  color: var(--lk-coral) !important;
+  font-weight: 600 !important;
+}
+.lk-result :is(#loss-breakdown, section:nth-of-type(3)) {
+  padding: 48px 28px !important;
+}
+@media (min-width: 1024px) {
+  .lk-result :is(#loss-breakdown, section:nth-of-type(3)) {
+    padding: 72px !important;
+  }
+}
+
+/* ===== Mostly monochrome; coral kept for the hero % and insight-card uplift. ===== */
+.lk-result {
+  --lk-coral: #ff4542;
+  --lk-coral-soft: #fff0ef;
+  --lk-coral-mid: #ffd0cd;
+  --lk-coral-ink: #b91c1c;
+  --lk-muted: #5a5a5a;
+  --lk-faint: #6e6e6e;
+}
+.lk-result .calc-loss-flow h1 [data-zone],
+.lk-result .calc-loss-flow h1 [data-zone] bdi {
+  color: #ff4542 !important;
+}
+.lk-result .calc-insight-card .calc-uplift-total b,
+.lk-result .calc-insight-card .calc-uplift-total b bdi {
+  color: #ff4542 !important;
+}
+.lk-result .calc-loss-flow :is([class*='text-[#ff4542]'], [class*='text-[#ff6b68]'], [class*='text-[#e52421]']):not(h1 *):not(.calc-uplift-total *):not(.calc-kpi-row *),
+.lk-result .calc-loss-flow :is([class*='text-[#ff4542]'], [class*='text-[#ff6b68]'], [class*='text-[#e52421]']):not(h1 *):not(.calc-uplift-total *):not(.calc-kpi-row *) bdi,
+.lk-result #loss-breakdown :is([class*='text-[#e52421]'], [class*='text-[#ff4542]']),
+.lk-result #loss-breakdown :is([class*='text-[#e52421]'], [class*='text-[#ff4542]']) bdi,
+.lk-result #loss-breakdown > div[style*='linear-gradient'] b.text-white,
+.lk-result #loss-breakdown > div[style*='linear-gradient'] b.text-white bdi,
+.lk-result [class*='hover:text-[#e52421]']:hover {
+  color: var(--lk-ink) !important;
+}
+/* KPI tiles: uniform hairline border (no coloured top edge). */
+/* KPI dark mini-cards: figures white; titles keep tone bars (see rules above). */
+/* Ring arc + legend swatches + stage bars stay coloured (4 zones). Stage % figures stay ink. */
+.lk-result .calc-loss-flow li b[data-zone],
+.lk-result .calc-loss-flow li b[data-zone].text-white,
+.lk-result .calc-loss-flow li b[data-zone] bdi {
+  color: var(--lk-ink) !important;
+}
+.lk-result #loss-breakdown [class*='h-full'][class*='rounded-full']:not([data-zone]) {
+  background: var(--lk-zone-warn) !important;
+  background-color: var(--lk-zone-warn) !important;
+}
+.lk-result span[class*='rounded-[3px]'][class*='uppercase'][class*='text-[10px]'],
+.lk-result span[class*='rounded-[3px]'][class*='uppercase'][class*='text-[10px]'][style*='background: rgb(229, 36, 33)'],
+.lk-result span[class*='rounded-[3px]'][class*='uppercase'][class*='text-[10px]'][style*='background: rgb(255, 69, 66)'],
+.lk-result span[class*='rounded-[3px]'][class*='uppercase'][class*='text-[10px]'][style*='background: rgb(30, 30, 30)'] {
+  background: #fff !important;
+  background-color: #fff !important;
+  border: 0.75px solid #d6d6d6 !important;
+  color: var(--lk-ink) !important;
+}
+.lk-result > div > section:nth-of-type(3) article,
+.lk-result > div > section:nth-of-type(3) li:first-of-type article {
+  border-top-color: #6b6b6b !important;
+}
+.lk-result > div > section:nth-of-type(3) span[style*='background: rgb(229, 36, 33)'],
+.lk-result > div > section:nth-of-type(3) span[style*='background: rgb(255, 69, 66)'],
+.lk-result > div > section:nth-of-type(3) span[style*='background: rgb(30, 30, 30)'] {
+  background: #fff !important;
+  border: 1px solid var(--lk-ink) !important;
+  color: var(--lk-ink) !important;
+}
+.lk-result [class*='border-[#e52421]'],
+.lk-result [class*='border-s-[#e52421]'],
+.lk-result [class*='border-t-[#e52421]'] {
+  border-color: var(--lk-ink) !important;
+  border-inline-start-color: var(--lk-ink) !important;
+}
+.lk-result [class*='w-[2px]'][class*='bg-[#e52421]'],
+.lk-result [class*='before:bg-[#e52421]']::before {
+  background: var(--lk-ink) !important;
+  background-color: var(--lk-ink) !important;
+}
+.lk-result i[class*='h-[3px]'][style*='rgb(34'],
+.lk-result i[class*='h-[3px]'][style*='rgb(255'],
+.lk-result i[class*='h-[3px]'][style*='rgb(229'],
+.lk-result i[class*='h-[3px]'][style*='#22bf16'],
+.lk-result i[class*='h-[3px]'][style*='#ff7900'],
+.lk-result i[class*='h-[3px]'][style*='#e52421'] {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+}
+.lk-result :is([class*='text-[#1d7a12]'], [class*='text-[#10b981]'], [class*='text-[#0e5a06]'], [class*='text-[#9a4a00]'], [style*='color: rgb(134, 239, 172)']),
+.lk-result :is([class*='text-[#1d7a12]'], [class*='text-[#10b981]'], [class*='text-[#0e5a06]'], [style*='color: rgb(134, 239, 172)']) bdi {
+  color: var(--lk-ink) !important;
+}
+.lk-result :is([class*='bg-[#d6f5d2]'], [class*='bg-[#eef9ec]'], [class*='bg-[#fff6ec]'], [class*='border-[#22bf16]'], [class*='border-[#cfeccb]'], [class*='border-[#f8dcc0]']) {
+  background: #fff !important;
+  background-color: #fff !important;
+  border-color: var(--lk-line) !important;
+  color: var(--lk-ink) !important;
+}
+/* Primary CTA: brand red + red shadow on hover. */
+.lk-result :is(a, button):is([class*='bg-[#e52421]'], [class*='bg-[#d11d1a]'], [class*='bg-[#ff4542]']) {
+  background: #e52421 !important;
+  background-color: #e52421 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.lk-result :is(a, button):is([class*='bg-[#e52421]'], [class*='bg-[#d11d1a]'], [class*='bg-[#ff4542]']):hover,
+.lk-result :is(a, button):is([class*='hover:bg-[#d11d1a]'], [class*='hover:bg-[#e52421]']):hover {
+  background: #d11d1a !important;
+  background-color: #d11d1a !important;
+  box-shadow: 0 10px 28px rgba(229, 36, 33, 0.45) !important;
+}
+/* Secondary “See breakdown”: white plate, black outline, bouncing arrow. */
+.lk-result .calc-loss-flow a.calc-hero-more {
+  background: #fff !important;
+  background-color: #fff !important;
+  color: #1e1e1e !important;
+  border: 1px solid #1e1e1e !important;
+  box-shadow: none !important;
+}
+.lk-result .calc-loss-flow a.calc-hero-more svg {
+  animation: lk-scroll-bob 1.35s ease-in-out infinite;
+}
+.lk-result a.calc-hero-more:hover {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border-color: #1e1e1e !important;
+}
+/* Leftover hues: status chips, dots, offer mint, tech stripes, slate text. */
+.lk-result :is(
+  [class*='text-[#b91c1c]'],
+  [class*='text-[#e52421]'],
+  [class*='text-[#ff4542]'],
+  [class*='text-[#ff6b68]'],
+  [class*='text-[#14532d]']
+) {
+  color: #1e1e1e !important;
+}
+.lk-result :is([class*='text-[#475569]'], [class*='text-[#64748b]'], [class*='text-[#94a3b8]'], [class*='text-[#6b6254]'], [class*='text-[#554f42]']) {
+  color: #6e6e6e !important;
+}
+.lk-result :is([class*='bg-[#fff1f0]'], [class*='border-[#fca5a5]']) {
+  background: #fff !important;
+  background-color: #fff !important;
+  border-color: #d6d6d6 !important;
+  color: #1e1e1e !important;
+}
+.lk-result [class*='size-1.5'][class*='bg-[#e52421]'],
+.lk-result i[class*='size-1.5'][style*='rgb(134, 239, 172)'] {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+}
+.lk-result [style*='border-top-color: rgb(34, 191, 22)'],
+.lk-result [style*='border-top-color: rgb(229, 36, 33)'],
+.lk-result [style*='border-top-color: rgb(255, 121, 0)'],
+.lk-result [style*='border-top-color: rgb(255, 69, 66)'] {
+  border-top-color: #e0e0e0 !important;
+}
+.lk-result .calc-fix-flow [style*='color: rgb(134, 239, 172)'],
+.lk-result .calc-fix-flow [style*='color: rgb(134, 239, 172)'] :is(bdi, span, svg) {
+  color: #1e1e1e !important;
+}
+.lk-result .calc-fix-flow [style*='background: rgb(134, 239, 172)'],
+.lk-result .calc-fix-flow [style*='background: linear-gradient'][style*='134, 239, 172'] {
+  background: #f3f3f3 !important;
+  background-color: #f3f3f3 !important;
+  border-color: #e0e0e0 !important;
+  color: #1e1e1e !important;
+}
+
+/* Domain + report meta moved into the black header strip — drop the hero row and pull the H1 up. */
+.lk-result .calc-hero-meta {
+  display: none !important;
+}
+.lk-result .calc-loss-flow h1 {
+  margin-top: 0 !important;
+  gap: 0.65rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  align-items: flex-start !important;
+  text-align: start !important;
+}
+/* Override light-theme “font-weight: 400/500/600” on hero spans — keep the headline heavy. */
+.lk-result .calc-loss-flow h1 .calc-hero-tail,
+.lk-result .calc-loss-flow h1 .calc-hero-tail span,
+.lk-result .calc-loss-flow h1 [data-zone],
+.lk-result .calc-loss-flow h1 [data-zone] bdi {
+  font-weight: 900 !important;
+}
+.lk-result .calc-loss-flow h1 span.calc-hero-label {
+  text-transform: uppercase !important;
+  text-align: start !important;
+  max-width: 100% !important;
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  line-height: 1.6 !important;
+  letter-spacing: normal !important;
+}
+/* Stay inside the left column: wrap by words from the start, never a centred mid-column strip. */
+.lk-result .calc-loss-flow h1 .calc-hero-tail {
+  font-size: clamp(28px, 3.2vw, 48px) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.02em !important;
+  text-transform: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  text-align: start !important;
+  text-wrap: wrap !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  hyphens: none !important;
+}
+.lk-result .calc-loss-flow h1 [data-zone] {
+  font-size: clamp(72px, 10vw, 132px) !important;
+}
+/* Subcopy = full width of the content container (not 100vw — that overflowed the page). */
+.lk-result .calc-hero-sub {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-inline: 0 !important;
+  margin-top: 40px !important;
+  margin-bottom: 32px !important;
+  padding-inline: 0 !important;
+  box-sizing: border-box !important;
+  color: var(--lk-muted) !important;
+  font-size: clamp(16px, 1.35vw, 20px) !important;
+  line-height: 1.55 !important;
+  text-align: start !important;
+  text-wrap: wrap !important;
+  overflow-wrap: break-word !important;
+}
+.lk-result .calc-loss-flow dl.calc-kpi-row {
+  margin-top: 0 !important;
+  overflow: visible;
+}
+@media (min-width: 1024px) {
+  .lk-result :is(.calc-loss-flow, .calc-fix-flow) > div {
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+  }
+}
+
+/* ===== Insight card (ring + stages): compact height, light elevation, children clipped. ===== */
+/* Hero = 50/50 (only the top two-column grid — not the KPI strip). */
+@media (min-width: 1024px) {
+  .lk-result .calc-loss-flow > div > .grid:not(.calc-kpi-row) {
+    align-items: center !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    column-gap: 14px !important;
+  }
+  .lk-result .calc-insight-card {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+/* Let the card shadow breathe (section used to clip it with overflow:hidden). */
+.lk-result .calc-loss-flow {
+  overflow: visible !important;
+  margin-top: 20px !important;
+}
+.lk-result {
+  padding-top: 1rem !important;
+}
+.lk-result .calc-insight-card {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+  box-shadow:
+    0 10px 28px -12px rgba(30, 30, 30, 0.18),
+    0 3px 10px -4px rgba(30, 30, 30, 0.08) !important;
+  overflow: hidden !important;
+  min-width: 0 !important;
+  backdrop-filter: none !important;
+  align-self: start;
+  padding: 0 !important;
+  gap: 0 !important;
+}
+.lk-result .calc-insight-badge {
+  background-color: #141414 !important;
+  background-image:
+    radial-gradient(
+      ellipse 130% 110% at 82% 14%,
+      rgba(196, 206, 220, 0.11) 0%,
+      rgba(196, 206, 220, 0.05) 22%,
+      rgba(30, 30, 30, 0.03) 48%,
+      transparent 78%
+    ),
+    radial-gradient(
+      ellipse 100% 90% at -8% 108%,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0.2) 35%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 75% 65% at 4% -2%,
+      rgba(0, 0, 0, 0.3) 0%,
+      rgba(0, 0, 0, 0.1) 30%,
+      transparent 62%
+    ),
+    radial-gradient(ellipse 110% 95% at 50% 55%, #1e1e1e 0%, #161616 55%, #121212 100%) !important;
+  color: #fff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.lk-result .calc-insight-body {
+  padding: 20px !important;
+  gap: 20px !important;
+  min-width: 0;
+}
+@media (min-width: 640px) {
+  .lk-result .calc-insight-body {
+    padding: 24px 28px !important;
+  }
+}
+.lk-result .calc-insight-card svg circle {
+  filter: none !important;
+}
+.lk-result .calc-insight-card > *,
+.lk-result .calc-insight-body > * {
+  min-width: 0;
+}
+/* Legend flush to the left edge of the ring column. */
+.lk-result .calc-ring-col {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.lk-result .calc-ring-legend {
+  align-items: flex-start !important;
+  align-self: stretch;
+  padding-inline: 0.25rem;
+}
+.lk-result .calc-ring-legend > span {
+  justify-content: flex-start;
+  width: 100%;
+  color: var(--lk-ink) !important;
+}
+.lk-result .calc-ring-legend > span:last-child {
+  color: var(--lk-muted) !important;
+}
+/* Прирост block: no hairline above; footnote under the label. */
+.lk-result .calc-insight-card .calc-uplift-total {
+  border-top: none !important;
+}
+.lk-result .calc-insight-card .calc-uplift-note,
+.lk-result .calc-insight-card [class~='text-white/55'],
+.lk-result .calc-insight-card p[class*='text-white/55'] {
+  color: var(--lk-muted) !important;
+}
+
+/* Stage bars: thin, ink fill only. Colour belongs on the ring arc alone. */
+.lk-result .calc-insight-card li [class~='h-1.5'] {
+  height: 2px !important;
+  border-radius: 999px !important;
+  background-color: #e8e8e8 !important;
+  background-image: none !important;
+  overflow: hidden !important;
+}
+.lk-result .calc-insight-card li [class~='h-1.5'] > [class*='h-full'],
+.lk-result .calc-insight-card li [class~='h-1.5'] > [data-zone] {
+  background: var(--lk-ink) !important;
+  background-color: var(--lk-ink) !important;
+  border-radius: 999px !important;
+}
+
+/* ===== Lower result blocks (2026-11-19): «Где уходят клиенты» → CTA.
+   Light report cards; orange = the report indicator (as the hero ring); red only as a 2px edge on the top
+   priority; charcoal gradient only on the two total plates («Итого», sum in the final CTA).
+   `:is(.hook, #lk-boost#lk-boost)` lifts specificity to id level so these win over the attribute-selector overrides above
+   (#lk-boost is never rendered). Hook classes live in CalcReport.tsx and are styled only here. ===== */
+.lk-result {
+  --lk-ind: #ff7900;
+  --lk-ind-soft: #fff1e5;
+  --lk-ind-mid: #ffd6b0;
+  --lk-ind-ink: #9a4300;
+  --lk-gain: #0e7a1e;
+  --lk-gain-soft: #e8f6e6;
+  --lk-gain-line: #c9eac4;
+}
+
+/* — Где уходят клиенты — */
+.lk-result :is(.calc-br-row, #lk-boost#lk-boost) {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.lk-result :is(.calc-br-row, #lk-boost#lk-boost):hover {
+  border-color: var(--lk-line-2) !important;
+  box-shadow: 0 8px 24px -16px rgba(30, 30, 30, 0.35);
+}
+.lk-result :is(.calc-br-row, #lk-boost#lk-boost)[data-top] {
+  border-inline-start: 2px solid var(--lk-red) !important;
+}
+.lk-result :is(.calc-br-num, #lk-boost#lk-boost) {
+  background: #f3f3f3 !important;
+  color: var(--lk-muted) !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+.lk-result [data-top] > :is(.calc-br-num, #lk-boost#lk-boost) {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  box-shadow: inset 0 0 0 1px var(--lk-ink) !important;
+}
+.lk-result :is(.calc-br-track, #lk-boost#lk-boost) {
+  height: 4px !important;
+  background: #efefef !important;
+}
+.lk-result :is(.calc-br-fill, #lk-boost#lk-boost) {
+  background: var(--lk-ind-mid) !important;
+}
+.lk-result [data-top] :is(.calc-br-fill, #lk-boost#lk-boost) {
+  background: linear-gradient(90deg, #ffa24d, var(--lk-ind)) !important;
+}
+.lk-result :is(.calc-br-row, #lk-boost#lk-boost) b,
+.lk-result :is(.calc-br-row, #lk-boost#lk-boost) b bdi {
+  color: var(--lk-ink) !important;
+  font-weight: 500 !important;
+}
+.lk-result :is(.calc-br-go, #lk-boost#lk-boost) {
+  border: 0.75px solid var(--lk-line-2) !important;
+  color: var(--lk-muted) !important;
+  background: #fff !important;
+}
+.lk-result :is(.calc-br-go, #lk-boost#lk-boost):hover {
+  border-color: var(--lk-ink) !important;
+  background: var(--lk-ink) !important;
+  color: #fff !important;
+}
+/* Stage tags (breakdown + «Почему»): outline; the top priority gets the orange indicator tag. */
+.lk-result :is(.calc-stage-tag, #lk-boost#lk-boost) {
+  background: #fff !important;
+  color: var(--lk-muted) !important;
+  border: 0.75px solid var(--lk-line-2) !important;
+  box-shadow: none !important;
+}
+.lk-result :is(.calc-stage-tag, #lk-boost#lk-boost)[data-top] {
+  background: var(--lk-ind-soft) !important;
+  color: var(--lk-ind-ink) !important;
+  border-color: var(--lk-ind-mid) !important;
+}
+/* «Итого»: the one dark plate of the block. */
+.lk-result :is(.calc-br-total, #lk-boost#lk-boost) {
+  background-color: #1e1e1e !important;
+  background-image:
+    radial-gradient(70% 140% at 0% 0%, rgba(255, 233, 199, 0.16), transparent 60%),
+    radial-gradient(60% 120% at 100% 100%, rgba(255, 121, 0, 0.16), transparent 65%),
+    linear-gradient(160deg, #2a2a2a 0%, #151515 100%) !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  color: #fff !important;
+  margin-top: 28px !important;
+  padding: 28px 32px !important;
+}
+.lk-result :is(.calc-br-total, #lk-boost#lk-boost) :is(span, b, bdi) {
+  color: #fff !important;
+}
+.lk-result :is(.calc-br-total, #lk-boost#lk-boost) > div > span + span,
+.lk-result :is(.calc-br-total, #lk-boost#lk-boost) b > span {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.lk-result :is(.calc-br-total, #lk-boost#lk-boost) b {
+  font-weight: 500 !important;
+}
+
+/* — Почему это происходит — */
+.lk-result :is(.calc-why-line, #lk-boost#lk-boost) {
+  width: 0 !important;
+  background: none !important;
+  border-inline-start: 1px dashed #c9c9c9;
+}
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost) {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  font-weight: 500 !important;
+  box-shadow: inset 0 0 0 0.75px var(--lk-line-2), 0 0 0 5px var(--lk-bg) !important;
+}
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost)[data-top] {
+  box-shadow: inset 0 0 0 1px var(--lk-ink), 0 0 0 5px var(--lk-bg) !important;
+}
+.lk-result :is(.calc-why-card, #lk-boost#lk-boost) {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+.lk-result :is(.calc-why-card, #lk-boost#lk-boost)[data-top] {
+  border-inline-start: 2px solid var(--lk-red) !important;
+}
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost),
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost) bdi {
+  background: #f3f3f3 !important;
+  color: var(--lk-ink) !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-top],
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-top] bdi {
+  background: var(--lk-ind-soft) !important;
+  color: var(--lk-ind-ink) !important;
+}
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-top] {
+  box-shadow: inset 0 0 0 0.75px var(--lk-ind-mid) !important;
+}
+.lk-result :is(.calc-why-act, #lk-boost#lk-boost) {
+  background: #f8f8f8 !important;
+  box-shadow: inset 0 0 0 0.75px #ececec !important;
+  border-radius: 10px !important;
+}
+.lk-result :is(.calc-why-act, #lk-boost#lk-boost) > p:first-child {
+  color: var(--lk-ink) !important;
+}
+.lk-result :is(.calc-why-ico, #lk-boost#lk-boost) {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  box-shadow: inset 0 0 0 0.75px var(--lk-line-2) !important;
+  border-radius: 8px !important;
+}
+.lk-result :is(.calc-why-issue, #lk-boost#lk-boost) {
+  background: #fffaf5 !important;
+  border: 0.75px solid #ffe3c9 !important;
+  border-radius: 10px !important;
+}
+.lk-result :is(.calc-why-ico-issue, #lk-boost#lk-boost) {
+  background: var(--lk-ind-soft) !important;
+  color: var(--lk-ind) !important;
+  box-shadow: inset 0 0 0 0.75px var(--lk-ind-mid) !important;
+  border-radius: 8px !important;
+}
+.lk-result :is(.calc-why-arrow, #lk-boost#lk-boost) {
+  color: #b3b3b3 !important;
+}
+
+/* — Как мы это решим (оффер) — */
+.lk-result :is(.calc-fix-list, #lk-boost#lk-boost) {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+  backdrop-filter: none !important;
+}
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost) {
+  background: #f3f3f3 !important;
+  color: var(--lk-muted) !important;
+  font-weight: 600 !important;
+}
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-top] {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  box-shadow: inset 0 0 0 1px var(--lk-ink) !important;
+}
+.lk-result :is(.calc-fix-gain, #lk-boost#lk-boost),
+.lk-result :is(.calc-fix-gain, #lk-boost#lk-boost) :is(bdi, svg) {
+  background: var(--lk-gain-soft) !important;
+  color: var(--lk-gain) !important;
+}
+.lk-result :is(.calc-fix-gain, #lk-boost#lk-boost) {
+  box-shadow: inset 0 0 0 0.75px var(--lk-gain-line) !important;
+}
+.lk-result :is(.calc-fix-check, #lk-boost#lk-boost) {
+  color: var(--lk-gain) !important;
+}
+/* Pro-audit bonus: the warm gold of the landing badge instead of a grey card. */
+.lk-result :is(.calc-fix-bonus, #lk-boost#lk-boost) {
+  background: linear-gradient(120deg, #fff6e6, #fffbf3) !important;
+  border: 0.75px solid #f5dcae !important;
+  border-radius: 10px !important;
+}
+.lk-result :is(.calc-fix-bonus, #lk-boost#lk-boost) > span:first-child,
+.lk-result :is(.calc-fix-bonus, #lk-boost#lk-boost) span[class*='uppercase'] {
+  background: var(--lk-gold) !important;
+  color: #7a4f00 !important;
+}
+.lk-result :is(.calc-fix-bonus, #lk-boost#lk-boost) > span:first-child {
+  border-radius: 8px !important;
+}
+.lk-result :is(.calc-fix-tile, #lk-boost#lk-boost) {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+  backdrop-filter: none !important;
+}
+
+/* — Финальный CTA: сумма и срок на угольной плашке — */
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) {
+  background-color: #1e1e1e !important;
+  background-image:
+    radial-gradient(70% 120% at 0% 0%, rgba(255, 233, 199, 0.16), transparent 60%),
+    radial-gradient(60% 110% at 100% 100%, rgba(255, 121, 0, 0.14), transparent 65%),
+    linear-gradient(160deg, #2a2a2a 0%, #151515 100%) !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+}
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) :is(span, b, bdi, s, p) {
+  color: #fff !important;
+}
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) span[class*='uppercase'],
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) s,
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) s bdi,
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) > span:last-child,
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) b > span[aria-hidden] {
+  color: rgba(255, 255, 255, 0.62) !important;
+}
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) svg,
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) span > b,
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) span > b bdi {
+  color: var(--lk-gold) !important;
+}
+
+/* ===== Правка 47: heading bars red · stages coloured by zone · black KPI cards in the hero. ===== */
+
+/* Every section heading on the result screen keeps the brand red 2px bar (CardTitle + ReportH2). */
+.lk-result h2 > span[aria-hidden]:first-child:is([class*='w-[2px]'], #lk-boost#lk-boost) {
+  background: var(--lk-red) !important;
+  background-color: var(--lk-red) !important;
+}
+
+/* Zone = zoneOf(stage score): ≥95 green · ≥85 yellow · ≥76 orange · else red (same thresholds as the ring). */
+.lk-result [data-zone] {
+  --z: #e52421;
+  --z-soft: #fdecec;
+  --z-line: #f7c4c3;
+  --z-ink: #a31512;
+  --z-on: #fff;
+}
+.lk-result [data-zone='excellent'] {
+  --z: #22bf16;
+  --z-soft: #e8f6e6;
+  --z-line: #c9eac4;
+  --z-ink: #0e5a06;
+}
+.lk-result [data-zone='good'] {
+  --z: #e6b400;
+  --z-soft: #fff7d6;
+  --z-line: #f3e1a0;
+  --z-ink: #6e5200;
+  --z-on: #1e1e1e;
+}
+.lk-result [data-zone='warn'] {
+  --z: #ff7900;
+  --z-soft: #fff1e5;
+  --z-line: #ffd6b0;
+  --z-ink: #9a4300;
+}
+
+/* Breakdown rows: even hairline (no side stripe); the zone lives in the filled number and the bar. */
+.lk-result :is(.calc-br-row, #lk-boost#lk-boost)[data-zone] {
+  border: 0.75px solid var(--lk-line) !important;
+}
+/* Zone shown quietly: a 1px ring on the white number and a thin 2px bar — no fills, no tinted panels. */
+.lk-result [data-zone] > :is(.calc-br-num, #lk-boost#lk-boost),
+.lk-result [data-top][data-zone] > :is(.calc-br-num, #lk-boost#lk-boost) {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  box-shadow: inset 0 0 0 1px var(--z) !important;
+  font-weight: 500 !important;
+}
+.lk-result [data-zone] :is(.calc-br-track, #lk-boost#lk-boost) {
+  height: 2px !important;
+  background: #ededed !important;
+}
+.lk-result [data-zone] :is(.calc-br-fill, #lk-boost#lk-boost),
+.lk-result [data-top][data-zone] :is(.calc-br-fill, #lk-boost#lk-boost) {
+  background: var(--z) !important;
+}
+/* Top-priority tag: ink outline. */
+.lk-result :is(.calc-stage-tag, #lk-boost#lk-boost)[data-top] {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  border-color: var(--lk-ink) !important;
+}
+
+/* «Почему»: ringed numbers on the timeline, a short zone tick on top of the card; everything else neutral. */
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost)[data-zone] {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  font-weight: 500 !important;
+  box-shadow: inset 0 0 0 1px var(--z), 0 0 0 5px var(--lk-bg) !important;
+}
+.lk-result :is(.calc-why-card, #lk-boost#lk-boost)[data-zone] {
+  position: relative;
+  border: 0.75px solid var(--lk-line) !important;
+}
+.lk-result :is(.calc-why-card, #lk-boost#lk-boost)[data-zone]::before {
+  content: '';
+  position: absolute;
+  top: -0.75px;
+  inset-inline-start: 32px;
+  width: 32px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: var(--z);
+}
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-zone],
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-zone] bdi {
+  background: #f3f3f3 !important;
+  color: var(--lk-ink) !important;
+}
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-zone] {
+  box-shadow: none !important;
+}
+.lk-result :is(.calc-why-issue, #lk-boost#lk-boost),
+.lk-result [data-zone] :is(.calc-why-issue, #lk-boost#lk-boost) {
+  background: #fafafa !important;
+  border: 0.75px solid #ececec !important;
+}
+.lk-result :is(.calc-why-ico-issue, #lk-boost#lk-boost),
+.lk-result [data-zone] :is(.calc-why-ico-issue, #lk-boost#lk-boost) {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  box-shadow: inset 0 0 0 0.75px var(--lk-line-2) !important;
+}
+/* Offer list numbers: same ring. */
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone] {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  box-shadow: inset 0 0 0 1px var(--z) !important;
+}
+
+/* Hero KPI: four black cards — big figure, caption, then the former «?» popup text inline; tone tick on top. */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'val'
+    'cap'
+    'desc';
+  align-items: start !important;
+  align-content: start;
+  height: 100%;
+  row-gap: 8px;
+  padding: 18px 20px 16px !important;
+  border-radius: 10px !important;
+  border: 0 !important;
+  background-color: #1a1a1a !important;
+  background-image:
+    radial-gradient(90% 120% at 0% 0%, rgba(255, 233, 199, 0.14), transparent 60%),
+    radial-gradient(70% 100% at 100% 100%, var(--kpi-glow, rgba(255, 255, 255, 0.06)), transparent 70%),
+    linear-gradient(160deg, #2a2a2a 0%, #141414 100%) !important;
+  box-shadow: 0 14px 30px -20px rgba(0, 0, 0, 0.7) !important;
+  overflow: visible !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline-start: 20px;
+  width: 28px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: var(--kpi-tone, #fff);
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card[data-tone='gain'] {
+  --kpi-tone: #22bf16;
+  --kpi-glow: rgba(34, 191, 22, 0.16);
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card[data-tone='warn'] {
+  --kpi-tone: #ff7900;
+  --kpi-glow: rgba(255, 121, 0, 0.16);
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card[data-tone='loss'] {
+  --kpi-tone: #e52421;
+  --kpi-glow: rgba(229, 36, 33, 0.16);
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-cell:hover .calc-kpi-card {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 36px -20px rgba(0, 0, 0, 0.8) !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dd {
+  grid-area: val;
+  font-size: clamp(26px, 2.4vw, 34px) !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1 !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt {
+  grid-area: cap;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+  white-space: normal !important;
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt bdi {
+  color: rgba(255, 255, 255, 0.86) !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt span {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card .calc-kpi-bar,
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card .calc-kpi-arrows {
+  display: none !important;
+}
+/* «?» hidden for now; its popup text becomes the card's third line. */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card .calc-kpi-help-wrap {
+  display: contents;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card .calc-kpi-help {
+  display: none !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card p.calc-kpi-pop {
+  grid-area: desc;
+  position: static;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  transition: none;
+  margin: 4px 0 0 !important;
+  padding: 10px 0 0 !important;
+  border: 0 !important;
+  border-top: 0.75px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.62) !important;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card p.calc-kpi-pop::after {
+  content: none;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-cell {
+  height: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card {
+    transition: none;
+  }
+}
+
+/* ===== Правка 49: numbers ink-ringed, #1 (top priority) solid red; red top-priority tag;
+   KPI title to the right of the figure behind a vertical tone line. ===== */
+.lk-result [data-zone] > :is(.calc-br-num, #lk-boost#lk-boost),
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone] {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  box-shadow: inset 0 0 0 1px var(--lk-ink) !important;
+}
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost)[data-zone] {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  box-shadow: inset 0 0 0 1px var(--lk-ink), 0 0 0 5px var(--lk-bg) !important;
+}
+.lk-result [data-top][data-zone] > :is(.calc-br-num, #lk-boost#lk-boost),
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-top][data-zone],
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost)[data-top][data-zone] {
+  background: var(--lk-red) !important;
+  color: #fff !important;
+}
+.lk-result [data-top][data-zone] > :is(.calc-br-num, #lk-boost#lk-boost),
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-top][data-zone] {
+  box-shadow: none !important;
+}
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost)[data-top][data-zone] {
+  box-shadow: 0 0 0 5px var(--lk-bg) !important;
+}
+.lk-result :is(.calc-stage-tag, #lk-boost#lk-boost)[data-top] {
+  background: var(--lk-red) !important;
+  color: #fff !important;
+  border-color: var(--lk-red) !important;
+}
+
+/* KPI: [figure | tone line | title] on one row, description below. */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card {
+  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-areas:
+    'val bar cap'
+    'desc desc desc';
+  align-items: center !important;
+  column-gap: 12px;
+  row-gap: 12px;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card::before {
+  content: none;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card .calc-kpi-bar {
+  display: block !important;
+  grid-area: bar;
+  width: 0;
+  height: 28px;
+  border-inline-start: 2px solid var(--kpi-tone, #fff);
+  align-self: center !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt bdi {
+  color: #fff !important;
+}
+@media (max-width: 639px) {
+  .lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'val val'
+      'bar cap'
+      'desc desc';
+    column-gap: 10px;
+    row-gap: 10px;
+  }
+  .lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card .calc-kpi-bar {
+    height: 100%;
+    min-height: 16px !important;
+  }
+}
+
+/* ===== Правка 50: compact KPI · ink bars for ink-ringed numbers · «Почему» plates and panels. ===== */
+
+/* KPI: lower cards — smaller figure, slightly bigger title, smaller description, tighter padding. */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card {
+  padding: 14px 18px !important;
+  row-gap: 8px;
+  column-gap: 10px;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dd {
+  font-size: clamp(22px, 1.9vw, 28px) !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt {
+  font-size: 15px !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card .calc-kpi-bar {
+  height: 22px;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card p.calc-kpi-pop {
+  margin: 0 !important;
+  padding: 8px 0 0 !important;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Numbers: ring only via inset shadow (drop the inherited 1px ink border); bar fill matches the ring colour. */
+.lk-result :is(.calc-br-num, .calc-why-num, .calc-fix-num, #lk-boost#lk-boost) {
+  border: 0 !important;
+}
+.lk-result [data-zone] :is(.calc-br-fill, #lk-boost#lk-boost) {
+  background: var(--lk-ink) !important;
+}
+.lk-result [data-top][data-zone] :is(.calc-br-fill, #lk-boost#lk-boost) {
+  background: var(--lk-red) !important;
+}
+
+/* «Почему»: % plates in colour (zone tint), the two panels clearly different. */
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-zone],
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-zone] bdi {
+  background: var(--z-soft) !important;
+  color: var(--z-ink) !important;
+}
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-zone] {
+  box-shadow: inset 0 0 0 0.75px var(--z-line) !important;
+}
+/* Visitor action: cool neutral. */
+.lk-result :is(.calc-why-act, #lk-boost#lk-boost) {
+  background: #f5f6f8 !important;
+  box-shadow: inset 0 0 0 0.75px #e3e6ea !important;
+}
+.lk-result :is(.calc-why-ico, #lk-boost#lk-boost) {
+  background: #fff !important;
+  color: #3b4250 !important;
+  box-shadow: inset 0 0 0 0.75px #d5dae1 !important;
+}
+/* Issue found: warm amber, distinct from the action panel. */
+.lk-result :is(.calc-why-issue, #lk-boost#lk-boost),
+.lk-result [data-zone] :is(.calc-why-issue, #lk-boost#lk-boost) {
+  background: #fff8ef !important;
+  border: 0.75px solid #f6dfc2 !important;
+}
+.lk-result :is(.calc-why-ico-issue, #lk-boost#lk-boost),
+.lk-result [data-zone] :is(.calc-why-ico-issue, #lk-boost#lk-boost) {
+  background: #ffedd8 !important;
+  color: #b45309 !important;
+  box-shadow: inset 0 0 0 0.75px #f3cfa3 !important;
+}
+.lk-result .calc-loss-flow dl.calc-kpi-row {
+  margin-top: 16px !important;
+}
+.lk-result .calc-loss-flow .calc-hero-ctas {
+  margin-top: 20px !important;
+}
+.lk-result .calc-loss-flow {
+  margin-top: 8px !important;
+}
+
+/* ===== Правка 51/52: second accent (was violet; now black — bronze and dark grey sets kept commented below).
+   Red stays only on the top priority; the second accent carries every other stage; black only on the two totals. ===== */
+.lk-result {
+  /* black (ink) */
+  --lk-acc2: #1e1e1e;
+  --lk-acc2-deep: #1e1e1e;
+  --lk-acc2-mid: #1e1e1e;
+  --lk-acc2-soft: #eeeeee;
+  --lk-acc2-wash: #f5f5f5;
+  --lk-acc2-ring: #d6d6d6;
+  --lk-acc2-glow: rgba(255, 233, 199, 0.1);
+  /* bronze: #8c6a3f / #5e4526 / #b08d5e / #f6efe5 / #fbf8f3 / #e6d7c2, glow rgba(176, 141, 94, 0.3) */
+  /* dark grey: #4a4a4a / #2e2e2e / #7a7a7a / #eeeeee / #f7f7f7 / #d9d9d9, glow rgba(160, 160, 160, 0.22) */
+}
+
+/* Numbers (breakdown, «Почему», offer): accent fill, white figure; #1 stays solid red. */
+.lk-result [data-zone]:not([data-top]) > :is(.calc-br-num, #lk-boost#lk-boost),
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
+  background: var(--lk-acc2) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
+  background: var(--lk-acc2) !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 5px var(--lk-bg) !important;
+}
+/* Bars follow the number: accent on a light track; #1 red. */
+.lk-result [data-zone] :is(.calc-br-track, #lk-boost#lk-boost) {
+  background: var(--lk-acc2-soft) !important;
+}
+.lk-result [data-zone]:not([data-top]) :is(.calc-br-fill, #lk-boost#lk-boost) {
+  background: var(--lk-acc2-mid) !important;
+}
+/* Share tags and the jump arrows of the other stages: lilac. */
+.lk-result :is(.calc-stage-tag, #lk-boost#lk-boost):not([data-top]) {
+  background: var(--lk-acc2-soft) !important;
+  color: var(--lk-acc2) !important;
+  border-color: var(--lk-acc2-ring) !important;
+}
+.lk-result [data-zone]:not([data-top]) > :is(.calc-br-go, #lk-boost#lk-boost) {
+  border-color: var(--lk-acc2-ring) !important;
+  color: var(--lk-acc2) !important;
+}
+.lk-result [data-zone]:not([data-top]) > :is(.calc-br-go, #lk-boost#lk-boost):hover {
+  background: var(--lk-acc2) !important;
+  border-color: var(--lk-acc2) !important;
+  color: #fff !important;
+}
+.lk-result [data-top][data-zone] > :is(.calc-br-go, #lk-boost#lk-boost) {
+  border-color: var(--lk-red) !important;
+  color: var(--lk-red) !important;
+}
+.lk-result [data-top][data-zone] > :is(.calc-br-go, #lk-boost#lk-boost):hover {
+  background: var(--lk-red) !important;
+  color: #fff !important;
+}
+
+/* «Почему»: accent timeline, tick on the card, tinted % plate; #1 keeps red. */
+.lk-result :is(.calc-why-line, #lk-boost#lk-boost) {
+  border-inline-start: 2px solid var(--lk-acc2-ring) !important;
+}
+.lk-result :is(.calc-why-card, #lk-boost#lk-boost)[data-zone]::before {
+  background: var(--lk-acc2);
+}
+.lk-result :is(.calc-why-card, #lk-boost#lk-boost)[data-top][data-zone]::before {
+  background: var(--lk-red);
+}
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-zone]:not([data-top]),
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-zone]:not([data-top]) bdi {
+  background: var(--lk-acc2-soft) !important;
+  color: var(--lk-acc2-deep) !important;
+}
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
+  box-shadow: inset 0 0 0 0.75px var(--lk-acc2-ring) !important;
+}
+/* Visitor action = tinted panel with an accent icon; issue found stays warm amber. */
+.lk-result :is(.calc-why-act, #lk-boost#lk-boost) {
+  background: var(--lk-acc2-wash) !important;
+  box-shadow: inset 0 0 0 0.75px var(--lk-acc2-soft) !important;
+}
+.lk-result :is(.calc-why-act, #lk-boost#lk-boost) > p:first-child {
+  color: var(--lk-acc2-deep) !important;
+}
+.lk-result :is(.calc-why-ico, #lk-boost#lk-boost) {
+  background: var(--lk-acc2) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.lk-result :is(.calc-why-arrow, #lk-boost#lk-boost) {
+  color: var(--lk-acc2-mid) !important;
+}
+
+/* Dark totals: accent glow instead of orange, so the second accent ties them in. */
+.lk-result :is(.calc-br-total, .calc-cta-total, #lk-boost#lk-boost) {
+  background-image:
+    radial-gradient(70% 140% at 0% 0%, rgba(255, 233, 199, 0.12), transparent 60%),
+    radial-gradient(60% 120% at 100% 100%, var(--lk-acc2-glow), transparent 65%),
+    linear-gradient(160deg, #2a2a2a 0%, #151515 100%) !important;
+}
+/* Second accent is black: action panel neutral grey, issue panel warm amber — the two «Почему» panels stay distinct. */
+.lk-result :is(.calc-why-issue, #lk-boost#lk-boost),
+.lk-result [data-zone] :is(.calc-why-issue, #lk-boost#lk-boost) {
+  background: #fff8ef !important;
+  border: 0.75px solid #f6dfc2 !important;
+}
+
+/* Правка 55: numbers 2–4 look like the share tags next to the title — light grey fill, grey hairline, ink figure. #1 stays solid red. */
+.lk-result [data-zone]:not([data-top]) > :is(.calc-br-num, #lk-boost#lk-boost),
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
+  background: var(--lk-acc2-soft) !important;
+  color: var(--lk-ink) !important;
+  box-shadow: inset 0 0 0 0.75px var(--lk-acc2-ring) !important;
+}
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
+  background: var(--lk-acc2-soft) !important;
+  color: var(--lk-ink) !important;
+  box-shadow: inset 0 0 0 0.75px var(--lk-acc2-ring), 0 0 0 5px var(--lk-bg) !important;
+}
+
+/* Правка 56: numbers 2–4 — white with a thin grey hairline (user's reference); #1 stays solid red. */
+.lk-result [data-zone]:not([data-top]) > :is(.calc-br-num, #lk-boost#lk-boost),
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  font-weight: 400 !important;
+  box-shadow: inset 0 0 0 1px var(--lk-acc2-ring) !important;
+}
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  font-weight: 400 !important;
+  box-shadow: inset 0 0 0 1px var(--lk-acc2-ring), 0 0 0 5px var(--lk-bg) !important;
+}
+/* Правка 57: the halo around timeline numbers is white (incl. the red #1). */
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
+  box-shadow: inset 0 0 0 1px var(--lk-acc2-ring), 0 0 0 5px #fff !important;
+}
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost)[data-top][data-zone] {
+  box-shadow: 0 0 0 5px #fff !important;
+}
+
+/* Правка 58: «Почему» panels per the user's reference — action: white + 1px ink border, black icon tile;
+   issue: light grey + hairline, coral icon tile. */
+.lk-result :is(.calc-why-act, #lk-boost#lk-boost) {
+  background: #fff !important;
+  box-shadow: inset 0 0 0 1px var(--lk-ink) !important;
+  border-radius: 10px !important;
+}
+.lk-result :is(.calc-why-act, #lk-boost#lk-boost) > p:first-child {
+  color: var(--lk-ink) !important;
+}
+.lk-result :is(.calc-why-ico, #lk-boost#lk-boost) {
+  background: var(--lk-ink) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+}
+.lk-result :is(.calc-why-issue, #lk-boost#lk-boost),
+.lk-result [data-zone] :is(.calc-why-issue, #lk-boost#lk-boost) {
+  background: #f7f7f7 !important;
+  border: 0.75px solid #e3e3e3 !important;
+  border-radius: 10px !important;
+}
+.lk-result :is(.calc-why-ico-issue, #lk-boost#lk-boost),
+.lk-result [data-zone] :is(.calc-why-ico-issue, #lk-boost#lk-boost) {
+  background: #ff4542 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+}
+.lk-result :is(.calc-why-arrow, #lk-boost#lk-boost) {
+  color: #9a9a9a !important;
+}
+
+/* Правка 59: top priority in coral — #1 circles and the «Почему» % plate (white text). */
+.lk-result [data-top][data-zone] > :is(.calc-br-num, #lk-boost#lk-boost),
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-top][data-zone],
+.lk-result :is(.calc-why-num, #lk-boost#lk-boost)[data-top][data-zone] {
+  background: #ff4542 !important;
+  color: #fff !important;
+}
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-top][data-zone],
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-top][data-zone] bdi {
+  background: #ff4542 !important;
+  color: #fff !important;
+}
+.lk-result :is(.calc-why-plate, #lk-boost#lk-boost)[data-top][data-zone] {
+  box-shadow: none !important;
+}
+
+/* Правка 60: the top-priority row in «Где уходят клиенты» gets a coral start border (asked by the user). */
+.lk-result :is(.calc-br-row, #lk-boost#lk-boost)[data-top][data-zone] {
+  border-inline-start: 3px solid #ff4542 !important;
+}
+
+/* ===== Правка 62: hero KPI — light, compact report cards instead of black plates (less weight, less height). ===== */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card {
+  background: #fff !important;
+  background-image: none !important;
+  border: 0.75px solid var(--lk-line) !important;
+  box-shadow: none !important;
+  padding: 12px 16px !important;
+  row-gap: 6px;
+  column-gap: 10px;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-cell:hover .calc-kpi-card {
+  transform: none;
+  box-shadow: none !important;
+  border-color: var(--lk-line-2) !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card,
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card :is(dd, dt, bdi) {
+  color: var(--lk-ink) !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dd {
+  font-size: 20px !important;
+  font-weight: 500 !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt span {
+  color: var(--lk-faint) !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card .calc-kpi-bar {
+  height: 16px;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card p.calc-kpi-pop {
+  padding: 6px 0 0 !important;
+  border-top: 0.75px solid #ececec !important;
+  color: var(--lk-faint) !important;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt bdi {
+  color: var(--lk-ink) !important;
+}
+/* Правка 63: KPI cards get a start border in the tone colour (user request; side-tab ignore already set for this file). */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card {
+  border-inline-start: 3px solid var(--kpi-tone, var(--lk-line)) !important;
+}
+/* Правка 64: hero context line («Из каждых 100 посетителей…») on a white report card. */
+.lk-result .calc-hero-sub {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+  padding: 14px 20px !important;
+  margin-top: 28px !important;
+  margin-bottom: 16px !important;
+  font-size: clamp(15px, 1.2vw, 18px) !important;
+}
+/* Правка 65: an icon (visitors) at the start of the hero context card. */
+.lk-result .calc-hero-sub {
+  position: relative;
+  padding-inline-start: 64px !important;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+}
+.lk-result .calc-hero-sub::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 16px;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  margin-top: -16px;
+  border-radius: 8px;
+  background-color: var(--lk-ink);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 18px 18px;
+}
+@media (max-width: 639px) {
+  .lk-result .calc-hero-sub::before {
+    top: 16px;
+    margin-top: 0;
+  }
+}
+.lk-result .calc-hero-sub {
+  font-size: clamp(15px, 1.1vw, 17px) !important;
+}
+/* Правка 66: the context-card icon is an info sign (circled «i»), not people. */
+.lk-result .calc-hero-sub::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E");
+}
+
+/* Правка 67: info icon tile in coral. */
+.lk-result .calc-hero-sub::before {
+  background-color: #ff4542;
+}
+
+/* KPI cards: hover / keyboard focus dims the card and shows a round «down» button → jumps to «Где уходят клиенты». */
+.lk-result .calc-kpi-go {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  background: rgba(30, 30, 30, 0.62);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+.lk-result .calc-kpi-cell:hover .calc-kpi-go,
+.lk-result .calc-kpi-go:focus-visible {
+  opacity: 1;
+}
+.lk-result .calc-kpi-go:focus-visible {
+  outline: 2px solid #ff4542;
+  outline-offset: 2px;
+}
+.lk-result .calc-kpi-go-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--lk-ink);
+  transform: translateY(-4px);
+  transition: transform 0.25s ease;
+}
+.lk-result .calc-kpi-go-btn svg {
+  width: 20px;
+  height: 20px;
+}
+.lk-result .calc-kpi-cell:hover .calc-kpi-go-btn,
+.lk-result .calc-kpi-go:focus-visible .calc-kpi-go-btn {
+  transform: none;
+}
+.lk-result .calc-kpi-cell:hover .calc-kpi-go-btn svg {
+  animation: lk-scroll-bob 1.35s ease-in-out infinite;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-cell:hover .calc-kpi-card {
+  border-color: var(--lk-line) !important;
+  border-inline-start-color: var(--kpi-tone, var(--lk-line)) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-result .calc-kpi-go,
+  .lk-result .calc-kpi-go-btn {
+    transition: none;
+  }
+  .lk-result .calc-kpi-cell:hover .calc-kpi-go-btn svg {
+    animation: none;
+  }
+}
+/* Grid items honour z-index even when static: the inline description (old popup, z-index 9) sat above the overlay. */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card p.calc-kpi-pop {
+  z-index: auto !important;
+}
+.lk-result .calc-kpi-go {
+  z-index: 20;
+}
+/* Jumps to the breakdown («Смотреть разбор», KPI cards) stop below the sticky header, not under it. */
+.lk-result #loss-breakdown {
+  scroll-margin-top: calc(var(--lk-head, 72px) + 24px) !important;
+}
+
+/* Правка 68: no dimming overlay — a small animated «down» button sits right of the KPI title instead. */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card {
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'val bar cap go'
+    'desc desc desc desc';
+}
+.lk-result .calc-kpi-go {
+  grid-area: go;
+  position: static;
+  inset: auto;
+  z-index: auto;
+  opacity: 1;
+  background: none;
+  border-radius: 999px;
+  justify-self: end;
+  align-self: center;
+}
+.lk-result .calc-kpi-go-btn {
+  width: 28px;
+  height: 28px;
+  background: #fff;
+  color: var(--lk-ink);
+  box-shadow: inset 0 0 0 1px var(--lk-line-2);
+  transform: none;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.lk-result .calc-kpi-go-btn svg {
+  width: 14px;
+  height: 14px;
+  animation: lk-scroll-bob 1.35s ease-in-out infinite;
+}
+.lk-result .calc-kpi-cell:hover .calc-kpi-go-btn {
+  transform: none;
+}
+.lk-result .calc-kpi-go:hover .calc-kpi-go-btn,
+.lk-result .calc-kpi-go:focus-visible .calc-kpi-go-btn {
+  background: var(--lk-ink);
+  color: #fff;
+  box-shadow: none;
+}
+@media (max-width: 639px) {
+  .lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'val val go'
+      'bar cap cap'
+      'desc desc desc';
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lk-result .calc-kpi-go-btn svg {
+    animation: none;
+  }
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card span.calc-kpi-go-btn {
+  color: var(--lk-ink) !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card .calc-kpi-go:is(:hover, :focus-visible) span.calc-kpi-go-btn {
+  color: #fff !important;
+}
+/* Правка 69: smaller KPI «down» buttons. */
+.lk-result .calc-kpi-go-btn {
+  width: 22px;
+  height: 22px;
+}
+.lk-result .calc-kpi-go-btn svg {
+  width: 11px;
+  height: 11px;
+}
+/* Правка 70: KPI «down» buttons without the grey ring (light fill keeps them visible); slower colour fade on hover. */
+.lk-result .calc-kpi-go-btn {
+  background: #f1f1f1;
+  box-shadow: none;
+  transition: background-color 0.45s ease, color 0.45s ease;
+}
+.lk-result .calc-kpi-go:hover .calc-kpi-go-btn,
+.lk-result .calc-kpi-go:focus-visible .calc-kpi-go-btn {
+  box-shadow: none;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card span.calc-kpi-go-btn {
+  transition: background-color 0.45s ease, color 0.45s ease !important;
+}
+/* Правка 71: KPI «down» buttons on white (no grey fill, no ring). */
+.lk-result .calc-kpi-go-btn {
+  background: #fff;
+}
+
+/* ===== Правка 72: offer + tech accordion. ===== */
+/* Pro bonus in green (gain), not gold. */
+.lk-result :is(.calc-fix-bonus, #lk-boost#lk-boost) {
+  background: #eef9ec !important;
+  border: 0.75px solid #cfeccb !important;
+}
+.lk-result :is(.calc-fix-bonus, #lk-boost#lk-boost) > span:first-child {
+  background: #22bf16 !important;
+  color: #fff !important;
+}
+.lk-result :is(.calc-fix-bonus, #lk-boost#lk-boost) span[class*='uppercase'] {
+  background: #22bf16 !important;
+  color: #fff !important;
+}
+.lk-result :is(.calc-fix-bonus, #lk-boost#lk-boost) b,
+.lk-result :is(.calc-fix-bonus, #lk-boost#lk-boost) b :is(bdi, span) {
+  color: #1d7a12 !important;
+}
+/* Offer tiles: figures were white on white. */
+.lk-result :is(.calc-fix-tile, #lk-boost#lk-boost) dd,
+.lk-result :is(.calc-fix-tile, #lk-boost#lk-boost) dd :is(bdi, span) {
+  color: var(--lk-ink) !important;
+}
+.lk-result :is(.calc-fix-tile, #lk-boost#lk-boost) dd[style*='134, 239, 172'],
+.lk-result :is(.calc-fix-tile, #lk-boost#lk-boost) dd[style*='134, 239, 172'] :is(bdi, span) {
+  color: #1d7a12 !important;
+}
+.lk-result :is(.calc-fix-tile, #lk-boost#lk-boost) dt {
+  color: var(--lk-faint) !important;
+}
+/* Tech accordion: same width as the other blocks (drop the inner side padding). */
+.lk-result .calc-tech-flow > div {
+  max-width: none !important;
+  padding-inline: 0 !important;
+}
+/* Diagnostic scales: coloured segments again (green / orange / red), like the leak-en report. */
+.lk-result .calc-tech-flow :is(i, #lk-boost#lk-boost)[class*='h-[3px]'][style*='34, 191, 22'] {
+  background: #22bf16 !important;
+  background-color: #22bf16 !important;
+}
+.lk-result .calc-tech-flow :is(i, #lk-boost#lk-boost)[class*='h-[3px]'][style*='255, 121, 0'] {
+  background: #ff7900 !important;
+  background-color: #ff7900 !important;
+}
+.lk-result .calc-tech-flow :is(i, #lk-boost#lk-boost)[class*='h-[3px]'][style*='229, 36, 33'] {
+  background: #e52421 !important;
+  background-color: #e52421 !important;
+}
+
+/* Правка 73: status chips (Хорошо / Внимание / Критично) in colour again, as in the leak-en report. */
+.lk-result :is(span, #lk-boost#lk-boost)[class*='bg-[#eef9ec]'] {
+  background: #eef9ec !important;
+  border-color: #cfeccb !important;
+  color: #1d7a12 !important;
+}
+.lk-result :is(span, #lk-boost#lk-boost)[class*='bg-[#fff6ec]'] {
+  background: #fff6ec !important;
+  border-color: #f8dcc0 !important;
+  color: #9a4a00 !important;
+}
+.lk-result :is(span, #lk-boost#lk-boost)[class*='bg-[#fff1f0]'] {
+  background: #fff1f0 !important;
+  border-color: #fca5a5 !important;
+  color: #b91c1c !important;
+}
+
+/* ===== Правка 74: «Как мы это решим» ===== */
+/* Kicker on a black plate. */
+.lk-result :is(.calc-fix-kicker, #lk-boost#lk-boost) {
+  background: var(--lk-ink) !important;
+  border-color: var(--lk-ink) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+.lk-result :is(.calc-fix-kicker, #lk-boost#lk-boost) i {
+  background: #22bf16 !important;
+}
+/* «3–5 дней» heavy, like the hero 22%. */
+.lk-result :is(.calc-fix-days, #lk-boost#lk-boost),
+.lk-result :is(.calc-fix-days, #lk-boost#lk-boost) bdi {
+  font-weight: 900 !important;
+  letter-spacing: -0.04em !important;
+  color: var(--lk-ink) !important;
+}
+/* «Что исправим» numbers: green (gain), #1 included. */
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone],
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone][data-top] {
+  background: #22bf16 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+/* «Сумма исправлений» in colour. */
+.lk-result :is(.calc-fix-sum, #lk-boost#lk-boost),
+.lk-result :is(.calc-fix-sum, #lk-boost#lk-boost) bdi {
+  color: #1d7a12 !important;
+}
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
+  background: #22bf16 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+/* ===== Правка 75: «Что исправим» card built like the hero «Результаты аудита» card. ===== */
+.lk-result :is(.calc-fix-list, #lk-boost#lk-boost) {
+  padding: 0 0 24px !important;
+  overflow: hidden !important;
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+  box-shadow:
+    0 10px 28px -12px rgba(30, 30, 30, 0.18),
+    0 3px 10px -4px rgba(30, 30, 30, 0.08) !important;
+}
+.lk-result :is(.calc-fix-list, #lk-boost#lk-boost) > :not(.calc-fix-list-head) {
+  margin-inline: 20px !important;
+}
+@media (min-width: 640px) {
+  .lk-result :is(.calc-fix-list, #lk-boost#lk-boost) > :not(.calc-fix-list-head) {
+    margin-inline: 28px !important;
+  }
+}
+.lk-result .calc-fix-list-head {
+  margin: 0 0 8px !important;
+  padding: 12px 20px !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.06em !important;
+}
+.lk-result .calc-fix-list-dot {
+  display: flex !important;
+}
+/* Numbers: white with a green ring, green figure. */
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone],
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone][data-top],
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
+  background: #fff !important;
+  color: #1d7a12 !important;
+  box-shadow: inset 0 0 0 1.5px #22bf16 !important;
+}
+.lk-result :is(.calc-fix-list-head, #lk-boost#lk-boost) {
+  color: #fff !important;
+}
+/* «Что исправим» numbers: white with a black ring, ink figure (user request). */
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone],
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone][data-top],
+.lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
+  background: #fff !important;
+  color: var(--lk-ink) !important;
+  box-shadow: inset 0 0 0 1px var(--lk-ink) !important;
+}
+
+/* Правка 76: hero kicker = small black plate with a green dot (same as «Как мы это решим»). */
+.lk-result .calc-loss-flow h1 span.calc-hero-label {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  width: auto !important;
+  max-width: max-content !important;
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
+  background: var(--lk-ink) !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 18px !important;
+  letter-spacing: 0.04em !important;
+}
+.lk-result .calc-hero-label-dot {
+  display: inline-block !important;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #22bf16;
+  flex-shrink: 0;
+}
+.lk-result .calc-loss-flow h1 :is(span.calc-hero-label, #lk-boost#lk-boost) {
+  color: #fff !important;
+}
+
+/* Правка 77: «3–5 дней» in coral; «Что исправим» keeps only the sum, aligned to the end side. */
+.lk-result :is(.calc-fix-days, #lk-boost#lk-boost),
+.lk-result :is(.calc-fix-days, #lk-boost#lk-boost) bdi {
+  color: #ff4542 !important;
+}
+.lk-result .calc-fix-totals {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+.lk-result .calc-fix-totals > div:nth-child(2) {
+  display: none !important;
+}
+.lk-result .calc-fix-totals > div:first-child {
+  align-items: flex-end !important;
+  text-align: end !important;
+}
+.lk-result .calc-fix-totals + p {
+  text-align: end;
+}
+
+/* ===== Правка 78: hero context as a small sub-heading under the H1 (left column ≈ height of the result card);
+   the KPI row gets more air. ===== */
+.lk-result .calc-hero-lede {
+  margin-top: 20px !important;
+  max-width: 34rem !important;
+  color: var(--lk-muted) !important;
+  font-size: clamp(15px, 1.15vw, 17px) !important;
+  line-height: 1.55 !important;
+  text-wrap: pretty;
+}
+.lk-result .calc-loss-flow dl.calc-kpi-row {
+  margin-top: 40px !important;
+  gap: 16px !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card {
+  padding: 16px 20px !important;
+}
+.lk-result .calc-loss-flow .calc-hero-ctas {
+  margin-top: 28px !important;
+}
+/* Правка 79: KPI titles larger. */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt {
+  font-size: 16px !important;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card .calc-kpi-bar {
+  height: 18px;
+}
+/* Правка 80: KPI detail («· Скорость») small, so «Узкое место · Скорость» stays on one line. */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt span {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  white-space: nowrap;
+}
+/* Detail goes under the title as a small caption (one-line title, no overflow on phones). */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt span {
+  display: block;
+  white-space: normal;
+  margin-top: 2px;
+  font-size: 12px !important;
+  line-height: 1.3;
+}
+/* Правка 81: KPI detail («Скорость») = small red plate with white text next to the title. */
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt span.calc-kpi-detail {
+  display: inline-block;
+  vertical-align: 2px;
+  margin: 0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e52421;
+  color: #fff !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 14px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card {
+  column-gap: 9px;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt span.calc-kpi-detail {
+  padding: 2px 5px;
+}
+.lk-result .calc-loss-flow .calc-kpi-row .calc-kpi-card dt span.calc-kpi-detail {
+  letter-spacing: 0;
+  padding: 2px 5px;
+}
+
+/* ===== Правка 82: last two blocks like the leak-en report (no lilac). ===== */
+/* Tech accordion: black icon tile and black round toggle. */
+.lk-result .calc-tech-flow > div > button :is(span, #lk-boost#lk-boost)[style*='background'] {
+  background: var(--lk-ink) !important;
+  background-color: var(--lk-ink) !important;
+  border-color: var(--lk-ink) !important;
+  color: #fff !important;
+}
+/* Final CTA: on the page background (no card), heavy two-line heading — ink + red. */
+.lk-result > div > section:last-of-type {
+  background: transparent !important;
+  border: 0 !important;
+}
+.lk-result > div > section:last-of-type h2 {
+  font-size: clamp(36px, 7.2vw, 96px) !important;
+  font-weight: 600 !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.045em !important;
+}
+.lk-result > div > section:last-of-type h2 > span:first-child {
+  color: var(--lk-ink) !important;
+}
+.lk-result > div > section:last-of-type h2 > span:last-child {
+  color: #e52421 !important;
+}
+/* Sum + timeline plate: the homepage dark gradient (`.dark-gradient-bg`). */
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) {
+  background-color: #141414 !important;
+  background-image:
+    radial-gradient(ellipse 130% 110% at 82% 14%, rgba(196, 206, 220, 0.11) 0%, rgba(196, 206, 220, 0.05) 22%, rgba(30, 30, 30, 0.03) 48%, transparent 78%),
+    radial-gradient(ellipse 100% 90% at -8% 108%, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.2) 35%, transparent 72%),
+    radial-gradient(ellipse 75% 65% at 4% -2%, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 30%, transparent 62%),
+    radial-gradient(ellipse 110% 95% at 50% 55%, #1e1e1e 0%, #161616 55%, #121212 100%) !important;
+  border-radius: 14px !important;
+}
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) b,
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) b > bdi {
+  color: #fff !important;
+  font-weight: 900 !important;
+}
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) [style*='134, 239, 172'],
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) [style*='134, 239, 172'] :is(bdi, span),
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) span > b,
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) span > b bdi,
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) svg {
+  color: #86efac !important;
+}
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) > span:first-of-type,
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) > span:first-of-type > :not(span) {
+  color: #fff !important;
+}
+/* WhatsApp button as in the report: white with an ink outline. */
+.lk-result > div > section:last-of-type a[class*='rounded-full'] {
+  background: #fff !important;
+  border: 1px solid var(--lk-ink) !important;
+  color: var(--lk-ink) !important;
+}
+.lk-result > div > section:last-of-type a[class*='rounded-full']:hover {
+  background: var(--lk-ink) !important;
+  color: #fff !important;
+}
+.lk-result > div > section:last-of-type :is(a, #lk-boost#lk-boost)[class*='rounded-full'] {
+  background: #fff !important;
+  background-color: #fff !important;
+  border: 1px solid var(--lk-ink) !important;
+  color: var(--lk-ink) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.lk-result > div > section:last-of-type :is(a, #lk-boost#lk-boost)[class*='rounded-full']:hover {
+  background: var(--lk-ink) !important;
+  background-color: var(--lk-ink) !important;
+  color: #fff !important;
+}
+@media (max-width: 639px) {
+  .lk-result > div > section:last-of-type h2 {
+    font-size: clamp(32px, 9vw, 44px) !important;
+    text-align: center;
+  }
+  .lk-result > div > section:last-of-type h2 > span:first-child {
+    display: block !important;
+    width: auto !important;
+    white-space: normal !important;
+    text-wrap: balance;
+  }
+}
+
+/* ===== Правка 83 ===== */
+/* Tech accordion header: its own white card (reads as an expandable block), coral icon tile,
+   white round toggle with a grey ring that turns black on hover. */
+.lk-result .calc-tech-flow > div > button {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+  padding: 20px 24px !important;
+  box-shadow: 0 10px 28px -16px rgba(30, 30, 30, 0.22);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.lk-result .calc-tech-flow > div > button:hover {
+  border-color: var(--lk-line-2) !important;
+  box-shadow: 0 14px 32px -16px rgba(30, 30, 30, 0.3);
+}
+.lk-result .calc-tech-flow > div > button > span:first-child :is(span, #lk-boost#lk-boost)[style*='background'] {
+  background: #ff4542 !important;
+  background-color: #ff4542 !important;
+  border-color: #ff4542 !important;
+  color: #fff !important;
+}
+.lk-result .calc-tech-flow > div > button > :is(span, #lk-boost#lk-boost)[style*='background']:last-child {
+  background: #fff !important;
+  background-color: #fff !important;
+  border: 1px solid var(--lk-line-2) !important;
+  color: var(--lk-ink) !important;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lk-result .calc-tech-flow > div > button:hover > :is(span, #lk-boost#lk-boost)[style*='background']:last-child {
+  background: var(--lk-ink) !important;
+  background-color: var(--lk-ink) !important;
+  border-color: var(--lk-ink) !important;
+  color: #fff !important;
+}
+@media (max-width: 639px) {
+  .lk-result .calc-tech-flow > div > button {
+    padding: 16px !important;
+  }
+}
+/* Final CTA plate: the landing's dark gradient (as in «Что проверяем»); timeline in coral. */
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) {
+  background-color: #1e1e1e !important;
+  background-image:
+    radial-gradient(70% 90% at 0% 0%, rgba(255, 233, 199, 0.16), transparent 60%),
+    radial-gradient(60% 80% at 100% 100%, rgba(229, 36, 33, 0.14), transparent 65%),
+    linear-gradient(160deg, #262626 0%, #161616 100%) !important;
+}
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) b[style*='134, 239, 172'],
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) b[style*='134, 239, 172'] bdi {
+  color: #ff4542 !important;
+}
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) span > b[style*='134, 239, 172'],
+.lk-result :is(.calc-cta-total, #lk-boost#lk-boost) span > b[style*='134, 239, 172'] bdi {
+  color: #86efac !important;
+}
+
+/* ===== Правка 84: tech report details as in leak-en; accordion = one white card; final heading air. ===== */
+/* Whole accordion is a single white card (no shadow); header has no own card, content opens inside. */
+.lk-result .calc-tech-flow > div {
+  background: #fff !important;
+  border: 0.75px solid var(--lk-line) !important;
+  border-radius: 10px !important;
+  padding: 24px !important;
+}
+@media (min-width: 1024px) {
+  .lk-result .calc-tech-flow > div {
+    padding: 28px 32px !important;
+  }
+}
+.lk-result .calc-tech-flow > div > button,
+.lk-result .calc-tech-flow > div > button:hover {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+.lk-result .calc-tech-flow > div > [id] > div > * {
+  margin-top: 24px;
+}
+/* Filter chips: the active one filled (all = ink, others in their status colour). */
+.lk-result .calc-tech-flow :is(button, #lk-boost#lk-boost)[aria-pressed='true'] {
+  color: #fff !important;
+}
+.lk-result .calc-tech-flow :is(button, #lk-boost#lk-boost)[aria-pressed='true'][style*='30, 30, 30'] {
+  background: var(--lk-ink) !important;
+  background-color: var(--lk-ink) !important;
+  border-color: var(--lk-ink) !important;
+}
+.lk-result .calc-tech-flow :is(button, #lk-boost#lk-boost)[aria-pressed='true'][style*='34, 191, 22'] {
+  background: #22bf16 !important;
+  background-color: #22bf16 !important;
+  border-color: #22bf16 !important;
+}
+.lk-result .calc-tech-flow :is(button, #lk-boost#lk-boost)[aria-pressed='true'][style*='255, 121, 0'] {
+  background: #ff7900 !important;
+  background-color: #ff7900 !important;
+  border-color: #ff7900 !important;
+}
+.lk-result .calc-tech-flow :is(button, #lk-boost#lk-boost)[aria-pressed='true'][style*='229, 36, 33'] {
+  background: #e52421 !important;
+  background-color: #e52421 !important;
+  border-color: #e52421 !important;
+}
+/* Protocol tiles: coloured 2px top edge back. */
+.lk-result .calc-tech-flow :is(div, #lk-boost#lk-boost)[style*='border-top-color: rgb(34, 191, 22)'] {
+  border-top-color: #22bf16 !important;
+}
+.lk-result .calc-tech-flow :is(div, #lk-boost#lk-boost)[style*='border-top-color: rgb(255, 121, 0)'] {
+  border-top-color: #ff7900 !important;
+}
+.lk-result .calc-tech-flow :is(div, #lk-boost#lk-boost)[style*='border-top-color: rgb(229, 36, 33)'] {
+  border-top-color: #e52421 !important;
+}
+/* Protocol bullets: red dots, as in the report. */
+.lk-result .calc-tech-flow :is(span, #lk-boost#lk-boost)[class~='size-1.5'][class*='bg-[#e52421]'] {
+  background: #e52421 !important;
+  background-color: #e52421 !important;
+}
+
+/* Final CTA heading: more air and line spacing. */
+.lk-result > div > section:last-of-type {
+  padding-top: clamp(64px, 9vw, 140px) !important;
+  padding-bottom: clamp(64px, 9vw, 140px) !important;
+}
+.lk-result > div > section:last-of-type h2 {
+  line-height: 1.12 !important;
+  margin-bottom: 16px !important;
+}
+/* Правка 85: tech accordion card on #f0f0f0. */
+.lk-result .calc-tech-flow > div {
+  background: #f0f0f0 !important;
+}
+
+/* ===== Правка 85: result CTA plate split like the landing's final block —
+   figures on the start side, live graph with floating fixes on the end side. ===== */
+.lk-result .calc-cta-split {
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  min-height: 360px;
+  background-color: #1e1e1e;
+  background-image:
+    radial-gradient(70% 90% at 0% 0%, rgba(255, 233, 199, 0.16), transparent 60%),
+    radial-gradient(60% 80% at 100% 100%, rgba(229, 36, 33, 0.14), transparent 65%),
+    linear-gradient(160deg, #262626 0%, #161616 100%);
+}
+.lk-result .calc-cta-split :is(.calc-cta-total, #lk-boost#lk-boost) {
+  background: transparent !important;
+  background-image: none !important;
+  border-radius: 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  align-items: flex-start !important;
+  justify-content: center;
+  gap: 14px !important;
+  padding: 40px 44px !important;
+  text-align: start !important;
+}
+.lk-result .calc-cta-split .calc-cta-total > div.grid {
+  grid-template-columns: repeat(2, max-content) !important;
+  justify-content: start;
+  column-gap: 48px !important;
+}
+.lk-result .calc-cta-split .calc-cta-total > div.grid > div {
+  align-items: flex-start !important;
+}
+.lk-result .calc-cta-visual {
+  border-inline-start: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 280px;
+}
+@media (max-width: 1023px) {
+  .lk-result .calc-cta-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lk-result .calc-cta-split :is(.calc-cta-total, #lk-boost#lk-boost) {
+    padding: 32px 24px !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  .lk-result .calc-cta-split .calc-cta-total > div.grid {
+    justify-content: center;
+  }
+  .lk-result .calc-cta-split .calc-cta-total > div.grid > div {
+    align-items: center !important;
+  }
+  .lk-result .calc-cta-visual {
+    border-inline-start: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 260px;
+  }
+}
+@media (max-width: 639px) {
+  .lk-result .calc-cta-split .calc-cta-total > div.grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    row-gap: 16px !important;
+  }
+}
+/* The split plate is wider than the heading column (which is as wide as «Верните заявки.»): centred overflow. */
+.lk-result .calc-cta-split {
+  width: min(1120px, calc(100vw - 32px)) !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  align-self: center;
+}
+
+/* Правка 86: heading in the dark CTA plate, as in the landing's final block (red 2px bar, white, light weight). */
+.lk-result .calc-cta-total .calc-cta-title {
+  display: flex;
+  align-items: stretch;
+  margin: 0 0 12px !important;
+  padding-inline-start: 28px;
+  border-inline-start: 2px solid #e52421;
+  color: #fff !important;
+  font-size: clamp(26px, 2.6vw, 36px);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-align: start;
+  text-wrap: balance;
+}
+@media (max-width: 1023px) {
+  .lk-result .calc-cta-total .calc-cta-title {
+    padding-inline-start: 16px;
+    text-align: start;
+    align-self: center;
+  }
+}
+
+/* Правка 87: dark CTA plate — tighter spacing, everything centred on the column's middle line. */
+.lk-result .calc-cta-split :is(.calc-cta-total, #lk-boost#lk-boost) {
+  align-items: center !important;
+  text-align: center !important;
+  gap: 6px !important;
+}
+.lk-result .calc-cta-total .calc-cta-title {
+  align-self: center;
+  margin: 0 0 10px !important;
+  text-align: start;
+}
+.lk-result .calc-cta-split .calc-cta-total > div.grid {
+  justify-content: center !important;
+  row-gap: 8px !important;
+}
+.lk-result .calc-cta-split .calc-cta-total > div.grid > div {
+  align-items: center !important;
+}
+.lk-result .calc-cta-split .calc-cta-total > span {
+  margin-top: 4px !important;
+}
+/* Правка 87b: left-aligned (start) text in the dark plate, vertically centred; the figures row lost the
+   inherited 40px block padding (old `.calc-fix-flow > div` rule). */
+.lk-result .calc-cta-split :is(.calc-cta-total, #lk-boost#lk-boost) {
+  align-items: flex-start !important;
+  text-align: start !important;
+  justify-content: center !important;
+}
+.lk-result .calc-cta-total .calc-cta-title {
+  align-self: flex-start;
+}
+.lk-result .calc-cta-split .calc-cta-total > div.grid {
+  justify-content: start !important;
+  padding-block: 0 !important;
+  margin-block: 0 !important;
+}
+.lk-result .calc-cta-split .calc-cta-total > div.grid > div {
+  align-items: flex-start !important;
+}
+@media (max-width: 1023px) {
+  .lk-result .calc-cta-split :is(.calc-cta-total, #lk-boost#lk-boost) {
+    align-items: flex-start !important;
+    text-align: start !important;
+  }
+  .lk-result .calc-cta-split .calc-cta-total > div.grid {
+    justify-content: start !important;
+  }
+  .lk-result .calc-cta-split .calc-cta-total > div.grid > div {
+    align-items: flex-start !important;
+  }
+  .lk-result .calc-cta-total .calc-cta-title {
+    align-self: flex-start;
+  }
+}
+.lk-result .calc-cta-total .calc-cta-title {
+  margin-bottom: 24px !important;
 }

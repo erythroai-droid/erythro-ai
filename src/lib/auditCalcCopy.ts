@@ -1290,6 +1290,37 @@ export const auditCalcCopy = {
   /** Biggest funnel leak tile (red): −N% above, stage name below. */
   step4StatBadgeLeak: { en: 'Leak', ru: 'Утечка', he: 'דליפה' } satisfies Localized,
   step4StatBadgeStages: { en: 'Risk', ru: 'Риск', he: 'סיכון' } satisfies Localized,
+  /** Longer line under the KPI title (audit LP horizontal tiles; calculator may ignore). */
+  step4StatDescYear: {
+    en: 'Estimated yearly impact if the issues in this report stay unfixed.',
+    ru: 'Оценка годового эффекта, если проблемы из отчёта не устранить.',
+    he: 'הערכת ההשפעה השנתית אם לא יתוקנו הבעיות שבדוח.',
+  } satisfies Localized,
+  step4StatDescClients: {
+    en: 'Approximate number of clients you could win back each month after the fixes.',
+    ru: 'Ориентировочно столько клиентов можно вернуть в месяц после исправлений.',
+    he: 'מספר משוער של לקוחות שאפשר להחזיר בכל חודש אחרי התיקונים.',
+  } satisfies Localized,
+  step4StatDescUpside: {
+    en: 'Share of visitors you can win back to an inquiry after fixing the issues in this report.',
+    ru: 'Доля посетителей, которую можно вернуть к заявке после устранения проблем из отчёта.',
+    he: 'חלק המבקרים שאפשר להחזיר לפנייה אחרי תיקון הבעיות שבדוח.',
+  } satisfies Localized,
+  step4StatDescScore: {
+    en: 'Overall funnel health across speed, forms, visibility and trust — how well the site leads to an inquiry.',
+    ru: 'Сводная оценка воронки по скорости, формам, видимости и доверию — насколько сайт доводит до заявки.',
+    he: 'ציון כולל של המשפך במהירות, טפסים, נראות ואמון — עד כמה האתר מוביל לפנייה.',
+  } satisfies Localized,
+  step4StatDescLeak: {
+    en: 'Biggest drop-off is at «{stage}» — this stage costs the most potential inquiries.',
+    ru: 'Главный отсев на этапе «{stage}» — здесь теряется больше всего потенциальных заявок.',
+    he: 'הנשירה הגדולה ביותר בשלב «{stage}» — כאן הולכות לאיבוד הכי הרבה פניות פוטנציאליות.',
+  } satisfies Localized,
+  step4StatDescStages: {
+    en: 'How many funnel stages currently cut conversion and need attention.',
+    ru: 'Сколько этапов воронки сейчас снижают конверсию и требуют внимания.',
+    he: 'כמה שלבי משפך מורידים כרגע המרה ודורשים טיפול.',
+  } satisfies Localized,
   step4WhereTitle: { en: 'Where the money leaks', ru: 'Куда уходят деньги', he: 'לאן הכסף דולף' } satisfies Localized,
   step4WhereSub: {
     en: 'Losses by funnel stage, from the biggest to the smallest.',
@@ -1371,11 +1402,15 @@ export const auditCalcCopy = {
   step4DotsLost: { en: '{n} leave without an inquiry', ru: '{n} уходят без заявки', he: '{n} עוזבים בלי פנייה' } satisfies Localized,
   step4DotsKept: { en: '{n} leave an inquiry', ru: '{n} оставляют заявку', he: '{n} משאירים פנייה' } satisfies Localized,
   step4RingTitle: { en: 'Who reaches an inquiry', ru: 'Кто доходит до заявки', he: 'מי מגיע לפנייה' } satisfies Localized,
+  /** Black top plaque on the insight card (audit LP). */
+  step4InsightBadge: { en: 'Audit results', ru: 'Результаты аудита', he: 'תוצאות הביקורת' } satisfies Localized,
   step4RingCenter: { en: 'reach an inquiry', ru: 'доходят до заявки', he: 'מגיעים לפנייה' } satisfies Localized,
   step4RingLegendKept: { en: 'Reach an inquiry', ru: 'Доходят до заявки', he: 'מגיעים לפנייה' } satisfies Localized,
   step4RingLegendLost: { en: 'Lost on the way', ru: 'Теряются по пути', he: 'אובדים בדרך' } satisfies Localized,
   step4LeaksByStage: { en: 'Losses by stage', ru: 'Потери по этапам', he: 'אובדן לפי שלבים' } satisfies Localized,
   step4LeaksTotal: { en: 'Total lost', ru: 'Всего теряется', he: 'סה״כ אובדן' } satisfies Localized,
+  /** Small line under the insight-card total (audit LP overrides; calculator leaves empty). */
+  step4LeaksTotalHint: { en: '', ru: '', he: '' } satisfies Localized,
   step4TopLeaks: { en: 'Biggest leaks', ru: 'Главные утечки', he: 'הדליפות הגדולות' } satisfies Localized,
   step4StatLeakStages: { en: 'funnel stages losing clients', ru: 'этапов воронки теряют клиентов', he: 'שלבי משפך מאבדים לקוחות' } satisfies Localized,
   step4StagesHeading: {

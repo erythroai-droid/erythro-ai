@@ -234,3 +234,61 @@ export default function LeakFinalCta({
     </div>
   )
 }
+
+// Fix-sprint items floating over the graph on the result screen: what gets fixed, the dot is green = done.
+const FIXES: { e: string; q: Record<Lang, string> }[] = [
+  { e: 'Speed', q: { en: 'images compressed', ru: 'сжатие изображений', he: 'דחיסת תמונות' } },
+  { e: 'CSS', q: { en: 'critical CSS inlined', ru: 'критический CSS', he: 'CSS קריטי' } },
+  { e: 'Form', q: { en: 'shorter inquiry form', ru: 'короткая форма заявки', he: 'טופס פנייה קצר' } },
+  { e: 'AI', q: { en: 'llms.txt and schema', ru: 'llms.txt и разметка', he: 'llms.txt וסכמה' } },
+  { e: 'Trust', q: { en: 'HTTPS and headers', ru: 'HTTPS и заголовки', he: 'HTTPS וכותרות' } },
+]
+const FIX_SPOTS = [
+  { top: '10%', left: '8%', d: '0s' },
+  { top: '28%', left: '36%', d: '-1.4s' },
+  { top: '47%', left: '4%', d: '-2.6s' },
+  { top: '65%', left: '30%', d: '-0.8s' },
+  { top: '82%', left: '10%', d: '-2s' },
+]
+
+/** Right half of the result-screen CTA plate: the same live graph as the final CTA, with the sprint's fixes floating over it. */
+export function LeakFixVisual({ locale }: { locale: string }) {
+  const lang = (['en', 'ru', 'he'].includes(locale) ? locale : 'en') as Lang
+  const reduced = usePrefersReducedMotion()
+  const ref = useRef<HTMLDivElement>(null)
+  const [play, setPlay] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([e]) => setPlay(e.isIntersecting), { rootMargin: '80px' })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  return (
+    <div ref={ref} data-play={play ? '' : undefined} className="lk-stage lk-net absolute inset-0 overflow-hidden" dir="ltr">
+      <NetCanvas play={play} reduced={reduced} />
+      {FIXES.map((f, i) => (
+        <div key={f.e} className="lk-float absolute" style={{ top: FIX_SPOTS[i].top, left: FIX_SPOTS[i].left, animationDelay: FIX_SPOTS[i].d }}>
+          <span className="inline-flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-[13px] leading-none text-white/75 backdrop-blur-[2px]">
+            <span className="text-white/40">{f.e}</span>
+            <span className="h-3 w-px bg-white/15" aria-hidden="true" />
+            <span dir={lang === 'he' ? 'rtl' : 'ltr'}>{f.q[lang]}</span>
+            <span className="size-1.5 rounded-full bg-[var(--lk-green)]" aria-hidden="true" />
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// Heading of the result-screen CTA plate (above the sum and timeline).
+const FIX_TITLE: Record<Lang, string> = {
+  en: 'We fix everything the audit found',
+  ru: 'Исправим всё, что нашёл аудит',
+  he: 'נתקן את כל מה שהביקורת מצאה',
+}
+export function leakFixTitle(locale: string): string {
+  return FIX_TITLE[(['en', 'ru', 'he'].includes(locale) ? locale : 'en') as Lang]
+}

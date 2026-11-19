@@ -1240,14 +1240,39 @@ function lossTone(loss: number): keyof typeof BADGE_TONE {
   return loss >= 10 ? 'crit' : loss > 0 ? 'warn' : 'ok'
 }
 
-/** "−₪8,600" or "−13%": a stage's loss in money when revenue is known, else in visitors. */
-function stageLoss(s: FunnelStage, locale: string): string {
-  if (s.money > 0) return `−${formatIls(s.money, locale)}`
-  return s.loss > 0 ? `−${s.loss}%` : '0%'
+/**
+ * Stage amount for the report.
+ * `signed` (default): "−₪8,600" / "−13%" — calculator “loss” framing.
+ * Unsigned: bare amount — audit LP “potential” framing (no leading minus).
+ */
+function stageLoss(s: FunnelStage, locale: string, signed = true): string {
+  if (s.money > 0) {
+    const v = formatIls(s.money, locale)
+    return signed ? `−${v}` : v
+  }
+  if (s.loss <= 0) return '0%'
+  return signed ? `−${s.loss}%` : `${s.loss}%`
+}
+
+function withLossSign(value: string, signed: boolean): string {
+  return signed ? `−${value}` : value
 }
 
 const RING_R = 50
 const RING_C = 2 * Math.PI * RING_R
+
+/**
+ * Four traffic-light zones for ring / stage bars (audit LP).
+ * 95–100 excellent (green) · 85–94 good (yellow) · 76–84 attention (orange) · ≤75 critical (red).
+ * Different from `lightFor` (60/80) used on diagnostic scales — keep them separate.
+ */
+type ReportZone = 'excellent' | 'good' | 'warn' | 'bad'
+function zoneOf(v: number): ReportZone {
+  if (v >= 95) return 'excellent'
+  if (v >= 85) return 'good'
+  if (v >= 76) return 'warn'
+  return 'bad'
+}
 
 /** First screen, full-bleed under the top bar: the loss in big numbers, 100 visitors as dots, top leaks, key stats. */
 function LossHero({
@@ -1276,6 +1301,7 @@ function LossHero({
   waHref: string | null
 }) {
   const copy = useCalcCopy()
+  const { lilac: LILAC, coral: CORAL, signedLoss = true } = useCalcPalette()
   const money = monthly > 0
   const animated = useAnimatedNumber(money ? monthly : lostPct, 1400)
   const big = money ? formatIls(Math.round(animated / 10) * 10, locale) : `${Math.round(animated)}%`
@@ -1289,6 +1315,7 @@ function LossHero({
   const ranked = [...stages].sort((a, b) => b.loss - a.loss)
   const top = ranked.filter((s) => s.loss > 0)
   const kept = 100 - lostPct
+  const keptZone = zoneOf(kept)
 
   // Inquiries won back if every leak is closed: the lost share measured against what reaches the form today.
   const upside = kept > 0 ? Math.round((lostPct / kept) * 100) : 0
@@ -1312,17 +1339,21 @@ function LossHero({
   type StatTile = {
     value: string
     label: string
+    desc: string
+    /** Optional stage name shown after the title on audit LP (bottleneck tile). */
+    detail?: string
     red: boolean
     tone: StatTone
     badge: { bg: string; text: string; caption: string }
   }
-  // Always four tiles, same stack: big value → short colour plaque → small label.
+  // Calculator: value → colour plaque → label. Audit LP (!signedLoss): horizontal value | title + description.
   const stats: StatTile[] = (
     [
       money
         ? {
             value: formatIls(yearly, locale),
             label: tCalc(copy.step4StatYear, locale),
+            desc: tCalc(copy.step4StatDescYear, locale),
             red: true,
             tone: 'loss' as StatTone,
             badge: { ...badgeLoss, caption: tCalc(copy.step4StatBadgeLoss, locale) },
@@ -1332,15 +1363,18 @@ function LossHero({
         ? {
             value: `≈ ${lostClients}`,
             label: tCalc(copy.step4StatClients, locale),
+            desc: tCalc(copy.step4StatDescClients, locale),
             red: true,
             tone: 'loss' as StatTone,
             badge: { ...badgeLoss, caption: tCalc(copy.step4StatBadgeLoss, locale) },
           }
         : null,
-      upside > 0
+      // Audit LP: uplift = sum of stage shares (lostPct), same figure as the insight-card total.
+      (signedLoss ? upside : lostPct) > 0
         ? {
-            value: `+${upside}%`,
+            value: `+${signedLoss ? upside : lostPct}%`,
             label: tCalc(copy.step4StatUpside, locale),
+            desc: tCalc(copy.step4StatDescUpside, locale),
             red: false,
             tone: 'gain' as StatTone,
             badge: { ...badgeGain, caption: tCalc(copy.step4StatBadgeUpside, locale) },
@@ -1349,6 +1383,7 @@ function LossHero({
       {
         value: `${score}/100`,
         label: tCalc(copy.step4StatScore, locale),
+        desc: tCalc(copy.step4StatDescScore, locale),
         red: scoreLevel === 'red',
         tone: scoreTone,
         badge: {
@@ -1356,11 +1391,13 @@ function LossHero({
           caption: tCalc(copy.levelLabel[scoreLevel], locale),
         },
       },
-      // Biggest leak: −N% on top, short «Leak» plaque, stage name below (e.g. Speed).
+      // Biggest leak: ±N% on top, short «Leak» plaque, stage name below (e.g. Speed).
       top[0]
         ? {
-            value: stageLoss(top[0], locale),
+            value: stageLoss(top[0], locale, signedLoss),
             label: tCalc(top[0].short, locale),
+            detail: tCalc(top[0].short, locale),
+            desc: fillCalc(tCalc(copy.step4StatDescLeak, locale), { stage: tCalc(top[0].short, locale) }),
             red: true,
             tone: 'loss' as StatTone,
             badge: { ...badgeLoss, caption: tCalc(copy.step4StatBadgeLeak, locale) },
@@ -1369,6 +1406,7 @@ function LossHero({
       {
         value: `${leaking.length} / ${stages.length}`,
         label: tCalc(copy.step4StatLeakStages, locale),
+        desc: tCalc(copy.step4StatDescStages, locale),
         red: false,
         tone: 'warn' as StatTone,
         badge: { ...badgeWarn, caption: tCalc(copy.step4StatBadgeStages, locale) },
@@ -1408,7 +1446,8 @@ function LossHero({
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-start lg:gap-14 xl:items-center">
           {/* Left: the loss itself */}
           <div className="flex flex-col items-center text-center lg:items-start lg:text-start">
-            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[13px] leading-[1.5] text-white/70 lg:justify-start">
+            {/* Domain + “audit report · 230+” — on the leak LP this lives in the black header strip (`.calc-hero-meta` hidden there). */}
+            <div className="calc-hero-meta flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[13px] leading-[1.5] text-white/70 lg:justify-start">
               <span className="inline-flex items-center gap-1.5 rounded-[4px] border-[0.75px] border-white/25 bg-white/10 px-2 py-[3px] text-xs text-white">
                 <svg className="size-3.5 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
@@ -1418,135 +1457,275 @@ function LossHero({
               <span>{tCalc(copy.step4MetaReport, locale)}</span>
             </div>
 
-            <h1 className="m-0 mt-7 flex flex-col items-center gap-3 sm:mt-9 lg:items-start">
-              <span className="text-[28px] font-black uppercase leading-[1.3] tracking-[0.01em] text-white sm:text-[40px] sm:leading-[1.25] lg:text-4xl lg:leading-[1.2] xl:text-[44px]">{tCalc(copy.step4HeroLabel, locale)}</span>
-              {/* A percent is short, so on phones it can be much larger than a ₪ amount without hitting the edges */}
-              <span className={`${money ? 'text-[56px]' : 'text-[88px]'} font-black leading-none tracking-[-0.04em] tabular-nums text-[#ff4542] [text-shadow:0_6px_40px_rgba(229,36,33,0.45)] sm:text-[96px] xl:text-[120px]`}>
+            <h1
+              className={`m-0 mt-7 flex w-full max-w-full flex-col gap-3 sm:mt-9 ${
+                signedLoss ? 'items-center text-center lg:items-start lg:text-start' : 'items-start text-start'
+              }`}
+            >
+              {tCalc(copy.step4HeroLabel, locale) ? (
+                <span className="calc-hero-label text-[28px] font-black uppercase leading-[1.3] tracking-[0.01em] text-white sm:text-[40px] sm:leading-[1.25] lg:text-4xl lg:leading-[1.2] xl:text-[44px]">
+                  {/* Dot shown only on the audit LP, where the label is a small black plate */}
+                  <i aria-hidden className="calc-hero-label-dot hidden" />
+                  {tCalc(copy.step4HeroLabel, locale)}
+                </span>
+              ) : null}
+              {/* A percent is short, so on phones it can be much larger than a ₪ amount without hitting the edges.
+                  data-zone: leak LP styles the figure like the report gauge (zone colour + medium weight). */}
+              <span
+                data-zone={keptZone}
+                className={`${money ? 'text-[56px]' : 'text-[88px]'} font-black leading-none tracking-[-0.04em] tabular-nums text-[#ff4542] [text-shadow:0_6px_40px_rgba(229,36,33,0.45)] sm:text-[96px] xl:text-[120px]`}
+              >
                 <bdi>{big}</bdi>
               </span>
-              <span className="max-w-2xl text-balance text-[28px] font-black uppercase leading-[1.3] tracking-[0.01em] text-white sm:text-[40px] sm:leading-[1.25] lg:text-4xl lg:leading-[1.2] xl:text-[44px]">
+              <span className="calc-hero-tail w-full max-w-full text-[28px] font-black leading-[1.2] tracking-[0.01em] text-white sm:text-[40px] lg:text-4xl xl:text-[44px]">
                 {money ? tCalc(copy.step4HeroPerMonth, locale) : tCalc(copy.step4HeroPctTail, locale)}
               </span>
             </h1>
 
-            <p className="m-0 mt-5 max-w-xl text-balance text-base leading-[1.7] text-white/75 sm:text-lg lg:leading-[1.5]">
+            {/* Context under the H1 (calculator and audit LP; on the LP it is a small sub-heading, see .calc-hero-lede) */}
+            <p className={`m-0 mt-5 max-w-xl text-balance text-base leading-[1.7] text-white/75 sm:text-lg lg:leading-[1.5] ${signedLoss ? '' : 'calc-hero-lede'}`}>
               {money && revenue
                 ? fillCalc(tCalc(copy.step4HeroContextMoney, locale), { rev: formatIls(revenue, locale), p: lostPct, yearly: formatIls(yearly, locale) })
                 : fillCalc(tCalc(copy.step4HeroContextPct, locale), { lost: lostPct })}
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-              {waHref ? (
+            {/* Calculator keeps CTAs under the hero copy; audit LP moves them below the KPI strip. */}
+            {signedLoss ? (
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+                {waHref ? (
+                  <a
+                    href={waHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#e52421] px-6 py-3.5 text-sm font-semibold text-white no-underline shadow-[0_8px_28px_rgba(229,36,33,0.45)] transition hover:bg-[#d11d1a] hover:shadow-[0_10px_34px_rgba(229,36,33,0.6)] sm:text-base"
+                  >
+                    {tCalc(copy.step4HeroCta, locale)}
+                    <svg className="size-4 rtl:-scale-x-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  </a>
+                ) : null}
                 <a
-                  href={waHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#e52421] px-6 py-3.5 text-sm font-semibold text-white no-underline shadow-[0_8px_28px_rgba(229,36,33,0.45)] transition hover:bg-[#d11d1a] hover:shadow-[0_10px_34px_rgba(229,36,33,0.6)] sm:text-base"
+                  href="#loss-breakdown"
+                  onClick={toBreakdown}
+                  className="calc-hero-more inline-flex items-center gap-2 rounded-full border border-white/30 bg-white px-6 py-3.5 text-sm font-semibold text-[#1e1e1e] no-underline transition hover:bg-[#f3f3f3] sm:text-base"
                 >
-                  {tCalc(copy.step4HeroCta, locale)}
-                  <svg className="size-4 rtl:-scale-x-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  {tCalc(copy.step4HeroMore, locale)}
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
                 </a>
-              ) : null}
-              <a
-                href="#loss-breakdown"
-                onClick={toBreakdown}
-                className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3.5 text-sm font-semibold text-white no-underline transition hover:border-white/60 hover:bg-white/10 sm:text-base"
-              >
-                {tCalc(copy.step4HeroMore, locale)}
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
-              </a>
-            </div>
-          </div>
-
-          {/* Right: ring of who reaches an inquiry + the biggest leaks */}
-          <div className="grid w-full gap-6 rounded-[16px] border border-white/15 bg-white/[0.07] p-5 backdrop-blur-md sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] sm:p-7 lg:grid-cols-1 xl:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]">
-            <div className="mx-auto w-full max-w-[15rem]">
-            <p className="m-0 text-center text-xs uppercase leading-[18px] tracking-[0.04em] text-white/65">{tCalc(copy.step4RingTitle, locale)}</p>
-            {/* Ring: red base = lost on the way, the light arc grows to the share that still reaches an inquiry */}
-            <div className="relative mx-auto mt-4 aspect-square w-full max-w-[13rem]" role="img" aria-label={fillCalc(tCalc(copy.step4DotsAria, locale), { kept, lost: lostPct })}>
-              <svg viewBox="0 0 120 120" className="size-full -rotate-90" aria-hidden="true">
-                <circle cx="60" cy="60" r={RING_R} fill="none" stroke="#ff4542" strokeWidth="12" className="[filter:drop-shadow(0_0_6px_rgba(255,69,66,0.5))]" />
-                <circle
-                  cx="60"
-                  cy="60"
-                  r={RING_R}
-                  fill="none"
-                  stroke="#f1f5f9"
-                  strokeWidth="12"
-                  strokeDasharray={`${shown ? (RING_C * kept) / 100 : 0} ${RING_C}`}
-                  className="transition-[stroke-dasharray] duration-[1400ms] ease-out motion-reduce:transition-none"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <b className="text-[44px] font-black leading-none tracking-[-0.03em] tabular-nums text-white"><bdi>{kept}%</bdi></b>
-                <span className="mt-1 max-w-[8rem] text-xs leading-[1.4] text-white/75">{tCalc(copy.step4RingCenter, locale)}</span>
-              </div>
-            </div>
-            <div className="mt-4 flex flex-col items-center gap-1 text-[13px] leading-[1.5]">
-              <span className="inline-flex items-center gap-2 text-white"><i aria-hidden className="size-2.5 rounded-[2px] bg-[#f1f5f9]" />{tCalc(copy.step4RingLegendKept, locale)}</span>
-              <span className="inline-flex items-center gap-2 text-white/75"><i aria-hidden className="size-2.5 rounded-[2px] bg-[#ff4542]" />{tCalc(copy.step4RingLegendLost, locale)}</span>
-            </div>
-            </div>
-
-            {ranked.length ? (
-              <div className="flex flex-col border-t border-white/15 pt-5 sm:border-s sm:border-t-0 sm:ps-6 sm:pt-0 lg:border-s-0 lg:border-t lg:ps-0 lg:pt-5 xl:border-s xl:border-t-0 xl:ps-6 xl:pt-0">
-                <p className="m-0 text-xs uppercase leading-[18px] tracking-[0.04em] text-white/65">{tCalc(copy.step4LeaksByStage, locale)}</p>
-                {/* Each bar is 100 visitors at that stage: white passes on, red is the shortfall */}
-                <ul className="m-0 mt-4 flex list-none flex-col gap-3.5 p-0">
-                  {ranked.map((s) => (
-                    <li key={s.key} className="flex flex-col gap-1.5">
-                      <div className="flex items-baseline justify-between gap-3">
-                        <span className="text-[15px] font-semibold leading-[1.5]">{tCalc(s.short, locale)}</span>
-                        <b className={`text-lg font-bold tabular-nums ${s.loss > 0 ? 'text-[#ff6b68]' : 'text-white/60'}`}>
-                          <bdi dir="ltr">{stageLoss(s, locale)}</bdi>
-                        </b>
-                      </div>
-                      <div className="flex h-1.5 justify-end overflow-hidden rounded-full bg-[#f1f5f9]">
-                        <div
-                          className="h-full bg-[#ff4542] transition-[width] duration-700 ease-out motion-reduce:transition-none"
-                          style={{ width: shown ? `${s.loss}%` : '0%' }}
-                        />
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-5 flex items-baseline justify-between gap-3 border-t border-white/15 pt-4">
-                  <span className="whitespace-nowrap text-sm font-semibold uppercase leading-[1.5] tracking-[0.02em] text-white">{tCalc(copy.step4LeaksTotal, locale)}</span>
-                  <b className="text-xl font-black tabular-nums text-[#ff4542]">
-                    <bdi dir="ltr">{money ? `−${formatIls(monthly, locale)}` : `−${lostPct}%`}</bdi>
-                  </b>
-                </div>
               </div>
             ) : null}
           </div>
+
+          {/* Right: ring of who reaches an inquiry + the biggest leaks */}
+          <div
+            className={`calc-insight-card flex w-full min-w-0 flex-col overflow-hidden rounded-[16px] border border-white/15 bg-white/[0.07] backdrop-blur-md ${
+              signedLoss ? 'p-5 sm:p-7' : 'calc-insight-card--audit p-0'
+            }`}
+          >
+            {!signedLoss ? (
+              <p className="calc-insight-badge m-0 flex shrink-0 items-center justify-start gap-2.5 px-4 py-2.5 text-start text-[11px] font-semibold uppercase leading-none tracking-[0.06em] text-white sm:px-5 sm:py-3 sm:text-xs">
+                <span className="relative flex size-2 shrink-0" aria-hidden>
+                  <span className="lk-ping absolute inline-flex size-full rounded-full bg-[#22bf16] opacity-70 motion-reduce:hidden" />
+                  <span className="relative inline-flex size-2 rounded-full bg-[#22bf16]" />
+                </span>
+                {tCalc(copy.step4InsightBadge, locale)}
+              </p>
+            ) : null}
+            <div
+              className={`calc-insight-body grid min-w-0 w-full flex-1 gap-6 sm:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] lg:grid-cols-1 xl:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] ${
+                signedLoss ? '' : 'p-5 sm:p-7'
+              }`}
+            >
+              <div className="calc-ring-col mx-auto w-full min-w-0 max-w-[15rem]">
+                <p className="m-0 text-center text-xs uppercase leading-[18px] tracking-[0.04em] text-white/65">{tCalc(copy.step4RingTitle, locale)}</p>
+                {/* Ring: dashed track = lost share; coloured arc = share that still reaches an inquiry */}
+                <div className="relative mx-auto mt-4 aspect-square w-full max-w-[13rem]" role="img" aria-label={fillCalc(tCalc(copy.step4DotsAria, locale), { kept, lost: lostPct })}>
+                  {/* data-zone on the svg: leak LP paints the arc by zone (4 colours). Calculator keeps the red/white look. */}
+                  <svg viewBox="0 0 120 120" className="size-full -rotate-90" data-zone={keptZone} aria-hidden="true">
+                    <circle cx="60" cy="60" r={RING_R} fill="none" stroke="#ff4542" strokeWidth="12" className="[filter:drop-shadow(0_0_6px_rgba(255,69,66,0.5))]" />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r={RING_R}
+                      fill="none"
+                      stroke="#f1f5f9"
+                      strokeWidth="12"
+                      strokeLinecap="round"
+                      strokeDasharray={`${shown ? (RING_C * kept) / 100 : 0} ${RING_C}`}
+                      className="transition-[stroke-dasharray] duration-[1400ms] ease-out motion-reduce:transition-none"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <b data-zone={keptZone} className="text-[44px] font-black leading-none tracking-[-0.03em] tabular-nums text-white"><bdi>{kept}%</bdi></b>
+                    <span className="mt-1 max-w-[8rem] text-xs leading-[1.4] text-white/75">{tCalc(copy.step4RingCenter, locale)}</span>
+                  </div>
+                </div>
+                <div className="calc-ring-legend mt-4 flex flex-col items-start gap-1.5 text-[13px] leading-[1.5]">
+                  <span className="inline-flex items-center gap-2 text-white"><i aria-hidden data-zone={keptZone} className="size-2.5 shrink-0 rounded-[2px] bg-[#f1f5f9]" />{tCalc(copy.step4RingLegendKept, locale)}</span>
+                  <span className="inline-flex items-center gap-2 text-white/75"><i aria-hidden data-lost="" className="size-2.5 shrink-0 rounded-[2px] bg-[#ff4542]" />{tCalc(copy.step4RingLegendLost, locale)}</span>
+                </div>
+              </div>
+
+              {ranked.length ? (
+                <div className="flex min-w-0 flex-col border-t border-white/15 pt-5 sm:border-s sm:border-t-0 sm:ps-6 sm:pt-0 lg:border-s-0 lg:border-t lg:ps-0 lg:pt-5 xl:border-s xl:border-t-0 xl:ps-6 xl:pt-0">
+                  <p className="m-0 text-xs uppercase leading-[18px] tracking-[0.04em] text-white/65">{tCalc(copy.step4LeaksByStage, locale)}</p>
+                  {/* Each bar is 100 visitors at that stage: white passes on, red is the shortfall */}
+                  <ul className="m-0 mt-4 flex list-none flex-col gap-3.5 p-0">
+                    {ranked.map((s) => {
+                      // Calculator: absolute loss % from the right. Audit LP: share of the recoverable total (sums to 100% of the bar).
+                      const barPct = signedLoss
+                        ? s.loss
+                        : lostPct > 0
+                          ? Math.round((s.loss / lostPct) * 100)
+                          : 0
+                      return (
+                      <li key={s.key} className="flex min-w-0 flex-col gap-1.5">
+                        <div className="flex min-w-0 items-baseline justify-between gap-3">
+                          <span className="min-w-0 truncate text-[15px] font-semibold leading-[1.5]">{tCalc(s.short, locale)}</span>
+                          <b data-zone={zoneOf(s.score)} className={`shrink-0 text-lg font-bold tabular-nums ${s.loss > 0 ? 'text-[#ff6b68]' : 'text-white/60'}`}>
+                            {/* Stage drop-off is always a minus (−13%), on the audit LP too */}
+                            <bdi dir="ltr">{stageLoss(s, locale, true)}</bdi>
+                          </b>
+                        </div>
+                        <div className={`flex h-1.5 overflow-hidden rounded-full bg-[#f1f5f9] ${signedLoss ? 'justify-end' : 'justify-start'}`}>
+                          <div
+                            data-zone={zoneOf(s.score)}
+                            className="h-full max-w-full bg-[#ff4542] transition-[width] duration-700 ease-out motion-reduce:transition-none"
+                            style={{ width: shown ? `${barPct}%` : '0%' }}
+                          />
+                        </div>
+                      </li>
+                      )
+                    })}
+                  </ul>
+                  {/* No divider line before Прирост — footnote sits under the label, stages end above. */}
+                  <div className="calc-uplift-total mt-4 flex min-w-0 flex-col gap-1">
+                    <div className="flex min-w-0 items-baseline justify-between gap-3">
+                    <span className="min-w-0 text-sm font-semibold uppercase leading-[1.5] tracking-[0.02em] text-white">
+                      {tCalc(copy.step4LeaksTotal, locale)}
+                    </span>
+                      <b className="shrink-0 text-xl font-black tabular-nums text-[#ff4542]">
+                        <bdi dir="ltr">
+                          {signedLoss
+                            ? withLossSign(money ? formatIls(monthly, locale) : `${lostPct}%`, true)
+                            : lostPct > 0
+                              ? `−${lostPct}%`
+                              : '0%'}
+                        </bdi>
+                      </b>
+                    </div>
+                    {!signedLoss && tCalc(copy.step4LeaksTotalHint, locale) ? (
+                    <p className="calc-uplift-note m-0 text-[11px] leading-[1.4] text-white/55 sm:text-xs">
+                      {tCalc(copy.step4LeaksTotalHint, locale)}
+                    </p>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
         </div>
 
-        <dl className="m-0 mt-10 grid grid-cols-2 gap-3 lg:mt-12 lg:grid-cols-4 lg:items-stretch">
-          {stats.map((s) => (
-            <div
-              key={s.label}
-              className="flex h-full flex-col items-center justify-center rounded-[12px] border border-white/12 bg-white/[0.06] px-3 py-5 text-center backdrop-blur-sm sm:px-5 sm:py-6"
-            >
-              {/* Same stack on every tile: big value → colour plaque → small label */}
-              <div className="flex flex-col items-center gap-1.5">
-                <dd className={`m-0 text-2xl font-bold leading-none tracking-[-0.02em] tabular-nums sm:text-[34px] ${s.red ? 'text-[#ff6b68]' : 'text-white'}`}>
-                  <bdi>{s.value}</bdi>
-                </dd>
-                <span
-                  className="inline-flex items-center rounded-[4px] px-2.5 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.04em] sm:text-xs"
-                  style={{ background: s.badge.bg, color: s.badge.text }}
-                >
-                  <bdi>{s.badge.caption}</bdi>
-                </span>
-                <dt className="m-0 text-[13px] leading-[1.35] text-white/70">{s.label}</dt>
+        <dl
+          className={
+            signedLoss
+              ? 'm-0 mt-10 grid grid-cols-2 gap-3 lg:mt-12 lg:grid-cols-4 lg:items-stretch'
+              : 'calc-kpi-row m-0 mt-6 grid grid-cols-2 gap-2 md:mt-8 xl:grid-cols-4 xl:gap-2.5'
+          }
+        >
+          {stats.map((s) =>
+            signedLoss ? (
+              <div
+                key={s.label}
+                data-tone={s.tone}
+                className="flex h-full flex-col items-center justify-center rounded-[12px] border border-white/12 bg-white/[0.06] px-3 py-5 text-center backdrop-blur-sm sm:px-5 sm:py-6"
+              >
+                {/* Calculator: big value → colour plaque → small label */}
+                <div className="flex flex-col items-center gap-1.5">
+                  <dd className={`m-0 text-2xl font-bold leading-none tracking-[-0.02em] tabular-nums sm:text-[34px] ${s.red ? 'text-[#ff6b68]' : 'text-white'}`}>
+                    <bdi>{s.value}</bdi>
+                  </dd>
+                  <span
+                    className="inline-flex items-center rounded-[4px] px-2.5 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.04em] sm:text-xs"
+                    style={{ background: s.badge.bg, color: s.badge.text }}
+                  >
+                    <bdi>{s.badge.caption}</bdi>
+                  </span>
+                  <dt className="m-0 text-[13px] leading-[1.35] text-white/70">{s.label}</dt>
+                </div>
               </div>
-            </div>
-          ))}
+            ) : (
+              <div key={`${s.badge.caption}-${s.label}`} className="calc-kpi-cell">
+                <div
+                  data-tone={s.tone}
+                  className="calc-kpi-card flex min-w-0 items-center gap-2 rounded-[3px] border border-white/10 px-3 py-2.5 text-start sm:px-3.5"
+                >
+                  <dd className="m-0 shrink-0 text-sm font-bold leading-none tracking-[-0.02em] tabular-nums text-white">
+                    <bdi>{s.value}</bdi>
+                  </dd>
+                  <i className="calc-kpi-bar shrink-0 self-center" aria-hidden />
+                  <dt className="m-0 min-w-0 text-sm font-semibold leading-none tracking-[-0.01em] text-white">
+                    <bdi>{s.badge.caption}</bdi>
+                    {s.detail ? <>{' '}<span className="calc-kpi-detail font-normal text-white/50">{s.detail}</span></> : null}
+                  </dt>
+                  <span className="calc-kpi-arrows" aria-hidden="true">
+                    <span className="calc-kpi-run" />
+                  </span>
+                  <div className="calc-kpi-help-wrap">
+                    <button
+                      type="button"
+                      className="calc-kpi-help"
+                      aria-label={locale === 'he' ? 'פרטים' : locale === 'ru' ? 'Подробнее' : 'Details'}
+                    >
+                      ?
+                    </button>
+                    <p className="calc-kpi-pop" role="tooltip">{s.desc}</p>
+                  </div>
+                  {/* Hover/focus: the card dims and offers a jump down to the stage breakdown */}
+                  <a
+                    href="#loss-breakdown"
+                    onClick={(e) => scrollToId(e, 'loss-breakdown')}
+                    className="calc-kpi-go"
+                    aria-label={locale === 'he' ? 'לפירוט לפי שלבים' : locale === 'ru' ? 'К разбору по этапам' : 'Go to the stage breakdown'}
+                  >
+                    <span className="calc-kpi-go-btn" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 5v14M6 13l6 6 6-6" />
+                      </svg>
+                    </span>
+                  </a>
+                </div>
+              </div>
+            ),
+          )}
         </dl>
+
+        {!signedLoss ? (
+          <div className="calc-hero-ctas mt-8 flex flex-wrap items-center justify-center gap-3 sm:mt-10">
+            {waHref ? (
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-[#e52421] px-6 py-3.5 text-sm font-semibold text-white no-underline shadow-[0_8px_28px_rgba(229,36,33,0.45)] transition hover:bg-[#d11d1a] hover:shadow-[0_10px_34px_rgba(229,36,33,0.6)] sm:text-base"
+              >
+                {tCalc(copy.step4HeroCta, locale)}
+                <svg className="size-4 rtl:-scale-x-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+            ) : null}
+            <a
+              href="#loss-breakdown"
+              onClick={toBreakdown}
+              className="calc-hero-more inline-flex items-center gap-2 rounded-full border border-[#1e1e1e] bg-white px-6 py-3.5 text-sm font-semibold text-[#1e1e1e] no-underline transition hover:bg-[#1e1e1e] hover:text-white sm:text-base"
+            >
+              {tCalc(copy.step4HeroMore, locale)}
+              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
+            </a>
+          </div>
+        ) : null}
       </div>
 
-      {/* Floating scroll hint, portalled to body so the page fade-in transform cannot pin it to the hero */}
-      {shown
+      {/* Floating scroll hint — calculator only. The audit LP uses the arrow on «Смотреть разбор». */}
+      {shown && signedLoss
         ? createPortal(
             <a
               href="#loss-breakdown"
@@ -1574,6 +1753,31 @@ const CORAL = '#ff4542'
 /* Lilac from the loss panel, reused as the report's second brand colour below it. */
 export const LILAC = { deep: '#3d2c66', base: '#54408a', mid: '#8b74c7', soft: '#f1edfa', wash: '#f9f7fd', ring: '#d6cfe6' } as const
 
+/**
+ * Accent palette of the report. Defaults to lilac + coral; a landing with its own look (the AI audit LP)
+ * passes an ink/stone palette via <CalcPaletteProvider>. Components shadow LILAC / CORAL with the context value.
+ */
+export type CalcPalette = {
+  lilac: { deep: string; base: string; mid: string; soft: string; wash: string; ring: string }
+  coral: string
+  /** When false, stage/total amounts omit the leading minus (audit LP “potential”). Default true. */
+  signedLoss?: boolean
+}
+const CalcPaletteContext = createContext<CalcPalette>({ lilac: LILAC, coral: CORAL, signedLoss: true })
+export function CalcPaletteProvider({ value, children }: { value: CalcPalette; children: React.ReactNode }) {
+  return <CalcPaletteContext.Provider value={value}>{children}</CalcPaletteContext.Provider>
+}
+function useCalcPalette(): CalcPalette {
+  return useContext(CalcPaletteContext)
+}
+
+/** Optional extras for the final CTA plate (audit LP: a heading and a live graph on the end side; calculator: none). */
+type CalcCtaExtras = { visual?: React.ReactNode; title?: React.ReactNode } | null
+const CalcCtaVisualContext = createContext<CalcCtaExtras>(null)
+export function CalcCtaVisualProvider({ value, children }: { value: CalcCtaExtras; children: React.ReactNode }) {
+  return <CalcCtaVisualContext.Provider value={value}>{children}</CalcCtaVisualContext.Provider>
+}
+
 /** Smooth in-page jump to an element id (instant when the visitor prefers reduced motion). */
 function scrollToId(e: React.MouseEvent, id: string) {
   const el = document.getElementById(id)
@@ -1592,6 +1796,8 @@ const TITLE_SUB = 'm-0 ps-[14px] text-base leading-[1.5] text-[#475569] sm:ps-[1
 /** Where the loss goes: stages ranked from the biggest leak with lilac share bars; red only marks the biggest leak and the total. */
 function LossBreakdown({ locale, stages, monthly, total }: { locale: string; stages: FunnelStage[]; monthly: number; total: number }) {
   const copy = useCalcCopy()
+  // «Where clients drop off» always shows the drop as a minus (−13% … −22%), also on the audit LP.
+  const { lilac: LILAC, coral: CORAL } = useCalcPalette()
   const [shown, setShown] = useState(false)
   useEffect(() => {
     const id = requestAnimationFrame(() => setShown(true))
@@ -1604,7 +1810,8 @@ function LossBreakdown({ locale, stages, monthly, total }: { locale: string; sta
   // One tag: red "biggest leak · N% of all losses" for the first stage, lilac (like the number circles) for the rest
   const stageTag = (s: FunnelStage, biggest: boolean) => (
     <span
-      className={STAGE_TAG}
+      className={STAGE_TAG + ' calc-stage-tag'}
+      data-top={biggest ? '' : undefined}
       style={biggest ? { background: '#e52421', color: '#fff' } : { background: LILAC.soft, color: LILAC.base, boxShadow: `inset 0 0 0 1px ${LILAC.ring}` }}
     >
       {biggest ? `${tCalc(copy.step4BiggestLeak, locale)} · ` : null}
@@ -1631,7 +1838,8 @@ function LossBreakdown({ locale, stages, monthly, total }: { locale: string; sta
           return (
             <li
               key={s.key}
-              className={`grid grid-cols-[1.125rem_minmax(0,1fr)_auto_auto] items-center gap-x-2.5 gap-y-1.5 rounded-[12px] px-3.5 py-3 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto_auto] sm:gap-x-6 sm:gap-y-2.5 sm:px-5 sm:py-3.5 lg:col-span-5 lg:grid-cols-subgrid ${
+              data-top={biggest ? '' : undefined} data-zone={zoneOf(s.score)}
+              className={`calc-br-row grid grid-cols-[1.125rem_minmax(0,1fr)_auto_auto] items-center gap-x-2.5 gap-y-1.5 rounded-[12px] px-3.5 py-3 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto_auto] sm:gap-x-6 sm:gap-y-2.5 sm:px-5 sm:py-3.5 lg:col-span-5 lg:grid-cols-subgrid ${
                 biggest
                   ? 'border border-s-[3px] border-[#e2e8f0] border-s-[#e52421] bg-white'
                   : 'border border-[#e8e8e8] bg-white'
@@ -1639,7 +1847,7 @@ function LossBreakdown({ locale, stages, monthly, total }: { locale: string; sta
             >
               {/* The biggest leak is the one red accent of the list: red marker, red left border, red badge and amount */}
               <span
-                className="flex size-[18px] items-center justify-center rounded-full text-[10px] font-bold tabular-nums sm:size-10 sm:text-sm"
+                className="calc-br-num flex size-[18px] items-center justify-center rounded-full text-[10px] font-bold tabular-nums sm:size-10 sm:text-sm"
                 style={biggest ? { background: CORAL, color: '#fff' } : { background: LILAC.soft, color: LILAC.base, boxShadow: `inset 0 0 0 1px ${LILAC.ring}` }}
               >
                 {i + 1}
@@ -1660,9 +1868,10 @@ function LossBreakdown({ locale, stages, monthly, total }: { locale: string; sta
               </div>
               {/* Share of all losses in lilac: it compares the stages, the red stays for the totals */}
               <div className="col-span-4 col-start-1 row-start-3 mt-1 flex items-center gap-3 sm:mt-0 sm:row-start-auto lg:col-span-1 lg:col-start-auto" aria-hidden>
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full" style={{ background: LILAC.soft }}>
+                <div className="calc-br-track h-1.5 flex-1 overflow-hidden rounded-full" style={{ background: LILAC.soft }}>
                   <div
-                    className="h-full rounded-full transition-[width] duration-700 ease-out motion-reduce:transition-none"
+                    data-zone={zoneOf(s.score)}
+                    className="calc-br-fill h-full rounded-full transition-[width] duration-700 ease-out motion-reduce:transition-none"
                     style={{ width: shown ? `${share(s)}%` : '0%', background: LILAC.mid }}
                   />
                 </div>
@@ -1672,7 +1881,7 @@ function LossBreakdown({ locale, stages, monthly, total }: { locale: string; sta
                   className={`block whitespace-nowrap text-[15px] font-bold leading-6 tracking-[-0.01em] tabular-nums sm:text-[30px] sm:leading-[1.1] sm:tracking-[-0.02em] ${biggest ? 'text-[#e52421]' : ''}`}
                   style={biggest ? undefined : { color: LILAC.deep }}
                 >
-                  <bdi dir="ltr">{stageLoss(s, locale)}</bdi>
+                  <bdi dir="ltr">{stageLoss(s, locale, true)}</bdi>
                   {/* Phone: a short "/mo" on the amount line keeps the first row one line high, so the tag sits right under the title */}
                   {money ? <span className="ms-0.5 text-[11px] font-medium tracking-normal text-[#64748b] sm:hidden">{tCalc(copy.step4PerMonthShort, locale)}</span> : null}
                 </b>
@@ -1684,7 +1893,7 @@ function LossBreakdown({ locale, stages, monthly, total }: { locale: string; sta
                 onClick={(e) => scrollToId(e, `why-${s.key}`)}
                 aria-label={fillCalc(tCalc(copy.step4StageWhyLink, locale), { stage: tCalc(s.short, locale) })}
                 title={fillCalc(tCalc(copy.step4StageWhyLink, locale), { stage: tCalc(s.short, locale) })}
-                className={`col-start-4 row-start-1 flex size-6 items-center justify-center rounded-full border transition-colors sm:size-9 lg:col-start-auto lg:row-start-auto ${
+                className={`calc-br-go col-start-4 row-start-1 flex size-6 items-center justify-center rounded-full border transition-colors sm:size-9 lg:col-start-auto lg:row-start-auto ${
                   biggest
                     ? 'border-[#e52421] text-[#e52421] hover:bg-[#e52421] hover:text-white'
                     : 'border-[#d6cfe6] text-[#54408a] hover:border-[#54408a] hover:bg-[#54408a] hover:text-white'
@@ -1700,7 +1909,7 @@ function LossBreakdown({ locale, stages, monthly, total }: { locale: string; sta
       </ol>
 
       <div
-        className="mt-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-[12px] px-5 py-5 text-white sm:px-7 sm:py-6"
+        className="calc-br-total mt-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-[12px] px-5 py-5 text-white sm:px-7 sm:py-6"
         style={{ background: `linear-gradient(120deg, ${LILAC.deep}, ${LILAC.base})` }}
       >
         <div className="min-w-0">
@@ -1708,7 +1917,7 @@ function LossBreakdown({ locale, stages, monthly, total }: { locale: string; sta
           <span className="block text-[13px] leading-[1.5] text-white/65">{tCalc(copy.step4LeaksAcross, locale)}</span>
         </div>
         <b className="text-[28px] font-black leading-[1.1] tracking-[-0.02em] tabular-nums text-white sm:text-[38px]">
-          <bdi dir="ltr">{money ? `−${formatIls(monthly, locale)}` : `−${total}%`}</bdi>
+          <bdi dir="ltr">{withLossSign(money ? formatIls(monthly, locale) : `${total}%`, true)}</bdi>
           {money ? <span className="ms-1.5 text-sm font-semibold tracking-normal text-white/70">{tCalc(copy.step4HeroPerMonth, locale)}</span> : null}
         </b>
       </div>
@@ -1747,9 +1956,10 @@ function StageIcon({ kind, stage }: { kind: 'action' | 'issue'; stage: CalcArea 
 /** Why it happens: the same ranked stages as the breakdown, each a card with "what the visitor does" and "where it breaks", joined by a timeline. */
 function StageTimeline({ locale, stages, biggestKey, total }: { locale: string; stages: FunnelStage[]; biggestKey: CalcArea; total: number }) {
   const copy = useCalcCopy()
+  const { lilac: LILAC, coral: CORAL, signedLoss = true } = useCalcPalette()
   const share = (s: FunnelStage) => (total > 0 ? Math.round((s.loss / total) * 100) : 0)
   return (
-    <section className="my-2 flex flex-col gap-6 sm:my-0 sm:gap-8">
+    <section className="calc-why my-2 flex flex-col gap-6 sm:my-0 sm:gap-8">
       {/* Same inner padding as the breakdown card, so this heading lines up under "where clients drop off" */}
       <div className="flex flex-col gap-2 border-x-[0.75px] border-transparent px-5 sm:px-10 lg:px-[60px]">
         <CardTitle className="!text-[24px] !font-bold !leading-[1.3] !tracking-[-0.02em] sm:!text-[34px] lg:!text-[34px]">
@@ -1766,17 +1976,19 @@ function StageTimeline({ locale, stages, biggestKey, total }: { locale: string; 
             <li key={s.key} id={`why-${s.key}`} className="relative grid scroll-mt-6 grid-cols-1 md:grid-cols-[3.5rem_minmax(0,1fr)] md:gap-5">
               {/* Timeline (md+ only): connector from under this marker into the next one; below 768 the number moves into the card */}
               {!last ? (
-                <span aria-hidden className="absolute bottom-[-24px] start-[27px] top-14 hidden w-0.5 md:block" style={{ background: LILAC.ring }} />
+                <span aria-hidden className="calc-why-line absolute bottom-[-24px] start-[27px] top-14 hidden w-0.5 md:block" style={{ background: LILAC.ring }} />
               ) : null}
               <span
-                className="relative z-10 hidden size-14 items-center justify-center rounded-full text-xl font-bold tabular-nums text-white shadow-[0_0_0_5px_#eaeaea] md:flex"
+                data-top={biggest ? '' : undefined} data-zone={zoneOf(s.score)}
+                className="calc-why-num relative z-10 hidden size-14 items-center justify-center rounded-full text-xl font-bold tabular-nums text-white shadow-[0_0_0_5px_#eaeaea] md:flex"
                 style={{ background: biggest ? CORAL : LILAC.base }}
               >
                 {i + 1}
               </span>
 
               <article
-                className={`min-w-0 rounded-[14px] border bg-white p-5 pb-6 sm:p-8 sm:pb-10 md:p-10 md:pb-14 lg:p-12 lg:pb-16 ${biggest ? 'border-[#e2e8f0] border-s-[3px] border-s-[#e52421]' : 'border-[#e8e8e8] border-s-[3px] border-s-[#8b74c7]'}`}
+                data-top={biggest ? '' : undefined} data-zone={zoneOf(s.score)}
+                className={`calc-why-card min-w-0 rounded-[14px] border bg-white p-5 pb-6 sm:p-8 sm:pb-10 md:p-10 md:pb-14 lg:p-12 lg:pb-16 ${biggest ? 'border-[#e2e8f0] border-s-[3px] border-s-[#e52421]' : 'border-[#e8e8e8] border-s-[3px] border-s-[#8b74c7]'}`}
               >
                 <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
                   <div className="flex min-w-0 flex-col gap-2">
@@ -1784,13 +1996,15 @@ function StageTimeline({ locale, stages, biggestKey, total }: { locale: string; 
                       {/* Below 768 the timeline marker moves in here, as in the "where clients drop off" rows */}
                       <span
                         aria-hidden
-                        className="flex size-[22px] shrink-0 items-center justify-center rounded-full text-[11px] font-bold tabular-nums text-white md:hidden"
+                        data-top={biggest ? '' : undefined} data-zone={zoneOf(s.score)}
+                        className="calc-why-num flex size-[22px] shrink-0 items-center justify-center rounded-full text-[11px] font-bold tabular-nums text-white md:hidden"
                         style={{ background: biggest ? CORAL : LILAC.base }}
                       >
                         {i + 1}
                       </span>
                       <span
-                        className={STAGE_TAG + ' w-fit'}
+                        data-top={biggest ? '' : undefined}
+                        className={STAGE_TAG + ' calc-stage-tag w-fit'}
                         style={biggest ? { background: '#e52421', color: '#fff' } : { background: LILAC.soft, color: LILAC.base, boxShadow: `inset 0 0 0 1px ${LILAC.ring}` }}
                       >
                         {biggest ? `${tCalc(copy.step4BiggestLeak, locale)} · ` : `${tCalc(s.short, locale)} · `}
@@ -1802,10 +2016,11 @@ function StageTimeline({ locale, stages, biggestKey, total }: { locale: string; 
                   {/* The stage's loss sits on a small, low rectangular plate: coral for the biggest leak, lilac for the rest */}
                   <p className="m-0 flex shrink-0 flex-col items-center gap-1.5 text-center">
                     <b
-                      className="inline-flex h-10 min-w-16 items-center justify-center rounded-[3px] px-3 text-lg font-extrabold leading-none tracking-[-0.02em] tabular-nums sm:h-11 sm:min-w-[4.5rem] sm:text-xl"
+                      data-top={biggest ? '' : undefined} data-zone={zoneOf(s.score)}
+                      className="calc-why-plate inline-flex h-10 min-w-16 items-center justify-center rounded-[3px] px-3 text-lg font-extrabold leading-none tracking-[-0.02em] tabular-nums sm:h-11 sm:min-w-[4.5rem] sm:text-xl"
                       style={biggest ? { background: CORAL, color: '#fff' } : { background: LILAC.soft, color: LILAC.deep, boxShadow: `inset 0 0 0 1px ${LILAC.ring}` }}
                     >
-                      <bdi dir="ltr">{stageLoss(s, locale)}</bdi>
+                      <bdi dir="ltr">{stageLoss(s, locale, true)}</bdi>
                     </b>
                     <span className="whitespace-nowrap text-xs leading-[1.5] text-[#1e1e1e]">
                       {s.money > 0 ? tCalc(copy.step4HeroPerMonth, locale) : fillCalc(tCalc(copy.step4StageScore, locale), { score: Math.round(s.score) })}
@@ -1815,10 +2030,10 @@ function StageTimeline({ locale, stages, biggestKey, total }: { locale: string; 
 
                 {/* Cause and effect: what the visitor does → where the site breaks, joined by an arrow */}
                 <div className="mt-6 grid items-stretch gap-2 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-3">
-                  <div className="flex flex-col gap-3 rounded-[12px] p-5 sm:p-6" style={{ background: LILAC.wash, boxShadow: `inset 0 0 0 1px ${LILAC.soft}` }}>
+                  <div className="calc-why-act flex flex-col gap-3 rounded-[12px] p-5 sm:p-6" style={{ background: LILAC.wash, boxShadow: `inset 0 0 0 1px ${LILAC.soft}` }}>
                     <p className="m-0 flex items-center gap-3 text-[15px] font-bold leading-[1.3] sm:text-base" style={{ color: LILAC.deep }}>
                       <span
-                        className="flex size-10 shrink-0 items-center justify-center rounded-[3px] text-white"
+                        className="calc-why-ico flex size-10 shrink-0 items-center justify-center rounded-[3px] text-white"
                         style={{ background: LILAC.base }}
                       >
                         <StageIcon kind="action" stage={s.key} />
@@ -1828,7 +2043,7 @@ function StageTimeline({ locale, stages, biggestKey, total }: { locale: string; 
                     <p className="m-0 text-base leading-[1.6] text-[#1e1e1e]">{tCalc(s.action, locale)}</p>
                   </div>
 
-                  <span aria-hidden className="flex items-center justify-center text-[#8b74c7]">
+                  <span aria-hidden className="calc-why-arrow flex items-center justify-center text-[#8b74c7]">
                     {/* The arrow drifts along its own direction (the svg is rotated on md+), pointing from the action to the failure */}
                     <svg className="size-6 md:-rotate-90 md:rtl:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                       <g className="calc-arrow-nudge">
@@ -1837,9 +2052,9 @@ function StageTimeline({ locale, stages, biggestKey, total }: { locale: string; 
                     </svg>
                   </span>
 
-                  <div className="flex flex-col gap-3 rounded-[12px] border border-[#ececec] bg-[#fafafa] p-5 sm:p-6">
+                  <div className="calc-why-issue flex flex-col gap-3 rounded-[12px] border border-[#ececec] bg-[#fafafa] p-5 sm:p-6">
                     <p className="m-0 flex items-center gap-3 text-[15px] font-bold leading-[1.3] text-[#1e1e1e] sm:text-base">
-                      <span className="flex size-10 shrink-0 items-center justify-center rounded-[3px] bg-[#ff4542] text-white">
+                      <span className="calc-why-ico-issue flex size-10 shrink-0 items-center justify-center rounded-[3px] bg-[#ff4542] text-white">
                         <StageIcon kind="issue" stage={s.key} />
                       </span>
                       {tCalc(copy.step4CardColIssue, locale)}
@@ -1896,6 +2111,7 @@ export function CalcResult({
   onWaText: (text: string) => void
 }) {
   const copy = useCalcCopy()
+  const { lilac: LILAC, coral: CORAL } = useCalcPalette()
   const breakdown = useMemo(() => leakBreakdown(pillars), [pillars])
   const [techOpen, setTechOpen] = useState(true)
   const techId = useId()
@@ -2444,6 +2660,7 @@ function TechReport({
   reportHref: string | null
 }) {
   const copy = useCalcCopy()
+  const { lilac: LILAC, coral: CORAL, signedLoss = true } = useCalcPalette()
   const [filter, setFilter] = useState<CheckFilter>('all')
   const shown = scales.filter((s) => filter === 'all' || lightFor(s.score) === filter)
   const filters: { key: CheckFilter; label: string }[] = [
@@ -2496,7 +2713,7 @@ function TechReport({
                 <span className="text-sm tabular-nums text-[#475569]">
                   {lossWord}{' '}
                   <b className="font-semibold" style={{ color: s.loss > 0 ? CORAL : '#1d7a12' }}>
-                    <bdi dir="ltr">{s.loss > 0 ? `−${s.loss}%` : '0%'}</bdi>
+                    <bdi dir="ltr">{s.loss > 0 ? withLossSign(`${s.loss}%`, signedLoss) : '0%'}</bdi>
                   </b>
                 </span>
               </div>
@@ -2627,6 +2844,7 @@ function FixSprintHero({
   waHref: string | null
 }) {
   const copy = useCalcCopy()
+  const { lilac: LILAC, coral: CORAL } = useCalcPalette()
   const leaking = stages.filter((s) => s.loss > 0)
   const kept = 100 - lostPct
   const upside = kept > 0 ? Math.round((lostPct / kept) * 100) : 0
@@ -2665,7 +2883,7 @@ function FixSprintHero({
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
           {/* Left: the promise, the bonus, the action */}
           <div className="flex flex-col items-center text-center lg:items-start lg:text-start">
-            <span className="inline-flex items-center gap-2 rounded-[4px] border-[0.75px] border-white/25 bg-white/10 px-2 py-[3px] text-xs uppercase leading-[18px] tracking-[0.04em] text-white">
+            <span className="calc-fix-kicker inline-flex items-center gap-2 rounded-[4px] border-[0.75px] border-white/25 bg-white/10 px-2 py-[3px] text-xs uppercase leading-[18px] tracking-[0.04em] text-white">
               <i aria-hidden className="size-1.5 rounded-full" style={{ background: GAIN.mint }} />
               {tCalc(copy.step4FixKicker, locale)}
             </span>
@@ -2674,7 +2892,7 @@ function FixSprintHero({
               <span className="text-[28px] font-black uppercase leading-[1.2] tracking-[0.01em] text-white sm:text-[40px] lg:text-4xl xl:text-[44px]">
                 {tCalc(copy.step4FixTitlePre, locale)}
               </span>
-              <span className="text-[64px] font-black leading-none tracking-[-0.04em] sm:text-[96px] xl:text-[112px]" style={{ color: GAIN.mint, textShadow: '0 6px 40px rgba(134,239,172,0.3)' }}>
+              <span className="calc-fix-days text-[64px] font-black leading-none tracking-[-0.04em] sm:text-[96px] xl:text-[112px]" style={{ color: GAIN.mint, textShadow: '0 6px 40px rgba(134,239,172,0.3)' }}>
                 <bdi>{tCalc(copy.step4FixTitleDays, locale)}</bdi>
                 {star}
               </span>
@@ -2684,7 +2902,7 @@ function FixSprintHero({
 
             {/* The Pro audit comes free with the sprint: the bonus is the accent of this column */}
             <div
-              className="mt-7 flex w-full max-w-xl items-center gap-4 rounded-[14px] border p-4 text-start sm:p-5"
+              className="calc-fix-bonus mt-7 flex w-full max-w-xl items-center gap-4 rounded-[14px] border p-4 text-start sm:p-5"
               style={{ borderColor: 'rgba(134,239,172,0.45)', background: 'linear-gradient(120deg, rgba(134,239,172,0.18), rgba(134,239,172,0.06))' }}
             >
               <span className="flex size-12 shrink-0 items-center justify-center rounded-[3px] text-[#14532d]" style={{ background: GAIN.mint }}>
@@ -2719,13 +2937,21 @@ function FixSprintHero({
           </div>
 
           {/* Right: what the sprint fixes, in the same order as the losses above, then the estimated total */}
-          <div className="w-full rounded-[16px] border border-white/15 bg-white/[0.08] p-5 backdrop-blur-md sm:p-7">
-            <p className="m-0 text-xs uppercase leading-[18px] tracking-[0.04em] text-white/70">{tCalc(copy.step4FixListTitle, locale)}</p>
+          <div className="calc-fix-list w-full rounded-[16px] border border-white/15 bg-white/[0.08] p-5 backdrop-blur-md sm:p-7">
+            {/* Header strip: same markup as the hero «Audit results» card (styled only on the audit LP) */}
+            <p className="calc-insight-badge calc-fix-list-head m-0 flex items-center gap-2.5 text-xs uppercase leading-[18px] tracking-[0.04em] text-white/70">
+              <span className="calc-fix-list-dot relative hidden size-2 shrink-0" aria-hidden>
+                <span className="lk-ping absolute inline-flex size-full rounded-full bg-[#22bf16] opacity-70 motion-reduce:hidden" />
+                <span className="relative inline-flex size-2 rounded-full bg-[#22bf16]" />
+              </span>
+              {tCalc(copy.step4FixListTitle, locale)}
+            </p>
             <ol className="m-0 mt-4 flex list-none flex-col p-0">
               {leaking.map((s, i) => (
                 <li key={s.key} className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3 border-t border-white/10 py-4 first:border-t-0 first:pt-1">
                   <span
-                    className="flex size-9 items-center justify-center rounded-full text-sm font-bold tabular-nums text-white"
+                    data-top={i === 0 ? '' : undefined} data-zone={zoneOf(s.score)}
+                    className="calc-fix-num flex size-9 items-center justify-center rounded-full text-sm font-bold tabular-nums text-white"
                     style={{ background: i === 0 ? CORAL : 'rgba(255,255,255,0.18)' }}
                   >
                     {i + 1}
@@ -2733,13 +2959,13 @@ function FixSprintHero({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                       <span className="text-[17px] font-bold leading-[1.4] text-white">{tCalc(s.short, locale)}</span>
-                      <span className="inline-flex items-center gap-1 rounded-[3px] px-1.5 text-xs font-semibold leading-5 tabular-nums" style={{ background: GAIN.soft, color: GAIN.mint }}>
+                      <span className="calc-fix-gain inline-flex items-center gap-1 rounded-[3px] px-1.5 text-xs font-semibold leading-5 tabular-nums" style={{ background: GAIN.soft, color: GAIN.mint }}>
                         <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
                         <bdi dir="ltr">+{backValue(s)}</bdi> {backTail(s)}
                       </span>
                     </div>
                     <p className="m-0 mt-1 flex items-start gap-2 text-[15px] leading-[1.55] text-white/80">
-                      <svg className="mt-[3px] size-4 shrink-0" style={{ color: GAIN.mint }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+                      <svg className="calc-fix-check mt-[3px] size-4 shrink-0" style={{ color: GAIN.mint }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
                       {tCalc(copy.areaFix[s.key], locale)}
                     </p>
                   </div>
@@ -2747,10 +2973,10 @@ function FixSprintHero({
               ))}
             </ol>
 
-            <div className="mt-1 grid grid-cols-1 gap-4 border-t border-white/20 pt-5 sm:grid-cols-2 sm:items-end sm:gap-6">
+            <div className="calc-fix-totals mt-1 grid grid-cols-1 gap-4 border-t border-white/20 pt-5 sm:grid-cols-2 sm:items-end sm:gap-6">
               <div className="flex flex-col gap-1.5">
                 <span className="min-h-4 text-xs font-semibold uppercase leading-4 tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotal, locale)}</span>
-                <b className="text-[32px] font-black leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[40px]">
+                <b className="calc-fix-sum text-[32px] font-black leading-none tracking-[-0.03em] tabular-nums text-white sm:text-[40px]">
                   <bdi>{formatIls(sprintPrice, locale)}</bdi>
                   {star}
                 </b>
@@ -2771,7 +2997,7 @@ function FixSprintHero({
           {tiles.map((t) => (
             <div
               key={t.label}
-              className="flex h-full flex-col items-center justify-center rounded-[12px] border border-white/12 bg-white/[0.07] px-3 py-5 text-center backdrop-blur-sm sm:px-5 sm:py-6"
+              className="calc-fix-tile flex h-full flex-col items-center justify-center rounded-[12px] border border-white/12 bg-white/[0.07] px-3 py-5 text-center backdrop-blur-sm sm:px-5 sm:py-6"
             >
               <div className="flex flex-col items-center gap-1.5">
                 <dd
@@ -2805,6 +3031,8 @@ export function CalcCta({
   sprintPrice: number
 }) {
   const copy = useCalcCopy()
+  const extras = useContext(CalcCtaVisualContext)
+  const visual = extras?.visual ?? null
   return (
     <>
       <section className="relative isolate flex flex-col items-center gap-4 px-[22px] py-12 text-center sm:gap-6 sm:px-8 sm:py-20 lg:px-[60px] lg:py-28">
@@ -2816,7 +3044,10 @@ export function CalcCta({
             <span className="block whitespace-nowrap text-[#e52421]">{tCalc(copy.ctaL2, locale)}</span>
           </h2>
           {/* Fix total on the blue of the "we close the leaks" sprint panel, the amount in white with the shekel sign first */}
-          <div className="calc-fix-flow relative isolate flex w-0 min-w-full flex-col items-center gap-1.5 overflow-hidden rounded-[14px] px-6 py-5 text-white sm:py-7">
+          {/* With a visual (audit LP) the plate splits: figures on the start side, the visual on the end side */}
+          <div className={visual ? 'calc-cta-split relative isolate grid w-0 min-w-full overflow-hidden rounded-[14px]' : 'contents'}>
+          <div className="calc-fix-flow calc-cta-total relative isolate flex w-0 min-w-full flex-col items-center gap-1.5 overflow-hidden rounded-[14px] px-6 py-5 text-white sm:py-7">
+            {extras?.title ? <h3 className="calc-cta-title m-0">{extras.title}</h3> : null}
             <div className="grid w-full grid-cols-1 items-end gap-4 sm:grid-cols-2 sm:gap-8">
               <div className="flex flex-col items-center gap-1.5">
                 <span className="min-h-4 text-xs font-semibold uppercase leading-4 tracking-[0.04em] text-white/70">{tCalc(copy.step4FixTotal, locale)}</span>
@@ -2847,6 +3078,8 @@ export function CalcCta({
               </span>
             </span>
             <span className="text-xs leading-[1.5] text-white/65">{tCalc(copy.step4FixEstimateNote, locale)}</span>
+          </div>
+            {visual ? <div className="calc-cta-visual relative" aria-hidden>{visual}</div> : null}
           </div>
           {/* Same width as the plate; zero intrinsic width so it never widens the column, only fills it */}
           <p className="m-0 w-0 min-w-full text-sm leading-[1.5] text-[#6b6254] sm:text-base">{tCalc(copy.ctaBody, locale)}</p>
