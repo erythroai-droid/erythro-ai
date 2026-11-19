@@ -186,6 +186,15 @@ export function buildLeakCalcSampleReportUrl(locale: AuditLpLocale | string): st
   })
 }
 
+/** Same public demo (#271), opened on the AI-audit landing host `ai-audit-{locale}.erythro.ai`. */
+export function buildLeakLpSampleReportUrl(locale: AuditLpLocale | string): string {
+  const lang: AuditLpLocale = isAuditLpLocale(locale) ? locale : 'en'
+  const u = new URL(`https://${LEAK_LP_HOST_BY_LOCALE[lang]}/`)
+  u.searchParams.set('report', String(LEAK_CALC_SAMPLE_REPORT.submissionId))
+  u.searchParams.set('k', LEAK_CALC_SAMPLE_REPORT.token)
+  return u.toString()
+}
+
 /** Internal App Router path after middleware rewrite. */
 export function auditLpInternalPath(product: AuditLpProduct, locale: AuditLpLocale): string {
   if (product === 'free') return `/lp/audit/${locale}`

@@ -15,7 +15,7 @@ import { useLeakCalcFlow } from '@/components/leak-lp/useLeakCalcFlow'
 import { Reveal, usePrefersReducedMotion } from '@/components/leak-lp/motion'
 import type { SiteContent } from '@/lib/defaultContent'
 import type { AuditPageContent } from '@/lib/auditPage'
-import { AUDIT_LP_LOCALES, buildLeakCalcSampleReportUrl, LEAK_LP_HOST_BY_LOCALE, leakLpLocaleFromHost, mainSiteUrl, type AuditLpLocale } from '@/lib/auditLp'
+import { AUDIT_LP_LOCALES, buildLeakLpSampleReportUrl, LEAK_LP_HOST_BY_LOCALE, leakLpLocaleFromHost, mainSiteUrl, type AuditLpLocale } from '@/lib/auditLp'
 import { tCalc, type Localized } from '@/lib/auditCalcCopy'
 import { leakLpCopy as c } from '@/lib/leakLpCopy'
 import './leakLp.css'
@@ -229,7 +229,7 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
   }, [])
   const waNumber = phone.replace(/[^0-9]/g, '')
   const waHref = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}` : ''
-  const sampleHref = buildLeakCalcSampleReportUrl(locale)
+  const sampleHref = buildLeakLpSampleReportUrl(locale)
 
   const [openFaq, setOpenFaq] = useState<number | null>(0)
 
