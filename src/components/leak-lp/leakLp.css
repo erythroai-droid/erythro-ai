@@ -1123,7 +1123,7 @@
 }
 /* Mint gains → readable green on light. */
 .lk-root :is(.calc-fix-flow, .calc-loss-flow) [style*='color: rgb(134, 239, 172)'] {
-  color: #0e5a06 !important;
+  color: #22bf16 !important;
 }
 /* Calm plates on light result (skip zone fills + main CTAs). */
 .lk-result :is(span, b, i, div, button, a):is(
@@ -1371,7 +1371,7 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
 /* Offer: gains stay green. */
 .lk-result .calc-fix-flow [style*='color: rgb(134, 239, 172)'],
 .lk-result .calc-fix-flow [style*='color: rgb(134, 239, 172)'] bdi {
-  color: #0e5a06 !important;
+  color: #22bf16 !important;
 }
 /* Tech scales: keep status colours (green / orange / coral-red). */
 .lk-result i[class*='h-[3px]'][style*='rgb(229, 36, 33)'],
@@ -2059,7 +2059,7 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
   --lk-ind-soft: #fff1e5;
   --lk-ind-mid: #ffd6b0;
   --lk-ind-ink: #9a4300;
-  --lk-gain: #0e7a1e;
+  --lk-gain: #22bf16;
   --lk-gain-soft: #e8f6e6;
   --lk-gain-line: #c9eac4;
 }
@@ -2313,7 +2313,7 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
   --z: #22bf16;
   --z-soft: #e8f6e6;
   --z-line: #c9eac4;
-  --z-ink: #0e5a06;
+  --z-ink: #22bf16;
 }
 .lk-result [data-zone='good'] {
   --z: #e6b400;
@@ -3139,7 +3139,7 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
 }
 .lk-result :is(.calc-fix-bonus, #lk-boost#lk-boost) b,
 .lk-result :is(.calc-fix-bonus, #lk-boost#lk-boost) b :is(bdi, span) {
-  color: #1d7a12 !important;
+  color: #22bf16 !important;
 }
 /* Offer tiles: figures were white on white. */
 .lk-result :is(.calc-fix-tile, #lk-boost#lk-boost) dd,
@@ -3148,7 +3148,7 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
 }
 .lk-result :is(.calc-fix-tile, #lk-boost#lk-boost) dd[style*='134, 239, 172'],
 .lk-result :is(.calc-fix-tile, #lk-boost#lk-boost) dd[style*='134, 239, 172'] :is(bdi, span) {
-  color: #1d7a12 !important;
+  color: #22bf16 !important;
 }
 .lk-result :is(.calc-fix-tile, #lk-boost#lk-boost) dt {
   color: var(--lk-faint) !important;
@@ -3176,7 +3176,7 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
 .lk-result :is(span, #lk-boost#lk-boost)[class*='bg-[#eef9ec]'] {
   background: #eef9ec !important;
   border-color: #cfeccb !important;
-  color: #1d7a12 !important;
+  color: #22bf16 !important;
 }
 .lk-result :is(span, #lk-boost#lk-boost)[class*='bg-[#fff6ec]'] {
   background: #fff6ec !important;
@@ -3217,7 +3217,7 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
 /* «Сумма исправлений» in colour. */
 .lk-result :is(.calc-fix-sum, #lk-boost#lk-boost),
 .lk-result :is(.calc-fix-sum, #lk-boost#lk-boost) bdi {
-  color: #1d7a12 !important;
+  color: #22bf16 !important;
 }
 .lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
   background: #22bf16 !important;
@@ -3260,7 +3260,7 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
 .lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone][data-top],
 .lk-result :is(.calc-fix-num, #lk-boost#lk-boost)[data-zone]:not([data-top]) {
   background: #fff !important;
-  color: #1d7a12 !important;
+  color: #22bf16 !important;
   box-shadow: inset 0 0 0 1.5px #22bf16 !important;
 }
 .lk-result :is(.calc-fix-list-head, #lk-boost#lk-boost) {
@@ -3434,7 +3434,7 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
 .lk-result :is(.calc-cta-total, #lk-boost#lk-boost) span > b,
 .lk-result :is(.calc-cta-total, #lk-boost#lk-boost) span > b bdi,
 .lk-result :is(.calc-cta-total, #lk-boost#lk-boost) svg {
-  color: #86efac !important;
+  color: #22bf16 !important;
 }
 .lk-result :is(.calc-cta-total, #lk-boost#lk-boost) > span:first-of-type,
 .lk-result :is(.calc-cta-total, #lk-boost#lk-boost) > span:first-of-type > :not(span) {
@@ -3528,7 +3528,7 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
 }
 .lk-result :is(.calc-cta-total, #lk-boost#lk-boost) span > b[style*='134, 239, 172'],
 .lk-result :is(.calc-cta-total, #lk-boost#lk-boost) span > b[style*='134, 239, 172'] bdi {
-  color: #86efac !important;
+  color: #22bf16 !important;
 }
 
 /* ===== Правка 84: tech report details as in leak-en; accordion = one white card; final heading air. ===== */
