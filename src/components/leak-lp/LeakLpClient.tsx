@@ -9,6 +9,7 @@ import { CalcCopyProvider, CalcCtaVisualProvider, CalcPaletteProvider, CalcResul
 import { leakResultCopy } from '@/lib/leakResultCopy'
 import { displayDomain } from '@/components/audit/AuditCalcFlow'
 import LeakCalcPanel from '@/components/leak-lp/LeakCalcPanel'
+import LeakPromoSlider from '@/components/leak-lp/LeakPromoSlider'
 import LeakFinalCta, { LeakFixVisual, leakFixTitle } from '@/components/leak-lp/LeakFinalCta'
 import LeakToolsGraph from '@/components/leak-lp/LeakToolsGraph'
 import { useLeakCalcFlow } from '@/components/leak-lp/useLeakCalcFlow'
@@ -406,20 +407,41 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
         {/* Hero stays put while the next block slides over it (as on the main site). Sticks once its bottom reaches the viewport bottom, so a hero taller than the screen is fully seen first. */}
         <section data-stack="" className="lk-stack overflow-clip">
           <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-10 px-4 pb-12 pt-14 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,500px)] lg:gap-14 lg:pb-10 lg:pt-16">
-            <div className="flex flex-col items-center gap-6 text-center lg:items-start lg:text-start">
+            <div
+              className={`flex flex-col items-center gap-6 text-center lg:items-start lg:text-start ${
+                stage.name === 'waiting' || stage.name === 'opening' ? 'lg:self-stretch' : ''
+              }`}
+            >
               <span className="lk-rise lk-badge-dark" style={{ animationDelay: '0ms' }}>
                 <span className="size-1.5 rounded-full bg-[var(--lk-red)]" />
                 {t(c.heroKicker)}
               </span>
-              <h1 className="lk-display lk-rise m-0 text-[38px] leading-[1.05] sm:text-[52px] lg:text-[60px]" style={{ animationDelay: '80ms' }}>
+              <h1
+                className={`lk-display lk-rise m-0 leading-[1.05] ${
+                  stage.name === 'waiting' || stage.name === 'opening'
+                    ? 'text-[30px] sm:text-[36px] lg:text-[40px]'
+                    : 'text-[38px] sm:text-[52px] lg:text-[60px]'
+                }`}
+                style={{ animationDelay: '80ms' }}
+              >
                 {t(c.heroL1)} <span className="text-[var(--lk-faint)]">{t(c.heroL2)}</span>
               </h1>
-              <p className="lk-rise m-0 max-w-[540px] text-[17px] leading-[1.5] text-[var(--lk-muted)]" style={{ animationDelay: '160ms' }}>
-                {t(c.heroSub)} <EngineSwap /> {t(c.heroSubTail)}
-              </p>
-              <p className="lk-rise m-0 text-[13px] leading-[1.5] text-[var(--lk-faint)]" style={{ animationDelay: '320ms' }}>
-                {t(c.heroProof)}
-              </p>
+              {stage.name === 'waiting' || stage.name === 'opening' ? (
+                // While the audit runs: promo videos (16:9) instead of the sub-heading and proof line.
+                // On lg the column stretches to the progress card, so the video ends level with its bottom.
+                <div className="lk-rise lk-promo-wrap w-full" style={{ animationDelay: '160ms' }}>
+                  <LeakPromoSlider locale={locale} />
+                </div>
+              ) : (
+                <>
+                  <p className="lk-rise m-0 max-w-[540px] text-[17px] leading-[1.5] text-[var(--lk-muted)]" style={{ animationDelay: '160ms' }}>
+                    {t(c.heroSub)} <EngineSwap /> {t(c.heroSubTail)}
+                  </p>
+                  <p className="lk-rise m-0 text-[13px] leading-[1.5] text-[var(--lk-faint)]" style={{ animationDelay: '320ms' }}>
+                    {t(c.heroProof)}
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Product window */}

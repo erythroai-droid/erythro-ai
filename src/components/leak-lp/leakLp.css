@@ -3788,3 +3788,144 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
 .lk-result .calc-tech-flow :is(a, #lk-boost#lk-boost)[href*='/api/audit/report/'] :is(svg, span) {
   color: #fff !important;
 }
+
+/* Правка 90: waiting screen progress fill green (was lilac #8b74c7 from the calculator palette). */
+.lk-root :is(div, #lk-boost#lk-boost)[class~='h-full'][style*='139, 116, 199'] {
+  background: #22bf16 !important;
+  background-color: #22bf16 !important;
+}
+
+/* ===== Правка 91: promo video slider on the waiting screen (16:9). ===== */
+.lk-promo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lk-promo-title {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--lk-muted);
+  text-align: start;
+}
+.lk-promo-frame {
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  background: #141414;
+  border: 0.75px solid var(--lk-line);
+  box-shadow: 0 24px 48px -36px rgba(0, 0, 0, 0.35);
+}
+.lk-promo-arrow {
+  position: absolute;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-top: -18px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--lk-ink);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+.lk-promo-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+.lk-promo-prev {
+  left: 12px;
+}
+.lk-promo-next {
+  right: 12px;
+}
+.lk-promo-frame:hover .lk-promo-arrow,
+.lk-promo-arrow:focus-visible {
+  opacity: 1;
+}
+.lk-promo-arrow:hover {
+  background: var(--lk-ink);
+  color: #fff;
+}
+@media (hover: none) {
+  .lk-promo-arrow {
+    opacity: 1;
+  }
+}
+/* Sound toggle: always visible, bottom-right corner of the video. */
+.lk-promo-sound {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+.lk-promo-sound svg {
+  width: 17px;
+  height: 17px;
+}
+.lk-promo-sound:hover {
+  background: #fff;
+  color: var(--lk-ink);
+}
+/* Dots sit inside the video, centred at the bottom, so the frame edge is the slider's bottom. */
+.lk-promo-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+}
+.lk-promo-dot {
+  width: 22px;
+  height: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: background-color 0.25s ease, width 0.25s ease;
+}
+.lk-promo-dot[aria-selected='true'] {
+  width: 36px;
+  background: #fff;
+}
+@media (max-width: 1023px) {
+  .lk-promo-title {
+    text-align: center;
+  }
+}
+/* lg: the hero column stretches to the progress card; the frame fills what is left,
+   so the video bottom lines up with the card bottom (object-cover trims the edges if needed). */
+@media (min-width: 1024px) {
+  .lk-promo-wrap {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .lk-promo-wrap > .lk-promo {
+    flex: 1 1 auto;
+  }
+  .lk-promo-wrap .lk-promo-frame {
+    flex: 1 1 auto;
+    aspect-ratio: auto;
+    min-height: 240px;
+  }
+}
