@@ -236,6 +236,11 @@ export const leakLpCopy = {
   ] satisfies { q: Localized; a: Localized }[],
 
   faqWaCta: { en: 'Message an engineer on WhatsApp', ru: 'Написать инженеру в WhatsApp', he: 'לכתוב למהנדס ב-WhatsApp' } satisfies Localized,
+  headerWaCta: {
+    en: 'Get a WhatsApp consult',
+    ru: 'Получить консультацию в WhatsApp',
+    he: 'לקבל ייעוץ ב-WhatsApp',
+  } satisfies Localized,
   faqWaText: {
     en: 'Hi! I have a question about the AI website audit.',
     ru: 'Здравствуйте! У меня вопрос по AI-аудиту сайта.',
