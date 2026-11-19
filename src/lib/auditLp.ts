@@ -53,6 +53,31 @@ export const AUDIT_LP_HOSTS_BY_PRODUCT: Record<
   },
 }
 
+/**
+ * AI-audit landing (`/lp/audit/leak/{locale}`, the redesigned leak LP) on its own hosts.
+ * Kept outside AUDIT_LP_PRODUCTS: it has its own route and client, not the ads LP shell.
+ * Leads from these hosts count as `leak_calc` (free check, WhatsApp follow-up, no Pro upsell).
+ */
+export const LEAK_LP_HOST_BY_LOCALE: Record<AuditLpLocale, string> = {
+  en: 'ai-audit-en.erythro.ai',
+  ru: 'ai-audit-ru.erythro.ai',
+  he: 'ai-audit-he.erythro.ai',
+}
+
+/** Locale of an AI-audit landing host, or null. */
+export function leakLpLocaleFromHost(host: string | null | undefined): AuditLpLocale | null {
+  const h = normalizeHost(host)
+  for (const locale of AUDIT_LP_LOCALES) {
+    if (LEAK_LP_HOST_BY_LOCALE[locale] === h) return locale
+  }
+  return null
+}
+
+/** Internal path of the AI-audit landing. */
+export function leakLpInternalPath(locale: AuditLpLocale): string {
+  return `/lp/audit/leak/${locale}`
+}
+
 /** Free LP hosts — kept for callers that only mean the express/free ads LP. */
 export const AUDIT_LP_HOST_BY_LOCALE: Record<AuditLpLocale, string> =
   AUDIT_LP_HOSTS_BY_PRODUCT.free
@@ -63,6 +88,7 @@ export const AUDIT_LP_ALL_HOSTS: readonly string[] = [
   ...Object.values(AUDIT_LP_HOSTS_BY_PRODUCT.pro),
   ...Object.values(AUDIT_LP_HOSTS_BY_PRODUCT.diagnostic),
   ...Object.values(AUDIT_LP_HOSTS_BY_PRODUCT.calc),
+  ...Object.values(LEAK_LP_HOST_BY_LOCALE),
   'audit-rus.erythro.ai', // unused free RU alias
 ]
 
@@ -91,19 +117,21 @@ export function auditLpTargetFromHost(host: string | null | undefined): AuditLpT
   return TARGET_BY_HOST[h] ?? null
 }
 
-/** Locale locked by ads subdomain, or null on the main site. */
+/** Locale locked by an LP subdomain (ads LPs and the AI-audit landing), or null on the main site. */
 export function auditLpLocaleFromHost(host: string | null | undefined): AuditLpLocale | null {
-  return auditLpTargetFromHost(host)?.locale ?? null
+  return auditLpTargetFromHost(host)?.locale ?? leakLpLocaleFromHost(host)
 }
 
+/** Any LP subdomain (ads LPs and the AI-audit landing): splash skip, eager analytics, Turnstile policy. */
 export function isAuditLpHost(host: string | null | undefined): boolean {
-  return auditLpTargetFromHost(host) != null
+  return auditLpTargetFromHost(host) != null || leakLpLocaleFromHost(host) != null
 }
 
 /** CMS `leadChannel` for free-audit intake (ads LP vs leak calculator vs organic). */
 export type AuditLeadChannel = 'organic' | 'meta_ads' | 'leak_calc'
 
 export function auditLeadChannelFromHost(host: string | null | undefined): AuditLeadChannel {
+  if (leakLpLocaleFromHost(host)) return 'leak_calc'
   const target = auditLpTargetFromHost(host)
   if (!target) return 'organic'
   if (target.product === 'calc') return 'leak_calc'
