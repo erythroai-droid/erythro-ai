@@ -16,7 +16,39 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;')
 }
 
-function copyForLocale(locale, withPdf, leakCalc = false) {
+function copyForLocale(locale, withPdf, leakCalc = false, aiAuditLp = false) {
+  // ai-audit-{locale}.erythro.ai landing: same funnel as the calculator, wording of an audit (no «leaks»).
+  if (leakCalc && aiAuditLp) {
+    if (locale === 'ru') {
+      return {
+        subject: (_url, orderId) => `Результаты AI-аудита вашего сайта готовы (${orderId})`,
+        greeting: (name) => `Здравствуйте${name ? `, ${name}` : ''}!`,
+        body: 'Мы проверили ваш сайт: скорость, формы заявок, видимость в Google и AI-поиске, доверие. Результаты и план исправлений:',
+        orderIdLabel: 'ID заказа',
+        support:
+          'Если ссылка не открывается или возникла ошибка — напишите в поддержку и укажите этот ID заказа.',
+        footer: 'Erythro.ai',
+      }
+    }
+    if (locale === 'he') {
+      return {
+        subject: (_url, orderId) => `תוצאות ביקורת ה-AI לאתר שלכם מוכנות (${orderId})`,
+        greeting: (name) => `שלום${name ? ` ${name}` : ''},`,
+        body: 'בדקנו את האתר שלכם: מהירות, טופסי פנייה, נראות בגוגל ובחיפוש AI ואמון. התוצאות ותוכנית התיקונים:',
+        orderIdLabel: 'מספר הזמנה',
+        support: 'אם משהו לא עובד — פנו לתמיכה וציינו את מספר ההזמנה.',
+        footer: 'Erythro.ai',
+      }
+    }
+    return {
+      subject: (_url, orderId) => `Your AI website audit results are ready (${orderId})`,
+      greeting: (name) => `Hello${name ? `, ${name}` : ''},`,
+      body: 'We checked your website: speed, inquiry forms, visibility in Google and AI search, and trust. Your results and fix plan:',
+      orderIdLabel: 'Order ID',
+      support: 'If the link fails or something goes wrong, contact support and quote this Order ID.',
+      footer: 'Erythro.ai',
+    }
+  }
   if (leakCalc) {
     if (locale === 'ru') {
       return {
@@ -189,6 +221,7 @@ export async function sendClientAuditEmail(input) {
 
   const locale = input.locale || 'en'
   const leakCalc = Boolean(input.leakCalc)
+  const aiAuditLp = Boolean(input.aiAuditLp)
   const pdfBuffer = input.blocked || input.waitingAccess ? null : input.pdfBuffer
   const withPdf = Boolean(pdfBuffer && pdfBuffer.length)
   const copyLang = locale === 'ru' || locale === 'he' ? locale : 'en'
@@ -196,7 +229,7 @@ export async function sendClientAuditEmail(input) {
     ? { ...copyForLocale(locale, false, false), ...WAITING_COPY[copyLang] }
     : input.blocked
       ? { ...copyForLocale(locale, false, false), ...BLOCKED_COPY[copyLang] }
-      : copyForLocale(locale, withPdf, leakCalc)
+      : copyForLocale(locale, withPdf, leakCalc, aiAuditLp)
   const orderId = formatAuditOrderId(input.orderId)
   const host = process.env.SMTP_HOST?.trim() || 'smtp.hostinger.com'
   const port = Number(process.env.SMTP_PORT || 465)

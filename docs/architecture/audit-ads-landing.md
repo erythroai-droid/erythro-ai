@@ -42,7 +42,17 @@
 
 **Client report email (leak):** ссылка не на `/audit/report/…`, а на шаг 4 калькулятора: `https://leak-{locale}.erythro.ai/?report={id}&k={token}` (+ опционально `rev` / `clients` из шага 2). LP при открытии поднимает waiting→ready (CalcResult).
 
-DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → Domains: все двенадцать.
+### AI-audit landing (redesigned leak LP)
+
+| Host | Locale | Internal route |
+|------|--------|----------------|
+| `https://ai-audit-en.erythro.ai/` | `en` | `/lp/audit/leak/en` |
+| `https://ai-audit-ru.erythro.ai/` | `ru` | `/lp/audit/leak/ru` |
+| `https://ai-audit-he.erythro.ai/` | `he` | `/lp/audit/leak/he` |
+
+Хосты — `LEAK_LP_HOST_BY_LOCALE` в `src/lib/auditLp.ts` (вне `AUDIT_LP_PRODUCTS`: у лендинга свой роут и клиент). `isAuditLpHost` / `auditLpLocaleFromHost` их учитывают (сплэш, eager-аналитика, Turnstile-политика), `LOCALE_BOOTSTRAP_SCRIPT` лочит язык по хосту. Заявки — `leadChannel=leak_calc` (как калькулятор: без Pro-допродажи, список Leak в админке) + `auditSummary.lp = 'ai-audit'`. Воркер по этому маркеру шлёт ссылку `https://ai-audit-{locale}.erythro.ai/?report={id}&k={token}` и письмо в формулировках аудита (`copyForLocale(..., aiAuditLp)` в `services/audit-agent/src/mail.js`). Переключатель языка на этих хостах ведёт на sibling-хост.
+
+DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → Domains: все двенадцать (+ три `ai-audit-*`).
 
 Публичный RU free-хост — **`audit-ru`**. Label `audit-rus` в коде только как alias middleware (DNS на него не публиковался → NXDOMAIN).
 

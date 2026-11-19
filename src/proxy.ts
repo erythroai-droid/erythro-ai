@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { HOMEPAGE_LINK_HEADER } from '@/lib/agentDiscovery'
-import { auditLpInternalPath, auditLpTargetFromHost } from '@/lib/auditLp'
+import { auditLpInternalPath, auditLpTargetFromHost, leakLpInternalPath, leakLpLocaleFromHost } from '@/lib/auditLp'
 import { shouldServeMarkdown } from '@/lib/markdownAccept'
 import {
   canonicalUrlForPath,
@@ -22,11 +22,15 @@ export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const host = requestHost(request.headers, request.nextUrl.hostname)
   const auditLp = auditLpTargetFromHost(host)
+  const leakLpLocale = auditLp ? null : leakLpLocaleFromHost(host)
 
-  // Ads Final URLs: audit[-pro|-diag]-{locale}.erythro.ai → /lp/audit[/pro|/diagnostic]/{locale}
+  // Ads Final URLs: audit[-pro|-diag]-{locale}.erythro.ai → /lp/audit[/pro|/diagnostic]/{locale};
+  // AI-audit landing: ai-audit-{locale}.erythro.ai → /lp/audit/leak/{locale}
   // (URL bar stays on the subdomain; no Set-Cookie).
-  if (auditLp) {
-    const internalPath = auditLpInternalPath(auditLp.product, auditLp.locale)
+  if (auditLp || leakLpLocale) {
+    const internalPath = auditLp
+      ? auditLpInternalPath(auditLp.product, auditLp.locale)
+      : leakLpInternalPath(leakLpLocale!)
     const isRoot = pathname === '/' || pathname === ''
     const alreadyLp = pathname === internalPath || pathname.startsWith(`${internalPath}/`)
 

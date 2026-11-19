@@ -64,7 +64,7 @@ try {
 } catch (e) {}
 
 function isAuditLpHost(h){
-  return /^audit-[a-z0-9-]+\\.erythro\\.ai$/.test(h);
+  return /^(ai-)?audit-[a-z0-9-]+\\.erythro\\.ai$/.test(h);
 }
 function needsEager(){
   if (isAuditLpHost(host)) return true;

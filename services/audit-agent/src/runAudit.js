@@ -41,6 +41,13 @@ function siteBase() {
   )
 }
 
+/** AI-audit landing (redesigned leak LP): leads carry auditSummary.lp = 'ai-audit'. */
+const AI_AUDIT_LP_HOSTS = {
+  en: 'ai-audit-en.erythro.ai',
+  ru: 'ai-audit-ru.erythro.ai',
+  he: 'ai-audit-he.erythro.ai',
+}
+
 const LEAK_CALC_HOSTS = {
   en: 'leak-en.erythro.ai',
   ru: 'leak-ru.erythro.ai',
@@ -58,11 +65,13 @@ function buildClientStatusPageUrl({
   leadChannel,
   calcRevenue,
   calcClients,
+  aiAuditLp = false,
 }) {
   const token = encodeURIComponent(reportAccessToken)
   if (leadChannel === 'leak_calc') {
     const lang = locale === 'ru' || locale === 'he' || locale === 'en' ? locale : 'en'
-    const host = LEAK_CALC_HOSTS[lang] || LEAK_CALC_HOSTS.en
+    const hosts = aiAuditLp ? AI_AUDIT_LP_HOSTS : LEAK_CALC_HOSTS
+    const host = hosts[lang] || hosts.en
     const u = new URL(`https://${host}/`)
     u.searchParams.set('report', String(submissionId))
     u.searchParams.set('k', reportAccessToken)
@@ -78,12 +87,13 @@ function buildClientStatusPageUrl({
 }
 
 function calcMetricsFromSummary(summary) {
-  if (!summary || typeof summary !== 'object') return { calcRevenue: null, calcClients: null }
+  if (!summary || typeof summary !== 'object') return { calcRevenue: null, calcClients: null, aiAuditLp: false }
   const rev = Number(summary.calcRevenue)
   const clients = Number(summary.calcClients)
   return {
     calcRevenue: Number.isFinite(rev) && rev > 0 ? rev : null,
     calcClients: Number.isFinite(clients) && clients > 0 ? clients : null,
+    aiAuditLp: summary.lp === 'ai-audit',
   }
 }
 
@@ -201,6 +211,7 @@ export async function runAuditJob(job) {
   let calcRevenue = null
   /** @type {number|null} */
   let calcClients = null
+  let aiAuditLp = false
   /** @type {Record<string, unknown>|null} */
   let priorSummary = null
 
@@ -218,6 +229,7 @@ export async function runAuditJob(job) {
         const metrics = calcMetricsFromSummary(doc.auditSummary)
         calcRevenue = metrics.calcRevenue
         calcClients = metrics.calcClients
+        aiAuditLp = metrics.aiAuditLp
       }
     }
     if (!reportAccessToken) {
@@ -270,6 +282,7 @@ export async function runAuditJob(job) {
         leadChannel,
         calcRevenue,
         calcClients,
+        aiAuditLp,
       })
       await updateContactSubmission(submissionId, {
         auditStatus: 'report_sent',
@@ -303,6 +316,7 @@ export async function runAuditJob(job) {
           planSlug,
           blocked: true,
           leakCalc: leadChannel === 'leak_calc',
+          aiAuditLp,
         })
         console.log(
           mailed.sent
@@ -358,6 +372,7 @@ export async function runAuditJob(job) {
       leadChannel,
       calcRevenue,
       calcClients,
+      aiAuditLp,
     })
     // Leak LP: client opens step 4 on leak-*; keep A44 R2 URL only when public (non-r2.dev).
     const publicReportUrl =
@@ -422,6 +437,7 @@ export async function runAuditJob(job) {
         pdfBuffer: wantsPdf ? result.pdf : null,
         pdfFilename,
         leakCalc: leadChannel === 'leak_calc',
+        aiAuditLp,
       })
       if (!mailed.sent) {
         console.warn(`[audit] submission=${submissionId} email skipped: ${mailed.reason}`)

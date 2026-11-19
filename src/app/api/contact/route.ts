@@ -20,6 +20,7 @@ import {
   AUDIT_LP_TURNSTILE_ENABLED,
   auditLeadChannelFromHost,
   isAuditLpHost,
+  leakLpLocaleFromHost,
 } from '@/lib/auditLp'
 import { buildAuditReportPath } from '@/lib/auditReport'
 import { formatSubmissionTicketId } from '@/lib/submissionTicket'
@@ -152,6 +153,8 @@ export async function POST(request: NextRequest) {
     const host = requestHost(request.headers)
     const leadChannel = source === 'audit' ? auditLeadChannelFromHost(host) : null
     const isLeakCalc = leadChannel === 'leak_calc'
+    // ai-audit-{locale}.erythro.ai: same channel as the calculator, but the worker links the client to this landing.
+    const fromAiAuditLp = source === 'audit' && leakLpLocaleFromHost(host) != null
 
     const created = await payload.create({
       collection: 'contact-submissions',
@@ -173,11 +176,12 @@ export async function POST(request: NextRequest) {
               leadChannel: leadChannel ?? 'organic',
               // Leak LP: free check only — no Pro/Diagnostic upsell emails (WhatsApp follow-up).
               proOfferStatus: isLeakCalc ? 'skipped' : 'none',
-              ...(isLeakCalc && (calcRevenue != null || calcClients != null)
+              ...(isLeakCalc && (calcRevenue != null || calcClients != null || fromAiAuditLp)
                 ? {
                     auditSummary: {
                       ...(calcRevenue != null ? { calcRevenue } : {}),
                       ...(calcClients != null ? { calcClients } : {}),
+                      ...(fromAiAuditLp ? { lp: 'ai-audit' } : {}),
                     },
                   }
                 : {}),
