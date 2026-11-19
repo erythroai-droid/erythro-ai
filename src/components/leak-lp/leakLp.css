@@ -3759,3 +3759,32 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
 .lk-result .calc-cta-total .calc-cta-title {
   margin-bottom: 24px !important;
 }
+
+/* ===== Правка 88 ===== */
+/* «Потери по этапам» in the hero results card: coral bars. */
+.lk-result .calc-insight-card li [class~='h-1.5'] > [class*='h-full'],
+.lk-result .calc-insight-card li [class~='h-1.5'] > [data-zone] {
+  background: #ff4542 !important;
+  background-color: #ff4542 !important;
+}
+/* Ring: the «good» (85–94) zone a bit brighter / more saturated than #e6b400. */
+.lk-result {
+  --lk-zone-good: #ffb800;
+}
+/* «Открыть отчёт Free»: black pill as in the leak-en report (old «calm plates» rule had turned it grey). */
+.lk-result .calc-tech-flow :is(a, #lk-boost#lk-boost)[href*='/api/audit/report/'] {
+  background: #1e1e1e !important;
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border-color: #1e1e1e !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18) !important;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+.lk-result .calc-tech-flow :is(a, #lk-boost#lk-boost)[href*='/api/audit/report/']:hover {
+  background: #e52421 !important;
+  background-color: #e52421 !important;
+  box-shadow: 0 10px 28px rgba(229, 36, 33, 0.35) !important;
+}
+.lk-result .calc-tech-flow :is(a, #lk-boost#lk-boost)[href*='/api/audit/report/'] :is(svg, span) {
+  color: #fff !important;
+}

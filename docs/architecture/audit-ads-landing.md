@@ -50,7 +50,7 @@
 | `https://ai-audit-ru.erythro.ai/` | `ru` | `/lp/audit/leak/ru` |
 | `https://ai-audit-he.erythro.ai/` | `he` | `/lp/audit/leak/he` |
 
-Хосты — `LEAK_LP_HOST_BY_LOCALE` в `src/lib/auditLp.ts` (вне `AUDIT_LP_PRODUCTS`: у лендинга свой роут и клиент). `isAuditLpHost` / `auditLpLocaleFromHost` их учитывают (сплэш, eager-аналитика, Turnstile-политика), `LOCALE_BOOTSTRAP_SCRIPT` лочит язык по хосту. Заявки — `leadChannel=leak_calc` (как калькулятор: без Pro-допродажи, список Leak в админке) + `auditSummary.lp = 'ai-audit'`. Воркер по этому маркеру шлёт ссылку `https://ai-audit-{locale}.erythro.ai/?report={id}&k={token}` и письмо в формулировках аудита (`copyForLocale(..., aiAuditLp)` в `services/audit-agent/src/mail.js`). Переключатель языка на этих хостах ведёт на sibling-хост.
+Хосты — `LEAK_LP_HOST_BY_LOCALE` в `src/lib/auditLp.ts` (вне `AUDIT_LP_PRODUCTS`: у лендинга свой роут и клиент). `isAuditLpHost` / `auditLpLocaleFromHost` их учитывают (сплэш, eager-аналитика, Turnstile-политика), `LOCALE_BOOTSTRAP_SCRIPT` лочит язык по хосту. Заявки — `leadChannel=leak_calc` (как калькулятор: без Pro-допродажи, список Leak в админке) + `auditSummary.lp = 'ai-audit'`. Воркер по этому маркеру шлёт ссылку `https://ai-audit-{locale}.erythro.ai/?report={id}&k={token}` и письмо в формулировках аудита (`copyForLocale(..., aiAuditLp)` в `services/audit-agent/src/mail.js`). Переключателя языка на лендинге нет (с 2026-11-19): каждый язык — свой субдомен.
 
 DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → Domains: все двенадцать (+ три `ai-audit-*`).
 
