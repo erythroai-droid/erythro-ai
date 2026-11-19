@@ -15,7 +15,7 @@ import { useLeakCalcFlow } from '@/components/leak-lp/useLeakCalcFlow'
 import { Reveal, usePrefersReducedMotion } from '@/components/leak-lp/motion'
 import type { SiteContent } from '@/lib/defaultContent'
 import type { AuditPageContent } from '@/lib/auditPage'
-import { AUDIT_LP_LOCALES, buildLeakLpSampleReportUrl, LEAK_LP_HOST_BY_LOCALE, leakLpLocaleFromHost, mainSiteUrl, type AuditLpLocale } from '@/lib/auditLp'
+import { buildLeakLpSampleReportUrl, mainSiteUrl, type AuditLpLocale } from '@/lib/auditLp'
 import { tCalc, type Localized } from '@/lib/auditCalcCopy'
 import { leakLpCopy as c } from '@/lib/leakLpCopy'
 import './leakLp.css'
@@ -221,12 +221,6 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
   const flow = useLeakCalcFlow()
   const phone = useSiteContent().siteSettings.phone || ''
   const [waText, setWaText] = useState('')
-  // On ai-audit-{locale}.erythro.ai the language switch goes to the sibling subdomain, not to /lp/… on this host
-  // (that path would 308 to the main site). Read after mount so SSR and the first client render match.
-  const [onLpHost, setOnLpHost] = useState(false)
-  useEffect(() => {
-    setOnLpHost(leakLpLocaleFromHost(window.location.hostname) != null)
-  }, [])
   const waNumber = phone.replace(/[^0-9]/g, '')
   const waHref = waNumber ? `https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}` : ''
   const sampleHref = buildLeakLpSampleReportUrl(locale)
@@ -360,22 +354,7 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
           </nav>
         ) : null}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          {!inFunnel ? (
-            <nav aria-label="Language" className="lk-seg">
-              {AUDIT_LP_LOCALES.map((l) => (
-                <a
-                  key={l}
-                  href={onLpHost ? `https://${LEAK_LP_HOST_BY_LOCALE[l]}/` : `/lp/audit/leak/${l}`}
-                  aria-current={l === locale ? 'true' : undefined}
-                  className={`rounded-[6px] px-2 py-1 text-xs font-medium uppercase no-underline transition-colors ${
-                    l === locale ? 'bg-[var(--lk-ink)] text-white' : 'text-[var(--lk-muted)] hover:text-[var(--lk-ink)]'
-                  }`}
-                >
-                  {l}
-                </a>
-              ))}
-            </nav>
-          ) : null}
+          {/* No language switch: each locale has its own subdomain (ai-audit-{en,ru,he}). */}
           {waHref ? (
             <a
               href={waHref}
