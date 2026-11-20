@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import type { AuditLpLocale } from '@/lib/auditLp'
+import { trackLeakLp } from '@/lib/leakLpAnalytics'
 
 type Lang = 'en' | 'ru' | 'he'
 type PromoVideo = { src: string; label: string }
@@ -76,6 +77,7 @@ export default function LeakPromoSlider({ locale }: { locale: AuditLpLocale }) {
     const v = ref.current
     const next = !muted
     setMuted(next)
+    trackLeakLp('promo_video', { action: next ? 'sound_off' : 'sound_on', video: current.label })
     if (v) {
       v.muted = next
       if (v.paused) void v.play().catch(() => {})
@@ -96,7 +98,10 @@ export default function LeakPromoSlider({ locale }: { locale: AuditLpLocale }) {
           playsInline
           preload="metadata"
           loop={count === 1}
-          onEnded={() => go(1)}
+          onEnded={() => {
+            trackLeakLp('promo_video', { action: 'complete', video: current.label })
+            go(1)
+          }}
           aria-label={`${COPY.slide[lang]} ${index + 1} / ${count}: ${current.label}`}
         />
         <button
@@ -117,12 +122,18 @@ export default function LeakPromoSlider({ locale }: { locale: AuditLpLocale }) {
         </button>
         {count > 1 ? (
           <>
-            <button type="button" className="lk-promo-arrow lk-promo-prev" aria-label={COPY.prev[lang]} onClick={() => go(-1)}>
+            <button type="button" className="lk-promo-arrow lk-promo-prev" aria-label={COPY.prev[lang]} onClick={() => {
+                trackLeakLp('promo_video', { action: 'prev', video: current.label })
+                go(-1)
+              }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="m15 18-6-6 6-6" />
               </svg>
             </button>
-            <button type="button" className="lk-promo-arrow lk-promo-next" aria-label={COPY.next[lang]} onClick={() => go(1)}>
+            <button type="button" className="lk-promo-arrow lk-promo-next" aria-label={COPY.next[lang]} onClick={() => {
+                trackLeakLp('promo_video', { action: 'next', video: current.label })
+                go(1)
+              }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="m9 18 6-6-6-6" />
               </svg>
@@ -136,7 +147,10 @@ export default function LeakPromoSlider({ locale }: { locale: AuditLpLocale }) {
                   aria-selected={i === index}
                   aria-label={`${COPY.slide[lang]} ${i + 1}: ${v.label}`}
                   className="lk-promo-dot"
-                  onClick={() => setIndex(i)}
+                  onClick={() => {
+                    trackLeakLp('promo_video', { action: 'dot', video: v.label })
+                    setIndex(i)
+                  }}
                 />
               ))}
             </div>

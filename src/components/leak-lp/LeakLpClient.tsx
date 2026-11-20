@@ -19,6 +19,7 @@ import type { AuditPageContent } from '@/lib/auditPage'
 import { buildLeakLpSampleReportUrl, mainSiteUrl, type AuditLpLocale } from '@/lib/auditLp'
 import { tCalc, type Localized } from '@/lib/auditCalcCopy'
 import { leakLpCopy as c } from '@/lib/leakLpCopy'
+import { bindLeakLpClickTracking, trackLeakLp } from '@/lib/leakLpAnalytics'
 import './leakLp.css'
 
 // Result screen is black / white / gray. Colour is added back one accent at a time.
@@ -289,8 +290,36 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
   }, [stage.name])
   const inFunnel = stage.name !== 'form' || flow.formStep === 2
 
+  // GA4 funnel: one lp_step per step (form → details → waiting → ready / failed). Dev ?preview= is not reported.
+  const gaStep = stage.name === 'form' ? (flow.formStep === 2 ? 'details' : 'form') : stage.name === 'opening' ? '' : stage.name
+  const gaReportId = 'submitted' in stage && stage.submitted ? String(stage.submitted.id ?? '') : ''
+  useEffect(() => {
+    if (!gaStep || new URLSearchParams(window.location.search).has('preview')) return
+    trackLeakLp('lp_step', { step: gaStep, report_id: gaStep === 'form' || gaStep === 'details' ? undefined : gaReportId })
+  }, [gaStep, gaReportId])
+
+  // GA4: first typing in the form, and clicks on WhatsApp / report links / CTAs anywhere on the landing.
+  useEffect(() => {
+    const root = document.querySelector<HTMLElement>('.lk-root')
+    if (!root) return
+    const unbind = bindLeakLpClickTracking(root, sampleHref)
+    let started = false
+    // First typing, not focus: the website field can be focused on load.
+    const onInput = (e: Event) => {
+      if (started || !(e.target as Element | null)?.closest?.(`#${WINDOW_ID} input, #${WINDOW_ID} textarea`)) return
+      started = true
+      trackLeakLp('form_start')
+    }
+    root.addEventListener('input', onInput)
+    return () => {
+      unbind()
+      root.removeEventListener('input', onInput)
+    }
+  }, [sampleHref])
+
   // Final CTA: smooth scroll back up to the form, then put the cursor in the first field.
   const toForm = () => {
+    trackLeakLp('lp_cta_click', { cta: 'to_form' })
     window.scrollTo({ top: 0, behavior: 'smooth' })
     // First visible field (skips the hidden anti-spam trap input).
     window.setTimeout(() => {
