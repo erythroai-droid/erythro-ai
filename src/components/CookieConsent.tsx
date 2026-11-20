@@ -60,6 +60,7 @@ export default function CookieConsent({ locale, theme, privacyHref = '/privacy' 
 
   return (
     <div
+      data-cookie-consent=""
       className="fixed inset-x-0 bottom-0 z-[60] w-full pointer-events-none"
       role="region"
       aria-label={

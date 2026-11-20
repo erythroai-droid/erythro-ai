@@ -195,7 +195,7 @@ export default function LeakFinalCta({
       <div className="lk-grad-move absolute -inset-[20%] -z-20" aria-hidden="true" />
 
       {/* Left: copy and the call to action. */}
-      <div className="relative flex flex-col items-center justify-center gap-5 px-8 py-14 text-center sm:px-14 sm:py-16 lg:min-h-[640px] lg:items-start lg:px-12 lg:py-24 lg:text-start">
+      <div className="relative flex flex-col items-start justify-center gap-5 px-6 py-14 text-start sm:px-14 sm:py-16 lg:min-h-[640px] lg:px-12 lg:py-24">
         <span className="inline-flex items-center gap-2 lk-label rounded-[4px] border border-white/15 bg-[var(--lk-dark)] px-2 py-0.5 !text-[var(--lk-gold)]">
           <span className="relative flex size-1.5">
             <span className="lk-ping absolute inline-flex size-full rounded-full bg-[var(--lk-red)] opacity-70" />
@@ -204,9 +204,9 @@ export default function LeakFinalCta({
           {LEGEND.badge[lang]}
         </span>
         <h2 className="lk-h2 lk-bar m-0 w-fit text-balance text-[34px] leading-[1.12] sm:text-[44px]">{title}</h2>
-        <p className="m-0 text-base leading-[1.5] text-white/70 lg:ps-[30px]">{sub}</p>
+        <p className="m-0 text-base leading-[1.5] text-white/70 ps-[30px]">{sub}</p>
         {/* Legend: what the dots on the query cards mean. */}
-        <p className="m-0 flex flex-col items-center gap-1.5 text-[13px] leading-[1.5] text-white/60 lg:items-start lg:ps-[30px]">
+        <p className="m-0 flex flex-col items-start gap-1.5 text-[13px] leading-[1.5] text-white/60 ps-[30px]">
           <span className="inline-flex items-center gap-2">
             <span className="size-1.5 rounded-full bg-[var(--lk-green)]" aria-hidden="true" />
             {LEGEND.hit[lang]}
@@ -216,7 +216,7 @@ export default function LeakFinalCta({
             {LEGEND.miss[lang]}
           </span>
         </p>
-        <button type="button" onClick={onCta} className="lk-btn-red mt-2 inline-flex h-12 cursor-pointer items-center justify-center gap-2 px-7 lg:ms-[30px]">
+        <button type="button" onClick={onCta} className="lk-btn-red mt-2 inline-flex h-12 cursor-pointer items-center justify-center gap-2 px-7 ms-[30px]">
           {cta}
           <span aria-hidden="true" className="rtl:-scale-x-100">→</span>
         </button>

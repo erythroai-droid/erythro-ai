@@ -584,7 +584,8 @@ export default function LeakToolsGraph({ locale, searchLabel, perfLabel }: { loc
   const dCloud = buildCloud(dc, drx * 0.85, dry * 0.85, 42, [...dLeft, ...dRight])
 
   // Mobile: tool cards above and below the cloud.
-  const M = { W: 360, H: 640, nw: 172, nh: 58 }
+  // The counter lives in HTML above the diagram here, so the bottom group sits right under the cloud.
+  const M = { W: 360, H: 567, nw: 172, nh: 58 }
   const mTop: Pt[] = [
     [0, 44],
     [188, 44],
@@ -592,16 +593,16 @@ export default function LeakToolsGraph({ locale, searchLabel, perfLabel }: { loc
     [188, 110],
   ]
   const mBot: Pt[] = [
-    [0, 496],
-    [188, 496],
-    [0, 562],
-    [188, 562],
+    [0, 442],
+    [188, 442],
+    [0, 508],
+    [188, 508],
   ]
   const mc: Pt = [180, 292]
   const mrx = 145
   const mry = 108
   const mTopIn = [-145, -35, -112, -68].map((a) => onEllipse(mc, mrx, mry, a))
-  // Bottom wires enter from the sides so they pass beside the counter card.
+  // Bottom wires enter from the sides of the cloud.
   const mBotIn = [165, 15, 140, 40].map((a) => onEllipse(mc, mrx, mry, a))
   const mCloud = buildCloud(mc, mrx * 0.85, mry * 0.85, 30, [...mTopIn, ...mBotIn])
 
@@ -636,10 +637,9 @@ export default function LeakToolsGraph({ locale, searchLabel, perfLabel }: { loc
         ))}
       </svg>
 
-      {/* Mobile */}
       <svg viewBox={`0 0 ${M.W} ${M.H}`} className="mx-auto block h-auto w-full max-w-[420px] sm:hidden" role="img" aria-label={`${searchLabel}, ${perfLabel}`}>
         <GroupHead x0={0.5} x1={M.W - 0.5} cy={18} label={searchLabel} count={SEARCH.length} fs={9} he={he} />
-        <GroupHead x0={0.5} x1={M.W - 0.5} cy={476} label={perfLabel} count={PERF.length} fs={9} he={he} />
+        <GroupHead x0={0.5} x1={M.W - 0.5} cy={422} label={perfLabel} count={PERF.length} fs={9} he={he} />
         <Cloud tags={3} fs={8.5} cloud={mCloud} c={mc} rx={mrx * 0.85} ry={mry * 0.85} link={54} live={play && !reduced} />
         {mTop.map(([x, y], i) => {
           const sx = x + M.nw / 2
@@ -652,7 +652,6 @@ export default function LeakToolsGraph({ locale, searchLabel, perfLabel }: { loc
           const [ex, ey] = mBotIn[i]
           return <Wire key={`mb${i}`} i={i + 4} reduced={reduced} d={`M${sx},${y} C${sx},${ey + 50} ${ex},${ey + 50} ${ex},${ey}`} />
         })}
-        <Counter cx={mc[0]} y={412} w={172} lang={lang} value={countText} big={15} />
         {SEARCH.map((t, i) => (
           <Node key={`ms${i}`} i={i} x={mTop[i][0] + 0.5} y={mTop[i][1]} w={M.nw - 1} h={M.nh} tool={t} fs={12.5} lang={lang} port={[mTop[i][0] + M.nw / 2, mTop[i][1] + M.nh]} meter={false} />
         ))}
@@ -660,6 +659,16 @@ export default function LeakToolsGraph({ locale, searchLabel, perfLabel }: { loc
           <Node key={`mp${i}`} i={i + 4} x={mBot[i][0] + 0.5} y={mBot[i][1]} w={M.nw - 1} h={M.nh} tool={t} fs={12.5} lang={lang} port={[mBot[i][0] + M.nw / 2, mBot[i][1]]} meter={false} />
         ))}
       </svg>
+      {/* Mobile: the live counter, full width, right under the performance cards. */}
+      <div dir={he ? 'rtl' : 'ltr'} className="mx-auto mt-2 flex w-full max-w-[420px] items-center justify-between gap-3 rounded-[5px] border border-[var(--lk-line)] bg-white px-4 py-3.5 sm:hidden">
+        <span className="text-[14px] leading-[1.2] text-[var(--lk-faint)]">{COUNTER_LABEL[lang]}</span>
+        <span className="inline-flex items-center gap-2" dir="ltr">
+          <span className="lk-live size-2 rounded-full bg-[var(--lk-green)]" aria-hidden="true" />
+          <span data-count="" className="text-[22px] font-semibold leading-none tracking-[-0.02em] text-[var(--lk-ink)] tabular-nums">
+            {countText}
+          </span>
+        </span>
+      </div>
     </div>
   )
 }
