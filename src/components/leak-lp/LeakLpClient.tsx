@@ -250,12 +250,30 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
         html.style.removeProperty('--lk-head')
       }
     }
+    // From 640px sections are stacked (sticky under the header, the next slides over — see .lk-stack in leakLp.css).
+    // A section taller than the room under the header is marked data-tall and scrolls normally; proximity snapping
+    // docks sections under the header. Phones keep normal flow without snapping.
+    const els = Array.from(document.querySelectorAll<HTMLElement>('main [data-stack]'))
+    const stackMq = window.matchMedia('(min-width: 640px)')
     const fit = () => {
       publishHead()
-      html.style.scrollPaddingTop = `${Math.round(headRef.current?.offsetHeight ?? 72)}px`
+      const head = Math.round(headRef.current?.offsetHeight ?? 72)
+      html.style.scrollPaddingTop = `${head}px`
+      html.style.scrollSnapType = stackMq.matches ? 'y proximity' : ''
+      els.forEach((el) => {
+        // Natural content height (min-height would inflate scrollHeight), compared with the room under the header.
+        const cs = getComputedStyle(el)
+        const content =
+          Array.from(el.children).reduce((s, ch) => s + (ch as HTMLElement).offsetHeight, 0) +
+          parseFloat(cs.paddingTop) +
+          parseFloat(cs.paddingBottom)
+        if (content > window.innerHeight - head + 1) el.setAttribute('data-tall', '')
+        else el.removeAttribute('data-tall')
+      })
     }
     fit()
     const ro = new ResizeObserver(fit)
+    els.forEach((el) => ro.observe(el))
     if (headRef.current) ro.observe(headRef.current)
     window.addEventListener('resize', fit)
     // Opened with #checks / #how / #faq: land that section right under the sticky header.
@@ -270,6 +288,7 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
     return () => {
       ro.disconnect()
       window.removeEventListener('resize', fit)
+      html.style.scrollSnapType = ''
       html.style.scrollPaddingTop = ''
       html.style.removeProperty('--lk-head')
     }
@@ -653,6 +672,9 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
                 />
               </Reveal>
             </section>
+            {/* From 640px: room after the last section. A sticky section cannot outlast its container (main), so without it
+                the FAQ would leave while the final block slides over, and the final block would get no hold before the footer. */}
+            <div aria-hidden="true" className="hidden h-[40svh] sm:block" />
           </>
         ) : null}
       <footer className="relative z-10 bg-[var(--lk-dark)]">
