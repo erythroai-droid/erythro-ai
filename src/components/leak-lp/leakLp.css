@@ -232,6 +232,13 @@
   flex-shrink: 0;
   border-left: 2px solid var(--lk-red);
 }
+/* Bar only as tall as a capital letter of the first line (Inter: cap height 0.727em; with line-height 1.2
+   the cap top sits 0.236em below the line top). */
+.lk-bar-cap::before {
+  align-self: flex-start;
+  height: 0.727em;
+  margin-top: 0.236em;
+}
 
 /* Halftone dot matrix on the red panel. */
 .lk-dither {
@@ -3924,7 +3931,16 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
 
 /* Phones: floating WhatsApp button rides above the cookie strip while the strip is shown. */
 .lk-wa-fab {
-  transition: bottom 0.3s ease;
+  transition:
+    bottom 0.3s ease,
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+/* Would cover a red CTA (set in JS): fade out and let taps through. */
+html .lk-wa-fab[data-away] {
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
 }
 html:has([data-cookie-consent]) .lk-wa-fab {
   bottom: calc(var(--lk-cookie-h, 44px) + 16px);

@@ -102,7 +102,10 @@ export default function LeakCalcPanel({
         <div className="flex flex-col gap-4 p-6 sm:p-9">
           {/* Report-style meta row: what this is and how long it takes. */}
           <div className="-mt-1 flex items-center justify-between gap-3 border-b border-[var(--lk-line)] pb-3.5">
-            <span className="lk-label">{t(FORM_META.kind)}</span>
+            <span className="lk-badge-dark">
+              <span className="size-1.5 rounded-full bg-[var(--lk-red)]" />
+              {t(FORM_META.kind)}
+            </span>
             <span className="inline-flex items-center gap-1.5 text-xs text-[var(--lk-faint)]">
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="size-3.5">
                 <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3" />
@@ -112,10 +115,11 @@ export default function LeakCalcPanel({
             </span>
           </div>
           <div>
-            <h3 className="m-0 text-[22px] !font-semibold leading-[1.2] tracking-[-0.02em] text-[var(--lk-ink)] sm:text-[26px]">
+            <h3 className="lk-bar lk-bar-cap m-0 !gap-5 text-[22px] !font-semibold leading-[1.2] tracking-[-0.02em] text-[var(--lk-ink)] sm:text-[26px]">
               {formStep === 1 ? t(copy.step1Heading) : t(copy.step2Heading)}
             </h3>
-            <p className="m-0 mt-2.5 text-sm leading-[1.5] text-[var(--lk-muted)]">
+            {/* Heading gap 20px + 2px bar = 22px: heading, this line and the "gets" items (16px icon + 6px gap) all start on one line. */}
+            <p className="m-0 mt-2.5 ps-[22px] text-sm leading-[1.5] text-[var(--lk-muted)]">
               {formStep === 1 ? t(copy.step1Sub) : t(copy.step2Sub)}
             </p>
           </div>
