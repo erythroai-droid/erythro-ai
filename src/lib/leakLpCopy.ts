@@ -10,6 +10,17 @@ export const leakLpCopy = {
     ru: 'Бесплатный AI-аудит сайта — скорость, конверсия, видимость в AI',
     he: 'אודיט AI חינמי לאתר — מהירות, המרות ונראות ב-AI',
   } satisfies Localized,
+  /** Share card (og:title / og:description). */
+  ogTitle: {
+    en: 'Free AI website audit',
+    ru: 'Бесплатный AI-аудит сайта',
+    he: 'אודיט AI חינמי לאתר',
+  } satisfies Localized,
+  ogDescription: {
+    en: 'See what holds your website back — and what to fix first. We test mobile speed, lead forms and how you show up in Perplexity, Gemini, ChatGPT — then rank every fix by its impact.',
+    ru: 'Узнайте, что мешает вашему сайту расти — и что исправить в первую очередь. Проверяем скорость на мобильных, формы заявок и то, как вас видят Perplexity, Gemini, ChatGPT, — и составляем план исправлений по приоритету.',
+    he: 'גלו מה מעכב את האתר שלכם — ומה לתקן קודם. בודקים מהירות במובייל, טפסי לידים ואיך רואים אתכם ב-Perplexity, ב-Gemini וב-ChatGPT — ובונים תוכנית תיקונים לפי סדר עדיפויות.',
+  } satisfies Localized,
   metaDescription: {
     en: 'Free audit of speed, lead forms, Google and AI visibility. 230+ checks and a prioritised fix plan — in about 5 minutes.',
     ru: 'Бесплатный аудит скорости, форм заявок, видимости в Google и AI. 230+ проверок и план исправлений по приоритету — примерно за 5 минут.',

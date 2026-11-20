@@ -52,6 +52,8 @@
 
 Хосты — `LEAK_LP_HOST_BY_LOCALE` в `src/lib/auditLp.ts` (вне `AUDIT_LP_PRODUCTS`: у лендинга свой роут и клиент). `isAuditLpHost` / `auditLpLocaleFromHost` их учитывают (сплэш, eager-аналитика, Turnstile-политика), `LOCALE_BOOTSTRAP_SCRIPT` лочит язык по хосту. Заявки — `leadChannel=leak_calc` (как калькулятор: без Pro-допродажи, список Leak в админке) + `auditSummary.lp = 'ai-audit'`. Воркер по этому маркеру шлёт ссылку `https://ai-audit-{locale}.erythro.ai/?report={id}&k={token}` и письмо в формулировках аудита (`copyForLocale(..., aiAuditLp)` в `services/audit-agent/src/mail.js`). Переключателя языка на лендинге нет (с 2026-11-19): каждый язык — свой субдомен.
 
+**Индексация и OG (с 2026-11-20):** страница `ai-audit-*` индексируется (`robots: index, follow`, proxy не ставит `X-Robots-Tag` на корень/внутренний путь этих хостов; редиректы с них на основной сайт остаются noindex). Canonical = свой субдомен, hreflang en/ru/he + x-default=en. OG: `leakLpCopy.ogTitle` / `ogDescription`, картинка `public/images/og/ai-audit-lp-en.jpg` (1200×630, пока одна английская для всех локалей — `ogImageForLeakLp` в `src/lib/ogImages.ts`). URL картинки на `erythro.ai` — появится после деплоя сайта.
+
 DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → Domains: все двенадцать (+ три `ai-audit-*`).
 
 Публичный RU free-хост — **`audit-ru`**. Label `audit-rus` в коде только как alias middleware (DNS на него не публиковался → NXDOMAIN).
