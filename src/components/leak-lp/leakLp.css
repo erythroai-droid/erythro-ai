@@ -254,19 +254,6 @@
   width: 1px;
 }
 
-/* Reveal on scroll. */
-.lk-reveal {
-  opacity: 0;
-  transform: translate3d(0, 18px, 0);
-  transition:
-    opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
-    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-.lk-reveal[data-in] {
-  opacity: 1;
-  transform: none;
-}
-
 /* Hero entrance (staggered). */
 @keyframes lk-rise {
   from {
@@ -479,7 +466,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lk-reveal,
   .lk-rise,
   .lk-swap,
   .lk-panel,
@@ -804,32 +790,11 @@
   }
 }
 
-/* Stacked sections: each one is a full-screen sticky layer; the next slides over it and docks under the header. */
+/* Sections follow each other in normal flow (the sticky slide-over was removed 20.11.2026). */
 .lk-stack {
-  position: sticky;
-  top: var(--lk-head, 72px);
-  min-height: calc(100svh - var(--lk-head, 72px));
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  scroll-snap-align: start;
-}
-.lk-stack + .lk-stack {
-  box-shadow: 0 -18px 40px -24px rgba(30, 30, 30, 0.22);
-}
-/* Taller than the screen: no sticking (it would have to slide under the header); scrolls like a normal block. */
-.lk-stack[data-tall] {
-  position: relative;
-  top: auto;
-}
-/* The footer is its own snap point, so reaching the end of the page doesn't snap back to the last section. */
-.lk-root footer {
-  scroll-snap-align: end;
-}
-/* Hold: after a section docks it stays fully visible for a stretch of scrolling before the next one starts to slide over.
-   The empty margin scrolls "behind" the stuck section. Not on tall sections (they scroll normally) or the last one. */
-.lk-stack:not([data-tall]):not(:last-of-type) {
-  margin-bottom: 40svh;
 }
 
 /* Inner containers use mx-auto + max-width; in a flex column that would shrink them to their content.
@@ -3927,5 +3892,90 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
     flex: 1 1 auto;
     aspect-ratio: auto;
     min-height: 240px;
+  }
+}
+
+/* Phones: floating WhatsApp button rides above the cookie strip while the strip is shown. */
+.lk-wa-fab {
+  transition: bottom 0.3s ease;
+}
+html:has([data-cookie-consent]) .lk-wa-fab {
+  bottom: calc(var(--lk-cookie-h, 44px) + 16px);
+}
+
+/* ===== Report on phones (20.11.2026): text to the start edge, KPI and protocol tiles stacked,
+   stage bars only as wide as the text, checklist rows stacked like the Free report, tighter final CTA. ===== */
+@media (max-width: 639px) {
+  /* Hero and offer columns: start-aligned instead of centred. */
+  .lk-result :is(.calc-loss-flow, #calc-offer) > div > .grid > div:first-child,
+  .lk-result #calc-offer h2 {
+    align-items: flex-start !important;
+    text-align: start !important;
+  }
+  .lk-result .calc-loss-flow .calc-hero-ctas {
+    justify-content: flex-start !important;
+  }
+
+  /* Four KPI plates one under another. */
+  .lk-result .calc-loss-flow dl.calc-kpi-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  /* «Where visitors drop off»: the bar spans the text and the figure, not the number badge or the arrow. */
+  .lk-result #loss-breakdown .calc-br-row > div[aria-hidden='true'] {
+    grid-column: 2 / 4 !important;
+  }
+  .lk-result #loss-breakdown .calc-stage-tag {
+    white-space: normal !important;
+  }
+
+  /* «All scales checked»: title, status, score stacked (as in the Free report); the chevron stays at the end. */
+  .lk-result details > summary {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'label chev'
+      'chip chev'
+      'score chev';
+    align-items: center;
+    justify-items: start;
+    row-gap: 10px;
+  }
+  .lk-result details > summary > :nth-child(1) {
+    grid-area: chip;
+  }
+  .lk-result details > summary > :nth-child(2) {
+    grid-area: label;
+    font-size: 17px !important;
+    font-weight: 500;
+  }
+  .lk-result details > summary > :nth-child(3) {
+    grid-area: score;
+    font-size: 28px !important;
+    line-height: 1 !important;
+  }
+  .lk-result details > summary > :nth-child(4) {
+    grid-area: chev;
+  }
+
+  /* Audit protocol: stat tiles one under another. */
+  .lk-result .calc-tech-flow dl[class*='lg:grid-cols-4'][class*='grid-cols-2'] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  /* Final CTA: smaller outer spacing, full-width blocks, start-aligned. */
+  .lk-result.lk-result > div > section:last-of-type {
+    padding: 8px 0 40px !important;
+    align-items: stretch !important;
+    text-align: start !important;
+  }
+  .lk-result.lk-result > div > section:last-of-type > div {
+    width: 100% !important;
+  }
+  .lk-result.lk-result > div > section:last-of-type h2 {
+    text-align: start !important;
+  }
+  .lk-result.lk-result > div > section:last-of-type h2 > span:first-child {
+    justify-content: flex-start !important;
   }
 }

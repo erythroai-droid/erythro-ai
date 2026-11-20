@@ -40,10 +40,12 @@ export function usePrefersReducedMotion() {
   return reduced
 }
 
-/** Fade + rise on first view. `delay` in ms. */
+/**
+ * Plain wrapper. Blocks used to fade and rise on first view; that scroll animation was removed (20.11.2026),
+ * so content is shown as is. `delay` is kept for call-site compatibility and ignored.
+ */
 export function Reveal({
   children,
-  delay = 0,
   className = '',
   as: Tag = 'div',
 }: {
@@ -52,13 +54,7 @@ export function Reveal({
   className?: string
   as?: 'div' | 'section' | 'li' | 'header'
 }) {
-  const [ref, inView] = useInView<HTMLElement>()
-  // createElement: with a union tag, JSX intersects every element's ref type and rejects a single ref.
-  return React.createElement(
-    Tag,
-    { ref, 'data-in': inView ? '' : undefined, className: `lk-reveal ${className}`, style: { transitionDelay: `${delay}ms` } },
-    children,
-  )
+  return React.createElement(Tag, { className: className || undefined }, children)
 }
 
 /** Animated number that counts up once visible. */

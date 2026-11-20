@@ -92,9 +92,8 @@ function EngineSwap() {
 }
 
 /**
- * Scroll so a stacked section docks exactly under the sticky header. Sections are sticky, so the browser's own
- * anchor jump uses their current (stuck) position; the docking point is computed from the flow instead:
- * main top + heights and hold margins of the sections before it.
+ * Scroll so a section lands exactly under the sticky header. Its position is computed from the flow:
+ * main top + heights and margins of the sections before it.
  */
 function scrollToStack(target: Element | null) {
   if (!target) return
@@ -122,7 +121,7 @@ const SIDE_COPY = {
  * "There is more below" aids, styled like the main site's side control:
  * desktop — fixed on the right: Top · 01 | track with a red beacon | 06 · Scroll (next section);
  * phones/tablets — a thin "Scroll" cue with the same track at the bottom of the first screen, hidden once scrolling starts.
- * Sections are sticky, so their positions are computed from the flow (main top + heights + margins), not from the DOM rects.
+ * Section positions are computed from the flow (main top + heights + margins).
  */
 function ScrollAids({ locale }: { locale: string }) {
   const [active, setActive] = useState(0)
@@ -210,10 +209,10 @@ function ScrollAids({ locale }: { locale: string }) {
 
 function SectionHead({ kicker, title, sub, center = false }: { kicker: string; title: string; sub?: string; center?: boolean }) {
   return (
-    <div className={`flex flex-col gap-3 ${center ? 'items-center text-center' : 'items-center text-center lg:items-start lg:text-start'}`}>
+    <div className={`flex flex-col gap-3 ${center ? 'items-center text-center' : 'items-start text-start'}`}>
       <span className="lk-label">{kicker}</span>
       <h2 className="lk-h2 lk-bar m-0 text-[34px] leading-[1.12] sm:text-[48px]">{title}</h2>
-      {sub ? <p className="m-0 text-base lg:ps-[30px] leading-[1.5] text-[var(--lk-muted)]">{sub}</p> : null}
+      {sub ? <p className="m-0 text-base ps-[30px] leading-[1.5] text-[var(--lk-muted)]">{sub}</p> : null}
     </div>
   )
 }
@@ -235,9 +234,7 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
       ? displayDomain(stage.submitted.website)
       : ''
 
-  // Stacked sections: each [data-stack] section is sticky right under the sticky header (strip + bar, height in --lk-head)
-  // and the next one slides over it. A section taller than the screen would have to stick with a negative offset and slide
-  // under the header, so it is marked data-tall and scrolls normally instead. Scroll snapping (proximity) docks sections under the header.
+  // Sections ([data-stack]) scroll in normal flow; the sticky header height is published as --lk-head for anchors and scroll aids.
   const headRef = useRef<HTMLElement>(null)
   useEffect(() => {
     const html = document.documentElement
@@ -253,25 +250,15 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
         html.style.removeProperty('--lk-head')
       }
     }
-    const els = Array.from(document.querySelectorAll<HTMLElement>('main [data-stack]'))
     const fit = () => {
       publishHead()
-      const head = Math.round(headRef.current?.offsetHeight ?? 72)
-      html.style.scrollPaddingTop = `${head}px`
-      els.forEach((el) => {
-        // Natural content height (min-height would inflate scrollHeight), compared with the room under the header.
-        const content = Array.from(el.children).reduce((s, c) => s + (c as HTMLElement).offsetHeight, 0) + parseFloat(getComputedStyle(el).paddingTop) + parseFloat(getComputedStyle(el).paddingBottom)
-        if (content > window.innerHeight - head + 1) el.setAttribute('data-tall', '')
-        else el.removeAttribute('data-tall')
-      })
+      html.style.scrollPaddingTop = `${Math.round(headRef.current?.offsetHeight ?? 72)}px`
     }
     fit()
     const ro = new ResizeObserver(fit)
-    els.forEach((el) => ro.observe(el))
     if (headRef.current) ro.observe(headRef.current)
     window.addEventListener('resize', fit)
-    html.style.scrollSnapType = 'y proximity'
-    // Opened with #checks / #how / #faq: dock that section under the header (the native jump lands short on sticky sections).
+    // Opened with #checks / #how / #faq: land that section right under the sticky header.
     if (window.location.hash.length > 1) {
       try {
         const target = document.querySelector(window.location.hash)
@@ -283,7 +270,6 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
     return () => {
       ro.disconnect()
       window.removeEventListener('resize', fit)
-      html.style.scrollSnapType = ''
       html.style.scrollPaddingTop = ''
       html.style.removeProperty('--lk-head')
     }
@@ -390,7 +376,7 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
               href={waHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="lk-header-wa inline-flex h-9 max-w-[min(100%,14rem)] items-center gap-1.5 truncate rounded-[3px] bg-[#25D366] px-2.5 text-[11px] font-semibold leading-none text-white no-underline transition-opacity hover:opacity-90 sm:max-w-none sm:px-3 sm:text-xs"
+              className="lk-header-wa hidden h-9 max-w-[min(100%,14rem)] items-center gap-1.5 truncate rounded-[3px] bg-[#25D366] px-2.5 text-[11px] font-semibold leading-none text-white no-underline transition-opacity hover:opacity-90 sm:inline-flex sm:max-w-none sm:px-3 sm:text-xs"
             >
               <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
@@ -403,10 +389,27 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
     </header>
   )
 
+  // Phones: WhatsApp moves out of the header into a round button fixed at the bottom right.
+  // Rendered outside the header: its backdrop-filter would make it the containing block of a fixed child.
+  const waFab = waHref ? (
+    <a
+      href={waHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={t(c.headerWaCta)}
+      className="lk-header-wa lk-wa-fab fixed bottom-5 right-4 z-40 flex size-14 items-center justify-center rounded-full bg-[#25D366] text-white no-underline shadow-[0_10px_24px_-10px_rgba(0,0,0,0.45)] transition-opacity hover:opacity-90 sm:hidden"
+    >
+      <svg className="size-7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+      </svg>
+    </a>
+  ) : null
+
   if (stage.name === 'ready' && report && pillars) {
     return (
       <>
         {header}
+        {waFab}
         <main className="lk-result mx-auto w-full max-w-[1440px] px-4 pb-14 pt-6 sm:px-8 lg:px-12">
           <CalcResult
             locale={locale}
@@ -429,15 +432,16 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
   return (
     <>
       {header}
+      {waFab}
       {stage.name === 'form' ? <ScrollAids locale={locale} /> : null}
 
       <main>
         {/* ================= HERO + PRODUCT WINDOW ================= */}
         {/* Hero stays put while the next block slides over it (as on the main site). Sticks once its bottom reaches the viewport bottom, so a hero taller than the screen is fully seen first. */}
         <section data-stack="" className="lk-stack overflow-clip">
-          <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-10 px-4 pb-12 pt-14 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,500px)] lg:gap-14 lg:pb-10 lg:pt-16">
+          <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-10 px-4 pb-12 pt-14 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,500px)] lg:gap-14 lg:pb-10 lg:pt-16 max-sm:pt-9">
             <div
-              className={`flex flex-col items-center gap-6 text-center lg:items-start lg:text-start ${
+              className={`flex flex-col items-start gap-6 text-start ${
                 stage.name === 'waiting' || stage.name === 'opening' ? 'lg:self-stretch' : ''
               }`}
             >
@@ -496,8 +500,8 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
             {/* Full-bleed white band; the heading and graph stay centred at 1200px. */}
             <section data-stack="" className="lk-stack border-y border-[var(--lk-line)] !bg-[var(--lk-stone-50)]">
               {/* Same side padding as the hero, so the heading lines up with the hero H1 on desktop. */}
-              <Reveal className="mx-auto flex max-w-[1200px] flex-col items-center gap-10 px-4 pb-12 pt-14 sm:px-6 lg:pb-10 lg:pt-16">
-                <h2 className="lk-h2 lk-bar m-0 w-fit text-center text-[32px] leading-[1.15] sm:text-[44px] lg:self-start lg:text-start">{t(c.measuredTitle)}</h2>
+              <Reveal className="mx-auto flex max-w-[1200px] flex-col items-start gap-10 px-4 pb-12 pt-14 sm:px-6 lg:pb-10 lg:pt-16">
+                <h2 className="lk-h2 lk-bar m-0 w-fit text-start text-[32px] leading-[1.15] sm:text-[44px]">{t(c.measuredTitle)}</h2>
                 <LeakToolsGraph locale={locale} searchLabel={t(c.measuredSearch)} perfLabel={t(c.measuredPerf)} />
               </Reveal>
             </section>
@@ -544,7 +548,7 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
             <section id="how" data-stack="" className="lk-stack lk-grad-dark scroll-mt-20 text-white">
               <div className="mx-auto flex max-w-[1200px] flex-col gap-12 px-4 pb-12 pt-14 sm:px-6 lg:gap-10 lg:pb-10 lg:pt-16">
                 <Reveal>
-                  <div className="flex flex-col items-center gap-3 text-center lg:items-start lg:text-start">
+                  <div className="flex flex-col items-start gap-3 text-start">
                     <span className="lk-label !text-white/60">{t(c.howKicker)}</span>
                     <h2 className="lk-h2 lk-bar m-0 text-[34px] leading-[1.12] sm:text-[48px]">{t(c.howTitle)}</h2>
                   </div>
@@ -639,7 +643,7 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
 
             {/* ================= FINAL CTA ================= */}
             <section data-stack="" className="lk-stack bg-[var(--lk-bg)]">
-              <Reveal className="mx-auto max-w-[1200px] px-4 pb-12 pt-14 sm:px-6 lg:pb-10 lg:pt-16">
+              <Reveal className="mx-auto max-w-[1200px] px-4 pb-12 pt-0 sm:px-6 sm:pt-14 lg:pb-10 lg:pt-16">
                 <LeakFinalCta
                   locale={locale}
                   title={t(c.finalTitle)}
@@ -649,9 +653,6 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
                 />
               </Reveal>
             </section>
-            {/* Room after the last section: a sticky section cannot outlast its container (main), so without it the FAQ would leave
-                while the final block slides over, and the final block would get no hold before the footer. */}
-            <div aria-hidden="true" className="h-[40svh]" />
           </>
         ) : null}
       <footer className="relative z-10 bg-[var(--lk-dark)]">
