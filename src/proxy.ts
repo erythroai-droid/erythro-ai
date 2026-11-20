@@ -47,7 +47,9 @@ export function proxy(request: NextRequest) {
       response = NextResponse.redirect(location, 308)
     }
 
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+    // The AI-audit landing page itself is indexable; redirects off these hosts and the ads LPs stay noindex.
+    const indexableLeakPage = Boolean(leakLpLocale) && (isRoot || alreadyLp)
+    if (!indexableLeakPage) response.headers.set('X-Robots-Tag', 'noindex, nofollow')
     response.headers.delete('x-powered-by')
     return response
   }

@@ -53,6 +53,20 @@ const PORTFOLIO_OG_IMAGES: Record<string, string> = {
   ember: 'https://erythro.ai/images/og/ember.jpg',
 }
 
+/**
+ * Share card for the AI-audit landing (ai-audit-{en,ru,he}). Source: `public/images/og/ai-audit-lp-en.jpg`.
+ * One English card for every locale until localized cards exist.
+ */
+const LEAK_LP_OG_IMAGES: Record<'en' | 'ru' | 'he', string> = {
+  en: 'https://erythro.ai/images/og/ai-audit-lp-en.jpg',
+  ru: 'https://erythro.ai/images/og/ai-audit-lp-en.jpg',
+  he: 'https://erythro.ai/images/og/ai-audit-lp-en.jpg',
+}
+
+export function ogImageForLeakLp(locale: 'en' | 'ru' | 'he'): string {
+  return LEAK_LP_OG_IMAGES[locale]
+}
+
 export function ogImageForLeakCalc(locale: 'en' | 'ru' | 'he'): string {
   return LEAK_CALC_OG_IMAGES[locale]
 }
