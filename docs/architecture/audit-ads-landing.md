@@ -54,6 +54,8 @@
 
 **Индексация и OG (с 2026-11-20):** страница `ai-audit-*` индексируется (`robots: index, follow`, proxy не ставит `X-Robots-Tag` на корень/внутренний путь этих хостов; редиректы с них на основной сайт остаются noindex). Canonical = свой субдомен, hreflang en/ru/he + x-default=en. OG: `leakLpCopy.ogTitle` / `ogDescription`, картинка `public/images/og/ai-audit-lp-en.jpg` (1200×630, пока одна английская для всех локалей — `ogImageForLeakLp` в `src/lib/ogImages.ts`). URL картинки на `erythro.ai` — появится после деплоя сайта.
 
+**GA4-события лендинга (с 2026-11-20, `src/lib/leakLpAnalytics.ts`):** у всех параметры `lp=ai_audit`, `lp_locale`, UTM. `lp_step` (step: form | details | waiting | ready | failed, + `report_id`; dev `?preview=` не шлётся), `form_start` (первый ввод в форму), `whatsapp_click` (placement: header | faq | result | other), `lp_cta_click` (cta: sample_report | open_report | to_form | nav | report_cta), `promo_video` (action: sound_on | sound_off | next | prev | dot | complete, video). Клики ловятся делегированно на `.lk-root`; видео-слайдер шлёт свои. Заявка — прежний `qualify_lead`, но `lead_source=ai_audit` (калькулятор остаётся `leak_calc`). События не дают согласие на cookies (Consent Mode). В GA4 Admin параметры нужно зарегистрировать как custom dimensions (event scope), иначе в отчётах их не видно.
+
 DNS: Cloudflare CNAME → `cname.vercel-dns.com` (Proxied). Vercel Project → Domains: все двенадцать (+ три `ai-audit-*`).
 
 Публичный RU free-хост — **`audit-ru`**. Label `audit-rus` в коде только как alias middleware (DNS на него не публиковался → NXDOMAIN).

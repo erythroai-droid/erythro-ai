@@ -255,8 +255,12 @@ export function trackMetaLead(transactionId: string, contentName = 'free_audit')
 export function trackFreeAuditLead(transactionId: string, leadChannel?: AuditLeadChannel | null) {
   ensureAnalyticsConsentAndGaConfig()
   trackAdsLead(transactionId)
+  // AI-audit landing shares leadChannel=leak_calc with the calculator; GA4 tells them apart by lead_source.
+  const aiAuditLp =
+    typeof window !== 'undefined' &&
+    (/^ai-audit-(en|ru|he)\./.test(window.location.hostname) || window.location.pathname.startsWith('/lp/audit/leak/'))
   trackGaLead(transactionId, {
-    leadSource: leadChannel === 'leak_calc' ? 'leak_calc' : 'audit',
+    leadSource: aiAuditLp ? 'ai_audit' : leadChannel === 'leak_calc' ? 'leak_calc' : 'audit',
     planSlug: 'audit-free',
   })
   trackMetaLead(
