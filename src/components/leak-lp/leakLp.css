@@ -790,11 +790,38 @@
   }
 }
 
-/* Sections follow each other in normal flow (the sticky slide-over was removed 20.11.2026). */
+/* Phones (<640px): sections follow each other in normal flow.
+   From 640px: each section is a full-screen sticky layer; the next slides over it and docks under the header. */
 .lk-stack {
   position: relative;
   display: flex;
   flex-direction: column;
+}
+@media (min-width: 640px) {
+  .lk-stack {
+    position: sticky;
+    top: var(--lk-head, 72px);
+    min-height: calc(100svh - var(--lk-head, 72px));
+    justify-content: flex-start;
+    scroll-snap-align: start;
+  }
+  .lk-stack + .lk-stack {
+    box-shadow: 0 -18px 40px -24px rgba(30, 30, 30, 0.22);
+  }
+  /* Taller than the screen: no sticking (it would have to slide under the header); scrolls like a normal block. */
+  .lk-stack[data-tall] {
+    position: relative;
+    top: auto;
+  }
+  /* The footer is its own snap point, so reaching the end of the page doesn't snap back to the last section. */
+  .lk-root footer {
+    scroll-snap-align: end;
+  }
+  /* Hold: a docked section stays fully visible for a stretch of scrolling before the next one slides over.
+     Not on tall sections (they scroll normally) or the last one. */
+  .lk-stack:not([data-tall]):not(:last-of-type) {
+    margin-bottom: 40svh;
+  }
 }
 
 /* Inner containers use mx-auto + max-width; in a flex column that would shrink them to their content.
