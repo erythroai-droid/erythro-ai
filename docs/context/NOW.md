@@ -1,9 +1,23 @@
 # Latest changes
 
-Обновлено: 2026-11-17 (deferred: Supabase RLS)  
-Статус: CMS Ember #11 ждёт commit/deploy; RLS PIT-110 снова в отложенных.
+Обновлено: 2026-11-22 (portfolio PSB + Origin)  
+Статус: CMS #12/#13 в БД; OG/cache ключи локально — ждут commit/deploy + Soft-save.
 
-## 0. Leak LP (новый, Searchable-style) — подключён на тестовый маршрут (2026-11-18, локально)
+## 0. Портфолио — PSB Consulting + ORIGIN Coffee (2026-11-22)
+- **Запрос:** кейсы по https://psb.erythro.ai/ (`C:\dev\consalting\redesign`) и https://origin.erythro.ai/ (`C:\dev\Coffee`) через `import:project`; EN/HE через Translater.
+- **Сделано:** `content/imports/{psb-consulting,origin-coffee}/` (brief + facts.ru/en/he + media) → `pnpm import:project -- … --create`.
+  - CMS: **#12** `psb-consulting` (websites, link psb.erythro.ai, media #220–226, без `solutionPlan`).
+  - CMS: **#13** `origin-coffee` (websites, link origin.erythro.ai, media #227–233, `solutionPlan` → `ai-smart-card` #2).
+- **Переводы:** `translate.erythro.ai` без DNS A → воркер недоступен; EN/HE через Gemini (`scripts/import-project/translate-facts.mjs`, `gemini-3.8-flash`). Helper `set-solution-plan.ts` для линка пакета.
+- **Код (локально, не в main):** кэш `portfolio-projects-v31-psb-origin` + cards `v8-psb-origin`; OG `public/images/og/{psb-consulting,origin-coffee}.jpg` + карта в `ogImages.ts`.
+- Админ: `/admin/collections/portfolio-projects/12` · `/13`. Страницы: `/portfolio/psb-consulting` · `/portfolio/origin-coffee` (после деплоя + Save).
+- **Следующий шаг:** Soft-save #12 и #13 в Production admin (ISR 1h) → commit/deploy по команде для OG/ключей кэша → визуально EN/RU/HE. Опц.: DNS A `translate` → `46.202.155.56` (DNS-only), чтобы следующий импорт шёл через воркер.
+
+## 0b. Leak LP waiting slider (2026-11-22, ветка `feat/leak-lp-waiting-green`)
+- Правки 99–101: 4 EN-ролика Ember→ORA→Rosso→Coffee, жёсткое 16:9, `scale(1)`, новый Coffee render. Коммит/деплой — по команде.
+- **Следующий шаг:** hard-refresh `?preview=waiting` → остальные ролики при необходимости → коммит.
+
+## 0c. Leak LP (новый, Searchable-style) — подключён на тестовый маршрут (2026-11-18, локально)
 - **Было:** WIP `5df6fa4` — только компоненты `src/components/leak-lp/*` + `leakLpCopy.ts`, ни одна страница их не рендерила.
 - **Сделано:** `LeakLpClient.tsx` (полоса сверху, sticky header + языки, hero + окно продукта «Новый аудит / Пример результата» с автопрокруткой вкладок, «Измеряем…», bento, тёмный «Как это работает» + цифры + карточка отчёта, FAQ, финальный CTA, футер; шаг `ready` → `CalcResult`). Маршрут `src/app/(frontend)/lp/audit/leak/[locale]/page.tsx`, **noindex**, ни откуда не слинкован; `leak-*` и `/lp/audit/calc` не тронуты.
 - `leakLp.css`: `text-transform: none` для h1–h3 (глобальные h2 были капсом). Bento: AI-карточка на 2 колонки (пустая ячейка).

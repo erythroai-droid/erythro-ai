@@ -51,6 +51,8 @@ const PORTFOLIO_OG_IMAGES: Record<string, string> = {
   'mustang-6663rt': 'https://erythro.ai/images/og/mustang-6663rt.jpg',
   'la-scala': 'https://erythro.ai/images/og/la-scala.jpg',
   ember: 'https://erythro.ai/images/og/ember.jpg',
+  'psb-consulting': 'https://erythro.ai/images/og/psb-consulting.jpg',
+  'origin-coffee': 'https://erythro.ai/images/og/origin-coffee.jpg',
 }
 
 /**
