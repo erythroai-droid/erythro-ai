@@ -3814,6 +3814,10 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
   border: 0.75px solid var(--lk-line);
   box-shadow: 0 24px 48px -36px rgba(0, 0, 0, 0.35);
 }
+.lk-promo-frame > video {
+  transform: scale(1);
+  transform-origin: center center;
+}
 .lk-promo-arrow {
   position: absolute;
   top: 50%;
@@ -3910,22 +3914,12 @@ html[data-lk] [class*='bottom-[4.5rem]'] > [class*='animate-ping'] {
     text-align: center;
   }
 }
-/* lg: the hero column stretches to the progress card; the frame fills what is left,
-   so the video bottom lines up with the card bottom (object-cover trims the edges if needed). */
 @media (min-width: 1024px) {
   .lk-promo-wrap {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-  }
-  .lk-promo-wrap > .lk-promo {
-    flex: 1 1 auto;
+    width: 100%;
   }
   .lk-promo-wrap .lk-promo-frame {
-    flex: 1 1 auto;
-    aspect-ratio: auto;
-    min-height: 240px;
+    aspect-ratio: 16 / 9;
   }
 }
 
