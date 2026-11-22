@@ -9,17 +9,20 @@ type PromoVideo = { src: string; label: string }
 
 /**
  * Promo videos (16:9) shown while the audit runs. Each locale has its own list;
- * for now every locale plays the same two Hebrew cuts — replace per locale when the localized renders exist.
+ * for now every locale plays the same EN cuts — replace per locale when localized renders exist.
  * Files live in /public/videos/promo.
+ * Order: fuller device-fills first; Coffee last (large black stage around the laptop).
  */
-const HE_CUTS: PromoVideo[] = [
-  { src: '/videos/promo/ora60a-1920x1080-he.mp4', label: 'ORA 60A' },
-  { src: '/videos/promo/ember-1920x1080-he.mp4', label: 'EMBER Steakhouse' },
+const EN_CUTS: PromoVideo[] = [
+  { src: '/videos/promo/ember-1920x1080-en.mp4', label: 'EMBER Steakhouse' },
+  { src: '/videos/promo/ora60a-1920x1080-en.mp4', label: 'ORA 60A' },
+  { src: '/videos/promo/rosso-1920x1080.mp4', label: 'Rosso Garage' },
+  { src: '/videos/promo/coffee-1920x1080-en.mp4', label: 'Coffee' },
 ]
 export const LEAK_PROMO_VIDEOS: Record<Lang, PromoVideo[]> = {
-  en: HE_CUTS,
-  ru: HE_CUTS,
-  he: HE_CUTS,
+  en: EN_CUTS,
+  ru: EN_CUTS,
+  he: EN_CUTS,
 }
 
 const COPY: Record<'title' | 'prev' | 'next' | 'slide' | 'soundOn' | 'soundOff', Record<Lang, string>> = {

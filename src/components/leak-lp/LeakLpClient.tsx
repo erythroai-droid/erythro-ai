@@ -495,11 +495,7 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
         {/* Hero stays put while the next block slides over it (as on the main site). Sticks once its bottom reaches the viewport bottom, so a hero taller than the screen is fully seen first. */}
         <section data-stack="" className="lk-stack overflow-clip">
           <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-10 px-4 pb-12 pt-14 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,500px)] lg:gap-14 lg:pb-10 lg:pt-16 max-sm:pt-9">
-            <div
-              className={`flex flex-col items-start gap-6 text-start ${
-                stage.name === 'waiting' || stage.name === 'opening' ? 'lg:self-stretch' : ''
-              }`}
-            >
+            <div className="flex flex-col items-start gap-6 text-start">
               <span className="lk-rise lk-badge-dark" style={{ animationDelay: '0ms' }}>
                 <span className="size-1.5 rounded-full bg-[var(--lk-red)]" />
                 {t(c.heroKicker)}
@@ -516,7 +512,6 @@ function LeakLpInner({ locale, page }: { locale: AuditLpLocale; page: AuditPageC
               </h1>
               {stage.name === 'waiting' || stage.name === 'opening' ? (
                 // While the audit runs: promo videos (16:9) instead of the sub-heading and proof line.
-                // On lg the column stretches to the progress card, so the video ends level with its bottom.
                 <div className="lk-rise lk-promo-wrap w-full" style={{ animationDelay: '160ms' }}>
                   <LeakPromoSlider locale={locale} />
                 </div>
