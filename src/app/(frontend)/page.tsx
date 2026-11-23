@@ -2,7 +2,6 @@ import React from 'react'
 import HomeClient from './HomeClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getCachedPortfolioProjectCards } from '@/lib/cmsPages'
-import { sortPortfolioForDisplay } from '@/lib/internalLinks'
 import { heroStillSrc } from '@/lib/heroImage'
 
 /**
@@ -17,7 +16,7 @@ export default async function HomePage() {
     getCachedSiteContent(),
     getCachedPortfolioProjectCards().catch(() => []),
   ])
-  const featuredCases = sortPortfolioForDisplay(projectCards)
+  const featuredCases = projectCards
     .slice(0, 8)
     .map((p) => ({ slug: p.slug, title: p.title }))
   const mobileHero = content.hero.backgroundImageMobile

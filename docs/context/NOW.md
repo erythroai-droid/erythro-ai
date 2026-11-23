@@ -1,7 +1,14 @@
 # Latest changes
 
-Обновлено: 2026-11-23 (A5 GSC dig)  
-Статус: A5 код локально; GSC разобран — Request indexing после deploy.
+Обновлено: 2026-11-24 (portfolio sort)  
+Статус: порядок портфолио поправлен локально — нужен deploy.
+
+## 0. Портфолио — порядок: newest first (2026-11-24)
+- **Симптом:** на `/portfolio` первыми шли AI Consultant / AI Audit Agent, а не последние добавленные (Origin, PSB, Ember…).
+- **Причина:** SEO-коммит `5672b06` (A5, 23.11) добавил `PORTFOLIO_PIN_SLUGS` + `sortPortfolioForDisplay` — pinned `ai-consultant` / `ai-audit-agent` наверх сетки и featured на home.
+- **Сделано (локально):** пин убран; CMS fetch `sort: ['order', '-createdAt']` (ручной `order`, внутри — newest); кэш `v32-newest-first` / cards `v9-newest-first`.
+- **Ожидаемый порядок (order=0):** origin-coffee → psb-consulting → ember → mustang → la-scala → ora-60a → rosso → ai-consultant → ai-audit-agent → pro-interior → montblanc (order=1).
+- **Следующий шаг:** commit/deploy → Soft-save любого portfolio project в Production admin (ISR 1h) или дождаться TTL → проверить `/portfolio`.
 
 ## 0. A5 — Недоиндекс 6 URL + ISR `/audit` (2026-11-23)
 - **GSC (браузер, 23.11, last update 16.11):** Indexed **24** / Not indexed **33** / 5 причин.

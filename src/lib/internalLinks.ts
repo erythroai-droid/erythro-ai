@@ -1,8 +1,5 @@
 import type { PortfolioProject } from '@/lib/portfolioProjects'
 
-/** Pin AI showcase cases to the top of `/portfolio` (and related grids). */
-export const PORTFOLIO_PIN_SLUGS = ['ai-consultant', 'ai-audit-agent'] as const
-
 /**
  * Legacy static slug → live CMS slug. Sitemap must not keep both.
  * Home service cards resolve id `3` through {@link SERVICE_ID_TO_SLUG}.
@@ -35,22 +32,6 @@ export const PORTFOLIO_RELATED_SERVICE_SLUG: Record<string, string> = {
 
 export function canonicalServiceSlug(slug: string): string {
   return SERVICE_SLUG_ALIASES[slug] || slug
-}
-
-export function sortPortfolioForDisplay<T extends { slug: string }>(projects: T[]): T[] {
-  const pinRank = new Map<string, number>(
-    PORTFOLIO_PIN_SLUGS.map((slug, i) => [slug, i]),
-  )
-  const pinned: T[] = []
-  const rest: T[] = []
-  for (const project of projects) {
-    if (pinRank.has(project.slug)) pinned.push(project)
-    else rest.push(project)
-  }
-  pinned.sort(
-    (a, b) => (pinRank.get(a.slug) ?? 99) - (pinRank.get(b.slug) ?? 99),
-  )
-  return [...pinned, ...rest]
 }
 
 export function relatedCasesForService(
