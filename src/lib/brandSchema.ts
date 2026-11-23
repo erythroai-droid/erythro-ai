@@ -5,10 +5,33 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 export const DEFAULT_ORGANIZATION_DESCRIPTION =
   'Digital agency building high-performance websites, custom brand identities, and AI automation.'
 
+/** Permanent Facebook Page URL (vanity). Share / profile.php links normalize to this. */
+export const FACEBOOK_CANONICAL = 'https://www.facebook.com/erythro.ai'
+
+/**
+ * Stable entity graph profiles. LinkedIn Company / Clutch / Crunchbase / Easy.co.il
+ * stay out until Track E (company page) exists — do not invent URLs.
+ */
 export const CANONICAL_SAME_AS = [
   'https://github.com/erythroai-droid',
   'https://www.linkedin.com/in/erythro-ai',
+  'https://www.instagram.com/erythro.ai/',
+  'https://www.youtube.com/@ErythroAi',
+  FACEBOOK_CANONICAL,
 ]
+
+const FOUNDERS_SAME_AS = [
+  'https://www.linkedin.com/in/erythro-ai',
+  'https://github.com/erythroai-droid',
+] as const
+
+const KNOWS_ABOUT = [
+  'Generative Engine Optimization (GEO)',
+  'AI Website Audit',
+  'Next.js Web Development',
+  'AI Agents & Business Automation',
+  'Conversion Rate Optimization (CRO)',
+] as const
 
 export type FaqSchemaItem = {
   question: Record<string, string>
@@ -27,6 +50,27 @@ function schemaLocale(locale: string): 'en' | 'ru' | 'he' {
   return 'en'
 }
 
+/** Map ephemeral FB share / profile IDs and bare erythro.ai paths to the vanity URL. */
+export function normalizeSameAsUrl(url: string): string {
+  const trimmed = url.trim()
+  if (!trimmed) return trimmed
+  try {
+    const parsed = new URL(trimmed)
+    const host = parsed.hostname.replace(/^www\./i, '').toLowerCase()
+    if (host === 'facebook.com' || host === 'fb.com' || host === 'm.facebook.com') {
+      const path = parsed.pathname.replace(/\/+$/, '').toLowerCase()
+      const isShare = path.startsWith('/share/')
+      const isErythroVanity = path === '/erythro.ai'
+      const isOurProfile =
+        path === '/profile.php' && parsed.searchParams.get('id') === '61592990561120'
+      if (isShare || isErythroVanity || isOurProfile) return FACEBOOK_CANONICAL
+    }
+  } catch {
+    /* keep original */
+  }
+  return trimmed
+}
+
 export function buildOrganizationSchema(
   content: SiteContent,
   description: string = DEFAULT_ORGANIZATION_DESCRIPTION,
@@ -36,9 +80,9 @@ export function buildOrganizationSchema(
     ...CANONICAL_SAME_AS,
     site.facebook,
     site.telegram,
-  ].filter(
-    (url): url is string => typeof url === 'string' && url.trim().length > 0,
-  )
+  ]
+    .filter((url): url is string => typeof url === 'string' && url.trim().length > 0)
+    .map(normalizeSameAsUrl)
   const uniqueSameAs = Array.from(new Set(sameAs))
 
   return {
@@ -67,21 +111,25 @@ export function buildOrganizationSchema(
     },
     areaServed: [
       { '@type': 'Country', name: 'Israel' },
+      { '@type': 'City', name: 'Tel Aviv' },
+      { '@type': 'City', name: 'Jerusalem' },
+      { '@type': 'City', name: 'Haifa' },
+      { '@type': 'City', name: 'Eilat' },
       { '@type': 'AdministrativeArea', name: 'Global' },
       { '@type': 'AdministrativeArea', name: 'CIS' },
       { '@type': 'Country', name: 'United States' },
     ],
+    knowsAbout: [...KNOWS_ABOUT],
     knowsLanguage: ['en', 'ru', 'he'],
     inLanguage: ['en', 'ru', 'he'],
     sameAs: uniqueSameAs,
     founder: {
       '@type': 'Person',
-      name: 'Founder',
+      '@id': `${SITE_URL}/#founder`,
+      name: 'Vadym Kovalenko',
+      jobTitle: 'Founder & Lead Architect',
       url: 'https://www.linkedin.com/in/erythro-ai',
-      sameAs: [
-        'https://www.linkedin.com/in/erythro-ai',
-        'https://github.com/erythroai-droid',
-      ],
+      sameAs: [...FOUNDERS_SAME_AS],
     },
     contactPoint: [
       {

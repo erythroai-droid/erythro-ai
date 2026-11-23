@@ -1,6 +1,5 @@
 import React from 'react'
 import type { Metadata } from 'next'
-import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import ProjectClient from './ProjectClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
@@ -10,10 +9,16 @@ import {
   getPortfolioProjectBySlug,
 } from '@/lib/cmsPages'
 import { getAllPortfolioSlugs, tLocale } from '@/lib/portfolioProjects'
-import { getRequestPrefs } from '@/lib/requestPrefs'
+import { relatedServiceSlugForProject } from '@/lib/internalLinks'
 import { ogImageFields, ogImageForPortfolioProject } from '@/lib/ogImages'
 
-const SUPPORTED_LOCALES = ['en', 'ru', 'he']
+/**
+ * Full Route Cache / CDN: static HTML with ISR. Must not call cookies()/headers()
+ * anywhere in this tree. Locale/theme hydrate client-side (PIT-056).
+ */
+export const dynamic = 'force-static'
+export const revalidate = 3600
+
 const DEFAULT_LOCALE = 'en'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
@@ -33,10 +38,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
   const { slug } = await params
-  const cookieStore = await cookies()
-  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
-  const locale =
-    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
+  const locale = DEFAULT_LOCALE
 
   const project = await getPortfolioProjectBySlug(slug)
 
@@ -82,8 +84,6 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { slug } = await params
 
-  const { initialLocale, initialTheme } = await getRequestPrefs()
-
   const project = await getPortfolioProjectBySlug(slug)
   if (!project) notFound()
 
@@ -107,12 +107,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   return (
     <ProjectClient
-      initialLocale={initialLocale}
-      initialTheme={initialTheme}
+      initialLocale={DEFAULT_LOCALE}
       content={content}
       project={project}
       prev={toNeighbor(prevProject)}
       next={toNeighbor(nextProject)}
+      relatedServiceSlug={relatedServiceSlugForProject(project.slug)}
+      clientHydratePrefs
     />
   )
 }

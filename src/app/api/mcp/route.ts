@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
-import { CANONICAL_SAME_AS } from '@/lib/brandSchema'
+import { CANONICAL_SAME_AS, normalizeSameAsUrl } from '@/lib/brandSchema'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
@@ -13,9 +13,9 @@ export async function GET() {
     ...CANONICAL_SAME_AS,
     site.facebook,
     site.telegram,
-  ].filter(
-    (url): url is string => typeof url === 'string' && url.trim().length > 0,
-  )
+  ]
+    .filter((url): url is string => typeof url === 'string' && url.trim().length > 0)
+    .map(normalizeSameAsUrl)
   const uniqueSameAs = Array.from(new Set(sameAs))
 
   return NextResponse.json(

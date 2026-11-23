@@ -1,6 +1,7 @@
 import { getAllOrderSlugs, isNonSitemapOrderSlug } from '@/lib/orderPlans'
 import { getAllPortfolioSlugs, isHiddenPortfolioSlug } from '@/lib/portfolioProjects'
 import { getAllServiceSlugs } from '@/lib/servicePages'
+import { SERVICE_SLUG_ALIASES, canonicalServiceSlug } from '@/lib/internalLinks'
 import { getCachedLegalPage } from '@/lib/legalPages.server'
 import type { LegalPageId } from '@/lib/legalPages'
 
@@ -62,14 +63,20 @@ async function fetchCollectionSitemap(
 
 export async function getServiceSitemapEntries(): Promise<SitemapSlugEntry[]> {
   const staticSlugs = getAllServiceSlugs()
+    .map(canonicalServiceSlug)
+    .filter((slug, i, all) => all.indexOf(slug) === i)
   try {
     const rows = await fetchCollectionSitemap('services')
     if (rows.length) {
       const existing = new Set(rows.map((r) => r.slug))
+      // Drop legacy aliases when the live CMS slug is already listed (e.g. management → enterprise-engineering).
+      for (const [alias, canonical] of Object.entries(SERVICE_SLUG_ALIASES)) {
+        if (existing.has(canonical)) existing.add(alias)
+      }
       const missing = staticSlugs
         .filter((slug) => !existing.has(slug))
         .map((slug) => ({ slug }))
-      return [...rows, ...missing]
+      return [...rows.filter((r) => !SERVICE_SLUG_ALIASES[r.slug]), ...missing]
     }
   } catch (err) {
     console.error('[sitemap] services CMS failed:', err)

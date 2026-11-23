@@ -20,22 +20,32 @@ import { useSitePrefs } from '@/hooks/useSitePrefs'
 interface ProjectClientProps {
   initialLocale: string
   initialTheme?: 'light' | 'dark'
+  /** ISR pages: hydrate locale/theme from storage after mount (no SSR cookies). */
+  clientHydratePrefs?: boolean
   content: SiteContent
   project: PortfolioProject
   prev: { slug: string; title: PortfolioProject['title'] } | null
   next: { slug: string; title: PortfolioProject['title'] } | null
+  relatedServiceSlug?: string | null
 }
 
 export default function ProjectClient({
   initialLocale,
   initialTheme,
+  clientHydratePrefs,
   content,
   project,
   prev,
   next,
+  relatedServiceSlug = null,
 }: ProjectClientProps) {
   const a11yTranslations = content.accessibility
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(
+    initialLocale,
+    'dark',
+    initialTheme,
+    clientHydratePrefs ? { clientHydratePrefs: true } : undefined,
+  )
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
   const projectTitle = tLocale(project.title, locale)
 
@@ -109,6 +119,7 @@ export default function ProjectClient({
               prev={prev}
               next={next}
               portfolioHref={content.caseStudies.viewAllHref || '/portfolio'}
+              relatedServiceSlug={relatedServiceSlug}
             />
           </div>
 

@@ -15,8 +15,7 @@ import {
 import { auditCalcCopy, tCalc } from '@/lib/auditCalcCopy'
 import { ogImageFields, ogImageForLeakCalc } from '@/lib/ogImages'
 
-export const dynamic = 'force-static'
-export const revalidate = 3600
+// Dynamic: parent (audit-lp) layout reads `x-lp-locale` for SSR lang/dir.
 
 const OG_LOCALE: Record<AuditLpLocale, string> = {
   en: 'en_US',

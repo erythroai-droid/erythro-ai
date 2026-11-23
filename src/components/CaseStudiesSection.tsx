@@ -4,10 +4,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSiteContent } from './SiteContentProvider'
 import StylizedSectionTitle from './StylizedSectionTitle'
+import { FeaturedCaseLinks } from './RelatedLinks'
 import { loadGsapAfterLcp } from '@/lib/gsapAfterLcp'
+import type { PortfolioProject } from '@/lib/portfolioProjects'
 
 interface CaseStudiesSectionProps {
   locale: string
+  featuredCases?: Array<Pick<PortfolioProject, 'slug' | 'title'>>
 }
 
 function useIsDesktop() {
@@ -198,7 +201,10 @@ const brandLogos = [
   { name: 'Vercel', src: '/images/brands/vercel 1.svg' },
 ]
 
-export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) {
+export default function CaseStudiesSection({
+  locale,
+  featuredCases = [],
+}: CaseStudiesSectionProps) {
   const translations = useSiteContent().caseStudies
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const isRtl = locale === 'he'
@@ -365,7 +371,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
 
         <div
           ref={linkRef}
-          className="relative z-20 mt-[34px] mb-8 shrink-0 flex justify-center pointer-events-auto lg:mb-[50px]"
+          className="relative z-20 mt-[34px] mb-8 shrink-0 flex flex-col items-center gap-4 pointer-events-auto lg:mb-[50px]"
         >
           <a
             href={portfolioHref}
@@ -387,6 +393,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
             </span>
             <ViewAllChevrons isRtl={isRtl} />
           </a>
+          <FeaturedCaseLinks locale={locale} cases={featuredCases} />
         </div>
       </div>
 

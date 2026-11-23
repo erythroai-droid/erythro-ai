@@ -10,6 +10,8 @@ import { currencySymbol } from '@/lib/orderPlans'
 import BidiText from '@/components/BidiText'
 import { isLexicalDoc, lexicalFromParagraphs, lexicalFromText, type LexicalDoc } from '@/lib/lexical'
 import { useSiteContent } from '@/components/SiteContentProvider'
+import { RelatedCases } from '@/components/RelatedLinks'
+import type { PortfolioProject } from '@/lib/portfolioProjects'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger)
@@ -19,6 +21,7 @@ interface ServiceBodyProps {
   service: ServicePage
   locale: string
   theme?: 'light' | 'dark'
+  relatedCases?: Array<Pick<PortfolioProject, 'slug' | 'title'>>
 }
 
 function pickLexical(
@@ -34,7 +37,12 @@ function pickLexical(
   return fallback
 }
 
-export default function ServiceBody({ service, locale, theme = 'dark' }: ServiceBodyProps) {
+export default function ServiceBody({
+  service,
+  locale,
+  theme = 'dark',
+  relatedCases = [],
+}: ServiceBodyProps) {
   const isLight = theme === 'light'
   const sectionRef = useRef<HTMLElement | null>(null)
   const title = tLocale(service.title, locale)
@@ -178,6 +186,8 @@ export default function ServiceBody({ service, locale, theme = 'dark' }: Service
             {portfolioCta}
           </Link>
         </div>
+
+        <RelatedCases locale={locale} theme={theme} cases={relatedCases} />
       </div>
 
       {/* Hold space after CTA so Let’s Talk doesn’t ride up immediately on scroll. */}

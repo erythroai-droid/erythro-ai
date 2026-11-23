@@ -35,7 +35,8 @@ export interface ServicePage {
 export const SERVICE_ID_TO_SLUG: Record<string, string> = {
   '1': 'design-branding',
   '2': 'development',
-  '3': 'management',
+  // Live CMS slug (static seed used to say `management`).
+  '3': 'enterprise-engineering',
   '4': 'ai-automation',
 }
 
@@ -225,11 +226,11 @@ export const SERVICE_PAGES: ServicePage[] = [
   },
   {
     id: '3',
-    slug: 'management',
+    slug: 'enterprise-engineering',
     title: {
-      en: 'Management',
-      ru: 'Управление',
-      he: 'ניהול',
+      en: 'Enterprise Engineering',
+      ru: 'Enterprise-инженерия',
+      he: 'הנדסת Enterprise',
     },
     hero: {
       type: 'image',

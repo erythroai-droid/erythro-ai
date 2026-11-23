@@ -28,6 +28,7 @@ interface ServiceClientProps {
   clientHydratePrefs?: boolean
   content: SiteContent
   service: ServicePage
+  relatedCases?: Array<{ slug: string; title: Record<string, string> }>
 }
 
 export default function ServiceClient({
@@ -36,6 +37,7 @@ export default function ServiceClient({
   clientHydratePrefs,
   content,
   service,
+  relatedCases = [],
 }: ServiceClientProps) {
   const a11yTranslations = content.accessibility
   const pageFaq = service.faq ?? getPageFaq(service.slug)
@@ -117,7 +119,12 @@ export default function ServiceClient({
           </div>
 
           <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
-            <ServiceBody service={service} locale={locale} theme={theme} />
+            <ServiceBody
+              service={service}
+              locale={locale}
+              theme={theme}
+              relatedCases={relatedCases}
+            />
           </div>
 
           {pageFaq ? (

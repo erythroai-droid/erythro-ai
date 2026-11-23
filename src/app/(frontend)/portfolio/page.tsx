@@ -7,6 +7,7 @@ import {
   getCachedPortfolioProjectCards,
 } from '@/lib/cmsPages'
 import { buildPortfolioFilters } from '@/lib/portfolioProjects'
+import { sortPortfolioForDisplay } from '@/lib/internalLinks'
 import { defaultShareImages } from '@/lib/ogImages'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
@@ -55,12 +56,13 @@ export default async function PortfolioPage() {
   ])
 
   const filters = buildPortfolioFilters(categoryFilters)
+  const orderedProjects = sortPortfolioForDisplay(projects)
 
   return (
     <PortfolioClient
       initialLocale="en"
       content={content}
-      projects={projects}
+      projects={orderedProjects}
       filters={filters}
       clientHydratePrefs
     />

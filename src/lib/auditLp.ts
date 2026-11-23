@@ -5,6 +5,9 @@ import { normalizeHost } from '@/lib/vercelHost'
 export const AUDIT_LP_LOCALES = ['en', 'ru', 'he'] as const
 export type AuditLpLocale = (typeof AUDIT_LP_LOCALES)[number]
 
+/** Request header set by `proxy` so the LP root layout can SSR `lang` / `dir`. */
+export const LP_LOCALE_HEADER = 'x-lp-locale'
+
 export const AUDIT_LP_PRODUCTS = ['free', 'pro', 'diagnostic', 'calc'] as const
 export type AuditLpProduct = (typeof AUDIT_LP_PRODUCTS)[number]
 
@@ -204,17 +207,33 @@ export function auditLpInternalPath(product: AuditLpProduct, locale: AuditLpLoca
 /**
  * Path after rewrite: `/lp/audit/ru` or `/lp/audit/pro/ru`.
  * Product segment must be parsed before treating the next token as locale.
+ * `/lp/audit/leak/{locale}` is the AI-audit landing (not an AUDIT_LP_PRODUCT).
  */
 export function auditLpTargetFromPathname(pathname: string): AuditLpTarget | null {
   const clean = pathname.split('?')[0] || '/'
+  if (/^\/lp\/audit\/leak\/(en|ru|he)(?:\/|$)/.test(clean)) return null
   const match = clean.match(/^\/lp\/audit\/(?:(pro|diagnostic|calc)\/)?(en|ru|he)(?:\/|$)/)
   if (!match?.[2] || !isAuditLpLocale(match[2])) return null
   const product = match[1] && isAuditLpProduct(match[1]) ? match[1] : 'free'
   return { product, locale: match[2] }
 }
 
+/** Locale of `/lp/audit/leak/{locale}` (AI-audit landing path), or null. */
+export function leakLpLocaleFromPathname(pathname: string): AuditLpLocale | null {
+  const clean = pathname.split('?')[0] || '/'
+  const match = clean.match(/^\/lp\/audit\/leak\/(en|ru|he)(?:\/|$)/)
+  return match?.[1] && isAuditLpLocale(match[1]) ? match[1] : null
+}
+
 export function auditLpLocaleFromPathname(pathname: string): AuditLpLocale | null {
-  return auditLpTargetFromPathname(pathname)?.locale ?? null
+  return auditLpTargetFromPathname(pathname)?.locale ?? leakLpLocaleFromPathname(pathname)
+}
+
+/** Free / calc / AI-audit hosts are indexable as separate pages; pro / diagnostic stay noindex. */
+export function isIndexableAuditLpProduct(
+  product: AuditLpProduct | 'leak' | null | undefined,
+): boolean {
+  return product === 'free' || product === 'calc' || product === 'leak'
 }
 
 export function auditLpPublicOrigin(

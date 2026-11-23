@@ -7,6 +7,7 @@ import HeroSection from '@/components/HeroSection'
 import { SiteContentProvider } from '@/components/SiteContentProvider'
 import { ContactModalProvider } from '@/components/ContactModal'
 import type { SiteContent } from '@/lib/defaultContent'
+import type { PortfolioProject } from '@/lib/portfolioProjects'
 import { persistHomeScrollY } from '@/lib/splash'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
 import { waitForPostLcpMotion } from '@/lib/lcpGate'
@@ -58,6 +59,7 @@ interface HomeClientProps {
   /** ISR pages: hydrate locale/theme from storage after mount (no SSR cookies). */
   clientHydratePrefs?: boolean
   content: SiteContent
+  featuredCases?: Array<Pick<PortfolioProject, 'slug' | 'title'>>
 }
 
 export default function HomeClient({
@@ -65,6 +67,7 @@ export default function HomeClient({
   initialTheme,
   clientHydratePrefs,
   content,
+  featuredCases = [],
 }: HomeClientProps) {
   const a11yTranslations = content.accessibility
   const { locale, setLocale, theme, setTheme } = useSitePrefs(
@@ -176,7 +179,7 @@ export default function HomeClient({
           </div>
 
           <div className="relative z-[15] -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
-            <CaseStudiesSection locale={locale} />
+            <CaseStudiesSection locale={locale} featuredCases={featuredCases} />
           </div>
 
           <div className="relative z-20 -mt-8 rounded-t-[28px] shadow-[0_-12px_30px_rgba(0,0,0,0.28)] max-lg:pointer-events-none lg:contents">

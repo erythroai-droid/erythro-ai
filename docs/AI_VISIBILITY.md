@@ -31,7 +31,7 @@ API Catalog, OpenAPI, Markdown negotiation, ACP discovery.
 | MCP manifest | `src/app/.well-known/mcp/route.ts` | Discovery endpoint `/.well-known/mcp` (SEP-1960 style) |
 | Brand API | `src/app/api/mcp/route.ts` | Read-only JSON с фактами о бренде |
 | About / Brand Facts | `src/app/(frontend)/about/` | Каноническая страница `/about` |
-| Organization schema | `src/lib/brandSchema.ts` + `src/components/StructuredData.tsx` | JSON-LD: Organization (`sameAs`: GitHub, LinkedIn, FB, TG; `founder`: Person), WebSite. FAQPage is per page (`FaqJsonLd`), in the active locale |
+| Organization schema | `src/lib/brandSchema.ts` + `src/components/StructuredData.tsx` | JSON-LD: Organization (`sameAs`: GitHub, LinkedIn person, Instagram, YouTube, FB vanity, TG; `founder`: Vadym Kovalenko; `knowsAbout` GEO/CRO/audit; FB share → `www.facebook.com/erythro.ai`), WebSite. FAQPage is per page (`FaqJsonLd`), in the active locale |
 | GA bootstrap | `src/components/AnalyticsBootstrap.tsx` | `dataLayer` + Consent Mode default в `<head>` |
 | AI referral | `src/lib/aiReferral.ts` | Детект referrer ChatGPT/Perplexity и push в dataLayer |
 | Security headers | `next.config.ts` → `headers()` | CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy |
@@ -168,6 +168,6 @@ next.config.ts
 
 - [ ] Обновить факты в `public/llms.txt` (телефон, email, услуги)
 - [ ] Проверить `/about` (контент из CMS через `getCachedSiteContent`)
-- [ ] Organization schema подтянет `SiteSettings` и канонические профили — проверить `sameAs` (GitHub, LinkedIn, Facebook, Telegram)
+- [ ] Organization schema подтянет `SiteSettings` и канонические профили — проверить `sameAs` (GitHub, LinkedIn person, Instagram, YouTube, Facebook vanity, Telegram) и `founder` (Vadym Kovalenko)
 - [ ] При смене публичных API — обновить `src/lib/agentDiscovery.ts` (Link header, catalog, OpenAPI)
 - [ ] Перезапустить внешний AI visibility / isitagentready scan
