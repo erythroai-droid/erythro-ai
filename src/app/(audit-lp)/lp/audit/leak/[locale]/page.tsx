@@ -10,8 +10,7 @@ import { leakLpCopy } from '@/lib/leakLpCopy'
 import { ogImageFields, ogImageForLeakLp } from '@/lib/ogImages'
 
 // AI-audit landing, served on ai-audit-{en,ru,he}.erythro.ai. Indexable (since 2026-11-20).
-export const dynamic = 'force-static'
-export const revalidate = 3600
+// Dynamic: parent (audit-lp) layout reads `x-lp-locale` for SSR lang/dir.
 
 const OG_LOCALE: Record<AuditLpLocale, string> = { en: 'en_US', ru: 'ru_RU', he: 'he_IL' }
 

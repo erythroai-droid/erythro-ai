@@ -13,7 +13,9 @@ Do **not** quote leftover `/services/management` USD stubs (`from $800` / `$4 00
 - Email: team@erythro.ai (orders / audit: order@erythro.ai)
 - Phone: +972 50 530 83 05
 - Telegram: https://t.me/erythro_ai
-- Facebook: https://www.facebook.com/share/1DKaM3k5ox/
+- Facebook: https://www.facebook.com/erythro.ai
+- Instagram: https://www.instagram.com/erythro.ai/
+- YouTube: https://www.youtube.com/@ErythroAi
 - Response: Reply within one business day
 
 ## How we work

@@ -15,10 +15,10 @@ import {
 } from '@/lib/auditLp'
 import { ogImageFields, ogImageForPlan } from '@/lib/ogImages'
 
-export const dynamic = 'force-static'
-export const revalidate = 3600
+// Dynamic: parent (audit-lp) layout reads `x-lp-locale` for SSR lang/dir.
+// Intentionally noindex (paid ads LP) — metadata + X-Robots-Tag stay aligned.
 
-const PRODUCT = 'pro' as const
+const PRODUCT = 'diagnostic' as const
 
 const OG_LOCALE: Record<AuditLpLocale, string> = {
   en: 'en_US',
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonical = auditLpCanonicalUrl(locale, PRODUCT)
   const origin = auditLpPublicOrigin(locale, PRODUCT)
   // Child openGraph replaces layout OG — must include images (PIT-079).
-  const ogImage = ogImageForPlan('audit-pro')
+  const ogImage = ogImageForPlan('audit-diagnostic')
   const ogImages = [ogImageFields(ogImage, title)]
 
   return {
@@ -78,7 +78,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function AuditLpProPage({ params }: PageProps) {
+export default async function AuditLpDiagnosticPage({ params }: PageProps) {
   const { locale: raw } = await params
   if (!isAuditLpLocale(raw)) notFound()
 

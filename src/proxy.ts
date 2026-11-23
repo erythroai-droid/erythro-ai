@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { HOMEPAGE_LINK_HEADER } from '@/lib/agentDiscovery'
-import { auditLpInternalPath, auditLpTargetFromHost, leakLpInternalPath, leakLpLocaleFromHost } from '@/lib/auditLp'
+import {
+  LP_LOCALE_HEADER,
+  auditLpInternalPath,
+  auditLpLocaleFromPathname,
+  auditLpTargetFromHost,
+  auditLpTargetFromPathname,
+  isIndexableAuditLpProduct,
+  leakLpInternalPath,
+  leakLpLocaleFromHost,
+  leakLpLocaleFromPathname,
+  type AuditLpLocale,
+} from '@/lib/auditLp'
 import { shouldServeMarkdown } from '@/lib/markdownAccept'
 import {
   canonicalUrlForPath,
@@ -10,13 +21,26 @@ import {
   shouldSkipVercelAppRedirect,
 } from '@/lib/vercelHost'
 
+function withLpLocale(request: NextRequest, locale: AuditLpLocale): Headers {
+  const headers = new Headers(request.headers)
+  headers.set(LP_LOCALE_HEADER, locale)
+  return headers
+}
+
+function isAuditLpInternalPath(pathname: string): boolean {
+  return (
+    auditLpTargetFromPathname(pathname) != null || leakLpLocaleFromPathname(pathname) != null
+  )
+}
+
 /**
  * Proxy (Next 16 name for middleware; runs on the Node.js runtime) for markdown negotiation
  * + discovery Link header + audit LP host rewrites.
  *
  * Do NOT set NEXT_LOCALE here. A Set-Cookie on the response prevents Vercel/CDN
  * HTML cache (no s-maxage HIT). Locale is applied client-side via bootstrap +
- * useSitePrefs (see PIT-056). Ads audit LPs lock locale from the host instead.
+ * useSitePrefs (see PIT-056). Ads audit LPs lock locale from the host instead
+ * (and SSR `lang`/`dir` via `x-lp-locale` on the dedicated LP layout).
  */
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
@@ -28,28 +52,33 @@ export function proxy(request: NextRequest) {
   // AI-audit landing: ai-audit-{locale}.erythro.ai → /lp/audit/leak/{locale}
   // (URL bar stays on the subdomain; no Set-Cookie).
   if (auditLp || leakLpLocale) {
+    const locale: AuditLpLocale = auditLp?.locale ?? leakLpLocale!
     const internalPath = auditLp
       ? auditLpInternalPath(auditLp.product, auditLp.locale)
       : leakLpInternalPath(leakLpLocale!)
     const isRoot = pathname === '/' || pathname === ''
     const alreadyLp = pathname === internalPath || pathname.startsWith(`${internalPath}/`)
+    const requestHeaders = withLpLocale(request, locale)
 
     let response: NextResponse
     if (isRoot) {
       const url = request.nextUrl.clone()
       url.pathname = internalPath
-      response = NextResponse.rewrite(url)
+      response = NextResponse.rewrite(url, { request: { headers: requestHeaders } })
     } else if (alreadyLp || pathname.startsWith('/api/') || pathname.startsWith('/_next/')) {
-      response = NextResponse.next()
+      response = NextResponse.next({ request: { headers: requestHeaders } })
     } else {
       // Keep API/static on this host; send the rest to the main site.
       const location = canonicalUrlForPath(pathname, request.nextUrl.search)
       response = NextResponse.redirect(location, 308)
     }
 
-    // The AI-audit landing page itself is indexable; redirects off these hosts and the ads LPs stay noindex.
-    const indexableLeakPage = Boolean(leakLpLocale) && (isRoot || alreadyLp)
-    if (!indexableLeakPage) response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+    // Indexable as separate pages: free (audit-*), calc (leak-*), AI-audit (ai-audit-*).
+    // Pro / diagnostic stay noindex. Redirects off these hosts always noindex.
+    const product = auditLp?.product ?? (leakLpLocale ? 'leak' : null)
+    const indexablePage =
+      isIndexableAuditLpProduct(product) && (isRoot || alreadyLp) && response.status < 300
+    if (!indexablePage) response.headers.set('X-Robots-Tag', 'noindex, nofollow')
     response.headers.delete('x-powered-by')
     return response
   }
@@ -93,6 +122,7 @@ export function proxy(request: NextRequest) {
     }
   }
 
+  const pathLocale = auditLpLocaleFromPathname(pathname)
   const wantsMarkdown =
     !pathname.startsWith('/api') &&
     !pathname.startsWith('/admin') &&
@@ -104,11 +134,17 @@ export function proxy(request: NextRequest) {
     url.pathname = '/api/markdown-negotiate'
     url.searchParams.set('path', pathname)
     response = NextResponse.rewrite(url)
+  } else if (pathLocale) {
+    // Internal `/lp/audit/…` on the apex: lock SSR locale, but keep noindex so
+    // these paths do not compete with organic `/audit` or the subdomain canons.
+    response = NextResponse.next({
+      request: { headers: withLpLocale(request, pathLocale) },
+    })
   } else {
     response = NextResponse.next()
   }
 
-  if (isVercelAppHost(host)) {
+  if (isVercelAppHost(host) || isAuditLpInternalPath(pathname)) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow')
   }
 

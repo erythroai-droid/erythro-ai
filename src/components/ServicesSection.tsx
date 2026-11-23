@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { useRouter } from 'nextjs-toploader/app'
+import Link from 'next/link'
 import { useSiteContent } from './SiteContentProvider'
 import { useContactModal } from './ContactModal'
 import { navigateCtaHref } from '@/lib/ctaNav'
@@ -132,7 +132,6 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
   const letsTalkTranslations = content.letsTalk
   const navTranslations = content.navbar
   const { open: openContact } = useContactModal()
-  const router = useRouter()
   // Translate helper
   const t = (field: Record<string, string>) => field[locale] || field['en']
 
@@ -648,17 +647,36 @@ export default function ServicesSection({ locale, theme = 'dark' }: ServicesSect
                       </div>
 
                       <div className="mt-4 relative z-10">
-                        <Button
-                          variant={theme === 'dark' ? 'dark-outline' : 'light-outline'}
-                          showArrow
-                          onClick={() => {
-                            const slug = item.slug || getServiceSlugById(item.id)
-                            if (slug) router.push(`/services/${slug}`)
-                            else openContact()
-                          }}
-                        >
-                          {isRtl ? 'עוד' : locale === 'ru' ? 'подробнее' : 'more'}
-                        </Button>
+                        {(() => {
+                          const slug = item.slug || getServiceSlugById(item.id)
+                          const moreLabel = isRtl ? 'עוד' : locale === 'ru' ? 'подробнее' : 'more'
+                          if (slug) {
+                            return (
+                              <Link
+                                href={`/services/${slug}`}
+                                className={`group inline-flex items-center gap-2 font-sans text-sm font-medium uppercase tracking-[0.14em] transition-colors ${
+                                  theme === 'dark'
+                                    ? 'text-gold-100 hover:text-gold-500'
+                                    : 'text-coal-900 hover:text-erythro-500'
+                                }`}
+                              >
+                                {moreLabel}
+                                <span aria-hidden className="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5">
+                                  →
+                                </span>
+                              </Link>
+                            )
+                          }
+                          return (
+                            <Button
+                              variant={theme === 'dark' ? 'dark-outline' : 'light-outline'}
+                              showArrow
+                              onClick={() => openContact()}
+                            >
+                              {moreLabel}
+                            </Button>
+                          )
+                        })()}
                       </div>
                     </div>
 

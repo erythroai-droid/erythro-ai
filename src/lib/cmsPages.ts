@@ -962,8 +962,15 @@ export const getCachedServicePages = () =>
   })()
 
 export async function getServicePageBySlug(slug: string): Promise<ServicePage | undefined> {
+  const { canonicalServiceSlug } = await import('@/lib/internalLinks')
+  const resolved = canonicalServiceSlug(slug)
   const all = await getCachedServicePages()
-  return all.find((p) => p.slug === slug) || SERVICE_PAGES.find((p) => p.slug === slug)
+  return (
+    all.find((p) => p.slug === resolved) ||
+    all.find((p) => p.slug === slug) ||
+    SERVICE_PAGES.find((p) => p.slug === resolved) ||
+    SERVICE_PAGES.find((p) => p.slug === slug)
+  )
 }
 
 export async function getAllServiceSlugsCms(): Promise<string[]> {

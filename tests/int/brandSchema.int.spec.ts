@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { detectAiReferrer } from '@/lib/aiReferral'
 import {
+  FACEBOOK_CANONICAL,
   buildFaqPageSchema,
   buildOrganizationSchema,
   buildWebSiteSchema,
+  normalizeSameAsUrl,
 } from '@/lib/brandSchema'
 import { defaultSiteContent } from '@/lib/defaultContent'
 
@@ -19,19 +21,62 @@ describe('brandSchema', () => {
     expect(schema.sameAs).toEqual([
       'https://github.com/erythroai-droid',
       'https://www.linkedin.com/in/erythro-ai',
-      'https://facebook.com/erythro.ai',
+      'https://www.instagram.com/erythro.ai/',
+      'https://www.youtube.com/@ErythroAi',
+      FACEBOOK_CANONICAL,
       'https://t.me/erythroai',
     ])
     expect(schema.founder).toEqual({
       '@type': 'Person',
-      name: 'Founder',
+      '@id': 'https://erythro.ai/#founder',
+      name: 'Vadym Kovalenko',
+      jobTitle: 'Founder & Lead Architect',
       url: 'https://www.linkedin.com/in/erythro-ai',
       sameAs: [
         'https://www.linkedin.com/in/erythro-ai',
         'https://github.com/erythroai-droid',
       ],
     })
+    expect(schema.knowsAbout).toEqual([
+      'Generative Engine Optimization (GEO)',
+      'AI Website Audit',
+      'Next.js Web Development',
+      'AI Agents & Business Automation',
+      'Conversion Rate Optimization (CRO)',
+    ])
+    expect(schema.areaServed).toEqual(
+      expect.arrayContaining([
+        { '@type': 'Country', name: 'Israel' },
+        { '@type': 'City', name: 'Tel Aviv' },
+        { '@type': 'City', name: 'Jerusalem' },
+        { '@type': 'City', name: 'Haifa' },
+        { '@type': 'City', name: 'Eilat' },
+        { '@type': 'AdministrativeArea', name: 'Global' },
+      ]),
+    )
     expect(Array.isArray(schema.contactPoint)).toBe(true)
+  })
+
+  it('normalizes Facebook share / profile links to the vanity Page URL', () => {
+    expect(normalizeSameAsUrl('https://www.facebook.com/share/1DKaM3k5ox/')).toBe(
+      FACEBOOK_CANONICAL,
+    )
+    expect(
+      normalizeSameAsUrl('https://www.facebook.com/profile.php?id=61592990561120'),
+    ).toBe(FACEBOOK_CANONICAL)
+    expect(normalizeSameAsUrl('https://facebook.com/erythro.ai')).toBe(FACEBOOK_CANONICAL)
+
+    const withShare = {
+      ...defaultSiteContent,
+      siteSettings: {
+        ...defaultSiteContent.siteSettings,
+        facebook: 'https://www.facebook.com/share/1DKaM3k5ox/',
+      },
+    }
+    const schema = buildOrganizationSchema(withShare) as { sameAs: string[] }
+    expect(schema.sameAs).toContain(FACEBOOK_CANONICAL)
+    expect(schema.sameAs.some((u) => u.includes('/share/'))).toBe(false)
+    expect(schema.sameAs.filter((u) => u === FACEBOOK_CANONICAL)).toHaveLength(1)
   })
 
   it('builds FAQPage schema from default FAQ items', () => {

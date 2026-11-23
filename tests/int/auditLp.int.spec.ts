@@ -12,6 +12,9 @@ import {
   auditLpTargetFromHost,
   auditLpTargetFromPathname,
   isAuditLpHost,
+  isIndexableAuditLpProduct,
+  leakLpLocaleFromHost,
+  leakLpLocaleFromPathname,
   mainSiteUrl,
 } from '@/lib/auditLp'
 
@@ -75,8 +78,20 @@ describe('audit LP host / path lock', () => {
       product: 'calc',
       locale: 'he',
     })
+    expect(leakLpLocaleFromPathname('/lp/audit/leak/he')).toBe('he')
+    expect(auditLpLocaleFromPathname('/lp/audit/leak/ru')).toBe('ru')
+    expect(auditLpTargetFromPathname('/lp/audit/leak/en')).toBeNull()
+    expect(leakLpLocaleFromHost('ai-audit-he.erythro.ai')).toBe('he')
     expect(auditLpLocaleFromPathname('/audit')).toBeNull()
     expect(auditLpTargetFromPathname('/lp/audit/pro')).toBeNull()
+  })
+
+  it('marks free / calc / AI-audit as indexable; pro / diagnostic stay closed', () => {
+    expect(isIndexableAuditLpProduct('free')).toBe(true)
+    expect(isIndexableAuditLpProduct('calc')).toBe(true)
+    expect(isIndexableAuditLpProduct('leak')).toBe(true)
+    expect(isIndexableAuditLpProduct('pro')).toBe(false)
+    expect(isIndexableAuditLpProduct('diagnostic')).toBe(false)
   })
 
   it('builds internal paths and canonical LP URLs', () => {

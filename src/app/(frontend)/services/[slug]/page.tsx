@@ -1,10 +1,15 @@
 import React from 'react'
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import ServiceClient from './ServiceClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
-import { getAllServiceSlugsCms, getServicePageBySlug } from '@/lib/cmsPages'
+import {
+  getAllServiceSlugsCms,
+  getCachedPortfolioProjectCards,
+  getServicePageBySlug,
+} from '@/lib/cmsPages'
 import { getAllServiceSlugs, tLocale } from '@/lib/servicePages'
+import { SERVICE_SLUG_ALIASES, relatedCasesForService } from '@/lib/internalLinks'
 import { defaultShareImages } from '@/lib/ogImages'
 
 const DEFAULT_LOCALE = 'en'
@@ -78,17 +83,28 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
 
 export default async function ServiceDetailPage({ params }: ServicePageProps) {
   const { slug } = await params
+  const aliasTarget = SERVICE_SLUG_ALIASES[slug]
+  if (aliasTarget) permanentRedirect(`/services/${aliasTarget}`)
+
   const service = await getServicePageBySlug(slug)
 
   if (!service) notFound()
 
-  const content = await getCachedSiteContent()
+  const [content, projectCards] = await Promise.all([
+    getCachedSiteContent(),
+    getCachedPortfolioProjectCards().catch(() => []),
+  ])
+  const relatedCases = relatedCasesForService(service.slug, projectCards).map((p) => ({
+    slug: p.slug,
+    title: p.title,
+  }))
 
   return (
     <ServiceClient
       initialLocale={DEFAULT_LOCALE}
       content={content}
       service={service}
+      relatedCases={relatedCases}
       clientHydratePrefs
     />
   )

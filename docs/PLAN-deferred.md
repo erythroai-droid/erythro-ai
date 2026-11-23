@@ -1,4 +1,4 @@
-# Deferred follow-ups (updated 2026-10-27)
+# Deferred follow-ups (updated 2026-11-17)
 
 Напомнить в следующем сеансе, когда пользователь спросит про безопасность / perf / R2 / admin.
 
@@ -20,8 +20,9 @@
 | medium | Consultant wizard / intent router (v2) | **Not now.** Dynamic chips + intent router + engineer in the same thread. How-we-work card and reply-language detection are already in v1. See § Consultant v2 below. |
 | low | Purge `consult-sessions` older than 12 months | Retention promised on `/privacy` is manual today; add a cron |
 | later | CF-only UFW 80/443 | Needs orange cloud + Origin Cert for n8n/agent-api |
-| later | ISR remaining frontend pages | `/services/[slug]` done (2026-10-26). Still dynamic: order/audit + `/portfolio/[slug]` (`getRequestPrefs`, PIT-056) |
+| later | ISR remaining frontend pages | `/services/[slug]` done (2026-10-26). `/audit` + `/portfolio/[slug]` → ISR in A5 (2026-11-23). Still dynamic: `/order/*` (`getRequestPrefs`, PIT-056) |
 | later | Custom domain `media.erythro.ai` | r2.dev is rate-limited |
+| later | Supabase RLS / grants hardening (PIT-110) | **Not urgent / not an open leak.** Verified 2026-11-17 on `txyykmjocvbaqgkxlotu`: RLS off on **120/120** `public` tables (incl. `users`, `contact_submissions`, `consult_sessions`), but `anon`/`authenticated` have **0 SELECT** and no schema `USAGE` (revoke migrations applied 2026-10-15). App uses `DATABASE_URL` as `postgres` (`bypassrls`); Data API not used. When back: (1) re-check `has_table_privilege('anon',…)` after new Payload tables; (2) codify revoke SQL into `src/migrations/` (prod-only today); (3) optional `ENABLE ROW LEVEL SECURITY` on sensitive tables **without** client policies — does **not** break Payload. Never enable PostgREST exposed `public` / `GRANT … TO anon` on CMS tables. Canon: `docs/architecture/supabase-rls.md`. |
 
 ## Consultant v2 (wizard + grounded facts)
 

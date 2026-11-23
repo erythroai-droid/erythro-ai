@@ -1,9 +1,62 @@
 # Latest changes
 
-Обновлено: 2026-11-22 (portfolio PSB + Origin)  
-Статус: CMS #12/#13 в БД; OG/cache ключи локально — ждут commit/deploy + Soft-save.
+Обновлено: 2026-11-23 (A5 GSC dig)  
+Статус: A5 код локально; GSC разобран — Request indexing после deploy.
 
-## 0. Портфолио — PSB Consulting + ORIGIN Coffee (2026-11-22)
+## 0. A5 — Недоиндекс 6 URL + ISR `/audit` (2026-11-23)
+- **GSC (браузер, 23.11, last update 16.11):** Indexed **24** / Not indexed **33** / 5 причин.
+  - **Обнаружена, не проиндексирована (5)** — целевые: `/portfolio/ai-audit-agent`, `ai-consultant`, `ora-60a`, `rosso-garage`, `/services/management` (crawl = Отсутствует; ai-consultant: найден через sitemap, никогда не crawлился).
+  - **`/portfolio/ember`:** Inspection → «URL неизвестен Google», нет referring sitemap (хотя **сейчас** ember есть в live `sitemap.xml` — Google ещё не подхватил).
+  - **Просканирована, не проиндексирована (24):** шум `_next/static/css/*` + favicon — не кейсы.
+  - **404 (2):** `/&`, `/portfolio/Interior`. **Redirect (1):** `/portfolio/next-project`. **Canonical (1):** `/?utm_…Scamadviser`.
+  - Indexed уже есть: `/audit`, `/services/enterprise-engineering`, `/portfolio` + la-scala/mustang/montblanc/pro-interior — **не** 5 кейсов выше.
+- **Прод (curl):** все 6 (+ management) всё ещё в sitemap; management рядом с enterprise-engineering (A5-дроп не задеплоен).
+- **Сделано (локально):** ISR PIT-056 `/audit`+`/portfolio/[slug]` `revalidate=3600`; SSR-перелинковка; sitemap drop management + 308 → enterprise-engineering.
+- **Не сделано:** commit/deploy; GSC Request indexing по 5–6 URL (кнопка есть); `/he/audit` путей нет.
+- **Следующий шаг:** deploy → curl HIT `/audit`; в GSC Request indexing: ember, ai-consultant, ai-audit-agent, ora-60a, rosso-garage (+ enterprise-engineering уже indexed; management после 308 уйдёт в redirect).
+
+## 0a. A4 — Audit LP HTML lang/dir + robots (2026-11-23, локально)
+- **Прод было:** все LP SSR `<html lang="en" dir="ltr">` (даже HE); `audit-*`/`leak-*` — meta `index,follow` + `X-Robots-Tag: noindex`; `ai-audit-*` уже index без конфликта; `/lp/audit/*` на apex тоже meta index.
+- **Сделано:**
+  - Роуты `/lp/audit/**` → группа `(audit-lp)` с отдельным root layout: SSR `lang`/`dir` из `x-lp-locale` (proxy), HE → `he`+`rtl`. Main `(frontend)` ISR не трогали (PIT-056).
+  - Indexable отдельные страницы: `audit-*` (free), `leak-*` (calc), `ai-audit-*`. Pro/diag — noindex (meta уже был).
+  - Apex `/lp/audit/*` → `X-Robots-Tag: noindex` (не конкурируют с `/audit`); canonical по-прежнему на субдомен.
+  - Bootstrap: lock `leak-*` + path `calc|leak`; splash-skip для `ai-audit-*`/`leak-*`.
+- **Тесты:** обновить/прогнать `auditLp.int.spec.ts` по команде. DoD A4 «leak-he noindex» сознательно снят — по запросу лендинги индексируются.
+- **Следующий шаг:** commit/deploy → curl `ai-audit-he` / `audit-he` / `leak-he`: `lang="he" dir="rtl"`; free/calc/ai-audit без `X-Robots-Tag` noindex; apex `/lp/audit/he` — noindex header.
+
+## 0a. A3 — Organization JSON-LD / Entity Graph (2026-11-23, локально)
+- **Проблема (прод):** `founder.name: "Founder"`; `sameAs` без Instagram/YouTube; Facebook = share `…/share/1DKaM3k5ox/`.
+- **Сделано:** `src/lib/brandSchema.ts` — founder Vadym Kovalenko + `@id`/`jobTitle`; `CANONICAL_SAME_AS` + IG/YT/FB vanity; `normalizeSameAsUrl` (share/profile → `https://www.facebook.com/erythro.ai`); `knowsAbout` GEO/audit/Next.js/agents/CRO; `areaServed` + Tel Aviv/Jerusalem/Haifa/Eilat. MCP `/api/mcp` и default/seed Facebook на vanity. Тесты `brandSchema.int.spec.ts` — 7/7 green. Docs: `AI_VISIBILITY.md`, `consultant/erythro-knowledge-base.md` (+ Obsidian).
+- **Не сделано:** LinkedIn Company / Clutch / Crunchbase / Easy.co.il (Track E); CMS Site Settings Facebook на проде всё ещё share (JSON-LD всё равно нормализует); commit/deploy; Rich Results Test на проде после деплоя.
+- **Следующий шаг:** commit/PR/deploy → проверить SSR HTML (`Vadym Kovalenko`, IG, YT, FB vanity) → Schema Validator / Rich Results Test. Опц.: Soft-save Site Settings Facebook на vanity.
+
+## 0a. Templates — правило noindex для всех шаблонов (2026-11-23)
+- **Запрос:** в https://github.com/erythroai-droid/templates.git добавить правило — закрыть шаблоны от индексации.
+- **Сделано + push** (`2868cef` Close all templates from search indexing by default.):
+  - Repo: `AGENTS.md`, `.cursor/rules/demo-noindex.mdc`, README § Demo noindex.
+  - `ai-smart-card` + `scroll-film`: meta `robots: noindex`, `X-Robots-Tag`, demo `robots.txt`, пустой `sitemap.ts`; правила + AGENTS/CLAUDE/GEMINI/README; skill/playbook `ai-search-visibility` — демо noindex до client-domain go-live.
+- **Следующий шаг:** нет (закрыто). Новые клиентские форки с `*.erythro.ai` уже noindex из коробки.
+
+## 0a. Портфолио — закрыть демо от индексации (2026-11-22)
+- **Запрос:** проверить все проекты портфолио и закрыть поддомены от индексации.
+- **Сделано + push (коммит «Close portfolio demo from search indexing.»):**
+  | host | repo | commit |
+  |---|---|---|
+  | ember.erythro.ai | ember `main` | `82c546b` |
+  | la-scala.erythro.ai | LaScala `main` | `4239ae6` |
+  | mustang.erythro.ai | Mustang `main` | `f8c42cb` |
+  | ora60a.erythro.ai | ora60a `main` | `200d355` |
+  | origin.erythro.ai | coffee `main` | `92222cf` |
+  | psb.erythro.ai | consulting `main` (+`master`) | `58b03e3` |
+  | rosso-garage.erythro.ai | rosso-garage `main` | `3ed4489` |
+  | montblanc-frontend.vercel.app | Montblanc `main` | `c1e96b1` |
+  | pro-interier.vercel.app | Pro-interier `main` | `f5c7b70` |
+- Правки: `robots: noindex,nofollow` + `X-Robots-Tag` + `robots.txt` без Sitemap + пустой `sitemap.ts` где был. `erythro.ai` (AI Consultant / Auditor) не трогали.
+- **Прод проверен (curl):** все 9 — `X-Robots-Tag: noindex, nofollow`, meta `noindex, nofollow`, новый `robots.txt`.
+- **Следующий шаг:** если URL уже в Google — Removals в GSC; иначе закрыто.
+
+## 0a. Портфолио — PSB Consulting + ORIGIN Coffee (2026-11-22)
 - **Запрос:** кейсы по https://psb.erythro.ai/ (`C:\dev\consalting\redesign`) и https://origin.erythro.ai/ (`C:\dev\Coffee`) через `import:project`; EN/HE через Translater.
 - **Сделано:** `content/imports/{psb-consulting,origin-coffee}/` (brief + facts.ru/en/he + media) → `pnpm import:project -- … --create`.
   - CMS: **#12** `psb-consulting` (websites, link psb.erythro.ai, media #220–226, без `solutionPlan`).

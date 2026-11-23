@@ -89,7 +89,15 @@ Paid: редирект на hosted Grow; лаборатория стартует
 
 ## SEO / robots
 
-`noindex, nofollow` (middleware `X-Robots-Tag` + metadata). Каноникал — свой субдомен. Органика остаётся на `/audit` и `/order/…`.
+| Surface | Indexing | Notes |
+|---------|----------|--------|
+| `ai-audit-*` (AI-audit landing) | **index, follow** | Separate pages; canonical = own host |
+| `audit-*` (free) | **index, follow** | Same; meta + no `X-Robots-Tag` on the LP response |
+| `leak-*` (calc) | **index, follow** | Same |
+| `audit-pro-*` / `audit-diag-*` | **noindex, nofollow** | Paid ads LPs; meta + `X-Robots-Tag` aligned |
+| `erythro.ai/lp/audit/*` | **noindex** (`X-Robots-Tag`) | Internal paths; canonical still points at the subdomain so they do not compete with organic `/audit` |
+
+SSR `html lang` / `dir` come from the dedicated `(audit-lp)` root layout via proxy header `x-lp-locale` (Hebrew → `lang="he" dir="rtl"`). Main-site ISR layout stays locale-agnostic (PIT-056).
 
 ## Локальная проверка без DNS
 

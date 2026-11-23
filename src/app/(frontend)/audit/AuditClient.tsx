@@ -27,6 +27,8 @@ const AUDIT_FAQ = getPageFaq('audit')
 interface AuditClientProps {
   initialLocale: string
   initialTheme?: 'light' | 'dark'
+  /** ISR pages: hydrate locale/theme from storage after mount (no SSR cookies). */
+  clientHydratePrefs?: boolean
   content: SiteContent
   auditPageContent: AuditPageContent
 }
@@ -34,12 +36,18 @@ interface AuditClientProps {
 export default function AuditClient({
   initialLocale,
   initialTheme,
+  clientHydratePrefs,
   content,
   auditPageContent,
 }: AuditClientProps) {
   const a11yTranslations = content.accessibility
   const auditFaq = auditPageContent.faq ?? AUDIT_FAQ
-  const { locale, setLocale, theme, setTheme } = useSitePrefs(initialLocale, 'dark', initialTheme)
+  const { locale, setLocale, theme, setTheme } = useSitePrefs(
+    initialLocale,
+    'dark',
+    initialTheme,
+    clientHydratePrefs ? { clientHydratePrefs: true } : undefined,
+  )
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false)
 
   const pickA11y = (field?: Record<string, string> | null) =>

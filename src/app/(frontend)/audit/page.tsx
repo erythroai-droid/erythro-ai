@@ -1,26 +1,25 @@
 import React from 'react'
 import type { Metadata } from 'next'
-import { cookies } from 'next/headers'
 import AuditClient from './AuditClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import { getCachedAuditPage } from '@/lib/auditPage.server'
 import { tAudit } from '@/lib/auditPage'
-import { getRequestPrefs } from '@/lib/requestPrefs'
 import { ogImageFields, ogImageForPlan } from '@/lib/ogImages'
 
-const SUPPORTED_LOCALES = ['en', 'ru', 'he']
+/**
+ * Full Route Cache / CDN: static HTML with ISR. Must not call cookies()/headers()
+ * anywhere in this tree. Locale/theme hydrate client-side (PIT-056).
+ */
+export const dynamic = 'force-static'
+export const revalidate = 3600
+
 const DEFAULT_LOCALE = 'en'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const cookieStore = await cookies()
-  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
-  const locale =
-    cookieLocale && SUPPORTED_LOCALES.includes(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
-
   const page = await getCachedAuditPage()
-  const title = `${tAudit(page.title, locale)} | Erythro.ai`
-  const description = tAudit(page.metaDescription, locale)
+  const title = `${tAudit(page.title, DEFAULT_LOCALE)} | Erythro.ai`
+  const description = tAudit(page.metaDescription, DEFAULT_LOCALE)
   const slug = page.slug || 'audit'
   // Child openGraph replaces layout OG — must include images (PIT-079).
   const ogImage = ogImageForPlan('audit-free')
@@ -48,7 +47,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AuditPage() {
-  const { initialLocale, initialTheme } = await getRequestPrefs()
   const [content, auditPageContent] = await Promise.all([
     getCachedSiteContent(),
     getCachedAuditPage(),
@@ -56,10 +54,10 @@ export default async function AuditPage() {
 
   return (
     <AuditClient
-      initialLocale={initialLocale}
-      initialTheme={initialTheme}
+      initialLocale={DEFAULT_LOCALE}
       content={content}
       auditPageContent={auditPageContent}
+      clientHydratePrefs
     />
   )
 }

@@ -32,11 +32,11 @@ export const SPLASH_SKIP_HTML_ATTR = 'data-erythro-skip-splash'
  * `skip=true` over an SSR splash plate and can orphan `.splash-bg` on `<body>`
  * (solid red forever).
  */
-export const SPLASH_SKIP_BOOTSTRAP_SCRIPT = `(function(){try{var path=(location.pathname||'/').split('?')[0]||'/';var host=(location.hostname||'').toLowerCase();var q=location.search||'';var paid=/[?&](fbclid|gclid|gbraid|wbraid|utm_source|utm_campaign|utm_medium)=/.test(q);var conv=path==='/audit'||path.indexOf('/audit/')===0||path.indexOf('/order/')===0;var lp=path.indexOf('/lp/audit/')===0||/^audit-[a-z0-9-]+\\.erythro\\.ai$/.test(host);var mobile=false;try{mobile=window.matchMedia('${MOBILE_QUICK_SPLASH_MQ}').matches}catch(e){}var innerMobile=path!=='/'&&mobile;if(!(paid||conv||lp||innerMobile))return;document.documentElement.setAttribute('${SPLASH_SKIP_HTML_ATTR}','1');window.__erythroSplashDone=true}catch(e){}})();`
+export const SPLASH_SKIP_BOOTSTRAP_SCRIPT = `(function(){try{var path=(location.pathname||'/').split('?')[0]||'/';var host=(location.hostname||'').toLowerCase();var q=location.search||'';var paid=/[?&](fbclid|gclid|gbraid|wbraid|utm_source|utm_campaign|utm_medium)=/.test(q);var conv=path==='/audit'||path.indexOf('/audit/')===0||path.indexOf('/order/')===0;var lp=path.indexOf('/lp/audit/')===0||/^(?:audit|ai-audit|leak)-[a-z0-9-]+\\.erythro\\.ai$/.test(host);var mobile=false;try{mobile=window.matchMedia('${MOBILE_QUICK_SPLASH_MQ}').matches}catch(e){}var innerMobile=path!=='/'&&mobile;if(!(paid||conv||lp||innerMobile))return;document.documentElement.setAttribute('${SPLASH_SKIP_HTML_ATTR}','1');window.__erythroSplashDone=true}catch(e){}})();`
 
 /**
  * Returns true when the full-screen brand splash should be skipped entirely:
- * - `/lp/audit/*` and `audit-*.erythro.ai`
+ * - `/lp/audit/*` and `audit-*` / `ai-audit-*` / `leak-*.erythro.ai`
  * - `/audit` and `/order/*` conversion pages
  * - Paid ad click parameters (`fbclid`, `gclid`, `gbraid`, `wbraid`, `utm_*`)
  * - Organic inner routes on **mobile only** (desktop keeps short brand splash)

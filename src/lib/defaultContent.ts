@@ -90,7 +90,7 @@ export const defaultSiteContent: SiteContent = {
     notifyEmailOrder: 'order@erythro.ai',
     phone: '+972509312746',
     phoneDisplay: '+972 50 931 27 46',
-    facebook: 'https://facebook.com/erythro.ai',
+    facebook: 'https://www.facebook.com/erythro.ai',
     telegram: 'https://t.me/erythroai',
     pageHeroes: {},
   },
