@@ -1,7 +1,13 @@
 # Latest changes
 
-Обновлено: 2026-11-24 (blog pagination)  
-Статус: пагинация `/blog` + `/blog/page/N` (6 постов/стр); анонсы sentence case + дата/more в ряд.
+Обновлено: 2026-11-25 (blog API)  
+Статус: machine API для публикации постов без Access/админки.
+
+## 0. Blog — API для бота (2026-11-25)
+- **Сделано:** `GET/POST /api/blog`, `GET/PATCH/DELETE /api/blog/[slug]`; auth `BLOG_API_TOKEN` (Bearer или `x-blog-api-token`); upsert по slug; EN/RU/HE (maps или nested `ru`/`he`); plain text → Lexical; hooks → ISR. Док: `docs/architecture/blog-api.md` (+ Obsidian). `.env.example` обновлён.
+- **Сделано (токен):** `BLOG_API_TOKEN` в Vercel Production+Preview (sensitive, id `Qb31QD4IiblYS6aZ`) + `.env.local`.
+- **Не сделано:** cover upload по URL; markdown→H2; redeploy, чтобы прод подхватил env (код API ещё не в main).
+- **Следующий шаг:** commit/push API → deploy → curl POST draft с Bearer-токеном. Soft-save не нужен (hooks).
 
 ## 0. Blog — pagination (2026-11-24)
 - **Сделано:** `BLOG_PAGE_SIZE=6`; `/blog` = p1; `/blog/page/[n]` ISR + generateStaticParams; UI prev/next/номера; sitemap pages 2…N; slug `page` reserved.

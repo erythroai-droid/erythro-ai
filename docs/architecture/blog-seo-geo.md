@@ -62,6 +62,10 @@ public/llms.txt
 docs/AI_VISIBILITY.md
 ```
 
+## Machine publish API
+
+Боты / n8n без Cloudflare Access: `POST`/`PATCH` `/api/blog` с `BLOG_API_TOKEN`. См. [`blog-api.md`](./blog-api.md).
+
 ## Вне scope v1
 
 Категории/авторы как отдельные сущности, комментарии, `speakable`, динамический список постов внутри `llms.txt` (сейчас — ссылка на `/blog` + sitemap/RSS/markdown).
