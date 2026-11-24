@@ -1,17 +1,28 @@
 # Latest changes
 
-Обновлено: 2026-11-24 (blog deploy fix)  
-Статус: Blog migrate OK; Vercel ERROR на `8587c52` чинится (Payload в client bundle).
+Обновлено: 2026-11-24 (blog UI = services/portfolio)  
+Статус: `/blog` и пост — визуальный язык как services/portfolio (карточки, title, чипы). CMS: 19 published. Soft-save + commit PIT-169 ещё нужны.
+
+## 0. Blog — общий стиль services/portfolio (2026-11-24)
+- **Запрос:** оформление как `/services` или проекты `/portfolio`, одна колонка.
+- **Сделано:** `BlogIndexBody` — StylizedSectionTitle, service-cards (`rounded-[20px]`, image+copy, номер, more); `BlogPostBody` — как Service/Project body (1170, red first letter, gold excerpt, tag chips, CTA-кнопка). Chip strip `portfolio`.
+- **Следующий шаг:** глянуть `/blog` локально/preview.
+
+## 0. Blog — LinkedIn import (2026-11-24)
+- **Источник:** `linkedin.com/in/erythro-ai/recent-activity/all/` → `content/imports/linkedin-posts-raw.json` (20 карт; 1 дубль Free AI audit снят).
+- **Импорт:** `scripts/import-linkedin-blog.mjs` — clean + Gemini RU/HE → Payload `blog-posts` published.
+- **CMS:** 19 docs, 57 locale rows (EN/RU/HE). Скрипт: `--dry` / upsert по slug.
+- **PIT-169:** первая миграция blog не добавила `payload_locked_documents_rels.blog_posts_id` → create падал после insert. Фикс: `20261124_150000_blog_posts_locked_rels` (применена на prod DB) + бэкфилл в `20261124_120000_*`.
+- **Опц.:** 2 HE (EMBER #6, 15-years #17) могли остаться EN при Gemini 503 — `scripts/retry-blog-he.mjs 6 17`.
+- **Следующий шаг:** Soft-save любой Blog Post в Production admin (ISR 1h) → проверить `/blog` → commit/push миграции + скрипты → GSC.
 
 ## 0. Blog — SEO & GEO (2026-11-24)
 - **Цель:** регулярные посты для индексации и цитирования AI; ссылка только в футере (не в Header).
 - **Сделано:**
   - CMS `blog-posts` + страницы `/blog`, `/blog/[slug]`, RSS, schema, sitemap, llms.txt, markdown.
-  - **Migrate на DB (`txyykmjocvbaqgkxlotu`):** только pending `20261124_120000_blog_posts` → batch 26, Ran Yes (~13s). `PAYLOAD_DISABLE_PUSH=1`.
-  - Проверка: `blog_posts`/`locales`/`faq` созданы; footer `/blog` = 1 (label EN «Blog»); portfolio **12**, services **4** без изменений; migrations 52→53.
-- **Vercel ERROR `dpl_3FyJ…` (8587c52):** `blogSchema` → `blogCms`/`payloadStatic` попал в Client Component → `fileTypeFromFile` missing. Фикс: schema без blogCms; JSON-LD только в server `page.tsx`.
-- **Не сделано:** redeploy после фикса; первый published пост; GSC Request indexing.
-- **Следующий шаг:** push фикса → Vercel READY → админка Blog Posts → Soft-save → `/blog`.
+  - **Migrate на DB:** `20261124_120000_blog_posts` + `20261124_150000_blog_posts_locked_rels`. `PAYLOAD_DISABLE_PUSH=1`.
+  - Preview READY `531f82b` (фикс client Payload import).
+- **Следующий шаг:** Soft-save → `/blog` на preview/prod.
 
 ## 0. Портфолио — порядок: newest first (2026-11-24)
 - **Симптом:** на `/portfolio` первыми шли AI Consultant / AI Audit Agent, а не последние добавленные (Origin, PSB, Ember…).
