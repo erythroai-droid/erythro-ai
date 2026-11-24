@@ -12,6 +12,7 @@ import {
   getSiteSettingsLastModified,
   maxLastModified,
 } from '@/lib/sitemapEntries'
+import { BLOG_PAGE_SIZE, blogIndexHref, blogPageCount } from '@/lib/blogPosts'
 import { canonicalSiteOrigin } from '@/lib/vercelHost'
 
 export const revalidate = 3600
@@ -139,6 +140,15 @@ async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.75,
     })),
+    ...Array.from(
+      { length: Math.max(0, blogPageCount(blog.length, BLOG_PAGE_SIZE) - 1) },
+      (_, i) => ({
+        url: loc(blogIndexHref(i + 2)),
+        lastModified: maxLastModified(blog.map((r) => r.lastModified)) || contentStamp,
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      }),
+    ),
     ...orders.map((row) => ({
       url: loc(`/order/${row.slug}`),
       lastModified: row.lastModified || contentStamp,

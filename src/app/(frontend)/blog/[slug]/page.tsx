@@ -26,7 +26,7 @@ interface BlogPostPageProps {
 export async function generateStaticParams() {
   try {
     const slugs = await getAllPublishedBlogSlugs()
-    return slugs.map((slug) => ({ slug }))
+    return slugs.filter((slug) => slug !== 'page').map((slug) => ({ slug }))
   } catch {
     return []
   }
@@ -73,6 +73,8 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params
+  // Reserved for /blog/page/[n] pagination route.
+  if (slug === 'page') notFound()
   const post = await getBlogPostBySlug(slug)
   if (!post) notFound()
 

@@ -6,14 +6,23 @@ import Image from 'next/image'
 import type { BlogPost } from '@/lib/blogPosts'
 import { blogUi, formatBlogDate, tBlog } from '@/lib/blogPosts'
 import StylizedSectionTitle from '@/components/StylizedSectionTitle'
+import BlogPagination from '@/components/blog/BlogPagination'
 
 type Props = {
   locale: string
   theme: 'light' | 'dark'
   posts: BlogPost[]
+  page?: number
+  totalPages?: number
 }
 
-export default function BlogIndexBody({ locale, theme, posts }: Props) {
+export default function BlogIndexBody({
+  locale,
+  theme,
+  posts,
+  page = 1,
+  totalPages = 1,
+}: Props) {
   const isLight = theme === 'light'
   const title = tBlog(blogUi.indexTitle, locale)
   const description = tBlog(blogUi.indexDescription, locale)
@@ -125,17 +134,7 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
 
                     <div className="relative z-10 flex w-full flex-1 flex-col justify-between gap-6 p-6 lg:p-10">
                       <div className="flex flex-col gap-4">
-                        {date ? (
-                          <time
-                            dateTime={post.publishedAt || undefined}
-                            className={`font-sans text-xs uppercase ${
-                              isLight ? 'text-gold-900' : 'text-gold-800'
-                            }`}
-                          >
-                            {date}
-                          </time>
-                        ) : null}
-                        <h2 className="m-0 font-sans text-xl font-extralight leading-tight tracking-normal text-[var(--service-card-header,#0D0D0D)] lg:text-[32px] lg:leading-10">
+                        <h2 className="m-0 font-sans text-xl font-extralight normal-case leading-tight tracking-normal text-[var(--service-card-header,#0D0D0D)] lg:text-[32px] lg:leading-10">
                           {postTitle}
                         </h2>
                         {excerpt ? (
@@ -161,21 +160,38 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
                         ) : null}
                       </div>
 
-                      <span
-                        className={`inline-flex items-center gap-2 font-sans text-sm font-medium uppercase transition-colors ${
-                          isLight
-                            ? 'text-coal-900 group-hover:text-erythro-500'
-                            : 'text-gold-100 group-hover:text-gold-500'
-                        }`}
+                      <div
+                        dir="ltr"
+                        className="flex w-full items-center justify-between gap-4"
                       >
-                        {moreLabel}
+                        {date ? (
+                          <time
+                            dateTime={post.publishedAt || undefined}
+                            className={`shrink-0 font-sans text-xs ${
+                              isLight ? 'text-gold-900' : 'text-gold-800'
+                            }`}
+                          >
+                            {date}
+                          </time>
+                        ) : (
+                          <span aria-hidden className="shrink-0" />
+                        )}
                         <span
-                          aria-hidden
-                          className="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5"
+                          className={`inline-flex shrink-0 items-center gap-2 font-sans text-sm font-medium transition-colors ${
+                            isLight
+                              ? 'text-coal-900 group-hover:text-erythro-500'
+                              : 'text-gold-100 group-hover:text-gold-500'
+                          }`}
                         >
-                          →
+                          {moreLabel}
+                          <span
+                            aria-hidden
+                            className="transition-transform group-hover:translate-x-0.5"
+                          >
+                            →
+                          </span>
                         </span>
-                      </span>
+                      </div>
                     </div>
                   </Link>
                 </li>
@@ -183,6 +199,8 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
             })}
           </ul>
         )}
+
+        <BlogPagination locale={locale} theme={theme} page={page} totalPages={totalPages} />
       </div>
 
       <div className="relative z-10 h-[150px] w-full shrink-0" aria-hidden />

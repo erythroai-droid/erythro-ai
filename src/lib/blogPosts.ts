@@ -26,6 +26,36 @@ export type BlogPost = {
   seoDescription?: LocaleMap
 }
 
+/** Posts per index page (large service-style cards). */
+export const BLOG_PAGE_SIZE = 6
+
+export function blogIndexHref(page: number): string {
+  if (page <= 1) return '/blog'
+  return `/blog/page/${page}`
+}
+
+export function blogPageCount(totalPosts: number, pageSize = BLOG_PAGE_SIZE): number {
+  if (totalPosts <= 0) return 1
+  return Math.max(1, Math.ceil(totalPosts / pageSize))
+}
+
+export function sliceBlogPage<T>(
+  posts: T[],
+  page: number,
+  pageSize = BLOG_PAGE_SIZE,
+): { items: T[]; page: number; totalPages: number; total: number } {
+  const total = posts.length
+  const totalPages = blogPageCount(total, pageSize)
+  const safePage = Math.min(Math.max(1, page), totalPages)
+  const start = (safePage - 1) * pageSize
+  return {
+    items: posts.slice(start, start + pageSize),
+    page: safePage,
+    totalPages,
+    total,
+  }
+}
+
 /** UI + meta strings for the blog section (not CMS-managed yet). */
 export const blogUi = {
   indexTitle: {
@@ -87,6 +117,26 @@ export const blogUi = {
     en: 'GEO, AI visibility, CRO, and engineering articles from Erythro.ai — structured for search engines and AI citation.',
     ru: 'Статьи Erythro.ai про GEO, AI-видимость, CRO и инженерию — структурированы для поиска и цитирования AI.',
     he: 'מאמרים מ-Erythro.ai על GEO, נראות AI, CRO והנדסה — מובנים לחיפוש ולציטוט ב-AI.',
+  } satisfies LocaleMap,
+  prevPage: {
+    en: 'Previous',
+    ru: 'Назад',
+    he: 'הקודם',
+  } satisfies LocaleMap,
+  nextPage: {
+    en: 'Next',
+    ru: 'Вперёд',
+    he: 'הבא',
+  } satisfies LocaleMap,
+  paginationLabel: {
+    en: 'Blog pages',
+    ru: 'Страницы блога',
+    he: 'עמודי הבלוג',
+  } satisfies LocaleMap,
+  pageMetaSuffix: {
+    en: 'Page',
+    ru: 'Страница',
+    he: 'עמוד',
   } satisfies LocaleMap,
 }
 

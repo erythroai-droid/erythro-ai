@@ -12,7 +12,14 @@ import {
   getOrderPlanBySlug,
 } from './cmsPages'
 import { getCachedPublishedBlogPosts, getBlogPostBySlug, blogBodyPlain } from './blogCms'
-import { blogUi, formatBlogDate, tBlog } from './blogPosts'
+import {
+  blogIndexHref,
+  blogPageCount,
+  blogUi,
+  formatBlogDate,
+  sliceBlogPage,
+  tBlog,
+} from './blogPosts'
 import { tLocale, tLocaleList } from './servicePages'
 import { formatPageFaqBlock, formatPageFaqMarkdown } from './pageFaq'
 
@@ -104,18 +111,31 @@ export async function generateMarkdownForRoute(
     return { status: 404, markdown: generateNotFoundMarkdown(pathname, locale) }
   }
 
-  // 8. Blog index
+  // 8. Blog index (+ paginated /blog/page/N)
   if (pathname === '/blog') {
     return {
       status: 200,
-      markdown: await generateBlogIndexMarkdown(locale),
+      markdown: await generateBlogIndexMarkdown(locale, 1),
+    }
+  }
+  const blogPageMatch = pathname.match(/^\/blog\/page\/(\d+)$/)
+  if (blogPageMatch) {
+    const pageNum = Number(blogPageMatch[1])
+    const all = await getCachedPublishedBlogPosts()
+    const totalPages = blogPageCount(all.length)
+    if (!Number.isInteger(pageNum) || pageNum < 1 || pageNum > totalPages) {
+      return { status: 404, markdown: generateNotFoundMarkdown(pathname, locale) }
+    }
+    return {
+      status: 200,
+      markdown: await generateBlogIndexMarkdown(locale, pageNum),
     }
   }
 
   // 8b. Blog post detail
   if (pathname.startsWith('/blog/')) {
     const slug = pathname.slice('/blog/'.length).trim()
-    if (slug && slug !== 'rss.xml') {
+    if (slug && slug !== 'rss.xml' && !slug.startsWith('page/')) {
       const md = await generateBlogPostMarkdown(slug, locale)
       if (md) return { status: 200, markdown: md }
       return { status: 404, markdown: generateNotFoundMarkdown(pathname, locale) }
@@ -336,20 +356,30 @@ async function generateContactsMarkdown(locale: SupportedLocale): Promise<string
   return lines.join('\n').trim() + '\n'
 }
 
-async function generateBlogIndexMarkdown(locale: SupportedLocale): Promise<string> {
-  const posts = await getCachedPublishedBlogPosts()
+async function generateBlogIndexMarkdown(
+  locale: SupportedLocale,
+  page = 1,
+): Promise<string> {
+  const all = await getCachedPublishedBlogPosts()
+  const { items: posts, page: safePage, totalPages } = sliceBlogPage(all, page)
+  const canonical = `${SITE_URL}${blogIndexHref(safePage)}`
   const lines: string[] = [
     `# ${tBlog(blogUi.indexTitle, locale)} — Erythro.ai`,
     '',
     `> ${tBlog(blogUi.indexDescription, locale)}`,
     '',
-    `- **Canonical URL:** ${SITE_URL}/blog`,
+    `- **Canonical URL:** ${canonical}`,
     `- **RSS:** ${SITE_URL}/blog/rss.xml`,
     `- **Organization:** ${SITE_URL}/#organization`,
-    '',
   ]
+  if (totalPages > 1) {
+    lines.push(
+      `- **Page:** ${safePage} / ${totalPages}`,
+    )
+  }
+  lines.push('')
 
-  if (!posts.length) {
+  if (!all.length) {
     lines.push(`## ${tBlog(blogUi.emptyTitle, locale)}`)
     lines.push(tBlog(blogUi.emptyBody, locale))
     lines.push('')
@@ -368,6 +398,15 @@ async function generateBlogIndexMarkdown(locale: SupportedLocale): Promise<strin
     if (date) lines.push(`- **Published:** ${date}`)
     if (excerpt) lines.push(`- **Summary:** ${excerpt}`)
     if (post.tags.length) lines.push(`- **Tags:** ${post.tags.join(', ')}`)
+    lines.push('')
+  }
+
+  if (totalPages > 1) {
+    lines.push(`## Pages`)
+    for (let p = 1; p <= totalPages; p++) {
+      const href = `${SITE_URL}${blogIndexHref(p)}`
+      lines.push(`- [${tBlog(blogUi.pageMetaSuffix, locale)} ${p}](${href})${p === safePage ? ' (current)' : ''}`)
+    }
     lines.push('')
   }
 
