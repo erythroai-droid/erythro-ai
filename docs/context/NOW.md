@@ -1,10 +1,11 @@
 # Latest changes
 
-Обновлено: 2026-11-24 (blog: no number / no tracking)  
-Статус: `/blog` — без номера на карточке и без letter-spacing. Soft-save + commit стиля ещё нужны.
+Обновлено: 2026-11-24 (blog: tracking-normal on headings)  
+Статус: заголовки блога с `tracking-normal` — иначе глобальный `h2 { letter-spacing: 0.2em }` из `styles.css` оставался.
 
-## 0. Blog — убрать номер и tracking (2026-11-24)
-- **Сделано:** с карт снят красный номер; с индекса/поста убран `tracking-*`.
+## 0. Blog — letter-spacing в заголовках (2026-11-24)
+- **Причина:** сняли Tailwind `tracking-*`, но DS в `styles.css` задаёт `h2/h4/h5 { letter-spacing: 0.2em }`.
+- **Сделано:** `tracking-normal` на h1/h2 индекса и поста (+ body h2–h4).
 - **Следующий шаг:** проверить `/blog`.
 
 ## 0. Blog — общий стиль services/portfolio (2026-11-24)

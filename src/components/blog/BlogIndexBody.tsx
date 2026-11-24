@@ -34,7 +34,7 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
 
       <div className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col items-center px-[30px] pb-16 pt-10 lg:pb-24 lg:pt-12">
         <header className="mb-10 flex flex-col items-center gap-[5px] text-center lg:mb-14">
-          <h1 className="m-0 font-sans text-[32px] font-extralight uppercase leading-tight lg:text-[48px] lg:leading-[60px]">
+          <h1 className="m-0 font-sans text-[32px] font-extralight uppercase leading-tight tracking-normal lg:text-[48px] lg:leading-[60px]">
             <StylizedSectionTitle
               text={title.toUpperCase()}
               restClassName={isLight ? 'text-coal-900' : 'text-white'}
@@ -56,7 +56,7 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
             }`}
             style={!isLight ? { background: 'var(--service-card-bg)' } : undefined}
           >
-            <h2 className="m-0 font-sans text-xl font-extralight uppercase">
+            <h2 className="m-0 font-sans text-xl font-extralight uppercase tracking-normal">
               <span className="text-erythro-500">{tBlog(blogUi.emptyTitle, locale).charAt(0)}</span>
               <span>{tBlog(blogUi.emptyTitle, locale).slice(1)}</span>
             </h2>
@@ -135,7 +135,7 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
                             {date}
                           </time>
                         ) : null}
-                        <h2 className="m-0 font-sans text-xl font-extralight leading-tight text-[var(--service-card-header,#0D0D0D)] lg:text-[32px] lg:leading-10">
+                        <h2 className="m-0 font-sans text-xl font-extralight leading-tight tracking-normal text-[var(--service-card-header,#0D0D0D)] lg:text-[32px] lg:leading-10">
                           {postTitle}
                         </h2>
                         {excerpt ? (
