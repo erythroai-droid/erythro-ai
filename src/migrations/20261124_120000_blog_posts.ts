@@ -229,6 +229,25 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       END $$;
     `)
 
+    // Admin lock join (required for create/update — see PIT-169).
+    await db.execute(sql`
+      ALTER TABLE "payload_locked_documents_rels"
+      ADD COLUMN IF NOT EXISTS "blog_posts_id" integer;
+    `)
+    await db.execute(sql`
+      DO $$ BEGIN
+        ALTER TABLE "payload_locked_documents_rels"
+        ADD CONSTRAINT "payload_locked_documents_rels_blog_posts_fk"
+        FOREIGN KEY ("blog_posts_id")
+        REFERENCES "public"."blog_posts"("id")
+        ON DELETE cascade ON UPDATE no action;
+      EXCEPTION WHEN duplicate_object THEN null; END $$;
+    `)
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_blog_posts_id_idx"
+      ON "payload_locked_documents_rels" USING btree ("blog_posts_id");
+    `)
+
     // Footer: ensure /blog company link exists (idempotent).
     const footerRows = await db.execute(sql`SELECT "id" FROM "footer" ORDER BY "id" ASC LIMIT 1`)
     const footerId =
@@ -294,6 +313,15 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
+  await db.execute(sql`
+    ALTER TABLE "payload_locked_documents_rels"
+    DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_blog_posts_fk";
+  `)
+  await db.execute(sql`DROP INDEX IF EXISTS "payload_locked_documents_rels_blog_posts_id_idx";`)
+  await db.execute(sql`
+    ALTER TABLE "payload_locked_documents_rels"
+    DROP COLUMN IF EXISTS "blog_posts_id";
+  `)
   await db.execute(sql`DROP TABLE IF EXISTS "blog_posts_faq_items_locales" CASCADE;`)
   await db.execute(sql`DROP SEQUENCE IF EXISTS "blog_posts_faq_items_locales_id_seq";`)
   await db.execute(sql`DROP TABLE IF EXISTS "blog_posts_faq_items" CASCADE;`)

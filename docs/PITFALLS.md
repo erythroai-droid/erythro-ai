@@ -2221,6 +2221,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-169 — New Payload collection without `payload_locked_documents_rels` FK
+
+**Tags:** `payload`, `migrations`, `blog`, `locked-documents`
+**Seen:** 2026-11-24 — `blog-posts` create inserted the row, then failed: `column blog_posts_id does not exist` on `payload_locked_documents_rels`.
+
+**Symptom:** Scripted `payload.create` / admin save appears to write the document, then throws on the admin lock query. Locale updates never run. Revalidate hook may still fire.
+
+**Cause:** Collection tables were migrated, but `payload_locked_documents_rels` was not given `blog_posts_id` (+ FK + index). Payload always joins that column for every collection.
+
+**Fix:** Migration `20261124_150000_blog_posts_locked_rels` (also backfilled into `20261124_120000_blog_posts` for fresh DBs).
+
+**Prevent:** Every new collection migration must add the matching `payload_locked_documents_rels.<collection>_id` column/FK/index (same pattern as `consult_question_log`).
+
+---
+
 ## PIT-167 — Lexical rich text: video upload renders as a filename link
 
 **Tags:** `portfolio`, `richtext`, `lexical`, `video`, `payload`
@@ -2821,3 +2836,4 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 - [ ] Header / Audit submenu Href: per-locale `localized: true` links; never one shared href for EN/RU/HE destinations (PIT-161)
 - [ ] New Payload field: migrate first, then bump the `unstable_cache` key, then open the page — otherwise the seed fallback gets cached (PIT-166)
 - [ ] Lexical `<RichText>` with Media uploads: use `richTextConverters` so video is `<video>`, not a filename link (PIT-167)
+- [ ] New Payload collection: also add `payload_locked_documents_rels.<slug>_id` FK or create/update fails after insert (PIT-169)

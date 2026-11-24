@@ -51,6 +51,7 @@ import * as migration_20261109_180000_header_nav_href_localized from './20261109
 import * as migration_20261112_180000_portfolio_project_highlights from './20261112_180000_portfolio_project_highlights'
 import * as migration_20261112_210000_portfolio_project_solution_plan from './20261112_210000_portfolio_project_solution_plan'
 import * as migration_20261124_120000_blog_posts from './20261124_120000_blog_posts'
+import * as migration_20261124_150000_blog_posts_locked_rels from './20261124_150000_blog_posts_locked_rels'
 
 export const migrations = [
   {
@@ -317,5 +318,10 @@ export const migrations = [
     up: migration_20261124_120000_blog_posts.up,
     down: migration_20261124_120000_blog_posts.down,
     name: '20261124_120000_blog_posts',
+  },
+  {
+    up: migration_20261124_150000_blog_posts_locked_rels.up,
+    down: migration_20261124_150000_blog_posts_locked_rels.down,
+    name: '20261124_150000_blog_posts_locked_rels',
   },
 ]

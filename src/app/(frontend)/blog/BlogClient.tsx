@@ -83,7 +83,7 @@ export default function BlogClient({
           }`}
         >
           <div className="relative z-10 lg:contents">
-            <HeaderChipStrip page="legal" />
+            <HeaderChipStrip page="portfolio" />
           </div>
           <Navbar
             currentLocale={locale}
@@ -99,11 +99,11 @@ export default function BlogClient({
             <BlogIndexBody locale={locale} theme={theme} posts={posts} />
           </div>
 
-          <div className="relative z-30 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
+          <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
             <LetsTalkSection locale={locale} variant="simple" />
           </div>
 
-          <div className="relative z-40 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
+          <div className="relative z-40 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">
             <FooterSection locale={locale} theme={theme} pinSpacer={false} />
           </div>
 
