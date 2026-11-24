@@ -36,7 +36,8 @@ API Catalog, OpenAPI, Markdown negotiation, ACP discovery.
 | AI referral | `src/lib/aiReferral.ts` | Детект referrer ChatGPT/Perplexity и push в dataLayer |
 | Security headers | `next.config.ts` → `headers()` | CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy |
 | robots + Content Signals | `src/app/robots.txt/route.ts` | На `erythro.ai`: `Allow: /` для AI-ботов + `Content-Signal`. На `*.vercel.app`: `Disallow: /` + noindex |
-| Sitemap | `src/app/sitemap.ts` | ISR 1h, static fallback, health cron; home loc `https://erythro.ai` |
+| Sitemap | `src/app/sitemap.ts` | ISR 1h, static fallback, health cron; home loc `https://erythro.ai`; includes `/blog` + published posts |
+| Blog (SEO/GEO) | `src/app/(frontend)/blog/`, `src/collections/BlogPosts.ts` | `/blog`, `/blog/[slug]`, RSS, BlogPosting JSON-LD, markdown negotiate, footer-only link — see `architecture/blog-seo-geo.md` |
 | Link headers | `src/middleware.ts` + `src/lib/agentDiscovery.ts` | На `/`: `api-catalog`, `service-desc`, `service-doc`, `describedby` (RFC 8288 / 9727) |
 | API Catalog | `src/app/.well-known/api-catalog/route.ts` | `application/linkset+json` каталог публичных API |
 | OpenAPI | `src/app/openapi.json/route.ts` | `rel=service-desc` для Brand API / MCP |
@@ -170,4 +171,5 @@ next.config.ts
 - [ ] Проверить `/about` (контент из CMS через `getCachedSiteContent`)
 - [ ] Organization schema подтянет `SiteSettings` и канонические профили — проверить `sameAs` (GitHub, LinkedIn person, Instagram, YouTube, Facebook vanity, Telegram) и `founder` (Vadym Kovalenko)
 - [ ] При смене публичных API — обновить `src/lib/agentDiscovery.ts` (Link header, catalog, OpenAPI)
+- [ ] Новый экспертный контент — публиковать в Blog Posts (`/blog`); related links на `/audit` / services / `/about`
 - [ ] Перезапустить внешний AI visibility / isitagentready scan

@@ -11,6 +11,8 @@ import {
   getServicePageBySlug,
   getOrderPlanBySlug,
 } from './cmsPages'
+import { getCachedPublishedBlogPosts, getBlogPostBySlug, blogBodyPlain } from './blogCms'
+import { blogUi, formatBlogDate, tBlog } from './blogPosts'
 import { tLocale, tLocaleList } from './servicePages'
 import { formatPageFaqBlock, formatPageFaqMarkdown } from './pageFaq'
 
@@ -102,7 +104,25 @@ export async function generateMarkdownForRoute(
     return { status: 404, markdown: generateNotFoundMarkdown(pathname, locale) }
   }
 
-  // 8. Legal pages
+  // 8. Blog index
+  if (pathname === '/blog') {
+    return {
+      status: 200,
+      markdown: await generateBlogIndexMarkdown(locale),
+    }
+  }
+
+  // 8b. Blog post detail
+  if (pathname.startsWith('/blog/')) {
+    const slug = pathname.slice('/blog/'.length).trim()
+    if (slug && slug !== 'rss.xml') {
+      const md = await generateBlogPostMarkdown(slug, locale)
+      if (md) return { status: 200, markdown: md }
+      return { status: 404, markdown: generateNotFoundMarkdown(pathname, locale) }
+    }
+  }
+
+  // 9. Legal pages
   if (pathname === '/privacy' || pathname === '/terms' || pathname === '/accessibility') {
     const pageId = pathname.slice(1) as LegalPageId
     const md = await generateLegalMarkdown(pageId, locale)
@@ -314,6 +334,105 @@ async function generateContactsMarkdown(locale: SupportedLocale): Promise<string
   lines.push(`- [View Our Portfolio](${SITE_URL}/portfolio)`)
 
   return lines.join('\n').trim() + '\n'
+}
+
+async function generateBlogIndexMarkdown(locale: SupportedLocale): Promise<string> {
+  const posts = await getCachedPublishedBlogPosts()
+  const lines: string[] = [
+    `# ${tBlog(blogUi.indexTitle, locale)} — Erythro.ai`,
+    '',
+    `> ${tBlog(blogUi.indexDescription, locale)}`,
+    '',
+    `- **Canonical URL:** ${SITE_URL}/blog`,
+    `- **RSS:** ${SITE_URL}/blog/rss.xml`,
+    `- **Organization:** ${SITE_URL}/#organization`,
+    '',
+  ]
+
+  if (!posts.length) {
+    lines.push(`## ${tBlog(blogUi.emptyTitle, locale)}`)
+    lines.push(tBlog(blogUi.emptyBody, locale))
+    lines.push('')
+    lines.push(`- [AI Website Audit](${SITE_URL}/audit)`)
+    lines.push(`- [About Erythro.ai](${SITE_URL}/about)`)
+    return lines.join('\n').trim() + '\n'
+  }
+
+  lines.push(`## Published posts`)
+  lines.push('')
+  for (const post of posts) {
+    const title = tBlog(post.title, locale)
+    const excerpt = tBlog(post.excerpt, locale)
+    const date = formatBlogDate(post.publishedAt, locale)
+    lines.push(`### [${title}](${SITE_URL}/blog/${post.slug})`)
+    if (date) lines.push(`- **Published:** ${date}`)
+    if (excerpt) lines.push(`- **Summary:** ${excerpt}`)
+    if (post.tags.length) lines.push(`- **Tags:** ${post.tags.join(', ')}`)
+    lines.push('')
+  }
+
+  lines.push(`## Related`)
+  lines.push(`- [AI Website Audit](${SITE_URL}/audit)`)
+  lines.push(`- [About / Brand Facts](${SITE_URL}/about)`)
+  lines.push(`- [Portfolio](${SITE_URL}/portfolio)`)
+
+  return lines.join('\n').trim() + '\n'
+}
+
+async function generateBlogPostMarkdown(
+  slug: string,
+  locale: SupportedLocale,
+): Promise<string | null> {
+  const post = await getBlogPostBySlug(slug)
+  if (!post) return null
+
+  const title = tBlog(post.title, locale)
+  const excerpt = tBlog(post.excerpt, locale)
+  const body = blogBodyPlain(post, locale)
+  const published = formatBlogDate(post.publishedAt, locale)
+  const updated = formatBlogDate(post.updatedAt, locale)
+
+  const lines: string[] = [
+    `# ${title}`,
+    '',
+    excerpt ? `> ${excerpt}` : '',
+    '',
+    `- **Canonical URL:** ${SITE_URL}/blog/${post.slug}`,
+    `- **Publisher:** Erythro.ai (${SITE_URL}/#organization)`,
+    `- **Author:** Erythro.ai`,
+  ]
+  if (published) lines.push(`- **Published:** ${published}`)
+  if (updated) lines.push(`- **Updated:** ${updated}`)
+  if (post.tags.length) lines.push(`- **Keywords:** ${post.tags.join(', ')}`)
+  lines.push('')
+
+  if (body) {
+    lines.push(`## Article`)
+    lines.push('')
+    lines.push(body)
+    lines.push('')
+  }
+
+  if (post.faq?.items?.length) {
+    lines.push(formatPageFaqBlock(post.faq, locale))
+  }
+
+  if (post.relatedLinks.length) {
+    lines.push(`## ${tBlog(blogUi.relatedHeading, locale)}`)
+    for (const link of post.relatedLinks) {
+      const href = link.href.startsWith('http') ? link.href : `${SITE_URL}${link.href.startsWith('/') ? '' : '/'}${link.href}`
+      lines.push(`- [${tBlog(link.label, locale)}](${href})`)
+    }
+    lines.push('')
+  }
+
+  lines.push(`## Site`)
+  lines.push(`- [Blog index](${SITE_URL}/blog)`)
+  lines.push(`- [AI Website Audit](${SITE_URL}/audit)`)
+  lines.push(`- [About](${SITE_URL}/about)`)
+  lines.push(`- [llms.txt](${SITE_URL}/llms.txt)`)
+
+  return lines.filter((l, i, arr) => !(l === '' && arr[i - 1] === '')).join('\n').trim() + '\n'
 }
 
 async function generatePortfolioIndexMarkdown(locale: SupportedLocale): Promise<string> {

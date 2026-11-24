@@ -34,7 +34,7 @@ export function maxLastModified(dates: Array<Date | undefined>): Date | undefine
 }
 
 async function fetchCollectionSitemap(
-  collection: 'services' | 'portfolio-projects' | 'solution-plans',
+  collection: 'services' | 'portfolio-projects' | 'solution-plans' | 'blog-posts',
 ): Promise<SitemapSlugEntry[]> {
   if (!hasDatabase()) return []
   const { getPayload } = await import('payload')
@@ -96,6 +96,37 @@ export async function getPortfolioSitemapEntries(): Promise<SitemapSlugEntry[]> 
     console.error('[sitemap] portfolio CMS failed:', err)
   }
   return staticSlugs.map((slug) => ({ slug }))
+}
+
+export async function getBlogSitemapEntries(): Promise<SitemapSlugEntry[]> {
+  if (!hasDatabase()) return []
+  try {
+    const { getPayload } = await import('payload')
+    const config = (await import('@payload-config')).default
+    const payload = await getPayload({ config })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = await (payload as any).find({
+      collection: 'blog-posts',
+      limit: 500,
+      depth: 0,
+      overrideAccess: true,
+      where: { status: { equals: 'published' } },
+      select: { slug: true, updatedAt: true, publishedAt: true },
+    })
+    const out: SitemapSlugEntry[] = []
+    for (const doc of res.docs || []) {
+      const slug = typeof doc?.slug === 'string' ? doc.slug.trim() : ''
+      if (!slug) continue
+      out.push({
+        slug,
+        lastModified: toDate(doc.updatedAt) || toDate(doc.publishedAt),
+      })
+    }
+    return out
+  } catch (err) {
+    console.error('[sitemap] blog CMS failed:', err)
+    return []
+  }
 }
 
 export async function getOrderSitemapEntries(): Promise<SitemapSlugEntry[]> {

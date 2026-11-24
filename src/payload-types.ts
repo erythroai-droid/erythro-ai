@@ -74,6 +74,7 @@ export interface Config {
     'solution-plans': SolutionPlan;
     'portfolio-categories': PortfolioCategory;
     'portfolio-projects': PortfolioProject;
+    'blog-posts': BlogPost;
     partners: Partner;
     'contact-submissions': ContactSubmission;
     'consult-sessions': ConsultSession;
@@ -94,6 +95,7 @@ export interface Config {
     'solution-plans': SolutionPlansSelect<false> | SolutionPlansSelect<true>;
     'portfolio-categories': PortfolioCategoriesSelect<false> | PortfolioCategoriesSelect<true>;
     'portfolio-projects': PortfolioProjectsSelect<false> | PortfolioProjectsSelect<true>;
+    'blog-posts': BlogPostsSelect<false> | BlogPostsSelect<true>;
     partners: PartnersSelect<false> | PartnersSelect<true>;
     'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     'consult-sessions': ConsultSessionsSelect<false> | ConsultSessionsSelect<true>;
@@ -752,7 +754,7 @@ export interface PortfolioProject {
         paragraphs?:
           | {
               /**
-               * Body paragraph (rich text)
+               * Body paragraph (rich text). Upload images or videos from Media — videos render with a player on the site.
                */
               text: {
                 root: {
@@ -772,8 +774,14 @@ export interface PortfolioProject {
               id?: string | null;
             }[]
           | null;
+        /**
+         * Optional gallery under the section paragraphs. Image or video (MP4/WebM). Videos also work when inserted into the rich-text paragraph above.
+         */
         images?:
           | {
+              /**
+               * Image or video from Media
+               */
               image: number | Media;
               id?: string | null;
             }[]
@@ -798,6 +806,117 @@ export interface PortfolioProject {
    * Sort order (ascending)
    */
   order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * SEO/GEO articles. Only status=published appear on /blog and in sitemap. Drafts stay private.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-posts".
+ */
+export interface BlogPost {
+  id: number;
+  /**
+   * URL segment → /blog/your-slug
+   */
+  slug: string;
+  /**
+   * Published posts are indexed (sitemap, llms, markdown). Drafts are not.
+   */
+  status: 'draft' | 'published';
+  /**
+   * Public date for Article schema and sorting. Set when publishing.
+   */
+  publishedAt?: string | null;
+  title: string;
+  /**
+   * 1–2 sentence thesis for cards, meta fallback, and AI snippets. Lead with the answer.
+   */
+  excerpt: string;
+  /**
+   * Full article. Use H2 for direct answers (GEO). Link to /audit, /services/*, /about where relevant.
+   */
+  body: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Card + Open Graph image. Prefer 1200×630.
+   */
+  cover?: (number | null) | Media;
+  /**
+   * Topic keywords for Article.keywords and internal filters (e.g. GEO, CRO, Next.js).
+   */
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Internal links for entity graph / crawl paths (e.g. /audit, /services/ai-automation). Shown under the post.
+   */
+  relatedLinks?:
+    | {
+        label: string;
+        /**
+         * Path or absolute URL, e.g. /audit
+         */
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional FAQ under the post. Each answer should stand alone for FAQPage JSON-LD and AI citation.
+   */
+  faq?: {
+    /**
+     * Heading above the accordion, e.g. "Questions and answers"
+     */
+    title?: string | null;
+    /**
+     * Accordion on the public page. Drag to reorder. Switch locale in the admin bar to edit translations.
+     */
+    items?:
+      | {
+          question: string;
+          /**
+           * Direct answer, 1–2 sentences.
+           */
+          answer: string;
+          /**
+           * Optional bullets, one per line.
+           */
+          details?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * Optional. If empty, the page title and intro text are used for search engines and social previews.
+   */
+  seo?: {
+    /**
+     * Meta title. Example: "Design & Branding | Erythro.ai"
+     */
+    title?: string | null;
+    /**
+     * Meta description (recommended up to ~160 characters).
+     */
+    description?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -1153,6 +1272,10 @@ export interface PayloadLockedDocument {
         value: number | PortfolioProject;
       } | null)
     | ({
+        relationTo: 'blog-posts';
+        value: number | BlogPost;
+      } | null)
+    | ({
         relationTo: 'partners';
         value: number | Partner;
       } | null)
@@ -1497,6 +1620,53 @@ export interface PortfolioProjectsSelect<T extends boolean = true> {
         description?: T;
       };
   order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-posts_select".
+ */
+export interface BlogPostsSelect<T extends boolean = true> {
+  slug?: T;
+  status?: T;
+  publishedAt?: T;
+  title?: T;
+  excerpt?: T;
+  body?: T;
+  cover?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  relatedLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  faq?:
+    | T
+    | {
+        title?: T;
+        items?:
+          | T
+          | {
+              question?: T;
+              answer?: T;
+              details?: T;
+              id?: T;
+            };
+      };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
