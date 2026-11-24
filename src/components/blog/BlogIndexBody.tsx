@@ -34,14 +34,14 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
 
       <div className="relative z-10 mx-auto flex w-full max-w-[1170px] flex-col items-center px-[30px] pb-16 pt-10 lg:pb-24 lg:pt-12">
         <header className="mb-10 flex flex-col items-center gap-[5px] text-center lg:mb-14">
-          <h1 className="m-0 font-sans text-[32px] font-extralight uppercase leading-tight tracking-[9.6px] lg:text-[48px] lg:leading-[60px]">
+          <h1 className="m-0 font-sans text-[32px] font-extralight uppercase leading-tight lg:text-[48px] lg:leading-[60px]">
             <StylizedSectionTitle
               text={title.toUpperCase()}
               restClassName={isLight ? 'text-coal-900' : 'text-white'}
             />
           </h1>
           <p
-            className={`m-0 max-w-3xl font-sans text-sm font-light leading-relaxed tracking-[3.2px] lg:text-base lg:leading-8 ${
+            className={`m-0 max-w-3xl font-sans text-sm font-light leading-relaxed lg:text-base lg:leading-8 ${
               isLight ? 'text-gold-900' : 'text-gold-800'
             }`}
           >
@@ -56,12 +56,12 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
             }`}
             style={!isLight ? { background: 'var(--service-card-bg)' } : undefined}
           >
-            <h2 className="m-0 font-sans text-xl font-extralight uppercase tracking-[0.08em]">
+            <h2 className="m-0 font-sans text-xl font-extralight uppercase">
               <span className="text-erythro-500">{tBlog(blogUi.emptyTitle, locale).charAt(0)}</span>
               <span>{tBlog(blogUi.emptyTitle, locale).slice(1)}</span>
             </h2>
             <p
-              className={`mx-auto mt-4 max-w-xl font-sans text-sm font-light leading-6 tracking-[1.2px] ${
+              className={`mx-auto mt-4 max-w-xl font-sans text-sm font-light leading-6 ${
                 isLight ? 'text-gold-900' : 'text-gold-800'
               }`}
             >
@@ -69,7 +69,7 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
             </p>
             <Link
               href="/audit"
-              className={`mt-8 inline-flex items-center gap-2 font-sans text-sm font-medium uppercase tracking-[0.14em] transition-colors ${
+              className={`mt-8 inline-flex items-center gap-2 font-sans text-sm font-medium uppercase transition-colors ${
                 isLight ? 'text-coal-900 hover:text-erythro-500' : 'text-gold-100 hover:text-gold-500'
               }`}
             >
@@ -81,11 +81,10 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
           </div>
         ) : (
           <ul className="m-0 flex w-full list-none flex-col gap-6 p-0 lg:gap-10">
-            {posts.map((post, index) => {
+            {posts.map((post) => {
               const postTitle = tBlog(post.title, locale)
               const excerpt = tBlog(post.excerpt, locale)
               const date = formatBlogDate(post.publishedAt, locale)
-              const number = String(index + 1).padStart(2, '0')
 
               return (
                 <li key={post.slug} className="w-full">
@@ -124,23 +123,23 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
                       </div>
                     ) : null}
 
-                    <div className="relative z-10 flex w-full flex-1 flex-col justify-between gap-6 p-6 lg:p-10 lg:pe-16">
+                    <div className="relative z-10 flex w-full flex-1 flex-col justify-between gap-6 p-6 lg:p-10">
                       <div className="flex flex-col gap-4">
                         {date ? (
                           <time
                             dateTime={post.publishedAt || undefined}
-                            className={`font-sans text-xs uppercase tracking-[1.6px] ${
+                            className={`font-sans text-xs uppercase ${
                               isLight ? 'text-gold-900' : 'text-gold-800'
                             }`}
                           >
                             {date}
                           </time>
                         ) : null}
-                        <h2 className="m-0 font-sans text-xl font-extralight leading-tight tracking-[2px] text-[var(--service-card-header,#0D0D0D)] lg:text-[32px] lg:leading-10 lg:tracking-[4px]">
+                        <h2 className="m-0 font-sans text-xl font-extralight leading-tight text-[var(--service-card-header,#0D0D0D)] lg:text-[32px] lg:leading-10">
                           {postTitle}
                         </h2>
                         {excerpt ? (
-                          <p className="m-0 font-sans text-sm font-normal leading-6 tracking-[1.2px] text-[var(--service-card-list,#1E1E1E)] lg:text-[14px] lg:leading-6 lg:tracking-[2px]">
+                          <p className="m-0 font-sans text-sm font-normal leading-6 text-[var(--service-card-list,#1E1E1E)] lg:text-[14px] lg:leading-6">
                             {excerpt}
                           </p>
                         ) : null}
@@ -149,7 +148,7 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
                             {post.tags.slice(0, 6).map((tag) => (
                               <span
                                 key={tag}
-                                className={`rounded-[2px] px-2 py-1 font-sans text-[11px] uppercase tracking-[1.2px] ${
+                                className={`rounded-[2px] px-2 py-1 font-sans text-[11px] uppercase ${
                                   isLight
                                     ? 'bg-coal-900/5 text-coal-900/70'
                                     : 'bg-white/5 text-white/60'
@@ -163,7 +162,7 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
                       </div>
 
                       <span
-                        className={`inline-flex items-center gap-2 font-sans text-sm font-medium uppercase tracking-[0.14em] transition-colors ${
+                        className={`inline-flex items-center gap-2 font-sans text-sm font-medium uppercase transition-colors ${
                           isLight
                             ? 'text-coal-900 group-hover:text-erythro-500'
                             : 'text-gold-100 group-hover:text-gold-500'
@@ -177,13 +176,6 @@ export default function BlogIndexBody({ locale, theme, posts }: Props) {
                           →
                         </span>
                       </span>
-                    </div>
-
-                    <div
-                      className={`absolute bottom-0 ${isRtl ? 'start-0' : 'end-0'} z-20 flex h-14 w-14 items-center justify-center bg-erythro-500 font-sans text-lg font-bold text-white select-none`}
-                      aria-hidden
-                    >
-                      {number}
                     </div>
                   </Link>
                 </li>
