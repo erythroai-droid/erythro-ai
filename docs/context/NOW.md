@@ -1,13 +1,15 @@
 # Latest changes
 
-Обновлено: 2026-11-25 (blog API)  
-Статус: machine API для публикации постов без Access/админки.
+Обновлено: 2026-11-25 (blog media API)  
+Статус: blog API + upload фото/видео для бота.
+
+## 0. Blog — media upload API (2026-11-25)
+- **Сделано:** `POST /api/blog/media` (multipart ≤4MB или JSON `{url,alt}` ≤12MB); jpeg/png/webp/gif/avif + mp4/webm/mov → Payload Media/R2; `cover` в POST/PATCH принимает id или `{url,alt}`; SSRF-guard на URL. Док `blog-api.md` (+ Obsidian).
+- **Следующий шаг:** commit/push → deploy → curl upload + cover на пост.
 
 ## 0. Blog — API для бота (2026-11-25)
-- **Сделано:** `GET/POST /api/blog`, `GET/PATCH/DELETE /api/blog/[slug]`; auth `BLOG_API_TOKEN` (Bearer или `x-blog-api-token`); upsert по slug; EN/RU/HE (maps или nested `ru`/`he`); plain text → Lexical; hooks → ISR. Док: `docs/architecture/blog-api.md` (+ Obsidian). `.env.example` обновлён.
-- **Сделано (токен):** `BLOG_API_TOKEN` в Vercel Production+Preview (sensitive, id `Qb31QD4IiblYS6aZ`) + `.env.local`.
-- **Не сделано:** cover upload по URL; markdown→H2; redeploy, чтобы прод подхватил env (код API ещё не в main).
-- **Следующий шаг:** commit/push API → deploy → curl POST draft с Bearer-токеном. Soft-save не нужен (hooks).
+- **Сделано:** `GET/POST /api/blog`, `GET/PATCH/DELETE /api/blog/[slug]`; auth `BLOG_API_TOKEN`; upsert по slug; EN/RU/HE; plain→Lexical; hooks→ISR. Токен в Vercel Production+Preview + `.env.local`. Прод GET проверен (19 постов, 401 без токена).
+- **Не сделано:** markdown→H2; inline Lexical upload из простого plain text.
 
 ## 0. Blog — pagination (2026-11-24)
 - **Сделано:** `BLOG_PAGE_SIZE=6`; `/blog` = p1; `/blog/page/[n]` ISR + generateStaticParams; UI prev/next/номера; sitemap pages 2…N; slug `page` reserved.
