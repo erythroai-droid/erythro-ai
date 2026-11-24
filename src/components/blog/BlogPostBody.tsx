@@ -41,7 +41,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
         <div className="relative z-10 mx-auto flex w-full min-w-0 max-w-[1170px] flex-col gap-12 px-[30px] py-12 md:gap-16 md:py-16 lg:gap-20 lg:py-20">
           <nav
             aria-label="Breadcrumb"
-            className={`text-xs uppercase tracking-[1.6px] ${
+            className={`text-xs uppercase ${
               isLight ? 'text-gold-900' : 'text-gold-800'
             }`}
           >
@@ -79,7 +79,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
           </nav>
 
           <header className="flex flex-col gap-6 md:gap-8">
-            <h1 className="m-0 font-sans text-[28px] font-extralight uppercase leading-tight tracking-[0.06em] md:text-[40px] md:tracking-[0.08em] lg:text-[48px]">
+            <h1 className="m-0 font-sans text-[28px] font-extralight uppercase leading-tight md:text-[40px] lg:text-[48px]">
               <span className="text-erythro-500">{title.charAt(0)}</span>
               <span>{title.slice(1)}</span>
             </h1>
@@ -89,7 +89,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
               </div>
             ) : null}
             <div
-              className={`flex flex-wrap gap-x-4 gap-y-1 font-sans text-xs uppercase tracking-[1.6px] ${
+              className={`flex flex-wrap gap-x-4 gap-y-1 font-sans text-xs uppercase ${
                 isLight ? 'text-gold-900' : 'text-gold-800'
               }`}
             >
@@ -111,7 +111,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
                 {post.tags.map((tag) => (
                   <span
                     key={tag}
-                    className={`rounded-[2px] px-2 py-1 font-sans text-[11px] uppercase tracking-[1.2px] ${
+                    className={`rounded-[2px] px-2 py-1 font-sans text-[11px] uppercase ${
                       isLight
                         ? 'bg-coal-900/5 text-coal-900/70'
                         : 'bg-erythro-500/15 text-[#f7bbba]'
@@ -139,7 +139,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
 
           {hasBody ? (
             <div
-              className={`blog-body font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h2,h3,h4)]:mt-8 [&_:is(h2,h3,h4)]:mb-3 [&_:is(h2,h3,h4)]:font-extralight [&_:is(h2,h3,h4)]:uppercase [&_:is(h2,h3,h4)]:tracking-[0.06em] [&_p]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_blockquote]:border-s-2 [&_blockquote]:border-erythro-500 [&_blockquote]:ps-4 [&_blockquote]:italic ${
+              className={`blog-body font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h2,h3,h4)]:mt-8 [&_:is(h2,h3,h4)]:mb-3 [&_:is(h2,h3,h4)]:font-extralight [&_:is(h2,h3,h4)]:uppercase [&_p]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_blockquote]:border-s-2 [&_blockquote]:border-erythro-500 [&_blockquote]:ps-4 [&_blockquote]:italic ${
                 isLight
                   ? 'text-coal-900/85 [&_:is(h2,h3,h4)]:text-coal-900'
                   : 'text-white/80 [&_:is(h2,h3,h4)]:text-white'
@@ -151,7 +151,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
 
           {post.relatedLinks.length ? (
             <aside className="flex flex-col gap-6 border-t border-current/15 pt-10">
-              <h2 className="m-0 font-sans text-[22px] font-extralight uppercase tracking-[0.08em] md:text-[28px]">
+              <h2 className="m-0 font-sans text-[22px] font-extralight uppercase md:text-[28px]">
                 <span className="text-erythro-500">
                   {tBlog(blogUi.relatedHeading, locale).charAt(0)}
                 </span>
@@ -162,7 +162,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className={`inline-flex items-center gap-2 font-sans text-sm font-medium uppercase tracking-[0.14em] transition-colors ${
+                      className={`inline-flex items-center gap-2 font-sans text-sm font-medium uppercase transition-colors ${
                         isLight
                           ? 'text-coal-900 hover:text-erythro-500'
                           : 'text-gold-100 hover:text-gold-500'
@@ -180,7 +180,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
           <div>
             <Link
               href="/blog"
-              className={`inline-flex items-center justify-center gap-2 select-none font-button-base font-medium uppercase tracking-widest transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer active:scale-[0.97] active:duration-100 ${
+              className={`inline-flex items-center justify-center gap-2 select-none font-button-base font-medium uppercase transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none cursor-pointer active:scale-[0.97] active:duration-100 ${
                 isLight
                   ? 'rounded-[var(--xl,40px)] border border-[var(--gold-100,#fff)] bg-erythro-500 px-8 py-3 text-white hover:border-erythro-500 hover:bg-erythro-500 hover:shadow-[0_3px_20px_0_rgba(255,233,199,0.30)] active:bg-erythro-700 active:border-erythro-700'
                   : 'rounded-[var(--xl,40px)] border border-gold-500 bg-transparent px-8 py-3 text-gold-500 hover:border-[var(--Button-Primary-stroke-hover,#FFE9C7)] hover:bg-[var(--Button-Primary-hover,#FFE9C7)] hover:text-coal-900 hover:shadow-[0_3px_20px_0_var(--Buttons-Primary,rgba(255,233,199,0.30))]'

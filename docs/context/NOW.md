@@ -1,12 +1,14 @@
 # Latest changes
 
-Обновлено: 2026-11-24 (blog UI = services/portfolio)  
-Статус: `/blog` и пост — визуальный язык как services/portfolio (карточки, title, чипы). CMS: 19 published. Soft-save + commit PIT-169 ещё нужны.
+Обновлено: 2026-11-24 (blog: no number / no tracking)  
+Статус: `/blog` — без номера на карточке и без letter-spacing. Soft-save + commit стиля ещё нужны.
+
+## 0. Blog — убрать номер и tracking (2026-11-24)
+- **Сделано:** с карт снят красный номер; с индекса/поста убран `tracking-*`.
+- **Следующий шаг:** проверить `/blog`.
 
 ## 0. Blog — общий стиль services/portfolio (2026-11-24)
-- **Запрос:** оформление как `/services` или проекты `/portfolio`, одна колонка.
-- **Сделано:** `BlogIndexBody` — StylizedSectionTitle, service-cards (`rounded-[20px]`, image+copy, номер, more); `BlogPostBody` — как Service/Project body (1170, red first letter, gold excerpt, tag chips, CTA-кнопка). Chip strip `portfolio`.
-- **Следующий шаг:** глянуть `/blog` локально/preview.
+- **Сделано:** service-cards, StylizedSectionTitle, post body как Service/Project.
 
 ## 0. Blog — LinkedIn import (2026-11-24)
 - **Источник:** `linkedin.com/in/erythro-ai/recent-activity/all/` → `content/imports/linkedin-posts-raw.json` (20 карт; 1 дубль Free AI audit снят).
