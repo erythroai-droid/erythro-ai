@@ -2,6 +2,7 @@ import type { Payload } from 'payload'
 import { isLexicalDoc, lexicalFromText, lexicalToPlain } from '@/lib/lexical'
 import { mapBlogPostDoc } from '@/lib/blogCms'
 import type { BlogPost } from '@/lib/blogPosts'
+import { resolveCoverInput } from '@/lib/blogMediaApi'
 
 const LOCALES = ['en', 'ru', 'he'] as const
 export type BlogLocale = (typeof LOCALES)[number]
@@ -88,7 +89,8 @@ export type BlogWriteInput = {
   slug: string
   status?: 'draft' | 'published'
   publishedAt?: string | null
-  cover?: number | string | null
+  /** Media id, null to clear, or `{ url, alt }` / `{ id }` (resolved on upsert). */
+  cover?: unknown
   tags?: string[]
   relatedLinks?: Array<{ href: string; label: string | Partial<Record<BlogLocale, string>> }>
   faq?: {
@@ -143,9 +145,7 @@ export function parseBlogWriteBody(
     publishedAt = d.toISOString()
   }
 
-  let cover: number | string | null | undefined
-  if (body.cover === null) cover = null
-  else if (typeof body.cover === 'number' || typeof body.cover === 'string') cover = body.cover
+  const cover = body.cover !== undefined ? body.cover : undefined
 
   const tags: string[] = []
   if (Array.isArray(body.tags)) {
@@ -355,13 +355,18 @@ export async function upsertBlogPost(
   const createErr = existing ? null : assertCreateReady(input)
   if (createErr) throw Object.assign(new Error(createErr.error), { status: 400 })
 
+  const resolvedCover =
+    input.cover !== undefined ? await resolveCoverInput(payload, input.cover) : undefined
+  const writeInput: BlogWriteInput =
+    resolvedCover !== undefined ? { ...input, cover: resolvedCover } : input
+
   let id = existing?.id as string | number | undefined
   let created = false
 
   if (!id) {
     const enData = {
-      slug: input.slug,
-      ...buildLocaleData(input, 'en', { includeShared: true, isCreate: true }),
+      slug: writeInput.slug,
+      ...buildLocaleData(writeInput, 'en', { includeShared: true, isCreate: true }),
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const doc = await (payload as any).create({
@@ -373,7 +378,7 @@ export async function upsertBlogPost(
     id = doc.id
     created = true
   } else {
-    const enData = buildLocaleData(input, 'en', { includeShared: true, isCreate: false })
+    const enData = buildLocaleData(writeInput, 'en', { includeShared: true, isCreate: false })
     if (Object.keys(enData).length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (payload as any).update({
@@ -387,7 +392,7 @@ export async function upsertBlogPost(
   }
 
   for (const loc of ['ru', 'he'] as const) {
-    const locData = buildLocaleData(input, loc, { includeShared: false, isCreate: false })
+    const locData = buildLocaleData(writeInput, loc, { includeShared: false, isCreate: false })
     if (Object.keys(locData).length === 0) continue
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (payload as any).update({
@@ -400,8 +405,8 @@ export async function upsertBlogPost(
   }
 
   // Auto-fill publishedAt on publish when updating without a date
-  if (!created && input.status === 'published' && input.publishedAt === undefined) {
-    const fresh = await findBlogPostBySlug(payload, input.slug)
+  if (!created && writeInput.status === 'published' && writeInput.publishedAt === undefined) {
+    const fresh = await findBlogPostBySlug(payload, writeInput.slug)
     if (fresh && !fresh.publishedAt) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (payload as any).update({
@@ -413,7 +418,7 @@ export async function upsertBlogPost(
     }
   }
 
-  const finalDoc = await findBlogPostBySlug(payload, input.slug)
+  const finalDoc = await findBlogPostBySlug(payload, writeInput.slug)
   const post = finalDoc ? mapBlogPostDoc(finalDoc) : null
   if (!post) throw Object.assign(new Error('Failed to load saved post'), { status: 500 })
   return { post, created }
