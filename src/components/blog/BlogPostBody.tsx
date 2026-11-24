@@ -79,7 +79,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
           </nav>
 
           <header className="flex flex-col gap-6 md:gap-8">
-            <h1 className="m-0 font-sans text-[28px] font-extralight uppercase leading-tight md:text-[40px] lg:text-[48px]">
+            <h1 className="m-0 font-sans text-[28px] font-extralight uppercase leading-tight tracking-normal md:text-[40px] lg:text-[48px]">
               <span className="text-erythro-500">{title.charAt(0)}</span>
               <span>{title.slice(1)}</span>
             </h1>
@@ -139,7 +139,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
 
           {hasBody ? (
             <div
-              className={`blog-body font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h2,h3,h4)]:mt-8 [&_:is(h2,h3,h4)]:mb-3 [&_:is(h2,h3,h4)]:font-extralight [&_:is(h2,h3,h4)]:uppercase [&_p]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_blockquote]:border-s-2 [&_blockquote]:border-erythro-500 [&_blockquote]:ps-4 [&_blockquote]:italic ${
+              className={`blog-body font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h2,h3,h4)]:mt-8 [&_:is(h2,h3,h4)]:mb-3 [&_:is(h2,h3,h4)]:font-extralight [&_:is(h2,h3,h4)]:uppercase [&_:is(h2,h3,h4)]:tracking-normal [&_p]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_blockquote]:border-s-2 [&_blockquote]:border-erythro-500 [&_blockquote]:ps-4 [&_blockquote]:italic ${
                 isLight
                   ? 'text-coal-900/85 [&_:is(h2,h3,h4)]:text-coal-900'
                   : 'text-white/80 [&_:is(h2,h3,h4)]:text-white'
@@ -151,7 +151,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
 
           {post.relatedLinks.length ? (
             <aside className="flex flex-col gap-6 border-t border-current/15 pt-10">
-              <h2 className="m-0 font-sans text-[22px] font-extralight uppercase md:text-[28px]">
+              <h2 className="m-0 font-sans text-[22px] font-extralight uppercase tracking-normal md:text-[28px]">
                 <span className="text-erythro-500">
                   {tBlog(blogUi.relatedHeading, locale).charAt(0)}
                 </span>
