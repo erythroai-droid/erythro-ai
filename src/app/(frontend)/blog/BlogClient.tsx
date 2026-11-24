@@ -21,6 +21,8 @@ interface BlogClientProps {
   clientHydratePrefs?: boolean
   content: SiteContent
   posts: BlogPost[]
+  page?: number
+  totalPages?: number
 }
 
 export default function BlogClient({
@@ -29,6 +31,8 @@ export default function BlogClient({
   clientHydratePrefs,
   content,
   posts,
+  page = 1,
+  totalPages = 1,
 }: BlogClientProps) {
   const a11yTranslations = content.accessibility
   const { locale, setLocale, theme, setTheme } = useSitePrefs(
@@ -96,7 +100,13 @@ export default function BlogClient({
           />
 
           <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:mt-0 lg:contents">
-            <BlogIndexBody locale={locale} theme={theme} posts={posts} />
+            <BlogIndexBody
+              locale={locale}
+              theme={theme}
+              posts={posts}
+              page={page}
+              totalPages={totalPages}
+            />
           </div>
 
           <div className="relative z-20 -mt-8 max-lg:overflow-hidden max-lg:rounded-t-[28px] max-lg:shadow-[0_-12px_30px_rgba(0,0,0,0.28)] lg:contents">

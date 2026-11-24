@@ -1,7 +1,15 @@
 # Latest changes
 
-Обновлено: 2026-11-24 (blog: tracking-normal on headings)  
-Статус: заголовки блога с `tracking-normal` — иначе глобальный `h2 { letter-spacing: 0.2em }` из `styles.css` оставался.
+Обновлено: 2026-11-24 (blog pagination)  
+Статус: пагинация `/blog` + `/blog/page/N` (6 постов/стр); анонсы sentence case + дата/more в ряд.
+
+## 0. Blog — pagination (2026-11-24)
+- **Сделано:** `BLOG_PAGE_SIZE=6`; `/blog` = p1; `/blog/page/[n]` ISR + generateStaticParams; UI prev/next/номера; sitemap pages 2…N; slug `page` reserved.
+- **Также:** card titles `normal-case`; date left / more right (`dir=ltr`).
+- **Следующий шаг:** проверить `/blog` и `/blog/page/2` после деплоя.
+
+## 0. Blog — анонсы: case + дата/more (2026-11-24)
+- **Сделано:** card `h2` → `normal-case`; date + more в одной строке.
 
 ## 0. Blog — letter-spacing в заголовках (2026-11-24)
 - **Причина:** сняли Tailwind `tracking-*`, но DS в `styles.css` задаёт `h2/h4/h5 { letter-spacing: 0.2em }`.

@@ -14,7 +14,8 @@
 
 | URL | Назначение |
 |---|---|
-| `/blog` | Лента опубликованных постов, `Blog` JSON-LD |
+| `/blog` | Лента, страница 1 (`BLOG_PAGE_SIZE` = 6), `Blog` JSON-LD |
+| `/blog/page/[n]` | Страницы 2…N (ISR); `/blog/page/1` → 308 `/blog` |
 | `/blog/[slug]` | Пост: `BlogPosting` + `BreadcrumbList` + опц. `FAQPage` |
 | `/blog/rss.xml` | RSS 2.0 (EN titles/excerpts) |
 | `Accept: text/markdown` на `/blog` и `/blog/[slug]` | Чистый Markdown для RAG / grounding |

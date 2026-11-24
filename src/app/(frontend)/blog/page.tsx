@@ -4,7 +4,7 @@ import BlogClient from './BlogClient'
 import { BlogIndexJsonLd } from '@/components/blog/BlogPostJsonLd'
 import { getCachedShellSiteContent } from '@/lib/getSiteContent'
 import { getCachedPublishedBlogPosts } from '@/lib/blogCms'
-import { blogUi, tBlog } from '@/lib/blogPosts'
+import { blogUi, sliceBlogPage, tBlog } from '@/lib/blogPosts'
 import { defaultShareImages } from '@/lib/ogImages'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
@@ -47,15 +47,23 @@ export const metadata: Metadata = {
 }
 
 export default async function BlogPage() {
-  const [content, posts] = await Promise.all([
+  const [content, allPosts] = await Promise.all([
     getCachedShellSiteContent(),
     getCachedPublishedBlogPosts(),
   ])
+  const { items, page, totalPages } = sliceBlogPage(allPosts, 1)
 
   return (
     <>
-      <BlogIndexJsonLd posts={posts} locale="en" />
-      <BlogClient initialLocale="en" content={content} posts={posts} clientHydratePrefs />
+      <BlogIndexJsonLd posts={items} locale="en" />
+      <BlogClient
+        initialLocale="en"
+        content={content}
+        posts={items}
+        page={page}
+        totalPages={totalPages}
+        clientHydratePrefs
+      />
     </>
   )
 }
