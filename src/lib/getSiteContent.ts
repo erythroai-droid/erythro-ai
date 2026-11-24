@@ -577,6 +577,21 @@ export async function getSiteContent(): Promise<SiteContent> {
         label: L(n.label, defaultSiteContent.footer.companyLinks[i]?.label ?? {}),
       }))
     }
+    // Ensure Blog is always in the footer (SEO/GEO entry point; not in main nav).
+    {
+      const hasBlog = content.footer.companyLinks.some(
+        (l) => typeof l.href === 'string' && l.href.replace(/\/$/, '') === '/blog',
+      )
+      if (!hasBlog) {
+        const blogDefault = defaultSiteContent.footer.companyLinks.find(
+          (l) => l.href === '/blog',
+        ) || {
+          href: '/blog',
+          label: { en: 'blog', ru: 'блог', he: 'בלוג' },
+        }
+        content.footer.companyLinks = [...content.footer.companyLinks, blogDefault]
+      }
+    }
     if (Array.isArray(footer?.legalLinks) && footer.legalLinks.length) {
       content.footer.legalLinks = footer.legalLinks.map((n: any, i: number) => {
         const fallback = defaultSiteContent.footer.legalLinks.find(
@@ -856,6 +871,20 @@ export async function getShellSiteContent(): Promise<SiteContent> {
         href: n.href ?? defaultSiteContent.footer.companyLinks[i]?.href ?? '#',
         label: L(n.label, defaultSiteContent.footer.companyLinks[i]?.label ?? {}),
       }))
+    }
+    {
+      const hasBlog = content.footer.companyLinks.some(
+        (l) => typeof l.href === 'string' && l.href.replace(/\/$/, '') === '/blog',
+      )
+      if (!hasBlog) {
+        const blogDefault = defaultSiteContent.footer.companyLinks.find(
+          (l) => l.href === '/blog',
+        ) || {
+          href: '/blog',
+          label: { en: 'blog', ru: 'блог', he: 'בלוג' },
+        }
+        content.footer.companyLinks = [...content.footer.companyLinks, blogDefault]
+      }
     }
     if (Array.isArray(footer?.legalLinks) && footer.legalLinks.length) {
       content.footer.legalLinks = footer.legalLinks.map((n: any, i: number) => {

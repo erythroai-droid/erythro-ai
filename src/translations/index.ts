@@ -870,6 +870,10 @@ export const footer = {
       href: '#solutions',
       label: { en: 'solutions', ru: 'решения', he: 'פתרונות' },
     },
+    {
+      href: '/blog',
+      label: { en: 'blog', ru: 'блог', he: 'בלוג' },
+    },
   ],
   contactTitle: {
     en: 'Contact Info',

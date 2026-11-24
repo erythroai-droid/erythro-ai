@@ -1,7 +1,16 @@
 # Latest changes
 
-Обновлено: 2026-11-24 (portfolio sort)  
-Статус: порядок портфолио поправлен локально — нужен deploy.
+Обновлено: 2026-11-24 (blog migrate)  
+Статус: Blog код + migrate на shared Supabase применены; нужны commit/deploy + первый пост.
+
+## 0. Blog — SEO & GEO (2026-11-24)
+- **Цель:** регулярные посты для индексации и цитирования AI; ссылка только в футере (не в Header).
+- **Сделано:**
+  - CMS `blog-posts` + страницы `/blog`, `/blog/[slug]`, RSS, schema, sitemap, llms.txt, markdown.
+  - **Migrate на DB (`txyykmjocvbaqgkxlotu`):** только pending `20261124_120000_blog_posts` → batch 26, Ran Yes (~13s). `PAYLOAD_DISABLE_PUSH=1`.
+  - Проверка: `blog_posts`/`locales`/`faq` созданы; footer `/blog` = 1 (label EN «Blog»); portfolio **12**, services **4** без изменений; migrations 52→53.
+- **Не сделано:** commit/deploy; `payload generate:types`; первый published пост; GSC Request indexing.
+- **Следующий шаг:** commit/deploy → админка Content → Blog Posts (Published + publishedAt + excerpt + related `/audit`) → Soft-save → `/blog`, sitemap, markdown, футер.
 
 ## 0. Портфолио — порядок: newest first (2026-11-24)
 - **Симптом:** на `/portfolio` первыми шли AI Consultant / AI Audit Agent, а не последние добавленные (Origin, PSB, Ember…).

@@ -19,6 +19,7 @@ import { Services } from './collections/Services'
 import { SolutionPlans } from './collections/SolutionPlans'
 import { PortfolioCategories } from './collections/PortfolioCategories'
 import { PortfolioProjects } from './collections/PortfolioProjects'
+import { BlogPosts } from './collections/BlogPosts'
 import { Partners } from './collections/Partners'
 import { ContactSubmissions } from './collections/ContactSubmissions'
 import { ConsultSessions } from './collections/ConsultSessions'
@@ -74,6 +75,7 @@ export default buildConfig({
     SolutionPlans,
     PortfolioCategories,
     PortfolioProjects,
+    BlogPosts,
     Partners,
     ContactSubmissions,
     ConsultSessions,

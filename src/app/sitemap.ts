@@ -4,6 +4,7 @@ import { getAllPortfolioSlugs } from '@/lib/portfolioProjects'
 import { getAllServiceSlugs } from '@/lib/servicePages'
 import {
   getAuditPageLastModified,
+  getBlogSitemapEntries,
   getLegalSitemapEntries,
   getOrderSitemapEntries,
   getPortfolioSitemapEntries,
@@ -20,6 +21,7 @@ const SITE_URL = canonicalSiteOrigin()
 const CORE_PATHS = [
   { path: '/', changeFrequency: 'weekly' as const, priority: 1 },
   { path: '/portfolio', changeFrequency: 'weekly' as const, priority: 0.9 },
+  { path: '/blog', changeFrequency: 'weekly' as const, priority: 0.85 },
   { path: '/contacts', changeFrequency: 'monthly' as const, priority: 0.7 },
   { path: '/audit', changeFrequency: 'monthly' as const, priority: 0.75 },
   { path: '/about', changeFrequency: 'monthly' as const, priority: 0.7 },
@@ -61,10 +63,11 @@ export function staticSitemapFallback(): MetadataRoute.Sitemap {
 }
 
 async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
-  const [services, portfolio, orders, legal, auditLastMod, siteSettingsLastMod] =
+  const [services, portfolio, blog, orders, legal, auditLastMod, siteSettingsLastMod] =
     await Promise.all([
       getServiceSitemapEntries(),
       getPortfolioSitemapEntries(),
+      getBlogSitemapEntries(),
       getOrderSitemapEntries(),
       getLegalSitemapEntries(),
       getAuditPageLastModified(),
@@ -76,6 +79,7 @@ async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
     siteSettingsLastMod,
     ...services.map((r) => r.lastModified),
     ...portfolio.map((r) => r.lastModified),
+    ...blog.map((r) => r.lastModified),
     ...orders.map((r) => r.lastModified),
     ...legal.map((r) => r.lastModified),
   ])
@@ -92,6 +96,12 @@ async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: maxLastModified(portfolio.map((r) => r.lastModified)) || contentStamp,
       changeFrequency: 'weekly',
       priority: 0.9,
+    },
+    {
+      url: loc('/blog'),
+      lastModified: maxLastModified(blog.map((r) => r.lastModified)) || contentStamp,
+      changeFrequency: 'weekly',
+      priority: 0.85,
     },
     {
       url: loc('/contacts'),
@@ -122,6 +132,12 @@ async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: row.lastModified || contentStamp,
       changeFrequency: 'monthly' as const,
       priority: 0.7,
+    })),
+    ...blog.map((row) => ({
+      url: loc(`/blog/${row.slug}`),
+      lastModified: row.lastModified || contentStamp,
+      changeFrequency: 'weekly' as const,
+      priority: 0.75,
     })),
     ...orders.map((row) => ({
       url: loc(`/order/${row.slug}`),
