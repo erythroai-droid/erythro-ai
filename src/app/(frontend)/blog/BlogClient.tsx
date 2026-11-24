@@ -11,7 +11,6 @@ import LetsTalkSection from '@/components/LetsTalkSection'
 import ChatButton from '@/components/ChatButton'
 import HeaderChipStrip from '@/components/HeaderChipStrip'
 import BlogIndexBody from '@/components/blog/BlogIndexBody'
-import { BlogIndexJsonLd } from '@/components/blog/BlogPostJsonLd'
 import type { SiteContent } from '@/lib/defaultContent'
 import type { BlogPost } from '@/lib/blogPosts'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
@@ -83,7 +82,6 @@ export default function BlogClient({
             theme === 'light' ? 'bg-gold-100' : 'bg-coal-900'
           }`}
         >
-          <BlogIndexJsonLd posts={posts} locale={locale} />
           <div className="relative z-10 lg:contents">
             <HeaderChipStrip page="legal" />
           </div>

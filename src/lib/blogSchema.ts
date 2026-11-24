@@ -1,6 +1,5 @@
 import type { BlogPost } from '@/lib/blogPosts'
 import { tBlog } from '@/lib/blogPosts'
-import { blogBodyPlain } from '@/lib/blogCms'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
@@ -13,8 +12,8 @@ function absoluteUrl(pathOrUrl: string): string {
 /** BlogPosting + BreadcrumbList for a published post (SEO + AI citation). */
 export function buildBlogPostingSchema(post: BlogPost, locale: string) {
   const title = tBlog(post.seoTitle, locale) || tBlog(post.title, locale)
-  const description =
-    tBlog(post.seoDescription, locale) || tBlog(post.excerpt, locale) || blogBodyPlain(post, locale).slice(0, 300)
+  // Prefer SEO/excerpt only — do not import blogCms/Payload here (client-safe schema builders).
+  const description = tBlog(post.seoDescription, locale) || tBlog(post.excerpt, locale)
   const url = `${SITE_URL}/blog/${post.slug}`
   const image = post.cover?.src ? absoluteUrl(post.cover.src) : `${SITE_URL}/images/og-image.png`
   const datePublished = post.publishedAt || post.updatedAt || undefined

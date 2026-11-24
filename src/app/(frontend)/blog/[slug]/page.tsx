@@ -2,6 +2,8 @@ import React from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import BlogPostClient from './BlogPostClient'
+import { BlogPostJsonLd } from '@/components/blog/BlogPostJsonLd'
+import FaqJsonLd from '@/components/FaqJsonLd'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
 import {
   getAllPublishedBlogSlugs,
@@ -79,11 +81,21 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const content = await getCachedSiteContent()
 
   return (
-    <BlogPostClient
-      initialLocale={DEFAULT_LOCALE}
-      content={content}
-      post={post}
-      clientHydratePrefs
-    />
+    <>
+      <BlogPostJsonLd post={post} locale={DEFAULT_LOCALE} />
+      {post.faq?.items?.length ? (
+        <FaqJsonLd
+          items={post.faq.items}
+          locale={DEFAULT_LOCALE}
+          id={`${SITE_URL}/blog/${post.slug}#faq`}
+        />
+      ) : null}
+      <BlogPostClient
+        initialLocale={DEFAULT_LOCALE}
+        content={content}
+        post={post}
+        clientHydratePrefs
+      />
+    </>
   )
 }

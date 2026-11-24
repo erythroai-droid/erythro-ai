@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import BlogClient from './BlogClient'
+import { BlogIndexJsonLd } from '@/components/blog/BlogPostJsonLd'
 import { getCachedShellSiteContent } from '@/lib/getSiteContent'
 import { getCachedPublishedBlogPosts } from '@/lib/blogCms'
 import { blogUi, tBlog } from '@/lib/blogPosts'
@@ -52,6 +53,9 @@ export default async function BlogPage() {
   ])
 
   return (
-    <BlogClient initialLocale="en" content={content} posts={posts} clientHydratePrefs />
+    <>
+      <BlogIndexJsonLd posts={posts} locale="en" />
+      <BlogClient initialLocale="en" content={content} posts={posts} clientHydratePrefs />
+    </>
   )
 }

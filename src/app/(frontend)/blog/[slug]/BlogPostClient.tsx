@@ -11,13 +11,9 @@ import LetsTalkSection from '@/components/LetsTalkSection'
 import ChatButton from '@/components/ChatButton'
 import HeaderChipStrip from '@/components/HeaderChipStrip'
 import BlogPostBody from '@/components/blog/BlogPostBody'
-import { BlogPostJsonLd } from '@/components/blog/BlogPostJsonLd'
-import FaqJsonLd from '@/components/FaqJsonLd'
 import type { SiteContent } from '@/lib/defaultContent'
 import type { BlogPost } from '@/lib/blogPosts'
 import { useSitePrefs } from '@/hooks/useSitePrefs'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://erythro.ai'
 
 interface BlogPostClientProps {
   initialLocale: string
@@ -86,15 +82,6 @@ export default function BlogPostClient({
             theme === 'light' ? 'bg-gold-100' : 'bg-coal-900'
           }`}
         >
-          <BlogPostJsonLd post={post} locale={locale} />
-          {post.faq?.items?.length ? (
-            <FaqJsonLd
-              items={post.faq.items}
-              locale={locale}
-              id={`${SITE_URL}/blog/${post.slug}#faq`}
-            />
-          ) : null}
-
           <div className="relative z-10 lg:contents">
             <HeaderChipStrip page="legal" />
           </div>
