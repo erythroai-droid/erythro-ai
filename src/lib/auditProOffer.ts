@@ -155,22 +155,24 @@ export async function emailHasPaidAuditFunnelOrder(
   if (!raw) return false
 
   const payload = await getPayload({ config })
+  const paidWhere = {
+    and: [
+      { source: { equals: 'audit' as const } },
+      { email: { equals: raw } },
+      { planSlug: { in: [...PAID_AUDIT_FUNNEL_SLUGS] } },
+      { paymentStatus: { in: ['pending' as const, 'paid' as const] } },
+      ...(excludeSubmissionId != null
+        ? [{ id: { not_equals: excludeSubmissionId } }]
+        : []),
+    ],
+  }
   const found = await payload.find({
     collection: 'contact-submissions',
     depth: 0,
-    limit: 10,
+    limit: 1,
     overrideAccess: true,
-    where: {
-      and: [
-        { source: { equals: 'audit' } },
-        { email: { equals: raw } },
-        { planSlug: { in: [...PAID_AUDIT_FUNNEL_SLUGS] } },
-        { paymentStatus: { in: ['pending', 'paid'] } },
-        ...(excludeSubmissionId != null
-          ? [{ id: { not_equals: excludeSubmissionId } }]
-          : []),
-      ],
-    },
+    select: { id: true },
+    where: paidWhere,
   })
   if (found.docs.length > 0) return true
 
@@ -180,8 +182,9 @@ export async function emailHasPaidAuditFunnelOrder(
   const again = await payload.find({
     collection: 'contact-submissions',
     depth: 0,
-    limit: 10,
+    limit: 1,
     overrideAccess: true,
+    select: { id: true },
     where: {
       and: [
         { source: { equals: 'audit' } },
@@ -1275,6 +1278,7 @@ export async function trySendAuditProOffer(
     id: submissionId,
     depth: 0,
     overrideAccess: true,
+    select: { htmlResult: false },
   })
 
   if (!doc || doc.source !== 'audit') {
@@ -1394,6 +1398,7 @@ export async function trySendPaidAuditDevOffer(
     id: submissionId,
     depth: 0,
     overrideAccess: true,
+    select: { htmlResult: false },
   })
 
   if (!doc || doc.source !== 'audit') {
@@ -1500,6 +1505,7 @@ export async function trySendAuditProOfferNudge(
     id: submissionId,
     depth: 0,
     overrideAccess: true,
+    select: { htmlResult: false },
   })
 
   if (!doc || doc.source !== 'audit') {
@@ -1607,6 +1613,7 @@ export async function trySendAuditProOfferReminder(
     id: submissionId,
     depth: 0,
     overrideAccess: true,
+    select: { htmlResult: false },
   })
 
   if (!doc || doc.source !== 'audit') {
@@ -1709,6 +1716,7 @@ export async function sendDueAuditProOffers(limit = 20): Promise<{
     depth: 0,
     limit,
     overrideAccess: true,
+    select: { id: true, planSlug: true },
     where: {
       and: [
         { source: { equals: 'audit' } },
@@ -1747,6 +1755,7 @@ export async function sendDueAuditProOfferNudges(limit = 20): Promise<{
     depth: 0,
     limit,
     overrideAccess: true,
+    select: { id: true },
     where: {
       and: [
         { source: { equals: 'audit' } },
@@ -1786,6 +1795,7 @@ export async function sendDueAuditProOfferReminders(limit = 20): Promise<{
     depth: 0,
     limit,
     overrideAccess: true,
+    select: { id: true },
     where: {
       and: [
         { source: { equals: 'audit' } },

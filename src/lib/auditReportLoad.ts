@@ -48,6 +48,8 @@ export async function findAuditSubmission(id: number): Promise<AuditReportDoc | 
       id,
       depth: 0,
       overrideAccess: true,
+      // Report HTML is served from R2 via auditSummary.storageKey (PIT-egress).
+      select: { htmlResult: false },
     })
     if (!doc || doc.source !== 'audit') return null
     return doc as AuditReportDoc
@@ -95,20 +97,19 @@ export function clipAuditReportFindingOverflow(html: string): string {
   return FINDING_CLIP_STYLE + html
 }
 
-/** Full report HTML from CMS or R2. */
+/** Full report HTML — prefer R2 (`storageKey`); CMS `htmlResult` only as legacy fallback. */
 export async function resolveAuditReportHtml(
   doc: AuditReportDoc,
   status: AuditReportStatus,
 ): Promise<string | null> {
   let html: string | null = null
-  if (typeof doc.htmlResult === 'string' && doc.htmlResult.length > 0) {
+  const key = storageKeyFromSummary(doc.auditSummary)
+  if (key && (status === 'report_sent' || status === 'in_progress')) {
+    const fromR2 = await getR2ObjectText(key)
+    if (fromR2) html = fromR2.slice(0, AUDIT_REPORT_HTML_MAX)
+  }
+  if (!html && typeof doc.htmlResult === 'string' && doc.htmlResult.length > 0) {
     html = doc.htmlResult.slice(0, AUDIT_REPORT_HTML_MAX)
-  } else if (status === 'report_sent') {
-    const key = storageKeyFromSummary(doc.auditSummary)
-    if (key) {
-      const fromR2 = await getR2ObjectText(key)
-      if (fromR2) html = fromR2.slice(0, AUDIT_REPORT_HTML_MAX)
-    }
   }
   return html ? clipAuditReportFindingOverflow(rewriteAuditReportAssetUrls(html)) : null
 }

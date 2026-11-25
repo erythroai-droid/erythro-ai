@@ -2221,6 +2221,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-170 — Supabase Free egress: pooler + duplicated audit HTML
+
+**Tags:** `supabase`, `egress`, `payload`, `audit`, `r2`
+**Seen:** 2026-11-25 — org Fair Use warning; cycle egress **5.61 / 5 GB**, ~99.6% Shared Pooler.
+
+**Symptom:** Email/dashboard: Egress Exceeded / grace until next month; DB size tiny (~40 MB), Storage 0.
+
+**Cause:** Payload↔Postgres via Supavisor. Hot paths: (1) `contact-submissions` list/find pulling `html_result` (~80–200 KB/row) while the same HTML already lived in R2 `auditSummary.storageKey`; (2) `fetchOrderPlans` running **4** parallel `solution-plans` finds (all+en+ru+he).
+
+**Fix:** Exclude `htmlResult` on list/`find` (collection `beforeOperation` + lean `select` on pro-offer/report/internal); prefer R2 in `resolveAuditReportHtml`; skip persisting `html_result` when `storageKey` is set; single `locale:'all'` order-plans fetch; one-time SQL null of existing HTML copies.
+
+**Prevent:** Never store large audit HTML in Postgres when R2 already has it. Avoid N× locale finds when `locale:'all'` is enough. Watch org Usage → Shared Pooler after CMS/import spikes.
+
+---
+
 ## PIT-169 — New Payload collection without `payload_locked_documents_rels` FK
 
 **Tags:** `payload`, `migrations`, `blog`, `locked-documents`

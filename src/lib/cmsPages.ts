@@ -577,16 +577,6 @@ async function fetchServicePages(): Promise<ServicePage[]> {
   }
 }
 
-function indexPlanDocs(docs: unknown[] | undefined): Map<string | number, any> {
-  const map = new Map<string | number, any>()
-  for (const doc of docs || []) {
-    if (doc && typeof doc === 'object' && 'id' in doc) {
-      map.set((doc as { id: string | number }).id, doc)
-    }
-  }
-  return map
-}
-
 function localeRichMap(
   allValue: unknown,
   per: { en?: unknown; ru?: unknown; he?: unknown },
@@ -882,31 +872,21 @@ function mapOrderFromPlanDoc(d: any, i: number): OrderPlan {
 async function fetchOrderPlans(): Promise<OrderPlan[]> {
   try {
     const payload = await getPayload({ config })
-    const query = {
-      collection: 'solution-plans' as const,
+    // Single locale:'all' find — previously 4 parallel finds (all+en+ru+he) dominated
+    // Shared Pooler egress. mergePlanLocaleRichText still normalizes Lexical from all-maps.
+    const res = await payload.find({
+      collection: 'solution-plans',
       depth: 0,
       limit: 100,
-      sort: 'order' as const,
-    }
-    const [res, enRes, ruRes, heRes] = await Promise.all([
-      payload.find({ ...query, locale: 'all' }),
-      payload.find({ ...query, locale: 'en', fallbackLocale: false }),
-      payload.find({ ...query, locale: 'ru', fallbackLocale: false }),
-      payload.find({ ...query, locale: 'he', fallbackLocale: false }),
-    ])
+      sort: 'order',
+      locale: 'all',
+      overrideAccess: true,
+    })
     if (!res.docs?.length) return ORDER_PLANS
-    const per = {
-      en: indexPlanDocs(enRes.docs),
-      ru: indexPlanDocs(ruRes.docs),
-      he: indexPlanDocs(heRes.docs),
-    }
+    const emptyPer = {}
     const cmsPlans = res.docs.flatMap((d: any, i: number) => {
       try {
-        const merged = mergePlanLocaleRichText(d, {
-          en: per.en.get(d.id),
-          ru: per.ru.get(d.id),
-          he: per.he.get(d.id),
-        })
+        const merged = mergePlanLocaleRichText(d, emptyPer)
         return [mapOrderFromPlanDoc(merged, i)]
       } catch (err) {
         console.error('[cmsPages] skip plan', d?.slug ?? d?.id, err)
@@ -982,7 +962,7 @@ export async function getAllServiceSlugsCms(): Promise<string[]> {
 }
 
 export const getCachedOrderPlans = () =>
-  unstable_cache(() => fetchOrderPlans(), ['order-plans-v9-trim-slug'], {
+  unstable_cache(() => fetchOrderPlans(), ['order-plans-v10-single-locale-all'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
