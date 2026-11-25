@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
       id: Number(id),
       depth: 0,
       overrideAccess: true,
+      select: { paymentStatus: true },
     })
     const status = doc?.paymentStatus
     const known = status === 'paid' || status === 'pending' || status === 'failed' || status === 'refunded'

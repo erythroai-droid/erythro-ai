@@ -30,6 +30,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       id,
       depth: 0,
       overrideAccess: true,
+      select: { htmlResult: false },
     })
     if (!doc || doc.source !== 'audit') {
       return NextResponse.json({ message: 'Not found' }, { status: 404 })
@@ -128,6 +129,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       id,
       depth: 0,
       overrideAccess: true,
+      select: { htmlResult: false },
     })
     if (!existing || existing.source !== 'audit') {
       return NextResponse.json({ message: 'Not found' }, { status: 404 })
@@ -153,8 +155,20 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     } else if (data.reportUrl === null) {
       sets.push(sql`report_url = null`)
     }
+    // Prefer R2: do not persist large HTML when storageKey is (or will be) set — cuts pooler egress.
+    const incomingSummary =
+      data.auditSummary !== undefined ? data.auditSummary : existing.auditSummary
+    const hasStorageKey =
+      incomingSummary &&
+      typeof incomingSummary === 'object' &&
+      typeof (incomingSummary as { storageKey?: unknown }).storageKey === 'string' &&
+      Boolean(String((incomingSummary as { storageKey: string }).storageKey).trim())
     if (typeof data.htmlResult === 'string') {
-      sets.push(sql`html_result = ${data.htmlResult.replace(/\u0000/g, '')}`)
+      if (hasStorageKey) {
+        sets.push(sql`html_result = null`)
+      } else {
+        sets.push(sql`html_result = ${data.htmlResult.replace(/\u0000/g, '')}`)
+      }
     } else if (data.htmlResult === null) {
       sets.push(sql`html_result = null`)
     }
@@ -219,13 +233,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       id,
       depth: 0,
       overrideAccess: true,
+      select: { htmlResult: false },
     })
 
     return NextResponse.json({
       ok: true,
       id,
       auditStatus: refreshed?.auditStatus ?? data.auditStatus ?? existing.auditStatus,
-      htmlSaved: typeof data.htmlResult === 'string',
+      htmlSaved: typeof data.htmlResult === 'string' && !hasStorageKey,
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)

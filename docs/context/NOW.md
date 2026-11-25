@@ -1,7 +1,26 @@
 # Latest changes
 
-Обновлено: 2026-11-25 (blog media API)  
-Статус: blog API + upload фото/видео для бота.
+Обновлено: 2026-11-25 (Supabase egress cut)  
+Статус: патч pooler egress закоммичен; нужен deploy.
+
+## 0. Supabase — режем pooler egress (2026-11-25, утро)
+- **Контекст:** Free Egress **5.61/5 GB**; ~99.6% Shared Pooler; grace до **2026-12-25**.
+- **Сделано (код):**
+  - `ContactSubmissions` `beforeOperation`: list/`find` → `select.htmlResult: false`.
+  - Lean `select` на pro-offer / report / internal GET·PATCH / payment status.
+  - `resolveAuditReportHtml` — сначала R2; internal PATCH не пишет `html_result`, если есть `storageKey`.
+  - `fetchOrderPlans`: **4 find → 1** `locale:'all'`; кэш `order-plans-v10-…`.
+  - PIT-170 (+ Obsidian).
+- **Сделано (prod DB):** `UPDATE … SET html_result = NULL` где есть `storageKey` → **0** строк с HTML (~2.8 MB снято из ответов).
+- **Не сделано:** deploy; VACUUM (не критично); Pro.
+- **Следующий шаг:** deploy → через 1–2 дня Usage (Shared Pooler MB/день). Soft-save не нужен.
+
+## 0. Blog — links для бота (local WIP)
+- **Сделано локально (не в egress-коммите):** alias `links` = `relatedLinks`; body markdown links → Lexical; док `blog-api.md`.
+- **Следующий шаг:** отдельный commit/push.
+
+## 0. Supabase — письмо Fair Use / egress (2026-11-25)
+- Usage/разбивка зафиксированы; патч — § выше.
 
 ## 0. Blog — media upload API (2026-11-25)
 - **Сделано:** `POST /api/blog/media` (multipart ≤4MB или JSON `{url,alt}` ≤12MB); jpeg/png/webp/gif/avif + mp4/webm/mov → Payload Media/R2; `cover` в POST/PATCH принимает id или `{url,alt}`; SSRF-guard на URL. Док `blog-api.md` (+ Obsidian).

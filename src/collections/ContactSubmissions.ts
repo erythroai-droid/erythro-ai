@@ -43,6 +43,23 @@ export const ContactSubmissions: CollectionConfig = {
     delete: ({ req }) => Boolean(req.user),
   },
   hooks: {
+    /**
+     * List/find pulls every column by default — `htmlResult` is ~80–200KB per row and
+     * dominates Shared Pooler egress. Exclude it unless the caller opted into an include-style
+     * `select` (or findByID for the admin detail / rare CMS fallback).
+     */
+    beforeOperation: [
+      ({ args, operation }) => {
+        if (operation !== 'find' && operation !== 'read') return args
+        const select = (args as { select?: Record<string, unknown> } | undefined)?.select
+        if (select && typeof select === 'object') {
+          const isInclude = Object.values(select).some((v) => v === true)
+          if (isInclude) return args
+          return { ...args, select: { ...select, htmlResult: false } }
+        }
+        return { ...args, select: { htmlResult: false } }
+      },
+    ],
     beforeChange: [
       ({ data, originalDoc }) => {
         const source = (data?.source ?? originalDoc?.source) as string | undefined
@@ -344,7 +361,7 @@ export const ContactSubmissions: CollectionConfig = {
               type: 'textarea',
               admin: {
                 description:
-                  'Inline HTML report for typical sizes (≤ ~2MB); larger reports stay in R2 only. Collapsed by default — Expand to view.',
+                  'Legacy inline HTML (usually empty). Canonical report lives in R2 via auditSummary.storageKey — open the report link. Collapsed by default.',
                 condition: auditOnly,
                 readOnly: true,
                 rows: 8,
