@@ -2236,6 +2236,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-175 — `ignoreCommand` on `VERCEL_ENV` cancelled Production builds
+
+**Tags:** `vercel`, `deploy`, `ci`
+**Seen:** 2026-11-25 — after merge of PR #449 / #450 both Production builds showed "Canceled by Ignored Build Step"; prod stayed on `851b310`.
+
+**Symptom:** GitHub status "Vercel — success — Canceled by Ignored Build Step" on the `main` merge commit; no Production deployment.
+
+**Cause:** `vercel.json` `ignoreCommand: [ "$VERCEL_ENV" != "production" ]`. In the Ignored Build Step `VERCEL_ENV` was empty, so the test exited 0 (= skip) for every build, Production included.
+
+**Fix:** Drop `ignoreCommand`; disable branch previews with `git.deploymentEnabled` branch globs (`feat/**`, `fix/**`, `cursor/**`, …: false). `main` is unmatched → stays enabled.
+
+**Prevent:** Never gate builds on env vars inside `ignoreCommand` without checking a real Production build status after merge. After any `vercel.json` build-config change, confirm the next `main` merge has a Production deployment.
+
+---
+
 ## PIT-173 — Audit report: inline `htmlResult` fallback was unreachable
 
 **Tags:** `audit`, `r2`, `payload`, `select`, `egress`

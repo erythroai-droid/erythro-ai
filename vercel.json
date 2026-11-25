@@ -1,6 +1,20 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "[ \"$VERCEL_ENV\" != \"production\" ]",
+  "git": {
+    "deploymentEnabled": {
+      "feat/**": false,
+      "fix/**": false,
+      "hotfix/**": false,
+      "revert/**": false,
+      "chore/**": false,
+      "docs/**": false,
+      "ci/**": false,
+      "cursor/**": false,
+      "claude/**": false,
+      "codex/**": false,
+      "github/**": false
+    }
+  },
   "crons": [
     {
       "path": "/api/audit/reconcile",
