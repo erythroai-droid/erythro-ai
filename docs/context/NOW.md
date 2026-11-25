@@ -1,12 +1,19 @@
 # Latest changes
 
-Обновлено: 2026-11-25 (legal operator line)  
-Статус: Osek Patur в Privacy/Terms/footer — код + CMS; Soft-save + deploy кода.
+Обновлено: 2026-11-25 (merge main + legal operator)  
+Статус: конфликт NOW.md снят; Osek Patur + relatedLinks locales из main.
 
 ## 0. Legal — operator line (2026-11-25)
 - **Строка:** `Kovalenko Vadym (קובלנקו ודים), Osek Patur · Eilat, Israel` (+ RU/HE).
 - **Сделано:** defaults `legalPages.ts` (Privacy §1, Terms §1); footer `purchaseTermsNotice` в `translations`; CMS `scripts/patch-legal-operator-line.ts` применён (privacy/terms/footer EN/RU/HE).
 - **Следующий шаг:** Soft-save Privacy / Terms / Footer в Production admin (ISR 1h) → проверить `/privacy`, `/terms`, подвал → commit/deploy кода по команде.
+
+## 0. Blog API — локали `relatedLinks` / `links` (2026-11-25, из main)
+- **Симптом:** POST/PATCH с label `{en,ru,he}` → 200, остаётся только последняя локаль (he). EN на чтении падает в URL, RU пустой. PATCH без `relatedLinks` на посте со ссылками → `Related Links > Label invalid`. Пост `psb-consulting-demo-site-from-first-screen-to-request` (id 20).
+- **Причина:** массив не локализован, `label` локализован. Запись по локалям без row id пересоздавала строки (PIT-014 / PIT-171). Пустой label в локали валил любой update этой локали (`required: true`).
+- **Сделано:** те же row id (href, иначе индекс при той же длине); строка по-прежнему пишется во все локали; объект пишет только присланные ключи; пропуск поля не трогает ссылки; `[]` очищает; `label` больше не required. Док `blog-api.md`, PIT-171. Тест `tests/int/blogApi.int.spec.ts` (мок Payload, без БД).
+- **Не сделано:** починить прод-пост id 20 (данные не трогали); FAQ-массив той же формы не менялся.
+- **Следующий шаг:** merge → deploy. Повторная отправка links на id 20 перезапишет лейблы; Soft-save поста в Production admin, если HTML блога выглядит старым (ISR 1 час).
 
 ## 0. Supabase egress — волна 2 (2026-11-25, день)
 - **Диагноз (`pg_stat_statements` с 26.06):** главный потребитель — `solution_plans` locale-all (~215 KB/запрос, ~25k вызовов ≈ 5 GB), не `html_result` (вернулись единицы строк). Фон низкий (крон reconcile ~30 conn/ч); всплески 230–330 conn/ч = деплои (Preview + Production, оба на прод-БД) и сохранения в CMS (полный сброс кэша).
