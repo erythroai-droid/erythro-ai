@@ -12,6 +12,13 @@ import type {
 export const SITE_CONTENT_TAG = 'payload-content'
 
 /**
+ * Blog-only cache tag. Blog posts are read only by `/blog/**`, the blog API, markdown
+ * negotiation and the sitemap, so a post save must not flush the whole site: every full
+ * flush re-reads all CMS content from Supabase and rewrites every ISR page (PIT-172).
+ */
+export const BLOG_CONTENT_TAG = 'payload-blog'
+
+/**
  * Drops the cached site content. Wrapped in try/catch because Payload config
  * (and therefore these hooks) is also loaded outside a Next.js request scope
  * — e.g. `payload generate:types`, migrations, seed scripts — where
@@ -43,5 +50,36 @@ export const revalidateOnChange: CollectionAfterChangeHook = ({ doc }) => {
 
 export const revalidateOnDelete: CollectionAfterDeleteHook = ({ doc }) => {
   revalidateContent()
+  return doc
+}
+
+/** Drops blog caches and blog routes only (index, pages, posts, RSS) plus the sitemap. */
+function revalidateBlog(): void {
+  try {
+    revalidateTag(BLOG_CONTENT_TAG, { expire: 0 })
+    revalidatePath('/blog', 'layout')
+    revalidatePath('/sitemap.xml')
+  } catch (err) {
+    console.error('[revalidate] blog skipped (no request scope):', err)
+  }
+}
+
+export const revalidateBlogOnChange: CollectionAfterChangeHook = ({ doc }) => {
+  revalidateBlog()
+  return doc
+}
+
+export const revalidateBlogOnDelete: CollectionAfterDeleteHook = ({ doc }) => {
+  revalidateBlog()
+  return doc
+}
+
+/**
+ * A freshly uploaded file is not referenced by any page yet — the post/page that starts
+ * using it revalidates on its own save. Only edits to an existing file (alt, replace) can
+ * change rendered pages, so only those flush the site (PIT-172: blog bot uploads).
+ */
+export const revalidateMediaOnChange: CollectionAfterChangeHook = ({ doc, operation }) => {
+  if (operation === 'update') revalidateContent()
   return doc
 }

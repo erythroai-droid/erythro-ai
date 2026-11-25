@@ -1,6 +1,6 @@
 # Latest changes
 
-Обновлено: 2026-11-25 (merge main + legal operator)  
+Обновлено: 2026-11-25 (Supabase egress волна 2 закоммичена)  
 Статус: конфликт NOW.md снят; Osek Patur + relatedLinks locales из main.
 
 ## 0. Legal — operator line (2026-11-25)
@@ -17,11 +17,12 @@
 
 ## 0. Supabase egress — волна 2 (2026-11-25, день)
 - **Диагноз (`pg_stat_statements` с 26.06):** главный потребитель — `solution_plans` locale-all (~215 KB/запрос, ~25k вызовов ≈ 5 GB), не `html_result` (вернулись единицы строк). Фон низкий (крон reconcile ~30 conn/ч); всплески 230–330 conn/ч = деплои (Preview + Production, оба на прод-БД) и сохранения в CMS (полный сброс кэша).
-- **Сделано (код, локально):** `getSiteContent` — `select` карточных полей планов (без `includes`/`addons`); блог → свой тег `payload-blog` + `revalidatePath('/blog','layout')` + sitemap; Media → полный сброс только на `update`, не на `create`. PIT-171 (+ Obsidian).
+- **Сделано (код, закоммичено):** `getSiteContent` — `select` карточных полей планов (без `includes`/`addons`); блог → свой тег `payload-blog` + `revalidatePath('/blog','layout')` + sitemap; Media → полный сброс только на `update`, не на `create`. PIT-172 (+ Obsidian).
 - **Проверено на проде:** `/order/{ai-smart-card,enterprise-custom,free-start}` — includes и описания допов на EN/RU/HE есть (волна 1 их не сломала).
 - **Риск (не чинили):** `findAuditSubmission` не читает `htmlResult` → legacy-fallback в `resolveAuditReportHtml` мёртв; если воркер пришлёт HTML без `storageKey`, отчёт не покажется.
-- **Не сделано:** Preview-сборки на прод-БД (нужна настройка Vercel env — ждёт «да» пользователя); регион функций Vercel (US East) ≠ БД (Сингапур).
-- **Следующий шаг:** commit/push волны 2 → после деплоя через 1–2 дня Usage Shared Pooler MB/день. Базовая точка `pg_stat_statements` 08:35 UTC: queryid `6799518027359341062` calls=25378.
+- **Preview-сборки (решение пользователя — вариант A):** `vercel.json` `ignoreCommand: [ "$VERCEL_ENV" != "production" ]` → Vercel собирает только Production, Preview веток пропускает (статус «Canceled»). Перекрывает Ignored Build Step из Project Settings. Нужен preview — убрать строку или собрать вручную.
+- **Не сделано:** регион функций Vercel (US East) ≠ БД (Сингапур).
+- **Следующий шаг:** push → PR → merge (Production) → после деплоя через 1–2 дня Usage Shared Pooler MB/день. Базовая точка `pg_stat_statements` 08:35 UTC: queryid `6799518027359341062` calls=25378.
 
 ## 0. Supabase — режем pooler egress (2026-11-25, утро)
 - **Контекст:** Free Egress **5.61/5 GB**; ~99.6% Shared Pooler; grace до **2026-12-25**.

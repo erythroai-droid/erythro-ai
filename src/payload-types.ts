@@ -1028,7 +1028,7 @@ export interface ContactSubmission {
    */
   reportAccessToken?: string | null;
   /**
-   * Inline HTML report for typical sizes (≤ ~2MB); larger reports stay in R2 only. Collapsed by default — Expand to view.
+   * Legacy inline HTML (usually empty). Canonical report lives in R2 via auditSummary.storageKey — open the report link. Collapsed by default.
    */
   htmlResult?: string | null;
   /**

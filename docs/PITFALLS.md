@@ -2236,6 +2236,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-172 — Supabase egress: full CMS re-read on every cache flush
+
+**Tags:** `supabase`, `egress`, `vercel`, `isr`, `payload`, `cache`
+**Seen:** 2026-11-25 — after PIT-170, `pg_stat_statements` showed the `solution_plans` locale-all read (~215 KB incl. `includes`/`addons` Lexical ×3 locales) at ~25k calls ≈ 5 GB; contact-submissions HTML returned only a handful of rows in total.
+
+**Symptom:** Steady traffic is low (reconcile cron ~30 pooler connections/h), but bursts of 230–330 connections/h with 20–45 Vercel functions line up with deploys (Preview + Production per change) and CMS saves.
+
+**Cause:** (1) `getSiteContent` fetched `solution-plans` with `locale:'all'` and no `select` — the home cards need ~13 card fields, not `includes`/`addons`. (2) `revalidateOnChange` on **Blog posts** and **Media** flushed `payload-content` + `revalidatePath('/', 'layout')`, so every bot post / media upload re-read all CMS content and rewrote all ISR pages. (3) Preview builds read the production DB.
+
+**Fix:** `select` card fields in `getSiteContent` plans find. Blog posts → own tag `payload-blog` + `revalidatePath('/blog','layout')` + sitemap (blog cache tagged with both tags). Media → flush only on `update`, not on `create`.
+
+**Prevent:** Every `locale:'all'` find on a collection with localized rich text needs a `select`. A collection whose docs are read by one route group gets its own tag. Keep Preview builds off the prod DB (separate DB/branch or cached data).
+
+---
+
 ## PIT-170 — Supabase Free egress: pooler + duplicated audit HTML
 
 **Tags:** `supabase`, `egress`, `payload`, `audit`, `r2`

@@ -205,6 +205,8 @@ export async function getSiteContent(): Promise<SiteContent> {
         sort: 'order',
         overrideAccess: true,
       }) as Promise<any>,
+      // Card fields only — `includes` / `addons` Lexical in all locales is ~190KB per read and
+      // dominated Supabase pooler egress on every cache miss (PIT-172). Order pages use cmsPages.
       payload.find({
         collection: 'solution-plans',
         locale: 'all',
@@ -212,6 +214,21 @@ export async function getSiteContent(): Promise<SiteContent> {
         limit: 100,
         sort: 'order',
         overrideAccess: true,
+        select: {
+          kind: true,
+          slug: true,
+          order: true,
+          price: true,
+          currency: true,
+          pricePrefix: true,
+          priceNote: true,
+          originalPrice: true,
+          featured: true,
+          title: true,
+          features: true,
+          disclaimer: true,
+          ctaHref: true,
+        },
       }) as Promise<any>,
     ])
     // --- Navbar (Header global) ---
