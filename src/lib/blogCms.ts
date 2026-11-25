@@ -1,5 +1,5 @@
 import { unstable_cache } from 'next/cache'
-import { SITE_CONTENT_TAG } from './revalidate'
+import { BLOG_CONTENT_TAG, SITE_CONTENT_TAG } from './revalidate'
 import { getPayloadLocal } from './payloadStatic'
 import { mediaDocUrl } from './publicMediaUrl'
 import { pageFaqFromCms } from './pageFaq'
@@ -152,7 +152,8 @@ async function fetchPublishedBlogPosts(): Promise<BlogPost[]> {
 
 export const getCachedPublishedBlogPosts = () =>
   unstable_cache(() => fetchPublishedBlogPosts(), ['blog-posts-v1'], {
-    tags: [SITE_CONTENT_TAG],
+    // Blog saves flush BLOG_CONTENT_TAG only; a site-wide CMS flush still drops this too.
+    tags: [BLOG_CONTENT_TAG, SITE_CONTENT_TAG],
     revalidate: false,
   })()
 

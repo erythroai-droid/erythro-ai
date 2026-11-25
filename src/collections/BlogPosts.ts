@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { locText, locTextarea, locRichText } from '../fields/localized'
 import { pageFaqGroup } from '../fields/pageFaqFields'
 import { seoFields } from '../fields/seo'
-import { revalidateOnChange, revalidateOnDelete } from '../lib/revalidate'
+import { revalidateBlogOnChange, revalidateBlogOnDelete } from '../lib/revalidate'
 
 export const BlogPosts: CollectionConfig = {
   slug: 'blog-posts',
@@ -20,7 +20,7 @@ export const BlogPosts: CollectionConfig = {
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user),
   },
-  hooks: { afterChange: [revalidateOnChange], afterDelete: [revalidateOnDelete] },
+  hooks: { afterChange: [revalidateBlogOnChange], afterDelete: [revalidateBlogOnDelete] },
   fields: [
     {
       name: 'slug',
