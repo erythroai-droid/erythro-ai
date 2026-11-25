@@ -1,8 +1,9 @@
 import type { Payload } from 'payload'
-import { isLexicalDoc, lexicalFromText, lexicalToPlain } from '@/lib/lexical'
+import { lexicalToPlain } from '@/lib/lexical'
 import { mapBlogPostDoc } from '@/lib/blogCms'
 import type { BlogPost } from '@/lib/blogPosts'
 import { resolveCoverInput } from '@/lib/blogMediaApi'
+import { blogBodyToLexical, normalizeBlogHref } from '@/lib/blogLexical'
 
 const LOCALES = ['en', 'ru', 'he'] as const
 export type BlogLocale = (typeof LOCALES)[number]
@@ -39,23 +40,17 @@ function localeMapFrom(raw: unknown): Partial<Record<BlogLocale, string>> {
   return out
 }
 
-function bodyForLocale(raw: unknown): ReturnType<typeof lexicalFromText> | undefined {
-  if (isLexicalDoc(raw)) return raw
-  if (typeof raw === 'string' && raw.trim()) return lexicalFromText(raw.trim())
-  return undefined
-}
-
-function bodyMapFrom(raw: unknown): Partial<Record<BlogLocale, ReturnType<typeof lexicalFromText>>> {
-  const out: Partial<Record<BlogLocale, ReturnType<typeof lexicalFromText>>> = {}
-  if (isLexicalDoc(raw) || typeof raw === 'string') {
-    const doc = bodyForLocale(raw)
+function bodyMapFrom(raw: unknown): Partial<Record<BlogLocale, NonNullable<ReturnType<typeof blogBodyToLexical>>>> {
+  const out: Partial<Record<BlogLocale, NonNullable<ReturnType<typeof blogBodyToLexical>>>> = {}
+  if (typeof raw === 'string' || (raw && typeof raw === 'object' && !Array.isArray(raw) && 'root' in (raw as object))) {
+    const doc = blogBodyToLexical(raw)
     if (doc) out.en = doc
     return out
   }
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out
   const o = raw as Record<string, unknown>
   for (const loc of LOCALES) {
-    const doc = bodyForLocale(o[loc])
+    const doc = blogBodyToLexical(o[loc])
     if (doc) out[loc] = doc
   }
   return out
@@ -64,7 +59,7 @@ function bodyMapFrom(raw: unknown): Partial<Record<BlogLocale, ReturnType<typeof
 type LocaleContent = {
   title?: string
   excerpt?: string
-  body?: ReturnType<typeof lexicalFromText>
+  body?: NonNullable<ReturnType<typeof blogBodyToLexical>>
   seoTitle?: string
   seoDescription?: string
 }
@@ -79,7 +74,7 @@ function pickLocaleBlock(raw: unknown): LocaleContent {
   return {
     title: asTrimmedString(o.title),
     excerpt: asTrimmedString(o.excerpt),
-    body: bodyForLocale(o.body),
+    body: blogBodyToLexical(o.body),
     seoTitle: asTrimmedString(seo?.title ?? o.seoTitle),
     seoDescription: asTrimmedString(seo?.description ?? o.seoDescription),
   }
@@ -160,15 +155,30 @@ export function parseBlogWriteBody(
 
   type RelatedLabel = string | Partial<Record<BlogLocale, string>>
   const relatedLinks: Array<{ href: string; label: RelatedLabel }> = []
-  if (Array.isArray(body.relatedLinks)) {
-    for (const row of body.relatedLinks) {
+  const linksRaw =
+    body.relatedLinks !== undefined
+      ? body.relatedLinks
+      : body.links !== undefined
+        ? body.links
+        : undefined
+  if (Array.isArray(linksRaw)) {
+    for (const row of linksRaw) {
       if (!row || typeof row !== 'object') continue
-      const r = row as { href?: unknown; label?: unknown }
-      const href = asTrimmedString(r.href)
+      const r = row as {
+        href?: unknown
+        url?: unknown
+        label?: unknown
+        title?: unknown
+        text?: unknown
+      }
+      const href = normalizeBlogHref(
+        asTrimmedString(r.href) || asTrimmedString(r.url) || '',
+      )
       if (!href) continue
+      const labelRaw = r.label ?? r.title ?? r.text
       const label: RelatedLabel =
-        typeof r.label === 'string' || (r.label && typeof r.label === 'object')
-          ? (r.label as RelatedLabel)
+        typeof labelRaw === 'string' || (labelRaw && typeof labelRaw === 'object')
+          ? (labelRaw as RelatedLabel)
           : href
       relatedLinks.push({ href, label })
     }
@@ -233,7 +243,7 @@ export function parseBlogWriteBody(
     publishedAt,
     cover,
     tags: body.tags !== undefined ? tags : undefined,
-    relatedLinks: body.relatedLinks !== undefined ? relatedLinks : undefined,
+    relatedLinks: linksRaw !== undefined ? relatedLinks : undefined,
     faq,
     locales,
   }
