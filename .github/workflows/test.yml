@@ -91,21 +91,10 @@ jobs:
           echo "skip=false" >> "$GITHUB_OUTPUT"
           echo "DATABASE_URL ready"
 
-      # Additive schema fixes (IF NOT EXISTS) — Payload stays on push:false in CI,
-      # so new columns must land before find() or the API suite fails.
-      - name: Apply pending schema fixes
-        if: steps.db.outputs.skip != 'true'
-        env:
-          DATABASE_SSL_INSECURE: '1'
-          NODE_ENV: test
-        run: |
-          pnpm db:fix-portfolio-subtitle
-          pnpm db:fix-portfolio-richtext
-          pnpm db:fix-solution-feature-columns
-          pnpm db:fix-contact-submissions-audit-fields
-          pnpm db:fix-users-reset-password-requested-at
-          pnpm db:fix-audit-plan-card-name
-
+      # Read-only against the production DB. CI no longer runs the db:fix-* schema
+      # scripts (they took table locks on every PR/push and ran unreviewed PR code as
+      # DDL on prod). A missing column now fails this test; fix it by hand with the
+      # matching `pnpm db:fix-*` script or `pnpm db:migrate` (docs/DEPLOYMENT.md).
       - name: Run API integration test
         if: steps.db.outputs.skip != 'true'
         env:

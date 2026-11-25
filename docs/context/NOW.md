@@ -21,6 +21,7 @@
 - **Проверено на проде:** `/order/{ai-smart-card,enterprise-custom,free-start}` — includes и описания допов на EN/RU/HE есть (волна 1 их не сломала).
 - **Починено (закоммичено):** fallback отчёта — `resolveAuditReportHtml` дочитывает `htmlResult` точечным `findByID` (только поле), если R2 пусто; только для `report_sent`/`in_progress`. Воркер ставит `storageKey` только после успешного R2 PutObject — запись без дыры. PIT-173 (+ Obsidian).
 - **Preview-сборки (вариант A):** `ignoreCommand` на `VERCEL_ENV` отменял и Production (PR #449/#450 не выкатились, прод остался на `851b310`, PIT-175). Заменено на `git.deploymentEnabled` по маскам веток (`feat/**`, `fix/**`, `cursor/**`… = false); `main` деплоится. После merge — проверить, что у merge-коммита есть Production-деплой.
+- **CI (2026-11-25):** шаг `db:fix-*` убран из `test.yml` — API Tests только читают прод-БД. PR с новой колонкой: перед merge `pnpm db:migrate` к проду, затем Re-run API Tests (Preview больше не мигрирует). Правило — `docs/DEPLOYMENT.md` § «Схема БД и API Tests».
 - **Не сделано:** регион функций Vercel (US East) ≠ БД (Сингапур).
 - **Следующий шаг:** push → PR → merge (Production) → после деплоя через 1–2 дня Usage Shared Pooler MB/день. Базовая точка `pg_stat_statements` 08:35 UTC: queryid `6799518027359341062` calls=25378.
 

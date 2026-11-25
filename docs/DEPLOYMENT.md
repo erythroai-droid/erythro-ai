@@ -392,6 +392,13 @@ URL вычисляется в afterRead-хуке, так что ссылка ч�
 
 Скрипты: `pnpm test:int` / `pnpm test:ci`. E2E (Playwright) в CI пока не включены.
 
+### Схема БД и API Tests (с 2026-11-25)
+
+- **API Tests только читают** боевую БД. Шаг `db:fix-*` из CI убран: он на каждый PR/push брал блокировки таблиц и выполнял код из PR как DDL на проде до review.
+- **Миграции** применяет `pnpm build` (`payload migrate`) — теперь только Production-сборка после merge: Preview для веток `feat/**`, `fix/**`, `cursor/**`… выключены (`vercel.json` → `git.deploymentEnabled`).
+- **PR с новой колонкой/таблицей:** API Tests на PR упадут (колонки ещё нет), а ruleset не даст merge. Перед merge примени миграцию к проду вручную: `pnpm db:migrate` (миграции аддитивные — старый код на проде их переживает), затем Re-run API Tests.
+- Пропала колонка из уже применённой миграции → тест покажет `missing column`; чинить вручную соответствующим `pnpm db:fix-*`.
+
 ### GitHub Secrets
 
 `Settings → Secrets and variables → Actions`:
