@@ -2,7 +2,7 @@
 
 Machine API for creating / updating / listing `blog-posts`, plus media upload for covers and body assets. Bypasses Cloudflare Access on `/admin*`; uses a dedicated token.
 
-Date: **2026-11-25** (media upload added same day).
+Date: **2026-11-25** (media + links).
 
 ## Auth
 
@@ -82,10 +82,45 @@ Minimal create (EN only; plain text → Lexical paragraphs):
   "excerpt": "Five concrete checks before you claim AI-search visibility.",
   "body": "First paragraph.\n\n## Direct answer\n\nSecond paragraph.",
   "tags": ["GEO", "SEO"],
-  "relatedLinks": [
-    { "href": "/audit", "label": { "en": "Free AI audit", "ru": "Бесплатный AI-аудит", "he": "ביקורת AI חינם" } }
+  "links": [
+    { "href": "/audit", "label": { "en": "Free AI audit", "ru": "Бесплатный AI-аудит", "he": "ביקורת AI חינם" } },
+    { "url": "https://erythro.ai/portfolio", "title": "Portfolio" }
   ]
 }
+```
+
+## Links
+
+### A) Related links block (under the post)
+
+Field: `relatedLinks` or alias **`links`**.
+
+Each item:
+
+| Field | Aliases | Notes |
+|---|---|---|
+| `href` | `url` | Internal `/path` or `https://…` (bare domain → https) |
+| `label` | `title`, `text` | String or `{ en, ru, he }` |
+
+Rejected: `javascript:`, `data:`, `file:`, protocol-relative `//…`.
+
+External `https://` links open in a new tab on the site.
+
+```json
+{
+  "links": [
+    { "href": "/audit", "label": "Free AI audit" },
+    { "url": "https://example.com/case", "title": { "en": "Case study", "ru": "Кейс" } }
+  ]
+}
+```
+
+### B) Inline links in `body`
+
+Plain text may include markdown links — they become Lexical link nodes:
+
+```text
+Run the [free AI audit](/audit) or read more at [erythro.ai](https://erythro.ai).
 ```
 
 ### Cover (photo or video)
@@ -165,8 +200,9 @@ src/app/api/blog/media/route.ts
 src/lib/blogApi.ts
 src/lib/blogApiAuth.ts
 src/lib/blogMediaApi.ts
+src/lib/blogLexical.ts
 ```
 
 ## Out of scope
 
-Markdown→Lexical headings/lists, public unauthenticated JSON feed (use `/blog/rss.xml` + markdown negotiation), direct-to-R2 multipart for files >12 MB.
+Markdown headings/lists beyond `[text](url)`, public unauthenticated JSON feed (use `/blog/rss.xml` + markdown negotiation), direct-to-R2 multipart for files >12 MB.

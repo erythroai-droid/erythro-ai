@@ -158,21 +158,34 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
                 <span>{tBlog(blogUi.relatedHeading, locale).slice(1)}</span>
               </h2>
               <ul className="m-0 flex list-none flex-col gap-3 p-0">
-                {post.relatedLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={`inline-flex items-center gap-2 font-sans text-sm font-medium uppercase transition-colors ${
-                        isLight
-                          ? 'text-coal-900 hover:text-erythro-500'
-                          : 'text-gold-100 hover:text-gold-500'
-                      }`}
-                    >
-                      {tBlog(link.label, locale)}
-                      <span aria-hidden>→</span>
-                    </Link>
-                  </li>
-                ))}
+                {post.relatedLinks.map((link) => {
+                  const external = /^https?:\/\//i.test(link.href)
+                  const className = `inline-flex items-center gap-2 font-sans text-sm font-medium uppercase transition-colors ${
+                    isLight
+                      ? 'text-coal-900 hover:text-erythro-500'
+                      : 'text-gold-100 hover:text-gold-500'
+                  }`
+                  return (
+                    <li key={link.href}>
+                      {external ? (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={className}
+                        >
+                          {tBlog(link.label, locale)}
+                          <span aria-hidden>→</span>
+                        </a>
+                      ) : (
+                        <Link href={link.href} className={className}>
+                          {tBlog(link.label, locale)}
+                          <span aria-hidden>→</span>
+                        </Link>
+                      )}
+                    </li>
+                  )
+                })}
               </ul>
             </aside>
           ) : null}
