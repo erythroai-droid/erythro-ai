@@ -1,14 +1,27 @@
 # Latest changes
 
-Обновлено: 2026-11-25 (blog relatedLinks locales)  
-Статус: фикс локалей ссылок в ветке; прод-данные не трогали.
+Обновлено: 2026-11-25 (merge main + legal operator)  
+Статус: конфликт NOW.md снят; Osek Patur + relatedLinks locales из main.
 
-## 0. Blog API — локали `relatedLinks` / `links` (2026-11-25)
+## 0. Legal — operator line (2026-11-25)
+- **Строка:** `Kovalenko Vadym (קובלנקו ודים), Osek Patur · Eilat, Israel` (+ RU/HE).
+- **Сделано:** defaults `legalPages.ts` (Privacy §1, Terms §1); footer `purchaseTermsNotice` в `translations`; CMS `scripts/patch-legal-operator-line.ts` применён (privacy/terms/footer EN/RU/HE).
+- **Следующий шаг:** Soft-save Privacy / Terms / Footer в Production admin (ISR 1h) → проверить `/privacy`, `/terms`, подвал → commit/deploy кода по команде.
+
+## 0. Blog API — локали `relatedLinks` / `links` (2026-11-25, из main)
 - **Симптом:** POST/PATCH с label `{en,ru,he}` → 200, остаётся только последняя локаль (he). EN на чтении падает в URL, RU пустой. PATCH без `relatedLinks` на посте со ссылками → `Related Links > Label invalid`. Пост `psb-consulting-demo-site-from-first-screen-to-request` (id 20).
 - **Причина:** массив не локализован, `label` локализован. Запись по локалям без row id пересоздавала строки (PIT-014 / PIT-171). Пустой label в локали валил любой update этой локали (`required: true`).
 - **Сделано:** те же row id (href, иначе индекс при той же длине); строка по-прежнему пишется во все локали; объект пишет только присланные ключи; пропуск поля не трогает ссылки; `[]` очищает; `label` больше не required. Док `blog-api.md`, PIT-171. Тест `tests/int/blogApi.int.spec.ts` (мок Payload, без БД).
 - **Не сделано:** починить прод-пост id 20 (данные не трогали); FAQ-массив той же формы не менялся.
 - **Следующий шаг:** merge → deploy. Повторная отправка links на id 20 перезапишет лейблы; Soft-save поста в Production admin, если HTML блога выглядит старым (ISR 1 час).
+
+## 0. Supabase egress — волна 2 (2026-11-25, день)
+- **Диагноз (`pg_stat_statements` с 26.06):** главный потребитель — `solution_plans` locale-all (~215 KB/запрос, ~25k вызовов ≈ 5 GB), не `html_result` (вернулись единицы строк). Фон низкий (крон reconcile ~30 conn/ч); всплески 230–330 conn/ч = деплои (Preview + Production, оба на прод-БД) и сохранения в CMS (полный сброс кэша).
+- **Сделано (код, локально):** `getSiteContent` — `select` карточных полей планов (без `includes`/`addons`); блог → свой тег `payload-blog` + `revalidatePath('/blog','layout')` + sitemap; Media → полный сброс только на `update`, не на `create`. PIT-171 (+ Obsidian).
+- **Проверено на проде:** `/order/{ai-smart-card,enterprise-custom,free-start}` — includes и описания допов на EN/RU/HE есть (волна 1 их не сломала).
+- **Риск (не чинили):** `findAuditSubmission` не читает `htmlResult` → legacy-fallback в `resolveAuditReportHtml` мёртв; если воркер пришлёт HTML без `storageKey`, отчёт не покажется.
+- **Не сделано:** Preview-сборки на прод-БД (нужна настройка Vercel env — ждёт «да» пользователя); регион функций Vercel (US East) ≠ БД (Сингапур).
+- **Следующий шаг:** commit/push волны 2 → после деплоя через 1–2 дня Usage Shared Pooler MB/день. Базовая точка `pg_stat_statements` 08:35 UTC: queryid `6799518027359341062` calls=25378.
 
 ## 0. Supabase — режем pooler egress (2026-11-25, утро)
 - **Контекст:** Free Egress **5.61/5 GB**; ~99.6% Shared Pooler; grace до **2026-12-25**.
@@ -19,8 +32,7 @@
   - `fetchOrderPlans`: **4 find → 1** `locale:'all'`; кэш `order-plans-v10-…`.
   - PIT-170 (+ Obsidian).
 - **Сделано (prod DB):** `UPDATE … SET html_result = NULL` где есть `storageKey` → **0** строк с HTML (~2.8 MB снято из ответов).
-- **Не сделано:** deploy; VACUUM (не критично); Pro.
-- **Следующий шаг:** deploy → через 1–2 дня Usage (Shared Pooler MB/день). Soft-save не нужен.
+- **Деплой:** в проде (`906911b`). VACUUM не критичен.
 
 ## 0. Blog — links для бота (local WIP)
 - **Сделано локально (не в egress-коммите):** alias `links` = `relatedLinks`; body markdown links → Lexical; док `blog-api.md`.
