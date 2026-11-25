@@ -40,9 +40,14 @@ function localeMapFrom(raw: unknown): Partial<Record<BlogLocale, string>> {
   return out
 }
 
-function bodyMapFrom(raw: unknown): Partial<Record<BlogLocale, NonNullable<ReturnType<typeof blogBodyToLexical>>>> {
+function bodyMapFrom(
+  raw: unknown,
+): Partial<Record<BlogLocale, NonNullable<ReturnType<typeof blogBodyToLexical>>>> {
   const out: Partial<Record<BlogLocale, NonNullable<ReturnType<typeof blogBodyToLexical>>>> = {}
-  if (typeof raw === 'string' || (raw && typeof raw === 'object' && !Array.isArray(raw) && 'root' in (raw as object))) {
+  if (
+    typeof raw === 'string' ||
+    (raw && typeof raw === 'object' && !Array.isArray(raw) && 'root' in (raw as object))
+  ) {
     const doc = blogBodyToLexical(raw)
     if (doc) out.en = doc
     return out
@@ -171,9 +176,7 @@ export function parseBlogWriteBody(
         title?: unknown
         text?: unknown
       }
-      const href = normalizeBlogHref(
-        asTrimmedString(r.href) || asTrimmedString(r.url) || '',
-      )
+      const href = normalizeBlogHref(asTrimmedString(r.href) || asTrimmedString(r.url) || '')
       if (!href) continue
       const labelRaw = r.label ?? r.title ?? r.text
       const label: RelatedLabel =
@@ -249,12 +252,191 @@ export function parseBlogWriteBody(
   }
 }
 
-function labelForLocale(
-  label: string | Partial<Record<BlogLocale, string>>,
+/**
+ * Label text this request explicitly sets for `loc`.
+ * A plain string applies to every locale (existing contract).
+ * An object writes only its own keys — no cross-locale fallback — so a
+ * partial update cannot replace another locale's label.
+ */
+export function explicitLinkLabel(
+  label: string | Partial<Record<BlogLocale, string>> | undefined,
   loc: BlogLocale,
-): string {
-  if (typeof label === 'string') return label
-  return label[loc] || label.en || Object.values(label).find(Boolean) || ''
+): string | undefined {
+  if (typeof label === 'string') {
+    const trimmed = label.trim()
+    return trimmed || undefined
+  }
+  if (!label || typeof label !== 'object' || Array.isArray(label)) return undefined
+  const value = label[loc]
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  return trimmed || undefined
+}
+
+function storedLinkLabel(row: StoredRelatedLink | undefined, loc: BlogLocale): string | undefined {
+  if (!row) return undefined
+  const label = row.label
+  if (typeof label === 'string') {
+    const trimmed = label.trim()
+    return loc === 'en' && trimmed ? trimmed : undefined
+  }
+  if (!label || typeof label !== 'object' || Array.isArray(label)) return undefined
+  const value = (label as Record<string, unknown>)[loc]
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  return trimmed || undefined
+}
+
+function relatedRowId(row: { id?: unknown } | undefined): string | undefined {
+  if (!row || row.id == null || row.id === '') return undefined
+  return String(row.id)
+}
+
+export type StoredRelatedLink = {
+  id?: unknown
+  href?: unknown
+  label?: unknown
+}
+
+export type PlannedRelatedLinkRow = {
+  id?: string
+  href: string
+  /** Locales this request sets. A string label fills en, ru, and he. */
+  explicit: Partial<Record<BlogLocale, string>>
+  /** Stored labels to send again when this locale's write includes the row. */
+  preserved: Partial<Record<BlogLocale, string>>
+}
+
+export type RelatedLinkWritePlan = {
+  /**
+   * Locales whose update must include `relatedLinks`.
+   * `en` is always included when the field was sent, so adds, removals, and
+   * href edits happen once on the shared rows. `ru` / `he` are included only
+   * when the request sets that locale's label.
+   */
+  locales: BlogLocale[]
+  rows: PlannedRelatedLinkRow[]
+}
+
+export function readExistingRelatedLinks(doc: Record<string, unknown> | null): StoredRelatedLink[] {
+  if (!doc || !Array.isArray(doc.relatedLinks)) return []
+  return doc.relatedLinks.filter(
+    (row): row is StoredRelatedLink =>
+      Boolean(row) && typeof row === 'object' && !Array.isArray(row),
+  )
+}
+
+/**
+ * Pair incoming links with existing array rows.
+ * `relatedLinks` is not a localized array: one row id holds every locale's
+ * label. Matching by href (then by index when the list length is unchanged)
+ * lets later locale writes update that row instead of inserting a new one.
+ */
+function matchRelatedLinkRows(
+  incoming: Array<{ href: string }>,
+  existing: StoredRelatedLink[],
+): Array<StoredRelatedLink | undefined> {
+  const used = new Set<number>()
+  const byHref = new Map<string, number[]>()
+  existing.forEach((row, index) => {
+    const href = typeof row.href === 'string' ? row.href : ''
+    if (!href) return
+    const bucket = byHref.get(href) ?? []
+    bucket.push(index)
+    byHref.set(href, bucket)
+  })
+
+  return incoming.map((link, index) => {
+    const hrefIndex = byHref.get(link.href)?.find((i) => !used.has(i))
+    if (hrefIndex !== undefined) {
+      used.add(hrefIndex)
+      return existing[hrefIndex]
+    }
+    if (incoming.length === existing.length && existing[index] && !used.has(index)) {
+      used.add(index)
+      return existing[index]
+    }
+    return undefined
+  })
+}
+
+/** `undefined` incoming → caller leaves links untouched. `[]` clears them. */
+export function planRelatedLinkWrites(
+  incoming:
+    | Array<{ href: string; label: string | Partial<Record<BlogLocale, string>> }>
+    | undefined,
+  existing: StoredRelatedLink[],
+): RelatedLinkWritePlan | null {
+  if (incoming === undefined) return null
+  if (incoming.length === 0) return { locales: ['en'], rows: [] }
+
+  const matched = matchRelatedLinkRows(incoming, existing)
+  const rows: PlannedRelatedLinkRow[] = incoming.map((link, index) => {
+    const prev = matched[index]
+    const explicit: Partial<Record<BlogLocale, string>> = {}
+    const preserved: Partial<Record<BlogLocale, string>> = {}
+    for (const loc of LOCALES) {
+      const next = explicitLinkLabel(link.label, loc)
+      if (next) explicit[loc] = next
+      else {
+        const stored = storedLinkLabel(prev, loc)
+        if (stored) preserved[loc] = stored
+      }
+    }
+    return {
+      id: relatedRowId(prev),
+      href: link.href,
+      explicit,
+      preserved,
+    }
+  })
+
+  const locales = LOCALES.filter(
+    (loc) => loc === 'en' || rows.some((row) => Boolean(row.explicit[loc])),
+  )
+  return { locales: [...locales], rows }
+}
+
+/** Payload array for one locale write. `undefined` means omit the field. */
+export function relatedLinksPayloadForLocale(
+  plan: RelatedLinkWritePlan,
+  loc: BlogLocale,
+  ids: Array<string | undefined>,
+): Array<{ id?: string; href: string; label?: string }> | undefined {
+  if (!plan.locales.includes(loc)) return undefined
+  if (plan.rows.length === 0) return []
+  return plan.rows.map((row, index) => {
+    const out: { id?: string; href: string; label?: string } = { href: row.href }
+    const id = ids[index] || row.id
+    if (id) out.id = id
+    const label = row.explicit[loc] || row.preserved[loc]
+    if (label) out.label = label
+    return out
+  })
+}
+
+function adoptRelatedLinkIds(
+  sent: Array<{ id?: string; href: string }>,
+  returned: unknown,
+): Array<string | undefined> | null {
+  if (!Array.isArray(returned) || returned.length !== sent.length) return null
+  const rows = returned as Array<{ id?: unknown; href?: unknown }>
+  const sameOrder = rows.every((row, index) => row?.href === sent[index]?.href)
+  if (sameOrder) {
+    return rows.map((row, index) => relatedRowId(row) || sent[index]?.id)
+  }
+  const used = new Set<number>()
+  return sent.map((row) => {
+    const found = rows.findIndex(
+      (candidate, index) =>
+        !used.has(index) && candidate?.href === row.href && relatedRowId(candidate),
+    )
+    if (found >= 0) {
+      used.add(found)
+      return relatedRowId(rows[found])
+    }
+    return row.id
+  })
 }
 
 function faqFieldForLocale(
@@ -286,17 +468,6 @@ function buildLocaleData(
     }
     if (input.cover !== undefined) data.cover = input.cover
     if (input.tags !== undefined) data.tags = input.tags.map((tag) => ({ tag }))
-    if (input.relatedLinks !== undefined) {
-      data.relatedLinks = input.relatedLinks.map((l) => ({
-        href: l.href,
-        label: labelForLocale(l.label, loc),
-      }))
-    }
-  } else if (input.relatedLinks !== undefined) {
-    data.relatedLinks = input.relatedLinks.map((l) => ({
-      href: l.href,
-      label: labelForLocale(l.label, loc),
-    }))
   }
 
   if (c.title) data.title = c.title
@@ -373,11 +544,44 @@ export async function upsertBlogPost(
   let id = existing?.id as string | number | undefined
   let created = false
 
+  // Shared array rows. Ids are filled after the first write so ru/he update
+  // the same rows instead of replacing them (PIT-014 / PIT-171).
+  const linkPlan = planRelatedLinkWrites(
+    writeInput.relatedLinks,
+    readExistingRelatedLinks(existing),
+  )
+  let linkIds: Array<string | undefined> = linkPlan ? linkPlan.rows.map((row) => row.id) : []
+
+  const attachLinks = (data: Record<string, unknown>, loc: BlogLocale) => {
+    if (!linkPlan) return
+    const rows = relatedLinksPayloadForLocale(linkPlan, loc, linkIds)
+    if (rows !== undefined) data.relatedLinks = rows
+  }
+
+  const rememberLinkIds = async (doc: unknown) => {
+    if (!linkPlan || linkPlan.rows.length === 0) return
+    const sent = linkPlan.rows.map((row, index) => ({
+      id: linkIds[index] || row.id,
+      href: row.href,
+    }))
+    const returned =
+      doc && typeof doc === 'object' ? (doc as { relatedLinks?: unknown }).relatedLinks : undefined
+    const adopted = adoptRelatedLinkIds(sent, returned)
+    if (adopted?.every(Boolean)) {
+      linkIds = adopted
+      return
+    }
+    const fresh = await findBlogPostBySlug(payload, writeInput.slug)
+    const refetched = adoptRelatedLinkIds(sent, readExistingRelatedLinks(fresh))
+    if (refetched) linkIds = refetched
+  }
+
   if (!id) {
     const enData = {
       slug: writeInput.slug,
       ...buildLocaleData(writeInput, 'en', { includeShared: true, isCreate: true }),
     }
+    attachLinks(enData, 'en')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const doc = await (payload as any).create({
       collection: 'blog-posts',
@@ -387,31 +591,36 @@ export async function upsertBlogPost(
     })
     id = doc.id
     created = true
+    if (enData.relatedLinks) await rememberLinkIds(doc)
   } else {
     const enData = buildLocaleData(writeInput, 'en', { includeShared: true, isCreate: false })
+    attachLinks(enData, 'en')
     if (Object.keys(enData).length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (payload as any).update({
+      const doc = await (payload as any).update({
         collection: 'blog-posts',
         id,
         locale: 'en',
         overrideAccess: true,
         data: enData,
       })
+      if (enData.relatedLinks) await rememberLinkIds(doc)
     }
   }
 
   for (const loc of ['ru', 'he'] as const) {
     const locData = buildLocaleData(writeInput, loc, { includeShared: false, isCreate: false })
+    attachLinks(locData, loc)
     if (Object.keys(locData).length === 0) continue
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (payload as any).update({
+    const doc = await (payload as any).update({
       collection: 'blog-posts',
       id,
       locale: loc,
       overrideAccess: true,
       data: locData,
     })
+    if (locData.relatedLinks) await rememberLinkIds(doc)
   }
 
   // Auto-fill publishedAt on publish when updating without a date
