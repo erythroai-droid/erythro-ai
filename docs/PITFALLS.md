@@ -2236,6 +2236,21 @@ And add multilingual semantic scanning of `aria-label`, `title`, and `innerText`
 
 ---
 
+## PIT-173 — Audit report: inline `htmlResult` fallback was unreachable
+
+**Tags:** `audit`, `r2`, `payload`, `select`, `egress`
+**Seen:** 2026-11-25 — review of the PIT-170 egress patch.
+
+**Symptom:** None in prod yet (0 rows with `html_result`). Latent: a report with HTML only in Postgres (no R2 object, or R2 read failing) would show "not ready" forever.
+
+**Cause:** `findAuditSubmission` excludes `htmlResult` (`select: { htmlResult: false }`) to cut egress, but `resolveAuditReportHtml` still read `doc.htmlResult` as its fallback — always empty after the select.
+
+**Fix:** `resolveAuditReportHtml` reads `htmlResult` on demand (`findByID` with include-style `select: { htmlResult: true }`, which the collection hook passes through) only when R2 returned nothing, and only for `report_sent` / `in_progress`.
+
+**Prevent:** When a `select` drops a column, grep every consumer of that field in the same flow. Worker sets `storageKey` only after a successful R2 `PutObject` — keep it that way, since PATCH discards inline HTML when `storageKey` is present.
+
+---
+
 ## PIT-172 — Supabase egress: full CMS re-read on every cache flush
 
 **Tags:** `supabase`, `egress`, `vercel`, `isr`, `payload`, `cache`

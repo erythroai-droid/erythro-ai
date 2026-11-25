@@ -13,6 +13,7 @@ const ALLOWED_STATUS = new Set<AuditReportStatus>([
 ])
 
 export type AuditReportDoc = {
+  id?: number | string | null
   source?: string | null
   auditStatus?: string | null
   auditScore?: number | null
@@ -97,7 +98,33 @@ export function clipAuditReportFindingOverflow(html: string): string {
   return FINDING_CLIP_STYLE + html
 }
 
-/** Full report HTML — prefer R2 (`storageKey`); CMS `htmlResult` only as legacy fallback. */
+/**
+ * Reads only `htmlResult` for one row. `findAuditSubmission` skips the column to keep
+ * Supabase egress low, so the inline copy is fetched on demand — only when R2 has nothing
+ * (worker could not upload, or R2 is briefly unavailable). PIT-173.
+ */
+async function loadInlineHtmlResult(id: AuditReportDoc['id']): Promise<string | null> {
+  const numericId = typeof id === 'number' ? id : Number(id)
+  if (!Number.isFinite(numericId) || numericId <= 0) return null
+  try {
+    const payload = await getPayload({ config })
+    const row = await payload.findByID({
+      collection: 'contact-submissions',
+      id: numericId,
+      depth: 0,
+      overrideAccess: true,
+      // Include-style select: the collection beforeOperation hook leaves it as is.
+      select: { htmlResult: true },
+    })
+    const html = (row as { htmlResult?: unknown } | null)?.htmlResult
+    return typeof html === 'string' && html.length > 0 ? html : null
+  } catch (err) {
+    console.error('[auditReportLoad] inline htmlResult read failed:', err)
+    return null
+  }
+}
+
+/** Full report HTML — prefer R2 (`storageKey`); CMS `htmlResult` as fallback. */
 export async function resolveAuditReportHtml(
   doc: AuditReportDoc,
   status: AuditReportStatus,
@@ -108,8 +135,13 @@ export async function resolveAuditReportHtml(
     const fromR2 = await getR2ObjectText(key)
     if (fromR2) html = fromR2.slice(0, AUDIT_REPORT_HTML_MAX)
   }
-  if (!html && typeof doc.htmlResult === 'string' && doc.htmlResult.length > 0) {
-    html = doc.htmlResult.slice(0, AUDIT_REPORT_HTML_MAX)
+  if (!html && (status === 'report_sent' || status === 'in_progress')) {
+    // `htmlResult` is filled only if the caller selected it; otherwise read it on demand.
+    const inline =
+      typeof doc.htmlResult === 'string' && doc.htmlResult.length > 0
+        ? doc.htmlResult
+        : await loadInlineHtmlResult(doc.id)
+    if (inline) html = inline.slice(0, AUDIT_REPORT_HTML_MAX)
   }
   return html ? clipAuditReportFindingOverflow(rewriteAuditReportAssetUrls(html)) : null
 }
