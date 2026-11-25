@@ -1,7 +1,20 @@
 # Latest changes
 
-Обновлено: 2026-11-25 (Supabase egress cut)  
-Статус: патч pooler egress закоммичен; нужен deploy.
+Обновлено: 2026-11-25 (legal operator line)  
+Статус: Osek Patur в Privacy/Terms/footer — код + CMS; Soft-save + deploy кода.
+
+## 0. Legal — operator line (2026-11-25)
+- **Строка:** `Kovalenko Vadym (קובלנקו ודים), Osek Patur · Eilat, Israel` (+ RU/HE).
+- **Сделано:** defaults `legalPages.ts` (Privacy §1, Terms §1); footer `purchaseTermsNotice` в `translations`; CMS `scripts/patch-legal-operator-line.ts` применён (privacy/terms/footer EN/RU/HE).
+- **Следующий шаг:** Soft-save Privacy / Terms / Footer в Production admin (ISR 1h) → проверить `/privacy`, `/terms`, подвал → commit/deploy кода по команде.
+
+## 0. Supabase egress — волна 2 (2026-11-25, день)
+- **Диагноз (`pg_stat_statements` с 26.06):** главный потребитель — `solution_plans` locale-all (~215 KB/запрос, ~25k вызовов ≈ 5 GB), не `html_result` (вернулись единицы строк). Фон низкий (крон reconcile ~30 conn/ч); всплески 230–330 conn/ч = деплои (Preview + Production, оба на прод-БД) и сохранения в CMS (полный сброс кэша).
+- **Сделано (код, локально):** `getSiteContent` — `select` карточных полей планов (без `includes`/`addons`); блог → свой тег `payload-blog` + `revalidatePath('/blog','layout')` + sitemap; Media → полный сброс только на `update`, не на `create`. PIT-171 (+ Obsidian).
+- **Проверено на проде:** `/order/{ai-smart-card,enterprise-custom,free-start}` — includes и описания допов на EN/RU/HE есть (волна 1 их не сломала).
+- **Риск (не чинили):** `findAuditSubmission` не читает `htmlResult` → legacy-fallback в `resolveAuditReportHtml` мёртв; если воркер пришлёт HTML без `storageKey`, отчёт не покажется.
+- **Не сделано:** Preview-сборки на прод-БД (нужна настройка Vercel env — ждёт «да» пользователя); регион функций Vercel (US East) ≠ БД (Сингапур).
+- **Следующий шаг:** commit/push волны 2 → после деплоя через 1–2 дня Usage Shared Pooler MB/день. Базовая точка `pg_stat_statements` 08:35 UTC: queryid `6799518027359341062` calls=25378.
 
 ## 0. Supabase — режем pooler egress (2026-11-25, утро)
 - **Контекст:** Free Egress **5.61/5 GB**; ~99.6% Shared Pooler; grace до **2026-12-25**.
@@ -12,8 +25,7 @@
   - `fetchOrderPlans`: **4 find → 1** `locale:'all'`; кэш `order-plans-v10-…`.
   - PIT-170 (+ Obsidian).
 - **Сделано (prod DB):** `UPDATE … SET html_result = NULL` где есть `storageKey` → **0** строк с HTML (~2.8 MB снято из ответов).
-- **Не сделано:** deploy; VACUUM (не критично); Pro.
-- **Следующий шаг:** deploy → через 1–2 дня Usage (Shared Pooler MB/день). Soft-save не нужен.
+- **Деплой:** в проде (`906911b`). VACUUM не критичен.
 
 ## 0. Blog — links для бота (local WIP)
 - **Сделано локально (не в egress-коммите):** alias `links` = `relatedLinks`; body markdown links → Lexical; док `blog-api.md`.

@@ -36,6 +36,13 @@ const CONTACT_LINE: LocalizedString = {
   he: 'יצירת קשר: erythro.ai@gmail.com · +972 50 931 27 46 · אילת, ישראל',
 }
 
+/** Legal identity line (Privacy Data controller, Terms, footer). */
+export const LEGAL_OPERATOR_LINE: LocalizedString = {
+  en: 'Kovalenko Vadym (קובלנקו ודים), Osek Patur · Eilat, Israel',
+  ru: 'Коваленко Вадим (קובלנקו ודים), Osek Patur · Эйлат, Израиль',
+  he: 'קובלנקו ודים (Kovalenko Vadym), עוסק פטור · אילת, ישראל',
+}
+
 export const legalPages: Record<LegalPageId, LegalPage> = {
   privacy: {
     id: 'privacy',
@@ -55,7 +62,7 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
       ru: 'Последнее обновление',
       he: 'עודכן לאחרונה',
     },
-    updatedAt: '2026-08-14',
+    updatedAt: '2026-11-25',
     intro: {
       en: 'This Privacy Policy explains how Erythro.ai (“we”, “us”) processes personal information when you visit erythro.ai, contact us, or use our services. We process data in accordance with the Israeli Privacy Protection Law, 5741-1981 (including Amendment 13), the Privacy Protection Regulations (Data Security), 5777-2017, and other applicable rules.',
       ru: 'Настоящая Политика конфиденциальности объясняет, как Erythro.ai («мы») обрабатывает персональные данные при посещении сайта erythro.ai, обращении к нам или использовании наших услуг. Мы обрабатываем данные в соответствии с Законом Израиля о защите частной жизни 5741-1981 (включая Поправку 13), Правилами защиты частной жизни (информационная безопасность) 5777-2017 и иными применимыми нормами.',
@@ -71,12 +78,15 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         paragraphs: {
           en: [
             'The data controller (database owner) is Erythro.ai, based in Eilat, Israel. The contact person for privacy matters is reachable at erythro.ai@gmail.com or +972 50 931 27 46.',
+            LEGAL_OPERATOR_LINE.en,
           ],
           ru: [
             'Владелец базы данных / оператор — Erythro.ai, Эйлат, Израиль. Ответственный контакт по вопросам конфиденциальности: erythro.ai@gmail.com или +972 50 931 27 46.',
+            LEGAL_OPERATOR_LINE.ru,
           ],
           he: [
             'בעל מאגר המידע / בעל השליטה הוא Erythro.ai, אילת, ישראל. איש הקשר לנושאי פרטיות: erythro.ai@gmail.com או +972 50 931 27 46.',
+            LEGAL_OPERATOR_LINE.he,
           ],
         },
       },
@@ -307,7 +317,7 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
       ru: 'Последнее обновление',
       he: 'עודכן לאחרונה',
     },
-    updatedAt: '2026-09-29',
+    updatedAt: '2026-11-25',
     intro: {
       en: 'These Terms of Use (“Terms”) govern access to and use of the erythro.ai website and related online materials. By using the site you agree to these Terms. If you do not agree, please do not use the site. Separate written agreements apply to paid projects and retainers.',
       ru: 'Настоящие Условия использования («Условия») регулируют доступ к сайту erythro.ai и связанным материалам. Используя сайт, вы соглашаетесь с Условиями. Если вы не согласны — не используйте сайт. На платные проекты и сопровождение действуют отдельные письменные договоры.',
@@ -323,12 +333,15 @@ export const legalPages: Record<LegalPageId, LegalPage> = {
         paragraphs: {
           en: [
             'The site is operated by Erythro.ai, Eilat, Israel. Contact: erythro.ai@gmail.com, +972 50 931 27 46.',
+            LEGAL_OPERATOR_LINE.en,
           ],
           ru: [
             'Сайт управляется Erythro.ai, Эйлат, Израиль. Контакты: erythro.ai@gmail.com, +972 50 931 27 46.',
+            LEGAL_OPERATOR_LINE.ru,
           ],
           he: [
             'האתר מופעל על ידי Erythro.ai, אילת, ישראל. יצירת קשר: erythro.ai@gmail.com, +972 50 931 27 46.',
+            LEGAL_OPERATOR_LINE.he,
           ],
         },
       },
