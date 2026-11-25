@@ -26,14 +26,14 @@ Do **not** reuse `AGENT_SECRET_TOKEN` or Payload admin password.
 
 ## Endpoints
 
-| Method | Path | Action |
-|---|---|---|
-| `GET` | `/api/blog?status=published\|draft\|all&limit=&page=` | List |
-| `POST` | `/api/blog` | Create or upsert by `slug` |
-| `GET` | `/api/blog/[slug]` | One post (incl. drafts) |
-| `PATCH` | `/api/blog/[slug]` | Partial update / publish |
-| `DELETE` | `/api/blog/[slug]` | Hard delete |
-| `POST` | `/api/blog/media` | Upload image/video → Media (R2) |
+| Method   | Path                                                  | Action                          |
+| -------- | ----------------------------------------------------- | ------------------------------- |
+| `GET`    | `/api/blog?status=published\|draft\|all&limit=&page=` | List                            |
+| `POST`   | `/api/blog`                                           | Create or upsert by `slug`      |
+| `GET`    | `/api/blog/[slug]`                                    | One post (incl. drafts)         |
+| `PATCH`  | `/api/blog/[slug]`                                    | Partial update / publish        |
+| `DELETE` | `/api/blog/[slug]`                                    | Hard delete                     |
+| `POST`   | `/api/blog/media`                                     | Upload image/video → Media (R2) |
 
 Hooks on the collection still run → ISR revalidation via `SITE_CONTENT_TAG` (same as admin Save).
 
@@ -63,7 +63,10 @@ curl -sS -X POST "https://erythro.ai/api/blog/media" \
 Response:
 
 ```json
-{ "ok": true, "media": { "id": 234, "url": "https://…", "mimeType": "image/jpeg", "alt": "…", "filename": "…" } }
+{
+  "ok": true,
+  "media": { "id": 234, "url": "https://…", "mimeType": "image/jpeg", "alt": "…", "filename": "…" }
+}
 ```
 
 Use `media.id` as `cover` on the post. Larger videos: upload elsewhere (or admin), then pass HTTPS URL / id.
@@ -83,7 +86,10 @@ Minimal create (EN only; plain text → Lexical paragraphs):
   "body": "First paragraph.\n\n## Direct answer\n\nSecond paragraph.",
   "tags": ["GEO", "SEO"],
   "links": [
-    { "href": "/audit", "label": { "en": "Free AI audit", "ru": "Бесплатный AI-аудит", "he": "ביקורת AI חינם" } },
+    {
+      "href": "/audit",
+      "label": { "en": "Free AI audit", "ru": "Бесплатный AI-аудит", "he": "ביקורת AI חינם" }
+    },
     { "url": "https://erythro.ai/portfolio", "title": "Portfolio" }
   ]
 }
@@ -97,10 +103,10 @@ Field: `relatedLinks` or alias **`links`**.
 
 Each item:
 
-| Field | Aliases | Notes |
-|---|---|---|
-| `href` | `url` | Internal `/path` or `https://…` (bare domain → https) |
-| `label` | `title`, `text` | String or `{ en, ru, he }` |
+| Field   | Aliases         | Notes                                                 |
+| ------- | --------------- | ----------------------------------------------------- |
+| `href`  | `url`           | Internal `/path` or `https://…` (bare domain → https) |
+| `label` | `title`, `text` | String or `{ en, ru, he }`                            |
 
 Rejected: `javascript:`, `data:`, `file:`, protocol-relative `//…`.
 
@@ -114,6 +120,17 @@ External `https://` links open in a new tab on the site.
   ]
 }
 ```
+
+Rows are shared across locales. Only `label` is localized, and it stays on the same row id.
+
+| What you send           | What is stored                                                               |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| `label` string          | That text for **en, ru, and he**                                             |
+| `label: { en, ru, he }` | Each locale you include. A locale you leave out keeps its current label      |
+| field omitted           | Existing links stay as they are. Missing translations do not fail the update |
+| `[]`                    | Clears the list                                                              |
+
+A partial label update (for example only `ru`) must not clear `en` or `he`. The public page uses the locale's label, then English, then the URL.
 
 ### B) Inline links in `body`
 

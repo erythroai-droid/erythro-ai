@@ -90,7 +90,8 @@ export const BlogPosts: CollectionConfig = {
       type: 'array',
       labels: { singular: 'Tag', plural: 'Tags' },
       admin: {
-        description: 'Topic keywords for Article.keywords and internal filters (e.g. GEO, CRO, Next.js).',
+        description:
+          'Topic keywords for Article.keywords and internal filters (e.g. GEO, CRO, Next.js).',
         initCollapsed: true,
       },
       fields: [{ name: 'tag', type: 'text', required: true }],
@@ -105,7 +106,16 @@ export const BlogPosts: CollectionConfig = {
         initCollapsed: true,
       },
       fields: [
-        locText('label', { required: true }),
+        // Not required. Payload validates every existing row when any field of
+        // that locale is updated. An empty translation must not reject a PATCH
+        // that does not mention links (PIT-171). The site falls back to English,
+        // then the URL.
+        locText('label', {
+          admin: {
+            description:
+              'Link text for this locale. Empty is allowed; the public page uses English, then the URL.',
+          },
+        }),
         {
           name: 'href',
           type: 'text',

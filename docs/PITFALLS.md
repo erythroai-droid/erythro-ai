@@ -222,7 +222,22 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 
 **Fix:** Create `en` first, `applyIds` from en rows into other locales, then update.
 
-**Prevent:** Always use the `applyIds` pattern in `scripts/seed.ts` for localized arrays.
+**Prevent:** Always use the `applyIds` pattern in `scripts/seed.ts` for localized arrays. Blog API writes use the same rule (PIT-171).
+
+---
+
+## PIT-171 — Blog API keeps only the last locale's related-link labels
+
+**Tags:** `blog`, `payload`, `i18n`, `api`
+**Seen:** 2026-11-25 — `POST`/`PATCH` `relatedLinks` / `links` on `psb-consulting-demo-site-from-first-screen-to-request` (id 20). Response 200, then only HE labels remained. EN fell back to the URL. RU was empty. A later PATCH that did not send links failed with `Related Links > Label invalid`.
+
+**Symptom:** One request with `label: { en, ru, he }` persists only the last locale written (`he`). A follow-up PATCH of another field (no `relatedLinks`) returns a validation error on Related Links → Label.
+
+**Cause:** `relatedLinks` is a non-localized array. `label` is a localized column on that row (`blog_posts_related_links_locales`). `upsertBlogPost` wrote the array once per locale **without row ids**. Payload deleted the rows and inserted new ones, so each locale write dropped the other locales' labels (same class as PIT-014). After that, the locale being updated had no label. `label` was `required: true`, and Payload validates existing array rows on any update of that locale, so a PATCH that never mentioned links still failed.
+
+**Fix:** Keep row ids (match by href, then by index when the list length is unchanged). Write EN first, then RU/HE with those ids. Send a locale's label only when the request includes it; resend the stored label when that locale's write includes the row. A plain string still fills en, ru, and he. `label` is not required, so an empty translation does not block an unrelated PATCH. `[]` still clears the list. Omitting the field does not write it.
+
+**Prevent:** Any API write of a non-localized array with localized subfields must pass the existing row `id` into every locale update. Do not recreate rows per locale. See `scripts/seed.ts` `applyIds` and `src/lib/blogApi.ts`.
 
 ---
 
@@ -2717,6 +2732,7 @@ The full Pro run (10 funnel URLs, 3 locales, PSI, Gemini) then completes locally
 
 ## Checklist before merging CMS / schema PRs
 
+- [ ] Blog API `relatedLinks`: pass array row ids across locale writes; do not require a label in every locale (PIT-171)
 - [ ] Locale patch scripts: no `\\b` on Hebrew; walk `addons` / Lexical on plans (PIT-071)
 - [ ] Sitemap: merge static for services/orders; portfolio = CMS-only when CMS has docs (PIT-070)
 - [ ] Audit waiting page: dedicated poll limiter; Vercel Cron reconcile + contact `after()` retry (PIT-072)

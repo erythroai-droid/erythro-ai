@@ -1,7 +1,14 @@
 # Latest changes
 
-Обновлено: 2026-11-25 (Supabase egress cut)  
-Статус: патч pooler egress закоммичен; нужен deploy.
+Обновлено: 2026-11-25 (blog relatedLinks locales)  
+Статус: фикс локалей ссылок в ветке; прод-данные не трогали.
+
+## 0. Blog API — локали `relatedLinks` / `links` (2026-11-25)
+- **Симптом:** POST/PATCH с label `{en,ru,he}` → 200, остаётся только последняя локаль (he). EN на чтении падает в URL, RU пустой. PATCH без `relatedLinks` на посте со ссылками → `Related Links > Label invalid`. Пост `psb-consulting-demo-site-from-first-screen-to-request` (id 20).
+- **Причина:** массив не локализован, `label` локализован. Запись по локалям без row id пересоздавала строки (PIT-014 / PIT-171). Пустой label в локали валил любой update этой локали (`required: true`).
+- **Сделано:** те же row id (href, иначе индекс при той же длине); строка по-прежнему пишется во все локали; объект пишет только присланные ключи; пропуск поля не трогает ссылки; `[]` очищает; `label` больше не required. Док `blog-api.md`, PIT-171. Тест `tests/int/blogApi.int.spec.ts` (мок Payload, без БД).
+- **Не сделано:** починить прод-пост id 20 (данные не трогали); FAQ-массив той же формы не менялся.
+- **Следующий шаг:** merge → deploy. Повторная отправка links на id 20 перезапишет лейблы; Soft-save поста в Production admin, если HTML блога выглядит старым (ISR 1 час).
 
 ## 0. Supabase — режем pooler egress (2026-11-25, утро)
 - **Контекст:** Free Egress **5.61/5 GB**; ~99.6% Shared Pooler; grace до **2026-12-25**.
