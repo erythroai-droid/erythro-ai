@@ -1,7 +1,23 @@
 # Latest changes
 
-Обновлено: 2026-11-27 (relatedService seed fix PIT-178)  
-Статус: БД починена (slugs + related_service_id); нужен deploy кода + Soft-save/ISR.
+Обновлено: 2026-11-27 (relatedAuditHref/Label в CMS)  
+Статус: audit CTA редактируется в admin; нужен migrate + deploy.
+
+## 0. Portfolio — Related Audit CTA в админке (2026-11-27)
+- **Запрос:** менять ссылку «Бесплатный AI-аудит» как Related Service.
+- **Сделано:** `relatedAuditHref` (default `/audit`) + `relatedAuditLabel` (loc) в sidebar Portfolio Projects; UI `RelatedServiceAndAudit`; migrate `20261127_020000_…` применена; кэш `v34`.
+- **Следующий шаг:** commit/deploy → Admin sidebar: **Related Audit Link** / **Related Audit Label** → Soft-save.
+
+## 0. Portfolio — ember Related Service смена (2026-11-27)
+- **Admin save:** `ember` `related_service_id=3` (`enterprise-engineering`), `updated_at` 23:31 UTC.
+- **Live:** `/portfolio/ember` → «Enterprise Engineering» (+ Free AI audit). ISR сначала STALE, потом HIT.
+- **Если не видно:** Ctrl+Shift+R; на RU после гидрации — «Инжиниринг».
+
+## 0. Portfolio — Related Service не видно в admin (2026-11-27)
+- **Деплой #454 READY**, поле в коде на main есть.
+- **Где:** не в Services и не в списке без колонки — **Pages → Portfolio Projects → открыть кейс** (например Ember). Поле рядом с Solution Plan / теперь в **sidebar**.
+- **Сделано:** `label`, `admin.position: 'sidebar'`, колонка в `defaultColumns`; CMS_FIELD_MAP.
+- **Следующий шаг:** deploy → hard-refresh admin (Ctrl+Shift+R) → открыть Ember → sidebar Related Service.
 
 ## 0. Portfolio — Related service verify + seed fix (2026-11-27)
 - **Прод deploy OK:** merge #453 `READY` (relatedService CMS).
