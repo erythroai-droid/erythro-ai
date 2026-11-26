@@ -15,6 +15,7 @@
 | Pricing package badge next to body H1 | `solutionPlan` | relationship → Plans (`kind=solution`); title → badge, links to `/order/[slug]` |
 | Bottom “Related service” CTA | `relatedService` | relationship → Services (sidebar); title = link text |
 | Second CTA (audit) | `relatedAuditHref`, `relatedAuditLabel` | sidebar; href default `/audit`; label optional (EN/RU/HE) |
+| Lighthouse-style gauges | `performanceScores` | group: `enabled` checkbox + scores 0–100 + `agentBrowse` (e.g. 2/2) |
 | `CLIENT_NAME` | `client` | text |
 | Period | `date` | text |
 | Demo URL | `link` | text |

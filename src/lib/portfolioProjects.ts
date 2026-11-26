@@ -64,6 +64,16 @@ export interface PortfolioProject {
   relatedAuditHref?: string | null
   /** Localized audit CTA label; empty → built-in “Free AI audit” strings. */
   relatedAuditLabel?: LocaleMap
+  /**
+   * Optional Lighthouse-style gauges (CMS performanceScores.enabled).
+   */
+  performanceScores?: {
+    performance?: number | null
+    accessibility?: number | null
+    bestPractices?: number | null
+    seo?: number | null
+    agentBrowse?: string | null
+  } | null
   body: PortfolioBodySection[]
   seoTitle?: LocaleMap
   seoDescription?: LocaleMap

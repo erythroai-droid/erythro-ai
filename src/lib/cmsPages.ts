@@ -388,6 +388,26 @@ export function mapPortfolioDoc(d: any): PortfolioProject {
     ...(LOCALES.some((l) => Boolean(locMapCms(d.relatedAuditLabel)[l]?.trim()))
       ? { relatedAuditLabel: locMapCms(d.relatedAuditLabel) }
       : {}),
+    ...(() => {
+      const g = d.performanceScores
+      if (!g || typeof g !== 'object' || !g.enabled) return {}
+      const performanceScores = {
+        ...(typeof g.performance === 'number' ? { performance: g.performance } : {}),
+        ...(typeof g.accessibility === 'number' ? { accessibility: g.accessibility } : {}),
+        ...(typeof g.bestPractices === 'number' ? { bestPractices: g.bestPractices } : {}),
+        ...(typeof g.seo === 'number' ? { seo: g.seo } : {}),
+        ...(typeof g.agentBrowse === 'string' && g.agentBrowse.trim()
+          ? { agentBrowse: g.agentBrowse.trim() }
+          : {}),
+      }
+      const hasAny =
+        performanceScores.performance != null ||
+        performanceScores.accessibility != null ||
+        performanceScores.bestPractices != null ||
+        performanceScores.seo != null ||
+        Boolean(performanceScores.agentBrowse)
+      return hasAny ? { performanceScores } : {}
+    })(),
     body,
     ...(hasSeoTitle ? { seoTitle } : {}),
     ...(hasSeoDescription ? { seoDescription } : {}),
@@ -944,7 +964,7 @@ export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
   // v10: trim slugs + per-doc map (trailing-space slugs 404'd detail pages)
   // v26: rosso-garage four languages (EN/RU/HE/AR)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v34-related-audit'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v35-perf-scores'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

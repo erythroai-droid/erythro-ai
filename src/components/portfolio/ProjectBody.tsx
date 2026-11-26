@@ -18,6 +18,7 @@ import {
 import { richTextConverters } from '@/lib/richTextConverters'
 import ProjectNav, { type ProjectNavNeighbor } from './ProjectNav'
 import { RelatedServiceAndAudit } from '@/components/RelatedLinks'
+import ProjectPerformanceScores from '@/components/portfolio/ProjectPerformanceScores'
 import { relatedServiceSlugForProject } from '@/lib/internalLinks'
 
 /** Shared Tailwind for Lexical body / subtitle media (img + video). */
@@ -163,6 +164,13 @@ export default function ProjectBody({
               )
             ) : null}
           </div>
+          {project.performanceScores ? (
+            <ProjectPerformanceScores
+              locale={locale}
+              theme={theme}
+              scores={project.performanceScores}
+            />
+          ) : null}
           {highlights.length > 0 ? (
             <dl
               className={`m-0 flex w-full flex-col border-t ${

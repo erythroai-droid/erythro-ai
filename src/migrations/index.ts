@@ -55,6 +55,7 @@ import * as migration_20261124_150000_blog_posts_locked_rels from './20261124_15
 import * as migration_20261126_110000_portfolio_project_related_service from './20261126_110000_portfolio_project_related_service'
 import * as migration_20261127_010000_fix_service_slugs_related_seed from './20261127_010000_fix_service_slugs_related_seed'
 import * as migration_20261127_020000_portfolio_related_audit_cta from './20261127_020000_portfolio_related_audit_cta'
+import * as migration_20261127_030000_portfolio_performance_scores from './20261127_030000_portfolio_performance_scores'
 
 export const migrations = [
   {
@@ -341,5 +342,10 @@ export const migrations = [
     up: migration_20261127_020000_portfolio_related_audit_cta.up,
     down: migration_20261127_020000_portfolio_related_audit_cta.down,
     name: '20261127_020000_portfolio_related_audit_cta',
+  },
+  {
+    up: migration_20261127_030000_portfolio_performance_scores.up,
+    down: migration_20261127_030000_portfolio_performance_scores.down,
+    name: '20261127_030000_portfolio_performance_scores',
   },
 ]
