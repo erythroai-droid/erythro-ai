@@ -18,6 +18,7 @@ import {
 import { richTextConverters } from '@/lib/richTextConverters'
 import ProjectNav, { type ProjectNavNeighbor } from './ProjectNav'
 import { RelatedServiceAndAudit } from '@/components/RelatedLinks'
+import { relatedServiceSlugForProject } from '@/lib/internalLinks'
 
 /** Shared Tailwind for Lexical body / subtitle media (img + video). */
 const richMediaClass =
@@ -34,7 +35,6 @@ interface ProjectBodyProps {
   prev?: ProjectNavNeighbor | null
   next?: ProjectNavNeighbor | null
   portfolioHref?: string
-  relatedServiceSlug?: string | null
 }
 
 function visitProjectLabel(locale: string): string {
@@ -60,7 +60,6 @@ export default function ProjectBody({
   prev = null,
   next = null,
   portfolioHref = '/portfolio',
-  relatedServiceSlug = null,
 }: ProjectBodyProps) {
   const isLight = theme === 'light'
   const sectionRef = useRef<HTMLElement | null>(null)
@@ -340,7 +339,14 @@ export default function ProjectBody({
         <RelatedServiceAndAudit
           locale={locale}
           theme={theme}
-          serviceSlug={relatedServiceSlug}
+          serviceSlug={
+            project.relatedServiceSlug ?? relatedServiceSlugForProject(project.slug)
+          }
+          serviceLabel={
+            project.relatedServiceLabel
+              ? tLocale(project.relatedServiceLabel, locale).trim() || undefined
+              : undefined
+          }
         />
 
         <ProjectNav

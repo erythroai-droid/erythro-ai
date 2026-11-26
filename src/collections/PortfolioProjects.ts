@@ -68,6 +68,15 @@ export const PortfolioProjects: CollectionConfig = {
         kind: { equals: 'solution' },
       },
     },
+    {
+      name: 'relatedService',
+      type: 'relationship',
+      relationTo: 'services',
+      admin: {
+        description:
+          'Service linked at the bottom of the project page (“Related service”). Label = service title. Free AI audit CTA always shows below.',
+      },
+    },
     locTextarea('description', {
       required: true,
       admin: { description: 'Short card description on /portfolio' },
