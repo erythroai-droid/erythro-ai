@@ -50,6 +50,13 @@ export interface PortfolioProject {
   packageLabel?: LocaleMap
   /** Order page path when the related plan has a slug, e.g. /order/ai-smart-card. */
   packageHref?: string
+  /**
+   * Related service CTA at the bottom of the project page (CMS relatedService).
+   * Falls back to the static map in internalLinks when the CMS field is empty.
+   */
+  relatedServiceSlug?: string | null
+  /** Localized link label; when empty the UI uses a generic “Services” string. */
+  relatedServiceLabel?: LocaleMap
   body: PortfolioBodySection[]
   seoTitle?: LocaleMap
   seoDescription?: LocaleMap

@@ -26,7 +26,6 @@ interface ProjectClientProps {
   project: PortfolioProject
   prev: { slug: string; title: PortfolioProject['title'] } | null
   next: { slug: string; title: PortfolioProject['title'] } | null
-  relatedServiceSlug?: string | null
 }
 
 export default function ProjectClient({
@@ -37,7 +36,6 @@ export default function ProjectClient({
   project,
   prev,
   next,
-  relatedServiceSlug = null,
 }: ProjectClientProps) {
   const a11yTranslations = content.accessibility
   const { locale, setLocale, theme, setTheme } = useSitePrefs(
@@ -119,7 +117,6 @@ export default function ProjectClient({
               prev={prev}
               next={next}
               portfolioHref={content.caseStudies.viewAllHref || '/portfolio'}
-              relatedServiceSlug={relatedServiceSlug}
             />
           </div>
 

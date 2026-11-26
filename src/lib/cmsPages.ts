@@ -43,6 +43,7 @@ import {
   type OrderPeriod,
 } from './orderPlans'
 import { sanitizeFeature, sanitizePlanTitle, sanitizeSeoTitle } from './copyHygiene'
+import { relatedServiceSlugForProject } from './internalLinks'
 import { solutions, type SolutionCardItem } from '@/translations'
 
 const LOCALES = ['en', 'ru', 'he'] as const
@@ -313,6 +314,23 @@ export function mapPortfolioDoc(d: any): PortfolioProject {
   const packageHref =
     hasPackageLabel && planSlugRaw ? `/order/${planSlugRaw}` : undefined
 
+  const relatedServiceDoc =
+    d.relatedService && typeof d.relatedService === 'object' && !Array.isArray(d.relatedService)
+      ? d.relatedService
+      : null
+  const relatedServiceSlugFromCms =
+    typeof relatedServiceDoc?.slug === 'string' ? relatedServiceDoc.slug.trim() : ''
+  // CMS relation wins; otherwise keep the static slug map (seed/dev fallback).
+  const relatedServiceSlug =
+    relatedServiceSlugFromCms || relatedServiceSlugForProject(resolvedSlug) || null
+  const relatedServiceLabelFromCms = relatedServiceDoc
+    ? locMapCms(relatedServiceDoc.title)
+    : undefined
+  const hasRelatedServiceLabel = Boolean(
+    relatedServiceLabelFromCms &&
+      LOCALES.some((l) => Boolean(relatedServiceLabelFromCms[l]?.trim())),
+  )
+
   return {
     id: String(d.id ?? fb.id),
     slug: resolvedSlug,
@@ -350,6 +368,10 @@ export function mapPortfolioDoc(d: any): PortfolioProject {
           packageLabel,
           ...(packageHref ? { packageHref } : {}),
         }
+      : {}),
+    ...(relatedServiceSlug ? { relatedServiceSlug } : {}),
+    ...(hasRelatedServiceLabel && relatedServiceLabelFromCms
+      ? { relatedServiceLabel: relatedServiceLabelFromCms }
       : {}),
     body,
     ...(hasSeoTitle ? { seoTitle } : {}),
@@ -907,7 +929,7 @@ export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
   // v10: trim slugs + per-doc map (trailing-space slugs 404'd detail pages)
   // v26: rosso-garage four languages (EN/RU/HE/AR)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v32-newest-first'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v33-related-service'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()

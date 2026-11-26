@@ -17,7 +17,10 @@ export const SERVICE_RELATED_CASE_SLUGS: Record<string, readonly string[]> = {
   'design-branding': ['rosso-garage', 'ember', 'la-scala', 'origin-coffee'],
 }
 
-/** Primary related service for a portfolio case (for cross-links + audit CTA). */
+/**
+ * Fallback related service for a portfolio case when CMS `relatedService` is empty.
+ * Prefer editing the relation on Portfolio Projects in admin after migrate seed.
+ */
 export const PORTFOLIO_RELATED_SERVICE_SLUG: Record<string, string> = {
   'ai-consultant': 'ai-automation',
   'ai-audit-agent': 'ai-automation',

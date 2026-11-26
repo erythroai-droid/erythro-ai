@@ -640,6 +640,10 @@ export interface PortfolioProject {
    */
   solutionPlan?: (number | null) | SolutionPlan;
   /**
+   * Service linked at the bottom of the project page (“Related service”). Label = service title. Free AI audit CTA always shows below.
+   */
+  relatedService?: (number | null) | Service;
+  /**
    * Short card description on /portfolio
    */
   description: string;
@@ -870,7 +874,10 @@ export interface BlogPost {
    */
   relatedLinks?:
     | {
-        label: string;
+        /**
+         * Link text for this locale. Empty is allowed; the public page uses English, then the URL.
+         */
+        label?: string | null;
         /**
          * Path or absolute URL, e.g. /audit
          */
@@ -1559,6 +1566,7 @@ export interface PortfolioProjectsSelect<T extends boolean = true> {
   category?: T;
   categoryLabel?: T;
   solutionPlan?: T;
+  relatedService?: T;
   description?: T;
   summary?: T;
   subtitle?: T;

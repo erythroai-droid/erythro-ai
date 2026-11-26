@@ -1,12 +1,38 @@
 # Latest changes
 
-Обновлено: 2026-11-25 (Supabase egress волна 2 закоммичена)  
-Статус: конфликт NOW.md снят; Osek Patur + relatedLinks locales из main.
+Обновлено: 2026-11-26 (portfolio relatedService migrate OK)  
+Статус: миграция на прод-БД применена; нужен deploy кода.
+
+## 0. Portfolio — Related service в админке (2026-11-26)
+- **Было:** блок «Связанная услуга» хардкод в `internalLinks.PORTFOLIO_RELATED_SERVICE_SLUG`.
+- **Сделано:** поле `relatedService` (relationship → Services) на Portfolio Projects; маппинг в `mapPortfolioDoc`; лейбл = title услуги; миграция `20261126_110000_portfolio_project_related_service` сидит текущую карту; fallback на static map если CMS пусто.
+- **Migrate:** `pnpm db:migrate` → `Migrated: 20261126_110000_portfolio_project_related_service` (прод-БД из `.env`).
+- **Аудит-CTA** «Бесплатный AI-аудит» → `/audit` по-прежнему в коде (`RelatedLinks.tsx`).
+- **Следующий шаг:** deploy → в Admin: Pages → Portfolio Projects → Related Service (уже засеяно) → Soft-save при смене для ISR.
+
+## 0. Blog — Lexical Upload populated object (2026-11-25)
+- **Симптом (admin):** Body RU — `Upload value should be a string or number. The Lexical Upload component should not receive the populated value object.` (пост PSB demo, id 20).
+- **Причина:** `fix-blog-localization-audit.ts` читал `depth:1` и записывал body с populated Media в upload-ноде.
+- **Сделано:** `fix-blog-lexical-upload-ids.ts` — value→id в EN/RU/HE у id 20; скрипт аудита → `depth:0`.
+- **Следующий шаг:** обновить страницу поста в admin → Soft-save для ISR блога.
+
+## 0. Blog — localization audit fixes (2026-11-25)
+- **Источник:** `docs/reports/erythro_blog_localization_audit.md` (Translater, 20 постов RU→EN/HE).
+- **CMS (прод БД):** `relatedLinks` EN/RU/HE; `seoDescription` smart-cut; junk/CTA LinkedIn; критичные EN/HE/RU замены; скрипты `fix-blog-localization-audit*.ts`.
+- **Код:** `smartMetaDescription`; HE UI `הזחלן`; PIT-176.
+- **Не трогали:** Media `alt` у ID 20 не локализован (одно поле).
+- **Следующий шаг:** Soft-save Blog Post в Production admin → проверить `/blog`.
+
+## 0. Legal — /privacy /terms съехало (2026-11-25)
+- **Коммит кода OK** (operator line в `legalPages.ts` / translations). Живые страницы сломал **CMS-скрипт**, не git-дифф фронта.
+- **Причина (PIT-174):** `patch-legal-operator-line.ts` читал `locale:'all'`, писал `locale:en|ru|he` с объектами `{en,ru,he}` → Payload сохранил JSON-строки в heading/paragraphs/bullets. §1 paragraphs остались нормальными.
+- **Сделано:** `restore-legal-globals.ts` восстановил privacy/terms (EN/RU/HE); патч-скрипт исправлен (read/write по одной локали); `legalPages.server.ts` игнорит locale-JSON dumps → fallback на defaults.
+- **Проверено live:** после Soft-save JSON-дампов нет; заголовки §1/§2 и Osek Patur на `/privacy` и `/terms` ок.
+- **Следующий шаг:** commit скриптов + guard (`restore-legal-globals.ts`, патч, `legalPages.server.ts`, PIT-174) по команде.
 
 ## 0. Legal — operator line (2026-11-25)
 - **Строка:** `Kovalenko Vadym (קובלנקו ודים), Osek Patur · Eilat, Israel` (+ RU/HE).
-- **Сделано:** defaults `legalPages.ts` (Privacy §1, Terms §1); footer `purchaseTermsNotice` в `translations`; CMS `scripts/patch-legal-operator-line.ts` применён (privacy/terms/footer EN/RU/HE).
-- **Следующий шаг:** Soft-save Privacy / Terms / Footer в Production admin (ISR 1h) → проверить `/privacy`, `/terms`, подвал → commit/deploy кода по команде.
+- **Сделано:** defaults `legalPages.ts` (Privacy §1, Terms §1); footer `purchaseTermsNotice` в `translations`; CMS патч применён, затем данные починены (см. PIT-174 выше).
 
 ## 0. Blog API — локали `relatedLinks` / `links` (2026-11-25, из main)
 - **Симптом:** POST/PATCH с label `{en,ru,he}` → 200, остаётся только последняя локаль (he). EN на чтении падает в URL, RU пустой. PATCH без `relatedLinks` на посте со ссылками → `Related Links > Label invalid`. Пост `psb-consulting-demo-site-from-first-screen-to-request` (id 20).

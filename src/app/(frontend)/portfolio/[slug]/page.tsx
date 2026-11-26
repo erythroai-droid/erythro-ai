@@ -9,7 +9,6 @@ import {
   getPortfolioProjectBySlug,
 } from '@/lib/cmsPages'
 import { getAllPortfolioSlugs, tLocale } from '@/lib/portfolioProjects'
-import { relatedServiceSlugForProject } from '@/lib/internalLinks'
 import { ogImageFields, ogImageForPortfolioProject } from '@/lib/ogImages'
 
 /**
@@ -112,7 +111,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       project={project}
       prev={toNeighbor(prevProject)}
       next={toNeighbor(nextProject)}
-      relatedServiceSlug={relatedServiceSlugForProject(project.slug)}
       clientHydratePrefs
     />
   )
