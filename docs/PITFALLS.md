@@ -226,6 +226,21 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 
 ---
 
+## PIT-178 — Services with empty slug break relatedService seed / labels
+
+**Tags:** `portfolio`, `services`, `payload`, `cms`
+**Seen:** 2026-11-26 — after `relatedService` migrate, only `psb-consulting` got a CMS label («Enterprise Engineering»). `ember` / `ora-60a` stayed on generic «Services» despite the static slug fallback.
+
+**Symptom:** Portfolio “Related service” link href is correct (`/services/development`), but the label stays the generic “Services” / “Услуги”. Admin relation seed appears incomplete.
+
+**Cause:** Live `services` rows id 1/2/4 had `slug` empty or null (only id 3 = `enterprise-engineering` was filled). Frontend routing still worked via `SERVICE_ID_TO_SLUG` in `mapServiceDoc`. The migrate seed joined `services.slug`, so only `psb-consulting` matched. Without `related_service_id`, `mapPortfolioDoc` had no CMS title for the CTA.
+
+**Fix:** Migration `20261127_010000_fix_service_slugs_related_seed` backfills service slugs from `SERVICE_ID_TO_SLUG` and re-seeds `related_service_id` by service id. `mapPortfolioDoc` also resolves slug via `SERVICE_ID_TO_SLUG` when the relation’s slug is empty.
+
+**Prevent:** Never seed portfolio↔service links by joining on `services.slug` alone without a fallback to stable ids. Keep `services.slug` filled for every published service. Soft-save / revalidate portfolio after CMS relation changes (ISR 1h).
+
+---
+
 ## PIT-171 — Blog API keeps only the last locale's related-link labels
 
 **Tags:** `blog`, `payload`, `i18n`, `api`

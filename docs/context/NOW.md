@@ -1,14 +1,20 @@
 # Latest changes
 
-Обновлено: 2026-11-26 (portfolio relatedService migrate OK)  
-Статус: миграция на прод-БД применена; нужен deploy кода.
+Обновлено: 2026-11-27 (relatedService seed fix PIT-178)  
+Статус: БД починена (slugs + related_service_id); нужен deploy кода + Soft-save/ISR.
+
+## 0. Portfolio — Related service verify + seed fix (2026-11-27)
+- **Прод deploy OK:** merge #453 `READY` (relatedService CMS).
+- **Live check:** блок есть; `psb-consulting` → «Enterprise Engineering»; `ember`/`ora-60a` → generic «Services» (PIT-178).
+- **Причина:** `services` id 1/2/4 имели пустой `slug` → seed join по slug почти ничего не записал.
+- **Сделано:** migrate `20261127_010000_fix_service_slugs_related_seed` (slug backfill + seed по id); `mapPortfolioDoc` → `SERVICE_ID_TO_SLUG` fallback; PIT-178 (+ Obsidian).
+- **БД сейчас:** все 9 кейсов с `related_service_id`; services 1–4 со slug.
+- **Revalidate API:** локальный `REVALIDATION_TOKEN` ≠ прод (401).
+- **Следующий шаг:** commit/deploy фикса → Soft-save Portfolio Project (или ждать ISR 1h) → проверить лейбл «Development» на `/portfolio/ember`.
 
 ## 0. Portfolio — Related service в админке (2026-11-26)
-- **Было:** блок «Связанная услуга» хардкод в `internalLinks.PORTFOLIO_RELATED_SERVICE_SLUG`.
-- **Сделано:** поле `relatedService` (relationship → Services) на Portfolio Projects; маппинг в `mapPortfolioDoc`; лейбл = title услуги; миграция `20261126_110000_portfolio_project_related_service` сидит текущую карту; fallback на static map если CMS пусто.
-- **Migrate:** `pnpm db:migrate` → `Migrated: 20261126_110000_portfolio_project_related_service` (прод-БД из `.env`).
-- **Аудит-CTA** «Бесплатный AI-аудит» → `/audit` по-прежнему в коде (`RelatedLinks.tsx`).
-- **Следующий шаг:** deploy → в Admin: Pages → Portfolio Projects → Related Service (уже засеяно) → Soft-save при смене для ISR.
+- **Сделано:** поле `relatedService`; migrate `20261126_110000_…` применена; fallback static map.
+- **Аудит-CTA** всё ещё в коде (`RelatedLinks.tsx`).
 
 ## 0. Blog — Lexical Upload populated object (2026-11-25)
 - **Симптом (admin):** Body RU — `Upload value should be a string or number. The Lexical Upload component should not receive the populated value object.` (пост PSB demo, id 20).
