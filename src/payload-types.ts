@@ -652,6 +652,35 @@ export interface PortfolioProject {
    */
   relatedAuditLabel?: string | null;
   /**
+   * Optional Lighthouse-style gauges under the project title (Performance / Accessibility / Best Practices / SEO + Agent browse).
+   */
+  performanceScores?: {
+    /**
+     * Turn on to enter scores and show the diagrams on the project page.
+     */
+    enabled?: boolean | null;
+    /**
+     * 0–100 (circular gauge)
+     */
+    performance?: number | null;
+    /**
+     * 0–100
+     */
+    accessibility?: number | null;
+    /**
+     * 0–100
+     */
+    bestPractices?: number | null;
+    /**
+     * 0–100
+     */
+    seo?: number | null;
+    /**
+     * e.g. "2/2" (pill badge, not a 0–100 gauge)
+     */
+    agentBrowse?: string | null;
+  };
+  /**
    * Short card description on /portfolio
    */
   description: string;
@@ -1577,6 +1606,16 @@ export interface PortfolioProjectsSelect<T extends boolean = true> {
   relatedService?: T;
   relatedAuditHref?: T;
   relatedAuditLabel?: T;
+  performanceScores?:
+    | T
+    | {
+        enabled?: T;
+        performance?: T;
+        accessibility?: T;
+        bestPractices?: T;
+        seo?: T;
+        agentBrowse?: T;
+      };
   description?: T;
   summary?: T;
   subtitle?: T;

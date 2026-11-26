@@ -1,7 +1,12 @@
 # Latest changes
 
-Обновлено: 2026-11-27 (relatedAuditHref/Label в CMS)  
-Статус: audit CTA редактируется в admin; нужен migrate + deploy.
+Обновлено: 2026-11-27 (portfolio performanceScores)  
+Статус: блок Performance gauges в CMS; нужен migrate + deploy.
+
+## 0. Portfolio — Performance scores (2026-11-27)
+- **Запрос:** опциональное поле «производительность» (чекбокс) + числа → диаграммы как Lighthouse.
+- **Сделано:** group `performanceScores` (enabled + performance/accessibility/bestPractices/seo 0–100 + agentBrowse); UI `ProjectPerformanceScores`; migrate `20261127_030000_…` применена; кэш `v35`.
+- **Следующий шаг:** commit/deploy → Admin: **Show performance scores** → цифры → Soft-save.
 
 ## 0. Portfolio — Related Audit CTA в админке (2026-11-27)
 - **Запрос:** менять ссылку «Бесплатный AI-аудит» как Related Service.

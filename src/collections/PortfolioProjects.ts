@@ -115,6 +115,79 @@ export const PortfolioProjects: CollectionConfig = {
       },
     }),
     {
+      name: 'performanceScores',
+      type: 'group',
+      label: 'Performance scores',
+      admin: {
+        description:
+          'Optional Lighthouse-style gauges under the project title (Performance / Accessibility / Best Practices / SEO + Agent browse).',
+      },
+      fields: [
+        {
+          name: 'enabled',
+          type: 'checkbox',
+          label: 'Show performance scores',
+          defaultValue: false,
+          admin: {
+            description: 'Turn on to enter scores and show the diagrams on the project page.',
+          },
+        },
+        {
+          name: 'performance',
+          type: 'number',
+          label: 'Performance',
+          min: 0,
+          max: 100,
+          admin: {
+            condition: (_, siblingData) => Boolean(siblingData?.enabled),
+            description: '0–100 (circular gauge)',
+          },
+        },
+        {
+          name: 'accessibility',
+          type: 'number',
+          label: 'Accessibility',
+          min: 0,
+          max: 100,
+          admin: {
+            condition: (_, siblingData) => Boolean(siblingData?.enabled),
+            description: '0–100',
+          },
+        },
+        {
+          name: 'bestPractices',
+          type: 'number',
+          label: 'Best Practices',
+          min: 0,
+          max: 100,
+          admin: {
+            condition: (_, siblingData) => Boolean(siblingData?.enabled),
+            description: '0–100',
+          },
+        },
+        {
+          name: 'seo',
+          type: 'number',
+          label: 'SEO',
+          min: 0,
+          max: 100,
+          admin: {
+            condition: (_, siblingData) => Boolean(siblingData?.enabled),
+            description: '0–100',
+          },
+        },
+        {
+          name: 'agentBrowse',
+          type: 'text',
+          label: 'Agent browse',
+          admin: {
+            condition: (_, siblingData) => Boolean(siblingData?.enabled),
+            description: 'e.g. "2/2" (pill badge, not a 0–100 gauge)',
+          },
+        },
+      ],
+    },
+    {
       name: 'highlights',
       type: 'array',
       labels: { singular: 'Highlight', plural: 'Highlights' },
