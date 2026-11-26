@@ -318,8 +318,16 @@ export function mapPortfolioDoc(d: any): PortfolioProject {
     d.relatedService && typeof d.relatedService === 'object' && !Array.isArray(d.relatedService)
       ? d.relatedService
       : null
+  const relatedServiceId =
+    relatedServiceDoc?.id != null
+      ? String(relatedServiceDoc.id)
+      : typeof d.relatedService === 'number' || typeof d.relatedService === 'string'
+        ? String(d.relatedService)
+        : ''
+  // Live CMS often has empty service.slug; resolve via SERVICE_ID_TO_SLUG (same as mapServiceDoc).
   const relatedServiceSlugFromCms =
-    typeof relatedServiceDoc?.slug === 'string' ? relatedServiceDoc.slug.trim() : ''
+    (typeof relatedServiceDoc?.slug === 'string' ? relatedServiceDoc.slug.trim() : '') ||
+    (relatedServiceId ? SERVICE_ID_TO_SLUG[relatedServiceId] || '' : '')
   // CMS relation wins; otherwise keep the static slug map (seed/dev fallback).
   const relatedServiceSlug =
     relatedServiceSlugFromCms || relatedServiceSlugForProject(resolvedSlug) || null
