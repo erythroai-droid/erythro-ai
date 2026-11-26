@@ -347,6 +347,12 @@ export default function ProjectBody({
               ? tLocale(project.relatedServiceLabel, locale).trim() || undefined
               : undefined
           }
+          auditHref={project.relatedAuditHref ?? '/audit'}
+          auditLabel={
+            project.relatedAuditLabel
+              ? tLocale(project.relatedAuditLabel, locale).trim() || undefined
+              : undefined
+          }
         />
 
         <ProjectNav

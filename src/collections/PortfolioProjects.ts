@@ -8,7 +8,7 @@ export const PortfolioProjects: CollectionConfig = {
   labels: { singular: 'Portfolio Project', plural: 'Portfolio Projects' },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'slug', 'category', 'order'],
+    defaultColumns: ['title', 'slug', 'category', 'relatedService', 'order'],
     group: 'Pages',
   },
   access: {
@@ -72,11 +72,32 @@ export const PortfolioProjects: CollectionConfig = {
       name: 'relatedService',
       type: 'relationship',
       relationTo: 'services',
+      label: 'Related Service',
       admin: {
+        position: 'sidebar',
         description:
-          'Service linked at the bottom of the project page (“Related service”). Label = service title. Free AI audit CTA always shows below.',
+          'Bottom-of-page “Related service” link on /portfolio/[slug]. Uses the service title as the link text.',
       },
     },
+    {
+      name: 'relatedAuditHref',
+      type: 'text',
+      label: 'Related Audit Link',
+      defaultValue: '/audit',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Second CTA under Related Service. Path or https URL. Empty → /audit.',
+      },
+    },
+    locText('relatedAuditLabel', {
+      label: 'Related Audit Label',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Optional label for the audit CTA. Empty → default “Free AI audit” / “Бесплатный AI-аудит” / HE.',
+      },
+    }),
     locTextarea('description', {
       required: true,
       admin: { description: 'Short card description on /portfolio' },

@@ -17,6 +17,10 @@ interface RelatedServiceAuditProps {
   theme?: 'light' | 'dark'
   serviceSlug: string | null
   serviceLabel?: string
+  /** Second CTA href; empty/null hides the audit link. */
+  auditHref?: string | null
+  /** Override for the audit CTA label; empty → locale default. */
+  auditLabel?: string
 }
 
 function headingClass(isLight: boolean) {
@@ -69,17 +73,30 @@ export function RelatedCases({ locale, theme = 'dark', cases }: RelatedCasesProp
   )
 }
 
+function safePublicHref(raw: string | null | undefined): string | null {
+  const href = typeof raw === 'string' ? raw.trim() : ''
+  if (!href) return null
+  if (href.startsWith('/') && !href.startsWith('//')) return href
+  if (/^https:\/\//i.test(href)) return href
+  return null
+}
+
 /** Related service + free audit CTAs at the bottom of portfolio cases. */
 export function RelatedServiceAndAudit({
   locale,
   theme = 'dark',
   serviceSlug,
   serviceLabel,
+  auditHref = '/audit',
+  auditLabel,
 }: RelatedServiceAuditProps) {
   const isLight = theme === 'light'
   const label =
     serviceLabel ||
     (locale === 'ru' ? 'Услуги' : locale === 'he' ? 'שירותים' : 'Services')
+  const resolvedAuditHref = safePublicHref(auditHref)
+  const resolvedAuditLabel = auditLabel?.trim() || freeAuditLabel(locale)
+  if (!serviceSlug && !resolvedAuditHref) return null
   return (
     <nav
       aria-label={relatedServiceTitle(locale)}
@@ -94,11 +111,13 @@ export function RelatedServiceAndAudit({
             </Link>
           </li>
         ) : null}
-        <li>
-          <Link href="/audit" className={linkClass(isLight)}>
-            {freeAuditLabel(locale)}
-          </Link>
-        </li>
+        {resolvedAuditHref ? (
+          <li>
+            <Link href={resolvedAuditHref} className={linkClass(isLight)}>
+              {resolvedAuditLabel}
+            </Link>
+          </li>
+        ) : null}
       </ul>
     </nav>
   )
