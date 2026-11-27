@@ -1,7 +1,12 @@
 # Latest changes
 
-Обновлено: 2026-11-27 (relatedAuditHref loc migrate)  
-Статус: migrate `20261127_040000_…` на prod OK; нужен commit/deploy.
+Обновлено: 2026-11-27 (perf scores dark contrast)  
+Статус: dark-theme contrast fix в коде; нужен commit/deploy.
+
+## 0. Portfolio — Performance scores dark contrast (2026-11-27)
+- **Проблема:** gauges/цифры на `*-600` плохо читались в dark theme.
+- **Сделано:** `ProjectPerformanceScores` — light: `*-600`/`*-500`; dark: `*-400` + track `/25`; labels `text-white/80`; Agent pill тоже.
+- **Следующий шаг:** commit/deploy → проверить кейс с scores в dark theme.
 
 ## 0. Portfolio — Related Audit Link per locale (2026-11-27)
 - **Запрос:** свой `relatedAuditHref` на EN/RU/HE.
