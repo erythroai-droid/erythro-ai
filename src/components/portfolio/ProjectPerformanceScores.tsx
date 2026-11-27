@@ -25,25 +25,28 @@ function clampScore(n: unknown): number | null {
   return Math.max(0, Math.min(100, Math.round(n)))
 }
 
-function scoreTone(score: number): { stroke: string; text: string; track: string } {
+function scoreTone(
+  score: number,
+  isLight: boolean,
+): { stroke: string; text: string; track: string } {
   if (score >= 90) {
     return {
-      stroke: 'stroke-emerald-500',
-      text: 'text-emerald-600',
-      track: 'stroke-emerald-500/15',
+      stroke: isLight ? 'stroke-emerald-500' : 'stroke-emerald-400',
+      text: isLight ? 'text-emerald-600' : 'text-emerald-400',
+      track: isLight ? 'stroke-emerald-500/15' : 'stroke-emerald-400/25',
     }
   }
   if (score >= 50) {
     return {
-      stroke: 'stroke-amber-500',
-      text: 'text-amber-600',
-      track: 'stroke-amber-500/15',
+      stroke: isLight ? 'stroke-amber-500' : 'stroke-amber-400',
+      text: isLight ? 'text-amber-600' : 'text-amber-400',
+      track: isLight ? 'stroke-amber-500/15' : 'stroke-amber-400/25',
     }
   }
   return {
-    stroke: 'stroke-erythro-500',
-    text: 'text-erythro-500',
-    track: 'stroke-erythro-500/15',
+    stroke: isLight ? 'stroke-erythro-500' : 'stroke-erythro-400',
+    text: isLight ? 'text-erythro-500' : 'text-erythro-400',
+    track: isLight ? 'stroke-erythro-500/15' : 'stroke-erythro-400/25',
   }
 }
 
@@ -56,7 +59,7 @@ function Gauge({
   label: string
   isLight: boolean
 }) {
-  const tone = scoreTone(score)
+  const tone = scoreTone(score, isLight)
   const offset = C * (1 - score / 100)
   return (
     <li className="flex min-w-[4.5rem] flex-col items-center gap-2 text-center">
@@ -91,7 +94,7 @@ function Gauge({
       </div>
       <span
         className={`max-w-[7.5rem] font-sans text-[11px] leading-snug ${
-          isLight ? 'text-coal-600' : 'text-white/65'
+          isLight ? 'text-coal-600' : 'text-white/80'
         }`}
       >
         {label}
@@ -117,15 +120,23 @@ function AgentPill({
       >
         <span
           dir="ltr"
-          className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1.5 font-sans text-sm font-semibold tabular-nums text-emerald-600"
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-sm font-semibold tabular-nums ${
+            isLight
+              ? 'bg-emerald-500/15 text-emerald-600'
+              : 'bg-emerald-400/20 text-emerald-400'
+          }`}
         >
-          <span className="size-2 shrink-0 rounded-full bg-emerald-500" />
+          <span
+            className={`size-2 shrink-0 rounded-full ${
+              isLight ? 'bg-emerald-500' : 'bg-emerald-400'
+            }`}
+          />
           {value}
         </span>
       </div>
       <span
         className={`max-w-[7.5rem] font-sans text-[11px] leading-snug ${
-          isLight ? 'text-coal-600' : 'text-white/65'
+          isLight ? 'text-coal-600' : 'text-white/80'
         }`}
       >
         {label}
