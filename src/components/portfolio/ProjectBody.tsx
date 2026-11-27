@@ -355,7 +355,11 @@ export default function ProjectBody({
               ? tLocale(project.relatedServiceLabel, locale).trim() || undefined
               : undefined
           }
-          auditHref={project.relatedAuditHref ?? '/audit'}
+          auditHref={
+            project.relatedAuditHref
+              ? tLocale(project.relatedAuditHref, locale).trim() || '/audit'
+              : '/audit'
+          }
           auditLabel={
             project.relatedAuditLabel
               ? tLocale(project.relatedAuditLabel, locale).trim() || undefined

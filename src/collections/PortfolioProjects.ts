@@ -79,17 +79,15 @@ export const PortfolioProjects: CollectionConfig = {
           'Bottom-of-page “Related service” link on /portfolio/[slug]. Uses the service title as the link text.',
       },
     },
-    {
-      name: 'relatedAuditHref',
-      type: 'text',
+    locText('relatedAuditHref', {
       label: 'Related Audit Link',
       defaultValue: '/audit',
       admin: {
         position: 'sidebar',
         description:
-          'Second CTA under Related Service. Path or https URL. Empty → /audit.',
+          'Second CTA under Related Service. Path or https URL per locale. Empty → /audit.',
       },
-    },
+    }),
     locText('relatedAuditLabel', {
       label: 'Related Audit Label',
       admin: {

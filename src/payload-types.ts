@@ -644,42 +644,13 @@ export interface PortfolioProject {
    */
   relatedService?: (number | null) | Service;
   /**
-   * Second CTA under Related Service. Path or https URL. Empty → /audit.
+   * Second CTA under Related Service. Path or https URL per locale. Empty → /audit.
    */
   relatedAuditHref?: string | null;
   /**
    * Optional label for the audit CTA. Empty → default “Free AI audit” / “Бесплатный AI-аудит” / HE.
    */
   relatedAuditLabel?: string | null;
-  /**
-   * Optional Lighthouse-style gauges under the project title (Performance / Accessibility / Best Practices / SEO + Agent browse).
-   */
-  performanceScores?: {
-    /**
-     * Turn on to enter scores and show the diagrams on the project page.
-     */
-    enabled?: boolean | null;
-    /**
-     * 0–100 (circular gauge)
-     */
-    performance?: number | null;
-    /**
-     * 0–100
-     */
-    accessibility?: number | null;
-    /**
-     * 0–100
-     */
-    bestPractices?: number | null;
-    /**
-     * 0–100
-     */
-    seo?: number | null;
-    /**
-     * e.g. "2/2" (pill badge, not a 0–100 gauge)
-     */
-    agentBrowse?: string | null;
-  };
   /**
    * Short card description on /portfolio
    */
@@ -720,6 +691,35 @@ export interface PortfolioProject {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Optional Lighthouse-style gauges under the project title (Performance / Accessibility / Best Practices / SEO + Agent browse).
+   */
+  performanceScores?: {
+    /**
+     * Turn on to enter scores and show the diagrams on the project page.
+     */
+    enabled?: boolean | null;
+    /**
+     * 0–100 (circular gauge)
+     */
+    performance?: number | null;
+    /**
+     * 0–100
+     */
+    accessibility?: number | null;
+    /**
+     * 0–100
+     */
+    bestPractices?: number | null;
+    /**
+     * 0–100
+     */
+    seo?: number | null;
+    /**
+     * e.g. "2/2" (pill badge, not a 0–100 gauge)
+     */
+    agentBrowse?: string | null;
+  };
   /**
    * Rows under the project title: small label on the left, text on the right. Separate items with " · ". Leave empty to hide.
    */
@@ -1606,6 +1606,9 @@ export interface PortfolioProjectsSelect<T extends boolean = true> {
   relatedService?: T;
   relatedAuditHref?: T;
   relatedAuditLabel?: T;
+  description?: T;
+  summary?: T;
+  subtitle?: T;
   performanceScores?:
     | T
     | {
@@ -1616,9 +1619,6 @@ export interface PortfolioProjectsSelect<T extends boolean = true> {
         seo?: T;
         agentBrowse?: T;
       };
-  description?: T;
-  summary?: T;
-  subtitle?: T;
   highlights?:
     | T
     | {

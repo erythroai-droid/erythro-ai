@@ -1,7 +1,18 @@
 # Latest changes
 
-Обновлено: 2026-11-27 (portfolio performanceScores)  
-Статус: блок Performance gauges в CMS; нужен migrate + deploy.
+Обновлено: 2026-11-27 (relatedAuditHref loc migrate)  
+Статус: migrate `20261127_040000_…` на prod OK; нужен commit/deploy.
+
+## 0. Portfolio — Related Audit Link per locale (2026-11-27)
+- **Запрос:** свой `relatedAuditHref` на EN/RU/HE.
+- **Сделано:** `locText('relatedAuditHref')`; map → `LocaleMap`; UI `tLocale`; migrate `20261127_040000_…` применена (2230ms); кэш `v36`; CMS_FIELD_MAP (+ Obsidian).
+- **Следующий шаг:** commit/deploy → Admin: EN/RU/HE → Related Audit Link → Soft-save.
+
+## 0. n8n security upgrade → 2.49.7 (2026-11-27)
+- **Причина:** bi-weekly advisories 2026-11-26 — High GHSA-w6f8-8qh4-h3j4 (sandbox escape → RCE); Medium GHSA-g45f / p3cc / rqx8. Stable floor: `2.49.7`.
+- **Сделано:** pin `infra/n8n/docker-compose.yml` `2.47.6` → `2.49.7`; docs `vps-n8n.md` + `ai-audit-architecture.md` (+ Obsidian); `py -3 scripts/upgrade_n8n_image.py`.
+- **Live:** было `2.47.6` → стало `2.49.7`. Backup `/root/n8n/backups/20261127T084818Z-image-2.49.7`. healthz 200. Active: Email Autoresponder, Marketing Digest, Telegram Bot, Meta CAPI, ORA 60A lead form.
+- **Следующий шаг:** коммит репо по команде; опционально smoke IMAP/Telegram/CAPI.
 
 ## 0. Portfolio — Performance scores (2026-11-27)
 - **Запрос:** опциональное поле «производительность» (чекбокс) + числа → диаграммы как Lighthouse.

@@ -58,10 +58,10 @@ export interface PortfolioProject {
   /** Localized link label; when empty the UI uses a generic “Services” string. */
   relatedServiceLabel?: LocaleMap
   /**
-   * Second CTA under Related Service (CMS relatedAuditHref).
+   * Second CTA under Related Service (CMS relatedAuditHref), per locale.
    * Empty/missing → `/audit`.
    */
-  relatedAuditHref?: string | null
+  relatedAuditHref?: LocaleMap
   /** Localized audit CTA label; empty → built-in “Free AI audit” strings. */
   relatedAuditLabel?: LocaleMap
   /**
