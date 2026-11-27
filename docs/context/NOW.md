@@ -1,7 +1,12 @@
 # Latest changes
 
-Обновлено: 2026-11-27 (n8n → 2.49.7)  
-Статус: n8n security patch на VPS применён.
+Обновлено: 2026-11-27 (relatedAuditHref loc migrate)  
+Статус: migrate `20261127_040000_…` на prod OK; нужен commit/deploy.
+
+## 0. Portfolio — Related Audit Link per locale (2026-11-27)
+- **Запрос:** свой `relatedAuditHref` на EN/RU/HE.
+- **Сделано:** `locText('relatedAuditHref')`; map → `LocaleMap`; UI `tLocale`; migrate `20261127_040000_…` применена (2230ms); кэш `v36`; CMS_FIELD_MAP (+ Obsidian).
+- **Следующий шаг:** commit/deploy → Admin: EN/RU/HE → Related Audit Link → Soft-save.
 
 ## 0. n8n security upgrade → 2.49.7 (2026-11-27)
 - **Причина:** bi-weekly advisories 2026-11-26 — High GHSA-w6f8-8qh4-h3j4 (sandbox escape → RCE); Medium GHSA-g45f / p3cc / rqx8. Stable floor: `2.49.7`.

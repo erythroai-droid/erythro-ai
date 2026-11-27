@@ -381,10 +381,9 @@ export function mapPortfolioDoc(d: any): PortfolioProject {
     ...(hasRelatedServiceLabel && relatedServiceLabelFromCms
       ? { relatedServiceLabel: relatedServiceLabelFromCms }
       : {}),
-    relatedAuditHref:
-      typeof d.relatedAuditHref === 'string' && d.relatedAuditHref.trim()
-        ? d.relatedAuditHref.trim()
-        : '/audit',
+    ...(LOCALES.some((l) => Boolean(locMapCms(d.relatedAuditHref)[l]?.trim()))
+      ? { relatedAuditHref: locMapCms(d.relatedAuditHref) }
+      : {}),
     ...(LOCALES.some((l) => Boolean(locMapCms(d.relatedAuditLabel)[l]?.trim()))
       ? { relatedAuditLabel: locMapCms(d.relatedAuditLabel) }
       : {}),
@@ -964,7 +963,7 @@ export const getCachedPortfolioProjects = () =>
   // v4: keep all locales for client-side language switching (like services)
   // v10: trim slugs + per-doc map (trailing-space slugs 404'd detail pages)
   // v26: rosso-garage four languages (EN/RU/HE/AR)
-  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v35-perf-scores'], {
+  unstable_cache(() => fetchPortfolioProjects(), ['portfolio-projects-v36-audit-href-loc'], {
     tags: [SITE_CONTENT_TAG],
     revalidate: false,
   })()
