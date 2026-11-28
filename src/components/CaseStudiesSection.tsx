@@ -29,11 +29,10 @@ const CASE_STUDY_POSTER = '/images/Dynamic-Urban-Slideshow.jpg'
 type BannerSlide = { video: string; videoMobile?: string }
 
 /**
- * Loads src only near the section; plays while the block is in view.
- * One element at a time — parent remounts via `key` when the slide changes,
- * so previous files stop downloading.
+ * Dual-buffer player: keep the current frame visible while the next slide buffers,
+ * then crossfade. Only the active (and optionally next) file is attached — not all.
  */
-function CaseStudyVideo({
+function CaseStudyBannerPlayer({
   src,
   label,
   sectionRef,
@@ -48,119 +47,201 @@ function CaseStudyVideo({
   loop?: boolean
   onEnded?: () => void
 }) {
-  const ref = useRef<HTMLVideoElement | null>(null)
+  const layerARef = useRef<HTMLVideoElement | null>(null)
+  const layerBRef = useRef<HTMLVideoElement | null>(null)
+  const [frontIsA, setFrontIsA] = useState(true)
+  const [hasPlayed, setHasPlayed] = useState(false)
+  const [sectionNear, setSectionNear] = useState(false)
   const [inView, setInView] = useState(false)
-  const [ready, setReady] = useState(false)
-  const [failed, setFailed] = useState(false)
-  const attachedSrcRef = useRef<string | null>(null)
+  const attachedRef = useRef<{ a: string | null; b: string | null }>({ a: null, b: null })
+  const frontSrcRef = useRef<string | null>(null)
+  const loadingSrcRef = useRef<string | null>(null)
+  const inViewRef = useRef(false)
   const onEndedRef = useRef(onEnded)
   onEndedRef.current = onEnded
 
-  useEffect(() => {
-    setReady(false)
-    setFailed(false)
-    setInView(false)
-    attachedSrcRef.current = null
-    const el = ref.current
-    if (el) {
-      el.removeAttribute('src')
-      el.load()
-    }
-  }, [src])
+  const frontRef = frontIsA ? layerARef : layerBRef
+  const backRef = frontIsA ? layerBRef : layerARef
 
   useEffect(() => {
-    const el = ref.current
     const section = sectionRef.current
     const container = containerRef.current
-    if (!el || failed) return
+    if (!section && !container) return
 
-    const attachSrc = (mode: 'metadata' | 'auto') => {
-      if (attachedSrcRef.current !== src) {
-        attachedSrcRef.current = src
-        el.src = src
-      }
-      el.preload = mode
-      el.load()
-    }
-
-    const handleEnded = () => {
-      if (loop) {
-        el.currentTime = 0
-        el.play().catch(() => {})
-        return
-      }
-      onEndedRef.current?.()
-    }
-    const onCanPlay = () => setReady(true)
-    const onError = () => {
-      setFailed(true)
-      setReady(false)
-      // Skip a broken slide instead of freezing the carousel.
-      if (!loop) onEndedRef.current?.()
-    }
-
-    el.loop = loop
-    el.addEventListener('ended', handleEnded)
-    el.addEventListener('canplay', onCanPlay)
-    el.addEventListener('error', onError)
-    if (el.readyState >= 3 && attachedSrcRef.current === src) setReady(true)
-
-    // Light prefetch only when the section is ~half a viewport away — not on first paint.
-    const prefetchObserver = section
+    const nearObserver = section
       ? new IntersectionObserver(
           ([entry]) => {
-            if (entry.isIntersecting) attachSrc('metadata')
+            if (entry.isIntersecting) setSectionNear(true)
           },
           { rootMargin: '0px 0px 50% 0px', threshold: 0 },
         )
       : null
 
-    // Observe the sized container (not the absolute video) so mobile IO works.
-    const playTarget = container ?? el
-    const playObserver = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          attachSrc('auto')
-          setInView(true)
-          void el.play().catch(() => {})
-        } else {
-          setInView(false)
-          el.pause()
-        }
-      },
-      { rootMargin: '120px 0px', threshold: 0.05 },
-    )
+    const playTarget = container ?? section
+    const playObserver = playTarget
+      ? new IntersectionObserver(
+          ([entry]) => {
+            inViewRef.current = entry.isIntersecting
+            setInView(entry.isIntersecting)
+          },
+          { rootMargin: '120px 0px', threshold: 0.05 },
+        )
+      : null
 
-    if (prefetchObserver && section) prefetchObserver.observe(section)
-    playObserver.observe(playTarget)
+    if (nearObserver && section) nearObserver.observe(section)
+    if (playObserver && playTarget) playObserver.observe(playTarget)
 
     return () => {
-      el.removeEventListener('ended', handleEnded)
-      el.removeEventListener('canplay', onCanPlay)
-      el.removeEventListener('error', onError)
-      prefetchObserver?.disconnect()
-      playObserver.disconnect()
+      nearObserver?.disconnect()
+      playObserver?.disconnect()
     }
-  }, [src, sectionRef, containerRef, failed, loop])
+  }, [sectionRef, containerRef])
 
-  if (failed) return null
+  // Pause / resume the visible layer with viewport.
+  useEffect(() => {
+    const front = frontRef.current
+    if (!front || !frontSrcRef.current) return
+    if (inView) {
+      void front.play().catch(() => {})
+    } else {
+      front.pause()
+    }
+  }, [inView, frontIsA, src])
 
-  const showVideo = inView && ready
+  // Load / swap when src changes. Keep the front frame until the back layer is ready.
+  useEffect(() => {
+    if (!src || (!sectionNear && !inView)) return
+    if (frontSrcRef.current === src) return
+    if (loadingSrcRef.current === src) return
+
+    const back = backRef.current
+    const front = frontRef.current
+    if (!back) return
+
+    loadingSrcRef.current = src
+    const backKey: 'a' | 'b' = frontIsA ? 'b' : 'a'
+    const frontKey: 'a' | 'b' = frontIsA ? 'a' : 'b'
+
+    const clearBack = () => {
+      back.pause()
+      back.removeAttribute('src')
+      back.load()
+      attachedRef.current[backKey] = null
+    }
+
+    const onReady = () => {
+      if (loadingSrcRef.current !== src) return
+      back.removeEventListener('canplay', onReady)
+      back.removeEventListener('loadeddata', onReady)
+      back.removeEventListener('error', onError)
+
+      // Swap: show buffered layer, unload the previous file.
+      setFrontIsA((v) => !v)
+      frontSrcRef.current = src
+      loadingSrcRef.current = null
+      setHasPlayed(true)
+
+      if (front) {
+        front.pause()
+        front.removeAttribute('src')
+        front.load()
+        attachedRef.current[frontKey] = null
+      }
+
+      if (inViewRef.current) void back.play().catch(() => {})
+    }
+
+    const onError = () => {
+      if (loadingSrcRef.current !== src) return
+      back.removeEventListener('canplay', onReady)
+      back.removeEventListener('loadeddata', onReady)
+      back.removeEventListener('error', onError)
+      clearBack()
+      loadingSrcRef.current = null
+      // Advance past a broken slide; keep the last good frame if we already had one.
+      if (!loop || !frontSrcRef.current) onEndedRef.current?.()
+    }
+
+    back.muted = true
+    back.playsInline = true
+    back.loop = loop
+    back.preload = 'auto'
+    if (attachedRef.current[backKey] !== src) {
+      attachedRef.current[backKey] = src
+      back.src = src
+    }
+    back.addEventListener('canplay', onReady)
+    back.addEventListener('loadeddata', onReady)
+    back.addEventListener('error', onError)
+    back.load()
+    if (back.readyState >= 3) onReady()
+
+    return () => {
+      back.removeEventListener('canplay', onReady)
+      back.removeEventListener('loadeddata', onReady)
+      back.removeEventListener('error', onError)
+    }
+    // frontIsA / backRef identity is derived; intentional deps are src + view gates.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src, sectionNear, inView, loop, frontIsA])
+
+  // Wire ended on whichever layer is currently front.
+  useEffect(() => {
+    const front = frontRef.current
+    if (!front) return
+
+    const handleEnded = () => {
+      if (loop) {
+        front.currentTime = 0
+        void front.play().catch(() => {})
+        return
+      }
+      onEndedRef.current?.()
+    }
+
+    front.loop = loop
+    front.addEventListener('ended', handleEnded)
+    return () => front.removeEventListener('ended', handleEnded)
+  }, [frontIsA, loop, src])
+
+  const layerClass = (isFront: boolean) =>
+    `absolute inset-0 z-[1] h-full w-full object-cover transition-opacity duration-300 ${
+      isFront && hasPlayed ? 'opacity-100' : 'opacity-0'
+    }`
 
   return (
-    <video
-      key={src}
-      ref={ref}
-      poster={CASE_STUDY_POSTER}
-      className={`absolute inset-0 z-[1] h-full w-full object-cover transition-opacity duration-500 ${
-        showVideo ? 'opacity-100' : 'opacity-0'
-      }`}
-      muted
-      loop={loop}
-      playsInline
-      preload="none"
-      aria-label={label}
-    />
+    <>
+      {/* Static poster only until the first real frame is ready — never during slide swaps. */}
+      <img
+        src={CASE_STUDY_POSTER}
+        alt=""
+        className={`absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-300 ${
+          hasPlayed ? 'opacity-0' : 'opacity-100'
+        }`}
+        loading="lazy"
+        decoding="async"
+        fetchPriority="low"
+        aria-hidden={hasPlayed}
+      />
+      <video
+        ref={layerARef}
+        className={layerClass(frontIsA)}
+        muted
+        playsInline
+        preload="none"
+        aria-label={frontIsA ? label : undefined}
+        aria-hidden={!frontIsA}
+      />
+      <video
+        ref={layerBRef}
+        className={layerClass(!frontIsA)}
+        muted
+        playsInline
+        preload="none"
+        aria-label={!frontIsA ? label : undefined}
+        aria-hidden={frontIsA}
+      />
+    </>
   )
 }
 
@@ -241,6 +322,11 @@ function resolveSlides(translations: {
   return []
 }
 
+function slideSrc(slide: BannerSlide, isDesktop: boolean | null): string | null {
+  if (isDesktop === null) return null
+  return isDesktop ? slide.video : slide.videoMobile || slide.video
+}
+
 export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) {
   const translations = useSiteContent().caseStudies
   const t = (field: Record<string, string>) => field[locale] || field['en']
@@ -252,12 +338,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
   const [index, setIndex] = useState(0)
   const safeIndex = count ? index % count : 0
   const current = count ? slides[safeIndex] : null
-  const videoSrc =
-    isDesktop === null || !current
-      ? null
-      : isDesktop
-        ? current.video
-        : current.videoMobile || current.video
+  const videoSrc = current ? slideSrc(current, isDesktop) : null
   const multi = count > 1
   const lang = (locale === 'ru' || locale === 'he' ? locale : 'en') as 'en' | 'ru' | 'he'
 
@@ -270,12 +351,29 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
   const sectionRef = useRef<HTMLDivElement | null>(null)
   const headingRef = useRef<HTMLDivElement | null>(null)
   const cardRef = useRef<HTMLAnchorElement | null>(null)
+  const mediaBlockRef = useRef<HTMLDivElement | null>(null)
   const linkRef = useRef<HTMLDivElement | null>(null)
   const marqueeRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (count && index >= count) setIndex(0)
   }, [count, index])
+
+  // Prefetch the next slide file lightly while the current one plays (still only 1–2 at a time).
+  useEffect(() => {
+    if (!multi || isDesktop === null || typeof window === 'undefined') return
+    const next = slides[(safeIndex + 1) % count]
+    const nextUrl = slideSrc(next, isDesktop)
+    if (!nextUrl) return
+    const link = document.createElement('link')
+    link.rel = 'prefetch'
+    link.as = 'video'
+    link.href = nextUrl
+    document.head.appendChild(link)
+    return () => {
+      link.remove()
+    }
+  }, [multi, safeIndex, count, slides, isDesktop])
 
   useEffect(() => {
     let cancelled = false
@@ -294,12 +392,12 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
             opacity: 0,
             y: 60,
           })
-          gsap.set(cardRef.current, {
+          gsap.set(mediaBlockRef.current, {
             opacity: 1,
             y: 40,
           })
 
-          gsap.to([headingRef.current, cardRef.current, linkRef.current, marqueeRef.current], {
+          gsap.to([headingRef.current, mediaBlockRef.current, linkRef.current, marqueeRef.current], {
             opacity: 1,
             y: 0,
             duration: 0.8,
@@ -338,12 +436,12 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           // Keep the marquee at y:0 — a downward tween would push logos under the
           // overlapping Services panel (HomeClient -mt-8 stacking).
           gsap.set(marqueeRef.current, { opacity: 0, y: 0 })
-          gsap.set(cardRef.current, {
+          gsap.set(mediaBlockRef.current, {
             opacity: 1,
             y: 24,
           })
 
-          gsap.to([headingRef.current, cardRef.current, linkRef.current, marqueeRef.current], {
+          gsap.to([headingRef.current, mediaBlockRef.current, linkRef.current, marqueeRef.current], {
             opacity: 1,
             y: 0,
             duration: 0.8,
@@ -380,9 +478,9 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
         data-menu-contrast="light"
         className="pt-20 pb-0 lg:py-0 lg:pt-16 lg:pb-0 lg:flex lg:flex-1 lg:min-h-0 lg:flex-col w-full transition-colors duration-500 bg-white border-t border-b border-coal-400/5 dark:border-white/5 relative z-10 select-none max-lg:rounded-t-[28px]"
       >
-      <div className="max-w-[1170px] mx-auto px-[30px] w-full lg:flex lg:flex-1 lg:min-h-0 lg:flex-col">
+      <div className="max-w-[1170px] mx-auto px-[30px] w-full lg:flex lg:flex-1 lg:min-h-0 lg:flex-col lg:justify-center">
         {/* Headings */}
-        <div ref={headingRef} className="mb-[50px] shrink-0 text-center max-w-2xl mx-auto flex flex-col items-center gap-3">
+        <div ref={headingRef} className="mb-8 lg:mb-10 shrink-0 text-center max-w-2xl mx-auto flex flex-col items-center gap-3">
           <h2 className="font-sans text-[32px] lg:text-[40px] font-extralight leading-tight lg:leading-[50px] tracking-[9.6px] uppercase text-[#0D0D0D]">
             <StylizedSectionTitle
               text={t(translations.preTitle)}
@@ -394,25 +492,16 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           </p>
         </div>
 
-        {/* 1920×1080 (16:9) banner slot on all breakpoints */}
-        <div className="relative mx-auto w-full lg:flex-1 lg:min-h-0 lg:flex lg:items-center">
+        {/* 1920×1080 (16:9) — natural height only (no flex-1 overflow over the CTA). */}
+        <div ref={mediaBlockRef} className="relative mx-auto w-full max-w-full shrink-0">
           <Link
             ref={cardRef}
             href={portfolioHref}
             aria-label={viewAllLabelText(t(translations.viewAllProjects), isRtl)}
             className="relative block w-full aspect-video overflow-hidden bg-[#0D0D0D] transition-opacity duration-300 hover:opacity-95"
           >
-            <img
-              src={CASE_STUDY_POSTER}
-              alt=""
-              className="absolute inset-0 z-0 h-full w-full object-cover"
-              loading="lazy"
-              decoding="async"
-              fetchPriority="low"
-            />
             {videoSrc ? (
-              <CaseStudyVideo
-                key={`${safeIndex}-${videoSrc}`}
+              <CaseStudyBannerPlayer
                 src={videoSrc}
                 label={`${t(translations.cardTitle)}${multi ? ` — ${safeIndex + 1}/${count}` : ''}`}
                 sectionRef={sectionRef}
@@ -420,12 +509,21 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
                 loop={!multi}
                 onEnded={multi ? () => go(1) : undefined}
               />
-            ) : null}
+            ) : (
+              <img
+                src={CASE_STUDY_POSTER}
+                alt=""
+                className="absolute inset-0 z-0 h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+                fetchPriority="low"
+              />
+            )}
           </Link>
 
           {multi ? (
             <div
-              className="pointer-events-none absolute inset-0 z-10 flex items-end justify-center pb-4 lg:pb-6"
+              className="pointer-events-none absolute inset-0 z-10 flex items-end justify-center pb-3 sm:pb-4"
               dir="ltr"
             >
               <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-black/35 px-3 py-2 backdrop-blur-[2px]">
@@ -480,7 +578,7 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
 
         <div
           ref={linkRef}
-          className="relative z-20 mt-[34px] mb-8 shrink-0 flex flex-col items-center gap-4 pointer-events-auto lg:mb-[50px]"
+          className="relative z-20 mt-6 mb-8 shrink-0 flex flex-col items-center gap-4 pointer-events-auto sm:mt-8 lg:mb-10"
         >
           <a
             href={portfolioHref}
