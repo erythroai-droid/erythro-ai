@@ -27,7 +27,6 @@ export default function BlogIndexBody({
   const title = tBlog(blogUi.indexTitle, locale)
   const description = tBlog(blogUi.indexDescription, locale)
   const moreLabel = locale === 'he' ? 'עוד' : locale === 'ru' ? 'подробнее' : 'more'
-  const isRtl = locale === 'he'
 
   return (
     <section
@@ -99,7 +98,7 @@ export default function BlogIndexBody({
                 <li key={post.slug} className="w-full">
                   <Link
                     href={`/blog/${post.slug}`}
-                    className={`group relative flex w-full flex-col overflow-hidden rounded-[20px] border border-white/5 shadow-card-services-dark transition-all duration-500 lg:flex-row lg:items-stretch ${
+                    className={`group relative block w-full overflow-hidden rounded-[20px] border border-white/5 p-6 shadow-card-services-dark transition-all duration-500 lg:p-8 ${
                       isLight
                         ? 'hover:border-white/70 hover:shadow-[0_0_30px_0_rgba(255,255,255,0.35)]'
                         : 'hover:border-erythro-500/30 hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.45)]'
@@ -114,56 +113,48 @@ export default function BlogIndexBody({
                       aria-hidden
                     />
 
-                    {post.cover?.src ? (
-                      <div
-                        className={`relative flex w-full shrink-0 items-center overflow-hidden border-white/5 lg:w-[42%] lg:self-stretch lg:border-b-0 ${
-                          isRtl
-                            ? 'rounded-t-[20px] border-b lg:rounded-t-none lg:rounded-e-[20px] lg:border-s'
-                            : 'rounded-t-[20px] border-b lg:rounded-t-none lg:rounded-s-[20px] lg:border-e'
-                        }`}
-                      >
-                        <Image
-                          src={post.cover.src}
-                          alt={post.cover.alt || postTitle}
-                          width={post.cover.width || 1170}
-                          height={post.cover.height || 658}
-                          className="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-105"
-                          sizes="(max-width: 1024px) 100vw, 490px"
-                        />
-                      </div>
-                    ) : null}
+                    <div className="relative z-10">
+                      {post.cover?.src ? (
+                        <div className="float-start mb-3 me-4 w-[42%] max-w-[320px] overflow-hidden rounded-[12px] sm:me-5 lg:mb-4 lg:me-6 lg:max-w-[380px]">
+                          <Image
+                            src={post.cover.src}
+                            alt={post.cover.alt || postTitle}
+                            width={post.cover.width || 1170}
+                            height={post.cover.height || 658}
+                            className="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-105"
+                            sizes="(max-width: 640px) 42vw, 380px"
+                          />
+                        </div>
+                      ) : null}
 
-                    <div className="relative z-10 flex w-full flex-1 flex-col justify-between gap-6 p-6 lg:p-10">
-                      <div className="flex flex-col gap-4">
-                        <h2 className="m-0 font-sans text-xl font-extralight normal-case leading-tight tracking-normal text-[var(--service-card-header,#0D0D0D)] lg:text-[32px] lg:leading-10">
-                          {postTitle}
-                        </h2>
-                        {excerpt ? (
-                          <p className="m-0 font-sans text-sm font-normal leading-6 text-[var(--service-card-list,#1E1E1E)] lg:text-[14px] lg:leading-6">
-                            {excerpt}
-                          </p>
-                        ) : null}
-                        {post.tags.length ? (
-                          <div className="mt-1 flex flex-wrap gap-2">
-                            {post.tags.slice(0, 6).map((tag) => (
-                              <span
-                                key={tag}
-                                className={`rounded-[2px] px-2 py-1 font-sans text-[11px] uppercase ${
-                                  isLight
-                                    ? 'bg-coal-900/5 text-coal-900/70'
-                                    : 'bg-white/5 text-white/60'
-                                }`}
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
-                      </div>
+                      <h2 className="m-0 font-sans text-xl font-extralight normal-case leading-tight tracking-normal text-[var(--service-card-header,#0D0D0D)] lg:text-[32px] lg:leading-10">
+                        {postTitle}
+                      </h2>
+                      {excerpt ? (
+                        <p className="m-0 mt-3 font-sans text-sm font-normal leading-6 text-[var(--service-card-list,#1E1E1E)] lg:mt-4 lg:text-[14px] lg:leading-6">
+                          {excerpt}
+                        </p>
+                      ) : null}
+                      {post.tags.length ? (
+                        <div className="mt-3 flex flex-wrap gap-2 lg:mt-4">
+                          {post.tags.slice(0, 6).map((tag) => (
+                            <span
+                              key={tag}
+                              className={`rounded-[2px] px-2 py-1 font-sans text-[11px] uppercase ${
+                                isLight
+                                  ? 'bg-coal-900/5 text-coal-900/70'
+                                  : 'bg-white/5 text-white/60'
+                              }`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
 
                       <div
                         dir="ltr"
-                        className="flex w-full items-center justify-between gap-4"
+                        className="mt-6 flex w-full clear-both items-center justify-between gap-4"
                       >
                         {date ? (
                           <time
