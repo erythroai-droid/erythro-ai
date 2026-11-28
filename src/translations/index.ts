@@ -553,8 +553,12 @@ export const caseStudies = {
   },
   viewAllHref: '/portfolio',
   // Prefer CMS/Blob uploads. Local paths and stale blob URLs break on Vercel.
+  /** @deprecated Prefer `banners[]` — kept for one-slide fallback while CMS migrates. */
   video: '',
+  /** @deprecated Prefer `banners[]`. */
   videoMobile: '',
+  /** Homepage rotating video banners (desktop + optional mobile URL per slide). */
+  banners: [] as Array<{ video: string; videoMobile?: string }>,
 }
 
 // 6. Solution Section translations

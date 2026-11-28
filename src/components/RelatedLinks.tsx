@@ -123,34 +123,3 @@ export function RelatedServiceAndAudit({
   )
 }
 
-/** Compact crawlable list of featured portfolio URLs (homepage cases block). */
-export function FeaturedCaseLinks({
-  locale,
-  cases,
-}: {
-  locale: string
-  cases: RelatedCase[]
-}) {
-  if (!cases.length) return null
-  const title =
-    locale === 'ru' ? 'Избранные проекты' : locale === 'he' ? 'פרויקטים נבחרים' : 'Featured projects'
-  return (
-    <nav aria-label={title} className="w-full max-w-3xl">
-      <p className="mb-2 text-center font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-gold-900/80">
-        {title}
-      </p>
-      <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-        {cases.map((item) => (
-          <li key={item.slug}>
-            <Link
-              href={`/portfolio/${item.slug}`}
-              className="font-sans text-[12px] text-gold-900 underline-offset-4 transition-colors hover:text-erythro-500 hover:underline"
-            >
-              {tLocale(item.title, locale)}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  )
-}

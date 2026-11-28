@@ -1,7 +1,14 @@
 # Latest changes
 
-Обновлено: 2026-11-28 (blog preview radius 5px)  
-Статус: превью блога — cover `rounded-[5px]`.
+Обновлено: 2026-11-28 (homepage case video slider)  
+Статус: слайдер видео-баннеров в «Наши работы»; «Избранные проекты» убраны. Миграция не применена локально.
+
+## 0. Homepage — video banner slider + remove Featured (2026-11-28)
+- **Запрос:** в блоке «Наши работы» — слайдер видео-баннеров; в админке отдельно desktop/mobile; не грузить все сразу; убрать «Избранные проекты».
+- **CMS:** `CaseStudies` — массив `banners[]` (`video` + `videoMobile` на слайд). Старые одиночные `bannerVideo*` убраны из админки; migrate копирует их в первый слайд.
+- **Миграция:** `20261128_120000_case_studies_banner_slider` (+ index). Кэш `site-content-v18-case-banners`.
+- **UI:** `CaseStudiesSection` — один активный `<video>`, `preload=none` до near-viewport, смена слайда по `ended` / стрелки / точки; при смене слайда предыдущий src снимается. `FeaturedCaseLinks` и fetch карточек портфолио с главной убраны.
+- **Следующий шаг:** `payload migrate` (или деплой) → Admin → Case Studies Section → Video banners (desktop + mobile) → Soft-save → проверить главную desktop/mobile.
 
 ## 0. Blog — preview cover radius 5px (2026-11-28)
 - **Сделано:** `BlogIndexBody` cover wrapper `rounded-[12px]` → `rounded-[5px]`.
@@ -16,6 +23,30 @@
 - **Причина:** `BlogIndexBody` — `aspect-[16/10]` + `fill` + `object-cover` (на lg колонка тянется по тексту → ещё сильнее L/R crop); `BlogPostBody` cover — `16/9` / `21/9` + `object-cover`; body без media-классов как у portfolio.
 - **Сделано:** intrinsic `width`/`height` + `h-auto w-full`; body — `[&_img]/[&_picture]/[&_video]` как в `ProjectBody`; PIT-009 (+ Obsidian) обновлён.
 - **Следующий шаг:** commit/deploy → проверить `/blog` и пост с cover + inline-картинкой.
+
+## 0. Portfolio — mustang-6663rt EN/HE from RU (2026-11-28)
+- **RU правки:** overview без «вымышленного»; §05 intro укорочен до «Инженерные решения под Core Web Vitals…» (без «лаб. балл не приводится»).
+- **CMS (id 10):** summary EN/RU/HE = overview; §05 intro EN/HE; HE summary пересобран в 1 абзац.
+- **Источники:** `body.ts`, `brief.yaml`.
+- **Следующий шаг:** Soft-save Mustang в Production admin → проверить EN/HE `/portfolio/mustang-6663rt`.
+
+## 0. Portfolio — psb-consulting EN/HE from RU (2026-11-27)
+- **Находка:** RU overview уже без «Демо-», summary/EN/HE ещё со старым префиксом.
+- **CMS (id 12):** RU summary без «Демо-»; EN/HE overview+summary без Demo/דמו; HE polish (הירו, →, דוכן חי, seo).
+- **Источники:** `facts.ru/en/he.json`, `brief.yaml`.
+- **Следующий шаг:** Soft-save PSB в Production admin → проверить EN/HE.
+
+## 0. Portfolio — origin-coffee EN/HE from RU (2026-11-27)
+- **База:** RU описание Origin Coffee.
+- **CMS (id 13):** EN summary/overview ближе к RU; HE — без «פיצול (Fork)» / «מצייני מיקום» / «גיבור (Hero)», стрелки →, «דוכן חי», seo_description.
+- **Источники:** `facts.en.json`, `facts.he.json`, `brief.yaml`.
+- **Следующий шаг:** Soft-save Origin Coffee в Production admin → проверить EN/HE на `/portfolio/origin-coffee`.
+
+## 0. Portfolio — ember EN/HE copy from RU (2026-11-27)
+- **База:** RU правки пользователя (убрано «вымышленный», SEO без «демо», AI-модуль «готов к подключению»).
+- **CMS (id 11):** summary + overview + challenges + features AI + audit notes + seo_title/seo_description для EN/HE; RU seo_description double-space починен.
+- **Источники:** `content/imports/ember/body.ts` + `brief.yaml`.
+- **Следующий шаг:** Soft-save Ember в Production admin (или revalidate) → проверить `/portfolio/ember` на EN/HE.
 
 ## 0. Portfolio — Performance scores dark contrast (2026-11-27)
 - **Проблема:** gauges/цифры на `*-600` плохо читались в dark theme.
