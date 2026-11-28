@@ -116,7 +116,7 @@ export default function BlogIndexBody({
 
                     {post.cover?.src ? (
                       <div
-                        className={`relative aspect-[16/10] w-full shrink-0 overflow-hidden border-white/5 lg:aspect-auto lg:h-auto lg:min-h-[280px] lg:w-[42%] lg:border-b-0 ${
+                        className={`relative flex w-full shrink-0 items-center overflow-hidden border-white/5 lg:w-[42%] lg:self-stretch lg:border-b-0 ${
                           isRtl
                             ? 'rounded-t-[20px] border-b lg:rounded-t-none lg:rounded-e-[20px] lg:border-s'
                             : 'rounded-t-[20px] border-b lg:rounded-t-none lg:rounded-s-[20px] lg:border-e'
@@ -125,8 +125,9 @@ export default function BlogIndexBody({
                         <Image
                           src={post.cover.src}
                           alt={post.cover.alt || postTitle}
-                          fill
-                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                          width={post.cover.width || 1170}
+                          height={post.cover.height || 658}
+                          className="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-105"
                           sizes="(max-width: 1024px) 100vw, 490px"
                         />
                       </div>

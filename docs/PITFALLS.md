@@ -138,20 +138,20 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 
 ## PIT-009 — Body images cropped left/right (e.g. 1920×1080)
 
-**Tags:** `portfolio`, `images`, `css`, `richtext`
+**Tags:** `portfolio`, `blog`, `images`, `css`, `richtext`
 
-**Symptom:** Wide images look cropped by width in project body.
+**Symptom:** Wide images look cropped by width in project body / blog covers & cards.
 
 **Causes:**
-1. Section gallery: fixed `aspect-[16/10]` or `aspect-[4/3]` + `object-cover`.
+1. Section gallery / blog cover / blog index: fixed `aspect-[16/10]`, `aspect-[16/9]`, `aspect-[21/9]` + `fill` + `object-cover` (card side column also stretches to text height → extra L/R crop).
 2. Lexical Upload in rich text: `<img width="1920" height="1080">` without `max-width:100%`, clipped by page `overflow-x: clip`.
 
 **Fix:**
-- Gallery: `w-full h-auto`, no forced cover crop.
-- Rich text: `[&_img]:max-w-full [&_img]:h-auto` (+ radius/shadow as designed).
+- Gallery / blog cover / blog card: `w-full h-auto` with intrinsic `width`/`height`, no forced cover crop.
+- Rich text (portfolio `ProjectBody`, blog `BlogPostBody`): `[&_img]:max-w-full [&_img]:h-auto` (+ radius/shadow as designed).
 - Keep paragraphs that contain only uploads (`lexicalHasContent`, not only `lexicalToPlain`).
 
-**Prevent:** Prefer natural aspect for case-study imagery; always constrain rich-text media to container width.
+**Prevent:** Prefer natural aspect for case-study and blog imagery; always constrain rich-text media to container width.
 
 ---
 
