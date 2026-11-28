@@ -115,7 +115,7 @@ export default function BlogIndexBody({
 
                     <div className="relative z-10">
                       {post.cover?.src ? (
-                        <div className="float-start mb-3 me-4 w-[42%] max-w-[320px] overflow-hidden rounded-[12px] sm:me-5 lg:mb-4 lg:me-6 lg:max-w-[380px]">
+                        <div className="float-start mb-3 me-4 w-[42%] max-w-[320px] overflow-hidden rounded-[5px] sm:me-5 lg:mb-4 lg:me-6 lg:max-w-[380px]">
                           <Image
                             src={post.cover.src}
                             alt={post.cover.alt || postTitle}

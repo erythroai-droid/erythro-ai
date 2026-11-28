@@ -1,7 +1,10 @@
 # Latest changes
 
-Обновлено: 2026-11-28 (blog preview float wrap)  
-Статус: превью блога — картинка с отступом, текст обтекает.
+Обновлено: 2026-11-28 (blog preview radius 5px)  
+Статус: превью блога — cover `rounded-[5px]`.
+
+## 0. Blog — preview cover radius 5px (2026-11-28)
+- **Сделано:** `BlogIndexBody` cover wrapper `rounded-[12px]` → `rounded-[5px]`.
 
 ## 0. Blog — preview cover float + inset (2026-11-28)
 - **Запрос:** в превью изображение с отступом от края слева и обтекаемое текстом.
