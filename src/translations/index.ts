@@ -464,7 +464,7 @@ export const homeAiAudit = {
       support: {
         en: 'citations in ChatGPT if the crawler can’t read you.',
         ru: 'цитат в ChatGPT, если краулер вас не читает.',
-        he: 'ציטוטים ב-ChatGPT אם הזוחל לא יכול לקרוא אתכם.',
+        he: 'ציטוטים ב-ChatGPT אם הזחלן לא יכול לקרוא אתכם.',
       },
       impact: {
         en: 'Your competitor shows up instead.',

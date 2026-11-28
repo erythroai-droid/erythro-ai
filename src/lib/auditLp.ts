@@ -76,6 +76,18 @@ export function leakLpLocaleFromHost(host: string | null | undefined): AuditLpLo
   return null
 }
 
+/**
+ * CMS link to any AI-audit landing host → the host for the reader's locale.
+ * Blog `relatedLinks` share one `href` across locales, so RU/HE readers would
+ * otherwise land on `ai-audit-en`. Other URLs pass through unchanged.
+ */
+export function localizeLeakLpHref(href: string, locale: string): string {
+  if (!(AUDIT_LP_LOCALES as readonly string[]).includes(locale)) return href
+  const m =/^https?:\/\/(ai-audit-(?:en|ru|he)\.erythro\.ai)(\/.*)?$/i.exec(href.trim())
+  if (!m) return href
+  return `https://${LEAK_LP_HOST_BY_LOCALE[locale as AuditLpLocale]}${m[2] ?? '/'}`
+}
+
 /** Internal path of the AI-audit landing. */
 export function leakLpInternalPath(locale: AuditLpLocale): string {
   return `/lp/audit/leak/${locale}`

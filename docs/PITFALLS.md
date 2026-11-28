@@ -226,6 +226,21 @@ curl -D - -o NUL -H "Range: bytes=0-1023" "<media-url>"
 
 ---
 
+## PIT-179 — Blog `relatedLinks`: one `href` for all locales (RU/HE sent to EN audit host)
+
+**Tags:** `blog`, `cms`, `i18n`, `links`, `audit`
+**Seen:** 2026-11-28 — Translater report `docs/reports/erythro_blog_and_portfolio_audit.md`: posts 20–22 sent RU/HE readers to `ai-audit-en.erythro.ai`; post 20 had 4 of 5 rows with `href: "/"`.
+
+**Symptom:** Related links on a RU/HE post open the English AI-audit landing, or the home page.
+
+**Cause:** `relatedLinks` is not localized — only `label` is. A per-locale audit host cannot be stored in the row; editors worked around it with three rows ("(in Russian)", "(in Hebrew)") and some lost their `href`.
+
+**Fix:** `localizeLeakLpHref(href, locale)` (`src/lib/auditLp.ts`) maps any `ai-audit-{en,ru,he}.erythro.ai` link to the reader's locale host in `BlogPostBody` and markdown negotiation. Store one audit row (`https://ai-audit-en.erythro.ai/`). Body text is per-locale Lexical, so links there are written per locale.
+
+**Prevent:** Never add per-language duplicate rows to `relatedLinks`; one row per destination. After a blog script, grep `relatedLinks` for `"href":"/"`.
+
+---
+
 ## PIT-178 — Services with empty slug break relatedService seed / labels
 
 **Tags:** `portfolio`, `services`, `payload`, `cms`
