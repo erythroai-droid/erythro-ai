@@ -1,7 +1,12 @@
 # Latest changes
 
-Обновлено: 2026-11-28 (blog image crop)  
-Статус: обложки и inline-картинки блога больше не режутся `object-cover` / жёстким aspect.
+Обновлено: 2026-11-28 (blog preview float wrap)  
+Статус: превью блога — картинка с отступом, текст обтекает.
+
+## 0. Blog — preview cover float + inset (2026-11-28)
+- **Запрос:** в превью изображение с отступом от края слева и обтекаемое текстом.
+- **Сделано:** `BlogIndexBody` — убран split flex/колонка; cover `float-start` + `me-*`, карточка с `p-6/p-8`; title/excerpt обтекают; footer `clear-both`.
+- **Следующий шаг:** проверить `/blog` (EN/RU/HE, mobile + desktop).
 
 ## 0. Blog — images cropped in preview & post (2026-11-28)
 - **Симптом:** превью на `/blog` и cover в посте обрезались; inline Upload без `max-w-full` мог клипаться (PIT-009).
