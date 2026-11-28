@@ -27,20 +27,34 @@ export const CaseStudies: GlobalConfig = {
       admin: { description: 'Banner + “View all projects” link. Default /portfolio.' },
     }),
     {
-      name: 'bannerVideo',
-      type: 'upload',
-      relationTo: 'media',
+      name: 'banners',
+      type: 'array',
+      labels: { singular: 'Banner', plural: 'Video banners' },
       admin: {
-        description: 'Desktop banner video (1024px+). Shown instead of the static default when set.',
+        description:
+          'Rotating video banners on the homepage “Our works” block. Each row needs a desktop video; add a separate mobile cut when the crop differs. The site loads only the active slide (not every file at once).',
+        initCollapsed: false,
       },
-    },
-    {
-      name: 'bannerVideoMobile',
-      type: 'upload',
-      relationTo: 'media',
-      admin: {
-        description: 'Mobile banner video (under 1024px). Falls back to the desktop video when empty.',
-      },
+      fields: [
+        {
+          name: 'video',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+          admin: {
+            description: 'Desktop banner video (1024px+). Prefer short muted MP4/WebM.',
+          },
+        },
+        {
+          name: 'videoMobile',
+          type: 'upload',
+          relationTo: 'media',
+          admin: {
+            description:
+              'Mobile banner video (under 1024px, ideally 9:16). Falls back to the desktop file when empty.',
+          },
+        },
+      ],
     },
   ],
 }

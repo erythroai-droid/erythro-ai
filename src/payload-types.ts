@@ -2095,13 +2095,21 @@ export interface CaseStudy {
    */
   viewAllHref?: string | null;
   /**
-   * Desktop banner video (1024px+). Shown instead of the static default when set.
+   * Rotating video banners on the homepage “Our works” block. Each row needs a desktop video; add a separate mobile cut when the crop differs. The site loads only the active slide (not every file at once).
    */
-  bannerVideo?: (number | null) | Media;
-  /**
-   * Mobile banner video (under 1024px). Falls back to the desktop video when empty.
-   */
-  bannerVideoMobile?: (number | null) | Media;
+  banners?:
+    | {
+        /**
+         * Desktop banner video (1024px+). Prefer short muted MP4/WebM.
+         */
+        video: number | Media;
+        /**
+         * Mobile banner video (under 1024px, ideally 9:16). Falls back to the desktop file when empty.
+         */
+        videoMobile?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2817,8 +2825,13 @@ export interface CaseStudiesSelect<T extends boolean = true> {
   cardCtaHref?: T;
   viewAllProjects?: T;
   viewAllHref?: T;
-  bannerVideo?: T;
-  bannerVideoMobile?: T;
+  banners?:
+    | T
+    | {
+        video?: T;
+        videoMobile?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

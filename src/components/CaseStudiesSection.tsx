@@ -4,13 +4,10 @@ import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useSiteContent } from './SiteContentProvider'
 import StylizedSectionTitle from './StylizedSectionTitle'
-import { FeaturedCaseLinks } from './RelatedLinks'
 import { loadGsapAfterLcp } from '@/lib/gsapAfterLcp'
-import type { PortfolioProject } from '@/lib/portfolioProjects'
 
 interface CaseStudiesSectionProps {
   locale: string
-  featuredCases?: Array<Pick<PortfolioProject, 'slug' | 'title'>>
 }
 
 function useIsDesktop() {
@@ -29,25 +26,37 @@ function useIsDesktop() {
 
 const CASE_STUDY_POSTER = '/images/Dynamic-Urban-Slideshow.jpg'
 
-/** Loads src only near the section; plays while the block is in view. */
+type BannerSlide = { video: string; videoMobile?: string }
+
+/**
+ * Loads src only near the section; plays while the block is in view.
+ * One element at a time — parent remounts via `key` when the slide changes,
+ * so previous files stop downloading.
+ */
 function CaseStudyVideo({
   src,
   label,
   sectionRef,
   containerRef,
   portrait = false,
+  loop = true,
+  onEnded,
 }: {
   src: string
   label: string
   sectionRef: React.RefObject<HTMLElement | null>
   containerRef: React.RefObject<HTMLElement | null>
   portrait?: boolean
+  loop?: boolean
+  onEnded?: () => void
 }) {
   const ref = useRef<HTMLVideoElement | null>(null)
   const [inView, setInView] = useState(false)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const attachedSrcRef = useRef<string | null>(null)
+  const onEndedRef = useRef(onEnded)
+  onEndedRef.current = onEnded
 
   useEffect(() => {
     setReady(false)
@@ -76,18 +85,24 @@ function CaseStudyVideo({
       el.load()
     }
 
-    const onEnded = () => {
-      el.currentTime = 0
-      el.play().catch(() => {})
+    const handleEnded = () => {
+      if (loop) {
+        el.currentTime = 0
+        el.play().catch(() => {})
+        return
+      }
+      onEndedRef.current?.()
     }
     const onCanPlay = () => setReady(true)
     const onError = () => {
       setFailed(true)
       setReady(false)
+      // Skip a broken slide instead of freezing the carousel.
+      if (!loop) onEndedRef.current?.()
     }
 
-    el.loop = true
-    el.addEventListener('ended', onEnded)
+    el.loop = loop
+    el.addEventListener('ended', handleEnded)
     el.addEventListener('canplay', onCanPlay)
     el.addEventListener('error', onError)
     if (el.readyState >= 3 && attachedSrcRef.current === src) setReady(true)
@@ -122,13 +137,13 @@ function CaseStudyVideo({
     playObserver.observe(playTarget)
 
     return () => {
-      el.removeEventListener('ended', onEnded)
+      el.removeEventListener('ended', handleEnded)
       el.removeEventListener('canplay', onCanPlay)
       el.removeEventListener('error', onError)
       prefetchObserver?.disconnect()
       playObserver.disconnect()
     }
-  }, [src, sectionRef, containerRef, failed])
+  }, [src, sectionRef, containerRef, failed, loop])
 
   if (failed) return null
 
@@ -143,7 +158,7 @@ function CaseStudyVideo({
         portrait ? '' : 'scale-[1.14]'
       } ${showVideo ? 'opacity-100' : 'opacity-0'}`}
       muted
-      loop
+      loop={loop}
       playsInline
       preload="none"
       aria-label={label}
@@ -186,6 +201,13 @@ function ViewAllChevrons({ isRtl }: { isRtl: boolean }) {
     </span>
   )
 }
+
+const SLIDER_COPY = {
+  prev: { en: 'Previous banner', ru: 'Предыдущий баннер', he: 'באנר קודם' },
+  next: { en: 'Next banner', ru: 'Следующий баннер', he: 'באנר הבא' },
+  slide: { en: 'Banner', ru: 'Баннер', he: 'באנר' },
+} as const
+
 // Brand logos path mappings
 const brandLogos = [
   { name: 'Adobe', src: '/images/brands/Adobe_Corporate_logo 1.svg' },
@@ -201,27 +223,61 @@ const brandLogos = [
   { name: 'Vercel', src: '/images/brands/vercel 1.svg' },
 ]
 
-export default function CaseStudiesSection({
-  locale,
-  featuredCases = [],
-}: CaseStudiesSectionProps) {
+function resolveSlides(translations: {
+  banners?: BannerSlide[]
+  video?: string
+  videoMobile?: string
+}): BannerSlide[] {
+  const fromCms = Array.isArray(translations.banners)
+    ? translations.banners.filter((b) => typeof b?.video === 'string' && b.video.trim())
+    : []
+  if (fromCms.length) return fromCms
+  if (translations.video) {
+    return [
+      {
+        video: translations.video,
+        videoMobile: translations.videoMobile || translations.video,
+      },
+    ]
+  }
+  return []
+}
+
+export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) {
   const translations = useSiteContent().caseStudies
   const t = (field: Record<string, string>) => field[locale] || field['en']
   const isRtl = locale === 'he'
   const isDesktop = useIsDesktop()
   const portfolioHref = translations.viewAllHref || '/portfolio'
+  const slides = resolveSlides(translations)
+  const count = slides.length
+  const [index, setIndex] = useState(0)
+  const safeIndex = count ? index % count : 0
+  const current = count ? slides[safeIndex] : null
   const videoSrc =
-    isDesktop === null
+    isDesktop === null || !current
       ? null
       : isDesktop
-        ? translations.video
-        : translations.videoMobile || translations.video
+        ? current.video
+        : current.videoMobile || current.video
+  const multi = count > 1
+  const lang = (locale === 'ru' || locale === 'he' ? locale : 'en') as 'en' | 'ru' | 'he'
+
+  const go = (step: number) => {
+    if (!count) return
+    setIndex((i) => (i + step + count) % count)
+  }
+
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const sectionRef = useRef<HTMLDivElement | null>(null)
   const headingRef = useRef<HTMLDivElement | null>(null)
   const cardRef = useRef<HTMLAnchorElement | null>(null)
   const linkRef = useRef<HTMLDivElement | null>(null)
   const marqueeRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (count && index >= count) setIndex(0)
+  }, [count, index])
 
   useEffect(() => {
     let cancelled = false
@@ -341,33 +397,91 @@ export default function CaseStudiesSection({
         </div>
 
         {/* Mobile: 9:16 portrait player; desktop: flex slot for 16:9 video */}
-        <Link
-          ref={cardRef}
-          href={portfolioHref}
-          aria-label={viewAllLabelText(t(translations.viewAllProjects), isRtl)}
-          className="relative mx-auto block w-full max-w-[420px] aspect-[9/16] overflow-hidden bg-[#0D0D0D] transition-opacity duration-300 hover:opacity-95 lg:max-w-none lg:aspect-auto lg:flex-1 lg:min-h-0"
-        >
-          <img
-            src={CASE_STUDY_POSTER}
-            alt="Dynamic Urban Showcase project preview"
-            className={`absolute inset-0 z-0 h-full w-full object-cover ${
-              isDesktop === false ? '' : 'lg:scale-[1.14]'
-            }`}
-            loading="lazy"
-            decoding="async"
-            fetchPriority="low"
-          />
-          {videoSrc ? (
-            <CaseStudyVideo
-              key={videoSrc}
-              src={videoSrc}
-              label={t(translations.cardTitle)}
-              sectionRef={sectionRef}
-              containerRef={cardRef}
-              portrait={isDesktop === false}
+        <div className="relative mx-auto w-full max-w-[420px] lg:max-w-none lg:flex-1 lg:min-h-0">
+          <Link
+            ref={cardRef}
+            href={portfolioHref}
+            aria-label={viewAllLabelText(t(translations.viewAllProjects), isRtl)}
+            className="relative block w-full aspect-[9/16] overflow-hidden bg-[#0D0D0D] transition-opacity duration-300 hover:opacity-95 lg:aspect-auto lg:h-full lg:min-h-0"
+          >
+            <img
+              src={CASE_STUDY_POSTER}
+              alt=""
+              className={`absolute inset-0 z-0 h-full w-full object-cover ${
+                isDesktop === false ? '' : 'lg:scale-[1.14]'
+              }`}
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
             />
+            {videoSrc ? (
+              <CaseStudyVideo
+                key={`${safeIndex}-${videoSrc}`}
+                src={videoSrc}
+                label={`${t(translations.cardTitle)}${multi ? ` — ${safeIndex + 1}/${count}` : ''}`}
+                sectionRef={sectionRef}
+                containerRef={cardRef}
+                portrait={isDesktop === false}
+                loop={!multi}
+                onEnded={multi ? () => go(1) : undefined}
+              />
+            ) : null}
+          </Link>
+
+          {multi ? (
+            <div
+              className="pointer-events-none absolute inset-0 z-10 flex items-end justify-center pb-4 lg:pb-6"
+              dir="ltr"
+            >
+              <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-black/35 px-3 py-2 backdrop-blur-[2px]">
+                <button
+                  type="button"
+                  aria-label={SLIDER_COPY.prev[lang]}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    go(-1)
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                </button>
+                <div className="flex items-center gap-1.5" role="tablist" aria-label={t(translations.preTitle)}>
+                  {slides.map((slide, i) => (
+                    <button
+                      key={`${slide.video}-${i}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={i === safeIndex}
+                      aria-label={`${SLIDER_COPY.slide[lang]} ${i + 1} / ${count}`}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        i === safeIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/45 hover:bg-white/70'
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setIndex(i)
+                      }}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  aria-label={SLIDER_COPY.next[lang]}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-white/90 transition-colors hover:bg-white/15 hover:text-white"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    go(1)
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           ) : null}
-        </Link>
+        </div>
 
         <div
           ref={linkRef}
@@ -393,7 +507,6 @@ export default function CaseStudiesSection({
             </span>
             <ViewAllChevrons isRtl={isRtl} />
           </a>
-          <FeaturedCaseLinks locale={locale} cases={featuredCases} />
         </div>
       </div>
 

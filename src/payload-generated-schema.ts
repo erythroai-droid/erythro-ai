@@ -1291,6 +1291,32 @@ export const case_studies = pgTable(
   ],
 )
 
+export const case_studies_banners = pgTable(
+  'case_studies_banners',
+  {
+    _order: integer('_order').notNull(),
+    _parentID: integer('_parent_id').notNull(),
+    id: varchar('id').primaryKey(),
+    video: integer('video_id').references(() => media.id, {
+      onDelete: 'set null',
+    }),
+    videoMobile: integer('video_mobile_id').references(() => media.id, {
+      onDelete: 'set null',
+    }),
+  },
+  (columns) => [
+    index('case_studies_banners_order_idx').on(columns._order),
+    index('case_studies_banners_parent_id_idx').on(columns._parentID),
+    index('case_studies_banners_video_idx').on(columns.video),
+    index('case_studies_banners_video_mobile_idx').on(columns.videoMobile),
+    foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [case_studies.id],
+      name: 'case_studies_banners_parent_id_fk',
+    }).onDelete('cascade'),
+  ],
+)
+
 export const case_studies_locales = pgTable(
   'case_studies_locales',
   {
@@ -2393,6 +2419,23 @@ export const relations_services_section = relations(services_section, ({ many })
     relationName: '_locales',
   }),
 }))
+export const relations_case_studies_banners = relations(case_studies_banners, ({ one }) => ({
+  _parentID: one(case_studies, {
+    fields: [case_studies_banners._parentID],
+    references: [case_studies.id],
+    relationName: 'banners',
+  }),
+  video: one(media, {
+    fields: [case_studies_banners.video],
+    references: [media.id],
+    relationName: 'video',
+  }),
+  videoMobile: one(media, {
+    fields: [case_studies_banners.videoMobile],
+    references: [media.id],
+    relationName: 'videoMobile',
+  }),
+}))
 export const relations_case_studies_locales = relations(case_studies_locales, ({ one }) => ({
   _parentID: one(case_studies, {
     fields: [case_studies_locales._parentID],
@@ -2410,6 +2453,9 @@ export const relations_case_studies = relations(case_studies, ({ one, many }) =>
     fields: [case_studies.bannerVideoMobile],
     references: [media.id],
     relationName: 'bannerVideoMobile',
+  }),
+  banners: many(case_studies_banners, {
+    relationName: 'banners',
   }),
   _locales: many(case_studies_locales, {
     relationName: '_locales',
@@ -2733,6 +2779,7 @@ type DatabaseSchema = {
   services_section: typeof services_section
   services_section_locales: typeof services_section_locales
   case_studies: typeof case_studies
+  case_studies_banners: typeof case_studies_banners
   case_studies_locales: typeof case_studies_locales
   solutions_section: typeof solutions_section
   solutions_section_locales: typeof solutions_section_locales
@@ -2813,6 +2860,7 @@ type DatabaseSchema = {
   relations_hero: typeof relations_hero
   relations_services_section_locales: typeof relations_services_section_locales
   relations_services_section: typeof relations_services_section
+  relations_case_studies_banners: typeof relations_case_studies_banners
   relations_case_studies_locales: typeof relations_case_studies_locales
   relations_case_studies: typeof relations_case_studies
   relations_solutions_section_locales: typeof relations_solutions_section_locales

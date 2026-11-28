@@ -1,7 +1,6 @@
 import React from 'react'
 import HomeClient from './HomeClient'
 import { getCachedSiteContent } from '@/lib/getSiteContent'
-import { getCachedPortfolioProjectCards } from '@/lib/cmsPages'
 import { heroStillSrc } from '@/lib/heroImage'
 
 /**
@@ -12,13 +11,7 @@ export const dynamic = 'force-static'
 export const revalidate = 3600
 
 export default async function HomePage() {
-  const [content, projectCards] = await Promise.all([
-    getCachedSiteContent(),
-    getCachedPortfolioProjectCards().catch(() => []),
-  ])
-  const featuredCases = projectCards
-    .slice(0, 8)
-    .map((p) => ({ slug: p.slug, title: p.title }))
+  const content = await getCachedSiteContent()
   const mobileHero = content.hero.backgroundImageMobile
   const heroPreload = mobileHero ? heroStillSrc(mobileHero) : null
 
@@ -37,12 +30,7 @@ export default async function HomePage() {
           fetchPriority="high"
         />
       ) : null}
-      <HomeClient
-        initialLocale="en"
-        content={content}
-        featuredCases={featuredCases}
-        clientHydratePrefs
-      />
+      <HomeClient initialLocale="en" content={content} clientHydratePrefs />
     </>
   )
 }

@@ -413,14 +413,49 @@ export async function getSiteContent(): Promise<SiteContent> {
     if (typeof caseStudiesG?.viewAllHref === 'string' && caseStudiesG.viewAllHref.trim()) {
       content.caseStudies.viewAllHref = caseStudiesG.viewAllHref.trim()
     }
-    const caseStudyVideoDoc = await resolveMediaDoc(payload, caseStudiesG?.bannerVideo)
-    const caseStudyVideo = mediaUrl(caseStudyVideoDoc)
-    if (caseStudyVideo) content.caseStudies.video = caseStudyVideo
-    const caseStudyVideoMobileDoc = await resolveMediaDoc(payload, caseStudiesG?.bannerVideoMobile)
-    const caseStudyVideoMobile = mediaUrl(caseStudyVideoMobileDoc)
-    if (caseStudyVideoMobile) content.caseStudies.videoMobile = caseStudyVideoMobile
-    // If only desktop banner is set, don't keep a broken local mobile fallback.
-    else if (caseStudyVideo) content.caseStudies.videoMobile = caseStudyVideo
+
+    const bannerRows = Array.isArray(caseStudiesG?.banners) ? caseStudiesG.banners : []
+    if (bannerRows.length) {
+      const resolved = await Promise.all(
+        bannerRows.map(async (row: { video?: unknown; videoMobile?: unknown }) => {
+          const desktopDoc = await resolveMediaDoc(payload, row?.video)
+          const desktop = mediaUrl(desktopDoc)
+          if (!desktop) return null
+          const mobileDoc = await resolveMediaDoc(payload, row?.videoMobile)
+          const mobile = mediaUrl(mobileDoc)
+          return {
+            video: desktop,
+            videoMobile: mobile || desktop,
+          }
+        }),
+      )
+      content.caseStudies.banners = resolved.filter(
+        (b): b is { video: string; videoMobile: string } => Boolean(b?.video),
+      )
+      // Keep legacy single-URL fields in sync with the first slide for older consumers.
+      const first = content.caseStudies.banners[0]
+      if (first) {
+        content.caseStudies.video = first.video
+        content.caseStudies.videoMobile = first.videoMobile
+      }
+    } else {
+      // Legacy single-banner globals (pre-slider) until migrate seeds banners[].
+      const caseStudyVideoDoc = await resolveMediaDoc(payload, caseStudiesG?.bannerVideo)
+      const caseStudyVideo = mediaUrl(caseStudyVideoDoc)
+      if (caseStudyVideo) content.caseStudies.video = caseStudyVideo
+      const caseStudyVideoMobileDoc = await resolveMediaDoc(payload, caseStudiesG?.bannerVideoMobile)
+      const caseStudyVideoMobile = mediaUrl(caseStudyVideoMobileDoc)
+      if (caseStudyVideoMobile) content.caseStudies.videoMobile = caseStudyVideoMobile
+      else if (caseStudyVideo) content.caseStudies.videoMobile = caseStudyVideo
+      if (caseStudyVideo) {
+        content.caseStudies.banners = [
+          {
+            video: caseStudyVideo,
+            videoMobile: caseStudyVideoMobile || caseStudyVideo,
+          },
+        ]
+      }
+    }
 
     // --- Solutions section intro + cards ---
     content.solutions.sectionTitle = L(solutionsIntro?.sectionTitle, content.solutions.sectionTitle)
@@ -1003,7 +1038,7 @@ export async function getShellSiteContent(): Promise<SiteContent> {
  * Invalidated via `SITE_CONTENT_TAG` when content is edited in Payload admin.
  * Prefer {@link getCachedShellSiteContent} on chrome-only routes.
  */
-export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v17-home-ai-audit'], {
+export const getCachedSiteContent = unstable_cache(getSiteContent, ['site-content-v18-case-banners'], {
   tags: [SITE_CONTENT_TAG],
 })
 
