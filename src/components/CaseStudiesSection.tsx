@@ -38,7 +38,6 @@ function CaseStudyVideo({
   label,
   sectionRef,
   containerRef,
-  portrait = false,
   loop = true,
   onEnded,
 }: {
@@ -46,7 +45,6 @@ function CaseStudyVideo({
   label: string
   sectionRef: React.RefObject<HTMLElement | null>
   containerRef: React.RefObject<HTMLElement | null>
-  portrait?: boolean
   loop?: boolean
   onEnded?: () => void
 }) {
@@ -155,8 +153,8 @@ function CaseStudyVideo({
       ref={ref}
       poster={CASE_STUDY_POSTER}
       className={`absolute inset-0 z-[1] h-full w-full object-cover transition-opacity duration-500 ${
-        portrait ? '' : 'scale-[1.14]'
-      } ${showVideo ? 'opacity-100' : 'opacity-0'}`}
+        showVideo ? 'opacity-100' : 'opacity-0'
+      }`}
       muted
       loop={loop}
       playsInline
@@ -396,20 +394,18 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
           </p>
         </div>
 
-        {/* Mobile: 9:16 portrait player; desktop: flex slot for 16:9 video */}
-        <div className="relative mx-auto w-full max-w-[420px] lg:max-w-none lg:flex-1 lg:min-h-0">
+        {/* 1920×1080 (16:9) banner slot on all breakpoints */}
+        <div className="relative mx-auto w-full lg:flex-1 lg:min-h-0 lg:flex lg:items-center">
           <Link
             ref={cardRef}
             href={portfolioHref}
             aria-label={viewAllLabelText(t(translations.viewAllProjects), isRtl)}
-            className="relative block w-full aspect-[9/16] overflow-hidden bg-[#0D0D0D] transition-opacity duration-300 hover:opacity-95 lg:aspect-auto lg:h-full lg:min-h-0"
+            className="relative block w-full aspect-video overflow-hidden bg-[#0D0D0D] transition-opacity duration-300 hover:opacity-95"
           >
             <img
               src={CASE_STUDY_POSTER}
               alt=""
-              className={`absolute inset-0 z-0 h-full w-full object-cover ${
-                isDesktop === false ? '' : 'lg:scale-[1.14]'
-              }`}
+              className="absolute inset-0 z-0 h-full w-full object-cover"
               loading="lazy"
               decoding="async"
               fetchPriority="low"
@@ -421,7 +417,6 @@ export default function CaseStudiesSection({ locale }: CaseStudiesSectionProps) 
                 label={`${t(translations.cardTitle)}${multi ? ` — ${safeIndex + 1}/${count}` : ''}`}
                 sectionRef={sectionRef}
                 containerRef={cardRef}
-                portrait={isDesktop === false}
                 loop={!multi}
                 onEnded={multi ? () => go(1) : undefined}
               />

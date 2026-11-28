@@ -2095,16 +2095,16 @@ export interface CaseStudy {
    */
   viewAllHref?: string | null;
   /**
-   * Rotating video banners on the homepage “Our works” block. Each row needs a desktop video; add a separate mobile cut when the crop differs. The site loads only the active slide (not every file at once).
+   * Rotating 1920×1080 (16:9) video banners on the homepage “Our works” block. Optional lighter mobile file per slide; the site loads only the active slide.
    */
   banners?:
     | {
         /**
-         * Desktop banner video (1024px+). Prefer short muted MP4/WebM.
+         * Desktop banner — 1920×1080 (16:9), short muted MP4/WebM.
          */
         video: number | Media;
         /**
-         * Mobile banner video (under 1024px, ideally 9:16). Falls back to the desktop file when empty.
+         * Mobile banner — same 16:9 crop, lighter/smaller file preferred. Falls back to desktop when empty.
          */
         videoMobile?: (number | null) | Media;
         id?: string | null;
