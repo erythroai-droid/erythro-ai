@@ -21,6 +21,7 @@ import {
   tBlog,
 } from './blogPosts'
 import { tLocale, tLocaleList } from './servicePages'
+import { localizeLeakLpHref } from './auditLp'
 import { formatPageFaqBlock, formatPageFaqMarkdown } from './pageFaq'
 
 export { shouldServeMarkdown } from './markdownAccept'
@@ -458,7 +459,8 @@ async function generateBlogPostMarkdown(
 
   if (post.relatedLinks.length) {
     lines.push(`## ${tBlog(blogUi.relatedHeading, locale)}`)
-    for (const link of post.relatedLinks) {
+    for (const raw of post.relatedLinks) {
+      const link = { ...raw, href: localizeLeakLpHref(raw.href, locale) }
       const href = link.href.startsWith('http') ? link.href : `${SITE_URL}${link.href.startsWith('/') ? '' : '/'}${link.href}`
       lines.push(`- [${tBlog(link.label, locale)}](${href})`)
     }

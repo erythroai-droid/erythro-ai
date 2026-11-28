@@ -8,6 +8,7 @@ import { richTextConverters } from '@/lib/richTextConverters'
 import { isLexicalDoc } from '@/lib/lexical'
 import type { BlogPost } from '@/lib/blogPosts'
 import { blogUi, formatBlogDate, tBlog } from '@/lib/blogPosts'
+import { localizeLeakLpHref } from '@/lib/auditLp'
 import PageFaqSection from '@/components/PageFaqSection'
 
 type Props = {
@@ -159,7 +160,8 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
                 <span>{tBlog(blogUi.relatedHeading, locale).slice(1)}</span>
               </h2>
               <ul className="m-0 flex list-none flex-col gap-3 p-0">
-                {post.relatedLinks.map((link) => {
+                {post.relatedLinks.map((raw) => {
+                  const link = { ...raw, href: localizeLeakLpHref(raw.href, locale) }
                   const external = /^https?:\/\//i.test(link.href)
                   const className = `inline-flex items-center gap-2 font-sans text-sm font-medium uppercase transition-colors ${
                     isLight

@@ -1,7 +1,16 @@
 # Latest changes
 
-Обновлено: 2026-11-28 (case banner slider bugs)  
-Статус: dual-buffer смена слайдов без постера; CTA не наезжает на баннер.
+Обновлено: 2026-11-28 (blog + portfolio localization audit)  
+Статус: правки аудита Translater применены в прод-CMS; код закоммичен в feat/leak-lp-waiting-green, ждёт Vercel site deploy.
+
+## 0. Blog + Portfolio — localization audit fixes (2026-11-28)
+- **Источник:** `docs/reports/erythro_blog_and_portfolio_audit.md` (+ Obsidian `reports/`). Решения пользователя: audit RU/HE → поддомены `ai-audit-ru/he`; противоречия «балл не приводится» убраны из текста (карточки баллов остались); HE трёх кейсов переведён заново с RU; HE «аудит» = `ביקורת AI`; бренд `Erythro.ai`; `A44` убран; пост 7 — прямые ссылки на 3 сайта; La Scala — 2016.
+- **CMS блог (прод):** `scripts/fix-blog-portfolio-audit-blog.ts` — CTA LinkedIn/«первый комментарий» → `/audit`/`/contacts`/демо (ID 1,3,5,6,7,9,15,17,18,19); `relatedLinks` ID 20 (3 строки: PSB demo, audit, blog); RU/HE body ID 21/22 → `ai-audit-ru/he`; удалён дубль H1 в RU ID 12; excerpt/SEO EN/HE хвосты; ID 16/19 RU шкалы на русском; `Erythro AI` → `Erythro.ai` во всех полях.
+- **CMS портфолио (прод):** `scripts/fix-blog-portfolio-audit-portfolio.ts` — категория #3 `Websites/Сайты/אתרים`; услуга #4 `AI & Automation` (+ trim пробелов у RU/HE названий услуг); pro-interior: SEO, client, stack ×5, categoryLabel пусто, ZWSP; HE `pro-interior`/`ai-audit-agent`/`ai-consultant` пересобран из структуры RU; точечные HE/EN/RU правки (דוכן חי, קרצוף, סלאם, דיוקן, ייבוש, ערימת UI, «», PIT-031, TZ briefs, visitors, CI→Поставка, agentBrowse 2/2, `relatedAuditLabel.he`, слэш в `relatedAuditHref.he`).
+- **Код:** `localizeLeakLpHref` (`auditLp.ts`) в `BlogPostBody` + `markdownNegotiation` — audit-ссылка в relatedLinks по локали читателя; HE `הזוחל` → `הזחלן` (`translations/index.ts`); PIT-179 (+ Obsidian).
+- **Не сделано:** `cover.alt` ID 20–22 (Media `alt` не локализован — нужна схема); пустые `tags` ID 5/14/15/16; мелкие EN-стилистика ID 1/3 из аудита; ревалидация из скрипта не сработала (нет request scope).
+- **Не проверено:** сборка/tsc и вид страниц в браузере (по AGENTS — только по команде).
+- **Следующий шаг:** Vercel site deploy → Soft-save в админке (или ISR 1 ч) → проверить `/blog/...` 7, 20, 21 и `/portfolio/pro-interior`, `/portfolio/ai-audit-agent` на HE.
 
 ## 0. Homepage — case banner slider bugs (2026-11-28)
 - **Баги:** при смене слайда мигал постер первого; «Смотреть все проекты» налазила на видео.
