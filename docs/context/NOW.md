@@ -1,7 +1,13 @@
 # Latest changes
 
-Обновлено: 2026-11-27 (perf scores dark contrast)  
-Статус: dark-theme contrast fix в коде; нужен commit/deploy.
+Обновлено: 2026-11-28 (blog image crop)  
+Статус: обложки и inline-картинки блога больше не режутся `object-cover` / жёстким aspect.
+
+## 0. Blog — images cropped in preview & post (2026-11-28)
+- **Симптом:** превью на `/blog` и cover в посте обрезались; inline Upload без `max-w-full` мог клипаться (PIT-009).
+- **Причина:** `BlogIndexBody` — `aspect-[16/10]` + `fill` + `object-cover` (на lg колонка тянется по тексту → ещё сильнее L/R crop); `BlogPostBody` cover — `16/9` / `21/9` + `object-cover`; body без media-классов как у portfolio.
+- **Сделано:** intrinsic `width`/`height` + `h-auto w-full`; body — `[&_img]/[&_picture]/[&_video]` как в `ProjectBody`; PIT-009 (+ Obsidian) обновлён.
+- **Следующий шаг:** commit/deploy → проверить `/blog` и пост с cover + inline-картинкой.
 
 ## 0. Portfolio — Performance scores dark contrast (2026-11-27)
 - **Проблема:** gauges/цифры на `*-600` плохо читались в dark theme.

@@ -125,13 +125,14 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
           </header>
 
           {post.cover?.src ? (
-            <div className="relative aspect-[16/9] w-full overflow-hidden md:aspect-[21/9]">
+            <div className="relative w-full overflow-hidden">
               <Image
                 src={post.cover.src}
                 alt={post.cover.alt || title}
-                fill
+                width={post.cover.width || 1170}
+                height={post.cover.height || 658}
                 priority
-                className="object-cover"
+                className="h-auto w-full"
                 sizes="(max-width: 1170px) 100vw, 1170px"
               />
             </div>
@@ -139,7 +140,7 @@ export default function BlogPostBody({ locale, theme, post }: Props) {
 
           {hasBody ? (
             <div
-              className={`blog-body font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h2,h3,h4)]:mt-8 [&_:is(h2,h3,h4)]:mb-3 [&_:is(h2,h3,h4)]:font-extralight [&_:is(h2,h3,h4)]:uppercase [&_:is(h2,h3,h4)]:tracking-normal [&_p]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_blockquote]:border-s-2 [&_blockquote]:border-erythro-500 [&_blockquote]:ps-4 [&_blockquote]:italic ${
+              className={`blog-body font-sans text-base font-light leading-7 md:text-lg md:leading-8 [&_:is(h2,h3,h4)]:mt-8 [&_:is(h2,h3,h4)]:mb-3 [&_:is(h2,h3,h4)]:font-extralight [&_:is(h2,h3,h4)]:uppercase [&_:is(h2,h3,h4)]:tracking-normal [&_p]:m-0 [&_p+_p]:mt-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:ps-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:ps-5 [&_li]:my-1 [&_a]:underline [&_strong]:font-semibold [&_em]:italic [&_blockquote]:border-s-2 [&_blockquote]:border-erythro-500 [&_blockquote]:ps-4 [&_blockquote]:italic [&_img]:mt-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-[10px] [&_img]:shadow-[0_6px_20px_rgba(0,0,0,0.18)] [&_picture]:mt-4 [&_picture]:block [&_picture]:max-w-full [&_video]:mt-4 [&_video]:h-auto [&_video]:w-full [&_video]:max-w-full [&_video]:rounded-[10px] [&_video]:shadow-[0_6px_20px_rgba(0,0,0,0.18)] ${
                 isLight
                   ? 'text-coal-900/85 [&_:is(h2,h3,h4)]:text-coal-900'
                   : 'text-white/80 [&_:is(h2,h3,h4)]:text-white'
